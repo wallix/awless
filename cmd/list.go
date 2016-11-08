@@ -8,9 +8,15 @@ import (
 	"github.com/wallix/awless/api"
 )
 
-var accessApi *api.Access
+var (
+	accessApi *api.Access
+
+	displayFormat string
+)
 
 func init() {
+	listCmd.PersistentFlags().StringVarP(&displayFormat, "format", "f", "line", "Display entities as raw in the console")
+
 	listCmd.AddCommand(listUsersCmd)
 	listCmd.AddCommand(listGroupsCmd)
 	listCmd.AddCommand(listRolesCmd)
@@ -36,7 +42,8 @@ var listUsersCmd = &cobra.Command{
 	Short: "List users",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(accessApi.Users())
+		resp, err := accessApi.Users()
+		display(displayFormat, resp, err)
 	},
 }
 
@@ -45,7 +52,8 @@ var listGroupsCmd = &cobra.Command{
 	Short: "List groups",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(accessApi.Groups())
+		resp, err := accessApi.Groups()
+		display(displayFormat, resp, err)
 	},
 }
 
@@ -54,7 +62,8 @@ var listRolesCmd = &cobra.Command{
 	Short: "List roles",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(accessApi.Roles())
+		resp, err := accessApi.Roles()
+		display(displayFormat, resp, err)
 	},
 }
 
@@ -63,6 +72,7 @@ var listPoliciesCmd = &cobra.Command{
 	Short: "List policies",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(accessApi.Policies())
+		resp, err := accessApi.Policies()
+		display(displayFormat, resp, err)
 	},
 }

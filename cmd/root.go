@@ -37,9 +37,9 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName("config") // name of config file (without extension)
-	viper.AddConfigPath("$HOME/.awless")   // adding home directory as first search path
-	viper.AutomaticEnv()           // read in environment variables that match
+	viper.SetConfigName("config")        // name of config file (without extension)
+	viper.AddConfigPath("$HOME/.awless") // adding home directory as first search path
+	viper.AutomaticEnv()                 // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

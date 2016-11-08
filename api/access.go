@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 )
@@ -20,34 +18,18 @@ func NewAccess() (*Access, error) {
 	return &Access{iam.New(sess)}, nil
 }
 
-func (a *Access) Users() string {
-	if resp, err := a.ListUsers(&iam.ListUsersInput{}); err != nil {
-		return err.Error()
-	} else {
-		return fmt.Sprint(resp)
-	}
+func (a *Access) Users() (interface{}, error) {
+	return a.ListUsers(&iam.ListUsersInput{})
 }
 
-func (a *Access) Groups() string {
-	if resp, err := a.ListGroups(&iam.ListGroupsInput{}); err != nil {
-		return err.Error()
-	} else {
-		return fmt.Sprint(resp)
-	}
+func (a *Access) Groups() (interface{}, error) {
+	return a.ListGroups(&iam.ListGroupsInput{})
 }
 
-func (a *Access) Roles() string {
-	if resp, err := a.ListRoles(&iam.ListRolesInput{}); err != nil {
-		return err.Error()
-	} else {
-		return fmt.Sprint(resp)
-	}
+func (a *Access) Roles() (interface{}, error) {
+	return a.ListRoles(&iam.ListRolesInput{})
 }
 
-func (a *Access) Policies() string {
-	if resp, err := a.ListPolicies(&iam.ListPoliciesInput{}); err != nil {
-		return err.Error()
-	} else {
-		return fmt.Sprint(resp)
-	}
+func (a *Access) Policies() (interface{}, error) {
+	return a.ListPolicies(&iam.ListPoliciesInput{})
 }
