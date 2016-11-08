@@ -36,7 +36,8 @@ func lineDisplay(item interface{}) {
 			buf.WriteString(fmt.Sprintf("id:%s, name:%s\n", *policy.PolicyId, *policy.PolicyName))
 		}
 	default:
-		fmt.Println("unknown entities to display")
+		fmt.Println(item)
+		return
 	}
 
 	fmt.Println(buf.String())

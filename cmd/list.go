@@ -1,35 +1,25 @@
 package cmd
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/spf13/cobra"
-	"github.com/wallix/awless/api"
-)
+import "github.com/spf13/cobra"
 
 var (
-	accessApi *api.Access
-
 	displayFormat string
 )
 
 func init() {
 	listCmd.PersistentFlags().StringVarP(&displayFormat, "format", "f", "line", "Display entities as raw in the console")
 
+	// access
 	listCmd.AddCommand(listUsersCmd)
 	listCmd.AddCommand(listGroupsCmd)
 	listCmd.AddCommand(listRolesCmd)
 	listCmd.AddCommand(listPoliciesCmd)
 
+	// infra
+	listCmd.AddCommand(listRegionsCmd)
+	listCmd.AddCommand(listInstancesCmd)
+
 	RootCmd.AddCommand(listCmd)
-
-	var err error
-
-	if accessApi, err = api.NewAccess(); err != nil {
-		fmt.Fprintf(os.Stderr, "unable to init the api: %s\n", err)
-		os.Exit(-1)
-	}
 }
 
 var listCmd = &cobra.Command{
@@ -73,6 +63,26 @@ var listPoliciesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := accessApi.Policies()
+		display(displayFormat, resp, err)
+	},
+}
+
+var listInstancesCmd = &cobra.Command{
+	Use:   "instances",
+	Short: "List instances",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Instances()
+		display(displayFormat, resp, err)
+	},
+}
+
+var listRegionsCmd = &cobra.Command{
+	Use:   "regions",
+	Short: "List regions",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Regions()
 		display(displayFormat, resp, err)
 	},
 }
