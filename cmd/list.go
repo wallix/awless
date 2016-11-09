@@ -18,6 +18,8 @@ func init() {
 	// infra
 	listCmd.AddCommand(listRegionsCmd)
 	listCmd.AddCommand(listInstancesCmd)
+	listCmd.AddCommand(listVpcsCmd)
+	listCmd.AddCommand(listSubnetsCmd)
 
 	RootCmd.AddCommand(listCmd)
 }
@@ -33,7 +35,7 @@ var listUsersCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := accessApi.Users()
-		display(displayFormat, resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -43,7 +45,7 @@ var listGroupsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := accessApi.Groups()
-		display(displayFormat, resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -53,7 +55,7 @@ var listRolesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := accessApi.Roles()
-		display(displayFormat, resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -63,17 +65,7 @@ var listPoliciesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := accessApi.Policies()
-		display(displayFormat, resp, err)
-	},
-}
-
-var listInstancesCmd = &cobra.Command{
-	Use:   "instances",
-	Short: "List instances",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := infraApi.Instances()
-		display(displayFormat, resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -83,6 +75,36 @@ var listRegionsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Regions()
-		display(displayFormat, resp, err)
+		display(resp, err)
+	},
+}
+
+var listInstancesCmd = &cobra.Command{
+	Use:   "instances",
+	Short: "List instances",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Instances()
+		display(resp, err)
+	},
+}
+
+var listVpcsCmd = &cobra.Command{
+	Use:   "vpcs",
+	Short: "List vpcs",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Vpcs()
+		display(resp, err)
+	},
+}
+
+var listSubnetsCmd = &cobra.Command{
+	Use:   "subnets",
+	Short: "List subnets",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Subnets()
+		display(resp, err)
 	},
 }

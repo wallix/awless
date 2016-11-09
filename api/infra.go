@@ -23,6 +23,22 @@ func (inf *Infra) Instances() (interface{}, error) {
 	return inf.DescribeInstances(&ec2.DescribeInstancesInput{})
 }
 
+func (inf *Infra) Vpcs() (interface{}, error) {
+	return inf.DescribeVpcs(&ec2.DescribeVpcsInput{})
+}
+
+func (inf *Infra) Subnets() (interface{}, error) {
+	return inf.DescribeSubnets(&ec2.DescribeSubnetsInput{})
+}
+
 func (inf *Infra) Regions() (interface{}, error) {
 	return inf.DescribeRegions(&ec2.DescribeRegionsInput{})
+}
+
+func (inf *Infra) Vpc(id string) (interface{}, error) {
+	input := &ec2.DescribeVpcsInput{
+		VpcIds: []*string{aws.String(id)},
+	}
+
+	return inf.DescribeVpcs(input)
 }

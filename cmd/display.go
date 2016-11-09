@@ -6,12 +6,18 @@ import (
 )
 import "github.com/aws/aws-sdk-go/service/iam"
 
-func display(format string, item interface{}, err error) {
+func display(item interface{}, err error, format ...string) {
 	if err != nil {
 		fmt.Println(err.Error())
+		return
 	}
 
-	switch format {
+	if len(format) < 1 {
+		fmt.Println(item)
+		return
+	}
+
+	switch format[0] {
 	case "raw":
 		fmt.Println(item)
 	default:
