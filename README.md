@@ -20,7 +20,14 @@ Get help on a specific command
 
     $ awless help list
 
+Show config
+
+    $ awless config
+
 List various items
 
     $ awless list users
     $ awless list policies
+    $ awless list instances
+    $ awless list vpcs
+    $ awless list subnets
