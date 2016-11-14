@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 import "github.com/aws/aws-sdk-go/service/iam"
@@ -13,7 +14,7 @@ func display(item interface{}, err error, format ...string) {
 	}
 
 	if len(format) < 1 {
-		fmt.Println(item)
+		jsonDisplay(item)
 		return
 	}
 
@@ -23,6 +24,15 @@ func display(item interface{}, err error, format ...string) {
 	default:
 		lineDisplay(item)
 	}
+}
+
+func jsonDisplay(item interface{}) {
+	j, err := json.MarshalIndent(item, "", " ")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Printf("%s\n", j)
 }
 
 func lineDisplay(item interface{}) {
