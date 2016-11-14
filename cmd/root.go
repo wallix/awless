@@ -9,11 +9,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/config"
 )
 
 var (
-	configPath string
-
 	accessApi *api.Access
 	infraApi  *api.Infra
 )
@@ -24,8 +23,6 @@ var RootCmd = &cobra.Command{
 	Long:  "Awless is a CLI to ....:",
 }
 
-// Execute adds all child commands to the root command sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -37,10 +34,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	viper.SetConfigName("config")            // name of config file (without extension)
-	viper.AddConfigPath("$HOME/.awless/aws") // adding home directory as first search path
+	viper.SetConfigFile(config.Path)
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
