@@ -32,79 +32,79 @@ func TestBuildInfraTreeFromAwsReservations(t *testing.T) {
 
 	region := BuildRegionTree("us-trump", vpcs, subnets, instances)
 
-	if got, want := region.id, "us-trump"; got != want {
+	if got, want := region.Id, "us-trump"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := len(region.vpcs), 3; got != want {
+	if got, want := len(region.Vpcs), 3; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	if got, want := region.vpcs[0].id, "vpc_1"; got != want {
+	if got, want := region.Vpcs[0].Id, "vpc_1"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := len(region.vpcs[0].subnets), 2; got != want {
+	if got, want := len(region.Vpcs[0].Subnets), 2; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := region.vpcs[1].id, "vpc_2"; got != want {
+	if got, want := region.Vpcs[1].Id, "vpc_2"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := len(region.vpcs[1].subnets), 0; got != want {
+	if got, want := len(region.Vpcs[1].Subnets), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := region.vpcs[2].id, "vpc_3"; got != want {
+	if got, want := region.Vpcs[2].Id, "vpc_3"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := len(region.vpcs[2].subnets), 1; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-
-	if got, want := region.vpcs[0].subnets[0].id, "sub_1"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := region.vpcs[0].subnets[0].vpcId, "vpc_1"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := len(region.vpcs[0].subnets[0].instances), 2; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := region.vpcs[0].subnets[1].id, "sub_2"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := region.vpcs[0].subnets[1].vpcId, "vpc_1"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := len(region.vpcs[0].subnets[1].instances), 3; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := region.vpcs[2].subnets[0].id, "sub_3"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := region.vpcs[2].subnets[0].vpcId, "vpc_3"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := len(region.vpcs[2].subnets[0].instances), 2; got != want {
+	if got, want := len(region.Vpcs[2].Subnets), 1; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	if got, want := region.vpcs[0].subnets[0].instances[0].id, "inst_1"; got != want {
+	if got, want := region.Vpcs[0].Subnets[0].Id, "sub_1"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := region.vpcs[0].subnets[0].instances[1].id, "inst_2"; got != want {
+	if got, want := region.Vpcs[0].Subnets[0].VpcId, "vpc_1"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := region.vpcs[0].subnets[1].instances[0].id, "inst_3"; got != want {
+	if got, want := len(region.Vpcs[0].Subnets[0].Instances), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := region.Vpcs[0].Subnets[1].Id, "sub_2"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := region.vpcs[0].subnets[1].instances[1].id, "inst_4"; got != want {
+	if got, want := region.Vpcs[0].Subnets[1].VpcId, "vpc_1"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := region.vpcs[0].subnets[1].instances[2].id, "inst_5"; got != want {
+	if got, want := len(region.Vpcs[0].Subnets[1].Instances), 3; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := region.Vpcs[2].Subnets[0].Id, "sub_3"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := region.vpcs[2].subnets[0].instances[0].id, "inst_6"; got != want {
+	if got, want := region.Vpcs[2].Subnets[0].VpcId, "vpc_3"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := region.vpcs[2].subnets[0].instances[1].id, "inst_7"; got != want {
+	if got, want := len(region.Vpcs[2].Subnets[0].Instances), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	if got, want := region.Vpcs[0].Subnets[0].Instances[0].Id, "inst_1"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := region.Vpcs[0].Subnets[0].Instances[1].Id, "inst_2"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := region.Vpcs[0].Subnets[1].Instances[0].Id, "inst_3"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := region.Vpcs[0].Subnets[1].Instances[1].Id, "inst_4"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := region.Vpcs[0].Subnets[1].Instances[2].Id, "inst_5"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := region.Vpcs[2].Subnets[0].Instances[0].Id, "inst_6"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := region.Vpcs[2].Subnets[0].Instances[1].Id, "inst_7"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }

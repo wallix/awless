@@ -56,7 +56,7 @@ var syncCmd = &cobra.Command{
 
 		tree := store.BuildRegionTree(viper.GetString("region"), vpcs, subnets, instances)
 
-		fmt.Println(tree)
+		fmt.Println(tree.Json())
 		return nil
 	},
 }
