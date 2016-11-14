@@ -10,13 +10,8 @@ type Infra struct {
 	*ec2.EC2
 }
 
-func NewInfra(region string) (*Infra, error) {
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Infra{ec2.New(sess, aws.NewConfig().WithRegion(region))}, nil
+func NewInfra(sess *session.Session) *Infra {
+	return &Infra{ec2.New(sess)}
 }
 
 func (inf *Infra) Instances() (interface{}, error) {

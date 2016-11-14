@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/api"
@@ -37,21 +39,28 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	viper.SetConfigName("config")        // name of config file (without extension)
-	viper.AddConfigPath("$HOME/.awless") // adding home directory as first search path
+	viper.SetConfigName("config")            // name of config file (without extension)
+	viper.AddConfigPath("$HOME/.awless/aws") // adding home directory as first search path
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
+		os.Exit(-1)
+		return
 	}
 
-	var err error
+	sess, err := session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(-1)
+		return
+	}
+	if _, err = sess.Config.Credentials.Get(); err != nil {
+		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, "Your AWS credentials seem undefined!")
+		os.Exit(-1)
+		return
+	}
 
-	if accessApi, err = api.NewAccess(); err != nil {
-		fmt.Fprintf(os.Stderr, "unable to init the access api: %s\n", err)
-		os.Exit(-1)
-	}
-	if infraApi, err = api.NewInfra(viper.GetString("region")); err != nil {
-		fmt.Fprintf(os.Stderr, "unable to init the infra api: %s\n", err)
-		os.Exit(-1)
-	}
+	accessApi = api.NewAccess(sess)
+	infraApi = api.NewInfra(sess)
 }

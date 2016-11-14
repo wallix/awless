@@ -9,13 +9,8 @@ type Access struct {
 	*iam.IAM
 }
 
-func NewAccess() (*Access, error) {
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Access{iam.New(sess)}, nil
+func NewAccess(sess *session.Session) *Access {
+	return &Access{iam.New(sess)}
 }
 
 func (a *Access) Users() (interface{}, error) {
