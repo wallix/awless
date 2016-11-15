@@ -1,4 +1,4 @@
-package converters
+package models
 
 import (
 	"fmt"
@@ -7,22 +7,21 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/wallix/awless/models"
 )
 
-func ConvertModel(source interface{}) interface{} {
+func Convert(source interface{}) interface{} {
 	awsObject := reflect.ValueOf(source).Elem()
 
 	switch awsType := source.(type) {
 	case *ec2.Instance:
-		instance := &models.Instance{}
-		return convert(awsObject, instance)
+		instance := &Instance{}
+		return populate(awsObject, instance)
 	case *ec2.Vpc:
-		vpc := &models.Vpc{}
-		return convert(awsObject, vpc)
+		vpc := &Vpc{}
+		return populate(awsObject, vpc)
 	case *ec2.Subnet:
-		subnet := &models.Subnet{}
-		return convert(awsObject, subnet)
+		subnet := &Subnet{}
+		return populate(awsObject, subnet)
 	default:
 		fmt.Fprintf(os.Stderr, "struct conversion: aws %T unsupported\n", awsType)
 		os.Exit(-1)
@@ -31,7 +30,7 @@ func ConvertModel(source interface{}) interface{} {
 	return nil
 }
 
-func convert(source reflect.Value, dest interface{}) interface{} {
+func populate(source reflect.Value, dest interface{}) interface{} {
 	destStruct := reflect.ValueOf(dest).Elem()
 
 	for i := 0; i < destStruct.NumField(); i++ {

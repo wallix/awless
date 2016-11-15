@@ -3,7 +3,6 @@ package store
 import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/wallix/awless/models"
-	"github.com/wallix/awless/models/converters"
 )
 
 func BuildRegionTree(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.Subnet, awsInstances []*ec2.Instance) *models.Region {
@@ -12,11 +11,11 @@ func BuildRegionTree(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.Subnet
 	var instances []*models.Instance
 
 	for _, instance := range awsInstances {
-		instances = append(instances, converters.ConvertModel(instance).(*models.Instance))
+		instances = append(instances, models.Convert(instance).(*models.Instance))
 	}
 
 	for _, subnet := range awsSubnets {
-		subnets = append(subnets, converters.ConvertModel(subnet).(*models.Subnet))
+		subnets = append(subnets, models.Convert(subnet).(*models.Subnet))
 	}
 
 	for _, instance := range instances {
@@ -28,7 +27,7 @@ func BuildRegionTree(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.Subnet
 	}
 
 	for _, vpc := range awsVpcs {
-		vpcs = append(vpcs, converters.ConvertModel(vpc).(*models.Vpc))
+		vpcs = append(vpcs, models.Convert(vpc).(*models.Vpc))
 	}
 
 	for _, sub := range subnets {
