@@ -24,15 +24,30 @@ Show config
 
     $ awless config
 
-Discover your infra
+Sync your infra
 
     $ awless sync
-     Region: eu-west-1, 1 VPC(s)
-        1. VPC vpc-00b68c65, 3 subnet(s)
-            1. Subnet subnet-0c41ad68, 1 instance(s)
-                1. Instance i-ad86f625
-            2. Subnet subnet-f5c9dd82, 0 instance(s)
-            3. Subnet subnet-267d517f, 0 instance(s)
+
+Diff your local infra to the remote one
+
+    $ awless diff
+        {
+         "RegionMatch": true,
+         "ExtraVpcs": null,
+         "MissingVpcs": null,
+         "ExtraSubnets": [
+          "subnet-w8eftweifgw"
+         ],
+         "MissingSubnets": [
+          "subnet-267d517f"
+         ],
+         "ExtraInstances": [
+          "i-uevfwiefbow"
+         ],
+         "MissingInstances": [
+          "i-ad86f625"
+         ]
+        }
 
 List various items
 

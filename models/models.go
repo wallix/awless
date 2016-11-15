@@ -31,14 +31,34 @@ type Instance struct {
 	PrivateIp string `aws:"PrivateIpAddress"`
 }
 
-func (t *Region) Json() string {
-	j, err := json.MarshalIndent(t, "", " ")
+func (r *Region) AllSubnetsAndInstances() ([]*Subnet, []*Instance) {
+	var subs []*Subnet
+	var insts []*Instance
+	for _, vpc := range r.Vpcs {
+		for _, sub := range vpc.Subnets {
+			subs = append(subs, sub)
+			insts = append(insts, sub.Instances...)
+		}
+	}
+	return subs, insts
+}
+
+func (r *Region) AllSubnets() []*Subnet {
+	var all []*Subnet
+	for _, vpc := range r.Vpcs {
+		all = append(all, vpc.Subnets...)
+	}
+	return all
+}
+
+func (r *Region) Json() []byte {
+	content, err := json.MarshalIndent(r, "", " ")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(-1)
 	}
 
-	return string(j)
+	return content
 }
 
 func (t *Region) String() string {

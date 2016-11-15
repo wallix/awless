@@ -9,12 +9,14 @@ import (
 
 var (
 	configFilename = "config.yaml"
-	dir            = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
-	Path           = filepath.Join(dir, configFilename)
+	Dir            = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
+	Path           = filepath.Join(Dir, configFilename)
+
+	InfraFilename = "infra.json"
 )
 
 func CreateDefaultConf() {
-	os.MkdirAll(dir, 0700)
+	os.MkdirAll(Dir, 0700)
 
 	if _, err := os.Stat(Path); os.IsNotExist(err) {
 		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0400)
