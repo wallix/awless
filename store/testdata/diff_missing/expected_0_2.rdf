@@ -1,0 +1,2 @@
+/vpc<vpc_1> "parent_of"@[]	/subnet<subnet_1>
+/vpc<vpc_2> "parent_of"@[]	/subnet<subnet_2>

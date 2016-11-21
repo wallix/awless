@@ -1,0 +1,27 @@
+/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
+/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
+/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_3>
+
+/vpc<vpc_1> "parent_of"@[]	/subnet<vpc_1subnet_1>
+/vpc<vpc_1> "parent_of"@[]	/subnet<vpc_1subnet_2>
+/vpc<vpc_2> "parent_of"@[]	/subnet<vpc_2subnet_1>
+/vpc<vpc_2> "parent_of"@[]	/subnet<vpc_2subnet_2>
+/vpc<vpc_2> "parent_of"@[]	/subnet<vpc_2subnet_3>
+/vpc<vpc_3> "parent_of"@[]	/subnet<vpc_3subnet_1>
+
+/subnet<vpc_1subnet_1> "parent_of"@[]	/instance<vpc_1subnet_1instance_1>
+/subnet<vpc_1subnet_1> "parent_of"@[]	/instance<vpc_1subnet_1instance_2>
+/subnet<vpc_1subnet_1> "parent_of"@[]	/instance<vpc_1subnet_1instance_3>
+/subnet<vpc_1subnet_2> "parent_of"@[]	/instance<vpc_1subnet_2instance_1>
+/subnet<vpc_1subnet_2> "parent_of"@[]	/instance<vpc_1subnet_2instance_2>
+/subnet<vpc_1subnet_2> "parent_of"@[]	/instance<vpc_1subnet_2instance_3>
+/subnet<vpc_2subnet_1> "parent_of"@[]	/instance<vpc_2subnet_1instance_1>
+/subnet<vpc_2subnet_2> "parent_of"@[]	/instance<vpc_2subnet_2instance_1>
+/subnet<vpc_2subnet_2> "parent_of"@[]	/instance<vpc_2subnet_2instance_2>
+/subnet<vpc_2subnet_2> "parent_of"@[]	/instance<vpc_2subnet_2instance_3>
+/subnet<vpc_2subnet_3> "parent_of"@[]	/instance<vpc_2subnet_3instance_1>
+/subnet<vpc_2subnet_3> "parent_of"@[]	/instance<vpc_2subnet_3instance_2>
+/subnet<vpc_2subnet_3> "parent_of"@[]	/instance<vpc_2subnet_3instance_3>
+/subnet<vpc_3subnet_1> "parent_of"@[]	/instance<vpc_3subnet_1instance_1>
+/subnet<vpc_3subnet_1> "parent_of"@[]	/instance<vpc_3subnet_1instance_2>
+/subnet<vpc_3subnet_1> "parent_of"@[]	/instance<vpc_3subnet_1instance_3>

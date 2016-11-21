@@ -24,9 +24,12 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		region := store.BuildRegionTree(viper.GetString("region"), vpcs, subnets, instances)
+		triples, err := store.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		if err != nil {
+			return err
+		}
 
-		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), region.Json(), 0700); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(store.MarshalTriples(triples)), 0700); err != nil {
 			return err
 		}
 

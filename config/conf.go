@@ -12,7 +12,7 @@ var (
 	Dir            = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
 	Path           = filepath.Join(Dir, configFilename)
 
-	InfraFilename = "infra.json"
+	InfraFilename = "infra.rdf"
 )
 
 func CreateDefaultConf() {

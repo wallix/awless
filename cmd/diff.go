@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -9,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/models"
 	"github.com/wallix/awless/store"
 )
 
@@ -27,8 +25,8 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		localRegion := &models.Region{}
-		if err := json.Unmarshal(content, localRegion); err != nil {
+		local, err := store.UnmarshalTriples(string(content))
+		if err != nil {
 			return err
 		}
 
@@ -37,9 +35,19 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteRegion := store.BuildRegionTree(viper.GetString("region"), vpcs, subnets, instances)
+		remote, err := store.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		if err != nil {
+			return err
+		}
+		extras, missings, err := store.Compare(viper.GetString("region"), local, remote)
+		if err != nil {
+			return err
+		}
 
-		fmt.Printf(string(models.Compare(localRegion, remoteRegion).Json()))
+		fmt.Println("Extras:")
+		fmt.Printf("\t%s\n", store.MarshalTriples(extras))
+		fmt.Println("Missings:")
+		fmt.Printf("\t%s\n", store.MarshalTriples(missings))
 
 		return nil
 	},

@@ -1,0 +1,3 @@
+/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_4>
+/subnet<vpc_2subnet_1> "parent_of"@[]	/instance<vpc_2subnet_1instance_2>
+/subnet<vpc_2subnet_1> "parent_of"@[]	/instance<vpc_2subnet_1instance_3>
