@@ -65,11 +65,13 @@ func (inf *Infra) FetchInfra() ([]*ec2.Vpc, []*ec2.Subnet, []*ec2.Instance, erro
 		case r := <-resultc:
 			switch r.(type) {
 			case *ec2.DescribeVpcsOutput:
-				vpcs = r.(*ec2.DescribeVpcsOutput).Vpcs
+				vpcs = append(vpcs, r.(*ec2.DescribeVpcsOutput).Vpcs...)
 			case *ec2.DescribeSubnetsOutput:
-				subnets = r.(*ec2.DescribeSubnetsOutput).Subnets
+				subnets = append(subnets, r.(*ec2.DescribeSubnetsOutput).Subnets...)
 			case *ec2.DescribeInstancesOutput:
-				instances = r.(*ec2.DescribeInstancesOutput).Reservations[0].Instances
+				for _, reservation := range r.(*ec2.DescribeInstancesOutput).Reservations {
+					instances = append(instances, reservation.Instances...)
+				}
 			}
 		case fetchErr = <-errc:
 			//
