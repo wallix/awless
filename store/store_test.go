@@ -7,9 +7,82 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 )
+
+func TestBuildAccessRdfTriples(t *testing.T) {
+	var groups []*iam.Group
+	var users []*iam.User
+	usersByGroup := map[string][]string{}
+	triples, err := BuildAccessRdfTriples("eu-west-1", groups, users, usersByGroup)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := MarshalTriples(triples)
+	expect := ``
+	if result != expect {
+		t.Fatalf("got\n%s\nwant\n%s", result, expect)
+	}
+
+	groups = []*iam.Group{
+		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("group_1")},
+		&iam.Group{GroupId: aws.String("group_2"), GroupName: aws.String("group_2")},
+		&iam.Group{GroupId: aws.String("group_3"), GroupName: aws.String("group_3")},
+		&iam.Group{GroupId: aws.String("group_4"), GroupName: aws.String("group_4")},
+	}
+
+	users = []*iam.User{
+		&iam.User{UserId: aws.String("usr_1")},
+		&iam.User{UserId: aws.String("usr_2")},
+		&iam.User{UserId: aws.String("usr_3")},
+		&iam.User{UserId: aws.String("usr_4")},
+		&iam.User{UserId: aws.String("usr_5")},
+		&iam.User{UserId: aws.String("usr_6")},
+		&iam.User{UserId: aws.String("usr_7")},
+		&iam.User{UserId: aws.String("usr_8")},
+		&iam.User{UserId: aws.String("usr_9")},
+		&iam.User{UserId: aws.String("usr_10")}, //users not in any groups
+		&iam.User{UserId: aws.String("usr_11")},
+	}
+
+	usersByGroup = map[string][]string{
+		"group_1": []string{"usr_1", "usr_2", "usr_3"},
+		"group_2": []string{"usr_1", "usr_4", "usr_5", "usr_6", "usr_7"},
+		"group_4": []string{"usr_3", "usr_8", "usr_9", "usr_7"},
+	}
+
+	triples, err = BuildAccessRdfTriples("eu-west-1", groups, users, usersByGroup)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result = SortLines(MarshalTriples(triples))
+	expect = `/group<group_1>	"parent_of"@[]	/user<usr_1>
+/group<group_1>	"parent_of"@[]	/user<usr_2>
+/group<group_1>	"parent_of"@[]	/user<usr_3>
+/group<group_2>	"parent_of"@[]	/user<usr_1>
+/group<group_2>	"parent_of"@[]	/user<usr_4>
+/group<group_2>	"parent_of"@[]	/user<usr_5>
+/group<group_2>	"parent_of"@[]	/user<usr_6>
+/group<group_2>	"parent_of"@[]	/user<usr_7>
+/group<group_4>	"parent_of"@[]	/user<usr_3>
+/group<group_4>	"parent_of"@[]	/user<usr_7>
+/group<group_4>	"parent_of"@[]	/user<usr_8>
+/group<group_4>	"parent_of"@[]	/user<usr_9>
+/region<eu-west-1>	"parent_of"@[]	/group<group_1>
+/region<eu-west-1>	"parent_of"@[]	/group<group_2>
+/region<eu-west-1>	"parent_of"@[]	/group<group_3>
+/region<eu-west-1>	"parent_of"@[]	/group<group_4>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_10>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_11>`
+	if result != expect {
+		t.Fatalf("got\n%s\nwant\n%s", result, expect)
+	}
+
+}
 
 func TestBuildInfraRdfTriples(t *testing.T) {
 	var instances []*ec2.Instance

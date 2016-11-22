@@ -3,8 +3,11 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"text/tabwriter"
 
+	"github.com/google/badwolf/triple"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/config"
@@ -20,35 +23,68 @@ var diffCmd = &cobra.Command{
 	Short: "Show diff between your local and remote infra",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		content, err := ioutil.ReadFile(filepath.Join(config.Dir, config.InfraFilename))
+		localInfra, err := triplesFromFile(config.InfraFilename)
 		if err != nil {
 			return err
 		}
-
-		local, err := store.UnmarshalTriples(string(content))
-		if err != nil {
-			return err
-		}
-
 		vpcs, subnets, instances, err := infraApi.FetchInfra()
 		if err != nil {
 			return err
 		}
 
-		remote, err := store.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		remoteInfra, err := store.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
 		if err != nil {
 			return err
 		}
-		extras, missings, err := store.Compare(viper.GetString("region"), local, remote)
+		extras, missings, err := store.Compare(viper.GetString("region"), localInfra, remoteInfra)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("Extras:")
-		fmt.Printf("\t%s\n", store.MarshalTriples(extras))
-		fmt.Println("Missings:")
-		fmt.Printf("\t%s\n", store.MarshalTriples(missings))
+		const padding = 5
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		fmt.Fprintln(w, "INFRA")
+		fmt.Fprintln(w, "Extras:")
+		fmt.Fprintln(w, store.MarshalTriples(extras))
+		fmt.Fprintln(w, "Missings:")
+		fmt.Fprintln(w, store.MarshalTriples(missings))
+
+		localAccess, err := triplesFromFile(config.AccessFilename)
+		if err != nil {
+			return err
+		}
+
+		groups, users, usersByGroup, err := accessApi.FetchAccess()
+		if err != nil {
+			return err
+		}
+
+		remoteAccess, err := store.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
+		if err != nil {
+			return err
+		}
+		extras, missings, err = store.Compare(viper.GetString("region"), localAccess, remoteAccess)
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, "ACCESS:")
+		fmt.Fprintln(w, "Extras:")
+		fmt.Fprintln(w, store.MarshalTriples(extras))
+		fmt.Fprintln(w, "Missings:")
+		fmt.Fprintln(w, store.MarshalTriples(missings))
+
+		w.Flush()
 
 		return nil
 	},
+}
+
+func triplesFromFile(filename string) ([]*triple.Triple, error) {
+	if content, err := ioutil.ReadFile(filepath.Join(config.Dir, filename)); err != nil {
+		return nil, err
+	} else {
+		return store.UnmarshalTriples(string(content))
+	}
 }

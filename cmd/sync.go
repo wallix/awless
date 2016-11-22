@@ -29,7 +29,21 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(store.MarshalTriples(triples)), 0700); err != nil {
+		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(store.MarshalTriples(triples)), 0700); err != nil {
+			return err
+		}
+
+		groups, users, usersByGroup, err := accessApi.FetchAccess()
+		if err != nil {
+			return err
+		}
+
+		triples, err = store.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
+		if err != nil {
+			return err
+		}
+
+		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), []byte(store.MarshalTriples(triples)), 0700); err != nil {
 			return err
 		}
 
