@@ -4,11 +4,29 @@ A nice, easy-to-use CLI for AWS
 
 ## Install
 
-    go install github.com/wallix/awless
+    $ go get github.com/wallix/awless
+
+or install as a global executable
+
+    $ go install github.com/wallix/awless
+
+## Test
+
+    $ cd awless
+    $ go test -race ./...
 
 ## Configure
 
 Export in your shell session `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+
+## Run
+
+    $ go run main.go list instances
+
+or
+
+    $ go build .
+    $ ./awless list instances
 
 ## Usage
 
@@ -31,23 +49,10 @@ Sync your infra
 Diff your local infra to the remote one
 
     $ awless diff
-        {
-         "RegionMatch": true,
-         "ExtraVpcs": null,
-         "MissingVpcs": null,
-         "ExtraSubnets": [
-          "subnet-w8eftweifgw"
-         ],
-         "MissingSubnets": [
-          "subnet-267d517f"
-         ],
-         "ExtraInstances": [
-          "i-uevfwiefbow"
-         ],
-         "MissingInstances": [
-          "i-ad86f625"
-         ]
-        }
+      Extras:
+
+      Missings:
+        /subnet<subnet-0c41ad68>	"parent_of"@[]	/instance<i-56adc1dd>
 
 List various items
 
