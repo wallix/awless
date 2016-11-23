@@ -1,4 +1,4 @@
-package store
+package rdf
 
 import (
 	"io/ioutil"

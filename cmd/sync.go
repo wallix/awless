@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/store"
+	"github.com/wallix/awless/rdf"
 )
 
 func init() {
@@ -24,12 +24,12 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		triples, err := store.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		triples, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
 		if err != nil {
 			return err
 		}
 
-		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(store.MarshalTriples(triples)), 0700); err != nil {
+		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(rdf.MarshalTriples(triples)), 0700); err != nil {
 			return err
 		}
 
@@ -38,12 +38,12 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		triples, err = store.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
+		triples, err = rdf.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
 		if err != nil {
 			return err
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), []byte(store.MarshalTriples(triples)), 0700); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), []byte(rdf.MarshalTriples(triples)), 0700); err != nil {
 			return err
 		}
 

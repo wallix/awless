@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/store"
+	"github.com/wallix/awless/rdf"
 )
 
 func init() {
@@ -32,11 +32,11 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteInfra, err := store.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		remoteInfra, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
 		if err != nil {
 			return err
 		}
-		extras, missings, err := store.Compare(viper.GetString("region"), localInfra, remoteInfra)
+		extras, missings, err := rdf.Compare(viper.GetString("region"), localInfra, remoteInfra)
 		if err != nil {
 			return err
 		}
@@ -45,9 +45,9 @@ var diffCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
 		fmt.Fprintln(w, "INFRA")
 		fmt.Fprintln(w, "Extras:")
-		fmt.Fprintln(w, store.MarshalTriples(extras))
+		fmt.Fprintln(w, rdf.MarshalTriples(extras))
 		fmt.Fprintln(w, "Missings:")
-		fmt.Fprintln(w, store.MarshalTriples(missings))
+		fmt.Fprintln(w, rdf.MarshalTriples(missings))
 
 		localAccess, err := triplesFromFile(config.AccessFilename)
 		if err != nil {
@@ -59,11 +59,11 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteAccess, err := store.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
+		remoteAccess, err := rdf.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
 		if err != nil {
 			return err
 		}
-		extras, missings, err = store.Compare(viper.GetString("region"), localAccess, remoteAccess)
+		extras, missings, err = rdf.Compare(viper.GetString("region"), localAccess, remoteAccess)
 		if err != nil {
 			return err
 		}
@@ -71,9 +71,9 @@ var diffCmd = &cobra.Command{
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, "ACCESS:")
 		fmt.Fprintln(w, "Extras:")
-		fmt.Fprintln(w, store.MarshalTriples(extras))
+		fmt.Fprintln(w, rdf.MarshalTriples(extras))
 		fmt.Fprintln(w, "Missings:")
-		fmt.Fprintln(w, store.MarshalTriples(missings))
+		fmt.Fprintln(w, rdf.MarshalTriples(missings))
 
 		w.Flush()
 
@@ -85,6 +85,6 @@ func triplesFromFile(filename string) ([]*triple.Triple, error) {
 	if content, err := ioutil.ReadFile(filepath.Join(config.Dir, filename)); err != nil {
 		return nil, err
 	} else {
-		return store.UnmarshalTriples(string(content))
+		return rdf.UnmarshalTriples(string(content))
 	}
 }
