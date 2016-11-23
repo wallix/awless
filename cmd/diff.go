@@ -27,12 +27,12 @@ var diffCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		vpcs, subnets, instances, err := infraApi.FetchInfra()
+		awsInfra, err := infraApi.FetchInfra()
 		if err != nil {
 			return err
 		}
 
-		remoteInfra, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		remoteInfra, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), awsInfra)
 		if err != nil {
 			return err
 		}

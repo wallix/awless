@@ -19,12 +19,12 @@ var syncCmd = &cobra.Command{
 	Short: "Manage your local infrastructure",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		vpcs, subnets, instances, err := infraApi.FetchInfra()
+		infra, err := infraApi.FetchInfra()
 		if err != nil {
 			return err
 		}
 
-		triples, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), vpcs, subnets, instances)
+		triples, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), infra)
 		if err != nil {
 			return err
 		}

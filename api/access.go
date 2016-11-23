@@ -52,8 +52,6 @@ func NewAwsAccess() *AwsAccess {
 }
 
 func (access *Access) FetchAccess() (*AwsAccess, error) {
-	response := NewAwsAccess()
-
 	type fetchFn func() (interface{}, error)
 
 	allFetch := []fetchFn{access.Groups, access.Users, access.Roles}
@@ -70,34 +68,36 @@ func (access *Access) FetchAccess() (*AwsAccess, error) {
 		}(fetch)
 	}
 
+	awsAccess := NewAwsAccess()
+
 	for range allFetch {
 		select {
 		case r := <-resultc:
 			switch r.(type) {
 			case *iam.ListGroupsOutput:
-				response.Groups = append(response.Groups, r.(*iam.ListGroupsOutput).Groups...)
+				awsAccess.Groups = append(awsAccess.Groups, r.(*iam.ListGroupsOutput).Groups...)
 			case *iam.ListUsersOutput:
-				response.Users = append(response.Users, r.(*iam.ListUsersOutput).Users...)
+				awsAccess.Users = append(awsAccess.Users, r.(*iam.ListUsersOutput).Users...)
 			case *iam.ListRolesOutput:
-				response.Roles = append(response.Roles, r.(*iam.ListRolesOutput).Roles...)
+				awsAccess.Roles = append(awsAccess.Roles, r.(*iam.ListRolesOutput).Roles...)
 			}
 		case e := <-errc:
-			return response, e
+			return awsAccess, e
 		}
 	}
 
-	for _, group := range response.Groups {
+	for _, group := range awsAccess.Groups {
 		groupName := aws.StringValue(group.GroupName)
 		groupId := aws.StringValue(group.GroupId)
 		groupUsers, err := access.UsersForGroup(groupName)
 		if err != nil {
-			return response, err
+			return awsAccess, err
 		}
 
 		for _, groupUser := range groupUsers.([]*iam.User) {
-			response.UsersByGroup[groupId] = append(response.UsersByGroup[groupId], aws.StringValue(groupUser.UserId))
+			awsAccess.UsersByGroup[groupId] = append(awsAccess.UsersByGroup[groupId], aws.StringValue(groupUser.UserId))
 		}
 	}
 
-	return response, nil
+	return awsAccess, nil
 }

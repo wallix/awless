@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
@@ -85,7 +84,7 @@ func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	return triples, nil
 }
 
-func BuildInfraRdfTriples(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.Subnet, awsInstances []*ec2.Instance) ([]*triple.Triple, error) {
+func BuildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Triple, error) {
 	var triples []*triple.Triple
 	var vpcNodes, subnetNodes []*node.Node
 
@@ -94,7 +93,7 @@ func BuildInfraRdfTriples(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.S
 		return triples, err
 	}
 
-	for _, vpc := range awsVpcs {
+	for _, vpc := range awsInfra.Vpcs {
 		n, err := node.NewNodeFromStrings("/vpc", aws.StringValue(vpc.VpcId))
 		if err != nil {
 			return triples, err
@@ -108,7 +107,7 @@ func BuildInfraRdfTriples(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.S
 		triples = append(triples, t)
 	}
 
-	for _, subnet := range awsSubnets {
+	for _, subnet := range awsInfra.Subnets {
 		n, err := node.NewNodeFromStrings("/subnet", aws.StringValue(subnet.SubnetId))
 		if err != nil {
 			return triples, fmt.Errorf("subnet %s", err)
@@ -126,7 +125,7 @@ func BuildInfraRdfTriples(region string, awsVpcs []*ec2.Vpc, awsSubnets []*ec2.S
 		}
 	}
 
-	for _, instance := range awsInstances {
+	for _, instance := range awsInfra.Instances {
 		n, err := node.NewNodeFromStrings("/instance", aws.StringValue(instance.InstanceId))
 		if err != nil {
 			return triples, err

@@ -94,7 +94,9 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 }
 
 func TestBuildInfraRdfTriples(t *testing.T) {
-	instances := []*ec2.Instance{
+	awsInfra := &api.AwsInfra{}
+
+	awsInfra.Instances = []*ec2.Instance{
 		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
 		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
 		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
@@ -102,19 +104,19 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 		&ec2.Instance{InstanceId: aws.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
 	}
 
-	vpcs := []*ec2.Vpc{
+	awsInfra.Vpcs = []*ec2.Vpc{
 		&ec2.Vpc{VpcId: aws.String("vpc_1")},
 		&ec2.Vpc{VpcId: aws.String("vpc_2")},
 	}
 
-	subnets := []*ec2.Subnet{
+	awsInfra.Subnets = []*ec2.Subnet{
 		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
 		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	triples, err := BuildInfraRdfTriples("eu-west-1", vpcs, subnets, instances)
+	triples, err := BuildInfraRdfTriples("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +146,7 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	triples, err = BuildInfraRdfTriples("any", []*ec2.Vpc{}, []*ec2.Subnet{}, []*ec2.Instance{})
+	triples, err = BuildInfraRdfTriples("any", &api.AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
