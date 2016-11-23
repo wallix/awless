@@ -38,15 +38,25 @@ func (a *Access) Policies() (interface{}, error) {
 	return a.ListPolicies(&iam.ListPoliciesInput{})
 }
 
-func (access *Access) FetchAccess() ([]*iam.Group, []*iam.User, map[string][]string, error) {
-	var fetchErr error
-	var groups []*iam.Group
-	var users []*iam.User
-	usersByGroup := make(map[string][]string)
+type AwsAccess struct {
+	Groups       []*iam.Group
+	Users        []*iam.User
+	Roles        []*iam.Role
+	UsersByGroup map[string][]string
+}
+
+func NewAwsAccess() *AwsAccess {
+	return &AwsAccess{
+		UsersByGroup: make(map[string][]string),
+	}
+}
+
+func (access *Access) FetchAccess() (*AwsAccess, error) {
+	response := NewAwsAccess()
 
 	type fetchFn func() (interface{}, error)
 
-	allFetch := []fetchFn{access.Groups, access.Users}
+	allFetch := []fetchFn{access.Groups, access.Users, access.Roles}
 	resultc := make(chan interface{})
 	errc := make(chan error)
 
@@ -65,27 +75,29 @@ func (access *Access) FetchAccess() ([]*iam.Group, []*iam.User, map[string][]str
 		case r := <-resultc:
 			switch r.(type) {
 			case *iam.ListGroupsOutput:
-				groups = append(groups, r.(*iam.ListGroupsOutput).Groups...)
+				response.Groups = append(response.Groups, r.(*iam.ListGroupsOutput).Groups...)
 			case *iam.ListUsersOutput:
-				users = append(users, r.(*iam.ListUsersOutput).Users...)
+				response.Users = append(response.Users, r.(*iam.ListUsersOutput).Users...)
+			case *iam.ListRolesOutput:
+				response.Roles = append(response.Roles, r.(*iam.ListRolesOutput).Roles...)
 			}
-		case fetchErr = <-errc:
-			return groups, users, usersByGroup, fetchErr
+		case e := <-errc:
+			return response, e
 		}
 	}
 
-	for _, group := range groups {
+	for _, group := range response.Groups {
 		groupName := aws.StringValue(group.GroupName)
 		groupId := aws.StringValue(group.GroupId)
 		groupUsers, err := access.UsersForGroup(groupName)
 		if err != nil {
-			return groups, users, usersByGroup, err
+			return response, err
 		}
 
 		for _, groupUser := range groupUsers.([]*iam.User) {
-			usersByGroup[groupId] = append(usersByGroup[groupId], aws.StringValue(groupUser.UserId))
+			response.UsersByGroup[groupId] = append(response.UsersByGroup[groupId], aws.StringValue(groupUser.UserId))
 		}
 	}
 
-	return groups, users, usersByGroup, fetchErr
+	return response, nil
 }

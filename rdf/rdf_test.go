@@ -10,31 +10,27 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
+	"github.com/wallix/awless/api"
 )
 
 func TestBuildAccessRdfTriples(t *testing.T) {
-	var groups []*iam.Group
-	var users []*iam.User
-	usersByGroup := map[string][]string{}
-	triples, err := BuildAccessRdfTriples("eu-west-1", groups, users, usersByGroup)
-	if err != nil {
-		t.Fatal(err)
+	awsAccess := &api.AwsAccess{}
+
+	awsAccess.Groups = []*iam.Group{
+		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("ngroup_1")},
+		&iam.Group{GroupId: aws.String("group_2"), GroupName: aws.String("ngroup_2")},
+		&iam.Group{GroupId: aws.String("group_3"), GroupName: aws.String("ngroup_3")},
+		&iam.Group{GroupId: aws.String("group_4"), GroupName: aws.String("ngroup_4")},
 	}
 
-	result := MarshalTriples(triples)
-	expect := ``
-	if result != expect {
-		t.Fatalf("got\n%s\nwant\n%s", result, expect)
+	awsAccess.Roles = []*iam.Role{
+		&iam.Role{RoleId: aws.String("role_1")},
+		&iam.Role{RoleId: aws.String("role_2")},
+		&iam.Role{RoleId: aws.String("role_3")},
+		&iam.Role{RoleId: aws.String("role_4")},
 	}
 
-	groups = []*iam.Group{
-		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("group_1")},
-		&iam.Group{GroupId: aws.String("group_2"), GroupName: aws.String("group_2")},
-		&iam.Group{GroupId: aws.String("group_3"), GroupName: aws.String("group_3")},
-		&iam.Group{GroupId: aws.String("group_4"), GroupName: aws.String("group_4")},
-	}
-
-	users = []*iam.User{
+	awsAccess.Users = []*iam.User{
 		&iam.User{UserId: aws.String("usr_1")},
 		&iam.User{UserId: aws.String("usr_2")},
 		&iam.User{UserId: aws.String("usr_3")},
@@ -48,19 +44,19 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 		&iam.User{UserId: aws.String("usr_11")},
 	}
 
-	usersByGroup = map[string][]string{
+	awsAccess.UsersByGroup = map[string][]string{
 		"group_1": []string{"usr_1", "usr_2", "usr_3"},
 		"group_2": []string{"usr_1", "usr_4", "usr_5", "usr_6", "usr_7"},
 		"group_4": []string{"usr_3", "usr_8", "usr_9", "usr_7"},
 	}
 
-	triples, err = BuildAccessRdfTriples("eu-west-1", groups, users, usersByGroup)
+	triples, err := BuildAccessRdfTriples("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result = SortLines(MarshalTriples(triples))
-	expect = `/group<group_1>	"parent_of"@[]	/user<usr_1>
+	result := SortLines(MarshalTriples(triples))
+	expect := `/group<group_1>	"parent_of"@[]	/user<usr_1>
 /group<group_1>	"parent_of"@[]	/user<usr_2>
 /group<group_1>	"parent_of"@[]	/user<usr_3>
 /group<group_2>	"parent_of"@[]	/user<usr_1>
@@ -76,31 +72,29 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 /region<eu-west-1>	"parent_of"@[]	/group<group_2>
 /region<eu-west-1>	"parent_of"@[]	/group<group_3>
 /region<eu-west-1>	"parent_of"@[]	/group<group_4>
+/region<eu-west-1>	"parent_of"@[]	/role<role_1>
+/region<eu-west-1>	"parent_of"@[]	/role<role_2>
+/region<eu-west-1>	"parent_of"@[]	/role<role_3>
+/region<eu-west-1>	"parent_of"@[]	/role<role_4>
 /region<eu-west-1>	"parent_of"@[]	/user<usr_10>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_11>`
+/region<eu-west-1>	"parent_of"@[]	/user<usr_11>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_1>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_2>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_3>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_4>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_5>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_6>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_7>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_8>
+/region<eu-west-1>	"parent_of"@[]	/user<usr_9>`
 	if result != expect {
-		t.Fatalf("got\n%s\nwant\n%s", result, expect)
+		t.Fatalf("got\n%s\n\nwant\n%s", result, expect)
 	}
 
 }
 
 func TestBuildInfraRdfTriples(t *testing.T) {
-	var instances []*ec2.Instance
-	var vpcs []*ec2.Vpc
-	var subnets []*ec2.Subnet
-
-	triples, err := BuildInfraRdfTriples("eu-west-1", vpcs, subnets, instances)
-	if err != nil {
-		t.Fatalf("error while building triples : %s", err)
-	}
-
-	result := MarshalTriples(triples)
-	expect := ``
-	if result != expect {
-		t.Fatalf("got %s\nwant %s", result, expect)
-	}
-
-	instances = []*ec2.Instance{
+	instances := []*ec2.Instance{
 		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
 		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
 		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
@@ -108,25 +102,25 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 		&ec2.Instance{InstanceId: aws.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
 	}
 
-	vpcs = []*ec2.Vpc{
+	vpcs := []*ec2.Vpc{
 		&ec2.Vpc{VpcId: aws.String("vpc_1")},
 		&ec2.Vpc{VpcId: aws.String("vpc_2")},
 	}
 
-	subnets = []*ec2.Subnet{
+	subnets := []*ec2.Subnet{
 		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
 		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	triples, err = BuildInfraRdfTriples("eu-west-1", vpcs, subnets, instances)
+	triples, err := BuildInfraRdfTriples("eu-west-1", vpcs, subnets, instances)
 	if err != nil {
-		t.Fatalf("error while building triples : %s", err)
+		t.Fatal(err)
 	}
 
-	result = SortLines(MarshalTriples(triples))
-	expect = `/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
+	result := SortLines(MarshalTriples(triples))
+	expect := `/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
 /subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
 /subnet<sub_2>	"parent_of"@[]	/instance<inst_2>
@@ -137,6 +131,26 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 /vpc<vpc_2>	"parent_of"@[]	/subnet<sub_3>`
 	if result != expect {
 		t.Fatalf("got %s\nwant %s", result, expect)
+	}
+}
+
+func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
+	triples, err := BuildAccessRdfTriples("any", api.NewAwsAccess())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := len(triples), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	triples, err = BuildInfraRdfTriples("any", []*ec2.Vpc{}, []*ec2.Subnet{}, []*ec2.Instance{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := len(triples), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
 	}
 }
 

@@ -54,12 +54,12 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		groups, users, usersByGroup, err := accessApi.FetchAccess()
+		access, err := accessApi.FetchAccess()
 		if err != nil {
 			return err
 		}
 
-		remoteAccess, err := rdf.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
+		remoteAccess, err := rdf.BuildAccessRdfTriples(viper.GetString("region"), access)
 		if err != nil {
 			return err
 		}

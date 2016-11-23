@@ -33,12 +33,12 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		groups, users, usersByGroup, err := accessApi.FetchAccess()
+		access, err := accessApi.FetchAccess()
 		if err != nil {
 			return err
 		}
 
-		triples, err = rdf.BuildAccessRdfTriples(viper.GetString("region"), groups, users, usersByGroup)
+		triples, err = rdf.BuildAccessRdfTriples(viper.GetString("region"), access)
 		if err != nil {
 			return err
 		}

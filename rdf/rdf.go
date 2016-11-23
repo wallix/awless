@@ -6,11 +6,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/google/badwolf/triple/predicate"
+	"github.com/wallix/awless/api"
 )
 
 var parentOf *predicate.Predicate
@@ -22,67 +22,64 @@ func init() {
 	}
 }
 
-func BuildAccessRdfTriples(region string, groups []*iam.Group, users []*iam.User, usersByGroup map[string][]string) ([]*triple.Triple, error) {
+func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Triple, error) {
 	var triples []*triple.Triple
-	var groupNodes []*node.Node
-	var addedUsers []string
-	userNodes := make(map[string]*node.Node)
 
 	regionN, err := node.NewNodeFromStrings("/region", region)
 	if err != nil {
 		return triples, err
 	}
 
-	for _, user := range users {
+	userNodes := make(map[string]*node.Node)
+	for _, user := range access.Users {
 		n, err := node.NewNodeFromStrings("/user", aws.StringValue(user.UserId))
 		if err != nil {
 			return triples, err
 		}
-		userNodes[aws.StringValue(user.UserId)] = n
-	}
-
-	for _, group := range groups {
-		groupId := aws.StringValue(group.GroupId)
-		n, err := node.NewNodeFromStrings("/group", groupId)
-		if err != nil {
-			return triples, err
-		}
-		groupNodes = append(groupNodes, n)
 		t, err := triple.New(regionN, parentOf, triple.NewNodeObject(n))
 		if err != nil {
 			return triples, err
 		}
 		triples = append(triples, t)
 
-		for _, userId := range usersByGroup[groupId] {
+		userNodes[aws.StringValue(user.UserId)] = n
+	}
+
+	for _, role := range access.Roles {
+		roleId := aws.StringValue(role.RoleId)
+		n, err := node.NewNodeFromStrings("/role", roleId)
+		if err != nil {
+			return triples, err
+		}
+		t, err := triple.New(regionN, parentOf, triple.NewNodeObject(n))
+		if err != nil {
+			return triples, err
+		}
+		triples = append(triples, t)
+	}
+
+	for _, group := range access.Groups {
+		groupId := aws.StringValue(group.GroupId)
+		n, err := node.NewNodeFromStrings("/group", groupId)
+		if err != nil {
+			return triples, err
+		}
+		t, err := triple.New(regionN, parentOf, triple.NewNodeObject(n))
+		if err != nil {
+			return triples, err
+		}
+		triples = append(triples, t)
+
+		for _, userId := range access.UsersByGroup[groupId] {
 			if userNodes[userId] == nil {
 				return triples, fmt.Errorf("group %s has user %s, but this user does not exist", groupId, userId)
 			}
 			t, err := triple.New(n, parentOf, triple.NewNodeObject(userNodes[userId]))
-			addedUsers = append(addedUsers, userId)
 			if err != nil {
 				return triples, err
 			}
 			triples = append(triples, t)
 		}
-	}
-
-	for userId, userNode := range userNodes {
-		nodeAlreadyAdded := false
-		for _, userAdded := range addedUsers {
-			if userAdded == userId {
-				nodeAlreadyAdded = true
-				break
-			}
-		}
-		if nodeAlreadyAdded {
-			continue
-		}
-		t, err := triple.New(regionN, parentOf, triple.NewNodeObject(userNode))
-		if err != nil {
-			return triples, err
-		}
-		triples = append(triples, t)
 	}
 
 	return triples, nil
