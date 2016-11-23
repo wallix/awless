@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,17 +11,23 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/api"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/stats"
 )
 
 var (
 	accessApi *api.Access
 	infraApi  *api.Infra
+	statsDB   *stats.DB
 )
 
 var RootCmd = &cobra.Command{
 	Use:   "awless",
 	Short: "Manage your cloud",
 	Long:  "Awless is a CLI to ....:",
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		defer statsDB.Close()
+		statsDB.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+	},
 }
 
 func Execute() {
@@ -58,4 +65,10 @@ func initConfig() {
 
 	accessApi = api.NewAccess(sess)
 	infraApi = api.NewInfra(sess)
+
+	statsDB, err = stats.NewDB(config.DatabasePath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(-1)
+	}
 }

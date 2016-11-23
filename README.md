@@ -61,3 +61,9 @@ List various items
     $ awless list instances
     $ awless list vpcs
     $ awless list subnets
+
+Show or delete the history of commands entered in awless
+
+    $ awless history show
+
+    $ awless history delete

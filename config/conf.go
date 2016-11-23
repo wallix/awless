@@ -8,9 +8,11 @@ import (
 )
 
 var (
-	configFilename = "config.yaml"
-	Dir            = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
-	Path           = filepath.Join(Dir, configFilename)
+	configFilename   = "config.yaml"
+	databaseFilename = "database.db"
+	Dir              = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
+	Path             = filepath.Join(Dir, configFilename)
+	DatabasePath     = filepath.Join(os.Getenv("HOME"), ".awless", databaseFilename)
 
 	InfraFilename  = "infra.rdf"
 	AccessFilename = "access.rdf"
