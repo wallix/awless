@@ -27,11 +27,16 @@ var historyFlushCmd = &cobra.Command{
 	Short: "Empty the history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := statsDB.FlushHistory()
-		if err != nil {
-			return err
+		if statsDB != nil {
+			err := statsDB.FlushHistory()
+			if err != nil {
+				return err
+			}
+			return nil
+		} else {
+			fmt.Fprintln(os.Stderr, "The history database has not been loaded")
+			return nil
 		}
-		return nil
 	},
 }
 
@@ -40,20 +45,25 @@ var historyShowCmd = &cobra.Command{
 	Short: "Show the history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		lines, err := statsDB.GetHistory()
-		if err != nil {
-			return err
-		}
-		if len(lines) == 0 {
-			fmt.Println("There is no line in the awless history")
+		if statsDB != nil {
+			lines, err := statsDB.GetHistory()
+			if err != nil {
+				return err
+			}
+			if len(lines) == 0 {
+				fmt.Println("There is no line in the awless history")
+				return nil
+			}
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
+			for _, line := range lines {
+				fmt.Fprintln(w, line.Time.Format(time.RFC822), "\t", strings.Join(line.Command, " "))
+			}
+			w.Flush()
+
+			return nil
+		} else {
+			fmt.Fprintln(os.Stderr, "The history database has not been loaded")
 			return nil
 		}
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
-		for _, line := range lines {
-			fmt.Fprintln(w, line.Time.Format(time.RFC822), "\t", strings.Join(line.Command, " "))
-		}
-		w.Flush()
-
-		return nil
 	},
 }

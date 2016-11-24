@@ -14,7 +14,7 @@ func TestSaveCommandHistory(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 
-	db, err := NewDB(f.Name())
+	db, err := OpenDB(f.Name())
 	if err != nil {
 		t.Fatal(err)
 	}

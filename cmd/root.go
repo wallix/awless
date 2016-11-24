@@ -25,8 +25,10 @@ var RootCmd = &cobra.Command{
 	Short: "Manage your cloud",
 	Long:  "Awless is a CLI to ....:",
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		defer statsDB.Close()
-		statsDB.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+		if statsDB != nil {
+			defer statsDB.Close()
+			statsDB.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+		}
 	},
 }
 
@@ -66,9 +68,8 @@ func initConfig() {
 	accessApi = api.NewAccess(sess)
 	infraApi = api.NewInfra(sess)
 
-	statsDB, err = stats.NewDB(config.DatabasePath)
+	statsDB, err = stats.OpenDB(config.DatabasePath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		fmt.Fprintln(os.Stderr, "can not save history:", err)
 	}
 }
