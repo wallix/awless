@@ -24,7 +24,7 @@ func (db *DB) FlushHistory() error {
 	return db.DeleteBucket(historyBucketName)
 }
 
-func (db *DB) GetHistory() ([]*Line, error) {
+func (db *DB) GetHistory(fromCommandId int) ([]*Line, error) {
 	var result []*Line
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(historyBucketName))
@@ -32,7 +32,7 @@ func (db *DB) GetHistory() ([]*Line, error) {
 			return nil
 		}
 		c := b.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
+		for k, v := c.Seek(itob(fromCommandId)); k != nil; k, v = c.Next() {
 			line := &Line{}
 			e := json.Unmarshal(v, line)
 			if e != nil {
@@ -48,8 +48,8 @@ func (db *DB) GetHistory() ([]*Line, error) {
 	return result, nil
 }
 
-func (db *DB) AddHistoryCommand(command []string) error {
-	line := Line{Command: command, Time: time.Now()}
+func (db *DB) AddHistoryCommandWithTime(command []string, time time.Time) error {
+	line := Line{Command: command, Time: time}
 
 	err := db.Update(func(tx *bolt.Tx) error {
 		b, e := tx.CreateBucketIfNotExists([]byte(historyBucketName))
@@ -74,6 +74,10 @@ func (db *DB) AddHistoryCommand(command []string) error {
 		return err
 	}
 	return nil
+}
+
+func (db *DB) AddHistoryCommand(command []string) error {
+	return db.AddHistoryCommandWithTime(command, time.Now())
 }
 
 // itob returns an 8-byte big endian representation of v.

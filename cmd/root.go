@@ -71,5 +71,14 @@ func initConfig() {
 	statsDB, err = stats.OpenDB(config.DatabasePath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "can not save history:", err)
+	} else if statsDB.CheckStatsToSend(config.StatsExpirationDuration) {
+		publicKey, err := config.LoadPublicKey()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		} else {
+			if err := statsDB.SendStats(config.StatsServerUrl, *publicKey); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
+		}
 	}
 }

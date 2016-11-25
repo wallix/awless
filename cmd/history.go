@@ -46,7 +46,7 @@ var historyShowCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if statsDB != nil {
-			lines, err := statsDB.GetHistory()
+			lines, err := statsDB.GetHistory(0)
 			if err != nil {
 				return err
 			}

@@ -24,7 +24,7 @@ func TestSaveCommandHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if lines, err := db.GetHistory(); err != nil {
+	if lines, err := db.GetHistory(0); err != nil {
 		t.Fatal(err)
 	} else if got, want := len(lines), 0; got != want {
 		t.Fatalf("got %d; want %d", got, want)
@@ -34,7 +34,7 @@ func TestSaveCommandHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if lines, err := db.GetHistory(); err != nil {
+	if lines, err := db.GetHistory(0); err != nil {
 		t.Fatal(err)
 	} else if got, want := len(lines), 1; got != want {
 		t.Fatalf("got %d; want %d", got, want)
@@ -46,7 +46,7 @@ func TestSaveCommandHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if lines, err := db.GetHistory(); err != nil {
+	if lines, err := db.GetHistory(0); err != nil {
 		t.Fatal(err)
 	} else if got, want := len(lines), 0; got != want {
 		t.Fatalf("got %d; want %d", got, want)

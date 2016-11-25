@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -46,7 +47,7 @@ func (db *DB) DeleteBucket(name string) error {
 	})
 }
 
-func (db *DB) GetStringValue(key string) (string, error) {
+func (db *DB) GetValue(key string) ([]byte, error) {
 	var value []byte
 	err := db.View(func(tx *bolt.Tx) error {
 		if b := tx.Bucket([]byte(AWLESS_BUCKET)); b != nil {
@@ -55,18 +56,66 @@ func (db *DB) GetStringValue(key string) (string, error) {
 		return nil
 	})
 	if err != nil {
-		return "", err
+		return value, err
 	}
 
-	return string(value), nil
+	return value, nil
 }
 
-func (db *DB) SetStringValue(key, value string) error {
+func (db *DB) GetStringValue(key string) (string, error) {
+	str, err := db.GetValue(key)
+	if err != nil {
+		return "", err
+	}
+	return string(str), nil
+}
+
+func (db *DB) GetTimeValue(key string) (time.Time, error) {
+	var t time.Time
+	bin, err := db.GetValue(key)
+	if err != nil {
+		return t, err
+	}
+	if len(bin) == 0 {
+		return t, nil
+	}
+	err = t.UnmarshalBinary(bin)
+	return t, err
+}
+
+func (db *DB) GetIntValue(key string) (int, error) {
+	str, err := db.GetStringValue(key)
+	if err != nil {
+		return 0, err
+	}
+	if str == "" {
+		return 0, nil
+	}
+	return strconv.Atoi(str)
+}
+
+func (db *DB) SetValue(key string, value []byte) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(AWLESS_BUCKET))
 		if err != nil {
 			return err
 		}
-		return b.Put([]byte(key), []byte(value))
+		return b.Put([]byte(key), value)
 	})
+}
+
+func (db *DB) SetStringValue(key, value string) error {
+	return db.SetValue(key, []byte(value))
+}
+
+func (db *DB) SetTimeValue(key string, t time.Time) error {
+	bin, err := t.MarshalBinary()
+	if err != nil {
+		return err
+	}
+	return db.SetValue(key, bin)
+}
+
+func (db *DB) SetIntValue(key string, value int) error {
+	return db.SetStringValue(key, strconv.Itoa(value))
 }

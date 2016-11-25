@@ -29,40 +29,53 @@ func TestBuildStats(t *testing.T) {
 	}
 	defer db.Close()
 
+	db.AddHistoryCommandWithTime([]string{"awless sync"}, time.Now().Add(-24*time.Hour))
+	db.AddHistoryCommandWithTime([]string{"awless diff"}, time.Now().Add(-24*time.Hour))
+	db.AddHistoryCommandWithTime([]string{"awless diff"}, time.Now().Add(-24*time.Hour))
+	db.AddHistoryCommand([]string{"awless diff"})
+	db.AddHistoryCommand([]string{"awless diff"})
 	db.AddHistoryCommand([]string{"awless sync"})
-	db.AddHistoryCommand([]string{"awless diff"})
-	db.AddHistoryCommand([]string{"awless diff"})
-	db.AddHistoryCommand([]string{"awless diff"})
 	db.AddHistoryCommand([]string{"awless sync"})
 	db.AddHistoryCommand([]string{"awless list instances"})
 	db.AddHistoryCommand([]string{"awless list vpcs"})
 	db.AddHistoryCommand([]string{"awless list subnets"})
 	db.AddHistoryCommand([]string{"awless list instances"})
 
-	stats, err := db.BuildStats()
+	stats, _, err := db.BuildStats(0)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if got, want := len(stats.DailyStats), 1; got != want {
+	if got, want := len(stats.DailyStats), 2; got != want {
 		t.Fatalf("got %d; want %d", got, want)
 	}
-	nowDate := time.Now()
-	if got, want := SameDay(&stats.DailyStats[0].Date, &nowDate), true; got != want {
+	yesterdayDate := time.Now().Add(-24 * time.Hour)
+	if got, want := SameDay(&stats.DailyStats[0].Date, &yesterdayDate), true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
-
-	expected :=
+	nowDate := time.Now()
+	if got, want := SameDay(&stats.DailyStats[1].Date, &nowDate), true; got != want {
+		t.Fatalf("got %t; want %t", got, want)
+	}
+	expectedYesterday :=
+		map[string]int{
+			"awless sync": 1,
+			"awless diff": 2,
+		}
+	expectedToday :=
 		map[string]int{
 			"awless sync":           2,
-			"awless diff":           3,
+			"awless diff":           2,
 			"awless list instances": 2,
 			"awless list vpcs":      1,
 			"awless list subnets":   1,
 		}
 
-	if got, want := reflect.DeepEqual(expected, stats.DailyStats[0].Commands), true; got != want {
-		t.Fatalf("got \n%#v\n; want \n%#v", stats.DailyStats[0].Commands, expected)
+	if got, want := reflect.DeepEqual(expectedYesterday, stats.DailyStats[0].Commands), true; got != want {
+		t.Fatalf("got \n%#v\n; want \n%#v", stats.DailyStats[0].Commands, expectedYesterday)
+	}
+	if got, want := reflect.DeepEqual(expectedToday, stats.DailyStats[1].Commands), true; got != want {
+		t.Fatalf("got \n%#v\n; want \n%#v", stats.DailyStats[1].Commands, expectedToday)
 	}
 }
 
@@ -89,7 +102,7 @@ func TestSendStats(t *testing.T) {
 	db.AddHistoryCommand([]string{"awless list subnets"})
 	db.AddHistoryCommand([]string{"awless list instances"})
 
-	expected, err := db.BuildStats()
+	expected, _, err := db.BuildStats(0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,6 +153,35 @@ func TestSendStats(t *testing.T) {
 	if got, want := processed, true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
+}
+
+func TestIfDataToSend(t *testing.T) {
+	f, e := ioutil.TempFile(".", "test.db")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer os.Remove(f.Name())
+
+	db, err := OpenDB(f.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	if got, want := db.CheckStatsToSend(1*time.Hour), true; got != want {
+		t.Fatalf("got %t; want %t", got, want)
+	}
+
+	db.SetTimeValue(SENT_TIME_KEY, time.Now().Add(-2*time.Hour))
+	if got, want := db.CheckStatsToSend(1*time.Hour), true; got != want {
+		t.Fatalf("got %t; want %t", got, want)
+	}
+	db.SetTimeValue(SENT_TIME_KEY, time.Now())
+
+	if got, want := db.CheckStatsToSend(1*time.Hour), false; got != want {
+		t.Fatalf("got %t; want %t", got, want)
+	}
+
 }
 
 func assertEqual(t *testing.T, stats1, stats2 *Stats) {

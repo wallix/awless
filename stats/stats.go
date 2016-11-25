@@ -16,6 +16,8 @@ import (
 )
 
 const AWLESS_ID_KEY = "awless_id"
+const SENT_ID_KEY = "sent_id"
+const SENT_TIME_KEY = "sent_time"
 
 func generateAwlessId() (string, error) {
 	seed := make([]byte, 32)
@@ -37,23 +39,24 @@ type DailyStat struct {
 	Date     time.Time
 }
 
-func (db *DB) BuildStats() (*Stats, error) {
+func (db *DB) BuildStats(fromCommandId int) (*Stats, int, error) {
 	id, err := db.GetStringValue(AWLESS_ID_KEY)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	stats := &Stats{Id: id, DailyStats: []*DailyStat{}}
-	commands, err := db.GetHistory()
+	commands, err := db.GetHistory(fromCommandId)
 	if err != nil {
-		return stats, err
+		return stats, 0, err
 	}
 
 	if len(commands) == 0 {
-		return stats, nil
+		return stats, 0, nil
 	}
 
 	dailyStat := &DailyStat{make(map[string]int), commands[0].Time}
+	lastCommandId := commands[0].Id
 
 	for _, command := range commands {
 		if !SameDay(&dailyStat.Date, &command.Time) {
@@ -61,11 +64,12 @@ func (db *DB) BuildStats() (*Stats, error) {
 			dailyStat = &DailyStat{make(map[string]int), command.Time}
 		}
 		dailyStat.Commands[strings.Join(command.Command, " ")] += 1
+		lastCommandId = command.Id
 	}
 
 	stats.DailyStats = append(stats.DailyStats, dailyStat)
 
-	return stats, nil
+	return stats, lastCommandId, nil
 }
 
 func SameDay(date1, date2 *time.Time) bool {
@@ -78,7 +82,11 @@ type EncryptedData struct {
 }
 
 func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
-	stats, err := db.BuildStats()
+	lastCommandId, err := db.GetIntValue(SENT_ID_KEY)
+	if err != nil {
+		return err
+	}
+	stats, lastCommandId, err := db.BuildStats(lastCommandId)
 	if err != nil {
 		return err
 	}
@@ -106,7 +114,21 @@ func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
 		return err
 	}
 
+	if err := db.SetIntValue(SENT_ID_KEY, lastCommandId); err != nil {
+		return err
+	}
+	if err := db.SetTimeValue(SENT_TIME_KEY, time.Now()); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (db *DB) CheckStatsToSend(expirationDuration time.Duration) bool {
+	sent, err := db.GetTimeValue(SENT_TIME_KEY)
+	if err != nil {
+		sent = time.Time{}
+	}
+	return (time.Since(sent) > expirationDuration)
 }
 
 func aesEncrypt(data []byte) ([]byte, []byte, error) {
