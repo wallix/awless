@@ -87,30 +87,20 @@ func compareTriplesFromNode(rootNode *node.Node, localGraph storage.Graph, remot
 
 func triplesForSubjectAndPredicate(graph storage.Graph, subject *node.Node, predicate *predicate.Predicate) ([]*triple.Triple, error) {
 	errc := make(chan error)
-	tric := make(chan *triple.Triple)
+	triplec := make(chan *triple.Triple)
 
 	go func() {
 		defer close(errc)
-		errc <- graph.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, tric)
+		errc <- graph.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
 	}()
 
 	var triples []*triple.Triple
 
-OutLoop:
-	for {
-		select {
-		case e := <-errc:
-			if e != nil {
-				return triples, e
-			}
-		case t, ok := <-tric:
-			if !ok {
-				break OutLoop
-			}
-			triples = append(triples, t)
-		}
+	for t := range triplec {
+		triples = append(triples, t)
 	}
-	return triples, nil
+
+	return triples, <-errc
 }
 
 func max(a, b int) int {
