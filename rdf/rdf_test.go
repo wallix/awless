@@ -23,6 +23,13 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 		&iam.Group{GroupId: aws.String("group_4"), GroupName: aws.String("ngroup_4")},
 	}
 
+	awsAccess.LocalPolicies = []*iam.Policy{
+		&iam.Policy{PolicyId: aws.String("policy_1"), PolicyName: aws.String("npolicy_1")},
+		&iam.Policy{PolicyId: aws.String("policy_2"), PolicyName: aws.String("npolicy_2")},
+		&iam.Policy{PolicyId: aws.String("policy_3"), PolicyName: aws.String("npolicy_3")},
+		&iam.Policy{PolicyId: aws.String("policy_4"), PolicyName: aws.String("npolicy_4")},
+	}
+
 	awsAccess.Roles = []*iam.Role{
 		&iam.Role{RoleId: aws.String("role_1")},
 		&iam.Role{RoleId: aws.String("role_2")},
@@ -50,6 +57,24 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 		"group_4": []string{"usr_3", "usr_8", "usr_9", "usr_7"},
 	}
 
+	awsAccess.UsersByLocalPolicies = map[string][]string{
+		"policy_1": []string{"usr_1", "usr_2", "usr_3"},
+		"policy_2": []string{"usr_1", "usr_4", "usr_5", "usr_6", "usr_7"},
+		"policy_4": []string{"usr_3", "usr_8", "usr_9", "usr_7"},
+	}
+
+	awsAccess.RolesByLocalPolicies = map[string][]string{
+		"policy_1": []string{"role_1", "role_2"},
+		"policy_2": []string{"role_3"},
+		"policy_4": []string{"role_4"},
+	}
+
+	awsAccess.GroupsByLocalPolicies = map[string][]string{
+		"policy_1": []string{"group_1", "group_2"},
+		"policy_2": []string{"group_3"},
+		"policy_4": []string{"group_4"},
+	}
+
 	triples, err := BuildAccessRdfTriples("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
@@ -68,10 +93,34 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 /group<group_4>	"parent_of"@[]	/user<usr_7>
 /group<group_4>	"parent_of"@[]	/user<usr_8>
 /group<group_4>	"parent_of"@[]	/user<usr_9>
+/policy<policy_1>	"parent_of"@[]	/group<group_1>
+/policy<policy_1>	"parent_of"@[]	/group<group_2>
+/policy<policy_1>	"parent_of"@[]	/role<role_1>
+/policy<policy_1>	"parent_of"@[]	/role<role_2>
+/policy<policy_1>	"parent_of"@[]	/user<usr_1>
+/policy<policy_1>	"parent_of"@[]	/user<usr_2>
+/policy<policy_1>	"parent_of"@[]	/user<usr_3>
+/policy<policy_2>	"parent_of"@[]	/group<group_3>
+/policy<policy_2>	"parent_of"@[]	/role<role_3>
+/policy<policy_2>	"parent_of"@[]	/user<usr_1>
+/policy<policy_2>	"parent_of"@[]	/user<usr_4>
+/policy<policy_2>	"parent_of"@[]	/user<usr_5>
+/policy<policy_2>	"parent_of"@[]	/user<usr_6>
+/policy<policy_2>	"parent_of"@[]	/user<usr_7>
+/policy<policy_4>	"parent_of"@[]	/group<group_4>
+/policy<policy_4>	"parent_of"@[]	/role<role_4>
+/policy<policy_4>	"parent_of"@[]	/user<usr_3>
+/policy<policy_4>	"parent_of"@[]	/user<usr_7>
+/policy<policy_4>	"parent_of"@[]	/user<usr_8>
+/policy<policy_4>	"parent_of"@[]	/user<usr_9>
 /region<eu-west-1>	"parent_of"@[]	/group<group_1>
 /region<eu-west-1>	"parent_of"@[]	/group<group_2>
 /region<eu-west-1>	"parent_of"@[]	/group<group_3>
 /region<eu-west-1>	"parent_of"@[]	/group<group_4>
+/region<eu-west-1>	"parent_of"@[]	/policy<policy_1>
+/region<eu-west-1>	"parent_of"@[]	/policy<policy_2>
+/region<eu-west-1>	"parent_of"@[]	/policy<policy_3>
+/region<eu-west-1>	"parent_of"@[]	/policy<policy_4>
 /region<eu-west-1>	"parent_of"@[]	/role<role_1>
 /region<eu-west-1>	"parent_of"@[]	/role<role_2>
 /region<eu-west-1>	"parent_of"@[]	/role<role_3>

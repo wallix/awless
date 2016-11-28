@@ -34,8 +34,15 @@ func (a *Access) Roles() (interface{}, error) {
 	return a.ListRoles(&iam.ListRolesInput{})
 }
 
-func (a *Access) Policies() (interface{}, error) {
-	return a.ListPolicies(&iam.ListPoliciesInput{})
+func (a *Access) LocalPolicies() (interface{}, error) {
+	return a.ListPolicies(&iam.ListPoliciesInput{Scope: aws.String(iam.PolicyScopeTypeLocal)})
+}
+
+func (a *Access) AttachedToPolicy(policyArn *string) (interface{}, error) {
+	params := &iam.ListEntitiesForPolicyInput{
+		PolicyArn: policyArn,
+	}
+	return a.ListEntitiesForPolicy(params)
 }
 
 type AwsAccess struct {
@@ -43,18 +50,26 @@ type AwsAccess struct {
 	Users        []*iam.User
 	Roles        []*iam.Role
 	UsersByGroup map[string][]string
+
+	LocalPolicies         []*iam.Policy
+	UsersByLocalPolicies  map[string][]string
+	GroupsByLocalPolicies map[string][]string
+	RolesByLocalPolicies  map[string][]string
 }
 
 func NewAwsAccess() *AwsAccess {
 	return &AwsAccess{
-		UsersByGroup: make(map[string][]string),
+		UsersByGroup:          make(map[string][]string),
+		UsersByLocalPolicies:  make(map[string][]string),
+		GroupsByLocalPolicies: make(map[string][]string),
+		RolesByLocalPolicies:  make(map[string][]string),
 	}
 }
 
-func (access *Access) FetchAccess() (*AwsAccess, error) {
+func (access *Access) FetchAwsAccess() (*AwsAccess, error) {
 	type fetchFn func() (interface{}, error)
 
-	allFetch := []fetchFn{access.Groups, access.Users, access.Roles}
+	allFetch := []fetchFn{access.Groups, access.Users, access.Roles, access.LocalPolicies}
 	resultc := make(chan interface{})
 	errc := make(chan error)
 
@@ -80,9 +95,29 @@ func (access *Access) FetchAccess() (*AwsAccess, error) {
 				awsAccess.Users = append(awsAccess.Users, r.(*iam.ListUsersOutput).Users...)
 			case *iam.ListRolesOutput:
 				awsAccess.Roles = append(awsAccess.Roles, r.(*iam.ListRolesOutput).Roles...)
+			case *iam.ListPoliciesOutput:
+				awsAccess.LocalPolicies = append(awsAccess.LocalPolicies, r.(*iam.ListPoliciesOutput).Policies...)
 			}
 		case e := <-errc:
 			return awsAccess, e
+		}
+	}
+
+	for _, policy := range awsAccess.LocalPolicies {
+		resp, err := access.AttachedToPolicy(policy.Arn)
+		if err != nil {
+			return awsAccess, err
+		}
+
+		output := resp.(*iam.ListEntitiesForPolicyOutput)
+		for _, group := range output.PolicyGroups {
+			awsAccess.GroupsByLocalPolicies[aws.StringValue(policy.PolicyId)] = append(awsAccess.GroupsByLocalPolicies[aws.StringValue(policy.PolicyId)], aws.StringValue(group.GroupId))
+		}
+		for _, role := range output.PolicyRoles {
+			awsAccess.RolesByLocalPolicies[aws.StringValue(policy.PolicyId)] = append(awsAccess.RolesByLocalPolicies[aws.StringValue(policy.PolicyId)], aws.StringValue(role.RoleId))
+		}
+		for _, user := range output.PolicyUsers {
+			awsAccess.UsersByLocalPolicies[aws.StringValue(policy.PolicyId)] = append(awsAccess.UsersByLocalPolicies[aws.StringValue(policy.PolicyId)], aws.StringValue(user.UserId))
 		}
 	}
 

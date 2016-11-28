@@ -19,7 +19,7 @@ var syncCmd = &cobra.Command{
 	Short: "Manage your local infrastructure",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		infra, err := infraApi.FetchInfra()
+		infra, err := infraApi.FetchAwsInfra()
 		if err != nil {
 			return err
 		}
@@ -29,11 +29,11 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(rdf.MarshalTriples(triples)), 0700); err != nil {
+		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(rdf.MarshalTriples(triples)), 0600); err != nil {
 			return err
 		}
 
-		access, err := accessApi.FetchAccess()
+		access, err := accessApi.FetchAwsAccess()
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), []byte(rdf.MarshalTriples(triples)), 0700); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), []byte(rdf.MarshalTriples(triples)), 0600); err != nil {
 			return err
 		}
 

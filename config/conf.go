@@ -37,7 +37,7 @@ func CreateDefaultConf() {
 	os.MkdirAll(Dir, 0700)
 
 	if _, err := os.Stat(Path); os.IsNotExist(err) {
-		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0400)
+		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)
 		fmt.Printf("Creating default config file at %s\n", Path)
 	}
 }

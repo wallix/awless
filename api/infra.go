@@ -44,7 +44,7 @@ type AwsInfra struct {
 	Instances []*ec2.Instance
 }
 
-func (inf *Infra) FetchInfra() (*AwsInfra, error) {
+func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
 	type fetchFn func() (interface{}, error)
 
 	allFetch := []fetchFn{inf.Instances, inf.Subnets, inf.Vpcs}

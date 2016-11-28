@@ -64,7 +64,7 @@ var listPoliciesCmd = &cobra.Command{
 	Short: "List policies",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := accessApi.Policies()
+		resp, err := accessApi.LocalPolicies()
 		display(resp, err, displayFormat)
 	},
 }

@@ -27,7 +27,7 @@ var diffCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		awsInfra, err := infraApi.FetchInfra()
+		awsInfra, err := infraApi.FetchAwsInfra()
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		access, err := accessApi.FetchAccess()
+		access, err := accessApi.FetchAwsAccess()
 		if err != nil {
 			return err
 		}

@@ -29,9 +29,10 @@ func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		return triples, err
 	}
 
-	userNodes := make(map[string]*node.Node)
+	usersIndex := make(map[string]*node.Node)
 	for _, user := range access.Users {
-		n, err := node.NewNodeFromStrings("/user", aws.StringValue(user.UserId))
+		userId := aws.StringValue(user.UserId)
+		n, err := node.NewNodeFromStrings("/user", userId)
 		if err != nil {
 			return triples, err
 		}
@@ -41,9 +42,10 @@ func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		}
 		triples = append(triples, t)
 
-		userNodes[aws.StringValue(user.UserId)] = n
+		usersIndex[userId] = n
 	}
 
+	rolesIndex := make(map[string]*node.Node)
 	for _, role := range access.Roles {
 		roleId := aws.StringValue(role.RoleId)
 		n, err := node.NewNodeFromStrings("/role", roleId)
@@ -55,8 +57,11 @@ func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			return triples, err
 		}
 		triples = append(triples, t)
+
+		rolesIndex[roleId] = n
 	}
 
+	groupsIndex := make(map[string]*node.Node)
 	for _, group := range access.Groups {
 		groupId := aws.StringValue(group.GroupId)
 		n, err := node.NewNodeFromStrings("/group", groupId)
@@ -69,11 +74,59 @@ func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		}
 		triples = append(triples, t)
 
+		groupsIndex[groupId] = n
+
 		for _, userId := range access.UsersByGroup[groupId] {
-			if userNodes[userId] == nil {
+			if usersIndex[userId] == nil {
 				return triples, fmt.Errorf("group %s has user %s, but this user does not exist", groupId, userId)
 			}
-			t, err := triple.New(n, parentOf, triple.NewNodeObject(userNodes[userId]))
+			t, err := triple.New(n, parentOf, triple.NewNodeObject(usersIndex[userId]))
+			if err != nil {
+				return triples, err
+			}
+			triples = append(triples, t)
+		}
+	}
+
+	for _, policy := range access.LocalPolicies {
+		policyId := aws.StringValue(policy.PolicyId)
+		n, err := node.NewNodeFromStrings("/policy", policyId)
+		if err != nil {
+			return triples, err
+		}
+		t, err := triple.New(regionN, parentOf, triple.NewNodeObject(n))
+		if err != nil {
+			return triples, err
+		}
+		triples = append(triples, t)
+
+		for _, userId := range access.UsersByLocalPolicies[policyId] {
+			if usersIndex[userId] == nil {
+				return triples, fmt.Errorf("policy %s has user %s, but this user does not exist", policyId, userId)
+			}
+			t, err := triple.New(n, parentOf, triple.NewNodeObject(usersIndex[userId]))
+			if err != nil {
+				return triples, err
+			}
+			triples = append(triples, t)
+		}
+
+		for _, groupId := range access.GroupsByLocalPolicies[policyId] {
+			if groupsIndex[groupId] == nil {
+				return triples, fmt.Errorf("policy %s has user %s, but this user does not exist", policyId, groupId)
+			}
+			t, err := triple.New(n, parentOf, triple.NewNodeObject(groupsIndex[groupId]))
+			if err != nil {
+				return triples, err
+			}
+			triples = append(triples, t)
+		}
+
+		for _, roleId := range access.RolesByLocalPolicies[policyId] {
+			if rolesIndex[roleId] == nil {
+				return triples, fmt.Errorf("policy %s has user %s, but this user does not exist", policyId, roleId)
+			}
+			t, err := triple.New(n, parentOf, triple.NewNodeObject(rolesIndex[roleId]))
 			if err != nil {
 				return triples, err
 			}
