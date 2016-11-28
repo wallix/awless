@@ -67,40 +67,25 @@ func NewAwsAccess() *AwsAccess {
 }
 
 func (access *Access) FetchAwsAccess() (*AwsAccess, error) {
-	type fetchFn func() (interface{}, error)
-
-	allFetch := []fetchFn{access.Groups, access.Users, access.Roles, access.LocalPolicies}
-	resultc := make(chan interface{})
-	errc := make(chan error)
-
-	for _, fetch := range allFetch {
-		go func(fn fetchFn) {
-			if r, err := fn(); err != nil {
-				errc <- err
-			} else {
-				resultc <- r
-			}
-		}(fetch)
-	}
+	resultc, errc := multiFetch(access.Groups, access.Users, access.Roles, access.LocalPolicies)
 
 	awsAccess := NewAwsAccess()
 
-	for range allFetch {
-		select {
-		case r := <-resultc:
-			switch r.(type) {
-			case *iam.ListGroupsOutput:
-				awsAccess.Groups = append(awsAccess.Groups, r.(*iam.ListGroupsOutput).Groups...)
-			case *iam.ListUsersOutput:
-				awsAccess.Users = append(awsAccess.Users, r.(*iam.ListUsersOutput).Users...)
-			case *iam.ListRolesOutput:
-				awsAccess.Roles = append(awsAccess.Roles, r.(*iam.ListRolesOutput).Roles...)
-			case *iam.ListPoliciesOutput:
-				awsAccess.LocalPolicies = append(awsAccess.LocalPolicies, r.(*iam.ListPoliciesOutput).Policies...)
-			}
-		case e := <-errc:
-			return awsAccess, e
+	for r := range resultc {
+		switch r.(type) {
+		case *iam.ListGroupsOutput:
+			awsAccess.Groups = append(awsAccess.Groups, r.(*iam.ListGroupsOutput).Groups...)
+		case *iam.ListUsersOutput:
+			awsAccess.Users = append(awsAccess.Users, r.(*iam.ListUsersOutput).Users...)
+		case *iam.ListRolesOutput:
+			awsAccess.Roles = append(awsAccess.Roles, r.(*iam.ListRolesOutput).Roles...)
+		case *iam.ListPoliciesOutput:
+			awsAccess.LocalPolicies = append(awsAccess.LocalPolicies, r.(*iam.ListPoliciesOutput).Policies...)
 		}
+	}
+
+	if err := <-errc; err != nil {
+		return awsAccess, err
 	}
 
 	for _, policy := range awsAccess.LocalPolicies {

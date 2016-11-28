@@ -45,41 +45,22 @@ type AwsInfra struct {
 }
 
 func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	type fetchFn func() (interface{}, error)
-
-	allFetch := []fetchFn{inf.Instances, inf.Subnets, inf.Vpcs}
-	resultc := make(chan interface{})
-	errc := make(chan error)
-
-	for _, fetch := range allFetch {
-		go func(fn fetchFn) {
-			if r, err := fn(); err != nil {
-				errc <- err
-			} else {
-				resultc <- r
-			}
-		}(fetch)
-	}
+	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs)
 
 	awsInfra := &AwsInfra{}
 
-	for range allFetch {
-		select {
-		case r := <-resultc:
-			switch r.(type) {
-			case *ec2.DescribeVpcsOutput:
-				awsInfra.Vpcs = append(awsInfra.Vpcs, r.(*ec2.DescribeVpcsOutput).Vpcs...)
-			case *ec2.DescribeSubnetsOutput:
-				awsInfra.Subnets = append(awsInfra.Subnets, r.(*ec2.DescribeSubnetsOutput).Subnets...)
-			case *ec2.DescribeInstancesOutput:
-				for _, reservation := range r.(*ec2.DescribeInstancesOutput).Reservations {
-					awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)
-				}
+	for r := range resultc {
+		switch r.(type) {
+		case *ec2.DescribeVpcsOutput:
+			awsInfra.Vpcs = append(awsInfra.Vpcs, r.(*ec2.DescribeVpcsOutput).Vpcs...)
+		case *ec2.DescribeSubnetsOutput:
+			awsInfra.Subnets = append(awsInfra.Subnets, r.(*ec2.DescribeSubnetsOutput).Subnets...)
+		case *ec2.DescribeInstancesOutput:
+			for _, reservation := range r.(*ec2.DescribeInstancesOutput).Reservations {
+				awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)
 			}
-		case e := <-errc:
-			return awsInfra, e
 		}
 	}
 
-	return awsInfra, nil
+	return awsInfra, <-errc
 }
