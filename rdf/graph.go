@@ -115,6 +115,48 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*node.Node, int), dis
 	return nil
 }
 
+func (g *Graph) copy() *Graph {
+	newg, err := NewGraph()
+	if err != nil {
+		panic(err)
+	}
+
+	all, _ := g.allTriples()
+	newg.Add(all...)
+
+	return newg
+}
+
+func (g *Graph) Substract(other *Graph) *Graph {
+	sub := g.copy()
+
+	others, _ := other.allTriples()
+	sub.RemoveTriples(context.Background(), others)
+
+	return sub
+}
+
+func (g *Graph) Intersect(other *Graph) *Graph {
+	inter, err := NewGraph()
+	if err != nil {
+		panic(err)
+	}
+
+	all, err := g.allTriples()
+	if err != nil {
+		return nil
+	}
+
+	for _, tri := range all {
+		exists, err := other.Exist(context.Background(), tri)
+		if exists && err == nil {
+			inter.Add(tri)
+		}
+	}
+
+	return inter
+}
+
 func (g *Graph) TriplesCount() int {
 	return g.triplesCount
 }

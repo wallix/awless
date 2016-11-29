@@ -48,33 +48,84 @@ func TestCompare(t *testing.T) {
 					t.Fatalf("error while comparing triples : %s", err)
 				}
 
-				var triplesExpectedExtra []*triple.Triple
-				var triplesExpectedMissing []*triple.Triple
+				triplesExpectedExtra, _ := NewGraph()
+				triplesExpectedMissing, _ := NewGraph()
 
 				if infra1 != infra2 {
-					triplesExpectedExtra, err = loadTriplesFromFile(expectedExtraFilename)
+					triplesExpectedExtra, err = NewGraphFromFile(expectedExtraFilename)
 					if err != nil {
 						t.Fatalf("error '%s' while loading '%s'", err, expectedExtraFilename)
 					}
 
-					triplesExpectedMissing, err = loadTriplesFromFile(expectedMissingFilename)
+					triplesExpectedMissing, err = NewGraphFromFile(expectedMissingFilename)
 					if err != nil {
 						t.Fatalf("error '%s' while loading '%s'", err, expectedMissingFilename)
 					}
 				}
 
-				extras, _ := extraGraph.allTriples()
-				inter := IntersectTriples(triplesExpectedExtra, extras)
-				if !(len(inter) == len(triplesExpectedExtra) && len(inter) == extraGraph.TriplesCount()) {
-					t.Fatal("sets of triples are not equal: extra elements in one")
+				if got, want := extraGraph.FlushString(), triplesExpectedExtra.FlushString(); got != want {
+					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
 				}
-
-				missings, _ := missingGraph.allTriples()
-				inter = IntersectTriples(triplesExpectedMissing, missings)
-				if !(len(inter) == len(triplesExpectedMissing) && len(inter) == missingGraph.TriplesCount()) {
-					t.Fatal("sets of triples are not equal: extra elements in one")
+				if got, want := missingGraph.FlushString(), triplesExpectedMissing.FlushString(); got != want {
+					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
 				}
 			}
 		}
+	}
+}
+
+func TestIntersectTriples(t *testing.T) {
+	var a, b, expect []*triple.Triple
+
+	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
+	a = append(a, parseTriple("/a<2>  \"to\"@[] /b<2>"))
+	a = append(a, parseTriple("/a<3>  \"to\"@[] /b<3>"))
+	a = append(a, parseTriple("/a<4>  \"to\"@[] /b<4>"))
+
+	b = append(b, parseTriple("/a<0>  \"to\"@[] /b<0>"))
+	b = append(b, parseTriple("/a<2>  \"to\"@[] /b<2>"))
+	b = append(b, parseTriple("/a<3>  \"to\"@[] /b<3>"))
+	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
+	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
+
+	result := intersectTriples(a, b)
+	expect = append(expect, parseTriple("/a<2>  \"to\"@[] /b<2>"))
+	expect = append(expect, parseTriple("/a<3>  \"to\"@[] /b<3>"))
+
+	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+}
+
+func TestSubstractTriples(t *testing.T) {
+	var a, b, expect []*triple.Triple
+
+	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
+	a = append(a, parseTriple("/a<2>  \"to\"@[] /b<2>"))
+	a = append(a, parseTriple("/a<3>  \"to\"@[] /b<3>"))
+	a = append(a, parseTriple("/a<4>  \"to\"@[] /b<4>"))
+
+	b = append(b, parseTriple("/a<0>  \"to\"@[] /b<0>"))
+	b = append(b, parseTriple("/a<2>  \"to\"@[] /b<2>"))
+	b = append(b, parseTriple("/a<3>  \"to\"@[] /b<3>"))
+	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
+	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
+
+	result := substractTriples(a, b)
+	expect = append(expect, parseTriple("/a<1>  \"to\"@[] /b<1>"))
+	expect = append(expect, parseTriple("/a<4>  \"to\"@[] /b<4>"))
+
+	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+
+	result = substractTriples(b, a)
+	expect = []*triple.Triple{}
+	expect = append(expect, parseTriple("/a<0>  \"to\"@[] /b<0>"))
+	expect = append(expect, parseTriple("/a<5>  \"to\"@[] /b<5>"))
+	expect = append(expect, parseTriple("/a<6>  \"to\"@[] /b<6>"))
+
+	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 }

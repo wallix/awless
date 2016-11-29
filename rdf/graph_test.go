@@ -27,14 +27,6 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
 
-	noErrTriple := func(s *node.Node, p *predicate.Predicate, o *node.Node) *triple.Triple {
-		tri, err := triple.New(s, p, triple.NewNodeObject(o))
-		if err != nil {
-			t.Fatal(err)
-		}
-		return tri
-	}
-
 	g.Add(noErrTriple(one, parentOf, two))
 	g.Add(noErrTriple(one, parentOf, three))
 	g.Add(noErrTriple(one, parentOf, four))
@@ -69,4 +61,107 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 	if got, want := result.String(), "3/7/8"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}
+}
+
+func TestIntersectGraph(t *testing.T) {
+	azero, _ := node.NewNodeFromStrings("/a", "0")
+	aone, _ := node.NewNodeFromStrings("/a", "1")
+	atwo, _ := node.NewNodeFromStrings("/a", "2")
+	athree, _ := node.NewNodeFromStrings("/a", "3")
+	afour, _ := node.NewNodeFromStrings("/a", "4")
+	afive, _ := node.NewNodeFromStrings("/a", "5")
+	asix, _ := node.NewNodeFromStrings("/a", "6")
+
+	bzero, _ := node.NewNodeFromStrings("/b", "0")
+	bone, _ := node.NewNodeFromStrings("/b", "1")
+	btwo, _ := node.NewNodeFromStrings("/b", "2")
+	bthree, _ := node.NewNodeFromStrings("/b", "3")
+	bfour, _ := node.NewNodeFromStrings("/b", "4")
+	bfive, _ := node.NewNodeFromStrings("/b", "5")
+	bsix, _ := node.NewNodeFromStrings("/b", "6")
+
+	g1, _ := NewGraph()
+	g1.Add(noErrTriple(aone, parentOf, bone))
+	g1.Add(noErrTriple(atwo, parentOf, btwo))
+	g1.Add(noErrTriple(athree, parentOf, bthree))
+	g1.Add(noErrTriple(afour, parentOf, bfour))
+
+	g2, _ := NewGraph()
+	g2.Add(noErrTriple(azero, parentOf, bzero))
+	g2.Add(noErrTriple(atwo, parentOf, btwo))
+	g2.Add(noErrTriple(athree, parentOf, bthree))
+	g2.Add(noErrTriple(afive, parentOf, bfive))
+	g2.Add(noErrTriple(asix, parentOf, bsix))
+
+	expect, _ := NewGraph()
+	expect.Add(noErrTriple(atwo, parentOf, btwo))
+	expect.Add(noErrTriple(athree, parentOf, bthree))
+
+	result := g1.Intersect(g2)
+	if got, want := result.FlushString(), expect.FlushString(); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+
+	result = g2.Intersect(g1)
+	if got, want := result.FlushString(), expect.FlushString(); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+}
+
+func TestSubstractGraph(t *testing.T) {
+	azero, _ := node.NewNodeFromStrings("/a", "0")
+	aone, _ := node.NewNodeFromStrings("/a", "1")
+	atwo, _ := node.NewNodeFromStrings("/a", "2")
+	athree, _ := node.NewNodeFromStrings("/a", "3")
+	afour, _ := node.NewNodeFromStrings("/a", "4")
+	afive, _ := node.NewNodeFromStrings("/a", "5")
+	asix, _ := node.NewNodeFromStrings("/a", "6")
+
+	bzero, _ := node.NewNodeFromStrings("/b", "0")
+	bone, _ := node.NewNodeFromStrings("/b", "1")
+	btwo, _ := node.NewNodeFromStrings("/b", "2")
+	bthree, _ := node.NewNodeFromStrings("/b", "3")
+	bfour, _ := node.NewNodeFromStrings("/b", "4")
+	bfive, _ := node.NewNodeFromStrings("/b", "5")
+	bsix, _ := node.NewNodeFromStrings("/b", "6")
+
+	g1, _ := NewGraph()
+	g1.Add(noErrTriple(aone, parentOf, bone))
+	g1.Add(noErrTriple(atwo, parentOf, btwo))
+	g1.Add(noErrTriple(athree, parentOf, bthree))
+	g1.Add(noErrTriple(afour, parentOf, bfour))
+
+	g2, _ := NewGraph()
+	g2.Add(noErrTriple(azero, parentOf, bzero))
+	g2.Add(noErrTriple(atwo, parentOf, btwo))
+	g2.Add(noErrTriple(athree, parentOf, bthree))
+	g2.Add(noErrTriple(afive, parentOf, bfive))
+	g2.Add(noErrTriple(asix, parentOf, bsix))
+
+	expect, _ := NewGraph()
+	expect.Add(noErrTriple(aone, parentOf, bone))
+	expect.Add(noErrTriple(afour, parentOf, bfour))
+
+	result := g1.Substract(g2)
+	if got, want := result.FlushString(), expect.FlushString(); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+
+	expect, _ = NewGraph()
+	expect.Add(noErrTriple(azero, parentOf, bzero))
+	expect.Add(noErrTriple(afive, parentOf, bfive))
+	expect.Add(noErrTriple(asix, parentOf, bsix))
+
+	result = g2.Substract(g1)
+	if got, want := result.FlushString(), expect.FlushString(); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+}
+
+func noErrTriple(s *node.Node, p *predicate.Predicate, o *node.Node) *triple.Triple {
+	tri, err := triple.New(s, p, triple.NewNodeObject(o))
+	if err != nil {
+		panic(err)
+	}
+	return tri
 }
