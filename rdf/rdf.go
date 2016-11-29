@@ -2,11 +2,9 @@ package rdf
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/api"
@@ -21,7 +19,35 @@ func init() {
 	}
 }
 
-func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Triple, error) {
+func BuildAwsAccessGraph(graphname string, region string, access *api.AwsAccess) (*Graph, error) {
+	triples, err := buildAccessRdfTriples(region, access)
+	if err != nil {
+		return nil, err
+	}
+
+	g, err := NewNamedGraphFromTriples(graphname, triples)
+	if err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+func BuildAwsInfraGraph(graphname string, region string, infra *api.AwsInfra) (*Graph, error) {
+	triples, err := buildInfraRdfTriples(region, infra)
+	if err != nil {
+		return nil, err
+	}
+
+	g, err := NewNamedGraphFromTriples(graphname, triples)
+	if err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Triple, error) {
 	var triples []*triple.Triple
 
 	regionN, err := node.NewNodeFromStrings("/region", region)
@@ -137,7 +163,7 @@ func BuildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	return triples, nil
 }
 
-func BuildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Triple, error) {
+func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Triple, error) {
 	var triples []*triple.Triple
 	var vpcNodes, subnetNodes []*node.Node
 
@@ -204,59 +230,4 @@ func findNodeById(nodes []*node.Node, id string) *node.Node {
 		}
 	}
 	return nil
-}
-
-func IntersectTriples(a, b []*triple.Triple) []*triple.Triple {
-	var inter []*triple.Triple
-
-	for i := 0; i < len(a); i++ {
-		for j := 0; j < len(b); j++ {
-			if a[i].String() == b[j].String() {
-				inter = append(inter, a[i])
-			}
-		}
-	}
-
-	return inter
-}
-
-func SubstractTriples(a, b []*triple.Triple) []*triple.Triple {
-	var sub []*triple.Triple
-
-	for i := 0; i < len(a); i++ {
-		var found bool
-		for j := 0; j < len(b); j++ {
-			if a[i].String() == b[j].String() {
-				found = true
-			}
-		}
-		if !found {
-			sub = append(sub, a[i])
-		}
-	}
-
-	return sub
-}
-
-func MarshalTriples(triples []*triple.Triple) string {
-	var triplesString []string
-	for _, triple := range triples {
-		triplesString = append(triplesString, triple.String())
-	}
-	return strings.Join(triplesString, "\n")
-}
-
-func UnmarshalTriples(raw string) ([]*triple.Triple, error) {
-	var triples []*triple.Triple
-	for _, rawTriple := range strings.Split(raw, "\n") {
-		if strings.TrimSpace(rawTriple) == "" {
-			continue
-		}
-		triple, err := triple.Parse(rawTriple, literal.DefaultBuilder())
-		if err != nil {
-			return triples, err
-		}
-		triples = append(triples, triple)
-	}
-	return triples, nil
 }

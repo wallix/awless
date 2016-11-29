@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,71 +23,52 @@ var syncCmd = &cobra.Command{
 	Short: "Manage your local infrastructure",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		infra, err := infraApi.FetchAwsInfra()
-		if err != nil {
-			return err
-		}
-
-		triples, err := rdf.BuildInfraRdfTriples(viper.GetString("region"), infra)
-		if err != nil {
-			return err
-		}
-
-		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), []byte(rdf.MarshalTriples(triples)), 0600); err != nil {
-			return err
-		}
-
-		infrag, err := rdf.NewMemGraph("infra")
-		if err != nil {
-			return err
-		}
-
-		infrag.AddTriples(context.Background(), triples)
 		root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
 		if err != nil {
 			return err
 		}
 
-		rdf.VisitDepthFirst(infrag, root, func(n *node.Node, distance int) {
+		printWithTabs := func(n *node.Node, distance int) {
 			var tabs bytes.Buffer
 			for i := 0; i < distance; i++ {
 				tabs.WriteByte('\t')
 			}
 			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
-		})
+		}
+
+		infra, err := infraApi.FetchAwsInfra()
+		if err != nil {
+			return err
+		}
+
+		infrag, err := rdf.BuildAwsInfraGraph("infra", viper.GetString("region"), infra)
+
+		tofile, err := infrag.Marshal()
+		if err != nil {
+			return err
+		}
+		if err = ioutil.WriteFile(filepath.Join(config.Dir, config.InfraFilename), tofile, 0600); err != nil {
+			return err
+		}
+
+		infrag.VisitDepthFirst(root, printWithTabs)
 
 		access, err := accessApi.FetchAwsAccess()
 		if err != nil {
 			return err
 		}
 
-		triples, err = rdf.BuildAccessRdfTriples(viper.GetString("region"), access)
+		accessg, err := rdf.BuildAwsAccessGraph("access", viper.GetString("region"), access)
+
+		tofile, err = accessg.Marshal()
 		if err != nil {
 			return err
 		}
-
-		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), []byte(rdf.MarshalTriples(triples)), 0600); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(config.Dir, config.AccessFilename), tofile, 0600); err != nil {
 			return err
 		}
 
-		accessg, err := rdf.NewMemGraph("access")
-		if err != nil {
-			return err
-		}
-
-		accessg.AddTriples(context.Background(), triples)
-		root, err = node.NewNodeFromStrings("/region", viper.GetString("region"))
-		if err != nil {
-			return err
-		}
-
-		rdf.VisitDepthFirst(accessg, root, func(n *node.Node, distance int) {
-			var tabs bytes.Buffer
-			for i := 0; i < distance; i++ {
-				tabs.WriteByte('\t')
-			}
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
-		})
+		accessg.VisitDepthFirst(root, printWithTabs)
 
 		return nil
 	},

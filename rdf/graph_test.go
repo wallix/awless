@@ -2,7 +2,6 @@ package rdf
 
 import (
 	"bytes"
-	"context"
 	"testing"
 
 	"github.com/google/badwolf/triple"
@@ -11,7 +10,7 @@ import (
 )
 
 func TestVisitDepthFirstGraph(t *testing.T) {
-	g, _ := NewMemGraph("test")
+	g, _ := NewGraph()
 
 	//       1
 	//   2       3       4
@@ -28,24 +27,23 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
 
-	noErrTriple := func(s *node.Node, p *predicate.Predicate, o *node.Node) []*triple.Triple {
+	noErrTriple := func(s *node.Node, p *predicate.Predicate, o *node.Node) *triple.Triple {
 		tri, err := triple.New(s, p, triple.NewNodeObject(o))
 		if err != nil {
 			t.Fatal(err)
 		}
-		return []*triple.Triple{tri}
+		return tri
 	}
 
-	cxt := context.Background()
-	g.AddTriples(cxt, noErrTriple(one, parentOf, two))
-	g.AddTriples(cxt, noErrTriple(one, parentOf, three))
-	g.AddTriples(cxt, noErrTriple(one, parentOf, four))
-	g.AddTriples(cxt, noErrTriple(two, parentOf, five))
-	g.AddTriples(cxt, noErrTriple(two, parentOf, six))
-	g.AddTriples(cxt, noErrTriple(three, parentOf, seven))
-	g.AddTriples(cxt, noErrTriple(three, parentOf, eight))
-	g.AddTriples(cxt, noErrTriple(four, parentOf, nine))
-	g.AddTriples(cxt, noErrTriple(nine, parentOf, ten))
+	g.Add(noErrTriple(one, parentOf, two))
+	g.Add(noErrTriple(one, parentOf, three))
+	g.Add(noErrTriple(one, parentOf, four))
+	g.Add(noErrTriple(two, parentOf, five))
+	g.Add(noErrTriple(two, parentOf, six))
+	g.Add(noErrTriple(three, parentOf, seven))
+	g.Add(noErrTriple(three, parentOf, eight))
+	g.Add(noErrTriple(four, parentOf, nine))
+	g.Add(noErrTriple(nine, parentOf, ten))
 
 	var result bytes.Buffer
 	each := func(n *node.Node, distance int) {
@@ -55,19 +53,19 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 		result.WriteString(n.ID().String())
 	}
 
-	VisitDepthFirst(g, one, each)
+	g.VisitDepthFirst(one, each)
 	if got, want := result.String(), "1/2//5//6/3//7//8/4//9///10"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}
 
 	result.Reset()
-	VisitDepthFirst(g, four, each)
+	g.VisitDepthFirst(four, each)
 	if got, want := result.String(), "4/9//10"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}
 
 	result.Reset()
-	VisitDepthFirst(g, three, each)
+	g.VisitDepthFirst(three, each)
 	if got, want := result.String(), "3/7/8"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}

@@ -1,15 +1,11 @@
 package rdf
 
 import (
-	"sort"
-	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
 	"github.com/wallix/awless/api"
 )
 
@@ -75,12 +71,12 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 		"policy_4": []string{"group_4"},
 	}
 
-	triples, err := BuildAccessRdfTriples("eu-west-1", awsAccess)
+	triples, err := buildAccessRdfTriples("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := SortLines(MarshalTriples(triples))
+	result := marshalTriples(triples)
 	expect := `/group<group_1>	"parent_of"@[]	/user<usr_1>
 /group<group_1>	"parent_of"@[]	/user<usr_2>
 /group<group_1>	"parent_of"@[]	/user<usr_3>
@@ -137,7 +133,7 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 /region<eu-west-1>	"parent_of"@[]	/user<usr_8>
 /region<eu-west-1>	"parent_of"@[]	/user<usr_9>`
 	if result != expect {
-		t.Fatalf("got\n%s\n\nwant\n%s", result, expect)
+		t.Fatalf("got\n[%s]\n\nwant\n[%s]", result, expect)
 	}
 
 }
@@ -165,12 +161,12 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	triples, err := BuildInfraRdfTriples("eu-west-1", awsInfra)
+	triples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := SortLines(MarshalTriples(triples))
+	result := marshalTriples(triples)
 	expect := `/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
 /subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
@@ -181,12 +177,12 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_2>
 /vpc<vpc_2>	"parent_of"@[]	/subnet<sub_3>`
 	if result != expect {
-		t.Fatalf("got %s\nwant %s", result, expect)
+		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 }
 
 func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
-	triples, err := BuildAccessRdfTriples("any", api.NewAwsAccess())
+	triples, err := buildAccessRdfTriples("any", api.NewAwsAccess())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -195,7 +191,7 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	triples, err = BuildInfraRdfTriples("any", &api.AwsInfra{})
+	triples, err = buildInfraRdfTriples("any", &api.AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,75 +199,4 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 	if got, want := len(triples), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-}
-
-func TestIntersectTriples(t *testing.T) {
-	var a, b, expect []*triple.Triple
-
-	a = append(a, parseTriple("/a<1>	\"to\"@[]	/b<1>"))
-	a = append(a, parseTriple("/a<2>	\"to\"@[]	/b<2>"))
-	a = append(a, parseTriple("/a<3>	\"to\"@[]	/b<3>"))
-	a = append(a, parseTriple("/a<4>	\"to\"@[]	/b<4>"))
-
-	b = append(b, parseTriple("/a<0>	\"to\"@[]	/b<0>"))
-	b = append(b, parseTriple("/a<2>	\"to\"@[]	/b<2>"))
-	b = append(b, parseTriple("/a<3>	\"to\"@[]	/b<3>"))
-	b = append(b, parseTriple("/a<5>	\"to\"@[]	/b<5>"))
-	b = append(b, parseTriple("/a<6>	\"to\"@[]	/b<6>"))
-
-	result := IntersectTriples(a, b)
-	expect = append(expect, parseTriple("/a<2>	\"to\"@[]	/b<2>"))
-	expect = append(expect, parseTriple("/a<3>	\"to\"@[]	/b<3>"))
-
-	if got, want := MarshalTriples(result), MarshalTriples(expect); got != want {
-		t.Fatalf("got %s\nwant%s\n", got, want)
-	}
-}
-
-func TestSubstractTriples(t *testing.T) {
-	var a, b, expect []*triple.Triple
-
-	a = append(a, parseTriple("/a<1>	\"to\"@[]	/b<1>"))
-	a = append(a, parseTriple("/a<2>	\"to\"@[]	/b<2>"))
-	a = append(a, parseTriple("/a<3>	\"to\"@[]	/b<3>"))
-	a = append(a, parseTriple("/a<4>	\"to\"@[]	/b<4>"))
-
-	b = append(b, parseTriple("/a<0>	\"to\"@[]	/b<0>"))
-	b = append(b, parseTriple("/a<2>	\"to\"@[]	/b<2>"))
-	b = append(b, parseTriple("/a<3>	\"to\"@[]	/b<3>"))
-	b = append(b, parseTriple("/a<5>	\"to\"@[]	/b<5>"))
-	b = append(b, parseTriple("/a<6>	\"to\"@[]	/b<6>"))
-
-	result := SubstractTriples(a, b)
-	expect = append(expect, parseTriple("/a<1>	\"to\"@[]	/b<1>"))
-	expect = append(expect, parseTriple("/a<4>	\"to\"@[]	/b<4>"))
-
-	if got, want := MarshalTriples(result), MarshalTriples(expect); got != want {
-		t.Fatalf("got %s\nwant%s\n", got, want)
-	}
-
-	result = SubstractTriples(b, a)
-	expect = []*triple.Triple{}
-	expect = append(expect, parseTriple("/a<0>	\"to\"@[]	/b<0>"))
-	expect = append(expect, parseTriple("/a<5>	\"to\"@[]	/b<5>"))
-	expect = append(expect, parseTriple("/a<6>	\"to\"@[]	/b<6>"))
-
-	if got, want := MarshalTriples(result), MarshalTriples(expect); got != want {
-		t.Fatalf("got %s\nwant%s\n", got, want)
-	}
-}
-
-func parseTriple(s string) *triple.Triple {
-	t, err := triple.Parse(s, literal.DefaultBuilder())
-	if err != nil {
-		panic(err)
-	}
-
-	return t
-}
-
-func SortLines(lines string) string {
-	linesToSort := strings.Split(lines, "\n")
-	sort.Strings(linesToSort)
-	return strings.Join(linesToSort, "\n")
 }

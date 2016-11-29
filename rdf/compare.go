@@ -4,29 +4,24 @@ import (
 	"context"
 
 	"github.com/google/badwolf/storage"
-	"github.com/google/badwolf/storage/memory"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
 	"github.com/google/badwolf/triple/predicate"
 )
 
-func Compare(rootID string, local []*triple.Triple, remote []*triple.Triple) ([]*triple.Triple, []*triple.Triple, error) {
-	var allextras, allmissings, allcommons []*triple.Triple
-
-	ctx := context.Background()
-	localGraph, err := memory.DefaultStore.NewGraph(ctx, "local")
+func Compare(rootID string, local *Graph, remote *Graph) (*Graph, *Graph, error) {
+	allextras, err := NewGraph()
 	if err != nil {
-		return allextras, allmissings, err
+		return nil, nil, err
 	}
-	defer memory.DefaultStore.DeleteGraph(ctx, "local")
-	localGraph.AddTriples(ctx, local)
-
-	remoteGraph, err := memory.DefaultStore.NewGraph(ctx, "remote")
+	allmissings, err := NewGraph()
 	if err != nil {
-		return allextras, allmissings, err
+		return nil, nil, err
 	}
-	defer memory.DefaultStore.DeleteGraph(ctx, "remote")
-	remoteGraph.AddTriples(ctx, remote)
+	allcommons, err := NewGraph()
+	if err != nil {
+		return nil, nil, err
+	}
 
 	rootNode, err := node.NewNodeFromStrings("/region", rootID)
 
@@ -34,7 +29,7 @@ func Compare(rootID string, local []*triple.Triple, remote []*triple.Triple) ([]
 		return allextras, allmissings, err
 	}
 
-	maxCount := max(len(local), len(remote))
+	maxCount := max(local.TriplesCount(), remote.TriplesCount())
 	processing := make(chan *node.Node, maxCount)
 
 	processing <- rootNode
@@ -42,13 +37,15 @@ func Compare(rootID string, local []*triple.Triple, remote []*triple.Triple) ([]
 	for len(processing) > 0 {
 		select {
 		case node := <-processing:
-			extras, missings, commons, err := compareChildTriplesOf(node, localGraph, remoteGraph)
+			extras, missings, commons, err := compareChildTriplesOf(node, local, remote)
 			if err != nil {
 				return allextras, allmissings, err
 			}
-			allextras = append(allextras, extras...)
-			allmissings = append(allmissings, missings...)
-			allcommons = append(allcommons, commons...)
+
+			allextras.Add(extras...)
+			allmissings.Add(missings...)
+			allcommons.Add(commons...)
+
 			for _, nextNodeToProcess := range commons {
 				objectNode, err := nextNodeToProcess.Object().Node()
 				if err != nil {

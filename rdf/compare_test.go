@@ -26,7 +26,7 @@ func TestCompare(t *testing.T) {
 
 	for _, infra1 := range infras {
 		filename1 := "testdata/infra/" + infra1 + ".rdf"
-		triplesInfra1, err1 := loadTriplesFromFile(filename1)
+		graphInfra1, err1 := NewGraphFromFile(filename1)
 		if err1 != nil {
 			t.Fatalf("error '%s' while loading '%s'", err1, filename1)
 		}
@@ -38,12 +38,12 @@ func TestCompare(t *testing.T) {
 			} else {
 
 				filename2 := "testdata/infra/" + infra2 + ".rdf"
-				triplesInfra2, err2 := loadTriplesFromFile(filename2)
+				graphInfra2, err2 := NewGraphFromFile(filename2)
 				if err2 != nil {
 					t.Fatalf("error '%s' while loading '%s'", err2, filename2)
 				}
 
-				extraTriples, missingTriples, err := Compare(regionID, triplesInfra1, triplesInfra2)
+				extraGraph, missingGraph, err := Compare(regionID, graphInfra1, graphInfra2)
 				if err != nil {
 					t.Fatalf("error while comparing triples : %s", err)
 				}
@@ -63,31 +63,18 @@ func TestCompare(t *testing.T) {
 					}
 				}
 
-				if got, want := SortLines(MarshalTriples(extraTriples)), SortLines(MarshalTriples(triplesExpectedExtra)); got != want {
-					t.Errorf("error on extras from infra '%s' to infra '%s'. \ngot \n%s\nwant \n%s\n", infra1, infra2, got, want)
+				extras, _ := extraGraph.allTriples()
+				inter := IntersectTriples(triplesExpectedExtra, extras)
+				if !(len(inter) == len(triplesExpectedExtra) && len(inter) == extraGraph.TriplesCount()) {
+					t.Fatal("sets of triples are not equal: extra elements in one")
 				}
-				if got, want := SortLines(MarshalTriples(missingTriples)), SortLines(MarshalTriples(triplesExpectedMissing)); got != want {
-					t.Errorf("error on missings from infra '%s' to infra '%s'.\ngot \n%s\nwant \n%s\n", infra1, infra2, got, want)
+
+				missings, _ := missingGraph.allTriples()
+				inter = IntersectTriples(triplesExpectedMissing, missings)
+				if !(len(inter) == len(triplesExpectedMissing) && len(inter) == missingGraph.TriplesCount()) {
+					t.Fatal("sets of triples are not equal: extra elements in one")
 				}
 			}
 		}
-	}
-}
-
-func loadTriplesFromFile(filepath string) ([]*triple.Triple, error) {
-	content, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-	str := string(content)
-	if str == "" || str == "\n" {
-		return []*triple.Triple{}, nil
-	} else {
-		triples, err := UnmarshalTriples(str)
-
-		if err != nil {
-			return nil, err
-		}
-		return triples, nil
 	}
 }
