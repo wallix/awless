@@ -14,7 +14,17 @@ import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
+	"github.com/google/badwolf/triple/predicate"
 )
+
+var parentOf *predicate.Predicate
+
+func init() {
+	var err error
+	if parentOf, err = predicate.NewImmutable("parent_of"); err != nil {
+		panic(err)
+	}
+}
 
 type Graph struct {
 	storage.Graph
@@ -159,7 +169,7 @@ func (g *Graph) Marshal() ([]byte, error) {
 	return bytes.Join(out, []byte("\n")), nil
 }
 
-// Version of marhsal ignoring any error
+// Version of marshal ignoring any error
 func (g *Graph) FlushString() string {
 	b, _ := g.Marshal()
 	return string(b)

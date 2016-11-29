@@ -6,18 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
-	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/api"
 )
-
-var parentOf *predicate.Predicate
-
-func init() {
-	var err error
-	if parentOf, err = predicate.NewImmutable("parent_of"); err != nil {
-		panic(err)
-	}
-}
 
 func BuildAwsAccessGraph(graphname string, region string, access *api.AwsAccess) (*Graph, error) {
 	triples, err := buildAccessRdfTriples(region, access)
