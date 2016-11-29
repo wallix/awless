@@ -11,7 +11,7 @@ import (
 )
 
 func TestVisitDepthFirstGraph(t *testing.T) {
-	g, _ := newMemGraph("test")
+	g, _ := NewMemGraph("test")
 
 	//       1
 	//   2       3       4
@@ -55,20 +55,20 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 		result.WriteString(n.ID().String())
 	}
 
-	visitDepthFirst(g, one, each)
-	if got, want := result.String(), "/1//2///5///6//3///7///8//4///9////10"; got != want {
+	VisitDepthFirst(g, one, each)
+	if got, want := result.String(), "1/2//5//6/3//7//8/4//9///10"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}
 
 	result.Reset()
-	visitDepthFirst(g, four, each)
-	if got, want := result.String(), "/4//9///10"; got != want {
+	VisitDepthFirst(g, four, each)
+	if got, want := result.String(), "4/9//10"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}
 
 	result.Reset()
-	visitDepthFirst(g, three, each)
-	if got, want := result.String(), "/3//7//8"; got != want {
+	VisitDepthFirst(g, three, each)
+	if got, want := result.String(), "3/7/8"; got != want {
 		t.Fatalf("got '%s', want '%s'", got, want)
 	}
 }

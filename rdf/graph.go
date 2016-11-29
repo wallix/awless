@@ -9,7 +9,7 @@ import (
 	"github.com/google/badwolf/triple/node"
 )
 
-func newMemGraph(name string) (storage.Graph, error) {
+func NewMemGraph(name string) (storage.Graph, error) {
 	g, err := memory.DefaultStore.NewGraph(context.Background(), name)
 	if err != nil {
 		return nil, err
@@ -17,11 +17,9 @@ func newMemGraph(name string) (storage.Graph, error) {
 	return g, nil
 }
 
-func visitDepthFirst(g storage.Graph, root *node.Node, each func(*node.Node, int), distances ...int) error {
+func VisitDepthFirst(g storage.Graph, root *node.Node, each func(*node.Node, int), distances ...int) error {
 	var dist int
-	if len(distances) == 0 {
-		dist = 1
-	} else {
+	if len(distances) > 0 {
 		dist = distances[0]
 	}
 
@@ -44,7 +42,7 @@ func visitDepthFirst(g storage.Graph, root *node.Node, each func(*node.Node, int
 	sort.Sort(&nodeSorter{childs})
 
 	for _, child := range childs {
-		visitDepthFirst(g, child, each, dist+1)
+		VisitDepthFirst(g, child, each, dist+1)
 	}
 
 	return nil
