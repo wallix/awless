@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/wallix/awless/api"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
 )
@@ -23,6 +25,29 @@ var syncCmd = &cobra.Command{
 	Short: "Manage your local infrastructure",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var awsInfra *api.AwsInfra
+		var awsAccess *api.AwsAccess
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			infra, err := infraApi.FetchAwsInfra()
+			exitOn(err)
+			awsInfra = infra
+		}()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			access, err := accessApi.FetchAwsAccess()
+			exitOn(err)
+			awsAccess = access
+		}()
+
+		wg.Wait()
+
 		root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
 		if err != nil {
 			return err
@@ -36,12 +61,7 @@ var syncCmd = &cobra.Command{
 			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 		}
 
-		infra, err := infraApi.FetchAwsInfra()
-		if err != nil {
-			return err
-		}
-
-		infrag, err := rdf.BuildAwsInfraGraph("infra", viper.GetString("region"), infra)
+		infrag, err := rdf.BuildAwsInfraGraph("infra", viper.GetString("region"), awsInfra)
 
 		tofile, err := infrag.Marshal()
 		if err != nil {
@@ -53,12 +73,7 @@ var syncCmd = &cobra.Command{
 
 		infrag.VisitDepthFirst(root, printWithTabs)
 
-		access, err := accessApi.FetchAwsAccess()
-		if err != nil {
-			return err
-		}
-
-		accessg, err := rdf.BuildAwsAccessGraph("access", viper.GetString("region"), access)
+		accessg, err := rdf.BuildAwsAccessGraph("access", viper.GetString("region"), awsAccess)
 
 		tofile, err = accessg.Marshal()
 		if err != nil {

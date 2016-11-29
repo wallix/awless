@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/wallix/awless/api"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
 )
@@ -21,15 +23,34 @@ var diffCmd = &cobra.Command{
 	Short: "Show diff between your local and remote infra",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var awsInfra *api.AwsInfra
+		var awsAccess *api.AwsAccess
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			infra, err := infraApi.FetchAwsInfra()
+			exitOn(err)
+			awsInfra = infra
+		}()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			access, err := accessApi.FetchAwsAccess()
+			exitOn(err)
+			awsAccess = access
+		}()
+
+		wg.Wait()
+
 		localInfra, err := rdf.NewNamedGraphFromFile("localInfra", filepath.Join(config.Dir, config.InfraFilename))
 		if err != nil {
 			return err
 		}
 
-		awsInfra, err := infraApi.FetchAwsInfra()
-		if err != nil {
-			return err
-		}
 		remoteInfra, err := rdf.BuildAwsInfraGraph("remoteInfra", viper.GetString("region"), awsInfra)
 		if err != nil {
 			return err
@@ -53,11 +74,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		access, err := accessApi.FetchAwsAccess()
-		if err != nil {
-			return err
-		}
-		remoteAccess, err := rdf.BuildAwsAccessGraph("remoteAccess", viper.GetString("region"), access)
+		remoteAccess, err := rdf.BuildAwsAccessGraph("remoteAccess", viper.GetString("region"), awsAccess)
 		if err != nil {
 			return err
 		}
