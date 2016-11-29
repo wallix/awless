@@ -2,6 +2,7 @@ package stats
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -90,12 +91,15 @@ func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
 	if err != nil {
 		return err
 	}
-	marshaled, err := json.Marshal(stats)
-	if err != nil {
+
+	var zipped bytes.Buffer
+	zippedW := gzip.NewWriter(&zipped)
+	if err = json.NewEncoder(zippedW).Encode(stats); err != nil {
 		return err
 	}
+	zippedW.Close()
 
-	sessionKey, encrypted, err := aesEncrypt(marshaled)
+	sessionKey, encrypted, err := aesEncrypt(zipped.Bytes())
 	if err != nil {
 		return err
 	}

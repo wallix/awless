@@ -1,6 +1,8 @@
 package stats
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -134,8 +136,15 @@ func TestSendStats(t *testing.T) {
 			return
 		}
 
+		extracted, e := gzip.NewReader(bytes.NewReader(decrypted))
+		if e != nil {
+			t.Fatal(e)
+			return
+		}
+		defer extracted.Close()
+
 		var received Stats
-		if e := json.Unmarshal(decrypted, &received); e != nil {
+		if e := json.NewDecoder(extracted).Decode(&received); e != nil {
 			t.Fatal(e)
 			return
 		}
