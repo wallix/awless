@@ -15,7 +15,7 @@ func loadTriplesFromFile(filepath string) ([]*triple.Triple, error) {
 
 func marshalTriples(triples []*triple.Triple) string {
 	g := NewGraphFromTriples(triples)
-	return g.FlushString()
+	return g.MustMarshal()
 }
 
 func parseTriple(s string) *triple.Triple {

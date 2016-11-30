@@ -65,9 +65,9 @@ var diffCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
 		fmt.Fprintln(w, "INFRA")
 		fmt.Fprintln(w, "Extras:")
-		fmt.Fprintln(w, extras.FlushString())
+		fmt.Fprintln(w, extras.MustMarshal())
 		fmt.Fprintln(w, "Missings:")
-		fmt.Fprintln(w, missings.FlushString())
+		fmt.Fprintln(w, missings.MustMarshal())
 
 		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.AccessFilename))
 		if err != nil {
@@ -87,9 +87,9 @@ var diffCmd = &cobra.Command{
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, "ACCESS:")
 		fmt.Fprintln(w, "Extras:")
-		fmt.Fprintln(w, extras.FlushString())
+		fmt.Fprintln(w, extras.MustMarshal())
 		fmt.Fprintln(w, "Missings:")
-		fmt.Fprintln(w, missings.FlushString())
+		fmt.Fprintln(w, missings.MustMarshal())
 
 		w.Flush()
 

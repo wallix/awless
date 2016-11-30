@@ -98,12 +98,12 @@ func TestIntersectGraph(t *testing.T) {
 	expect.Add(noErrTriple(athree, parentOf, bthree))
 
 	result := g1.Intersect(g2)
-	if got, want := result.FlushString(), expect.FlushString(); got != want {
+	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
 	result = g2.Intersect(g1)
-	if got, want := result.FlushString(), expect.FlushString(); got != want {
+	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 }
@@ -143,7 +143,7 @@ func TestSubstractGraph(t *testing.T) {
 	expect.Add(noErrTriple(afour, parentOf, bfour))
 
 	result := g1.Substract(g2)
-	if got, want := result.FlushString(), expect.FlushString(); got != want {
+	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
@@ -153,7 +153,7 @@ func TestSubstractGraph(t *testing.T) {
 	expect.Add(noErrTriple(asix, parentOf, bsix))
 
 	result = g2.Substract(g1)
-	if got, want := result.FlushString(), expect.FlushString(); got != want {
+	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 }

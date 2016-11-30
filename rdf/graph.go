@@ -185,9 +185,11 @@ func (g *Graph) Marshal() ([]byte, error) {
 	return bytes.Join(out, []byte("\n")), nil
 }
 
-// Version of marshal ignoring any error
-func (g *Graph) FlushString() string {
-	b, _ := g.Marshal()
+func (g *Graph) MustMarshal() string {
+	b, err := g.Marshal()
+	if err != nil {
+		panic(err)
+	}
 	return string(b)
 }
 

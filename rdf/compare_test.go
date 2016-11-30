@@ -63,10 +63,10 @@ func TestCompare(t *testing.T) {
 					}
 				}
 
-				if got, want := extraGraph.FlushString(), expectedExtras.FlushString(); got != want {
+				if got, want := extraGraph.MustMarshal(), expectedExtras.MustMarshal(); got != want {
 					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
 				}
-				if got, want := missingGraph.FlushString(), expectedMissings.FlushString(); got != want {
+				if got, want := missingGraph.MustMarshal(), expectedMissings.MustMarshal(); got != want {
 					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
 				}
 			}
