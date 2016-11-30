@@ -1,0 +1,19 @@
+#local
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_1>
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_2>
+
+#remote
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_1>
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_3>
+
+#extras
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_2>
+
+#missings
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_3>
+
+#invextras
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_3>
+
+#invmissings
+/region<eu-west-1>  "parent_of"@[]  /vpc<vpc_2>

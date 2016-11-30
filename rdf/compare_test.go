@@ -1,147 +1,148 @@
 package rdf
 
 import (
-	"fmt"
+	"bufio"
+	"bytes"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/google/badwolf/triple"
 )
 
-type infraFile struct {
-	path, name string
-}
+func TestCompareInfraGraph(t *testing.T) {
+	cases := []*diffTest{}
 
-func (i *infraFile) String() string {
-	return fmt.Sprintf("[infra testfile at %s]", i.path)
-}
+	filepath.Walk("testdata/infras", collectTestCases(&cases))
 
-func TestCompareInfras(t *testing.T) {
-	infras := []*infraFile{}
+	for _, tcase := range cases {
+		localG := NewGraph()
+		localG.Unmarshal(tcase.local.Bytes())
 
-	filepath.Walk("testdata/infra/", rdfFilesOnly(&infras))
+		remoteG := NewGraph()
+		remoteG.Unmarshal(tcase.remote.Bytes())
 
-	for _, infra := range infras {
-		infraGraph, err := NewGraphFromFile(infra.path)
+		extrasG, missingsG, err := Compare("eu-west-1", localG, remoteG)
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, otherInfra := range infras {
-			otherGraph, err := NewGraphFromFile(otherInfra.path)
-			if err != nil {
-				t.Fatal(err)
-			}
 
-			extraGraph, missingGraph, err := Compare("eu-west-1", infraGraph, otherGraph)
-			if err != nil {
-				t.Fatal(err)
-			}
+		expectExtrasG := NewGraph()
+		expectExtrasG.Unmarshal(tcase.extras.Bytes())
 
-			expectedExtras := NewGraph()
-			expectedMissings := NewGraph()
+		expectMissingsG := NewGraph()
+		expectMissingsG.Unmarshal(tcase.missings.Bytes())
 
-			if infra.name != otherInfra.name {
-				extrasFilename, missingsFilename := expectedFilepathForComparison(infra.name, otherInfra.name)
+		if got, want := extrasG.MustMarshal(), expectExtrasG.MustMarshal(); got != want {
+			t.Fatalf("\n[%s] - extras: got\n[%s]\n\nwant\n[%s]\n\n", tcase.filepath, got, want)
+		}
+		if got, want := missingsG.MustMarshal(), expectMissingsG.MustMarshal(); got != want {
+			t.Fatalf("\n[%s] - missings: got\n[%s]\n\nwant\n[%s]\n\n", tcase.filepath, got, want)
+		}
 
-				if expectedExtras, err = NewGraphFromFile(extrasFilename); err != nil {
-					if _, ok := err.(*os.PathError); !ok {
-						t.Fatal(err)
-					} else {
-						continue
-					}
-				}
+		extrasG, missingsG, err = Compare("eu-west-1", remoteG, localG)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-				if expectedMissings, err = NewGraphFromFile(missingsFilename); err != nil {
-					if _, ok := err.(*os.PathError); !ok {
-						t.Fatal(err)
-					} else {
-						continue
-					}
-				}
-			}
+		expectInvExtrasG := NewGraph()
+		expectInvExtrasG.Unmarshal(tcase.invextras.Bytes())
 
-			if got, want := extraGraph.MustMarshal(), expectedExtras.MustMarshal(); got != want {
-				t.Fatalf("\n%s: got\n%s\n\n%s: want\n%s\n\n", infra, got, otherInfra, want)
-			}
-			if got, want := missingGraph.MustMarshal(), expectedMissings.MustMarshal(); got != want {
-				t.Fatalf("\n%s: got\n%s\n\n%s: want\n%s\n\n", infra, got, otherInfra, want)
-			}
+		expectInvMissingG := NewGraph()
+		expectInvMissingG.Unmarshal(tcase.invmissings.Bytes())
 
+		if got, want := extrasG.MustMarshal(), expectInvExtrasG.MustMarshal(); got != want {
+			t.Fatalf("\n[%s] - inv extras: got\n[%s]\n\nwant\n[%s]\n\n", tcase.filepath, got, want)
+		}
+		if got, want := missingsG.MustMarshal(), expectInvMissingG.MustMarshal(); got != want {
+			t.Fatalf("\n[%s] - inv missings: got\n[%s]\n\nwant\n[%s]\n\n", tcase.filepath, got, want)
 		}
 	}
 }
 
-func TestIntersectTriples(t *testing.T) {
-	var a, b, expect []*triple.Triple
-
-	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
-	a = append(a, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	a = append(a, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	a = append(a, parseTriple("/a<4>  \"to\"@[] /b<4>"))
-
-	b = append(b, parseTriple("/a<0>  \"to\"@[] /b<0>"))
-	b = append(b, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	b = append(b, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
-	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
-
-	result := intersectTriples(a, b)
-	expect = append(expect, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	expect = append(expect, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-
-	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
-		t.Fatalf("got %s\nwant%s\n", got, want)
-	}
-}
-
-func TestSubstractTriples(t *testing.T) {
-	var a, b, expect []*triple.Triple
-
-	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
-	a = append(a, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	a = append(a, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	a = append(a, parseTriple("/a<4>  \"to\"@[] /b<4>"))
-
-	b = append(b, parseTriple("/a<0>  \"to\"@[] /b<0>"))
-	b = append(b, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	b = append(b, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
-	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
-
-	result := substractTriples(a, b)
-	expect = append(expect, parseTriple("/a<1>  \"to\"@[] /b<1>"))
-	expect = append(expect, parseTriple("/a<4>  \"to\"@[] /b<4>"))
-
-	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
-		t.Fatalf("got %s\nwant%s\n", got, want)
-	}
-
-	result = substractTriples(b, a)
-	expect = []*triple.Triple{}
-	expect = append(expect, parseTriple("/a<0>  \"to\"@[] /b<0>"))
-	expect = append(expect, parseTriple("/a<5>  \"to\"@[] /b<5>"))
-	expect = append(expect, parseTriple("/a<6>  \"to\"@[] /b<6>"))
-
-	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
-		t.Fatalf("got %s\nwant%s\n", got, want)
-	}
-}
-
-func rdfFilesOnly(collect *[]*infraFile) filepath.WalkFunc {
+func collectTestCases(collect *[]*diffTest) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
-		ext := filepath.Ext(path)
-		if info.Mode().IsRegular() && ext == ".rdf" {
-			name := strings.TrimSuffix(filepath.Base(path), ext)
-			*collect = append(*collect, &infraFile{path: path, name: name})
+		if info.Mode().IsRegular() {
+			*collect = append(*collect, parseTestfile(path))
 		}
 		return nil
 	}
 }
 
-func expectedFilepathForComparison(first, second string) (extras string, missings string) {
-	extras = fmt.Sprintf("testdata/diff_extra/expected_%s_%s.rdf", first, second)
-	missings = fmt.Sprintf("testdata/diff_missing/expected_%s_%s.rdf", first, second)
-	return
+type diffTest struct {
+	filepath                                                string
+	local, remote, extras, missings, invextras, invmissings bytes.Buffer
+}
+
+type section int
+
+const (
+	Start section = iota
+	Local
+	Remote
+	Extras
+	Missings
+	InvExtras
+	InvMissings
+)
+
+func parseTestfile(path string) *diffTest {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	test := &diffTest{filepath: path}
+	r := bufio.NewReader(file)
+
+	where := Start
+
+Loop:
+	for {
+		line, err := r.ReadString('\n')
+
+		switch {
+		case err == io.EOF:
+			if len(line) > 0 {
+				test.invmissings.WriteString(line)
+			}
+			break Loop
+		case err != nil:
+			log.Fatal(err)
+		}
+
+		switch where {
+		case Local:
+			test.local.WriteString(line)
+		case Remote:
+			test.remote.WriteString(line)
+		case Extras:
+			test.extras.WriteString(line)
+		case Missings:
+			test.missings.WriteString(line)
+		case InvExtras:
+			test.invextras.WriteString(line)
+		case InvMissings:
+			test.invmissings.WriteString(line)
+		}
+
+		switch {
+		case strings.TrimSpace(line) == "":
+		case strings.HasPrefix(line, "#local"):
+			where = Local
+		case strings.HasPrefix(line, "#remote"):
+			where = Remote
+		case strings.HasPrefix(line, "#extras"):
+			where = Extras
+		case strings.HasPrefix(line, "#missings"):
+			where = Missings
+		case strings.HasPrefix(line, "#invextras"):
+			where = InvExtras
+		case strings.HasPrefix(line, "#invmissings"):
+			where = InvMissings
+		}
+	}
+
+	return test
 }
