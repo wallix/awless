@@ -4,14 +4,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/sts"
 )
 
 type Access struct {
 	*iam.IAM
+	secu *sts.STS
 }
 
 func NewAccess(sess *session.Session) *Access {
-	return &Access{iam.New(sess)}
+	return &Access{IAM: iam.New(sess), secu: sts.New(sess)}
 }
 
 func (a *Access) Users() (interface{}, error) {
@@ -32,6 +34,10 @@ func (a *Access) UsersForGroup(name string) (interface{}, error) {
 
 func (a *Access) Roles() (interface{}, error) {
 	return a.ListRoles(&iam.ListRolesInput{})
+}
+
+func (a *Access) CallerIdentity() (interface{}, error) {
+	return a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 }
 
 func (a *Access) LocalPolicies() (interface{}, error) {
