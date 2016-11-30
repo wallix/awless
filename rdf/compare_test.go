@@ -1,75 +1,74 @@
 package rdf
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/google/badwolf/triple"
 )
 
-var regionID string
-
-func init() {
-	regionID = "eu-west-1"
+type infraFile struct {
+	path, name string
 }
 
-func TestCompare(t *testing.T) {
-	var infras []string
-	files, _ := ioutil.ReadDir("./testdata/infra/")
-	for _, f := range files {
-		if extIndex := strings.LastIndex(f.Name(), "."); extIndex >= 0 && f.Name()[extIndex+1:] == "rdf" {
-			infras = append(infras, f.Name()[:extIndex])
+func (i *infraFile) String() string {
+	return fmt.Sprintf("[infra testfile at %s]", i.path)
+}
+
+func TestCompareInfras(t *testing.T) {
+	infras := []*infraFile{}
+
+	filepath.Walk("testdata/infra/", rdfFilesOnly(&infras))
+
+	for _, infra := range infras {
+		infraGraph, err := NewGraphFromFile(infra.path)
+		if err != nil {
+			t.Fatal(err)
 		}
-	}
+		for _, otherInfra := range infras {
+			otherGraph, err := NewGraphFromFile(otherInfra.path)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	for _, infra1 := range infras {
-		filename1 := "testdata/infra/" + infra1 + ".rdf"
-		graphInfra1, err1 := NewGraphFromFile(filename1)
-		if err1 != nil {
-			t.Fatalf("error '%s' while loading '%s'", err1, filename1)
-		}
-		for _, infra2 := range infras {
-			expectedExtraFilename := "testdata/diff_extra/expected_" + infra1 + "_" + infra2 + ".rdf"
-			expectedMissingFilename := "testdata/diff_missing/expected_" + infra1 + "_" + infra2 + ".rdf"
-			if _, err := os.Stat(expectedExtraFilename); infra1 != infra2 && os.IsNotExist(err) {
-				t.Logf("There is no test data for comparison from %s to %s", infra1, infra2)
-			} else {
+			extraGraph, missingGraph, err := Compare("eu-west-1", infraGraph, otherGraph)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-				filename2 := "testdata/infra/" + infra2 + ".rdf"
-				graphInfra2, err2 := NewGraphFromFile(filename2)
-				if err2 != nil {
-					t.Fatalf("error '%s' while loading '%s'", err2, filename2)
-				}
+			expectedExtras := NewGraph()
+			expectedMissings := NewGraph()
 
-				extraGraph, missingGraph, err := Compare(regionID, graphInfra1, graphInfra2)
-				if err != nil {
-					t.Fatalf("error while comparing triples : %s", err)
-				}
+			if infra.name != otherInfra.name {
+				extrasFilename, missingsFilename := expectedFilepathForComparison(infra.name, otherInfra.name)
 
-				expectedExtras := NewGraph()
-				expectedMissings := NewGraph()
-
-				if infra1 != infra2 {
-					expectedExtras, err = NewGraphFromFile(expectedExtraFilename)
-					if err != nil {
-						t.Fatalf("error '%s' while loading '%s'", err, expectedExtraFilename)
-					}
-
-					expectedMissings, err = NewGraphFromFile(expectedMissingFilename)
-					if err != nil {
-						t.Fatalf("error '%s' while loading '%s'", err, expectedMissingFilename)
+				if expectedExtras, err = NewGraphFromFile(extrasFilename); err != nil {
+					if _, ok := err.(*os.PathError); !ok {
+						t.Fatal(err)
+					} else {
+						continue
 					}
 				}
 
-				if got, want := extraGraph.MustMarshal(), expectedExtras.MustMarshal(); got != want {
-					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
-				}
-				if got, want := missingGraph.MustMarshal(), expectedMissings.MustMarshal(); got != want {
-					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
+				if expectedMissings, err = NewGraphFromFile(missingsFilename); err != nil {
+					if _, ok := err.(*os.PathError); !ok {
+						t.Fatal(err)
+					} else {
+						continue
+					}
 				}
 			}
+
+			if got, want := extraGraph.MustMarshal(), expectedExtras.MustMarshal(); got != want {
+				t.Fatalf("\n%s: got\n%s\n\n%s: want\n%s\n\n", infra, got, otherInfra, want)
+			}
+			if got, want := missingGraph.MustMarshal(), expectedMissings.MustMarshal(); got != want {
+				t.Fatalf("\n%s: got\n%s\n\n%s: want\n%s\n\n", infra, got, otherInfra, want)
+			}
+
 		}
 	}
 }
@@ -128,4 +127,21 @@ func TestSubstractTriples(t *testing.T) {
 	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
+}
+
+func rdfFilesOnly(collect *[]*infraFile) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		ext := filepath.Ext(path)
+		if info.Mode().IsRegular() && ext == ".rdf" {
+			name := strings.TrimSuffix(filepath.Base(path), ext)
+			*collect = append(*collect, &infraFile{path: path, name: name})
+		}
+		return nil
+	}
+}
+
+func expectedFilepathForComparison(first, second string) (extras string, missings string) {
+	extras = fmt.Sprintf("testdata/diff_extra/expected_%s_%s.rdf", first, second)
+	missings = fmt.Sprintf("testdata/diff_missing/expected_%s_%s.rdf", first, second)
+	return
 }
