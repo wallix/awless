@@ -10,7 +10,7 @@ import (
 )
 
 func TestVisitDepthFirstGraph(t *testing.T) {
-	g, _ := NewGraph()
+	g := NewGraph()
 
 	//       1
 	//   2       3       4
@@ -80,20 +80,20 @@ func TestIntersectGraph(t *testing.T) {
 	bfive, _ := node.NewNodeFromStrings("/b", "5")
 	bsix, _ := node.NewNodeFromStrings("/b", "6")
 
-	g1, _ := NewGraph()
+	g1 := NewGraph()
 	g1.Add(noErrTriple(aone, parentOf, bone))
 	g1.Add(noErrTriple(atwo, parentOf, btwo))
 	g1.Add(noErrTriple(athree, parentOf, bthree))
 	g1.Add(noErrTriple(afour, parentOf, bfour))
 
-	g2, _ := NewGraph()
+	g2 := NewGraph()
 	g2.Add(noErrTriple(azero, parentOf, bzero))
 	g2.Add(noErrTriple(atwo, parentOf, btwo))
 	g2.Add(noErrTriple(athree, parentOf, bthree))
 	g2.Add(noErrTriple(afive, parentOf, bfive))
 	g2.Add(noErrTriple(asix, parentOf, bsix))
 
-	expect, _ := NewGraph()
+	expect := NewGraph()
 	expect.Add(noErrTriple(atwo, parentOf, btwo))
 	expect.Add(noErrTriple(athree, parentOf, bthree))
 
@@ -125,20 +125,20 @@ func TestSubstractGraph(t *testing.T) {
 	bfive, _ := node.NewNodeFromStrings("/b", "5")
 	bsix, _ := node.NewNodeFromStrings("/b", "6")
 
-	g1, _ := NewGraph()
+	g1 := NewGraph()
 	g1.Add(noErrTriple(aone, parentOf, bone))
 	g1.Add(noErrTriple(atwo, parentOf, btwo))
 	g1.Add(noErrTriple(athree, parentOf, bthree))
 	g1.Add(noErrTriple(afour, parentOf, bfour))
 
-	g2, _ := NewGraph()
+	g2 := NewGraph()
 	g2.Add(noErrTriple(azero, parentOf, bzero))
 	g2.Add(noErrTriple(atwo, parentOf, btwo))
 	g2.Add(noErrTriple(athree, parentOf, bthree))
 	g2.Add(noErrTriple(afive, parentOf, bfive))
 	g2.Add(noErrTriple(asix, parentOf, bsix))
 
-	expect, _ := NewGraph()
+	expect := NewGraph()
 	expect.Add(noErrTriple(aone, parentOf, bone))
 	expect.Add(noErrTriple(afour, parentOf, bfour))
 
@@ -147,7 +147,7 @@ func TestSubstractGraph(t *testing.T) {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	expect, _ = NewGraph()
+	expect = NewGraph()
 	expect.Add(noErrTriple(azero, parentOf, bzero))
 	expect.Add(noErrTriple(afive, parentOf, bfive))
 	expect.Add(noErrTriple(asix, parentOf, bsix))

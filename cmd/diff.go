@@ -46,12 +46,12 @@ var diffCmd = &cobra.Command{
 
 		wg.Wait()
 
-		localInfra, err := rdf.NewNamedGraphFromFile("localInfra", filepath.Join(config.Dir, config.InfraFilename))
+		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
 		if err != nil {
 			return err
 		}
 
-		remoteInfra, err := rdf.BuildAwsInfraGraph("remoteInfra", viper.GetString("region"), awsInfra)
+		remoteInfra, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 		if err != nil {
 			return err
 		}
@@ -69,12 +69,12 @@ var diffCmd = &cobra.Command{
 		fmt.Fprintln(w, "Missings:")
 		fmt.Fprintln(w, missings.FlushString())
 
-		localAccess, err := rdf.NewNamedGraphFromFile("localAccess", filepath.Join(config.Dir, config.AccessFilename))
+		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.AccessFilename))
 		if err != nil {
 			return err
 		}
 
-		remoteAccess, err := rdf.BuildAwsAccessGraph("remoteAccess", viper.GetString("region"), awsAccess)
+		remoteAccess, err := rdf.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
 		if err != nil {
 			return err
 		}

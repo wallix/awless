@@ -31,57 +31,39 @@ type Graph struct {
 	triplesCount int
 }
 
-func NewNamedGraph(name string) (*Graph, error) {
-	g, err := memory.DefaultStore.NewGraph(context.Background(), name)
-	return &Graph{Graph: g}, err
-}
-
-func NewGraph() (*Graph, error) {
+func NewGraph() *Graph {
 	g, err := memory.DefaultStore.NewGraph(context.Background(), randString())
-	return &Graph{Graph: g}, err
-}
-
-func NewNamedGraphFromTriples(name string, triples []*triple.Triple) (*Graph, error) {
-	g, err := NewNamedGraph(name)
 	if err != nil {
-		return nil, err
+		panic(err) // badwolf implementation: only happens on duplicates names of graph
 	}
+	return &Graph{Graph: g}
+}
 
+func NewGraphFromTriples(triples []*triple.Triple) *Graph {
+	g := NewGraph()
 	g.triplesCount = len(triples)
-
-	return g, g.Add(triples...)
+	g.Add(triples...)
+	return g
 }
 
-func NewGraphFromTriples(triples []*triple.Triple) (*Graph, error) {
-	return NewNamedGraphFromTriples(randString(), triples)
-}
-
-func NewNamedGraphFromFile(graphname, filepath string) (*Graph, error) {
+func NewGraphFromFile(filepath string) (*Graph, error) {
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
 
-	g, err := NewNamedGraph(graphname)
-	if err != nil {
+	g := NewGraph()
+
+	if err := g.Unmarshal(data); err != nil {
 		return nil, err
 	}
 
-	err = g.Unmarshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return g, err
+	return g, nil
 }
 
-func NewGraphFromFile(filepath string) (*Graph, error) {
-	return NewNamedGraphFromFile(randString(), filepath)
-}
-
-func (g *Graph) Add(triples ...*triple.Triple) error {
+func (g *Graph) Add(triples ...*triple.Triple) {
 	g.triplesCount += len(triples)
-	return g.AddTriples(context.Background(), triples)
+	_ = g.AddTriples(context.Background(), triples) // badwolf mem store implementation always returns nil error
 }
 
 func (g *Graph) VisitDepthFirst(root *node.Node, each func(*node.Node, int), distances ...int) error {
@@ -116,10 +98,7 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*node.Node, int), dis
 }
 
 func (g *Graph) copy() *Graph {
-	newg, err := NewGraph()
-	if err != nil {
-		panic(err)
-	}
+	newg := NewGraph()
 
 	all, _ := g.allTriples()
 	newg.Add(all...)
@@ -137,10 +116,7 @@ func (g *Graph) Substract(other *Graph) *Graph {
 }
 
 func (g *Graph) Intersect(other *Graph) *Graph {
-	inter, err := NewGraph()
-	if err != nil {
-		panic(err)
-	}
+	inter := NewGraph()
 
 	all, err := g.allTriples()
 	if err != nil {
@@ -187,9 +163,7 @@ func (g *Graph) Unmarshal(data []byte) error {
 		if err != nil {
 			return err
 		}
-		if err = g.Add(triple); err != nil {
-			return err
-		}
+		g.Add(triple)
 	}
 
 	return nil

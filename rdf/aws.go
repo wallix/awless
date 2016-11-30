@@ -9,32 +9,22 @@ import (
 	"github.com/wallix/awless/api"
 )
 
-func BuildAwsAccessGraph(graphname string, region string, access *api.AwsAccess) (*Graph, error) {
+func BuildAwsAccessGraph(region string, access *api.AwsAccess) (*Graph, error) {
 	triples, err := buildAccessRdfTriples(region, access)
 	if err != nil {
 		return nil, err
 	}
 
-	g, err := NewNamedGraphFromTriples(graphname, triples)
-	if err != nil {
-		return nil, err
-	}
-
-	return g, nil
+	return NewGraphFromTriples(triples), nil
 }
 
-func BuildAwsInfraGraph(graphname string, region string, infra *api.AwsInfra) (*Graph, error) {
+func BuildAwsInfraGraph(region string, infra *api.AwsInfra) (*Graph, error) {
 	triples, err := buildInfraRdfTriples(region, infra)
 	if err != nil {
 		return nil, err
 	}
 
-	g, err := NewNamedGraphFromTriples(graphname, triples)
-	if err != nil {
-		return nil, err
-	}
-
-	return g, nil
+	return NewGraphFromTriples(triples), nil
 }
 
 func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Triple, error) {

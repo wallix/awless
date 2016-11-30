@@ -48,25 +48,25 @@ func TestCompare(t *testing.T) {
 					t.Fatalf("error while comparing triples : %s", err)
 				}
 
-				triplesExpectedExtra, _ := NewGraph()
-				triplesExpectedMissing, _ := NewGraph()
+				expectedExtras := NewGraph()
+				expectedMissings := NewGraph()
 
 				if infra1 != infra2 {
-					triplesExpectedExtra, err = NewGraphFromFile(expectedExtraFilename)
+					expectedExtras, err = NewGraphFromFile(expectedExtraFilename)
 					if err != nil {
 						t.Fatalf("error '%s' while loading '%s'", err, expectedExtraFilename)
 					}
 
-					triplesExpectedMissing, err = NewGraphFromFile(expectedMissingFilename)
+					expectedMissings, err = NewGraphFromFile(expectedMissingFilename)
 					if err != nil {
 						t.Fatalf("error '%s' while loading '%s'", err, expectedMissingFilename)
 					}
 				}
 
-				if got, want := extraGraph.FlushString(), triplesExpectedExtra.FlushString(); got != want {
+				if got, want := extraGraph.FlushString(), expectedExtras.FlushString(); got != want {
 					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
 				}
-				if got, want := missingGraph.FlushString(), triplesExpectedMissing.FlushString(); got != want {
+				if got, want := missingGraph.FlushString(), expectedMissings.FlushString(); got != want {
 					t.Errorf("\nfor %s,%s: got\n%s\n\nwant\n%s\n\n", infra1, infra2, got, want)
 				}
 			}

@@ -10,21 +10,11 @@ import (
 )
 
 func Compare(rootID string, local *Graph, remote *Graph) (*Graph, *Graph, error) {
-	allextras, err := NewGraph()
-	if err != nil {
-		return nil, nil, err
-	}
-	allmissings, err := NewGraph()
-	if err != nil {
-		return nil, nil, err
-	}
-	allcommons, err := NewGraph()
-	if err != nil {
-		return nil, nil, err
-	}
+	allextras := NewGraph()
+	allmissings := NewGraph()
+	allcommons := NewGraph()
 
 	rootNode, err := node.NewNodeFromStrings("/region", rootID)
-
 	if err != nil {
 		return allextras, allmissings, err
 	}

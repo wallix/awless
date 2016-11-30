@@ -10,14 +10,12 @@ func loadTriplesFromFile(filepath string) ([]*triple.Triple, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return g.allTriples()
 }
 
 func marshalTriples(triples []*triple.Triple) string {
-	g, _ := NewGraphFromTriples(triples)
-	out, _ := g.Marshal()
-	return string(out)
+	g := NewGraphFromTriples(triples)
+	return g.FlushString()
 }
 
 func parseTriple(s string) *triple.Triple {

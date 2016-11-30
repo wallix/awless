@@ -61,7 +61,7 @@ var syncCmd = &cobra.Command{
 			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 		}
 
-		infrag, err := rdf.BuildAwsInfraGraph("infra", viper.GetString("region"), awsInfra)
+		infrag, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 
 		tofile, err := infrag.Marshal()
 		if err != nil {
@@ -73,7 +73,7 @@ var syncCmd = &cobra.Command{
 
 		infrag.VisitDepthFirst(root, printWithTabs)
 
-		accessg, err := rdf.BuildAwsAccessGraph("access", viper.GetString("region"), awsAccess)
+		accessg, err := rdf.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
 
 		tofile, err = accessg.Marshal()
 		if err != nil {
