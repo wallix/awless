@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -30,55 +29,43 @@ func TestBuildStats(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
+	now := time.Now()
+	yesterday := now.Add(-24 * time.Hour)
+	db.AddHistoryCommandWithTime([]string{"awless sync"}, yesterday)
+	db.AddHistoryCommandWithTime([]string{"awless diff"}, yesterday)
+	db.AddHistoryCommandWithTime([]string{"awless diff"}, yesterday)
+	db.AddHistoryCommandWithTime([]string{"awless diff"}, now)
+	db.AddHistoryCommandWithTime([]string{"awless sync"}, now)
+	db.AddHistoryCommandWithTime([]string{"awless list instances"}, now)
+	db.AddHistoryCommandWithTime([]string{"awless list vpcs"}, now)
+	db.AddHistoryCommandWithTime([]string{"awless list instances"}, now)
 
-	db.AddHistoryCommandWithTime([]string{"awless sync"}, time.Now().Add(-24*time.Hour))
-	db.AddHistoryCommandWithTime([]string{"awless diff"}, time.Now().Add(-24*time.Hour))
-	db.AddHistoryCommandWithTime([]string{"awless diff"}, time.Now().Add(-24*time.Hour))
-	db.AddHistoryCommand([]string{"awless diff"})
-	db.AddHistoryCommand([]string{"awless diff"})
-	db.AddHistoryCommand([]string{"awless sync"})
-	db.AddHistoryCommand([]string{"awless sync"})
-	db.AddHistoryCommand([]string{"awless list instances"})
-	db.AddHistoryCommand([]string{"awless list vpcs"})
-	db.AddHistoryCommand([]string{"awless list subnets"})
-	db.AddHistoryCommand([]string{"awless list instances"})
+	id, _ := db.GetStringValue(AWLESS_ID_KEY)
+	expected := Stats{
+		Id: id,
+		Commands: []*DailyCommands{
+			{Command: "awless sync", Hits: 1, Date: yesterday},
+			{Command: "awless diff", Hits: 2, Date: yesterday},
+			{Command: "awless diff", Hits: 1, Date: now},
+			{Command: "awless sync", Hits: 1, Date: now},
+			{Command: "awless list instances", Hits: 2, Date: now},
+			{Command: "awless list vpcs", Hits: 1, Date: now},
+		},
+	}
 
 	stats, _, err := db.BuildStats(0)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if got, want := len(stats.DailyStats), 2; got != want {
+	if got, want := len(stats.Commands), len(expected.Commands); got != want {
 		t.Fatalf("got %d; want %d", got, want)
 	}
-	yesterdayDate := time.Now().Add(-24 * time.Hour)
-	if got, want := SameDay(&stats.DailyStats[0].Date, &yesterdayDate), true; got != want {
-		t.Fatalf("got %t; want %t", got, want)
-	}
-	nowDate := time.Now()
-	if got, want := SameDay(&stats.DailyStats[1].Date, &nowDate), true; got != want {
-		t.Fatalf("got %t; want %t", got, want)
-	}
-	expectedYesterday :=
-		map[string]int{
-			"awless sync": 1,
-			"awless diff": 2,
-		}
-	expectedToday :=
-		map[string]int{
-			"awless sync":           2,
-			"awless diff":           2,
-			"awless list instances": 2,
-			"awless list vpcs":      1,
-			"awless list subnets":   1,
-		}
 
-	if got, want := reflect.DeepEqual(expectedYesterday, stats.DailyStats[0].Commands), true; got != want {
-		t.Fatalf("got \n%#v\n; want \n%#v", stats.DailyStats[0].Commands, expectedYesterday)
+	if got, want := statsEqual(stats, &expected), true; got != want {
+		t.Fatalf("got %#v; want %#v", *stats, expected)
 	}
-	if got, want := reflect.DeepEqual(expectedToday, stats.DailyStats[1].Commands), true; got != want {
-		t.Fatalf("got \n%#v\n; want \n%#v", stats.DailyStats[1].Commands, expectedToday)
-	}
+
 }
 
 func TestSendStats(t *testing.T) {
@@ -193,18 +180,43 @@ func TestIfDataToSend(t *testing.T) {
 
 }
 
-func assertEqual(t *testing.T, stats1, stats2 *Stats) {
-	b1, err := json.Marshal(stats1)
-	if err != nil {
-		t.Fatal(err)
+func dcEqual(dc1, dc2 *DailyCommands) bool {
+	if dc1 == dc2 {
+		return true
 	}
-	b2, err := json.Marshal(stats2)
-	if err != nil {
-		t.Fatal(err)
+	if dc1 == nil {
+		return false
 	}
+	return dc1.Command == dc2.Command && dc1.Date.Equal(dc2.Date) && dc1.Hits == dc2.Hits
+}
 
-	if got, want := string(b1), string(b2); got != want {
-		t.Fatalf("got %s; want %s", got, want)
+func statsEqual(stats1, stats2 *Stats) bool {
+	if stats1 == stats2 {
+		return true
+	}
+	if stats1 == nil {
+		return false
+	}
+	if stats1.Id != stats2.Id {
+		return false
+	}
+	for _, dc1 := range stats1.Commands {
+		found := false
+		for _, dc2 := range stats2.Commands {
+			if dcEqual(dc1, dc2) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func assertEqual(t *testing.T, stats1, stats2 *Stats) {
+	if got, want := statsEqual(stats1, stats2), true; got != want {
+		t.Fatalf("got %t; want %t", got, want)
 	}
 }
 

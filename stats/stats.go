@@ -14,6 +14,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/wallix/awless/config"
 )
 
 const AWLESS_ID_KEY = "awless_id"
@@ -31,13 +33,15 @@ func generateAwlessId() (string, error) {
 }
 
 type Stats struct {
-	Id         string
-	DailyStats []*DailyStat
+	Id       string
+	Version  string
+	Commands []*DailyCommands
 }
 
-type DailyStat struct {
-	Commands map[string]int
-	Date     time.Time
+type DailyCommands struct {
+	Command string
+	Hits    int
+	Date    time.Time
 }
 
 func (db *DB) BuildStats(fromCommandId int) (*Stats, int, error) {
@@ -46,31 +50,38 @@ func (db *DB) BuildStats(fromCommandId int) (*Stats, int, error) {
 		return nil, 0, err
 	}
 
-	stats := &Stats{Id: id, DailyStats: []*DailyStat{}}
-	commands, err := db.GetHistory(fromCommandId)
+	stats := &Stats{Id: id, Version: config.Version, Commands: []*DailyCommands{}}
+	commandsHistory, err := db.GetHistory(fromCommandId)
 	if err != nil {
 		return stats, 0, err
 	}
 
-	if len(commands) == 0 {
+	if len(commandsHistory) == 0 {
 		return stats, 0, nil
 	}
 
-	dailyStat := &DailyStat{make(map[string]int), commands[0].Time}
-	lastCommandId := commands[0].Id
+	date := commandsHistory[0].Time
+	commands := make(map[string]int)
 
-	for _, command := range commands {
-		if !SameDay(&dailyStat.Date, &command.Time) {
-			stats.DailyStats = append(stats.DailyStats, dailyStat)
-			dailyStat = &DailyStat{make(map[string]int), command.Time}
+	for _, command := range commandsHistory {
+		if !SameDay(&date, &command.Time) {
+			addDailyCommands(stats, commands, &date)
+			date = command.Time
+			commands = make(map[string]int)
 		}
-		dailyStat.Commands[strings.Join(command.Command, " ")] += 1
-		lastCommandId = command.Id
+		commands[strings.Join(command.Command, " ")] += 1
 	}
+	addDailyCommands(stats, commands, &date)
 
-	stats.DailyStats = append(stats.DailyStats, dailyStat)
-
+	lastCommandId := commandsHistory[len(commandsHistory)-1].Id
 	return stats, lastCommandId, nil
+}
+
+func addDailyCommands(stats *Stats, commands map[string]int, date *time.Time) {
+	for command, hits := range commands {
+		dc := DailyCommands{Command: command, Hits: hits, Date: *date}
+		stats.Commands = append(stats.Commands, &dc)
+	}
 }
 
 func SameDay(date1, date2 *time.Time) bool {
