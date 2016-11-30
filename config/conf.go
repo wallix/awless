@@ -17,7 +17,7 @@ var (
 	Dir                  = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
 	Path                 = filepath.Join(Dir, configFilename)
 	DatabasePath         = filepath.Join(os.Getenv("HOME"), ".awless", databaseFilename)
-	StatsServerUrl       = "http://127.0.0.1:8080"
+	StatsServerUrl       = "http://52.213.243.16:8080"
 	StatsServerPublicKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuUK69ARmXV0Xsj30+6S7
 +oqDPmfIwQ0FxhlI6fcqlZ57mmURuZIJ4nnXxZrx5LXmbKGjDRgWtFLNQ2JFUGZB
