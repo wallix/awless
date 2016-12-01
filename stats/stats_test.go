@@ -13,8 +13,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/rdf"
 )
 
 func TestBuildStats(t *testing.T) {
@@ -40,6 +48,30 @@ func TestBuildStats(t *testing.T) {
 	db.AddHistoryCommandWithTime([]string{"awless list vpcs"}, now)
 	db.AddHistoryCommandWithTime([]string{"awless list instances"}, now)
 
+	awsInfra := &api.AwsInfra{}
+
+	awsInfra.Instances = []*ec2.Instance{
+		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
+		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
+		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
+	}
+
+	awsInfra.Vpcs = []*ec2.Vpc{
+		&ec2.Vpc{VpcId: aws.String("vpc_1")},
+		&ec2.Vpc{VpcId: aws.String("vpc_2")},
+	}
+
+	awsInfra.Subnets = []*ec2.Subnet{
+		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
+		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
+		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
+	}
+
+	infra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	id, _ := db.GetStringValue(AWLESS_ID_KEY)
 	expected := Stats{
 		Id: id,
@@ -51,9 +83,20 @@ func TestBuildStats(t *testing.T) {
 			{Command: "awless list instances", Hits: 2, Date: now},
 			{Command: "awless list vpcs", Hits: 1, Date: now},
 		},
+		InfraMetrics: &InfraMetrics{
+			Date:                  now,
+			Region:                "",
+			NbVpcs:                2,
+			NbSubnets:             3,
+			NbInstances:           3,
+			MinSubnetsPerVpc:      1,
+			MaxSubnetsPerVpc:      2,
+			MinInstancesPerSubnet: 1,
+			MaxInstancesPerSubnet: 1,
+		},
 	}
 
-	stats, _, err := db.BuildStats(0)
+	stats, _, err := BuildStats(db, infra, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +108,35 @@ func TestBuildStats(t *testing.T) {
 	if got, want := statsEqual(stats, &expected), true; got != want {
 		t.Fatalf("got %#v; want %#v", *stats, expected)
 	}
+}
 
+func TestBuildMetrics(t *testing.T) {
+	infra, err := rdf.NewGraphFromFile("testdata/infra.rdf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	now := time.Now()
+	infraMetrics, err := buildInfraMetrics(infra, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedMetrics := &InfraMetrics{
+		Date:                  now,
+		Region:                "",
+		NbVpcs:                3,
+		NbSubnets:             7,
+		MinSubnetsPerVpc:      2,
+		MaxSubnetsPerVpc:      3,
+		NbInstances:           18,
+		MinInstancesPerSubnet: 0,
+		MaxInstancesPerSubnet: 4,
+	}
+
+	if got, want := reflect.DeepEqual(infraMetrics, expectedMetrics), true; got != want {
+		t.Fatalf("got \n%#v\n; want \n%#v\n", infraMetrics, expectedMetrics)
+	}
 }
 
 func TestSendStats(t *testing.T) {
@@ -91,7 +162,12 @@ func TestSendStats(t *testing.T) {
 	db.AddHistoryCommand([]string{"awless list subnets"})
 	db.AddHistoryCommand([]string{"awless list instances"})
 
-	expected, _, err := db.BuildStats(0)
+	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected, _, err := BuildStats(db, localInfra, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -211,7 +287,30 @@ func statsEqual(stats1, stats2 *Stats) bool {
 			return false
 		}
 	}
-	return true
+	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics)
+}
+
+func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
+	if i1 == i2 {
+		return true
+	}
+	if i1 == nil {
+		return false
+	}
+
+	if i1.Region != i2.Region {
+		return false
+	}
+	if i1.NbVpcs != i2.NbVpcs || i1.MaxSubnetsPerVpc != i2.MaxSubnetsPerVpc || i1.MinSubnetsPerVpc != i2.MinSubnetsPerVpc {
+		return false
+	}
+	if i1.NbSubnets != i2.NbSubnets || i1.MaxInstancesPerSubnet != i2.MaxInstancesPerSubnet || i1.MinInstancesPerSubnet != i2.MinInstancesPerSubnet {
+		return false
+	}
+	if i1.NbInstances != i2.NbInstances {
+		return false
+	}
+	return SameDay(&i1.Date, &i2.Date)
 }
 
 func assertEqual(t *testing.T, stats1, stats2 *Stats) {

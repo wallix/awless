@@ -12,10 +12,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/rdf"
 )
 
 const AWLESS_ID_KEY = "awless_id"
@@ -33,9 +36,10 @@ func generateAwlessId() (string, error) {
 }
 
 type Stats struct {
-	Id       string
-	Version  string
-	Commands []*DailyCommands
+	Id           string
+	Version      string
+	Commands     []*DailyCommands
+	InfraMetrics *InfraMetrics
 }
 
 type DailyCommands struct {
@@ -44,20 +48,46 @@ type DailyCommands struct {
 	Date    time.Time
 }
 
-func (db *DB) BuildStats(fromCommandId int) (*Stats, int, error) {
+func BuildStats(db *DB, infra *rdf.Graph, fromCommandId int) (*Stats, int, error) {
+
+	commandsStat, lastCommandId, err := buildCommandsStat(db, fromCommandId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	infraMetrics := &InfraMetrics{}
+	if infra != nil {
+		infraMetrics, err = buildInfraMetrics(infra, time.Now())
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
 	id, err := db.GetStringValue(AWLESS_ID_KEY)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	stats := &Stats{Id: id, Version: config.Version, Commands: []*DailyCommands{}}
+	stats := &Stats{
+		Id:           id,
+		Version:      config.Version,
+		Commands:     commandsStat,
+		InfraMetrics: infraMetrics,
+	}
+
+	return stats, lastCommandId, nil
+}
+
+func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error) {
+	var commandsStat []*DailyCommands
+
 	commandsHistory, err := db.GetHistory(fromCommandId)
 	if err != nil {
-		return stats, 0, err
+		return commandsStat, 0, err
 	}
 
 	if len(commandsHistory) == 0 {
-		return stats, 0, nil
+		return commandsStat, 0, nil
 	}
 
 	date := commandsHistory[0].Time
@@ -65,23 +95,93 @@ func (db *DB) BuildStats(fromCommandId int) (*Stats, int, error) {
 
 	for _, command := range commandsHistory {
 		if !SameDay(&date, &command.Time) {
-			addDailyCommands(stats, commands, &date)
+			commandsStat = addDailyCommands(commandsStat, commands, &date)
 			date = command.Time
 			commands = make(map[string]int)
 		}
 		commands[strings.Join(command.Command, " ")] += 1
 	}
-	addDailyCommands(stats, commands, &date)
+	commandsStat = addDailyCommands(commandsStat, commands, &date)
 
 	lastCommandId := commandsHistory[len(commandsHistory)-1].Id
-	return stats, lastCommandId, nil
+	return commandsStat, lastCommandId, nil
 }
 
-func addDailyCommands(stats *Stats, commands map[string]int, date *time.Time) {
+func addDailyCommands(commandsStat []*DailyCommands, commands map[string]int, date *time.Time) []*DailyCommands {
 	for command, hits := range commands {
 		dc := DailyCommands{Command: command, Hits: hits, Date: *date}
-		stats.Commands = append(stats.Commands, &dc)
+		commandsStat = append(commandsStat, &dc)
 	}
+	return commandsStat
+}
+
+type InfraMetrics struct {
+	Date                  time.Time
+	Region                string
+	NbVpcs                int
+	NbSubnets             int
+	MinSubnetsPerVpc      int
+	MaxSubnetsPerVpc      int
+	NbInstances           int
+	MinInstancesPerSubnet int
+	MaxInstancesPerSubnet int
+}
+
+func buildInfraMetrics(infra *rdf.Graph, time time.Time) (*InfraMetrics, error) {
+	metrics := &InfraMetrics{
+		Date:   time,
+		Region: viper.GetString("region"),
+	}
+
+	c, min, max, err := computeCountMinMaxChildForType(infra, rdf.VPC)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbVpcs, metrics.MinSubnetsPerVpc, metrics.MaxSubnetsPerVpc = c, min, max
+
+	c, min, max, err = computeCountMinMaxChildForType(infra, rdf.SUBNET)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbSubnets, metrics.MinInstancesPerSubnet, metrics.MaxInstancesPerSubnet = c, min, max
+
+	c, _, _, err = computeCountMinMaxChildForType(infra, rdf.INSTANCE)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbInstances = c
+
+	return metrics, nil
+}
+
+func computeCountMinMaxChildForType(graph *rdf.Graph, t string) (int, int, int, error) {
+	nodes, err := graph.NodesForType(t)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	if len(nodes) == 0 {
+		return 0, 0, 0, nil
+	}
+	firstNode := nodes[0]
+	count, err := graph.CountTriplesForSubjectAndPredicate(firstNode, rdf.ParentOf)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	min, max := count, count
+	for _, node := range nodes[1:] {
+		count, err = graph.CountTriplesForSubjectAndPredicate(node, rdf.ParentOf)
+		if err != nil {
+			return 0, 0, 0, err
+		}
+		if count < min {
+			min = count
+		}
+		if count > max {
+			max = count
+		}
+	}
+	return len(nodes), min, max, nil
 }
 
 func SameDay(date1, date2 *time.Time) bool {
@@ -98,7 +198,13 @@ func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
 	if err != nil {
 		return err
 	}
-	stats, lastCommandId, err := db.BuildStats(lastCommandId)
+
+	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
+	if err != nil {
+		return err
+	}
+
+	stats, lastCommandId, err := BuildStats(db, localInfra, lastCommandId)
 	if err != nil {
 		return err
 	}

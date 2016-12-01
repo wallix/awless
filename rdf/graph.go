@@ -17,11 +17,15 @@ import (
 	"github.com/google/badwolf/triple/predicate"
 )
 
-var parentOf *predicate.Predicate
+var ParentOf *predicate.Predicate
+var HasType *predicate.Predicate
 
 func init() {
 	var err error
-	if parentOf, err = predicate.NewImmutable("parent_of"); err != nil {
+	if ParentOf, err = predicate.NewImmutable("parent_of"); err != nil {
+		panic(err)
+	}
+	if HasType, err = predicate.NewImmutable("has_type"); err != nil {
 		panic(err)
 	}
 }
@@ -74,7 +78,7 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*node.Node, int), dis
 
 	each(root, dist)
 
-	relations, err := triplesForSubjectAndPredicate(g, root, parentOf)
+	relations, err := triplesForSubjectAndPredicate(g, root, ParentOf)
 	if err != nil {
 		return err
 	}
@@ -152,6 +156,66 @@ func (g *Graph) allTriples() ([]*triple.Triple, error) {
 	}
 
 	return triples, <-errc
+}
+
+func (g *Graph) TriplesForType(t string) ([]*triple.Triple, error) {
+	var triples []*triple.Triple
+	errc := make(chan error)
+	triplec := make(chan *triple.Triple)
+	literal, err := literal.DefaultBuilder().Build(literal.Text, t)
+	if err != nil {
+		return triples, err
+	}
+
+	go func() {
+		defer close(errc)
+		errc <- g.TriplesForPredicateAndObject(context.Background(), HasType, triple.NewLiteralObject(literal), storage.DefaultLookup, triplec)
+	}()
+
+	for t := range triplec {
+		triples = append(triples, t)
+	}
+
+	return triples, <-errc
+}
+
+func (g *Graph) NodesForType(t string) ([]*node.Node, error) {
+	var nodes []*node.Node
+	errc := make(chan error)
+	nodec := make(chan *node.Node)
+	literal, err := literal.DefaultBuilder().Build(literal.Text, t)
+	if err != nil {
+		return nodes, err
+	}
+
+	go func() {
+		defer close(errc)
+		errc <- g.Subjects(context.Background(), HasType, triple.NewLiteralObject(literal), storage.DefaultLookup, nodec)
+	}()
+
+	for n := range nodec {
+		nodes = append(nodes, n)
+	}
+
+	return nodes, <-errc
+
+}
+
+func (g *Graph) CountTriplesForSubjectAndPredicate(subject *node.Node, predicate *predicate.Predicate) (int, error) {
+	count := 0
+	errc := make(chan error)
+	triplec := make(chan *triple.Triple)
+
+	go func() {
+		defer close(errc)
+		errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
+	}()
+
+	for range triplec {
+		count++
+	}
+
+	return count, <-errc
 }
 
 func (g *Graph) Unmarshal(data []byte) error {

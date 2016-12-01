@@ -14,7 +14,7 @@ func Compare(rootID string, local *Graph, remote *Graph) (*Graph, *Graph, error)
 	allmissings := NewGraph()
 	allcommons := NewGraph()
 
-	rootNode, err := node.NewNodeFromStrings("/region", rootID)
+	rootNode, err := node.NewNodeFromStrings(REGION, rootID)
 	if err != nil {
 		return allextras, allmissings, err
 	}
@@ -52,12 +52,12 @@ func Compare(rootID string, local *Graph, remote *Graph) (*Graph, *Graph, error)
 func compareChildTriplesOf(root *node.Node, localGraph storage.Graph, remoteGraph storage.Graph) ([]*triple.Triple, []*triple.Triple, []*triple.Triple, error) {
 	var extras, missings, commons []*triple.Triple
 
-	locals, err := triplesForSubjectAndPredicate(localGraph, root, parentOf)
+	locals, err := triplesForSubjectAndPredicate(localGraph, root, ParentOf)
 	if err != nil {
 		return extras, missings, commons, err
 	}
 
-	remotes, err := triplesForSubjectAndPredicate(remoteGraph, root, parentOf)
+	remotes, err := triplesForSubjectAndPredicate(remoteGraph, root, ParentOf)
 	if err != nil {
 		return extras, missings, commons, err
 	}
