@@ -21,39 +21,32 @@ const (
 	POLICY   = "/policy"
 )
 
-var regionLiteral *literal.Literal
-var vpcLiteral *literal.Literal
-var subnetLiteral *literal.Literal
-var instanceLiteral *literal.Literal
-var userLiteral *literal.Literal
-var roleLiteral *literal.Literal
-var groupLiteral *literal.Literal
-var policyLiteral *literal.Literal
+var regionL, vpcL, subnetL, instanceL, userL, roleL, groupL, policyL *literal.Literal
 
 func init() {
 	var err error
-	if regionLiteral, err = literal.DefaultBuilder().Build(literal.Text, REGION); err != nil {
+	if regionL, err = literal.DefaultBuilder().Build(literal.Text, REGION); err != nil {
 		panic(err)
 	}
-	if vpcLiteral, err = literal.DefaultBuilder().Build(literal.Text, VPC); err != nil {
+	if vpcL, err = literal.DefaultBuilder().Build(literal.Text, VPC); err != nil {
 		panic(err)
 	}
-	if subnetLiteral, err = literal.DefaultBuilder().Build(literal.Text, SUBNET); err != nil {
+	if subnetL, err = literal.DefaultBuilder().Build(literal.Text, SUBNET); err != nil {
 		panic(err)
 	}
-	if instanceLiteral, err = literal.DefaultBuilder().Build(literal.Text, INSTANCE); err != nil {
+	if instanceL, err = literal.DefaultBuilder().Build(literal.Text, INSTANCE); err != nil {
 		panic(err)
 	}
-	if userLiteral, err = literal.DefaultBuilder().Build(literal.Text, USER); err != nil {
+	if userL, err = literal.DefaultBuilder().Build(literal.Text, USER); err != nil {
 		panic(err)
 	}
-	if roleLiteral, err = literal.DefaultBuilder().Build(literal.Text, ROLE); err != nil {
+	if roleL, err = literal.DefaultBuilder().Build(literal.Text, ROLE); err != nil {
 		panic(err)
 	}
-	if groupLiteral, err = literal.DefaultBuilder().Build(literal.Text, GROUP); err != nil {
+	if groupL, err = literal.DefaultBuilder().Build(literal.Text, GROUP); err != nil {
 		panic(err)
 	}
-	if policyLiteral, err = literal.DefaultBuilder().Build(literal.Text, POLICY); err != nil {
+	if policyL, err = literal.DefaultBuilder().Build(literal.Text, POLICY); err != nil {
 		panic(err)
 	}
 }
@@ -84,7 +77,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		return triples, err
 	}
 
-	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionLiteral))
+	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionL))
 	if err != nil {
 		return triples, err
 	}
@@ -97,7 +90,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		if err != nil {
 			return triples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(userLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(userL))
 		if err != nil {
 			return triples, err
 		}
@@ -118,7 +111,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		if err != nil {
 			return triples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(roleLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(roleL))
 		if err != nil {
 			return triples, err
 		}
@@ -139,7 +132,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		if err != nil {
 			return triples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(groupLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(groupL))
 		if err != nil {
 			return triples, err
 		}
@@ -170,7 +163,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		if err != nil {
 			return triples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(policyLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(policyL))
 		if err != nil {
 			return triples, err
 		}
@@ -226,7 +219,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Trip
 	if err != nil {
 		return triples, err
 	}
-	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionLiteral))
+	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionL))
 	if err != nil {
 		return triples, err
 	}
@@ -237,7 +230,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Trip
 		if err != nil {
 			return triples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(vpcLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(vpcL))
 		if err != nil {
 			return triples, err
 		}
@@ -256,7 +249,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Trip
 		if err != nil {
 			return triples, fmt.Errorf("subnet %s", err)
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(subnetLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(subnetL))
 		if err != nil {
 			return triples, err
 		}
@@ -279,7 +272,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Trip
 		if err != nil {
 			return triples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(instanceLiteral))
+		t, err := triple.New(n, HasType, triple.NewLiteralObject(instanceL))
 		if err != nil {
 			return triples, err
 		}
