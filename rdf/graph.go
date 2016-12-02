@@ -17,8 +17,14 @@ import (
 	"github.com/google/badwolf/triple/predicate"
 )
 
-var ParentOf *predicate.Predicate
-var HasType *predicate.Predicate
+var (
+	ParentOf      *predicate.Predicate
+	HasType       *predicate.Predicate
+	DiffPredicate *predicate.Predicate
+
+	ExtraLiteral   *literal.Literal
+	MissingLiteral *literal.Literal
+)
 
 func init() {
 	var err error
@@ -26,6 +32,15 @@ func init() {
 		panic(err)
 	}
 	if HasType, err = predicate.NewImmutable("has_type"); err != nil {
+		panic(err)
+	}
+	if DiffPredicate, err = predicate.NewImmutable("diff"); err != nil {
+		panic(err)
+	}
+	if ExtraLiteral, err = literal.DefaultBuilder().Build(literal.Text, "extra"); err != nil {
+		panic(err)
+	}
+	if MissingLiteral, err = literal.DefaultBuilder().Build(literal.Text, "missing"); err != nil {
 		panic(err)
 	}
 }
@@ -70,15 +85,15 @@ func (g *Graph) Add(triples ...*triple.Triple) {
 	_ = g.AddTriples(context.Background(), triples) // badwolf mem store implementation always returns nil error
 }
 
-func (g *Graph) VisitDepthFirst(root *node.Node, each func(*node.Node, int), distances ...int) error {
+func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
 	var dist int
 	if len(distances) > 0 {
 		dist = distances[0]
 	}
 
-	each(root, dist)
+	each(g, root, dist)
 
-	relations, err := triplesForSubjectAndPredicate(g, root, ParentOf)
+	relations, err := g.TriplesForSubjectPredicate(root, ParentOf)
 	if err != nil {
 		return err
 	}
@@ -108,6 +123,13 @@ func (g *Graph) copy() *Graph {
 	newg.Add(all...)
 
 	return newg
+}
+
+func (g *Graph) Merge(other *Graph) *Graph {
+	all, _ := other.allTriples()
+	g.Add(all...)
+
+	return g
 }
 
 func (g *Graph) Substract(other *Graph) *Graph {
@@ -150,6 +172,24 @@ func (g *Graph) allTriples() ([]*triple.Triple, error) {
 		defer close(errc)
 		errc <- g.Triples(context.Background(), triplec)
 	}()
+
+	for t := range triplec {
+		triples = append(triples, t)
+	}
+
+	return triples, <-errc
+}
+
+func (g *Graph) TriplesForSubjectPredicate(subject *node.Node, predicate *predicate.Predicate) ([]*triple.Triple, error) {
+	errc := make(chan error)
+	triplec := make(chan *triple.Triple)
+
+	go func() {
+		defer close(errc)
+		errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
+	}()
+
+	var triples []*triple.Triple
 
 	for t := range triplec {
 		triples = append(triples, t)

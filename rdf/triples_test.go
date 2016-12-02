@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/badwolf/triple"
+	"github.com/google/badwolf/triple/literal"
 )
 
 func TestIntersectTriples(t *testing.T) {
@@ -59,5 +60,26 @@ func TestSubstractTriples(t *testing.T) {
 
 	if got, want := marshalTriples(result), marshalTriples(expect); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+}
+
+func TestAttachTriple(t *testing.T) {
+	tri := parseTriple("/a<1>  \"to\"@[] /b<1>")
+	objNode, _ := tri.Object().Node()
+
+	g := NewGraphFromTriples([]*triple.Triple{tri})
+
+	l, _ := literal.DefaultBuilder().Build(literal.Text, "trumped")
+	attachLiteralToTriple(g, tri, DiffPredicate, l)
+
+	triples, _ := g.TriplesForSubjectPredicate(objNode, DiffPredicate)
+
+	if got, want := len(triples), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	lit, _ := triples[0].Object().Literal()
+	if got, want := lit.ToComparableString(), `"trumped"^^type:text`; got != want {
+		t.Fatalf("got %s, want %s", got, want)
 	}
 }

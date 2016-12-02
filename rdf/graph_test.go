@@ -39,7 +39,7 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 	g.Add(noErrTriple(nine, ParentOf, ten))
 
 	var result bytes.Buffer
-	each := func(n *node.Node, distance int) {
+	each := func(g *Graph, n *node.Node, distance int) {
 		for i := 0; i < distance; i++ {
 			result.WriteByte('/')
 		}

@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
-	"text/tabwriter"
 
+	"github.com/fatih/color"
+	"github.com/google/badwolf/triple/literal"
+	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/api"
@@ -46,6 +49,11 @@ var diffCmd = &cobra.Command{
 
 		wg.Wait()
 
+		root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
+		if err != nil {
+			return err
+		}
+
 		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
 		if err != nil {
 			return err
@@ -56,18 +64,21 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		extras, missings, err := rdf.Compare(viper.GetString("region"), localInfra, remoteInfra)
+		extras, missings, commons, err := rdf.Compare(viper.GetString("region"), localInfra, remoteInfra)
 		if err != nil {
 			return err
 		}
 
-		const padding = 5
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
-		fmt.Fprintln(w, "INFRA")
-		fmt.Fprintln(w, "Extras:")
-		fmt.Fprintln(w, extras.MustMarshal())
-		fmt.Fprintln(w, "Missings:")
-		fmt.Fprintln(w, missings.MustMarshal())
+		rdf.AttachLiteralToAllTriples(extras, rdf.DiffPredicate, rdf.ExtraLiteral)
+		rdf.AttachLiteralToAllTriples(missings, rdf.DiffPredicate, rdf.MissingLiteral)
+
+		infraGraph := rdf.NewGraph()
+		infraGraph.Merge(extras)
+		infraGraph.Merge(missings)
+		infraGraph.Merge(commons)
+
+		fmt.Println("------ INFRA ------")
+		infraGraph.VisitDepthFirst(root, printWithDiff)
 
 		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.AccessFilename))
 		if err != nil {
@@ -79,20 +90,49 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		extras, missings, err = rdf.Compare(viper.GetString("region"), localAccess, remoteAccess)
+		extras, missings, commons, err = rdf.Compare(viper.GetString("region"), localAccess, remoteAccess)
 		if err != nil {
 			return err
 		}
 
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, "ACCESS:")
-		fmt.Fprintln(w, "Extras:")
-		fmt.Fprintln(w, extras.MustMarshal())
-		fmt.Fprintln(w, "Missings:")
-		fmt.Fprintln(w, missings.MustMarshal())
+		rdf.AttachLiteralToAllTriples(extras, rdf.DiffPredicate, rdf.ExtraLiteral)
+		rdf.AttachLiteralToAllTriples(missings, rdf.DiffPredicate, rdf.MissingLiteral)
 
-		w.Flush()
+		accessGraph := rdf.NewGraph()
+		accessGraph.Merge(extras)
+		accessGraph.Merge(missings)
+		accessGraph.Merge(commons)
+
+		fmt.Println()
+		fmt.Println("------ ACCESS ------")
+		accessGraph.VisitDepthFirst(root, printWithDiff)
 
 		return nil
 	},
+}
+
+func printWithDiff(g *rdf.Graph, n *node.Node, distance int) {
+	var lit *literal.Literal
+	diff, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
+	if len(diff) > 0 && err == nil {
+		lit, _ = diff[0].Object().Literal()
+	}
+
+	var tabs bytes.Buffer
+	for i := 0; i < distance; i++ {
+		tabs.WriteByte('\t')
+	}
+
+	switch lit {
+	case rdf.ExtraLiteral:
+		color.Set(color.FgGreen)
+		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+		color.Unset()
+	case rdf.MissingLiteral:
+		color.Set(color.FgRed)
+		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+		color.Unset()
+	default:
+		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+	}
 }

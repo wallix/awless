@@ -23,7 +23,7 @@ func TestCompareInfraGraph(t *testing.T) {
 		remoteG := NewGraph()
 		remoteG.Unmarshal(tcase.remote.Bytes())
 
-		extrasG, missingsG, err := Compare("eu-west-1", localG, remoteG)
+		extrasG, missingsG, _, err := Compare("eu-west-1", localG, remoteG)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -41,7 +41,7 @@ func TestCompareInfraGraph(t *testing.T) {
 			t.Fatalf("\n[%s] - missings: got\n[%s]\n\nwant\n[%s]\n\n", tcase.filepath, got, want)
 		}
 
-		extrasG, missingsG, err = Compare("eu-west-1", remoteG, localG)
+		extrasG, missingsG, _, err = Compare("eu-west-1", remoteG, localG)
 		if err != nil {
 			t.Fatal(err)
 		}

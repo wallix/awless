@@ -53,7 +53,7 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		printWithTabs := func(n *node.Node, distance int) {
+		printWithTabs := func(g *rdf.Graph, n *node.Node, distance int) {
 			var tabs bytes.Buffer
 			for i := 0; i < distance; i++ {
 				tabs.WriteByte('\t')
