@@ -6,6 +6,7 @@ import (
 	"text/tabwriter"
 )
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/fatih/color"
@@ -54,20 +55,12 @@ func lineDisplay(item interface{}) {
 	case *ec2.DescribeInstancesOutput:
 		for _, reserv := range item.(*ec2.DescribeInstancesOutput).Reservations {
 			for _, inst := range reserv.Instances {
-				var pubIp string
-				if inst.PublicIpAddress != nil {
-					pubIp = *inst.PublicIpAddress
-				}
-				fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", *inst.InstanceId, *inst.State.Name, *inst.InstanceType, *inst.PrivateIpAddress, pubIp, (*inst.LaunchTime).Format(simpleDay)))
+				fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
 			}
 		}
 	case *ec2.Reservation:
 		for _, inst := range item.(*ec2.Reservation).Instances {
-			var pubIp string
-			if inst.PublicIpAddress != nil {
-				pubIp = *inst.PublicIpAddress
-			}
-			fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", *inst.InstanceId, *inst.State.Name, *inst.InstanceType, *inst.PrivateIpAddress, pubIp, (*inst.LaunchTime).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
 		}
 	case *ec2.DescribeVpcsOutput:
 		for _, vpc := range item.(*ec2.DescribeVpcsOutput).Vpcs {
