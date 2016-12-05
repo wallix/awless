@@ -17,9 +17,10 @@ func init() {
 
 	// infra
 	listCmd.AddCommand(listRegionsCmd)
-	listCmd.AddCommand(listInstancesCmd)
 	listCmd.AddCommand(listVpcsCmd)
 	listCmd.AddCommand(listSubnetsCmd)
+	listCmd.AddCommand(listInstancesCmd)
+	listCmd.AddCommand(listImagesCmd)
 
 	RootCmd.AddCommand(listCmd)
 }
@@ -28,6 +29,8 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List various type of items: users, groups, instances, ...",
 }
+
+// access
 
 var listUsersCmd = &cobra.Command{
 	Use:   "users",
@@ -69,22 +72,14 @@ var listPoliciesCmd = &cobra.Command{
 	},
 }
 
+// infra
+
 var listRegionsCmd = &cobra.Command{
 	Use:   "regions",
 	Short: "List regions",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Regions()
-		display(resp, err, displayFormat)
-	},
-}
-
-var listInstancesCmd = &cobra.Command{
-	Use:   "instances",
-	Short: "List instances",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := infraApi.Instances()
 		display(resp, err, displayFormat)
 	},
 }
@@ -105,6 +100,26 @@ var listSubnetsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Subnets()
+		display(resp, err, displayFormat)
+	},
+}
+
+var listInstancesCmd = &cobra.Command{
+	Use:   "instances",
+	Short: "List instances",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Instances()
+		display(resp, err, displayFormat)
+	},
+}
+
+var listImagesCmd = &cobra.Command{
+	Use:   "images",
+	Short: "List images",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		resp, err := infraApi.Images()
 		display(resp, err, displayFormat)
 	},
 }

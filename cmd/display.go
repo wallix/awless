@@ -61,6 +61,14 @@ func lineDisplay(item interface{}) {
 				fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", *inst.InstanceId, *inst.State.Name, *inst.InstanceType, *inst.PrivateIpAddress, pubIp, (*inst.LaunchTime).Format(simpleDay)))
 			}
 		}
+	case *ec2.Reservation:
+		for _, inst := range item.(*ec2.Reservation).Instances {
+			var pubIp string
+			if inst.PublicIpAddress != nil {
+				pubIp = *inst.PublicIpAddress
+			}
+			fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", *inst.InstanceId, *inst.State.Name, *inst.InstanceType, *inst.PrivateIpAddress, pubIp, (*inst.LaunchTime).Format(simpleDay)))
+		}
 	case *ec2.DescribeVpcsOutput:
 		for _, vpc := range item.(*ec2.DescribeVpcsOutput).Vpcs {
 			fmt.Fprintln(w, fmt.Sprintf("id: %s\tdefault: %s\tstate: %s\tcidr: %s\t", *vpc.VpcId, printColorIf(*vpc.IsDefault), *vpc.State, *vpc.CidrBlock))

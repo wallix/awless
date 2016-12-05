@@ -18,6 +18,10 @@ func (inf *Infra) Instances() (interface{}, error) {
 	return inf.DescribeInstances(&ec2.DescribeInstancesInput{})
 }
 
+func (inf *Infra) Images() (interface{}, error) {
+	return inf.DescribeImages(&ec2.DescribeImagesInput{})
+}
+
 func (inf *Infra) Vpcs() (interface{}, error) {
 	return inf.DescribeVpcs(&ec2.DescribeVpcsInput{})
 }
@@ -36,6 +40,17 @@ func (inf *Infra) Vpc(id string) (interface{}, error) {
 	}
 
 	return inf.DescribeVpcs(input)
+}
+
+func (inf *Infra) CreateInstance(ami string) (interface{}, error) {
+	params := &ec2.RunInstancesInput{
+		ImageId:      aws.String(ami),
+		MaxCount:     aws.Int64(1),
+		MinCount:     aws.Int64(1),
+		InstanceType: aws.String("t2.micro"),
+	}
+
+	return inf.RunInstances(params)
 }
 
 type AwsInfra struct {
