@@ -6,9 +6,7 @@ A nice, easy-to-use CLI for AWS
 
 Until we inline dependencies fetch the following:
 
-    $ go get github.com/aws/aws-sdk-go/aws/...
-    $ go get github.com/aws/aws-sdk-go/service/ec2
-    $ go get github.com/aws/aws-sdk-go/service/iam
+    $ go get github.com/aws/aws-sdk-go/...
     $ go get github.com/fatih/color
     $ go get github.com/boltdb/bolt
     $ go get github.com/spf13/viper
@@ -60,10 +58,6 @@ Sync your infra
 Diff your local infra to the remote one
 
     $ awless diff
-      Extras:
-
-      Missings:
-        /subnet<subnet-0c41ad68>	"parent_of"@[]	/instance<i-56adc1dd>
 
 List various items
 
@@ -76,5 +70,4 @@ List various items
 Show or delete the history of commands entered in awless
 
     $ awless history show
-
     $ awless history delete
