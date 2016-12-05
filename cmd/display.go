@@ -33,42 +33,50 @@ func display(item interface{}, err error, format ...string) {
 var simpleDay = "Mon, Jan 2, 2006"
 
 func lineDisplay(item interface{}) {
-	w := tabwriter.NewWriter(os.Stdout, 20, 1, 1, ' ', 0)
+	w := tabwriter.NewWriter(os.Stdout, 25, 1, 1, ' ', 0)
 
 	switch item.(type) {
 	case *iam.ListUsersOutput:
+		fmt.Fprintln(w, "Name\tId\tCreated")
 		for _, user := range item.(*iam.ListUsersOutput).Users {
-			fmt.Fprintln(w, fmt.Sprintf("name: %s\tid: %s\tcreated: %s\t", *user.UserName, *user.UserId, (*user.CreateDate).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", *user.UserName, *user.UserId, (*user.CreateDate).Format(simpleDay)))
 		}
 	case *iam.ListGroupsOutput:
+		fmt.Fprintln(w, "Name\tId\tCreated")
 		for _, group := range item.(*iam.ListGroupsOutput).Groups {
-			fmt.Fprintln(w, fmt.Sprintf("name:%s\tid:%s\tcreated: %s\t", *group.GroupName, *group.GroupId, (*group.CreateDate).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", *group.GroupName, *group.GroupId, (*group.CreateDate).Format(simpleDay)))
 		}
 	case *iam.ListRolesOutput:
+		fmt.Fprintln(w, "Name\tId\tCreated")
 		for _, role := range item.(*iam.ListRolesOutput).Roles {
-			fmt.Fprintln(w, fmt.Sprintf("name: %s\tid: %s\tcreated: %s\t", *role.RoleName, *role.RoleId, (*role.CreateDate).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", *role.RoleName, *role.RoleId, (*role.CreateDate).Format(simpleDay)))
 		}
 	case *iam.ListPoliciesOutput:
+		fmt.Fprintln(w, "Name\tId\tCreated")
 		for _, policy := range item.(*iam.ListPoliciesOutput).Policies {
-			fmt.Fprintln(w, fmt.Sprintf("name: %s\tid: %s\tcreated: %s\t", *policy.PolicyName, *policy.PolicyId, (*policy.CreateDate).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", *policy.PolicyName, *policy.PolicyId, (*policy.CreateDate).Format(simpleDay)))
 		}
 	case *ec2.DescribeInstancesOutput:
+		fmt.Fprintln(w, "Id\tType\tState\tPriv IP\tPub IP\tLaunched")
 		for _, reserv := range item.(*ec2.DescribeInstancesOutput).Reservations {
 			for _, inst := range reserv.Instances {
-				fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
 			}
 		}
 	case *ec2.Reservation:
+		fmt.Fprintln(w, "Id\tType\tState\tPriv IP\tPub IP\tLaunched")
 		for _, inst := range item.(*ec2.Reservation).Instances {
-			fmt.Fprintln(w, fmt.Sprintf("id: %s\ttype: %s\tstate: %s\tpriv-ip: %s\tpub-ip: %s\tlaunched: %s\t", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
 		}
 	case *ec2.DescribeVpcsOutput:
+		fmt.Fprintln(w, "Id\tDefault\tState\tCidr")
 		for _, vpc := range item.(*ec2.DescribeVpcsOutput).Vpcs {
-			fmt.Fprintln(w, fmt.Sprintf("id: %s\tdefault: %s\tstate: %s\tcidr: %s\t", *vpc.VpcId, printColorIf(*vpc.IsDefault), *vpc.State, *vpc.CidrBlock))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s", *vpc.VpcId, printColorIf(*vpc.IsDefault), *vpc.State, *vpc.CidrBlock))
 		}
 	case *ec2.DescribeSubnetsOutput:
+		fmt.Fprintln(w, "Id\tPublic VMs\tState\tCidr")
 		for _, subnet := range item.(*ec2.DescribeSubnetsOutput).Subnets {
-			fmt.Fprintln(w, fmt.Sprintf("id: %s\tpublic-vms: %s\tstate: %s\tcidr: %s\t", *subnet.SubnetId, printColorIf(*subnet.MapPublicIpOnLaunch, color.FgRed), *subnet.State, *subnet.CidrBlock))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s", *subnet.SubnetId, printColorIf(*subnet.MapPublicIpOnLaunch, color.FgRed), *subnet.State, *subnet.CidrBlock))
 		}
 	default:
 		fmt.Println(item)
