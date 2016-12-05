@@ -4,6 +4,17 @@ A nice, easy-to-use CLI for AWS
 
 ## Install
 
+Until we inline dependencies fetch the following:
+
+    $ go get github.com/aws/aws-sdk-go/aws/...
+    $ go get github.com/aws/aws-sdk-go/service/ec2
+    $ go get github.com/aws/aws-sdk-go/service/iam
+    $ go get github.com/fatih/color
+    $ go get github.com/boltdb/bolt
+    $ go get github.com/spf13/viper
+    $ go get github.com/spf13/cobra
+    $ go get github.com/google/badwolf/...
+
     $ go get github.com/wallix/awless
 
 or install as a global executable

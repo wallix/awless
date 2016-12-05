@@ -75,7 +75,7 @@ var listRegionsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Regions()
-		display(resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -85,7 +85,7 @@ var listInstancesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Instances()
-		display(resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -95,7 +95,7 @@ var listVpcsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Vpcs()
-		display(resp, err)
+		display(resp, err, displayFormat)
 	},
 }
 
@@ -105,6 +105,6 @@ var listSubnetsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := infraApi.Subnets()
-		display(resp, err)
+		display(resp, err, displayFormat)
 	},
 }
