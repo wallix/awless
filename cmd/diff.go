@@ -59,7 +59,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteInfra, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+		remoteInfra, _, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 		if err != nil {
 			return err
 		}

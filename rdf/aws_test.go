@@ -182,15 +182,15 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
 		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
-		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: nil}, // edge case subnet with no vpc id
+		&ec2.Subnet{SubnetId: aws.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	triples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
+	infraTriples, propertiesTriples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := marshalTriples(triples)
+	result := marshalTriples(infraTriples)
 	expect := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_2>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_3>	"has_type"@[]	"/instance"^^type:text
@@ -206,11 +206,39 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 /subnet<sub_3>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_3>	"parent_of"@[]	/instance<inst_3>
 /subnet<sub_3>	"parent_of"@[]	/instance<inst_4>
+/subnet<sub_4>	"has_type"@[]	"/subnet"^^type:text
 /vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_1>
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_2>
 /vpc<vpc_2>	"has_type"@[]	"/vpc"^^type:text
 /vpc<vpc_2>	"parent_of"@[]	/subnet<sub_3>`
+	if result != expect {
+		t.Fatalf("got [%s]\nwant [%s]", result, expect)
+	}
+
+	result = marshalTriples(propertiesTriples)
+	expect = `/instance<inst_1>	"Id"@[]	"inst_1"^^type:text
+/instance<inst_1>	"SubnetId"@[]	"sub_1"^^type:text
+/instance<inst_1>	"VpcId"@[]	"vpc_1"^^type:text
+/instance<inst_2>	"Id"@[]	"inst_2"^^type:text
+/instance<inst_2>	"SubnetId"@[]	"sub_2"^^type:text
+/instance<inst_2>	"VpcId"@[]	"vpc_1"^^type:text
+/instance<inst_3>	"Id"@[]	"inst_3"^^type:text
+/instance<inst_3>	"SubnetId"@[]	"sub_3"^^type:text
+/instance<inst_3>	"VpcId"@[]	"vpc_2"^^type:text
+/instance<inst_4>	"Id"@[]	"inst_4"^^type:text
+/instance<inst_4>	"SubnetId"@[]	"sub_3"^^type:text
+/instance<inst_4>	"VpcId"@[]	"vpc_2"^^type:text
+/instance<inst_5>	"Id"@[]	"inst_5"^^type:text
+/subnet<sub_1>	"Id"@[]	"sub_1"^^type:text
+/subnet<sub_1>	"VpcId"@[]	"vpc_1"^^type:text
+/subnet<sub_2>	"Id"@[]	"sub_2"^^type:text
+/subnet<sub_2>	"VpcId"@[]	"vpc_1"^^type:text
+/subnet<sub_3>	"Id"@[]	"sub_3"^^type:text
+/subnet<sub_3>	"VpcId"@[]	"vpc_2"^^type:text
+/subnet<sub_4>	"Id"@[]	"sub_4"^^type:text
+/vpc<vpc_1>	"Id"@[]	"vpc_1"^^type:text
+/vpc<vpc_2>	"Id"@[]	"vpc_2"^^type:text`
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
@@ -228,13 +256,18 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	triples, err = buildInfraRdfTriples("eu-west-1", &api.AwsInfra{})
+	infraTriples, propertiesTriples, err := buildInfraRdfTriples("eu-west-1", &api.AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result = marshalTriples(triples)
+	result = marshalTriples(infraTriples)
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
+	}
+
+	result = marshalTriples(propertiesTriples)
+	if got, want := len(propertiesTriples), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
 	}
 }

@@ -67,7 +67,7 @@ func TestBuildStats(t *testing.T) {
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
 	}
 
-	infra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
+	infra, _, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}

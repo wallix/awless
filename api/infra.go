@@ -65,13 +65,13 @@ func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
 	awsInfra := &AwsInfra{}
 
 	for r := range resultc {
-		switch r.(type) {
+		switch rr := r.(type) {
 		case *ec2.DescribeVpcsOutput:
-			awsInfra.Vpcs = append(awsInfra.Vpcs, r.(*ec2.DescribeVpcsOutput).Vpcs...)
+			awsInfra.Vpcs = append(awsInfra.Vpcs, rr.Vpcs...)
 		case *ec2.DescribeSubnetsOutput:
-			awsInfra.Subnets = append(awsInfra.Subnets, r.(*ec2.DescribeSubnetsOutput).Subnets...)
+			awsInfra.Subnets = append(awsInfra.Subnets, rr.Subnets...)
 		case *ec2.DescribeInstancesOutput:
-			for _, reservation := range r.(*ec2.DescribeInstancesOutput).Reservations {
+			for _, reservation := range rr.Reservations {
 				awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)
 			}
 		}

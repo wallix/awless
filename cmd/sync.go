@@ -61,7 +61,7 @@ var syncCmd = &cobra.Command{
 			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 		}
 
-		infrag, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+		infrag, _, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 
 		tofile, err := infrag.Marshal()
 		if err != nil {

@@ -2,11 +2,13 @@ package rdf
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
+	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/api"
 )
 
@@ -60,13 +62,13 @@ func BuildAwsAccessGraph(region string, access *api.AwsAccess) (*Graph, error) {
 	return NewGraphFromTriples(triples), nil
 }
 
-func BuildAwsInfraGraph(region string, infra *api.AwsInfra) (*Graph, error) {
-	triples, err := buildInfraRdfTriples(region, infra)
+func BuildAwsInfraGraph(region string, infra *api.AwsInfra) (*Graph, *Graph, error) {
+	infraTriples, propertiesTriples, err := buildInfraRdfTriples(region, infra)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return NewGraphFromTriples(triples), nil
+	return NewGraphFromTriples(infraTriples), NewGraphFromTriples(propertiesTriples), nil
 }
 
 func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Triple, error) {
@@ -211,49 +213,38 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	return triples, nil
 }
 
-func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Triple, error) {
-	var triples []*triple.Triple
+func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (infraTriples, propertiesTriples []*triple.Triple, err error) {
 	var vpcNodes, subnetNodes []*node.Node
 
 	regionN, err := node.NewNodeFromStrings(REGION, region)
 	if err != nil {
-		return triples, err
+		return infraTriples, propertiesTriples, err
 	}
+
 	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionL))
 	if err != nil {
-		return triples, err
+		return infraTriples, propertiesTriples, err
 	}
-	triples = append(triples, t)
+	infraTriples = append(infraTriples, t)
 
 	for _, vpc := range awsInfra.Vpcs {
-		n, err := node.NewNodeFromStrings(VPC, aws.StringValue(vpc.VpcId))
+		n, err := addNode(VPC, aws.StringValue(vpc.VpcId), *vpc, &infraTriples, &propertiesTriples)
 		if err != nil {
-			return triples, err
+			return infraTriples, propertiesTriples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(vpcL))
-		if err != nil {
-			return triples, err
-		}
-		triples = append(triples, t)
-
 		vpcNodes = append(vpcNodes, n)
-		t, err = triple.New(regionN, ParentOf, triple.NewNodeObject(n))
+		t, err := triple.New(regionN, ParentOf, triple.NewNodeObject(n))
 		if err != nil {
-			return triples, fmt.Errorf("region %s", err)
+			return infraTriples, propertiesTriples, fmt.Errorf("region %s", err)
 		}
-		triples = append(triples, t)
+		infraTriples = append(infraTriples, t)
 	}
 
 	for _, subnet := range awsInfra.Subnets {
-		n, err := node.NewNodeFromStrings(SUBNET, aws.StringValue(subnet.SubnetId))
+		n, err := addNode(SUBNET, aws.StringValue(subnet.SubnetId), *subnet, &infraTriples, &propertiesTriples)
 		if err != nil {
-			return triples, fmt.Errorf("subnet %s", err)
+			return infraTriples, propertiesTriples, fmt.Errorf("subnet %s", err)
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(subnetL))
-		if err != nil {
-			return triples, err
-		}
-		triples = append(triples, t)
 
 		subnetNodes = append(subnetNodes, n)
 
@@ -261,34 +252,30 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) ([]*triple.Trip
 		if vpcN != nil {
 			t, err := triple.New(vpcN, ParentOf, triple.NewNodeObject(n))
 			if err != nil {
-				return triples, fmt.Errorf("vpc %s", err)
+				return infraTriples, propertiesTriples, fmt.Errorf("vpc %s", err)
 			}
-			triples = append(triples, t)
+			infraTriples = append(infraTriples, t)
 		}
 	}
 
 	for _, instance := range awsInfra.Instances {
-		n, err := node.NewNodeFromStrings(INSTANCE, aws.StringValue(instance.InstanceId))
+		n, err := addNode(INSTANCE, aws.StringValue(instance.InstanceId), *instance, &infraTriples, &propertiesTriples)
 		if err != nil {
-			return triples, err
+			return infraTriples, propertiesTriples, err
 		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(instanceL))
-		if err != nil {
-			return triples, err
-		}
-		triples = append(triples, t)
+
 		subnetN := findNodeById(subnetNodes, aws.StringValue(instance.SubnetId))
 
 		if subnetN != nil {
 			t, err := triple.New(subnetN, ParentOf, triple.NewNodeObject(n))
 			if err != nil {
-				return triples, fmt.Errorf("instances subnet %s", err)
+				return infraTriples, propertiesTriples, fmt.Errorf("instances subnet %s", err)
 			}
-			triples = append(triples, t)
+			infraTriples = append(infraTriples, t)
 		}
 	}
 
-	return triples, nil
+	return infraTriples, propertiesTriples, nil
 }
 
 func findNodeById(nodes []*node.Node, id string) *node.Node {
@@ -298,4 +285,77 @@ func findNodeById(nodes []*node.Node, id string) *node.Node {
 		}
 	}
 	return nil
+}
+
+type Vpc struct {
+	Id string `aws:"VpcId"`
+}
+
+type Subnet struct {
+	Id    string `aws:"SubnetId"`
+	VpcId string `aws:"VpcId"`
+}
+
+type Instance struct {
+	Id        string `aws:"InstanceId"`
+	Type      string `aws:"InstanceType"`
+	SubnetId  string `aws:"SubnetId"`
+	VpcId     string `aws:"VpcId"`
+	PublicIp  string `aws:"PublicIpAddress"`
+	PrivateIp string `aws:"PrivateIpAddress"`
+}
+
+func addNode(nodeType, id string, awsNode interface{}, infraTriples, propertiesTriples *[]*triple.Triple) (*node.Node, error) {
+	n, err := node.NewNodeFromStrings(nodeType, id)
+	if err != nil {
+		return nil, err
+	}
+	var lit *literal.Literal
+	if lit, err = literal.DefaultBuilder().Build(literal.Text, nodeType); err != nil {
+		return nil, err
+	}
+	t, err := triple.New(n, HasType, triple.NewLiteralObject(lit))
+	if err != nil {
+		return nil, err
+	}
+	*infraTriples = append(*infraTriples, t)
+
+	nodeV := reflect.ValueOf(awsNode)
+	var propP *predicate.Predicate
+	var destType reflect.Type
+	switch nodeType {
+	case VPC:
+		destType = reflect.TypeOf(Vpc{})
+	case SUBNET:
+		destType = reflect.TypeOf(Subnet{})
+	case INSTANCE:
+		destType = reflect.TypeOf(Instance{})
+	default:
+		return nil, fmt.Errorf("type %s is not managed", nodeType)
+	}
+
+	for i := 0; i < destType.NumField(); i++ {
+		if propP, err = predicate.NewImmutable(destType.Field(i).Name); err != nil {
+			return nil, err
+		}
+		var propL *literal.Literal
+		if awsTag, ok := destType.Field(i).Tag.Lookup("aws"); ok {
+			sourceField := nodeV.FieldByName(awsTag)
+			if sourceField.IsValid() {
+				stringValue := aws.StringValue(sourceField.Interface().(*string))
+				if stringValue != "" {
+					if propL, err = literal.DefaultBuilder().Build(literal.Text, stringValue); err != nil {
+						return nil, err
+					}
+					propT, err := triple.New(n, propP, triple.NewLiteralObject(propL))
+					if err != nil {
+						return nil, err
+					}
+					*propertiesTriples = append(*propertiesTriples, propT)
+				}
+			}
+		}
+	}
+
+	return n, nil
 }
