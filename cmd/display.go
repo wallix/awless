@@ -33,7 +33,7 @@ func display(item interface{}, err error, format ...string) {
 var simpleDay = "Mon, Jan 2, 2006"
 
 func lineDisplay(item interface{}) {
-	w := tabwriter.NewWriter(os.Stdout, 25, 1, 1, ' ', 0)
+	w := tabwriter.NewWriter(os.Stdout, 20, 1, 1, ' ', 0)
 
 	switch item.(type) {
 	case *iam.ListUsersOutput:
@@ -57,10 +57,16 @@ func lineDisplay(item interface{}) {
 			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", *policy.PolicyName, *policy.PolicyId, (*policy.CreateDate).Format(simpleDay)))
 		}
 	case *ec2.DescribeInstancesOutput:
-		fmt.Fprintln(w, "Id\tType\tState\tPriv IP\tPub IP\tLaunched")
+		fmt.Fprintln(w, "Id\tName\tState\tType\tPriv IP\tPub IP\tLaunched")
 		for _, reserv := range item.(*ec2.DescribeInstancesOutput).Reservations {
 			for _, inst := range reserv.Instances {
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
+				var name string
+				for _, t := range inst.Tags {
+					if *t.Key == "Name" {
+						name = *t.Value
+					}
+				}
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), name, aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
 			}
 		}
 	case *ec2.Reservation:
