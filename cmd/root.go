@@ -42,12 +42,12 @@ func Execute() {
 }
 
 func init() {
+	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
+
 	cobra.OnInitialize(initConfig)
 }
 
 func initConfig() {
-	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
-
 	viper.SetConfigFile(config.Path)
 
 	if err := viper.ReadInConfig(); err != nil {
