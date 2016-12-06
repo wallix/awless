@@ -23,7 +23,7 @@ var (
 var RootCmd = &cobra.Command{
 	Use:   "awless",
 	Short: "Manage your cloud",
-	Long:  "Awless is a CLI to ....:",
+	Long:  "Awless is a powerful command line tool to inspect, sync and manage your infrastructure",
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 		if statsDB != nil {
 			defer statsDB.Close()
