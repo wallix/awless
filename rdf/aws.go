@@ -62,13 +62,13 @@ func BuildAwsAccessGraph(region string, access *api.AwsAccess) (*Graph, error) {
 	return NewGraphFromTriples(triples), nil
 }
 
-func BuildAwsInfraGraph(region string, infra *api.AwsInfra) (*Graph, *Graph, error) {
-	infraTriples, propertiesTriples, err := buildInfraRdfTriples(region, infra)
+func BuildAwsInfraGraph(region string, infra *api.AwsInfra) (*Graph, error) {
+	triples, err := buildInfraRdfTriples(region, infra)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return NewGraphFromTriples(infraTriples), NewGraphFromTriples(propertiesTriples), nil
+	return NewGraphFromTriples(triples), nil
 }
 
 func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Triple, error) {
@@ -88,11 +88,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	usersIndex := make(map[string]*node.Node)
 	for _, user := range access.Users {
 		userId := aws.StringValue(user.UserId)
-		n, err := node.NewNodeFromStrings(USER, userId)
-		if err != nil {
-			return triples, err
-		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(userL))
+		n, err := addNode(USER, userId, user, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -109,11 +105,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	rolesIndex := make(map[string]*node.Node)
 	for _, role := range access.Roles {
 		roleId := aws.StringValue(role.RoleId)
-		n, err := node.NewNodeFromStrings(ROLE, roleId)
-		if err != nil {
-			return triples, err
-		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(roleL))
+		n, err := addNode(ROLE, roleId, role, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -130,11 +122,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	groupsIndex := make(map[string]*node.Node)
 	for _, group := range access.Groups {
 		groupId := aws.StringValue(group.GroupId)
-		n, err := node.NewNodeFromStrings(GROUP, groupId)
-		if err != nil {
-			return triples, err
-		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(groupL))
+		n, err := addNode(GROUP, groupId, group, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -151,7 +139,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			if usersIndex[userId] == nil {
 				return triples, fmt.Errorf("group %s has user %s, but this user does not exist", groupId, userId)
 			}
-			t, err := triple.New(n, ParentOf, triple.NewNodeObject(usersIndex[userId]))
+			t, err = triple.New(n, ParentOf, triple.NewNodeObject(usersIndex[userId]))
 			if err != nil {
 				return triples, err
 			}
@@ -161,11 +149,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 
 	for _, policy := range access.LocalPolicies {
 		policyId := aws.StringValue(policy.PolicyId)
-		n, err := node.NewNodeFromStrings(POLICY, policyId)
-		if err != nil {
-			return triples, err
-		}
-		t, err := triple.New(n, HasType, triple.NewLiteralObject(policyL))
+		n, err := addNode(POLICY, policyId, policy, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -213,37 +197,37 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 	return triples, nil
 }
 
-func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (infraTriples, propertiesTriples []*triple.Triple, err error) {
+func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (triples []*triple.Triple, err error) {
 	var vpcNodes, subnetNodes []*node.Node
 
 	regionN, err := node.NewNodeFromStrings(REGION, region)
 	if err != nil {
-		return infraTriples, propertiesTriples, err
+		return triples, err
 	}
 
 	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionL))
 	if err != nil {
-		return infraTriples, propertiesTriples, err
+		return triples, err
 	}
-	infraTriples = append(infraTriples, t)
+	triples = append(triples, t)
 
 	for _, vpc := range awsInfra.Vpcs {
-		n, err := addNode(VPC, aws.StringValue(vpc.VpcId), *vpc, &infraTriples, &propertiesTriples)
+		n, err := addNode(VPC, aws.StringValue(vpc.VpcId), vpc, &triples)
 		if err != nil {
-			return infraTriples, propertiesTriples, err
+			return triples, err
 		}
 		vpcNodes = append(vpcNodes, n)
 		t, err := triple.New(regionN, ParentOf, triple.NewNodeObject(n))
 		if err != nil {
-			return infraTriples, propertiesTriples, fmt.Errorf("region %s", err)
+			return triples, fmt.Errorf("region %s", err)
 		}
-		infraTriples = append(infraTriples, t)
+		triples = append(triples, t)
 	}
 
 	for _, subnet := range awsInfra.Subnets {
-		n, err := addNode(SUBNET, aws.StringValue(subnet.SubnetId), *subnet, &infraTriples, &propertiesTriples)
+		n, err := addNode(SUBNET, aws.StringValue(subnet.SubnetId), subnet, &triples)
 		if err != nil {
-			return infraTriples, propertiesTriples, fmt.Errorf("subnet %s", err)
+			return triples, fmt.Errorf("subnet %s", err)
 		}
 
 		subnetNodes = append(subnetNodes, n)
@@ -252,16 +236,16 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (infraTriples, 
 		if vpcN != nil {
 			t, err := triple.New(vpcN, ParentOf, triple.NewNodeObject(n))
 			if err != nil {
-				return infraTriples, propertiesTriples, fmt.Errorf("vpc %s", err)
+				return triples, fmt.Errorf("vpc %s", err)
 			}
-			infraTriples = append(infraTriples, t)
+			triples = append(triples, t)
 		}
 	}
 
 	for _, instance := range awsInfra.Instances {
-		n, err := addNode(INSTANCE, aws.StringValue(instance.InstanceId), *instance, &infraTriples, &propertiesTriples)
+		n, err := addNode(INSTANCE, aws.StringValue(instance.InstanceId), instance, &triples)
 		if err != nil {
-			return infraTriples, propertiesTriples, err
+			return triples, err
 		}
 
 		subnetN := findNodeById(subnetNodes, aws.StringValue(instance.SubnetId))
@@ -269,13 +253,13 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (infraTriples, 
 		if subnetN != nil {
 			t, err := triple.New(subnetN, ParentOf, triple.NewNodeObject(n))
 			if err != nil {
-				return infraTriples, propertiesTriples, fmt.Errorf("instances subnet %s", err)
+				return triples, fmt.Errorf("instances subnet %s", err)
 			}
-			infraTriples = append(infraTriples, t)
+			triples = append(triples, t)
 		}
 	}
 
-	return infraTriples, propertiesTriples, nil
+	return triples, nil
 }
 
 func findNodeById(nodes []*node.Node, id string) *node.Node {
@@ -285,6 +269,22 @@ func findNodeById(nodes []*node.Node, id string) *node.Node {
 		}
 	}
 	return nil
+}
+
+type User struct {
+	Id string `aws:"UserId"`
+}
+
+type Role struct {
+	Id string `aws:"RoleId"`
+}
+
+type Group struct {
+	Id string `aws:"GroupId"`
+}
+
+type Policy struct {
+	Id string `aws:"PolicyId"`
 }
 
 type Vpc struct {
@@ -305,7 +305,7 @@ type Instance struct {
 	PrivateIp string `aws:"PrivateIpAddress"`
 }
 
-func addNode(nodeType, id string, awsNode interface{}, infraTriples, propertiesTriples *[]*triple.Triple) (*node.Node, error) {
+func addNode(nodeType, id string, awsNode interface{}, triples *[]*triple.Triple) (*node.Node, error) {
 	n, err := node.NewNodeFromStrings(nodeType, id)
 	if err != nil {
 		return nil, err
@@ -318,9 +318,9 @@ func addNode(nodeType, id string, awsNode interface{}, infraTriples, propertiesT
 	if err != nil {
 		return nil, err
 	}
-	*infraTriples = append(*infraTriples, t)
+	*triples = append(*triples, t)
 
-	nodeV := reflect.ValueOf(awsNode)
+	nodeV := reflect.ValueOf(awsNode).Elem()
 	var propP *predicate.Predicate
 	var destType reflect.Type
 	switch nodeType {
@@ -330,6 +330,14 @@ func addNode(nodeType, id string, awsNode interface{}, infraTriples, propertiesT
 		destType = reflect.TypeOf(Subnet{})
 	case INSTANCE:
 		destType = reflect.TypeOf(Instance{})
+	case USER:
+		destType = reflect.TypeOf(User{})
+	case ROLE:
+		destType = reflect.TypeOf(Role{})
+	case GROUP:
+		destType = reflect.TypeOf(Group{})
+	case POLICY:
+		destType = reflect.TypeOf(Policy{})
 	default:
 		return nil, fmt.Errorf("type %s is not managed", nodeType)
 	}
@@ -351,7 +359,7 @@ func addNode(nodeType, id string, awsNode interface{}, infraTriples, propertiesT
 					if err != nil {
 						return nil, err
 					}
-					*propertiesTriples = append(*propertiesTriples, propT)
+					*triples = append(*triples, propT)
 				}
 			}
 		}

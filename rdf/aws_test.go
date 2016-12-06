@@ -77,22 +77,27 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 	}
 
 	result := marshalTriples(triples)
-	expect := `/group<group_1>	"has_type"@[]	"/group"^^type:text
+	expect := `/group<group_1>	"Id"@[]	"group_1"^^type:text
+/group<group_1>	"has_type"@[]	"/group"^^type:text
 /group<group_1>	"parent_of"@[]	/user<usr_1>
 /group<group_1>	"parent_of"@[]	/user<usr_2>
 /group<group_1>	"parent_of"@[]	/user<usr_3>
+/group<group_2>	"Id"@[]	"group_2"^^type:text
 /group<group_2>	"has_type"@[]	"/group"^^type:text
 /group<group_2>	"parent_of"@[]	/user<usr_1>
 /group<group_2>	"parent_of"@[]	/user<usr_4>
 /group<group_2>	"parent_of"@[]	/user<usr_5>
 /group<group_2>	"parent_of"@[]	/user<usr_6>
 /group<group_2>	"parent_of"@[]	/user<usr_7>
+/group<group_3>	"Id"@[]	"group_3"^^type:text
 /group<group_3>	"has_type"@[]	"/group"^^type:text
+/group<group_4>	"Id"@[]	"group_4"^^type:text
 /group<group_4>	"has_type"@[]	"/group"^^type:text
 /group<group_4>	"parent_of"@[]	/user<usr_3>
 /group<group_4>	"parent_of"@[]	/user<usr_7>
 /group<group_4>	"parent_of"@[]	/user<usr_8>
 /group<group_4>	"parent_of"@[]	/user<usr_9>
+/policy<policy_1>	"Id"@[]	"policy_1"^^type:text
 /policy<policy_1>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_1>	"parent_of"@[]	/group<group_1>
 /policy<policy_1>	"parent_of"@[]	/group<group_2>
@@ -101,6 +106,7 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 /policy<policy_1>	"parent_of"@[]	/user<usr_1>
 /policy<policy_1>	"parent_of"@[]	/user<usr_2>
 /policy<policy_1>	"parent_of"@[]	/user<usr_3>
+/policy<policy_2>	"Id"@[]	"policy_2"^^type:text
 /policy<policy_2>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_2>	"parent_of"@[]	/group<group_3>
 /policy<policy_2>	"parent_of"@[]	/role<role_3>
@@ -109,7 +115,9 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 /policy<policy_2>	"parent_of"@[]	/user<usr_5>
 /policy<policy_2>	"parent_of"@[]	/user<usr_6>
 /policy<policy_2>	"parent_of"@[]	/user<usr_7>
+/policy<policy_3>	"Id"@[]	"policy_3"^^type:text
 /policy<policy_3>	"has_type"@[]	"/policy"^^type:text
+/policy<policy_4>	"Id"@[]	"policy_4"^^type:text
 /policy<policy_4>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_4>	"parent_of"@[]	/group<group_4>
 /policy<policy_4>	"parent_of"@[]	/role<role_4>
@@ -141,20 +149,35 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 /region<eu-west-1>	"parent_of"@[]	/user<usr_7>
 /region<eu-west-1>	"parent_of"@[]	/user<usr_8>
 /region<eu-west-1>	"parent_of"@[]	/user<usr_9>
+/role<role_1>	"Id"@[]	"role_1"^^type:text
 /role<role_1>	"has_type"@[]	"/role"^^type:text
+/role<role_2>	"Id"@[]	"role_2"^^type:text
 /role<role_2>	"has_type"@[]	"/role"^^type:text
+/role<role_3>	"Id"@[]	"role_3"^^type:text
 /role<role_3>	"has_type"@[]	"/role"^^type:text
+/role<role_4>	"Id"@[]	"role_4"^^type:text
 /role<role_4>	"has_type"@[]	"/role"^^type:text
+/user<usr_10>	"Id"@[]	"usr_10"^^type:text
 /user<usr_10>	"has_type"@[]	"/user"^^type:text
+/user<usr_11>	"Id"@[]	"usr_11"^^type:text
 /user<usr_11>	"has_type"@[]	"/user"^^type:text
+/user<usr_1>	"Id"@[]	"usr_1"^^type:text
 /user<usr_1>	"has_type"@[]	"/user"^^type:text
+/user<usr_2>	"Id"@[]	"usr_2"^^type:text
 /user<usr_2>	"has_type"@[]	"/user"^^type:text
+/user<usr_3>	"Id"@[]	"usr_3"^^type:text
 /user<usr_3>	"has_type"@[]	"/user"^^type:text
+/user<usr_4>	"Id"@[]	"usr_4"^^type:text
 /user<usr_4>	"has_type"@[]	"/user"^^type:text
+/user<usr_5>	"Id"@[]	"usr_5"^^type:text
 /user<usr_5>	"has_type"@[]	"/user"^^type:text
+/user<usr_6>	"Id"@[]	"usr_6"^^type:text
 /user<usr_6>	"has_type"@[]	"/user"^^type:text
+/user<usr_7>	"Id"@[]	"usr_7"^^type:text
 /user<usr_7>	"has_type"@[]	"/user"^^type:text
+/user<usr_8>	"Id"@[]	"usr_8"^^type:text
 /user<usr_8>	"has_type"@[]	"/user"^^type:text
+/user<usr_9>	"Id"@[]	"usr_9"^^type:text
 /user<usr_9>	"has_type"@[]	"/user"^^type:text`
 	if result != expect {
 		t.Fatalf("got\n[%s]\n\nwant\n[%s]", result, expect)
@@ -185,60 +208,55 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 		&ec2.Subnet{SubnetId: aws.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	infraTriples, propertiesTriples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
+	triples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := marshalTriples(infraTriples)
-	expect := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
+	result := marshalTriples(triples)
+	expect := `/instance<inst_1>	"Id"@[]	"inst_1"^^type:text
+/instance<inst_1>	"SubnetId"@[]	"sub_1"^^type:text
+/instance<inst_1>	"VpcId"@[]	"vpc_1"^^type:text
+/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
+/instance<inst_2>	"Id"@[]	"inst_2"^^type:text
+/instance<inst_2>	"SubnetId"@[]	"sub_2"^^type:text
+/instance<inst_2>	"VpcId"@[]	"vpc_1"^^type:text
 /instance<inst_2>	"has_type"@[]	"/instance"^^type:text
+/instance<inst_3>	"Id"@[]	"inst_3"^^type:text
+/instance<inst_3>	"SubnetId"@[]	"sub_3"^^type:text
+/instance<inst_3>	"VpcId"@[]	"vpc_2"^^type:text
 /instance<inst_3>	"has_type"@[]	"/instance"^^type:text
+/instance<inst_4>	"Id"@[]	"inst_4"^^type:text
+/instance<inst_4>	"SubnetId"@[]	"sub_3"^^type:text
+/instance<inst_4>	"VpcId"@[]	"vpc_2"^^type:text
 /instance<inst_4>	"has_type"@[]	"/instance"^^type:text
+/instance<inst_5>	"Id"@[]	"inst_5"^^type:text
 /instance<inst_5>	"has_type"@[]	"/instance"^^type:text
 /region<eu-west-1>	"has_type"@[]	"/region"^^type:text
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
+/subnet<sub_1>	"Id"@[]	"sub_1"^^type:text
+/subnet<sub_1>	"VpcId"@[]	"vpc_1"^^type:text
 /subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
+/subnet<sub_2>	"Id"@[]	"sub_2"^^type:text
+/subnet<sub_2>	"VpcId"@[]	"vpc_1"^^type:text
 /subnet<sub_2>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_2>	"parent_of"@[]	/instance<inst_2>
+/subnet<sub_3>	"Id"@[]	"sub_3"^^type:text
+/subnet<sub_3>	"VpcId"@[]	"vpc_2"^^type:text
 /subnet<sub_3>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_3>	"parent_of"@[]	/instance<inst_3>
 /subnet<sub_3>	"parent_of"@[]	/instance<inst_4>
+/subnet<sub_4>	"Id"@[]	"sub_4"^^type:text
 /subnet<sub_4>	"has_type"@[]	"/subnet"^^type:text
+/vpc<vpc_1>	"Id"@[]	"vpc_1"^^type:text
 /vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_1>
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_2>
+/vpc<vpc_2>	"Id"@[]	"vpc_2"^^type:text
 /vpc<vpc_2>	"has_type"@[]	"/vpc"^^type:text
 /vpc<vpc_2>	"parent_of"@[]	/subnet<sub_3>`
-	if result != expect {
-		t.Fatalf("got [%s]\nwant [%s]", result, expect)
-	}
-
-	result = marshalTriples(propertiesTriples)
-	expect = `/instance<inst_1>	"Id"@[]	"inst_1"^^type:text
-/instance<inst_1>	"SubnetId"@[]	"sub_1"^^type:text
-/instance<inst_1>	"VpcId"@[]	"vpc_1"^^type:text
-/instance<inst_2>	"Id"@[]	"inst_2"^^type:text
-/instance<inst_2>	"SubnetId"@[]	"sub_2"^^type:text
-/instance<inst_2>	"VpcId"@[]	"vpc_1"^^type:text
-/instance<inst_3>	"Id"@[]	"inst_3"^^type:text
-/instance<inst_3>	"SubnetId"@[]	"sub_3"^^type:text
-/instance<inst_3>	"VpcId"@[]	"vpc_2"^^type:text
-/instance<inst_4>	"Id"@[]	"inst_4"^^type:text
-/instance<inst_4>	"SubnetId"@[]	"sub_3"^^type:text
-/instance<inst_4>	"VpcId"@[]	"vpc_2"^^type:text
-/instance<inst_5>	"Id"@[]	"inst_5"^^type:text
-/subnet<sub_1>	"Id"@[]	"sub_1"^^type:text
-/subnet<sub_1>	"VpcId"@[]	"vpc_1"^^type:text
-/subnet<sub_2>	"Id"@[]	"sub_2"^^type:text
-/subnet<sub_2>	"VpcId"@[]	"vpc_1"^^type:text
-/subnet<sub_3>	"Id"@[]	"sub_3"^^type:text
-/subnet<sub_3>	"VpcId"@[]	"vpc_2"^^type:text
-/subnet<sub_4>	"Id"@[]	"sub_4"^^type:text
-/vpc<vpc_1>	"Id"@[]	"vpc_1"^^type:text
-/vpc<vpc_2>	"Id"@[]	"vpc_2"^^type:text`
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
@@ -256,18 +274,13 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	infraTriples, propertiesTriples, err := buildInfraRdfTriples("eu-west-1", &api.AwsInfra{})
+	triples, err = buildInfraRdfTriples("eu-west-1", &api.AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result = marshalTriples(infraTriples)
+	result = marshalTriples(triples)
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
-	}
-
-	result = marshalTriples(propertiesTriples)
-	if got, want := len(propertiesTriples), 0; got != want {
-		t.Fatalf("got %d, want %d", got, want)
 	}
 }

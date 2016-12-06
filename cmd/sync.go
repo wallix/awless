@@ -74,7 +74,7 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 
 	wg.Wait()
 
-	infrag, _, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+	infrag, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 
 	tofile, err := infrag.Marshal()
 	if err != nil {
