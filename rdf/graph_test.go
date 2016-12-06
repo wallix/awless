@@ -243,6 +243,71 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	}
 }
 
+func TestGetTriplesForPredicateName(t *testing.T) {
+	aLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := NewGraph()
+	azero, _ := node.NewNodeFromStrings("/a", "0")
+	g.Add(noErrLiteralTriple(azero, HasType, aLiteral))
+	aone, _ := node.NewNodeFromStrings("/a", "1")
+	g.Add(noErrLiteralTriple(aone, HasType, aLiteral))
+	atwo, _ := node.NewNodeFromStrings("/a", "2")
+	g.Add(noErrLiteralTriple(atwo, HasType, aLiteral))
+
+	bzero, _ := node.NewNodeFromStrings("/b", "0")
+	g.Add(noErrLiteralTriple(bzero, HasType, bLiteral))
+	bone, _ := node.NewNodeFromStrings("/b", "1")
+	g.Add(noErrLiteralTriple(bone, HasType, bLiteral))
+	btwo, _ := node.NewNodeFromStrings("/b", "2")
+	g.Add(noErrLiteralTriple(btwo, HasType, bLiteral))
+	bthree, _ := node.NewNodeFromStrings("/b", "3")
+	g.Add(noErrLiteralTriple(bthree, HasType, bLiteral))
+
+	g.Add(noErrTriple(azero, ParentOf, bzero))
+	g.Add(noErrTriple(aone, ParentOf, bone))
+	g.Add(noErrTriple(atwo, ParentOf, btwo))
+
+	triples, err := g.TriplesForPredicateName(string(ParentOf.ID()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := NewGraphFromTriples(triples)
+
+	expect := NewGraph()
+	expect.Add(noErrTriple(azero, ParentOf, bzero))
+	expect.Add(noErrTriple(aone, ParentOf, bone))
+	expect.Add(noErrTriple(atwo, ParentOf, btwo))
+
+	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+
+	triples, err = g.TriplesForPredicateName(string(HasType.ID()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	result = NewGraphFromTriples(triples)
+
+	expect = NewGraph()
+	expect.Add(noErrLiteralTriple(azero, HasType, aLiteral))
+	expect.Add(noErrLiteralTriple(aone, HasType, aLiteral))
+	expect.Add(noErrLiteralTriple(atwo, HasType, aLiteral))
+	expect.Add(noErrLiteralTriple(bzero, HasType, bLiteral))
+	expect.Add(noErrLiteralTriple(bone, HasType, bLiteral))
+	expect.Add(noErrLiteralTriple(btwo, HasType, bLiteral))
+	expect.Add(noErrLiteralTriple(bthree, HasType, bLiteral))
+
+	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
+		t.Fatalf("got %s\nwant%s\n", got, want)
+	}
+}
+
 func TestCountTriples(t *testing.T) {
 	g := NewGraph()
 

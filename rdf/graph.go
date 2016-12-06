@@ -223,6 +223,27 @@ func (g *Graph) TriplesForType(t string) ([]*triple.Triple, error) {
 	return triples, <-errc
 }
 
+func (g *Graph) TriplesForPredicateName(name string) ([]*triple.Triple, error) {
+	var triples []*triple.Triple
+	errc := make(chan error)
+	triplec := make(chan *triple.Triple)
+	p, err := predicate.NewImmutable(name)
+	if err != nil {
+		return triples, err
+	}
+
+	go func() {
+		defer close(errc)
+		errc <- g.TriplesForPredicate(context.Background(), p, storage.DefaultLookup, triplec)
+	}()
+
+	for t := range triplec {
+		triples = append(triples, t)
+	}
+
+	return triples, <-errc
+}
+
 func (g *Graph) NodesForType(t string) ([]*node.Node, error) {
 	var nodes []*node.Node
 	errc := make(chan error)

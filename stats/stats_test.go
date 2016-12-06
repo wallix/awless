@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -51,9 +52,9 @@ func TestBuildStats(t *testing.T) {
 	awsInfra := &api.AwsInfra{}
 
 	awsInfra.Instances = []*ec2.Instance{
-		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
-		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
-		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
+		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro")},
+		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro")},
+		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2"), InstanceType: aws.String("t2.small")},
 	}
 
 	awsInfra.Vpcs = []*ec2.Vpc{
@@ -74,7 +75,8 @@ func TestBuildStats(t *testing.T) {
 
 	id, _ := db.GetStringValue(AWLESS_ID_KEY)
 	expected := Stats{
-		Id: id,
+		Id:      id,
+		Version: config.Version,
 		Commands: []*DailyCommands{
 			{Command: "awless sync", Hits: 1, Date: yesterday},
 			{Command: "awless diff", Hits: 2, Date: yesterday},
@@ -94,6 +96,10 @@ func TestBuildStats(t *testing.T) {
 			MinInstancesPerSubnet: 1,
 			MaxInstancesPerSubnet: 1,
 		},
+		InstancesStats: []*InstancesStat{
+			{Type: "InstanceType", Date: now, Name: "t2.micro", Hits: 2},
+			{Type: "InstanceType", Date: now, Name: "t2.small", Hits: 1},
+		},
 	}
 
 	stats, _, err := BuildStats(db, infra, 0)
@@ -106,7 +112,7 @@ func TestBuildStats(t *testing.T) {
 	}
 
 	if got, want := statsEqual(stats, &expected), true; got != want {
-		t.Fatalf("got %#v; want %#v", *stats, expected)
+		t.Fatalf("got\n%+v\nwant\n%+v\n", *stats, expected)
 	}
 }
 
@@ -276,6 +282,9 @@ func statsEqual(stats1, stats2 *Stats) bool {
 	if stats1.Id != stats2.Id {
 		return false
 	}
+	if stats1.Version != stats2.Version {
+		return false
+	}
 	for _, dc1 := range stats1.Commands {
 		found := false
 		for _, dc2 := range stats2.Commands {
@@ -287,7 +296,7 @@ func statsEqual(stats1, stats2 *Stats) bool {
 			return false
 		}
 	}
-	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics)
+	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics) && instancesStatsEqual(stats1.InstancesStats, stats2.InstancesStats)
 }
 
 func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
@@ -313,10 +322,56 @@ func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
 	return SameDay(&i1.Date, &i2.Date)
 }
 
-func assertEqual(t *testing.T, stats1, stats2 *Stats) {
-	if got, want := statsEqual(stats1, stats2), true; got != want {
-		t.Fatalf("got %t; want %t", got, want)
+func instancesStatsEqual(is1, is2 []*InstancesStat) bool {
+	if is1 == nil && is2 == nil {
+		return true
 	}
+	if is1 == nil {
+		return false
+	}
+	if len(is1) != len(is2) {
+		return false
+	}
+	for _, i1 := range is1 {
+		found := false
+		for _, i2 := range is2 {
+			if instancesStatEqual(i1, i2) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func instancesStatEqual(i1, i2 *InstancesStat) bool {
+	if i1 == i2 {
+		return true
+	}
+	if i1 == nil || i2 == nil {
+		return false
+	}
+	return SameDay(&i1.Date, &i2.Date) && i1.Hits == i2.Hits && i1.Name == i2.Name && i1.Type == i2.Type
+}
+
+func assertEqual(t *testing.T, got, want *Stats) {
+	if !statsEqual(got, want) {
+		t.Fatalf("got %+v; want %+v", got, want)
+	}
+}
+
+func (p *DailyCommands) String() string {
+	return fmt.Sprintf("%+v", *p)
+}
+
+func (p *InstancesStat) String() string {
+	return fmt.Sprintf("%+v", *p)
+}
+
+func (p *InfraMetrics) String() string {
+	return fmt.Sprintf("%+v", *p)
 }
 
 func aesDecrypt(encrypted, key []byte) ([]byte, error) {

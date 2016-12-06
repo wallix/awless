@@ -36,16 +36,24 @@ func generateAwlessId() (string, error) {
 }
 
 type Stats struct {
-	Id           string
-	Version      string
-	Commands     []*DailyCommands
-	InfraMetrics *InfraMetrics
+	Id             string
+	Version        string
+	Commands       []*DailyCommands
+	InfraMetrics   *InfraMetrics
+	InstancesStats []*InstancesStat
 }
 
 type DailyCommands struct {
 	Command string
 	Hits    int
 	Date    time.Time
+}
+
+type InstancesStat struct {
+	Type string
+	Date time.Time
+	Hits int
+	Name string
 }
 
 func BuildStats(db *DB, infra *rdf.Graph, fromCommandId int) (*Stats, int, error) {
@@ -63,16 +71,22 @@ func BuildStats(db *DB, infra *rdf.Graph, fromCommandId int) (*Stats, int, error
 		}
 	}
 
+	instancesStats, err := buildInstancesStats(infra)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	id, err := db.GetStringValue(AWLESS_ID_KEY)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	stats := &Stats{
-		Id:           id,
-		Version:      config.Version,
-		Commands:     commandsStat,
-		InfraMetrics: infraMetrics,
+		Id:             id,
+		Version:        config.Version,
+		Commands:       commandsStat,
+		InfraMetrics:   infraMetrics,
+		InstancesStats: instancesStats,
 	}
 
 	return stats, lastCommandId, nil
@@ -105,6 +119,32 @@ func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error)
 
 	lastCommandId := commandsHistory[len(commandsHistory)-1].Id
 	return commandsStat, lastCommandId, nil
+}
+
+func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err error) {
+	triples, err := infra.TriplesForPredicateName("Type")
+	if err != nil {
+		return instancesStats, err
+	}
+
+	instanceTypes := make(map[string]int)
+	for _, t := range triples {
+		l, e := t.Object().Literal()
+		if e != nil {
+			return instancesStats, e
+		}
+		instanceType, e := l.Text()
+		if e != nil {
+			return instancesStats, e
+		}
+		instanceTypes[instanceType]++
+	}
+
+	for k, v := range instanceTypes {
+		instancesStats = append(instancesStats, &InstancesStat{Type: "InstanceType", Date: time.Now(), Hits: v, Name: k})
+	}
+
+	return instancesStats, err
 }
 
 func addDailyCommands(commandsStat []*DailyCommands, commands map[string]int, date *time.Time) []*DailyCommands {
