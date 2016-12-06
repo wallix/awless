@@ -159,8 +159,12 @@ func (g *Graph) Intersect(other *Graph) *Graph {
 	return inter
 }
 
-func (g *Graph) TriplesCount() int {
+func (g *Graph) size() int {
 	return g.triplesCount
+}
+
+func (g *Graph) IsEmpty() bool {
+	return g.size() == 0
 }
 
 func (g *Graph) allTriples() ([]*triple.Triple, error) {

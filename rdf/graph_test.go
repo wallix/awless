@@ -303,6 +303,35 @@ func TestCountTriples(t *testing.T) {
 	}
 }
 
+func TestGraphSize(t *testing.T) {
+	g := NewGraph()
+	if got, want := g.IsEmpty(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := g.size(), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	one, _ := node.NewNodeFromStrings("/one", "1")
+	two, _ := node.NewNodeFromStrings("/two", "2")
+
+	g.Add(noErrTriple(one, ParentOf, two))
+	if got, want := g.IsEmpty(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := g.size(), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	g.Add(noErrTriple(two, ParentOf, one))
+	if got, want := g.IsEmpty(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := g.size(), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+}
+
 func noErrTriple(s *node.Node, p *predicate.Predicate, o *node.Node) *triple.Triple {
 	tri, err := triple.New(s, p, triple.NewNodeObject(o))
 	if err != nil {

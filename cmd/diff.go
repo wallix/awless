@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/fatih/color"
@@ -69,6 +70,8 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
+		noDiffInfra := extras.IsEmpty() && missings.IsEmpty()
+
 		rdf.AttachLiteralToAllTriples(extras, rdf.DiffPredicate, rdf.ExtraLiteral)
 		rdf.AttachLiteralToAllTriples(missings, rdf.DiffPredicate, rdf.MissingLiteral)
 
@@ -95,6 +98,8 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
+		noDiffAccess := extras.IsEmpty() && missings.IsEmpty()
+
 		rdf.AttachLiteralToAllTriples(extras, rdf.DiffPredicate, rdf.ExtraLiteral)
 		rdf.AttachLiteralToAllTriples(missings, rdf.DiffPredicate, rdf.MissingLiteral)
 
@@ -106,6 +111,15 @@ var diffCmd = &cobra.Command{
 		fmt.Println()
 		fmt.Println("------ ACCESS ------")
 		accessGraph.VisitDepthFirst(root, printWithDiff)
+
+		if !noDiffInfra || !noDiffAccess {
+			var yesorno string
+			fmt.Print("\nDo you want to perform a sync? (y/n): ")
+			fmt.Scanln(&yesorno)
+			if strings.TrimSpace(yesorno) == "y" {
+				performSync()
+			}
+		}
 
 		return nil
 	},

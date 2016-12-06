@@ -15,7 +15,7 @@ func Compare(rootID string, local *Graph, remote *Graph) (*Graph, *Graph, *Graph
 		return allextras, allmissings, allcommons, err
 	}
 
-	maxCount := max(local.TriplesCount(), remote.TriplesCount())
+	maxCount := max(local.size(), remote.size())
 	processing := make(chan *node.Node, maxCount)
 
 	processing <- rootNode
