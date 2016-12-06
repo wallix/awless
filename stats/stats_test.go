@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/api"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
@@ -68,6 +69,48 @@ func TestBuildStats(t *testing.T) {
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
 	}
 
+	awsAccess := &api.AwsAccess{}
+
+	awsAccess.Groups = []*iam.Group{
+		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("ngroup_1")},
+		&iam.Group{GroupId: aws.String("group_2"), GroupName: aws.String("ngroup_2")},
+	}
+
+	awsAccess.LocalPolicies = []*iam.Policy{
+		&iam.Policy{PolicyId: aws.String("policy_1"), PolicyName: aws.String("npolicy_1")},
+		&iam.Policy{PolicyId: aws.String("policy_2"), PolicyName: aws.String("npolicy_2")},
+	}
+
+	awsAccess.Roles = []*iam.Role{
+		&iam.Role{RoleId: aws.String("role_1")},
+	}
+
+	awsAccess.Users = []*iam.User{
+		&iam.User{UserId: aws.String("usr_1")},
+		&iam.User{UserId: aws.String("usr_2")},
+		&iam.User{UserId: aws.String("usr_3")},
+	}
+
+	awsAccess.UsersByGroup = map[string][]string{
+		"group_1": []string{"usr_1", "usr_2"},
+		"group_2": []string{"usr_1", "usr_2", "usr_3"},
+	}
+
+	awsAccess.UsersByLocalPolicies = map[string][]string{
+		"policy_1": []string{"usr_1", "usr_2", "usr_3"},
+		"policy_2": []string{"usr_1"},
+	}
+
+	awsAccess.RolesByLocalPolicies = map[string][]string{
+		"policy_1": []string{"role_1"},
+		"policy_2": []string{},
+	}
+
+	awsAccess.GroupsByLocalPolicies = map[string][]string{
+		"policy_1": []string{"group_1"},
+		"policy_2": []string{"group_1", "group_2"},
+	}
+
 	infra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
@@ -100,9 +143,30 @@ func TestBuildStats(t *testing.T) {
 			{Type: "InstanceType", Date: now, Name: "t2.micro", Hits: 2},
 			{Type: "InstanceType", Date: now, Name: "t2.small", Hits: 1},
 		},
+		AccessMetrics: &AccessMetrics{
+			Date:                     now,
+			Region:                   "",
+			NbGroups:                 2,
+			NbPolicies:               2,
+			NbRoles:                  1,
+			NbUsers:                  3,
+			MinUsersByGroup:          2,
+			MaxUsersByGroup:          3,
+			MinUsersByLocalPolicies:  1,
+			MaxUsersByLocalPolicies:  3,
+			MinRolesByLocalPolicies:  0,
+			MaxRolesByLocalPolicies:  1,
+			MinGroupsByLocalPolicies: 1,
+			MaxGroupsByLocalPolicies: 2,
+		},
 	}
 
-	stats, _, err := BuildStats(db, infra, 0)
+	access, err := rdf.BuildAwsAccessGraph("eu-west-1", awsAccess)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stats, _, err := BuildStats(db, infra, access, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +237,12 @@ func TestSendStats(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected, _, err := BuildStats(db, localInfra, 0)
+	localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected, _, err := BuildStats(db, localInfra, localAccess, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,7 +365,9 @@ func statsEqual(stats1, stats2 *Stats) bool {
 			return false
 		}
 	}
-	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics) && instancesStatsEqual(stats1.InstancesStats, stats2.InstancesStats)
+	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics) &&
+		instancesStatsEqual(stats1.InstancesStats, stats2.InstancesStats) &&
+		accessMetricsEqual(stats1.AccessMetrics, stats2.AccessMetrics)
 }
 
 func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
@@ -320,6 +391,36 @@ func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
 		return false
 	}
 	return SameDay(&i1.Date, &i2.Date)
+}
+
+func accessMetricsEqual(a1, a2 *AccessMetrics) bool {
+	if a1 == a2 {
+		return true
+	}
+	if a1 == nil {
+		return false
+	}
+
+	if a1.Region != a2.Region {
+		return false
+	}
+	if a1.NbGroups != a2.NbGroups || a1.NbPolicies != a2.NbPolicies || a1.NbRoles != a2.NbRoles || a1.NbUsers != a2.NbUsers {
+		return false
+	}
+	if a1.MinUsersByGroup != a2.MinUsersByGroup || a1.MaxUsersByGroup != a2.MaxUsersByGroup {
+		return false
+	}
+	if a1.MinUsersByLocalPolicies != a2.MinUsersByLocalPolicies || a1.MaxUsersByLocalPolicies != a2.MaxUsersByLocalPolicies {
+		return false
+	}
+	if a1.MinRolesByLocalPolicies != a2.MinRolesByLocalPolicies || a1.MaxRolesByLocalPolicies != a2.MaxRolesByLocalPolicies {
+		return false
+	}
+
+	if a1.MinGroupsByLocalPolicies != a2.MinGroupsByLocalPolicies || a1.MaxGroupsByLocalPolicies != a2.MaxGroupsByLocalPolicies {
+		return false
+	}
+	return SameDay(&a1.Date, &a2.Date)
 }
 
 func instancesStatsEqual(is1, is2 []*InstancesStat) bool {
@@ -371,6 +472,10 @@ func (p *InstancesStat) String() string {
 }
 
 func (p *InfraMetrics) String() string {
+	return fmt.Sprintf("%+v", *p)
+}
+
+func (p *AccessMetrics) String() string {
 	return fmt.Sprintf("%+v", *p)
 }
 

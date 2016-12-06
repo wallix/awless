@@ -283,6 +283,43 @@ func (g *Graph) CountTriplesForSubjectAndPredicate(subject *node.Node, predicate
 	return count, <-errc
 }
 
+func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Node, predicate *predicate.Predicate, objectType string) (int, error) {
+	count := 0
+	errc := make(chan error)
+	triplec := make(chan *triple.Triple)
+
+	go func() {
+		defer close(errc)
+		errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
+	}()
+
+	for t := range triplec {
+		n, err := t.Object().Node()
+		if err != nil {
+			return 0, err
+		}
+		triples, err := g.TriplesForSubjectPredicate(n, HasType)
+		if err != nil {
+			return 0, err
+		}
+		if len(triples) == 1 {
+			hasTypeTriple := triples[0]
+			childTypeL, err := hasTypeTriple.Object().Literal()
+			if err != nil {
+				return 0, err
+			}
+			childType, err := childTypeL.Text()
+			if err != nil {
+				return 0, err
+			} else if childType == objectType {
+				count++
+			}
+		}
+	}
+
+	return count, <-errc
+}
+
 func (g *Graph) Unmarshal(data []byte) error {
 	for _, line := range bytes.Split(data, []byte{'\n'}) {
 		if bytes.Equal(bytes.TrimSpace(line), []byte("")) {

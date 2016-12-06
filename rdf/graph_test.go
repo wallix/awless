@@ -311,20 +311,34 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 func TestCountTriples(t *testing.T) {
 	g := NewGraph()
 
-	//       1
-	//   2       3       4
-	// 5   6   7  8        9
-	//                      10
+	aLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/b")
+	if err != nil {
+		t.Fatal(err)
+	}
 	one, _ := node.NewNodeFromStrings("/one", "1")
+	g.Add(noErrLiteralTriple(one, HasType, aLiteral))
 	two, _ := node.NewNodeFromStrings("/two", "2")
+	g.Add(noErrLiteralTriple(two, HasType, aLiteral))
 	three, _ := node.NewNodeFromStrings("/three", "3")
+	g.Add(noErrLiteralTriple(three, HasType, aLiteral))
 	four, _ := node.NewNodeFromStrings("/four", "4")
+	g.Add(noErrLiteralTriple(four, HasType, aLiteral))
 	five, _ := node.NewNodeFromStrings("/five", "5")
+	g.Add(noErrLiteralTriple(five, HasType, aLiteral))
 	six, _ := node.NewNodeFromStrings("/six", "6")
+	g.Add(noErrLiteralTriple(six, HasType, bLiteral))
 	seven, _ := node.NewNodeFromStrings("/seven", "7")
+	g.Add(noErrLiteralTriple(seven, HasType, bLiteral))
 	eight, _ := node.NewNodeFromStrings("/eight", "8")
+	g.Add(noErrLiteralTriple(eight, HasType, bLiteral))
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
+	g.Add(noErrLiteralTriple(nine, HasType, bLiteral))
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
+	g.Add(noErrLiteralTriple(ten, HasType, bLiteral))
 
 	g.Add(noErrTriple(one, ParentOf, two))
 	g.Add(noErrTriple(one, ParentOf, three))
@@ -364,6 +378,37 @@ func TestCountTriples(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, want := count, 0; got != want {
+		t.Fatalf("got %d; want%d\n", got, want)
+	}
+
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOf, "/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := count, 0; got != want {
+		t.Fatalf("got %d; want%d\n", got, want)
+	}
+
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOf, "/b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := count, 1; got != want {
+		t.Fatalf("got %d; want%d\n", got, want)
+	}
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOf, "/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := count, 1; got != want {
+		t.Fatalf("got %d; want%d\n", got, want)
+	}
+
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOf, "/b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := count, 1; got != want {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 }

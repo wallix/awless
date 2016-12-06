@@ -41,6 +41,7 @@ type Stats struct {
 	Commands       []*DailyCommands
 	InfraMetrics   *InfraMetrics
 	InstancesStats []*InstancesStat
+	AccessMetrics  *AccessMetrics
 }
 
 type DailyCommands struct {
@@ -56,8 +57,24 @@ type InstancesStat struct {
 	Name string
 }
 
-func BuildStats(db *DB, infra *rdf.Graph, fromCommandId int) (*Stats, int, error) {
+type AccessMetrics struct {
+	Date                     time.Time
+	Region                   string
+	NbGroups                 int
+	NbPolicies               int
+	NbRoles                  int
+	NbUsers                  int
+	MinUsersByGroup          int
+	MaxUsersByGroup          int
+	MinUsersByLocalPolicies  int
+	MaxUsersByLocalPolicies  int
+	MinRolesByLocalPolicies  int
+	MaxRolesByLocalPolicies  int
+	MinGroupsByLocalPolicies int
+	MaxGroupsByLocalPolicies int
+}
 
+func BuildStats(db *DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) (*Stats, int, error) {
 	commandsStat, lastCommandId, err := buildCommandsStat(db, fromCommandId)
 	if err != nil {
 		return nil, 0, err
@@ -66,6 +83,14 @@ func BuildStats(db *DB, infra *rdf.Graph, fromCommandId int) (*Stats, int, error
 	infraMetrics := &InfraMetrics{}
 	if infra != nil {
 		infraMetrics, err = buildInfraMetrics(infra, time.Now())
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
+	accessMetrics := &AccessMetrics{}
+	if access != nil {
+		accessMetrics, err = buildAccessMetrics(access, time.Now())
 		if err != nil {
 			return nil, 0, err
 		}
@@ -87,6 +112,7 @@ func BuildStats(db *DB, infra *rdf.Graph, fromCommandId int) (*Stats, int, error
 		Commands:       commandsStat,
 		InfraMetrics:   infraMetrics,
 		InstancesStats: instancesStats,
+		AccessMetrics:  accessMetrics,
 	}
 
 	return stats, lastCommandId, nil
@@ -194,6 +220,50 @@ func buildInfraMetrics(infra *rdf.Graph, time time.Time) (*InfraMetrics, error) 
 	return metrics, nil
 }
 
+func buildAccessMetrics(access *rdf.Graph, time time.Time) (*AccessMetrics, error) {
+	metrics := &AccessMetrics{
+		Date:   time,
+		Region: viper.GetString("region"),
+	}
+	c, min, max, err := computeCountMinMaxForTypeWithChildType(access, rdf.GROUP, rdf.USER)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbGroups, metrics.MinUsersByGroup, metrics.MaxUsersByGroup = c, min, max
+
+	c, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.POLICY, rdf.USER)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbPolicies, metrics.MinUsersByLocalPolicies, metrics.MaxUsersByLocalPolicies = c, min, max
+
+	_, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.POLICY, rdf.ROLE)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.MinRolesByLocalPolicies, metrics.MaxRolesByLocalPolicies = min, max
+
+	_, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.POLICY, rdf.GROUP)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.MinGroupsByLocalPolicies, metrics.MaxGroupsByLocalPolicies = min, max
+
+	c, _, _, err = computeCountMinMaxChildForType(access, rdf.ROLE)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbRoles = c
+
+	c, _, _, err = computeCountMinMaxChildForType(access, rdf.USER)
+	if err != nil {
+		return metrics, err
+	}
+	metrics.NbUsers = c
+
+	return metrics, nil
+}
+
 func computeCountMinMaxChildForType(graph *rdf.Graph, t string) (int, int, int, error) {
 	nodes, err := graph.NodesForType(t)
 	if err != nil {
@@ -211,6 +281,36 @@ func computeCountMinMaxChildForType(graph *rdf.Graph, t string) (int, int, int, 
 	min, max := count, count
 	for _, node := range nodes[1:] {
 		count, err = graph.CountTriplesForSubjectAndPredicate(node, rdf.ParentOf)
+		if err != nil {
+			return 0, 0, 0, err
+		}
+		if count < min {
+			min = count
+		}
+		if count > max {
+			max = count
+		}
+	}
+	return len(nodes), min, max, nil
+}
+
+func computeCountMinMaxForTypeWithChildType(graph *rdf.Graph, parentType, childType string) (int, int, int, error) {
+	nodes, err := graph.NodesForType(parentType)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	if len(nodes) == 0 {
+		return 0, 0, 0, nil
+	}
+	firstNode := nodes[0]
+	count, err := graph.CountTriplesForSubjectAndPredicateObjectOfType(firstNode, rdf.ParentOf, childType)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	min, max := count, count
+	for _, node := range nodes[1:] {
+		count, err = graph.CountTriplesForSubjectAndPredicateObjectOfType(node, rdf.ParentOf, childType)
 		if err != nil {
 			return 0, 0, 0, err
 		}
@@ -243,8 +343,12 @@ func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
 	if err != nil {
 		return err
 	}
+	localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+	if err != nil {
+		return err
+	}
 
-	stats, lastCommandId, err := BuildStats(db, localInfra, lastCommandId)
+	stats, lastCommandId, err := BuildStats(db, localInfra, localAccess, lastCommandId)
 	if err != nil {
 		return err
 	}
