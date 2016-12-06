@@ -1,0 +1,127 @@
+package aws
+
+import (
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/wallix/awless/scenario/driver"
+)
+
+type AwsDriver struct {
+	api        ec2iface.EC2API
+	references map[driver.Token]map[string]string
+}
+
+func NewAwsDriver(api ec2iface.EC2API) *AwsDriver {
+	return &AwsDriver{
+		api:        api,
+		references: make(map[driver.Token]map[string]string),
+	}
+}
+
+func (d *AwsDriver) Lookup(tokens ...driver.Token) driver.DriverFn {
+	if len(tokens) < 2 {
+		panic("need at least 2 tokens to lookup driver method")
+	}
+
+	fnName := fmt.Sprintf("%s_%s", humanize(tokens[0].String()), humanize(tokens[1].String()))
+	method := reflect.ValueOf(d).MethodByName(fnName).Interface()
+
+	driverFn, converted := method.(func(map[driver.Token]interface{}) error)
+	if !converted {
+		panic(fmt.Sprintf("method '%s' found on '%T' is not a driver function", fnName, d))
+	}
+
+	return driverFn
+}
+
+func (d *AwsDriver) Create_Vpc(params map[driver.Token]interface{}) error {
+	input := &ec2.CreateVpcInput{}
+
+	setField(d.lookupValue(driver.CIDR, params), input, "CidrBlock")
+
+	output, err := d.api.CreateVpc(input)
+	if err != nil {
+		return err
+	}
+
+	if refname, ok := params[driver.REF]; ok {
+		d.addReference(driver.VPC, refname, aws.StringValue(output.Vpc.VpcId))
+	}
+
+	return nil
+}
+
+func (d *AwsDriver) Create_Subnet(params map[driver.Token]interface{}) error {
+	input := &ec2.CreateSubnetInput{}
+
+	setField(d.lookupValue(driver.CIDR, params), input, "CidrBlock")
+	setField(d.lookupValue(driver.VPC, params), input, "VpcId")
+
+	output, err := d.api.CreateSubnet(input)
+	if err != nil {
+		return err
+	}
+
+	if refname, ok := params[driver.REF]; ok {
+		d.addReference(driver.SUBNET, refname, aws.StringValue(output.Subnet.SubnetId))
+	}
+
+	return nil
+}
+
+func (d *AwsDriver) Create_Instance(params map[driver.Token]interface{}) error {
+	input := &ec2.RunInstancesInput{
+		ImageId:      aws.String("ami-9398d3e0"),
+		MaxCount:     aws.Int64(1),
+		MinCount:     aws.Int64(1),
+		InstanceType: aws.String("t2.micro"),
+	}
+
+	setField(d.lookupValue(driver.BASE, params), input, "ImageId")
+	setField(d.lookupValue(driver.TYPE, params), input, "InstanceType")
+	setField(d.lookupValue(driver.COUNT, params), input, "MaxCount")
+	setField(d.lookupValue(driver.COUNT, params), input, "MinCount")
+	setField(d.lookupValue(driver.SUBNET, params), input, "SubnetId")
+
+	output, err := d.api.RunInstances(input)
+	if err != nil {
+		return err
+	}
+
+	if refname, ok := params[driver.REF]; ok {
+		d.addReference(driver.INSTANCE, refname, aws.StringValue(output.Instances[0].InstanceId))
+	}
+
+	return nil
+}
+
+func (d *AwsDriver) lookupValue(tok driver.Token, params map[driver.Token]interface{}) interface{} {
+	if backref, ok := params[driver.REFERENCES]; ok {
+		if refs, ok := d.references[tok]; ok {
+			return refs[backref.(string)]
+		}
+	}
+
+	return params[tok]
+}
+
+func (d *AwsDriver) addReference(t driver.Token, refName interface{}, resourceId string) {
+	if d.references[t] == nil {
+		d.references[t] = make(map[string]string)
+	}
+
+	d.references[t][refName.(string)] = resourceId
+}
+
+func humanize(s string) string {
+	if len(s) > 1 {
+		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+	}
+
+	return strings.ToUpper(s)
+}

@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/cloud/aws"
+	awscloud "github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/scenario"
+	"github.com/wallix/awless/scenario/driver"
+	"github.com/wallix/awless/scenario/driver/aws"
 )
 
 func init() {
@@ -22,9 +25,15 @@ var createInstanceCmd = &cobra.Command{
 	Short:   "Create an instance",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := aws.InfraService.CreateInstance("ami-9398d3e0")
-		display(resp, err)
+		raw := `CREATE VPC CIDR 10.0.0.0/16 REF vpc_1
+CREATE SUBNET CIDR 10.0.0.0/16 REF subnet_1 REFERENCES vpc_1
+CREATE INSTANCE COUNT 1 REFERENCES subnet_1
+`
+		lex := &scenario.Lexer{}
+		scen := lex.ParseScenario(raw)
 
-		return nil
+		runner := &driver.Runner{aws.NewAwsDriver(awscloud.InfraService)}
+
+		return runner.Run(scen)
 	},
 }
