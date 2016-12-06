@@ -168,7 +168,7 @@ func TestSendStats(t *testing.T) {
 	db.AddHistoryCommand([]string{"awless list subnets"})
 	db.AddHistoryCommand([]string{"awless list instances"})
 
-	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
+	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 	if err != nil {
 		t.Fatal(err)
 	}

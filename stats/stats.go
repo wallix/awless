@@ -239,7 +239,7 @@ func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
 		return err
 	}
 
-	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
+	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 	if err != nil {
 		return err
 	}

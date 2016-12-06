@@ -14,6 +14,7 @@ import (
 var (
 	configFilename       = "config.yaml"
 	databaseFilename     = "database.db"
+	GitDir               = filepath.Join(os.Getenv("HOME"), ".awless", "aws", "rdf")
 	Dir                  = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
 	Path                 = filepath.Join(Dir, configFilename)
 	DatabasePath         = filepath.Join(os.Getenv("HOME"), ".awless", databaseFilename)
@@ -35,7 +36,7 @@ SwIDAQAB
 )
 
 func CreateDefaultConf() {
-	os.MkdirAll(Dir, 0700)
+	os.MkdirAll(GitDir, 0700)
 
 	if _, err := os.Stat(Path); os.IsNotExist(err) {
 		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)

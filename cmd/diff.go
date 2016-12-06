@@ -55,7 +55,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.InfraFilename))
+		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ var diffCmd = &cobra.Command{
 		fmt.Println("------ INFRA ------")
 		infraGraph.VisitDepthFirst(root, printWithDiff)
 
-		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.Dir, config.AccessFilename))
+		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 		if err != nil {
 			return err
 		}
