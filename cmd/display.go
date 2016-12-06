@@ -57,7 +57,7 @@ func lineDisplay(item interface{}) {
 			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", *policy.PolicyName, *policy.PolicyId, (*policy.CreateDate).Format(simpleDay)))
 		}
 	case *ec2.DescribeInstancesOutput:
-		fmt.Fprintln(w, "Id\tName\tState\tType\tPriv IP\tPub IP\tLaunched")
+		fmt.Fprintln(w, "Id\tName\tState\tType\tPriv IP\tPub IP")
 		for _, reserv := range item.(*ec2.DescribeInstancesOutput).Reservations {
 			for _, inst := range reserv.Instances {
 				var name string
@@ -66,13 +66,13 @@ func lineDisplay(item interface{}) {
 						name = *t.Value
 					}
 				}
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), name, aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), name, aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress)))
 			}
 		}
 	case *ec2.Reservation:
-		fmt.Fprintln(w, "Id\tType\tState\tPriv IP\tPub IP\tLaunched")
+		fmt.Fprintln(w, "Id\tType\tState\tPriv IP\tPub IP")
 		for _, inst := range item.(*ec2.Reservation).Instances {
-			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress), (*inst.LaunchTime).Format(simpleDay)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress)))
 		}
 	case *ec2.DescribeVpcsOutput:
 		fmt.Fprintln(w, "Id\tDefault\tState\tCidr")
