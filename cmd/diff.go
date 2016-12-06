@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,6 +28,10 @@ var diffCmd = &cobra.Command{
 	Short: "Show diff between your local and remote infra",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if config.AwlessFirstSync {
+			return errors.New("No local data for a diff. You might want to perfom a sync first with `awless sync`")
+		}
+
 		var awsInfra *api.AwsInfra
 		var awsAccess *api.AwsAccess
 

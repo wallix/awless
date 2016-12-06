@@ -33,12 +33,23 @@ SwIDAQAB
 
 	InfraFilename  = "infra.rdf"
 	AccessFilename = "access.rdf"
+
+	AwlessFirstInstall, AwlessFirstSync bool
 )
+
+func init() {
+	_, ierr := os.Stat(filepath.Join(GitDir, InfraFilename))
+	_, aerr := os.Stat(filepath.Join(GitDir, AccessFilename))
+	AwlessFirstSync = os.IsNotExist(ierr) || os.IsNotExist(aerr)
+
+	_, err := os.Stat(Path)
+	AwlessFirstInstall = os.IsNotExist(err)
+}
 
 func CreateDefaultConf() {
 	os.MkdirAll(GitDir, 0700)
 
-	if _, err := os.Stat(Path); os.IsNotExist(err) {
+	if AwlessFirstInstall {
 		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)
 		fmt.Printf("Creating default config file at %s\n", Path)
 	}

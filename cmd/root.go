@@ -76,8 +76,10 @@ func initConfig() {
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		} else {
-			if err := statsDB.SendStats(config.StatsServerUrl, *publicKey); err != nil {
-				fmt.Fprintln(os.Stderr, err)
+			if !config.AwlessFirstSync {
+				if err := statsDB.SendStats(config.StatsServerUrl, *publicKey); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
 			}
 		}
 	}
