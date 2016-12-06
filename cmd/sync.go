@@ -31,21 +31,23 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		printWithTabs := func(g *rdf.Graph, n *node.Node, distance int) {
-			var tabs bytes.Buffer
-			for i := 0; i < distance; i++ {
-				tabs.WriteByte('\t')
+		if verboseFlag {
+			printWithTabs := func(g *rdf.Graph, n *node.Node, distance int) {
+				var tabs bytes.Buffer
+				for i := 0; i < distance; i++ {
+					tabs.WriteByte('\t')
+				}
+				fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 			}
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
-		}
 
-		root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
-		if err != nil {
-			return err
-		}
+			root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
+			if err != nil {
+				return err
+			}
 
-		infrag.VisitDepthFirst(root, printWithTabs)
-		accessg.VisitDepthFirst(root, printWithTabs)
+			infrag.VisitDepthFirst(root, printWithTabs)
+			accessg.VisitDepthFirst(root, printWithTabs)
+		}
 
 		return nil
 	},

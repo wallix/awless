@@ -85,9 +85,6 @@ var diffCmd = &cobra.Command{
 		infraGraph.Merge(missings)
 		infraGraph.Merge(commons)
 
-		fmt.Println("------ INFRA ------")
-		infraGraph.VisitDepthFirst(root, printWithDiff)
-
 		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 		if err != nil {
 			return err
@@ -113,9 +110,13 @@ var diffCmd = &cobra.Command{
 		accessGraph.Merge(missings)
 		accessGraph.Merge(commons)
 
-		fmt.Println()
-		fmt.Println("------ ACCESS ------")
-		accessGraph.VisitDepthFirst(root, printWithDiff)
+		if !noDiffInfra || !noDiffAccess {
+			fmt.Println("------ INFRA ------")
+			infraGraph.VisitDepthFirst(root, printWithDiff)
+			fmt.Println()
+			fmt.Println("------ ACCESS ------")
+			accessGraph.VisitDepthFirst(root, printWithDiff)
+		}
 
 		if !noDiffInfra || !noDiffAccess {
 			var yesorno string
