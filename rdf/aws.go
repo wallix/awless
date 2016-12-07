@@ -303,6 +303,7 @@ type Instance struct {
 	VpcId     string `aws:"VpcId"`
 	PublicIp  string `aws:"PublicIpAddress"`
 	PrivateIp string `aws:"PrivateIpAddress"`
+	ImageId   string `aws:"ImageId"`
 }
 
 func addNode(nodeType, id string, awsNode interface{}, triples *[]*triple.Triple) (*node.Node, error) {

@@ -53,9 +53,9 @@ func TestBuildStats(t *testing.T) {
 	awsInfra := &api.AwsInfra{}
 
 	awsInfra.Instances = []*ec2.Instance{
-		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro")},
-		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro")},
-		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2"), InstanceType: aws.String("t2.small")},
+		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro"), ImageId: aws.String("ami-e98bd29a")},
+		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro"), ImageId: aws.String("ami-9398d3e0")},
+		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2"), InstanceType: aws.String("t2.small"), ImageId: aws.String("ami-e98bd29a")},
 	}
 
 	awsInfra.Vpcs = []*ec2.Vpc{
@@ -142,6 +142,8 @@ func TestBuildStats(t *testing.T) {
 		InstancesStats: []*InstancesStat{
 			{Type: "InstanceType", Date: now, Name: "t2.micro", Hits: 2},
 			{Type: "InstanceType", Date: now, Name: "t2.small", Hits: 1},
+			{Type: "ImageId", Date: now, Name: "ami-e98bd29a", Hits: 2},
+			{Type: "ImageId", Date: now, Name: "ami-9398d3e0", Hits: 1},
 		},
 		AccessMetrics: &AccessMetrics{
 			Date:                     now,

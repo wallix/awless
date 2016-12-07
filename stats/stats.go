@@ -148,26 +148,39 @@ func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error)
 }
 
 func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err error) {
-	triples, err := infra.TriplesForPredicateName("Type")
+	instancesStats, err = addStatsForInstanceProperty(infra, "Type", "InstanceType", instancesStats)
+	if err != nil {
+		return instancesStats, err
+	}
+	instancesStats, err = addStatsForInstanceProperty(infra, "ImageId", "ImageId", instancesStats)
 	if err != nil {
 		return instancesStats, err
 	}
 
-	instanceTypes := make(map[string]int)
+	return instancesStats, err
+}
+
+func addStatsForInstanceProperty(infra *rdf.Graph, propertyName string, instanceStatType string, instancesStats []*InstancesStat) ([]*InstancesStat, error) {
+	triples, err := infra.TriplesForPredicateName(propertyName)
+	if err != nil {
+		return nil, err
+	}
+
+	propertyMap := make(map[string]int)
 	for _, t := range triples {
 		l, e := t.Object().Literal()
 		if e != nil {
 			return instancesStats, e
 		}
-		instanceType, e := l.Text()
+		property, e := l.Text()
 		if e != nil {
 			return instancesStats, e
 		}
-		instanceTypes[instanceType]++
+		propertyMap[property]++
 	}
 
-	for k, v := range instanceTypes {
-		instancesStats = append(instancesStats, &InstancesStat{Type: "InstanceType", Date: time.Now(), Hits: v, Name: k})
+	for k, v := range propertyMap {
+		instancesStats = append(instancesStats, &InstancesStat{Type: instanceStatType, Date: time.Now(), Hits: v, Name: k})
 	}
 
 	return instancesStats, err
