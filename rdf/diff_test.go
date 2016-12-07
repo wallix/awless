@@ -16,7 +16,7 @@ func TestEmptyGraphDiff(t *testing.T) {
 	}
 }
 
-func TestGraphDiffGIvenNilRootNode(t *testing.T) {
+func TestGraphDiffGivenNilRootNode(t *testing.T) {
 	diffGraph, _ := Diff(nil, NewGraph(), NewGraph())
 
 	if got, want := diffGraph.size(), 0; got != want {

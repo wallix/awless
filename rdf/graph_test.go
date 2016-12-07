@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/google/badwolf/triple/predicate"
 )
 
 func TestVisitDepthFirstGraph(t *testing.T) {
@@ -440,22 +438,6 @@ func TestGraphSize(t *testing.T) {
 	if got, want := g.size(), 2; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-}
-
-func noErrTriple(s *node.Node, p *predicate.Predicate, o *node.Node) *triple.Triple {
-	tri, err := triple.New(s, p, triple.NewNodeObject(o))
-	if err != nil {
-		panic(err)
-	}
-	return tri
-}
-
-func noErrLiteralTriple(s *node.Node, p *predicate.Predicate, l *literal.Literal) *triple.Triple {
-	tri, err := triple.New(s, p, triple.NewLiteralObject(l))
-	if err != nil {
-		panic(err)
-	}
-	return tri
 }
 
 func sameElementsInSlice(a, b []*node.Node) bool {
