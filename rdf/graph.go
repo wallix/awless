@@ -17,6 +17,10 @@ import (
 	"github.com/google/badwolf/triple/predicate"
 )
 
+func init() {
+	rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
+}
+
 type Graph struct {
 	storage.Graph
 	triplesCount int
@@ -331,8 +335,6 @@ func (g *Graph) MustMarshal() string {
 	return string(b)
 }
 
-var rando = rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
-
 func randString() string {
-	return fmt.Sprintf("%d", rando.Intn(1e16))
+	return fmt.Sprintf("%d", rand.Intn(1e16))
 }
