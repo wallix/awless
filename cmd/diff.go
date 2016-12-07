@@ -110,12 +110,15 @@ var diffCmd = &cobra.Command{
 		accessGraph.Merge(missings)
 		accessGraph.Merge(commons)
 
-		if !noDiffInfra || !noDiffAccess {
-			fmt.Println("------ INFRA ------")
-			infraGraph.VisitDepthFirst(root, printWithDiff)
-			fmt.Println()
+		if !noDiffAccess {
 			fmt.Println("------ ACCESS ------")
 			accessGraph.VisitDepthFirst(root, printWithDiff)
+		}
+
+		if !noDiffInfra {
+			fmt.Println()
+			fmt.Println("------ INFRA ------")
+			infraGraph.VisitDepthFirst(root, printWithDiff)
 		}
 
 		if !noDiffInfra || !noDiffAccess {
