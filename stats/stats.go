@@ -286,14 +286,14 @@ func computeCountMinMaxChildForType(graph *rdf.Graph, t string) (int, int, int, 
 		return 0, 0, 0, nil
 	}
 	firstNode := nodes[0]
-	count, err := graph.CountTriplesForSubjectAndPredicate(firstNode, rdf.ParentOf)
+	count, err := graph.CountTriplesForSubjectAndPredicate(firstNode, rdf.ParentOfPredicate)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 
 	min, max := count, count
 	for _, node := range nodes[1:] {
-		count, err = graph.CountTriplesForSubjectAndPredicate(node, rdf.ParentOf)
+		count, err = graph.CountTriplesForSubjectAndPredicate(node, rdf.ParentOfPredicate)
 		if err != nil {
 			return 0, 0, 0, err
 		}
@@ -316,14 +316,14 @@ func computeCountMinMaxForTypeWithChildType(graph *rdf.Graph, parentType, childT
 		return 0, 0, 0, nil
 	}
 	firstNode := nodes[0]
-	count, err := graph.CountTriplesForSubjectAndPredicateObjectOfType(firstNode, rdf.ParentOf, childType)
+	count, err := graph.CountTriplesForSubjectAndPredicateObjectOfType(firstNode, rdf.ParentOfPredicate, childType)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 
 	min, max := count, count
 	for _, node := range nodes[1:] {
-		count, err = graph.CountTriplesForSubjectAndPredicateObjectOfType(node, rdf.ParentOf, childType)
+		count, err = graph.CountTriplesForSubjectAndPredicateObjectOfType(node, rdf.ParentOfPredicate, childType)
 		if err != nil {
 			return 0, 0, 0, err
 		}

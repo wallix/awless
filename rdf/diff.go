@@ -53,12 +53,12 @@ func Diff(root *node.Node, local *Graph, remote *Graph) (*Graph, error) {
 func compareChildTriplesOf(root *node.Node, localGraph *Graph, remoteGraph *Graph) ([]*triple.Triple, []*triple.Triple, []*triple.Triple, error) {
 	var extras, missings, commons []*triple.Triple
 
-	locals, err := localGraph.TriplesForSubjectPredicate(root, ParentOf)
+	locals, err := localGraph.TriplesForSubjectPredicate(root, ParentOfPredicate)
 	if err != nil {
 		return extras, missings, commons, err
 	}
 
-	remotes, err := remoteGraph.TriplesForSubjectPredicate(root, ParentOf)
+	remotes, err := remoteGraph.TriplesForSubjectPredicate(root, ParentOfPredicate)
 	if err != nil {
 		return extras, missings, commons, err
 	}

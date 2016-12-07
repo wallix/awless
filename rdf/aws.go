@@ -79,7 +79,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 		return triples, err
 	}
 
-	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionL))
+	t, err := triple.New(regionN, HasTypePredicate, triple.NewLiteralObject(regionL))
 	if err != nil {
 		return triples, err
 	}
@@ -93,7 +93,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			return triples, err
 		}
 		triples = append(triples, t)
-		t, err = triple.New(regionN, ParentOf, triple.NewNodeObject(n))
+		t, err = triple.New(regionN, ParentOfPredicate, triple.NewNodeObject(n))
 		if err != nil {
 			return triples, err
 		}
@@ -110,7 +110,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			return triples, err
 		}
 		triples = append(triples, t)
-		t, err = triple.New(regionN, ParentOf, triple.NewNodeObject(n))
+		t, err = triple.New(regionN, ParentOfPredicate, triple.NewNodeObject(n))
 		if err != nil {
 			return triples, err
 		}
@@ -127,7 +127,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			return triples, err
 		}
 		triples = append(triples, t)
-		t, err = triple.New(regionN, ParentOf, triple.NewNodeObject(n))
+		t, err = triple.New(regionN, ParentOfPredicate, triple.NewNodeObject(n))
 		if err != nil {
 			return triples, err
 		}
@@ -139,7 +139,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			if usersIndex[userId] == nil {
 				return triples, fmt.Errorf("group %s has user %s, but this user does not exist", groupId, userId)
 			}
-			t, err = triple.New(n, ParentOf, triple.NewNodeObject(usersIndex[userId]))
+			t, err = triple.New(n, ParentOfPredicate, triple.NewNodeObject(usersIndex[userId]))
 			if err != nil {
 				return triples, err
 			}
@@ -154,7 +154,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			return triples, err
 		}
 		triples = append(triples, t)
-		t, err = triple.New(regionN, ParentOf, triple.NewNodeObject(n))
+		t, err = triple.New(regionN, ParentOfPredicate, triple.NewNodeObject(n))
 		if err != nil {
 			return triples, err
 		}
@@ -164,7 +164,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			if usersIndex[userId] == nil {
 				return triples, fmt.Errorf("policy %s has user %s, but this user does not exist", policyId, userId)
 			}
-			t, err := triple.New(n, ParentOf, triple.NewNodeObject(usersIndex[userId]))
+			t, err := triple.New(n, ParentOfPredicate, triple.NewNodeObject(usersIndex[userId]))
 			if err != nil {
 				return triples, err
 			}
@@ -175,7 +175,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			if groupsIndex[groupId] == nil {
 				return triples, fmt.Errorf("policy %s has user %s, but this user does not exist", policyId, groupId)
 			}
-			t, err := triple.New(n, ParentOf, triple.NewNodeObject(groupsIndex[groupId]))
+			t, err := triple.New(n, ParentOfPredicate, triple.NewNodeObject(groupsIndex[groupId]))
 			if err != nil {
 				return triples, err
 			}
@@ -186,7 +186,7 @@ func buildAccessRdfTriples(region string, access *api.AwsAccess) ([]*triple.Trip
 			if rolesIndex[roleId] == nil {
 				return triples, fmt.Errorf("policy %s has user %s, but this user does not exist", policyId, roleId)
 			}
-			t, err := triple.New(n, ParentOf, triple.NewNodeObject(rolesIndex[roleId]))
+			t, err := triple.New(n, ParentOfPredicate, triple.NewNodeObject(rolesIndex[roleId]))
 			if err != nil {
 				return triples, err
 			}
@@ -205,7 +205,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (triples []*tri
 		return triples, err
 	}
 
-	t, err := triple.New(regionN, HasType, triple.NewLiteralObject(regionL))
+	t, err := triple.New(regionN, HasTypePredicate, triple.NewLiteralObject(regionL))
 	if err != nil {
 		return triples, err
 	}
@@ -217,7 +217,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (triples []*tri
 			return triples, err
 		}
 		vpcNodes = append(vpcNodes, n)
-		t, err := triple.New(regionN, ParentOf, triple.NewNodeObject(n))
+		t, err := triple.New(regionN, ParentOfPredicate, triple.NewNodeObject(n))
 		if err != nil {
 			return triples, fmt.Errorf("region %s", err)
 		}
@@ -234,7 +234,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (triples []*tri
 
 		vpcN := findNodeById(vpcNodes, aws.StringValue(subnet.VpcId))
 		if vpcN != nil {
-			t, err := triple.New(vpcN, ParentOf, triple.NewNodeObject(n))
+			t, err := triple.New(vpcN, ParentOfPredicate, triple.NewNodeObject(n))
 			if err != nil {
 				return triples, fmt.Errorf("vpc %s", err)
 			}
@@ -251,7 +251,7 @@ func buildInfraRdfTriples(region string, awsInfra *api.AwsInfra) (triples []*tri
 		subnetN := findNodeById(subnetNodes, aws.StringValue(instance.SubnetId))
 
 		if subnetN != nil {
-			t, err := triple.New(subnetN, ParentOf, triple.NewNodeObject(n))
+			t, err := triple.New(subnetN, ParentOfPredicate, triple.NewNodeObject(n))
 			if err != nil {
 				return triples, fmt.Errorf("instances subnet %s", err)
 			}
@@ -315,7 +315,7 @@ func addNode(nodeType, id string, awsNode interface{}, triples *[]*triple.Triple
 	if lit, err = literal.DefaultBuilder().Build(literal.Text, nodeType); err != nil {
 		return nil, err
 	}
-	t, err := triple.New(n, HasType, triple.NewLiteralObject(lit))
+	t, err := triple.New(n, HasTypePredicate, triple.NewLiteralObject(lit))
 	if err != nil {
 		return nil, err
 	}

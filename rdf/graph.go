@@ -17,34 +17,6 @@ import (
 	"github.com/google/badwolf/triple/predicate"
 )
 
-var (
-	ParentOf      *predicate.Predicate
-	HasType       *predicate.Predicate
-	DiffPredicate *predicate.Predicate
-
-	ExtraLiteral   *literal.Literal
-	MissingLiteral *literal.Literal
-)
-
-func init() {
-	var err error
-	if ParentOf, err = predicate.NewImmutable("parent_of"); err != nil {
-		panic(err)
-	}
-	if HasType, err = predicate.NewImmutable("has_type"); err != nil {
-		panic(err)
-	}
-	if DiffPredicate, err = predicate.NewImmutable("diff"); err != nil {
-		panic(err)
-	}
-	if ExtraLiteral, err = literal.DefaultBuilder().Build(literal.Text, "extra"); err != nil {
-		panic(err)
-	}
-	if MissingLiteral, err = literal.DefaultBuilder().Build(literal.Text, "missing"); err != nil {
-		panic(err)
-	}
-}
-
 type Graph struct {
 	storage.Graph
 	triplesCount int
@@ -93,7 +65,7 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, i
 
 	each(g, root, dist)
 
-	relations, err := g.TriplesForSubjectPredicate(root, ParentOf)
+	relations, err := g.TriplesForSubjectPredicate(root, ParentOfPredicate)
 	if err != nil {
 		return err
 	}
@@ -213,7 +185,7 @@ func (g *Graph) TriplesForType(t string) ([]*triple.Triple, error) {
 
 	go func() {
 		defer close(errc)
-		errc <- g.TriplesForPredicateAndObject(context.Background(), HasType, triple.NewLiteralObject(literal), storage.DefaultLookup, triplec)
+		errc <- g.TriplesForPredicateAndObject(context.Background(), HasTypePredicate, triple.NewLiteralObject(literal), storage.DefaultLookup, triplec)
 	}()
 
 	for t := range triplec {
@@ -255,7 +227,7 @@ func (g *Graph) NodesForType(t string) ([]*node.Node, error) {
 
 	go func() {
 		defer close(errc)
-		errc <- g.Subjects(context.Background(), HasType, triple.NewLiteralObject(literal), storage.DefaultLookup, nodec)
+		errc <- g.Subjects(context.Background(), HasTypePredicate, triple.NewLiteralObject(literal), storage.DefaultLookup, nodec)
 	}()
 
 	for n := range nodec {
@@ -298,7 +270,7 @@ func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Nod
 		if err != nil {
 			return 0, err
 		}
-		triples, err := g.TriplesForSubjectPredicate(n, HasType)
+		triples, err := g.TriplesForSubjectPredicate(n, HasTypePredicate)
 		if err != nil {
 			return 0, err
 		}

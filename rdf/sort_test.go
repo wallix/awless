@@ -14,9 +14,9 @@ func TestTripleSorter(t *testing.T) {
 	three, _ := node.NewNodeFromStrings("/three", "3")
 
 	triples := []*triple.Triple{
-		noErrTriple(three, ParentOf, two),
-		noErrTriple(one, ParentOf, two),
-		noErrTriple(two, ParentOf, one),
+		noErrTriple(three, ParentOfPredicate, two),
+		noErrTriple(one, ParentOfPredicate, two),
+		noErrTriple(two, ParentOfPredicate, one),
 	}
 
 	sort.Sort(&tripleSorter{triples})

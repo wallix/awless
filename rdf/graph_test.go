@@ -26,15 +26,15 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
 
-	g.Add(noErrTriple(one, ParentOf, two))
-	g.Add(noErrTriple(one, ParentOf, three))
-	g.Add(noErrTriple(one, ParentOf, four))
-	g.Add(noErrTriple(two, ParentOf, five))
-	g.Add(noErrTriple(two, ParentOf, six))
-	g.Add(noErrTriple(three, ParentOf, seven))
-	g.Add(noErrTriple(three, ParentOf, eight))
-	g.Add(noErrTriple(four, ParentOf, nine))
-	g.Add(noErrTriple(nine, ParentOf, ten))
+	g.Add(noErrTriple(one, ParentOfPredicate, two))
+	g.Add(noErrTriple(one, ParentOfPredicate, three))
+	g.Add(noErrTriple(one, ParentOfPredicate, four))
+	g.Add(noErrTriple(two, ParentOfPredicate, five))
+	g.Add(noErrTriple(two, ParentOfPredicate, six))
+	g.Add(noErrTriple(three, ParentOfPredicate, seven))
+	g.Add(noErrTriple(three, ParentOfPredicate, eight))
+	g.Add(noErrTriple(four, ParentOfPredicate, nine))
+	g.Add(noErrTriple(nine, ParentOfPredicate, ten))
 
 	var result bytes.Buffer
 	each := func(g *Graph, n *node.Node, distance int) {
@@ -80,21 +80,21 @@ func TestIntersectGraph(t *testing.T) {
 	bsix, _ := node.NewNodeFromStrings("/b", "6")
 
 	g1 := NewGraph()
-	g1.Add(noErrTriple(aone, ParentOf, bone))
-	g1.Add(noErrTriple(atwo, ParentOf, btwo))
-	g1.Add(noErrTriple(athree, ParentOf, bthree))
-	g1.Add(noErrTriple(afour, ParentOf, bfour))
+	g1.Add(noErrTriple(aone, ParentOfPredicate, bone))
+	g1.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
+	g1.Add(noErrTriple(athree, ParentOfPredicate, bthree))
+	g1.Add(noErrTriple(afour, ParentOfPredicate, bfour))
 
 	g2 := NewGraph()
-	g2.Add(noErrTriple(azero, ParentOf, bzero))
-	g2.Add(noErrTriple(atwo, ParentOf, btwo))
-	g2.Add(noErrTriple(athree, ParentOf, bthree))
-	g2.Add(noErrTriple(afive, ParentOf, bfive))
-	g2.Add(noErrTriple(asix, ParentOf, bsix))
+	g2.Add(noErrTriple(azero, ParentOfPredicate, bzero))
+	g2.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
+	g2.Add(noErrTriple(athree, ParentOfPredicate, bthree))
+	g2.Add(noErrTriple(afive, ParentOfPredicate, bfive))
+	g2.Add(noErrTriple(asix, ParentOfPredicate, bsix))
 
 	expect := NewGraph()
-	expect.Add(noErrTriple(atwo, ParentOf, btwo))
-	expect.Add(noErrTriple(athree, ParentOf, bthree))
+	expect.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
+	expect.Add(noErrTriple(athree, ParentOfPredicate, bthree))
 
 	result := g1.Intersect(g2)
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
@@ -125,21 +125,21 @@ func TestSubstractGraph(t *testing.T) {
 	bsix, _ := node.NewNodeFromStrings("/b", "6")
 
 	g1 := NewGraph()
-	g1.Add(noErrTriple(aone, ParentOf, bone))
-	g1.Add(noErrTriple(atwo, ParentOf, btwo))
-	g1.Add(noErrTriple(athree, ParentOf, bthree))
-	g1.Add(noErrTriple(afour, ParentOf, bfour))
+	g1.Add(noErrTriple(aone, ParentOfPredicate, bone))
+	g1.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
+	g1.Add(noErrTriple(athree, ParentOfPredicate, bthree))
+	g1.Add(noErrTriple(afour, ParentOfPredicate, bfour))
 
 	g2 := NewGraph()
-	g2.Add(noErrTriple(azero, ParentOf, bzero))
-	g2.Add(noErrTriple(atwo, ParentOf, btwo))
-	g2.Add(noErrTriple(athree, ParentOf, bthree))
-	g2.Add(noErrTriple(afive, ParentOf, bfive))
-	g2.Add(noErrTriple(asix, ParentOf, bsix))
+	g2.Add(noErrTriple(azero, ParentOfPredicate, bzero))
+	g2.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
+	g2.Add(noErrTriple(athree, ParentOfPredicate, bthree))
+	g2.Add(noErrTriple(afive, ParentOfPredicate, bfive))
+	g2.Add(noErrTriple(asix, ParentOfPredicate, bsix))
 
 	expect := NewGraph()
-	expect.Add(noErrTriple(aone, ParentOf, bone))
-	expect.Add(noErrTriple(afour, ParentOf, bfour))
+	expect.Add(noErrTriple(aone, ParentOfPredicate, bone))
+	expect.Add(noErrTriple(afour, ParentOfPredicate, bfour))
 
 	result := g1.Substract(g2)
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
@@ -147,9 +147,9 @@ func TestSubstractGraph(t *testing.T) {
 	}
 
 	expect = NewGraph()
-	expect.Add(noErrTriple(azero, ParentOf, bzero))
-	expect.Add(noErrTriple(afive, ParentOf, bfive))
-	expect.Add(noErrTriple(asix, ParentOf, bsix))
+	expect.Add(noErrTriple(azero, ParentOfPredicate, bzero))
+	expect.Add(noErrTriple(afive, ParentOfPredicate, bfive))
+	expect.Add(noErrTriple(asix, ParentOfPredicate, bsix))
 
 	result = g2.Substract(g1)
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
@@ -168,28 +168,28 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 		t.Fatal(err)
 	}
 	azero, _ := node.NewNodeFromStrings("/a", "0")
-	graph.Add(noErrLiteralTriple(azero, HasType, aLiteral))
+	graph.Add(noErrLiteralTriple(azero, HasTypePredicate, aLiteral))
 	aone, _ := node.NewNodeFromStrings("/a", "1")
-	graph.Add(noErrLiteralTriple(aone, HasType, aLiteral))
+	graph.Add(noErrLiteralTriple(aone, HasTypePredicate, aLiteral))
 
 	bzero, _ := node.NewNodeFromStrings("/b", "0")
-	graph.Add(noErrLiteralTriple(bzero, HasType, bLiteral))
+	graph.Add(noErrLiteralTriple(bzero, HasTypePredicate, bLiteral))
 	bone, _ := node.NewNodeFromStrings("/b", "1")
-	graph.Add(noErrLiteralTriple(bone, HasType, bLiteral))
+	graph.Add(noErrLiteralTriple(bone, HasTypePredicate, bLiteral))
 	btwo, _ := node.NewNodeFromStrings("/b", "2")
-	graph.Add(noErrLiteralTriple(btwo, HasType, bLiteral))
+	graph.Add(noErrLiteralTriple(btwo, HasTypePredicate, bLiteral))
 
 	atwo, _ := node.NewNodeFromStrings("/a", "2")
-	graph.Add(noErrLiteralTriple(atwo, HasType, aLiteral))
+	graph.Add(noErrLiteralTriple(atwo, HasTypePredicate, aLiteral))
 	athree, _ := node.NewNodeFromStrings("/a", "3")
-	graph.Add(noErrLiteralTriple(athree, HasType, aLiteral))
+	graph.Add(noErrLiteralTriple(athree, HasTypePredicate, aLiteral))
 
-	graph.Add(noErrTriple(azero, ParentOf, aone))
-	graph.Add(noErrTriple(aone, ParentOf, bone))
-	graph.Add(noErrTriple(atwo, ParentOf, btwo))
+	graph.Add(noErrTriple(azero, ParentOfPredicate, aone))
+	graph.Add(noErrTriple(aone, ParentOfPredicate, bone))
+	graph.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
-	graph.Add(noErrTriple(azero, ParentOf, bzero))
-	graph.Add(noErrTriple(atwo, ParentOf, btwo))
+	graph.Add(noErrTriple(azero, ParentOfPredicate, bzero))
+	graph.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
 	aTriples, err := graph.TriplesForType("/a")
 	if err != nil {
@@ -198,10 +198,10 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	result := NewGraphFromTriples(aTriples)
 
 	expect := NewGraph()
-	expect.Add(noErrLiteralTriple(azero, HasType, aLiteral))
-	expect.Add(noErrLiteralTriple(aone, HasType, aLiteral))
-	expect.Add(noErrLiteralTriple(atwo, HasType, aLiteral))
-	expect.Add(noErrLiteralTriple(athree, HasType, aLiteral))
+	expect.Add(noErrLiteralTriple(azero, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(aone, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(atwo, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(athree, HasTypePredicate, aLiteral))
 
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
@@ -215,9 +215,9 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 
 	expect = NewGraph()
 
-	expect.Add(noErrLiteralTriple(bzero, HasType, bLiteral))
-	expect.Add(noErrLiteralTriple(bone, HasType, bLiteral))
-	expect.Add(noErrLiteralTriple(btwo, HasType, bLiteral))
+	expect.Add(noErrLiteralTriple(bzero, HasTypePredicate, bLiteral))
+	expect.Add(noErrLiteralTriple(bone, HasTypePredicate, bLiteral))
+	expect.Add(noErrLiteralTriple(btwo, HasTypePredicate, bLiteral))
 
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
@@ -252,54 +252,54 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 	}
 	g := NewGraph()
 	azero, _ := node.NewNodeFromStrings("/a", "0")
-	g.Add(noErrLiteralTriple(azero, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(azero, HasTypePredicate, aLiteral))
 	aone, _ := node.NewNodeFromStrings("/a", "1")
-	g.Add(noErrLiteralTriple(aone, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(aone, HasTypePredicate, aLiteral))
 	atwo, _ := node.NewNodeFromStrings("/a", "2")
-	g.Add(noErrLiteralTriple(atwo, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(atwo, HasTypePredicate, aLiteral))
 
 	bzero, _ := node.NewNodeFromStrings("/b", "0")
-	g.Add(noErrLiteralTriple(bzero, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(bzero, HasTypePredicate, bLiteral))
 	bone, _ := node.NewNodeFromStrings("/b", "1")
-	g.Add(noErrLiteralTriple(bone, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(bone, HasTypePredicate, bLiteral))
 	btwo, _ := node.NewNodeFromStrings("/b", "2")
-	g.Add(noErrLiteralTriple(btwo, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(btwo, HasTypePredicate, bLiteral))
 	bthree, _ := node.NewNodeFromStrings("/b", "3")
-	g.Add(noErrLiteralTriple(bthree, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(bthree, HasTypePredicate, bLiteral))
 
-	g.Add(noErrTriple(azero, ParentOf, bzero))
-	g.Add(noErrTriple(aone, ParentOf, bone))
-	g.Add(noErrTriple(atwo, ParentOf, btwo))
+	g.Add(noErrTriple(azero, ParentOfPredicate, bzero))
+	g.Add(noErrTriple(aone, ParentOfPredicate, bone))
+	g.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
-	triples, err := g.TriplesForPredicateName(string(ParentOf.ID()))
+	triples, err := g.TriplesForPredicateName(string(ParentOfPredicate.ID()))
 	if err != nil {
 		t.Fatal(err)
 	}
 	result := NewGraphFromTriples(triples)
 
 	expect := NewGraph()
-	expect.Add(noErrTriple(azero, ParentOf, bzero))
-	expect.Add(noErrTriple(aone, ParentOf, bone))
-	expect.Add(noErrTriple(atwo, ParentOf, btwo))
+	expect.Add(noErrTriple(azero, ParentOfPredicate, bzero))
+	expect.Add(noErrTriple(aone, ParentOfPredicate, bone))
+	expect.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	triples, err = g.TriplesForPredicateName(string(HasType.ID()))
+	triples, err = g.TriplesForPredicateName(string(HasTypePredicate.ID()))
 	if err != nil {
 		t.Fatal(err)
 	}
 	result = NewGraphFromTriples(triples)
 
 	expect = NewGraph()
-	expect.Add(noErrLiteralTriple(azero, HasType, aLiteral))
-	expect.Add(noErrLiteralTriple(aone, HasType, aLiteral))
-	expect.Add(noErrLiteralTriple(atwo, HasType, aLiteral))
-	expect.Add(noErrLiteralTriple(bzero, HasType, bLiteral))
-	expect.Add(noErrLiteralTriple(bone, HasType, bLiteral))
-	expect.Add(noErrLiteralTriple(btwo, HasType, bLiteral))
-	expect.Add(noErrLiteralTriple(bthree, HasType, bLiteral))
+	expect.Add(noErrLiteralTriple(azero, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(aone, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(atwo, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(bzero, HasTypePredicate, bLiteral))
+	expect.Add(noErrLiteralTriple(bone, HasTypePredicate, bLiteral))
+	expect.Add(noErrLiteralTriple(btwo, HasTypePredicate, bLiteral))
+	expect.Add(noErrLiteralTriple(bthree, HasTypePredicate, bLiteral))
 
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
@@ -318,44 +318,44 @@ func TestCountTriples(t *testing.T) {
 		t.Fatal(err)
 	}
 	one, _ := node.NewNodeFromStrings("/one", "1")
-	g.Add(noErrLiteralTriple(one, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(one, HasTypePredicate, aLiteral))
 	two, _ := node.NewNodeFromStrings("/two", "2")
-	g.Add(noErrLiteralTriple(two, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(two, HasTypePredicate, aLiteral))
 	three, _ := node.NewNodeFromStrings("/three", "3")
-	g.Add(noErrLiteralTriple(three, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(three, HasTypePredicate, aLiteral))
 	four, _ := node.NewNodeFromStrings("/four", "4")
-	g.Add(noErrLiteralTriple(four, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(four, HasTypePredicate, aLiteral))
 	five, _ := node.NewNodeFromStrings("/five", "5")
-	g.Add(noErrLiteralTriple(five, HasType, aLiteral))
+	g.Add(noErrLiteralTriple(five, HasTypePredicate, aLiteral))
 	six, _ := node.NewNodeFromStrings("/six", "6")
-	g.Add(noErrLiteralTriple(six, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(six, HasTypePredicate, bLiteral))
 	seven, _ := node.NewNodeFromStrings("/seven", "7")
-	g.Add(noErrLiteralTriple(seven, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(seven, HasTypePredicate, bLiteral))
 	eight, _ := node.NewNodeFromStrings("/eight", "8")
-	g.Add(noErrLiteralTriple(eight, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(eight, HasTypePredicate, bLiteral))
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
-	g.Add(noErrLiteralTriple(nine, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(nine, HasTypePredicate, bLiteral))
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
-	g.Add(noErrLiteralTriple(ten, HasType, bLiteral))
+	g.Add(noErrLiteralTriple(ten, HasTypePredicate, bLiteral))
 
-	g.Add(noErrTriple(one, ParentOf, two))
-	g.Add(noErrTriple(one, ParentOf, three))
-	g.Add(noErrTriple(one, ParentOf, four))
-	g.Add(noErrTriple(two, ParentOf, five))
-	g.Add(noErrTriple(two, ParentOf, six))
-	g.Add(noErrTriple(three, ParentOf, seven))
-	g.Add(noErrTriple(three, ParentOf, eight))
-	g.Add(noErrTriple(four, ParentOf, nine))
-	g.Add(noErrTriple(nine, ParentOf, ten))
+	g.Add(noErrTriple(one, ParentOfPredicate, two))
+	g.Add(noErrTriple(one, ParentOfPredicate, three))
+	g.Add(noErrTriple(one, ParentOfPredicate, four))
+	g.Add(noErrTriple(two, ParentOfPredicate, five))
+	g.Add(noErrTriple(two, ParentOfPredicate, six))
+	g.Add(noErrTriple(three, ParentOfPredicate, seven))
+	g.Add(noErrTriple(three, ParentOfPredicate, eight))
+	g.Add(noErrTriple(four, ParentOfPredicate, nine))
+	g.Add(noErrTriple(nine, ParentOfPredicate, ten))
 
-	count, err := g.CountTriplesForSubjectAndPredicate(one, ParentOf)
+	count, err := g.CountTriplesForSubjectAndPredicate(one, ParentOfPredicate)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := count, 3; got != want {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
-	count, err = g.CountTriplesForSubjectAndPredicate(two, ParentOf)
+	count, err = g.CountTriplesForSubjectAndPredicate(two, ParentOfPredicate)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -363,7 +363,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicate(four, ParentOf)
+	count, err = g.CountTriplesForSubjectAndPredicate(four, ParentOfPredicate)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -371,7 +371,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicate(ten, ParentOf)
+	count, err = g.CountTriplesForSubjectAndPredicate(ten, ParentOfPredicate)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -379,7 +379,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOf, "/a")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, "/a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -387,14 +387,14 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOf, "/b")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, "/b")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := count, 1; got != want {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOf, "/a")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, "/a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -402,7 +402,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOf, "/b")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, "/b")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -423,7 +423,7 @@ func TestGraphSize(t *testing.T) {
 	one, _ := node.NewNodeFromStrings("/one", "1")
 	two, _ := node.NewNodeFromStrings("/two", "2")
 
-	g.Add(noErrTriple(one, ParentOf, two))
+	g.Add(noErrTriple(one, ParentOfPredicate, two))
 	if got, want := g.IsEmpty(), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
@@ -431,7 +431,7 @@ func TestGraphSize(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	g.Add(noErrTriple(two, ParentOf, one))
+	g.Add(noErrTriple(two, ParentOfPredicate, one))
 	if got, want := g.IsEmpty(), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
