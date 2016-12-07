@@ -29,7 +29,7 @@ pi+Bfy5FDK42Q/uJfUOJ5f6Ae/qIxxzKH7ixeXdCFvdzPvv4M4gGkqBAhpnFwLeX
 SwIDAQAB
 -----END PUBLIC KEY-----`
 	StatsExpirationDuration = 2 * time.Minute
-	Version                 = "0.1"
+	Version                 = "0.2"
 
 	InfraFilename  = "infra.rdf"
 	AccessFilename = "access.rdf"
