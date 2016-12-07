@@ -70,20 +70,12 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		extras, missings, commons, err := rdf.Compare(viper.GetString("region"), localInfra, remoteInfra)
+		infraDiffGraph, err := rdf.Diff(root, localInfra, remoteInfra)
 		if err != nil {
 			return err
 		}
 
-		noDiffInfra := extras.IsEmpty() && missings.IsEmpty()
-
-		rdf.AttachLiteralToAllTriples(extras, rdf.DiffPredicate, rdf.ExtraLiteral)
-		rdf.AttachLiteralToAllTriples(missings, rdf.DiffPredicate, rdf.MissingLiteral)
-
-		infraGraph := rdf.NewGraph()
-		infraGraph.Merge(extras)
-		infraGraph.Merge(missings)
-		infraGraph.Merge(commons)
+		noDiffInfra := graphHasDiff(infraDiffGraph)
 
 		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 		if err != nil {
@@ -95,30 +87,22 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		extras, missings, commons, err = rdf.Compare(viper.GetString("region"), localAccess, remoteAccess)
+		accessDiffGraph, err := rdf.Diff(root, localAccess, remoteAccess)
 		if err != nil {
 			return err
 		}
 
-		noDiffAccess := extras.IsEmpty() && missings.IsEmpty()
-
-		rdf.AttachLiteralToAllTriples(extras, rdf.DiffPredicate, rdf.ExtraLiteral)
-		rdf.AttachLiteralToAllTriples(missings, rdf.DiffPredicate, rdf.MissingLiteral)
-
-		accessGraph := rdf.NewGraph()
-		accessGraph.Merge(extras)
-		accessGraph.Merge(missings)
-		accessGraph.Merge(commons)
+		noDiffAccess := graphHasDiff(accessDiffGraph)
 
 		if !noDiffAccess {
 			fmt.Println("------ ACCESS ------")
-			accessGraph.VisitDepthFirst(root, printWithDiff)
+			accessDiffGraph.VisitDepthFirst(root, printWithDiff)
 		}
 
 		if !noDiffInfra {
 			fmt.Println()
 			fmt.Println("------ INFRA ------")
-			infraGraph.VisitDepthFirst(root, printWithDiff)
+			infraDiffGraph.VisitDepthFirst(root, printWithDiff)
 		}
 
 		if !noDiffInfra || !noDiffAccess {
@@ -132,6 +116,15 @@ var diffCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func graphHasDiff(g *rdf.Graph) bool {
+	triples, err := g.TriplesForPredicateName("diff")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, fmt.Sprintf("graph has diff:%s", err.Error()))
+		return false
+	}
+	return len(triples) == 0
 }
 
 func printWithDiff(g *rdf.Graph, n *node.Node, distance int) {

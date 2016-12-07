@@ -5,14 +5,6 @@ import (
 	"github.com/google/badwolf/triple/literal"
 )
 
-func loadTriplesFromFile(filepath string) ([]*triple.Triple, error) {
-	g, err := NewGraphFromFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-	return g.allTriples()
-}
-
 func marshalTriples(triples []*triple.Triple) string {
 	g := NewGraphFromTriples(triples)
 	return g.MustMarshal()

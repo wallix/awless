@@ -6,17 +6,6 @@ import (
 	"github.com/google/badwolf/triple/predicate"
 )
 
-func AttachLiteralToAllTriples(g *Graph, p *predicate.Predicate, lit *literal.Literal) error {
-	all, _ := g.allTriples()
-	for _, t := range all {
-		err := attachLiteralToTriple(g, t, p, lit)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func attachLiteralToTriple(g *Graph, t *triple.Triple, p *predicate.Predicate, lit *literal.Literal) error {
 	node, err := t.Object().Node()
 	if err != nil {

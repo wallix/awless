@@ -5,44 +5,49 @@ import (
 	"github.com/google/badwolf/triple/node"
 )
 
-func Compare(rootID string, local *Graph, remote *Graph) (*Graph, *Graph, *Graph, error) {
-	allextras := NewGraph()
-	allmissings := NewGraph()
-	allcommons := NewGraph()
-
-	rootNode, err := node.NewNodeFromStrings(REGION, rootID)
-	if err != nil {
-		return allextras, allmissings, allcommons, err
-	}
+func Diff(root *node.Node, local *Graph, remote *Graph) (*Graph, error) {
+	diffGraph := NewGraph()
 
 	maxCount := max(local.size(), remote.size())
 	processing := make(chan *node.Node, maxCount)
 
-	processing <- rootNode
+	if maxCount < 1 {
+		return diffGraph, nil
+	}
+
+	processing <- root
 
 	for len(processing) > 0 {
 		select {
 		case node := <-processing:
 			extras, missings, commons, err := compareChildTriplesOf(node, local, remote)
 			if err != nil {
-				return allextras, allmissings, allcommons, err
+				return diffGraph, err
 			}
 
-			allextras.Add(extras...)
-			allmissings.Add(missings...)
-			allcommons.Add(commons...)
+			for _, extra := range extras {
+				diffGraph.Add(extra)
+				attachLiteralToTriple(diffGraph, extra, DiffPredicate, ExtraLiteral)
+			}
+
+			for _, missing := range missings {
+				diffGraph.Add(missing)
+				attachLiteralToTriple(diffGraph, missing, DiffPredicate, MissingLiteral)
+			}
+
+			diffGraph.Add(commons...)
 
 			for _, nextNodeToProcess := range commons {
 				objectNode, err := nextNodeToProcess.Object().Node()
 				if err != nil {
-					return allextras, allmissings, allcommons, err
+					return diffGraph, err
 				}
 				processing <- objectNode
 			}
 		}
 	}
 
-	return allextras, allmissings, allcommons, nil
+	return diffGraph, nil
 }
 
 func compareChildTriplesOf(root *node.Node, localGraph *Graph, remoteGraph *Graph) ([]*triple.Triple, []*triple.Triple, []*triple.Triple, error) {
