@@ -10,64 +10,74 @@ import (
 	"github.com/google/badwolf/triple/predicate"
 )
 
+type QueryType int
+
+const (
+	SUBJECT_PREDICATE QueryType = iota
+	PREDICATE_OBJECT
+	PREDICATE_ONLY
+)
+
 func (g *Graph) TriplesForSubjectPredicate(subject *node.Node, predicate *predicate.Predicate) ([]*triple.Triple, error) {
-	errc := make(chan error)
-	triplec := make(chan *triple.Triple)
+	return g.returnTriples(SUBJECT_PREDICATE, predicate, subject)
+}
 
-	go func() {
-		defer close(errc)
-		errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
-	}()
-
-	var triples []*triple.Triple
-
-	for t := range triplec {
-		triples = append(triples, t)
-	}
-
-	return triples, <-errc
+func (g *Graph) CountTriplesForSubjectAndPredicate(subject *node.Node, predicate *predicate.Predicate) (int, error) {
+	all, err := g.returnTriples(SUBJECT_PREDICATE, predicate, subject)
+	return len(all), err
 }
 
 func (g *Graph) TriplesForType(t string) ([]*triple.Triple, error) {
-	var triples []*triple.Triple
-	errc := make(chan error)
-	triplec := make(chan *triple.Triple)
 	literal, err := literal.DefaultBuilder().Build(literal.Text, t)
 	if err != nil {
-		return triples, err
+		return []*triple.Triple{}, err
 	}
 
-	go func() {
-		defer close(errc)
-		errc <- g.TriplesForPredicateAndObject(context.Background(), HasTypePredicate, triple.NewLiteralObject(literal), storage.DefaultLookup, triplec)
-	}()
-
-	for t := range triplec {
-		triples = append(triples, t)
-	}
-
-	return triples, <-errc
+	return g.returnTriples(PREDICATE_OBJECT, HasTypePredicate, triple.NewLiteralObject(literal))
 }
 
 func (g *Graph) TriplesForPredicateName(name string) ([]*triple.Triple, error) {
-	var triples []*triple.Triple
-	errc := make(chan error)
-	triplec := make(chan *triple.Triple)
-	p, err := predicate.NewImmutable(name)
+	predicate, err := predicate.NewImmutable(name)
 	if err != nil {
-		return triples, err
+		return []*triple.Triple{}, err
 	}
 
-	go func() {
-		defer close(errc)
-		errc <- g.TriplesForPredicate(context.Background(), p, storage.DefaultLookup, triplec)
-	}()
+	return g.returnTriples(PREDICATE_ONLY, predicate)
+}
 
-	for t := range triplec {
-		triples = append(triples, t)
+func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Node, predicate *predicate.Predicate, objectType string) (int, error) {
+	all, err := g.returnTriples(SUBJECT_PREDICATE, predicate, subject)
+	if err != nil {
+		return 0, err
 	}
 
-	return triples, <-errc
+	var count int
+
+	for _, t := range all {
+		n, err := t.Object().Node()
+		if err != nil {
+			return 0, err
+		}
+		triples, err := g.TriplesForSubjectPredicate(n, HasTypePredicate)
+		if err != nil {
+			return 0, err
+		}
+		if len(triples) == 1 {
+			hasTypeTriple := triples[0]
+			childTypeL, err := hasTypeTriple.Object().Literal()
+			if err != nil {
+				return 0, err
+			}
+			childType, err := childTypeL.Text()
+			if err != nil {
+				return 0, err
+			} else if childType == objectType {
+				count++
+			}
+		}
+	}
+
+	return count, err
 }
 
 func (g *Graph) NodesForType(t string) ([]*node.Node, error) {
@@ -92,56 +102,31 @@ func (g *Graph) NodesForType(t string) ([]*node.Node, error) {
 
 }
 
-func (g *Graph) CountTriplesForSubjectAndPredicate(subject *node.Node, predicate *predicate.Predicate) (int, error) {
-	count := 0
+func (g *Graph) returnTriples(kind QueryType, objects ...interface{}) ([]*triple.Triple, error) {
 	errc := make(chan error)
 	triplec := make(chan *triple.Triple)
 
 	go func() {
 		defer close(errc)
-		errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
+
+		switch kind {
+		case SUBJECT_PREDICATE:
+			predicate, subject := objects[0].(*predicate.Predicate), objects[1].(*node.Node)
+			errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
+		case PREDICATE_OBJECT:
+			predicate, object := objects[0].(*predicate.Predicate), objects[1].(*triple.Object)
+			errc <- g.TriplesForPredicateAndObject(context.Background(), predicate, object, storage.DefaultLookup, triplec)
+		case PREDICATE_ONLY:
+			predicate := objects[0].(*predicate.Predicate)
+			errc <- g.TriplesForPredicate(context.Background(), predicate, storage.DefaultLookup, triplec)
+		}
 	}()
 
-	for range triplec {
-		count++
-	}
-
-	return count, <-errc
-}
-
-func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Node, predicate *predicate.Predicate, objectType string) (int, error) {
-	count := 0
-	errc := make(chan error)
-	triplec := make(chan *triple.Triple)
-
-	go func() {
-		defer close(errc)
-		errc <- g.TriplesForSubjectAndPredicate(context.Background(), subject, predicate, storage.DefaultLookup, triplec)
-	}()
+	var triples []*triple.Triple
 
 	for t := range triplec {
-		n, err := t.Object().Node()
-		if err != nil {
-			return 0, err
-		}
-		triples, err := g.TriplesForSubjectPredicate(n, HasTypePredicate)
-		if err != nil {
-			return 0, err
-		}
-		if len(triples) == 1 {
-			hasTypeTriple := triples[0]
-			childTypeL, err := hasTypeTriple.Object().Literal()
-			if err != nil {
-				return 0, err
-			}
-			childType, err := childTypeL.Text()
-			if err != nil {
-				return 0, err
-			} else if childType == objectType {
-				count++
-			}
-		}
+		triples = append(triples, t)
 	}
 
-	return count, <-errc
+	return triples, <-errc
 }
