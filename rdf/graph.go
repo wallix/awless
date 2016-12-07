@@ -92,22 +92,6 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, i
 	return nil
 }
 
-func (g *Graph) copy() *Graph {
-	newg := NewGraph()
-
-	all, _ := g.allTriples()
-	newg.Add(all...)
-
-	return newg
-}
-
-func (g *Graph) Merge(other *Graph) *Graph {
-	all, _ := other.allTriples()
-	g.Add(all...)
-
-	return g
-}
-
 func (g *Graph) Substract(other *Graph) *Graph {
 	sub := g.copy()
 
@@ -135,12 +119,21 @@ func (g *Graph) Intersect(other *Graph) *Graph {
 	return inter
 }
 
-func (g *Graph) size() int {
-	return g.triplesCount
-}
-
 func (g *Graph) IsEmpty() bool {
 	return g.size() == 0
+}
+
+func (g *Graph) copy() *Graph {
+	newg := NewGraph()
+
+	all, _ := g.allTriples()
+	newg.Add(all...)
+
+	return newg
+}
+
+func (g *Graph) size() int {
+	return g.triplesCount
 }
 
 func (g *Graph) allTriples() ([]*triple.Triple, error) {
