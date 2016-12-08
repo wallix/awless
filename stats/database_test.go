@@ -40,17 +40,8 @@ func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
 }
 
 func TestGetSetDatabaseValues(t *testing.T) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer os.Remove(f.Name())
-
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
+	db, close := newTestDb()
+	defer close()
 
 	value, e := db.GetStringValue("mykey")
 	if e != nil {

@@ -1,24 +1,13 @@
 package stats
 
 import (
-	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 )
 
 func TestSaveCommandHistory(t *testing.T) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer os.Remove(f.Name())
-
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
+	db, close := newTestDb()
+	defer close()
 
 	if err := db.FlushHistory(); err != nil {
 		t.Fatal(err)
@@ -51,5 +40,4 @@ func TestSaveCommandHistory(t *testing.T) {
 	} else if got, want := len(lines), 0; got != want {
 		t.Fatalf("got %d; want %d", got, want)
 	}
-
 }

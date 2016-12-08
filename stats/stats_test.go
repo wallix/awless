@@ -10,10 +10,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -356,25 +354,6 @@ func TestIfDataToSend(t *testing.T) {
 	if got, want := db.CheckStatsToSend(1*time.Hour), false; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
-}
-
-func newTestDb() (*DB, func()) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		panic(e)
-	}
-
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		panic(err)
-	}
-
-	todefer := func() {
-		os.Remove(f.Name())
-		db.Close()
-	}
-
-	return db, todefer
 }
 
 func dcEqual(dc1, dc2 *DailyCommands) bool {
