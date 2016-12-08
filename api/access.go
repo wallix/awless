@@ -5,7 +5,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/wallix/awless/config"
 )
+
+var AccessService *Access
+
+func init() {
+	AccessService = NewAccess(config.Session)
+}
 
 type Access struct {
 	*iam.IAM
@@ -36,7 +43,7 @@ func (a *Access) Roles() (interface{}, error) {
 	return a.ListRoles(&iam.ListRolesInput{})
 }
 
-func (a *Access) CallerIdentity() (interface{}, error) {
+func (a *Access) CallerIdentity() (*sts.GetCallerIdentityOutput, error) {
 	return a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 }
 

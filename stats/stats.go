@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -22,21 +21,13 @@ import (
 )
 
 const AWLESS_ID_KEY = "awless_id"
+const AWLESS_AID_KEY = "awless_aid"
 const SENT_ID_KEY = "sent_id"
 const SENT_TIME_KEY = "sent_time"
 
-func generateAwlessId() (string, error) {
-	seed := make([]byte, 32)
-	_, err := rand.Read(seed)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%x", sha256.Sum256(seed)), nil
-}
-
 type Stats struct {
 	Id             string
+	AId            string
 	Version        string
 	Commands       []*DailyCommands
 	InfraMetrics   *InfraMetrics
@@ -106,8 +97,14 @@ func BuildStats(db *DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) 
 		return nil, 0, err
 	}
 
+	aId, err := db.GetStringValue(AWLESS_AID_KEY)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	stats := &Stats{
 		Id:             id,
+		AId:            aId,
 		Version:        config.Version,
 		Commands:       commandsStat,
 		InfraMetrics:   infraMetrics,
@@ -346,17 +343,8 @@ type EncryptedData struct {
 	Data []byte
 }
 
-func (db *DB) SendStats(url string, publicKey rsa.PublicKey) error {
+func (db *DB) SendStats(url string, publicKey rsa.PublicKey, localInfra, localAccess *rdf.Graph) error {
 	lastCommandId, err := db.GetIntValue(SENT_ID_KEY)
-	if err != nil {
-		return err
-	}
-
-	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-	if err != nil {
-		return err
-	}
-	localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 	if err != nil {
 		return err
 	}
@@ -432,4 +420,8 @@ func aesEncrypt(data []byte) ([]byte, []byte, error) {
 	}
 	encrypted := gcm.Seal(nonce, nonce, data, nil)
 	return sessionKey, encrypted, nil
+}
+
+func generateAnonymousId(seed string) (string, error) {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(config.Salt+seed))), nil
 }

@@ -116,18 +116,3 @@ func TestGetSetDatabaseValues(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }
-
-func TestAwlessIdGenerator(t *testing.T) {
-	id1, _ := generateAwlessId()
-	id2, _ := generateAwlessId()
-
-	if got, want := len(id1), 64; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := len(id2), 64; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := (id1 != id2), true; got != want {
-		t.Fatalf("got %t, want %t", got, want)
-	}
-}

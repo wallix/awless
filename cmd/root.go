@@ -3,21 +3,17 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/wallix/awless/api"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/stats"
 )
 
 var (
-	accessApi *api.Access
-	infraApi  *api.Infra
-	statsDB   *stats.DB
+	statsDB *stats.DB
 
 	verboseFlag bool
 )
@@ -48,30 +44,7 @@ func init() {
 }
 
 func initConfig() {
-	viper.SetConfigFile(config.Path)
-
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-		return
-	}
-
-	sess, err := session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
-		return
-	}
-	if _, err = sess.Config.Credentials.Get(); err != nil {
-		fmt.Println(err)
-		fmt.Fprintln(os.Stderr, "Your AWS credentials seem undefined!")
-		os.Exit(-1)
-		return
-	}
-
-	accessApi = api.NewAccess(sess)
-	infraApi = api.NewInfra(sess)
-
+	var err error
 	statsDB, err = stats.OpenDB(config.DatabasePath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "can not save history:", err)
@@ -81,7 +54,16 @@ func initConfig() {
 			fmt.Fprintln(os.Stderr, err)
 		} else {
 			if !config.AwlessFirstSync {
-				if err := statsDB.SendStats(config.StatsServerUrl, *publicKey); err != nil {
+				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+
+				if err := statsDB.SendStats(config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
 			}

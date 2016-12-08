@@ -40,7 +40,7 @@ var diffCmd = &cobra.Command{
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			infra, err := infraApi.FetchAwsInfra()
+			infra, err := api.InfraService.FetchAwsInfra()
 			exitOn(err)
 			awsInfra = infra
 		}()
@@ -48,7 +48,7 @@ var diffCmd = &cobra.Command{
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			access, err := accessApi.FetchAwsAccess()
+			access, err := api.AccessService.FetchAwsAccess()
 			exitOn(err)
 			awsAccess = access
 		}()

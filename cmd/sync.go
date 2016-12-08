@@ -62,7 +62,7 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		infra, err := infraApi.FetchAwsInfra()
+		infra, err := api.InfraService.FetchAwsInfra()
 		exitOn(err)
 		awsInfra = infra
 	}()
@@ -70,7 +70,7 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		access, err := accessApi.FetchAwsAccess()
+		access, err := api.AccessService.FetchAwsAccess()
 		exitOn(err)
 		awsAccess = access
 	}()
@@ -121,10 +121,10 @@ func saveSyncRevision() error {
 		return err
 	}
 
-	if err := idx.AddByPath(config.InfraFilename); err != nil {
+	if err = idx.AddByPath(config.InfraFilename); err != nil {
 		return err
 	}
-	if err := idx.AddByPath(config.AccessFilename); err != nil {
+	if err = idx.AddByPath(config.AccessFilename); err != nil {
 		return err
 	}
 
@@ -133,7 +133,7 @@ func saveSyncRevision() error {
 		return err
 	}
 
-	if err := idx.Write(); err != nil {
+	if err = idx.Write(); err != nil {
 		return err
 	}
 
@@ -146,9 +146,9 @@ func saveSyncRevision() error {
 
 	head, err := repo.Head()
 	if err == nil {
-		headCommit, err := repo.LookupCommit(head.Target())
-		if err != nil {
-			return err
+		headCommit, e := repo.LookupCommit(head.Target())
+		if e != nil {
+			return e
 		}
 		parents = append(parents, headCommit)
 	}

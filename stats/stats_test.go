@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
@@ -116,9 +115,16 @@ func TestBuildStats(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	access, err := rdf.BuildAwsAccessGraph("eu-west-1", awsAccess)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	id, _ := db.GetStringValue(AWLESS_ID_KEY)
+	aId, _ := db.GetStringValue(AWLESS_AID_KEY)
 	expected := Stats{
 		Id:      id,
+		AId:     aId,
 		Version: config.Version,
 		Commands: []*DailyCommands{
 			{Command: "awless sync", Hits: 1, Date: yesterday},
@@ -130,7 +136,7 @@ func TestBuildStats(t *testing.T) {
 		},
 		InfraMetrics: &InfraMetrics{
 			Date:                  now,
-			Region:                "",
+			Region:                "eu-west-1",
 			NbVpcs:                2,
 			NbSubnets:             3,
 			NbInstances:           3,
@@ -147,7 +153,7 @@ func TestBuildStats(t *testing.T) {
 		},
 		AccessMetrics: &AccessMetrics{
 			Date:                     now,
-			Region:                   "",
+			Region:                   "eu-west-1",
 			NbGroups:                 2,
 			NbPolicies:               2,
 			NbRoles:                  1,
@@ -161,11 +167,6 @@ func TestBuildStats(t *testing.T) {
 			MinGroupsByLocalPolicies: 1,
 			MaxGroupsByLocalPolicies: 2,
 		},
-	}
-
-	access, err := rdf.BuildAwsAccessGraph("eu-west-1", awsAccess)
-	if err != nil {
-		t.Fatal(err)
 	}
 
 	stats, _, err := BuildStats(db, infra, access, 0)
@@ -196,7 +197,7 @@ func TestBuildMetrics(t *testing.T) {
 
 	expectedMetrics := &InfraMetrics{
 		Date:                  now,
-		Region:                "",
+		Region:                "eu-west-1",
 		NbVpcs:                3,
 		NbSubnets:             7,
 		MinSubnetsPerVpc:      2,
@@ -234,12 +235,63 @@ func TestSendStats(t *testing.T) {
 	db.AddHistoryCommand([]string{"awless list subnets"})
 	db.AddHistoryCommand([]string{"awless list instances"})
 
-	localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+	awsInfra := &api.AwsInfra{}
+
+	awsInfra.Instances = []*ec2.Instance{
+		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro"), ImageId: aws.String("ami-e98bd29a")},
+		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro"), ImageId: aws.String("ami-9398d3e0")},
+	}
+
+	awsInfra.Vpcs = []*ec2.Vpc{
+		&ec2.Vpc{VpcId: aws.String("vpc_1")},
+	}
+
+	awsInfra.Subnets = []*ec2.Subnet{
+		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
+		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
+	}
+
+	awsAccess := &api.AwsAccess{}
+
+	awsAccess.Groups = []*iam.Group{
+		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("ngroup_1")},
+	}
+
+	awsAccess.LocalPolicies = []*iam.Policy{
+		&iam.Policy{PolicyId: aws.String("policy_1"), PolicyName: aws.String("npolicy_1")},
+	}
+
+	awsAccess.Roles = []*iam.Role{
+		&iam.Role{RoleId: aws.String("role_1")},
+	}
+
+	awsAccess.Users = []*iam.User{
+		&iam.User{UserId: aws.String("usr_1")},
+		&iam.User{UserId: aws.String("usr_2")},
+	}
+
+	awsAccess.UsersByGroup = map[string][]string{
+		"group_1": []string{"usr_1", "usr_2"},
+	}
+
+	awsAccess.UsersByLocalPolicies = map[string][]string{
+		"policy_1": []string{"usr_1"},
+	}
+
+	awsAccess.RolesByLocalPolicies = map[string][]string{
+		"policy_1": []string{"role_1"},
+	}
+
+	awsAccess.GroupsByLocalPolicies = map[string][]string{
+		"policy_1": []string{"group_1"},
+	}
+
+	localInfra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+	localAccess, err := rdf.BuildAwsAccessGraph("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -295,7 +347,7 @@ func TestSendStats(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	if err := db.SendStats(ts.URL, privateKey.PublicKey); err != nil {
+	if err := db.SendStats(ts.URL, privateKey.PublicKey, localInfra, localAccess); err != nil {
 		t.Fatal(err)
 	}
 
@@ -351,6 +403,9 @@ func statsEqual(stats1, stats2 *Stats) bool {
 		return false
 	}
 	if stats1.Id != stats2.Id {
+		return false
+	}
+	if stats1.AId != stats2.AId {
 		return false
 	}
 	if stats1.Version != stats2.Version {

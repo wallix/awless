@@ -1,6 +1,9 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/wallix/awless/api"
+)
 
 func init() {
 	createCmd.AddCommand(createInstanceCmd)
@@ -19,7 +22,7 @@ var createInstanceCmd = &cobra.Command{
 	Short:   "Create an instance",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := infraApi.CreateInstance("ami-9398d3e0")
+		resp, err := api.InfraService.CreateInstance("ami-9398d3e0")
 		display(resp, err)
 
 		return nil

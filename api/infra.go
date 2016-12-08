@@ -4,7 +4,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/wallix/awless/config"
 )
+
+var InfraService *Infra
+
+func init() {
+	InfraService = NewInfra(config.Session)
+}
 
 type Infra struct {
 	*ec2.EC2

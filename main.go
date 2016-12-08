@@ -1,11 +1,7 @@
 package main
 
-import (
-	"github.com/wallix/awless/cmd"
-	"github.com/wallix/awless/config"
-)
+import "github.com/wallix/awless/cmd"
 
 func main() {
-	config.CreateDefaultConf()
 	cmd.RootCmd.Execute()
 }

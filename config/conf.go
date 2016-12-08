@@ -9,11 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/spf13/viper"
 )
 
 var (
 	configFilename       = "config.yaml"
-	databaseFilename     = "database.db"
+	databaseFilename     = "awless.db"
 	GitDir               = filepath.Join(os.Getenv("HOME"), ".awless", "aws", "rdf")
 	Dir                  = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
 	Path                 = filepath.Join(Dir, configFilename)
@@ -28,13 +32,13 @@ oBCBtu8q6WeCMBlGMnmFtjRCHPgpIf9/3vylFlNn6LRRG/DLO2xY4Is/wj2KM98O
 pi+Bfy5FDK42Q/uJfUOJ5f6Ae/qIxxzKH7ixeXdCFvdzPvv4M4gGkqBAhpnFwLeX
 SwIDAQAB
 -----END PUBLIC KEY-----`
-	StatsExpirationDuration = 2 * time.Minute
-	Version                 = "0.2"
-
-	InfraFilename  = "infra.rdf"
-	AccessFilename = "access.rdf"
-
+	Salt                                = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
+	StatsExpirationDuration             = 2 * time.Minute
+	Version                             = "0.2"
+	InfraFilename                       = "infra.rdf"
+	AccessFilename                      = "access.rdf"
 	AwlessFirstInstall, AwlessFirstSync bool
+	Session                             *session.Session
 )
 
 func init() {
@@ -44,6 +48,28 @@ func init() {
 
 	_, err := os.Stat(Path)
 	AwlessFirstInstall = os.IsNotExist(err)
+	CreateDefaultConf()
+
+	viper.SetConfigFile(Path)
+
+	if err = viper.ReadInConfig(); err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+		return
+	}
+
+	Session, err = session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(-1)
+		return
+	}
+	if _, err = Session.Config.Credentials.Get(); err != nil {
+		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, "Your AWS credentials seem undefined!")
+		os.Exit(-1)
+		return
+	}
 }
 
 func CreateDefaultConf() {

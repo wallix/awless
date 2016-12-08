@@ -4,7 +4,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/boltdb/bolt"
+	"github.com/wallix/awless/api"
 )
 
 const AWLESS_BUCKET = "awless"
@@ -18,22 +20,41 @@ func OpenDB(name string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	db := &DB{boltdb}
 
 	if id, err := db.GetStringValue(AWLESS_ID_KEY); err != nil {
 		return nil, err
 	} else if id == "" {
-		newId, err := generateAwlessId()
-		if err != nil {
+		if err = db.NewDB(); err != nil {
 			return nil, err
 		}
-		if err = db.SetStringValue(AWLESS_ID_KEY, newId); err != nil {
-			return nil, err
-		}
+
 	}
 
 	return db, nil
+}
+
+func (db *DB) NewDB() error {
+	identityOutput, err := api.AccessService.CallerIdentity()
+	if err != nil {
+		return err
+	}
+	newId, err := generateAnonymousId(aws.StringValue(identityOutput.Arn))
+	if err != nil {
+		return err
+	}
+	if err = db.SetStringValue(AWLESS_ID_KEY, newId); err != nil {
+		return err
+	}
+	aId, err := generateAnonymousId(aws.StringValue(identityOutput.Account))
+	if err != nil {
+		return err
+	}
+	if err = db.SetStringValue(AWLESS_AID_KEY, aId); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (db *DB) DeleteBucket(name string) error {
