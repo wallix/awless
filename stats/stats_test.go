@@ -27,17 +27,9 @@ import (
 )
 
 func TestBuildStats(t *testing.T) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer os.Remove(f.Name())
+	db, close := newTestDb()
+	defer close()
 
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
 	now := time.Now()
 	yesterday := now.Add(-24 * time.Hour)
 	db.AddHistoryCommandWithTime([]string{"awless sync"}, yesterday)
@@ -213,17 +205,8 @@ func TestBuildMetrics(t *testing.T) {
 }
 
 func TestSendStats(t *testing.T) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer os.Remove(f.Name())
-
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
+	db, close := newTestDb()
+	defer close()
 
 	db.AddHistoryCommand([]string{"awless sync"})
 	db.AddHistoryCommand([]string{"awless diff"})
@@ -357,17 +340,8 @@ func TestSendStats(t *testing.T) {
 }
 
 func TestIfDataToSend(t *testing.T) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer os.Remove(f.Name())
-
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
+	db, close := newTestDb()
+	defer close()
 
 	if got, want := db.CheckStatsToSend(1*time.Hour), true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
@@ -382,7 +356,25 @@ func TestIfDataToSend(t *testing.T) {
 	if got, want := db.CheckStatsToSend(1*time.Hour), false; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
+}
 
+func newTestDb() (*DB, func()) {
+	f, e := ioutil.TempFile(".", "test.db")
+	if e != nil {
+		panic(e)
+	}
+
+	db, err := OpenDB(f.Name())
+	if err != nil {
+		panic(err)
+	}
+
+	todefer := func() {
+		os.Remove(f.Name())
+		db.Close()
+	}
+
+	return db, todefer
 }
 
 func dcEqual(dc1, dc2 *DailyCommands) bool {
