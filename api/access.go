@@ -58,6 +58,19 @@ func (a *Access) AttachedToPolicy(policyArn *string) (interface{}, error) {
 	return a.ListEntitiesForPolicy(params)
 }
 
+func (a *Access) AccountDetails() (interface{}, error) {
+	params := &iam.GetAccountAuthorizationDetailsInput{
+		Filter: []*string{
+			aws.String(iam.EntityTypeUser),
+			aws.String(iam.EntityTypeRole),
+			aws.String(iam.EntityTypeGroup),
+			aws.String(iam.EntityTypeLocalManagedPolicy),
+			aws.String(iam.EntityTypeAwsmanagedPolicy),
+		},
+	}
+	return a.GetAccountAuthorizationDetails(params)
+}
+
 type AwsAccess struct {
 	Groups       []*iam.Group
 	Users        []*iam.User
