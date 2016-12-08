@@ -8,16 +8,12 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+var historyBucketName = "line"
+
 type Line struct {
 	Id      int
 	Command []string
 	Time    time.Time
-}
-
-var historyBucketName string
-
-func init() {
-	historyBucketName = "line"
 }
 
 func (db *DB) FlushHistory() error {

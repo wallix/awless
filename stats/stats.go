@@ -20,10 +20,12 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-const AWLESS_ID_KEY = "awless_id"
-const AWLESS_AID_KEY = "awless_aid"
-const SENT_ID_KEY = "sent_id"
-const SENT_TIME_KEY = "sent_time"
+const (
+	AWLESS_ID_KEY  = "awless_id"
+	AWLESS_AID_KEY = "awless_aid"
+	SENT_ID_KEY    = "sent_id"
+	SENT_TIME_KEY  = "sent_time"
+)
 
 type Stats struct {
 	Id             string
