@@ -30,21 +30,11 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func Execute() {
-	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
-}
-
 func init() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
 
-	cobra.OnInitialize(initConfig)
-}
-
-func initConfig() {
 	var err error
+
 	statsDB, err = stats.OpenDB(config.DatabasePath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "can not save history:", err)

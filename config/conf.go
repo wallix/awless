@@ -48,7 +48,13 @@ func init() {
 
 	_, err := os.Stat(Path)
 	AwlessFirstInstall = os.IsNotExist(err)
-	CreateDefaultConf()
+
+	os.MkdirAll(GitDir, 0700)
+
+	if AwlessFirstInstall {
+		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)
+		fmt.Printf("Creating default config file at %s\n", Path)
+	}
 
 	viper.SetConfigFile(Path)
 
@@ -69,15 +75,6 @@ func init() {
 		fmt.Fprintln(os.Stderr, "Your AWS credentials seem undefined!")
 		os.Exit(-1)
 		return
-	}
-}
-
-func CreateDefaultConf() {
-	os.MkdirAll(GitDir, 0700)
-
-	if AwlessFirstInstall {
-		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)
-		fmt.Printf("Creating default config file at %s\n", Path)
 	}
 }
 
