@@ -35,6 +35,7 @@ type Stats struct {
 	InfraMetrics   *InfraMetrics
 	InstancesStats []*InstancesStat
 	AccessMetrics  *AccessMetrics
+	Logs           []*Log
 }
 
 type DailyCommands struct {
@@ -104,6 +105,11 @@ func BuildStats(db *DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) 
 		return nil, 0, err
 	}
 
+	logs, err := db.GetLogs()
+	if err != nil {
+		return nil, 0, err
+	}
+
 	stats := &Stats{
 		Id:             id,
 		AId:            aId,
@@ -112,6 +118,7 @@ func BuildStats(db *DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) 
 		InfraMetrics:   infraMetrics,
 		InstancesStats: instancesStats,
 		AccessMetrics:  accessMetrics,
+		Logs:           logs,
 	}
 
 	return stats, lastCommandId, nil
@@ -386,6 +393,9 @@ func (db *DB) SendStats(url string, publicKey rsa.PublicKey, localInfra, localAc
 		return err
 	}
 	if err := db.SetTimeValue(SENT_TIME_KEY, time.Now()); err != nil {
+		return err
+	}
+	if err := db.FlushLogs(); err != nil {
 		return err
 	}
 	return nil

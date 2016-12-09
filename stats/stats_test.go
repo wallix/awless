@@ -58,6 +58,11 @@ func TestBuildStats(t *testing.T) {
 		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
 	}
 
+	infra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	awsAccess := &api.AwsAccess{}
 
 	awsAccess.Groups = []*iam.Group{
@@ -100,15 +105,14 @@ func TestBuildStats(t *testing.T) {
 		"policy_2": []string{"group_1", "group_2"},
 	}
 
-	infra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	access, err := rdf.BuildAwsAccessGraph("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	db.AddLog("log msg 1")
+	db.AddLog("log msg 2")
+	db.AddLog("log msg 1")
 
 	id, _ := db.GetStringValue(AWLESS_ID_KEY)
 	aId, _ := db.GetStringValue(AWLESS_AID_KEY)
@@ -156,6 +160,10 @@ func TestBuildStats(t *testing.T) {
 			MaxRolesByLocalPolicies:  1,
 			MinGroupsByLocalPolicies: 1,
 			MaxGroupsByLocalPolicies: 2,
+		},
+		Logs: []*Log{
+			{Msg: "log msg 1", Hits: 2, Date: now},
+			{Msg: "log msg 2", Hits: 1, Date: now},
 		},
 	}
 
@@ -277,6 +285,10 @@ func TestSendStats(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	db.AddLog("log msg 1")
+	db.AddLog("log msg 2")
+	db.AddLog("log msg 1")
+
 	expected, _, err := BuildStats(db, localInfra, localAccess, 0)
 	if err != nil {
 		t.Fatal(err)
@@ -328,12 +340,21 @@ func TestSendStats(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	if err := db.SendStats(ts.URL, privateKey.PublicKey, localInfra, localAccess); err != nil {
+	if err = db.SendStats(ts.URL, privateKey.PublicKey, localInfra, localAccess); err != nil {
 		t.Fatal(err)
 	}
 
 	if got, want := processed, true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
+	}
+
+	logs, err := db.GetLogs()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := len(logs), 0; got != want {
+		t.Fatalf("got %d; want %d", got, want)
 	}
 }
 
@@ -395,7 +416,8 @@ func statsEqual(stats1, stats2 *Stats) bool {
 	}
 	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics) &&
 		instancesStatsEqual(stats1.InstancesStats, stats2.InstancesStats) &&
-		accessMetricsEqual(stats1.AccessMetrics, stats2.AccessMetrics)
+		accessMetricsEqual(stats1.AccessMetrics, stats2.AccessMetrics) &&
+		logsEqual(stats1.Logs, stats2.Logs)
 }
 
 func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
@@ -483,6 +505,30 @@ func instancesStatEqual(i1, i2 *InstancesStat) bool {
 		return false
 	}
 	return SameDay(&i1.Date, &i2.Date) && i1.Hits == i2.Hits && i1.Name == i2.Name && i1.Type == i2.Type
+}
+
+func logsEqual(l1, l2 []*Log) bool {
+	if l1 == nil && l2 == nil {
+		return true
+	}
+	if l1 == nil {
+		return false
+	}
+	if len(l1) != len(l2) {
+		return false
+	}
+	for _, i1 := range l1 {
+		found := false
+		for _, i2 := range l2 {
+			if SameDay(&i1.Date, &i2.Date) && i1.Hits == i2.Hits && i1.Msg == i2.Msg {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 func assertEqual(t *testing.T, got, want *Stats) {

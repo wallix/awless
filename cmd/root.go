@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -37,26 +35,37 @@ func init() {
 
 	statsDB, err = stats.OpenDB(config.DatabasePath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "can not save history:", err)
+		if statsDB != nil {
+			statsDB.AddLog("can not save history: " + err.Error())
+		}
 	} else if statsDB.CheckStatsToSend(config.StatsExpirationDuration) {
 		publicKey, err := config.LoadPublicKey()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			statsDB.AddLog(err.Error())
 		} else {
 			if !config.AwlessFirstSync {
 				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
+					statsDB.AddLog(err.Error())
 				}
 				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
+					statsDB.AddLog(err.Error())
 				}
 
 				if err := statsDB.SendStats(config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
-					fmt.Fprintln(os.Stderr, err)
+					statsDB.AddLog(err.Error())
 				}
 			}
 		}
 	}
+}
+
+func ExecuteRoot() error {
+	err := RootCmd.Execute()
+	if err != nil && statsDB != nil {
+		statsDB.AddLog(err.Error())
+	}
+
+	return err
 }
