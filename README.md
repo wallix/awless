@@ -71,3 +71,21 @@ Show or delete the history of commands entered in awless
 
     $ awless history show
     $ awless history delete
+
+## Bash Autocomplete
+
+### Mac OS X with brew
+
+    $ brew install bash-completion
+    $ echo '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion\n' >> ~/.bashrc
+    $ awless genautocomplete /usr/local/etc/bash_completion.d/awless
+
+### Ubuntu
+
+Install bash completion
+
+    $ sudo apt-get install bash-completion
+    $ sudo awless genautocomplete /etc/bash_completion.d/awless
+
+
+
