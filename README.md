@@ -91,4 +91,10 @@ For Ubuntu
 
 ### Zsh
 
+Test once with
+
     $ source <(awless completion zsh)
+
+Or add to your ~/.zshrc
+
+    $ echo 'source <(awless completion zsh)\n' >> ~/.zshrc
