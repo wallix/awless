@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 
@@ -172,13 +173,41 @@ func TestBuildStats(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := len(stats.Commands), len(expected.Commands); got != want {
-		t.Fatalf("got %d; want %d", got, want)
-	}
+	t.Run("Timestamps", func(t *testing.T) {
+		for i := range expected.Commands {
+			if got, want := stats.Commands[i].Date, expected.Commands[i].Date; !got.Equal(want) {
+				t.Fatalf("got %v want %v", got, want)
+			}
+		}
+		if got, want := stats.AccessMetrics.Date, expected.AccessMetrics.Date; !SameDay(&got, &want) {
+			t.Fatalf("got %v want %v", got, want)
+		}
+		if got, want := stats.InfraMetrics.Date, expected.InfraMetrics.Date; !SameDay(&got, &want) {
+			t.Fatalf("got %v want %v", got, want)
+		}
+		for i := range expected.InstancesStats {
+			if got, want := stats.InstancesStats[i].Date, expected.InstancesStats[i].Date; !SameDay(&got, &want) {
+				t.Fatalf("got %v want %v", got, want)
+			}
+		}
+		for i := range expected.Logs {
+			if got, want := stats.Logs[i].Date, expected.Logs[i].Date; !SameDay(&got, &want) {
+				t.Fatalf("got %v want %v", got, want)
+			}
+		}
+	})
 
-	if got, want := statsEqual(stats, &expected), true; got != want {
-		t.Fatalf("got\n%+v\nwant\n%+v\n", *stats, expected)
-	}
+	t.Run("Ignoring timestamps", func(t *testing.T) {
+		sort.Sort(ByDateAndCommand(stats.Commands))
+		sort.Sort(ByDateAndCommand(expected.Commands))
+		sort.Sort(ByDateNameAndType(stats.InstancesStats))
+		sort.Sort(ByDateNameAndType(expected.InstancesStats))
+		nullifyTime(stats)
+		nullifyTime(&expected)
+		if got, want := reflect.DeepEqual(stats, &expected), true; got != want {
+			t.Fatalf("got\n%+v\nwant\n%+v\n", *stats, expected)
+		}
+	})
 }
 
 func TestBuildMetrics(t *testing.T) {
@@ -188,7 +217,7 @@ func TestBuildMetrics(t *testing.T) {
 	}
 
 	now := time.Now()
-	infraMetrics, err := buildInfraMetrics(infra, now)
+	infraMetrics, err := buildInfraMetrics(infra)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -204,6 +233,13 @@ func TestBuildMetrics(t *testing.T) {
 		MinInstancesPerSubnet: 0,
 		MaxInstancesPerSubnet: 4,
 	}
+
+	if got, want := SameDay(&infraMetrics.Date, &expectedMetrics.Date), true; got != want {
+		t.Fatalf("got %t; want %t", got, want)
+	}
+
+	nullifyTime(infraMetrics)
+	nullifyTime(expectedMetrics)
 
 	if got, want := reflect.DeepEqual(infraMetrics, expectedMetrics), true; got != want {
 		t.Fatalf("got \n%#v\n; want \n%#v\n", infraMetrics, expectedMetrics)
@@ -334,7 +370,16 @@ func TestSendStats(t *testing.T) {
 			return
 		}
 
-		assertEqual(t, &received, expected)
+		sort.Sort(ByDateAndCommand(received.Commands))
+		sort.Sort(ByDateAndCommand(expected.Commands))
+		sort.Sort(ByDateNameAndType(received.InstancesStats))
+		sort.Sort(ByDateNameAndType(expected.InstancesStats))
+		nullifyTime(&received)
+		nullifyTime(expected)
+
+		if !reflect.DeepEqual(&received, expected) {
+			t.Fatalf("got %+v; want %+v", &received, expected)
+		}
 		processed = true
 
 	}))
@@ -377,166 +422,6 @@ func TestIfDataToSend(t *testing.T) {
 	}
 }
 
-func dcEqual(dc1, dc2 *DailyCommands) bool {
-	if dc1 == dc2 {
-		return true
-	}
-	if dc1 == nil {
-		return false
-	}
-	return dc1.Command == dc2.Command && dc1.Date.Equal(dc2.Date) && dc1.Hits == dc2.Hits
-}
-
-func statsEqual(stats1, stats2 *Stats) bool {
-	if stats1 == stats2 {
-		return true
-	}
-	if stats1 == nil {
-		return false
-	}
-	if stats1.Id != stats2.Id {
-		return false
-	}
-	if stats1.AId != stats2.AId {
-		return false
-	}
-	if stats1.Version != stats2.Version {
-		return false
-	}
-	for _, dc1 := range stats1.Commands {
-		found := false
-		for _, dc2 := range stats2.Commands {
-			if dcEqual(dc1, dc2) {
-				found = true
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return infraMetricsEqual(stats1.InfraMetrics, stats2.InfraMetrics) &&
-		instancesStatsEqual(stats1.InstancesStats, stats2.InstancesStats) &&
-		accessMetricsEqual(stats1.AccessMetrics, stats2.AccessMetrics) &&
-		logsEqual(stats1.Logs, stats2.Logs)
-}
-
-func infraMetricsEqual(i1, i2 *InfraMetrics) bool {
-	if i1 == i2 {
-		return true
-	}
-	if i1 == nil {
-		return false
-	}
-
-	if i1.Region != i2.Region {
-		return false
-	}
-	if i1.NbVpcs != i2.NbVpcs || i1.MaxSubnetsPerVpc != i2.MaxSubnetsPerVpc || i1.MinSubnetsPerVpc != i2.MinSubnetsPerVpc {
-		return false
-	}
-	if i1.NbSubnets != i2.NbSubnets || i1.MaxInstancesPerSubnet != i2.MaxInstancesPerSubnet || i1.MinInstancesPerSubnet != i2.MinInstancesPerSubnet {
-		return false
-	}
-	if i1.NbInstances != i2.NbInstances {
-		return false
-	}
-	return SameDay(&i1.Date, &i2.Date)
-}
-
-func accessMetricsEqual(a1, a2 *AccessMetrics) bool {
-	if a1 == a2 {
-		return true
-	}
-	if a1 == nil {
-		return false
-	}
-
-	if a1.Region != a2.Region {
-		return false
-	}
-	if a1.NbGroups != a2.NbGroups || a1.NbPolicies != a2.NbPolicies || a1.NbRoles != a2.NbRoles || a1.NbUsers != a2.NbUsers {
-		return false
-	}
-	if a1.MinUsersByGroup != a2.MinUsersByGroup || a1.MaxUsersByGroup != a2.MaxUsersByGroup {
-		return false
-	}
-	if a1.MinUsersByLocalPolicies != a2.MinUsersByLocalPolicies || a1.MaxUsersByLocalPolicies != a2.MaxUsersByLocalPolicies {
-		return false
-	}
-	if a1.MinRolesByLocalPolicies != a2.MinRolesByLocalPolicies || a1.MaxRolesByLocalPolicies != a2.MaxRolesByLocalPolicies {
-		return false
-	}
-
-	if a1.MinGroupsByLocalPolicies != a2.MinGroupsByLocalPolicies || a1.MaxGroupsByLocalPolicies != a2.MaxGroupsByLocalPolicies {
-		return false
-	}
-	return SameDay(&a1.Date, &a2.Date)
-}
-
-func instancesStatsEqual(is1, is2 []*InstancesStat) bool {
-	if is1 == nil && is2 == nil {
-		return true
-	}
-	if is1 == nil {
-		return false
-	}
-	if len(is1) != len(is2) {
-		return false
-	}
-	for _, i1 := range is1 {
-		found := false
-		for _, i2 := range is2 {
-			if instancesStatEqual(i1, i2) {
-				found = true
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
-}
-
-func instancesStatEqual(i1, i2 *InstancesStat) bool {
-	if i1 == i2 {
-		return true
-	}
-	if i1 == nil || i2 == nil {
-		return false
-	}
-	return SameDay(&i1.Date, &i2.Date) && i1.Hits == i2.Hits && i1.Name == i2.Name && i1.Type == i2.Type
-}
-
-func logsEqual(l1, l2 []*Log) bool {
-	if l1 == nil && l2 == nil {
-		return true
-	}
-	if l1 == nil {
-		return false
-	}
-	if len(l1) != len(l2) {
-		return false
-	}
-	for _, i1 := range l1 {
-		found := false
-		for _, i2 := range l2 {
-			if SameDay(&i1.Date, &i2.Date) && i1.Hits == i2.Hits && i1.Msg == i2.Msg {
-				found = true
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
-}
-
-func assertEqual(t *testing.T, got, want *Stats) {
-	if !statsEqual(got, want) {
-		t.Fatalf("got %+v; want %+v", got, want)
-	}
-}
-
 func (p *DailyCommands) String() string {
 	return fmt.Sprintf("%+v", *p)
 }
@@ -570,4 +455,58 @@ func aesDecrypt(encrypted, key []byte) ([]byte, error) {
 		return nil, err
 	}
 	return decrypted, nil
+}
+
+func nullifyTime(i interface{}) {
+	switch ii := i.(type) {
+	case *Stats:
+		nullifyTime(ii.AccessMetrics)
+		nullifyTime(ii.Commands)
+		nullifyTime(ii.InfraMetrics)
+		nullifyTime(ii.InstancesStats)
+		nullifyTime(ii.Logs)
+	case *AccessMetrics:
+		ii.Date = time.Time{}
+	case *InfraMetrics:
+		ii.Date = time.Time{}
+	case *DailyCommands:
+		ii.Date = time.Time{}
+	case *InstancesStat:
+		ii.Date = time.Time{}
+	case *Log:
+		ii.Date = time.Time{}
+	case []*DailyCommands:
+		for _, v := range ii {
+			nullifyTime(v)
+		}
+	case []*InstancesStat:
+		for _, v := range ii {
+			nullifyTime(v)
+		}
+	case []*Log:
+		for _, v := range ii {
+			nullifyTime(v)
+		}
+	default:
+		panic(fmt.Sprintf("%T is not a known type", i))
+	}
+}
+
+type ByDateAndCommand []*DailyCommands
+
+func (a ByDateAndCommand) Len() int      { return len(a) }
+func (a ByDateAndCommand) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByDateAndCommand) Less(i, j int) bool {
+	return a[i].Command < a[j].Command
+}
+
+type ByDateNameAndType []*InstancesStat
+
+func (a ByDateNameAndType) Len() int      { return len(a) }
+func (a ByDateNameAndType) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByDateNameAndType) Less(i, j int) bool {
+	if a[i].Type == a[j].Type {
+		return a[i].Name < a[j].Name
+	}
+	return a[i].Type < a[j].Type
 }

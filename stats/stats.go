@@ -76,7 +76,7 @@ func BuildStats(db *DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) 
 
 	infraMetrics := &InfraMetrics{}
 	if infra != nil {
-		infraMetrics, err = buildInfraMetrics(infra, time.Now())
+		infraMetrics, err = buildInfraMetrics(infra)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -212,9 +212,9 @@ type InfraMetrics struct {
 	MaxInstancesPerSubnet int
 }
 
-func buildInfraMetrics(infra *rdf.Graph, time time.Time) (*InfraMetrics, error) {
+func buildInfraMetrics(infra *rdf.Graph) (*InfraMetrics, error) {
 	metrics := &InfraMetrics{
-		Date:   time,
+		Date:   time.Now(),
 		Region: viper.GetString("region"),
 	}
 
