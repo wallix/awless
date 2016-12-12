@@ -44,18 +44,20 @@ func init() {
 			statsDB.AddLog(err.Error())
 		} else {
 			if !config.AwlessFirstSync {
-				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-				if err != nil {
-					statsDB.AddLog(err.Error())
-				}
-				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-				if err != nil {
-					statsDB.AddLog(err.Error())
-				}
+				go func() {
+					localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+					if err != nil {
+						statsDB.AddLog(err.Error())
+					}
+					localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+					if err != nil {
+						statsDB.AddLog(err.Error())
+					}
 
-				if err := statsDB.SendStats(config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
-					statsDB.AddLog(err.Error())
-				}
+					if err := statsDB.SendStats(config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
+						statsDB.AddLog(err.Error())
+					}
+				}()
 			}
 		}
 	}
