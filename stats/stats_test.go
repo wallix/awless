@@ -287,42 +287,6 @@ func TestStats(t *testing.T) {
 	})
 }
 
-func TestBuildMetrics(t *testing.T) {
-	infra, err := rdf.NewGraphFromFile("testdata/infra.rdf")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	now := time.Now()
-	infraMetrics, err := buildInfraMetrics(infra)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expectedMetrics := &InfraMetrics{
-		Date:                  now,
-		Region:                "eu-west-1",
-		NbVpcs:                3,
-		NbSubnets:             7,
-		MinSubnetsPerVpc:      2,
-		MaxSubnetsPerVpc:      3,
-		NbInstances:           18,
-		MinInstancesPerSubnet: 0,
-		MaxInstancesPerSubnet: 4,
-	}
-
-	if got, want := SameDay(&infraMetrics.Date, &expectedMetrics.Date), true; got != want {
-		t.Fatalf("got %t; want %t", got, want)
-	}
-
-	nullifyTime(infraMetrics)
-	nullifyTime(expectedMetrics)
-
-	if got, want := reflect.DeepEqual(infraMetrics, expectedMetrics), true; got != want {
-		t.Fatalf("got \n%#v\n; want \n%#v\n", infraMetrics, expectedMetrics)
-	}
-}
-
 func TestIfDataToSend(t *testing.T) {
 	db, close := newTestDb()
 	defer close()
