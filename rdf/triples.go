@@ -3,8 +3,21 @@ package rdf
 import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
+	"github.com/google/badwolf/triple/node"
 	"github.com/google/badwolf/triple/predicate"
 )
+
+func NewTripleFromStrings(sub *node.Node, pred string, obj string) (*triple.Triple, error) {
+	p, err := predicate.NewImmutable(pred)
+	if err != nil {
+		return nil, err
+	}
+	objL, err := literal.DefaultBuilder().Build(literal.Text, obj)
+	if err != nil {
+		return nil, err
+	}
+	return triple.New(sub, p, triple.NewLiteralObject(objL))
+}
 
 func attachLiteralToTriple(g *Graph, t *triple.Triple, p *predicate.Predicate, lit *literal.Literal) error {
 	node, err := t.Object().Node()

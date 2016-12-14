@@ -1,16 +1,65 @@
 package aws
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/google/badwolf/triple/predicate"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 )
+
+func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
+	out, err := inf.DescribeInstances(&ec2.DescribeInstancesInput{})
+	if err != nil {
+		return nil, err
+	}
+	var triples []*triple.Triple
+	for _, res := range out.Reservations {
+		for _, inst := range res.Instances {
+			_, err := addNode(rdf.INSTANCE, awssdk.StringValue(inst.InstanceId), inst, &triples)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return rdf.NewGraphFromTriples(triples), nil
+}
+
+func (inf *Infra) VpcsGraph() (*rdf.Graph, error) {
+	out, err := inf.DescribeVpcs(&ec2.DescribeVpcsInput{})
+	if err != nil {
+		return nil, err
+	}
+	var triples []*triple.Triple
+	for _, vpc := range out.Vpcs {
+		_, err := addNode(rdf.VPC, awssdk.StringValue(vpc.VpcId), vpc, &triples)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return rdf.NewGraphFromTriples(triples), nil
+}
+
+func (inf *Infra) SubnetsGraph() (*rdf.Graph, error) {
+	out, err := inf.DescribeSubnets(&ec2.DescribeSubnetsInput{})
+	if err != nil {
+		return nil, err
+	}
+	var triples []*triple.Triple
+	for _, subnet := range out.Subnets {
+		_, err := addNode(rdf.SUBNET, awssdk.StringValue(subnet.SubnetId), subnet, &triples)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return rdf.NewGraphFromTriples(triples), nil
+}
 
 func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 	triples, err := buildAccessRdfTriples(region, access)
@@ -230,41 +279,6 @@ func findNodeById(nodes []*node.Node, id string) *node.Node {
 	return nil
 }
 
-type User struct {
-	Id string `aws:"UserId"`
-}
-
-type Role struct {
-	Id string `aws:"RoleId"`
-}
-
-type Group struct {
-	Id string `aws:"GroupId"`
-}
-
-type Policy struct {
-	Id string `aws:"PolicyId"`
-}
-
-type Vpc struct {
-	Id string `aws:"VpcId"`
-}
-
-type Subnet struct {
-	Id    string `aws:"SubnetId"`
-	VpcId string `aws:"VpcId"`
-}
-
-type Instance struct {
-	Id        string `aws:"InstanceId"`
-	Type      string `aws:"InstanceType"`
-	SubnetId  string `aws:"SubnetId"`
-	VpcId     string `aws:"VpcId"`
-	PublicIp  string `aws:"PublicIpAddress"`
-	PrivateIp string `aws:"PrivateIpAddress"`
-	ImageId   string `aws:"ImageId"`
-}
-
 func addNode(nodeType, id string, awsNode interface{}, triples *[]*triple.Triple) (*node.Node, error) {
 	n, err := node.NewNodeFromStrings(nodeType, id)
 	if err != nil {
@@ -280,47 +294,24 @@ func addNode(nodeType, id string, awsNode interface{}, triples *[]*triple.Triple
 	}
 	*triples = append(*triples, t)
 
+	var propL *literal.Literal
 	nodeV := reflect.ValueOf(awsNode).Elem()
-	var propP *predicate.Predicate
-	var destType reflect.Type
-	switch nodeType {
-	case rdf.VPC:
-		destType = reflect.TypeOf(Vpc{})
-	case rdf.SUBNET:
-		destType = reflect.TypeOf(Subnet{})
-	case rdf.INSTANCE:
-		destType = reflect.TypeOf(Instance{})
-	case rdf.USER:
-		destType = reflect.TypeOf(User{})
-	case rdf.ROLE:
-		destType = reflect.TypeOf(Role{})
-	case rdf.GROUP:
-		destType = reflect.TypeOf(Group{})
-	case rdf.POLICY:
-		destType = reflect.TypeOf(Policy{})
-	default:
-		return nil, fmt.Errorf("type %s is not managed", nodeType)
-	}
 
-	for i := 0; i < destType.NumField(); i++ {
-		if propP, err = predicate.NewImmutable(destType.Field(i).Name); err != nil {
-			return nil, err
-		}
-		var propL *literal.Literal
-		if awsTag, ok := destType.Field(i).Tag.Lookup("aws"); ok {
-			sourceField := nodeV.FieldByName(awsTag)
-			if sourceField.IsValid() {
-				stringValue := awssdk.StringValue(sourceField.Interface().(*string))
-				if stringValue != "" {
-					if propL, err = literal.DefaultBuilder().Build(literal.Text, stringValue); err != nil {
-						return nil, err
-					}
-					propT, err := triple.New(n, propP, triple.NewLiteralObject(propL))
-					if err != nil {
-						return nil, err
-					}
-					*triples = append(*triples, propT)
-				}
+	for propertyId, awsId := range awsResourcesProperties[nodeType] {
+		sourceField := nodeV.FieldByName(awsId)
+		if sourceField.IsValid() && !sourceField.IsNil() {
+			prop := cloud.Property{Key: propertyId, Value: sourceField.Interface()}
+			json, err := json.Marshal(prop)
+			if err != nil {
+				return nil, err
+			}
+			if propL, err = literal.DefaultBuilder().Build(literal.Text, string(json)); err != nil {
+				return nil, err
+			}
+			if propT, err := triple.New(n, rdf.PropertyPredicate, triple.NewLiteralObject(propL)); err != nil {
+				return nil, err
+			} else {
+				*triples = append(*triples, propT)
 			}
 		}
 	}

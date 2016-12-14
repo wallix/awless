@@ -6,6 +6,7 @@ var (
 	ParentOfPredicate *predicate.Predicate
 	HasTypePredicate  *predicate.Predicate
 	DiffPredicate     *predicate.Predicate
+	PropertyPredicate *predicate.Predicate
 )
 
 func init() {
@@ -19,6 +20,8 @@ func init() {
 	if DiffPredicate, err = predicate.NewImmutable("diff"); err != nil {
 		panic(err)
 	}
-
+	if PropertyPredicate, err = predicate.NewImmutable("property"); err != nil {
+		panic(err)
+	}
 	DefaultDiffer = &defaultDiffer{ParentOfPredicate}
 }

@@ -9,12 +9,14 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
 )
@@ -153,11 +155,11 @@ func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error)
 }
 
 func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err error) {
-	instancesStats, err = addStatsForInstanceProperty(infra, "Type", "InstanceType", instancesStats)
+	instancesStats, err = addStatsForInstanceStringProperty(infra, "Type", "InstanceType", instancesStats)
 	if err != nil {
 		return instancesStats, err
 	}
-	instancesStats, err = addStatsForInstanceProperty(infra, "ImageId", "ImageId", instancesStats)
+	instancesStats, err = addStatsForInstanceStringProperty(infra, "ImageId", "ImageId", instancesStats)
 	if err != nil {
 		return instancesStats, err
 	}
@@ -165,26 +167,28 @@ func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err
 	return instancesStats, err
 }
 
-func addStatsForInstanceProperty(infra *rdf.Graph, propertyName string, instanceStatType string, instancesStats []*InstancesStat) ([]*InstancesStat, error) {
-	triples, err := infra.TriplesForPredicateName(propertyName)
+func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, instanceStatType string, instancesStats []*InstancesStat) ([]*InstancesStat, error) {
+	nodes, err := infra.NodesForType(rdf.INSTANCE)
 	if err != nil {
 		return nil, err
 	}
-
-	propertyMap := make(map[string]int)
-	for _, t := range triples {
-		l, e := t.Object().Literal()
-		if e != nil {
-			return instancesStats, e
+	propertyValuesCountMap := make(map[string]int)
+	for _, inst := range nodes {
+		var instProperties cloud.Properties
+		instProperties, err = infra.LoadPropertiesTriples(inst)
+		if err != nil {
+			return nil, err
 		}
-		property, e := l.Text()
-		if e != nil {
-			return instancesStats, e
+		if instProperties[propertyName] != nil {
+			propertyValue, ok := instProperties[propertyName].(string)
+			if !ok {
+				return nil, fmt.Errorf("Property value of '%s' is not a string: %T", instProperties[propertyName], instProperties[propertyName])
+			}
+			propertyValuesCountMap[propertyValue]++
 		}
-		propertyMap[property]++
 	}
 
-	for k, v := range propertyMap {
+	for k, v := range propertyValuesCountMap {
 		instancesStats = append(instancesStats, &InstancesStat{Type: instanceStatType, Date: time.Now(), Hits: v, Name: k})
 	}
 

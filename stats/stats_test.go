@@ -176,6 +176,9 @@ func TestStats(t *testing.T) {
 	}
 
 	t.Run("Timestamps", func(t *testing.T) {
+		if got, want := len(stats.Commands), len(expected.Commands); got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
 		for i := range expected.Commands {
 			if got, want := stats.Commands[i].Date, expected.Commands[i].Date; !got.Equal(want) {
 				t.Fatalf("got %v want %v", got, want)
@@ -186,6 +189,9 @@ func TestStats(t *testing.T) {
 		}
 		if got, want := stats.InfraMetrics.Date, expected.InfraMetrics.Date; !SameDay(&got, &want) {
 			t.Fatalf("got %v want %v", got, want)
+		}
+		if got, want := len(stats.InstancesStats), len(expected.InstancesStats); got != want {
+			t.Fatalf("got %d want %d", got, want)
 		}
 		for i := range expected.InstancesStats {
 			if got, want := stats.InstancesStats[i].Date, expected.InstancesStats[i].Date; !SameDay(&got, &want) {
