@@ -9,7 +9,6 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -432,8 +431,4 @@ func aesEncrypt(data []byte) ([]byte, []byte, error) {
 	}
 	encrypted := gcm.Seal(nonce, nonce, data, nil)
 	return sessionKey, encrypted, nil
-}
-
-func generateAnonymousId(seed string) (string, error) {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(config.Salt+seed))), nil
 }

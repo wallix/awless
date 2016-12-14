@@ -6,6 +6,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/wallix/awless/cloud"
 )
 
 var (
@@ -28,6 +29,7 @@ func InitSession(region string) (*session.Session, error) {
 func InitServices(sess *session.Session) {
 	AccessService = NewAccess(sess)
 	InfraService = NewInfra(sess)
+	cloud.Current = AccessService
 }
 
 func multiFetch(fns ...func() (interface{}, error)) (<-chan interface{}, <-chan error) {

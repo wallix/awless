@@ -36,8 +36,24 @@ func (a *Access) Roles() (interface{}, error) {
 	return a.ListRoles(&iam.ListRolesInput{})
 }
 
-func (a *Access) CallerIdentity() (*sts.GetCallerIdentityOutput, error) {
+func (a *Access) CallerIdentity() (interface{}, error) {
 	return a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+}
+
+func (a *Access) GetUserId() (string, error) {
+	output, err := a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", err
+	}
+	return awssdk.StringValue(output.Arn), nil
+}
+
+func (a *Access) GetAccountId() (string, error) {
+	output, err := a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", err
+	}
+	return awssdk.StringValue(output.Account), nil
 }
 
 func (a *Access) LocalPolicies() (interface{}, error) {

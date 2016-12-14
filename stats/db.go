@@ -1,12 +1,14 @@
 package stats
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"strconv"
 	"time"
 
-	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/boltdb/bolt"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/config"
 )
 
 const AWLESS_BUCKET = "awless"
@@ -35,18 +37,22 @@ func OpenDB(name string) (*DB, error) {
 }
 
 func (db *DB) NewDB() error {
-	identityOutput, err := aws.AccessService.CallerIdentity()
+	userId, err := cloud.Current.GetUserId()
 	if err != nil {
 		return err
 	}
-	newId, err := generateAnonymousId(awssdk.StringValue(identityOutput.Arn))
+	newId, err := generateAnonymousId(userId)
 	if err != nil {
 		return err
 	}
 	if err = db.SetStringValue(AWLESS_ID_KEY, newId); err != nil {
 		return err
 	}
-	aId, err := generateAnonymousId(awssdk.StringValue(identityOutput.Account))
+	accountId, err := cloud.Current.GetAccountId()
+	if err != nil {
+		return err
+	}
+	aId, err := generateAnonymousId(accountId)
 	if err != nil {
 		return err
 	}
@@ -139,4 +145,8 @@ func (db *DB) SetTimeValue(key string, t time.Time) error {
 
 func (db *DB) SetIntValue(key string, value int) error {
 	return db.SetStringValue(key, strconv.Itoa(value))
+}
+
+func generateAnonymousId(seed string) (string, error) {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(config.Salt+seed))), nil
 }
