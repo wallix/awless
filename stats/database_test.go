@@ -5,7 +5,16 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/config"
 )
+
+func init() {
+	config.InitAwlessEnv()
+	config.InitCloudSession()
+	api.InitServices()
+}
 
 func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
 	f, e := ioutil.TempFile(".", "test.db")

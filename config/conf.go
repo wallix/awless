@@ -41,7 +41,7 @@ SwIDAQAB
 	Session                             *session.Session
 )
 
-func init() {
+func InitAwlessEnv() {
 	_, ierr := os.Stat(filepath.Join(GitDir, InfraFilename))
 	_, aerr := os.Stat(filepath.Join(GitDir, AccessFilename))
 	AwlessFirstSync = os.IsNotExist(ierr) || os.IsNotExist(aerr)
@@ -63,6 +63,10 @@ func init() {
 		os.Exit(-1)
 		return
 	}
+}
+
+func InitCloudSession() {
+	var err error
 
 	Session, err = session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
 	if err != nil {

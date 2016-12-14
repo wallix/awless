@@ -5,14 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/wallix/awless/config"
 )
-
-var AccessService *Access
-
-func init() {
-	AccessService = NewAccess(config.Session)
-}
 
 type Access struct {
 	*iam.IAM

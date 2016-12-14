@@ -28,7 +28,7 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func InitCli() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
 
 	var err error

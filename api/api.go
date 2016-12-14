@@ -1,6 +1,20 @@
 package api
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/wallix/awless/config"
+)
+
+var (
+	AccessService *Access
+	InfraService  *Infra
+)
+
+func InitServices() {
+	AccessService = NewAccess(config.Session)
+	InfraService = NewInfra(config.Session)
+}
 
 func multiFetch(fns ...func() (interface{}, error)) (<-chan interface{}, <-chan error) {
 	resultc := make(chan interface{})
