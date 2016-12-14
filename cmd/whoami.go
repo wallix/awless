@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 )
 
 func init() {
@@ -15,7 +15,7 @@ var whoamiCmd = &cobra.Command{
 	Short:   "Show the caller identity",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := api.AccessService.CallerIdentity()
+		resp, err := aws.AccessService.CallerIdentity()
 		display(resp, err)
 		return nil
 	},

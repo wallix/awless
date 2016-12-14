@@ -6,7 +6,7 @@ import (
 	"text/tabwriter"
 )
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/fatih/color"
@@ -66,13 +66,13 @@ func lineDisplay(item interface{}) {
 						name = *t.Value
 					}
 				}
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), name, aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress)))
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", awssdk.StringValue(inst.InstanceId), name, awssdk.StringValue(inst.State.Name), awssdk.StringValue(inst.InstanceType), awssdk.StringValue(inst.PrivateIpAddress), awssdk.StringValue(inst.PublicIpAddress)))
 			}
 		}
 	case *ec2.Reservation:
 		fmt.Fprintln(w, "Id\tType\tState\tPriv IP\tPub IP")
 		for _, inst := range item.(*ec2.Reservation).Instances {
-			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s", aws.StringValue(inst.InstanceId), aws.StringValue(inst.State.Name), aws.StringValue(inst.InstanceType), aws.StringValue(inst.PrivateIpAddress), aws.StringValue(inst.PublicIpAddress)))
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s", awssdk.StringValue(inst.InstanceId), awssdk.StringValue(inst.State.Name), awssdk.StringValue(inst.InstanceType), awssdk.StringValue(inst.PrivateIpAddress), awssdk.StringValue(inst.PublicIpAddress)))
 		}
 	case *ec2.DescribeVpcsOutput:
 		fmt.Fprintln(w, "Id\tDefault\tState\tCidr")

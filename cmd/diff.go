@@ -14,7 +14,7 @@ import (
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
 )
@@ -32,15 +32,15 @@ var diffCmd = &cobra.Command{
 			return errors.New("No local data for a diff. You might want to perfom a sync first with `awless sync`")
 		}
 
-		var awsInfra *api.AwsInfra
-		var awsAccess *api.AwsAccess
+		var awsInfra *aws.AwsInfra
+		var awsAccess *aws.AwsAccess
 
 		var wg sync.WaitGroup
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			infra, err := api.InfraService.FetchAwsInfra()
+			infra, err := aws.InfraService.FetchAwsInfra()
 			exitOn(err)
 			awsInfra = infra
 		}()
@@ -48,7 +48,7 @@ var diffCmd = &cobra.Command{
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			access, err := api.AccessService.FetchAwsAccess()
+			access, err := aws.AccessService.FetchAwsAccess()
 			exitOn(err)
 			awsAccess = access
 		}()
@@ -65,7 +65,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteInfra, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+		remoteInfra, err := aws.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 		if err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteAccess, err := rdf.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
+		remoteAccess, err := aws.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
 		if err != nil {
 			return err
 		}

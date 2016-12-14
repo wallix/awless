@@ -12,7 +12,7 @@ import (
 	"github.com/libgit2/git2go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
 )
@@ -54,15 +54,15 @@ var syncCmd = &cobra.Command{
 }
 
 func performSync() (*rdf.Graph, *rdf.Graph, error) {
-	var awsInfra *api.AwsInfra
-	var awsAccess *api.AwsAccess
+	var awsInfra *aws.AwsInfra
+	var awsAccess *aws.AwsAccess
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		infra, err := api.InfraService.FetchAwsInfra()
+		infra, err := aws.InfraService.FetchAwsInfra()
 		exitOn(err)
 		awsInfra = infra
 	}()
@@ -70,14 +70,14 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		access, err := api.AccessService.FetchAwsAccess()
+		access, err := aws.AccessService.FetchAwsAccess()
 		exitOn(err)
 		awsAccess = access
 	}()
 
 	wg.Wait()
 
-	infrag, err := rdf.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+	infrag, err := aws.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
 
 	tofile, err := infrag.Marshal()
 	if err != nil {
@@ -87,7 +87,7 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 		return nil, nil, err
 	}
 
-	accessg, err := rdf.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
+	accessg, err := aws.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
 
 	tofile, err = accessg.Marshal()
 	if err != nil {

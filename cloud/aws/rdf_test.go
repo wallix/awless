@@ -1,50 +1,51 @@
-package rdf
+package aws
 
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/wallix/awless/api"
+	"github.com/google/badwolf/triple"
+	"github.com/wallix/awless/rdf"
 )
 
 func TestBuildAccessRdfTriples(t *testing.T) {
-	awsAccess := &api.AwsAccess{}
+	awsAccess := &AwsAccess{}
 
 	awsAccess.Groups = []*iam.Group{
-		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("ngroup_1")},
-		&iam.Group{GroupId: aws.String("group_2"), GroupName: aws.String("ngroup_2")},
-		&iam.Group{GroupId: aws.String("group_3"), GroupName: aws.String("ngroup_3")},
-		&iam.Group{GroupId: aws.String("group_4"), GroupName: aws.String("ngroup_4")},
+		&iam.Group{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
+		&iam.Group{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
+		&iam.Group{GroupId: awssdk.String("group_3"), GroupName: awssdk.String("ngroup_3")},
+		&iam.Group{GroupId: awssdk.String("group_4"), GroupName: awssdk.String("ngroup_4")},
 	}
 
 	awsAccess.LocalPolicies = []*iam.Policy{
-		&iam.Policy{PolicyId: aws.String("policy_1"), PolicyName: aws.String("npolicy_1")},
-		&iam.Policy{PolicyId: aws.String("policy_2"), PolicyName: aws.String("npolicy_2")},
-		&iam.Policy{PolicyId: aws.String("policy_3"), PolicyName: aws.String("npolicy_3")},
-		&iam.Policy{PolicyId: aws.String("policy_4"), PolicyName: aws.String("npolicy_4")},
+		&iam.Policy{PolicyId: awssdk.String("policy_1"), PolicyName: awssdk.String("npolicy_1")},
+		&iam.Policy{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
+		&iam.Policy{PolicyId: awssdk.String("policy_3"), PolicyName: awssdk.String("npolicy_3")},
+		&iam.Policy{PolicyId: awssdk.String("policy_4"), PolicyName: awssdk.String("npolicy_4")},
 	}
 
 	awsAccess.Roles = []*iam.Role{
-		&iam.Role{RoleId: aws.String("role_1")},
-		&iam.Role{RoleId: aws.String("role_2")},
-		&iam.Role{RoleId: aws.String("role_3")},
-		&iam.Role{RoleId: aws.String("role_4")},
+		&iam.Role{RoleId: awssdk.String("role_1")},
+		&iam.Role{RoleId: awssdk.String("role_2")},
+		&iam.Role{RoleId: awssdk.String("role_3")},
+		&iam.Role{RoleId: awssdk.String("role_4")},
 	}
 
 	awsAccess.Users = []*iam.User{
-		&iam.User{UserId: aws.String("usr_1")},
-		&iam.User{UserId: aws.String("usr_2")},
-		&iam.User{UserId: aws.String("usr_3")},
-		&iam.User{UserId: aws.String("usr_4")},
-		&iam.User{UserId: aws.String("usr_5")},
-		&iam.User{UserId: aws.String("usr_6")},
-		&iam.User{UserId: aws.String("usr_7")},
-		&iam.User{UserId: aws.String("usr_8")},
-		&iam.User{UserId: aws.String("usr_9")},
-		&iam.User{UserId: aws.String("usr_10")}, //users not in any groups
-		&iam.User{UserId: aws.String("usr_11")},
+		&iam.User{UserId: awssdk.String("usr_1")},
+		&iam.User{UserId: awssdk.String("usr_2")},
+		&iam.User{UserId: awssdk.String("usr_3")},
+		&iam.User{UserId: awssdk.String("usr_4")},
+		&iam.User{UserId: awssdk.String("usr_5")},
+		&iam.User{UserId: awssdk.String("usr_6")},
+		&iam.User{UserId: awssdk.String("usr_7")},
+		&iam.User{UserId: awssdk.String("usr_8")},
+		&iam.User{UserId: awssdk.String("usr_9")},
+		&iam.User{UserId: awssdk.String("usr_10")}, //users not in any groups
+		&iam.User{UserId: awssdk.String("usr_11")},
 	}
 
 	awsAccess.UsersByGroup = map[string][]string{
@@ -186,26 +187,26 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 }
 
 func TestBuildInfraRdfTriples(t *testing.T) {
-	awsInfra := &api.AwsInfra{}
+	awsInfra := &AwsInfra{}
 
 	awsInfra.Instances = []*ec2.Instance{
-		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
-		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
-		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
-		&ec2.Instance{InstanceId: aws.String("inst_4"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
-		&ec2.Instance{InstanceId: aws.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
+		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
 	}
 
 	awsInfra.Vpcs = []*ec2.Vpc{
-		&ec2.Vpc{VpcId: aws.String("vpc_1")},
-		&ec2.Vpc{VpcId: aws.String("vpc_2")},
+		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
+		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
 	}
 
 	awsInfra.Subnets = []*ec2.Subnet{
-		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
-		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
-		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
-		&ec2.Subnet{SubnetId: aws.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
+		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
 	triples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
@@ -264,7 +265,7 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 
 func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 	expect := `/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`
-	triples, err := buildAccessRdfTriples("eu-west-1", api.NewAwsAccess())
+	triples, err := buildAccessRdfTriples("eu-west-1", NewAwsAccess())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,7 +275,7 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	triples, err = buildInfraRdfTriples("eu-west-1", &api.AwsInfra{})
+	triples, err = buildInfraRdfTriples("eu-west-1", &AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -283,4 +284,9 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
+}
+
+func marshalTriples(triples []*triple.Triple) string {
+	g := rdf.NewGraphFromTriples(triples)
+	return g.MustMarshal()
 }

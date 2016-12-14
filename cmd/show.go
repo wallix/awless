@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 )
 
 func init() {
@@ -26,7 +26,7 @@ var showVpcCmd = &cobra.Command{
 		if len(args) != 1 {
 			return errors.New("show vpc: id required")
 		}
-		resp, err := api.InfraService.Vpc(args[0])
+		resp, err := aws.InfraService.Vpc(args[0])
 		display(resp, err)
 		return nil
 	},

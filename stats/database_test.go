@@ -2,18 +2,22 @@ package stats
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 )
 
 func init() {
 	config.InitAwlessEnv()
-	config.InitCloudSession()
-	api.InitServices()
+	sess, err := aws.InitSession("eu-west-1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	aws.InitServices(sess)
 }
 
 func TestOpenDbGeneratesIdForNewDb(t *testing.T) {

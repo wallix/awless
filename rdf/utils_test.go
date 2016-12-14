@@ -28,7 +28,7 @@ func noErrLiteralTriple(s *node.Node, p *predicate.Predicate, l *literal.Literal
 	return tri
 }
 
-func marshalTriples(triples []*triple.Triple) string {
+func MarshalTriples(triples []*triple.Triple) string {
 	g := NewGraphFromTriples(triples)
 	return g.MustMarshal()
 }

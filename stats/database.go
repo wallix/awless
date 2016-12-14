@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/boltdb/bolt"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 )
 
 const AWLESS_BUCKET = "awless"
@@ -35,18 +35,18 @@ func OpenDB(name string) (*DB, error) {
 }
 
 func (db *DB) NewDB() error {
-	identityOutput, err := api.AccessService.CallerIdentity()
+	identityOutput, err := aws.AccessService.CallerIdentity()
 	if err != nil {
 		return err
 	}
-	newId, err := generateAnonymousId(aws.StringValue(identityOutput.Arn))
+	newId, err := generateAnonymousId(awssdk.StringValue(identityOutput.Arn))
 	if err != nil {
 		return err
 	}
 	if err = db.SetStringValue(AWLESS_ID_KEY, newId); err != nil {
 		return err
 	}
-	aId, err := generateAnonymousId(aws.StringValue(identityOutput.Account))
+	aId, err := generateAnonymousId(awssdk.StringValue(identityOutput.Account))
 	if err != nil {
 		return err
 	}

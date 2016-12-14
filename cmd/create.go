@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 )
 
 func init() {
@@ -22,7 +22,7 @@ var createInstanceCmd = &cobra.Command{
 	Short:   "Create an instance",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := api.InfraService.CreateInstance("ami-9398d3e0")
+		resp, err := aws.InfraService.CreateInstance("ami-9398d3e0")
 		display(resp, err)
 
 		return nil

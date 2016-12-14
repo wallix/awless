@@ -1,9 +1,11 @@
-package api
+package aws
 
 import (
+	"fmt"
 	"sync"
 
-	"github.com/wallix/awless/config"
+	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 var (
@@ -11,9 +13,21 @@ var (
 	InfraService  *Infra
 )
 
-func InitServices() {
-	AccessService = NewAccess(config.Session)
-	InfraService = NewInfra(config.Session)
+func InitSession(region string) (*session.Session, error) {
+	session, err := session.NewSession(&awssdk.Config{Region: awssdk.String(region)})
+	if err != nil {
+		return nil, err
+	}
+	if _, err = session.Config.Credentials.Get(); err != nil {
+		return nil, fmt.Errorf("Your AWS credentials seem undefined: %s", err)
+	}
+
+	return session, nil
+}
+
+func InitServices(sess *session.Session) {
+	AccessService = NewAccess(sess)
+	InfraService = NewInfra(sess)
 }
 
 func multiFetch(fns ...func() (interface{}, error)) (<-chan interface{}, <-chan error) {

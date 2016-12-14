@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/spf13/viper"
 )
 
@@ -38,7 +36,6 @@ SwIDAQAB
 	InfraFilename                       = "infra.rdf"
 	AccessFilename                      = "access.rdf"
 	AwlessFirstInstall, AwlessFirstSync bool
-	Session                             *session.Session
 )
 
 func InitAwlessEnv() {
@@ -60,23 +57,6 @@ func InitAwlessEnv() {
 
 	if err = viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
-		os.Exit(-1)
-		return
-	}
-}
-
-func InitCloudSession() {
-	var err error
-
-	Session, err = session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
-		return
-	}
-	if _, err = Session.Config.Credentials.Get(); err != nil {
-		fmt.Println(err)
-		fmt.Fprintln(os.Stderr, "Your AWS credentials seem undefined!")
 		os.Exit(-1)
 		return
 	}

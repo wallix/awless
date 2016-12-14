@@ -1,7 +1,7 @@
-package api
+package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -25,7 +25,7 @@ func (a *Access) Groups() (interface{}, error) {
 }
 
 func (a *Access) UsersForGroup(name string) (interface{}, error) {
-	group, err := a.GetGroup(&iam.GetGroupInput{GroupName: aws.String(name)})
+	group, err := a.GetGroup(&iam.GetGroupInput{GroupName: awssdk.String(name)})
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (a *Access) CallerIdentity() (*sts.GetCallerIdentityOutput, error) {
 }
 
 func (a *Access) LocalPolicies() (interface{}, error) {
-	return a.ListPolicies(&iam.ListPoliciesInput{Scope: aws.String(iam.PolicyScopeTypeLocal)})
+	return a.ListPolicies(&iam.ListPoliciesInput{Scope: awssdk.String(iam.PolicyScopeTypeLocal)})
 }
 
 func (a *Access) AttachedToPolicy(policyArn *string) (interface{}, error) {
@@ -54,11 +54,11 @@ func (a *Access) AttachedToPolicy(policyArn *string) (interface{}, error) {
 func (a *Access) AccountDetails() (interface{}, error) {
 	params := &iam.GetAccountAuthorizationDetailsInput{
 		Filter: []*string{
-			aws.String(iam.EntityTypeUser),
-			aws.String(iam.EntityTypeRole),
-			aws.String(iam.EntityTypeGroup),
-			aws.String(iam.EntityTypeLocalManagedPolicy),
-			aws.String(iam.EntityTypeAwsmanagedPolicy),
+			awssdk.String(iam.EntityTypeUser),
+			awssdk.String(iam.EntityTypeRole),
+			awssdk.String(iam.EntityTypeGroup),
+			awssdk.String(iam.EntityTypeLocalManagedPolicy),
+			awssdk.String(iam.EntityTypeAwsmanagedPolicy),
 		},
 	}
 	return a.GetAccountAuthorizationDetails(params)
@@ -115,26 +115,26 @@ func (access *Access) FetchAwsAccess() (*AwsAccess, error) {
 
 		output := resp.(*iam.ListEntitiesForPolicyOutput)
 		for _, group := range output.PolicyGroups {
-			awsAccess.GroupsByLocalPolicies[aws.StringValue(policy.PolicyId)] = append(awsAccess.GroupsByLocalPolicies[aws.StringValue(policy.PolicyId)], aws.StringValue(group.GroupId))
+			awsAccess.GroupsByLocalPolicies[awssdk.StringValue(policy.PolicyId)] = append(awsAccess.GroupsByLocalPolicies[awssdk.StringValue(policy.PolicyId)], awssdk.StringValue(group.GroupId))
 		}
 		for _, role := range output.PolicyRoles {
-			awsAccess.RolesByLocalPolicies[aws.StringValue(policy.PolicyId)] = append(awsAccess.RolesByLocalPolicies[aws.StringValue(policy.PolicyId)], aws.StringValue(role.RoleId))
+			awsAccess.RolesByLocalPolicies[awssdk.StringValue(policy.PolicyId)] = append(awsAccess.RolesByLocalPolicies[awssdk.StringValue(policy.PolicyId)], awssdk.StringValue(role.RoleId))
 		}
 		for _, user := range output.PolicyUsers {
-			awsAccess.UsersByLocalPolicies[aws.StringValue(policy.PolicyId)] = append(awsAccess.UsersByLocalPolicies[aws.StringValue(policy.PolicyId)], aws.StringValue(user.UserId))
+			awsAccess.UsersByLocalPolicies[awssdk.StringValue(policy.PolicyId)] = append(awsAccess.UsersByLocalPolicies[awssdk.StringValue(policy.PolicyId)], awssdk.StringValue(user.UserId))
 		}
 	}
 
 	for _, group := range awsAccess.Groups {
-		groupName := aws.StringValue(group.GroupName)
-		groupId := aws.StringValue(group.GroupId)
+		groupName := awssdk.StringValue(group.GroupName)
+		groupId := awssdk.StringValue(group.GroupId)
 		groupUsers, err := access.UsersForGroup(groupName)
 		if err != nil {
 			return awsAccess, err
 		}
 
 		for _, groupUser := range groupUsers.([]*iam.User) {
-			awsAccess.UsersByGroup[groupId] = append(awsAccess.UsersByGroup[groupId], aws.StringValue(groupUser.UserId))
+			awsAccess.UsersByGroup[groupId] = append(awsAccess.UsersByGroup[groupId], awssdk.StringValue(groupUser.UserId))
 		}
 	}
 

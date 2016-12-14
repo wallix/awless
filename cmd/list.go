@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 )
 
 var (
@@ -40,7 +40,7 @@ var listUsersCmd = &cobra.Command{
 	Short: "List users",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.AccessService.Users()
+		resp, err := aws.AccessService.Users()
 		display(resp, err, displayFormat)
 	},
 }
@@ -50,7 +50,7 @@ var listGroupsCmd = &cobra.Command{
 	Short: "List groups",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.AccessService.Groups()
+		resp, err := aws.AccessService.Groups()
 		display(resp, err, displayFormat)
 	},
 }
@@ -60,7 +60,7 @@ var listRolesCmd = &cobra.Command{
 	Short: "List roles",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.AccessService.Roles()
+		resp, err := aws.AccessService.Roles()
 		display(resp, err, displayFormat)
 	},
 }
@@ -70,7 +70,7 @@ var listPoliciesCmd = &cobra.Command{
 	Short: "List policies",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.AccessService.LocalPolicies()
+		resp, err := aws.AccessService.LocalPolicies()
 		display(resp, err, displayFormat)
 	},
 }
@@ -82,7 +82,7 @@ var listRegionsCmd = &cobra.Command{
 	Short: "List regions",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.InfraService.Regions()
+		resp, err := aws.InfraService.Regions()
 		display(resp, err, displayFormat)
 	},
 }
@@ -92,7 +92,7 @@ var listVpcsCmd = &cobra.Command{
 	Short: "List vpcs",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.InfraService.Vpcs()
+		resp, err := aws.InfraService.Vpcs()
 		display(resp, err, displayFormat)
 	},
 }
@@ -102,7 +102,7 @@ var listSubnetsCmd = &cobra.Command{
 	Short: "List subnets",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.InfraService.Subnets()
+		resp, err := aws.InfraService.Subnets()
 		display(resp, err, displayFormat)
 	},
 }
@@ -112,7 +112,7 @@ var listInstancesCmd = &cobra.Command{
 	Short: "List instances",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.InfraService.Instances()
+		resp, err := aws.InfraService.Instances()
 		display(resp, err, displayFormat)
 	},
 }
@@ -122,7 +122,7 @@ var listImagesCmd = &cobra.Command{
 	Short: "List images",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := api.InfraService.Images()
+		resp, err := aws.InfraService.Images()
 		display(resp, err, displayFormat)
 	},
 }

@@ -17,12 +17,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/wallix/awless/api"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/rdf"
 )
 
 func TestStats(t *testing.T) {
@@ -40,50 +39,50 @@ func TestStats(t *testing.T) {
 	db.AddHistoryCommandWithTime([]string{"awless list vpcs"}, now)
 	db.AddHistoryCommandWithTime([]string{"awless list instances"}, now)
 
-	awsInfra := &api.AwsInfra{}
+	awsInfra := &aws.AwsInfra{}
 
 	awsInfra.Instances = []*ec2.Instance{
-		&ec2.Instance{InstanceId: aws.String("inst_1"), SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro"), ImageId: aws.String("ami-e98bd29a")},
-		&ec2.Instance{InstanceId: aws.String("inst_2"), SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1"), InstanceType: aws.String("t2.micro"), ImageId: aws.String("ami-9398d3e0")},
-		&ec2.Instance{InstanceId: aws.String("inst_3"), SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2"), InstanceType: aws.String("t2.small"), ImageId: aws.String("ami-e98bd29a")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), InstanceType: awssdk.String("t2.micro"), ImageId: awssdk.String("ami-e98bd29a")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), InstanceType: awssdk.String("t2.micro"), ImageId: awssdk.String("ami-9398d3e0")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), InstanceType: awssdk.String("t2.small"), ImageId: awssdk.String("ami-e98bd29a")},
 	}
 
 	awsInfra.Vpcs = []*ec2.Vpc{
-		&ec2.Vpc{VpcId: aws.String("vpc_1")},
-		&ec2.Vpc{VpcId: aws.String("vpc_2")},
+		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
+		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
 	}
 
 	awsInfra.Subnets = []*ec2.Subnet{
-		&ec2.Subnet{SubnetId: aws.String("sub_1"), VpcId: aws.String("vpc_1")},
-		&ec2.Subnet{SubnetId: aws.String("sub_2"), VpcId: aws.String("vpc_1")},
-		&ec2.Subnet{SubnetId: aws.String("sub_3"), VpcId: aws.String("vpc_2")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
 	}
 
-	infra, err := rdf.BuildAwsInfraGraph("eu-west-1", awsInfra)
+	infra, err := aws.BuildAwsInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	awsAccess := &api.AwsAccess{}
+	awsAccess := &aws.AwsAccess{}
 
 	awsAccess.Groups = []*iam.Group{
-		&iam.Group{GroupId: aws.String("group_1"), GroupName: aws.String("ngroup_1")},
-		&iam.Group{GroupId: aws.String("group_2"), GroupName: aws.String("ngroup_2")},
+		&iam.Group{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
+		&iam.Group{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
 	}
 
 	awsAccess.LocalPolicies = []*iam.Policy{
-		&iam.Policy{PolicyId: aws.String("policy_1"), PolicyName: aws.String("npolicy_1")},
-		&iam.Policy{PolicyId: aws.String("policy_2"), PolicyName: aws.String("npolicy_2")},
+		&iam.Policy{PolicyId: awssdk.String("policy_1"), PolicyName: awssdk.String("npolicy_1")},
+		&iam.Policy{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
 	}
 
 	awsAccess.Roles = []*iam.Role{
-		&iam.Role{RoleId: aws.String("role_1")},
+		&iam.Role{RoleId: awssdk.String("role_1")},
 	}
 
 	awsAccess.Users = []*iam.User{
-		&iam.User{UserId: aws.String("usr_1")},
-		&iam.User{UserId: aws.String("usr_2")},
-		&iam.User{UserId: aws.String("usr_3")},
+		&iam.User{UserId: awssdk.String("usr_1")},
+		&iam.User{UserId: awssdk.String("usr_2")},
+		&iam.User{UserId: awssdk.String("usr_3")},
 	}
 
 	awsAccess.UsersByGroup = map[string][]string{
@@ -106,7 +105,7 @@ func TestStats(t *testing.T) {
 		"policy_2": []string{"group_1", "group_2"},
 	}
 
-	access, err := rdf.BuildAwsAccessGraph("eu-west-1", awsAccess)
+	access, err := aws.BuildAwsAccessGraph("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
