@@ -1,26 +1,24 @@
 package rdf
 
 import (
-	"sort"
 	"testing"
 
 	"github.com/google/badwolf/triple/node"
 )
 
-func TestEmptyGraphDiff(t *testing.T) {
+func TestEmptyGraphDiffOrGivenNilRootNode(t *testing.T) {
+	differ := &defaultDiffer{ParentOfPredicate}
+
 	any, _ := node.NewNodeFromStrings("/any", "any")
-	diffGraph, _ := Diff(any, NewGraph(), NewGraph())
+	diff, _ := differ.Run(any, NewGraph(), NewGraph())
 
-	if got, want := diffGraph.size(), 0; got != want {
-		t.Fatalf("got %d, want %d", got, want)
+	if got, want := diff.HasDiff(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
-}
 
-func TestGraphDiffGivenNilRootNode(t *testing.T) {
-	diffGraph, _ := Diff(nil, NewGraph(), NewGraph())
-
-	if got, want := diffGraph.size(), 0; got != want {
-		t.Fatalf("got %d, want %d", got, want)
+	diff, _ = differ.Run(nil, NewGraph(), NewGraph())
+	if got, want := diff.HasDiff(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
 }
 
@@ -77,17 +75,22 @@ func TestGraphDiff(t *testing.T) {
 	remote.Add(noErrTriple(rnine, ParentOfPredicate, rten))
 	remote.Add(noErrTriple(rnine, ParentOfPredicate, releven))
 
-	diffGraph, err := Diff(one, local, remote)
+	differ := &defaultDiffer{ParentOfPredicate}
+
+	diff, err := differ.Run(one, local, remote)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if got, want := diffGraph.size(), 12; got != want {
+	if got, want := diff.FullGraph().size(), 12; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	diffTriples, _ := diffGraph.TriplesForPredicateName("diff")
-	sort.Sort(&tripleSorter{diffTriples})
+	if got, want := diff.HasDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	diffTriples := diff.TriplesInDiff()
 
 	if got, want := len(diffTriples), 2; got != want {
 		t.Fatalf("got %d, want %d", got, want)
@@ -109,17 +112,19 @@ func TestGraphDiff(t *testing.T) {
 
 	// Diff the other way around
 
-	diffGraph, err = Diff(one, remote, local)
+	diff, err = differ.Run(one, remote, local)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if got, want := diffGraph.size(), 12; got != want {
+	if got, want := diff.FullGraph().size(), 12; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+	if got, want := diff.HasDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
 
-	diffTriples, _ = diffGraph.TriplesForPredicateName("diff")
-	sort.Sort(&tripleSorter{diffTriples})
+	diffTriples = diff.TriplesInDiff()
 
 	if got, want := len(diffTriples), 2; got != want {
 		t.Fatalf("got %d, want %d", got, want)
@@ -193,17 +198,21 @@ func TestGraphDiffStoppingShortOnDifferentNode(t *testing.T) {
 	remote.Add(noErrTriple(rfour, ParentOfPredicate, rnine))
 	remote.Add(noErrTriple(rnine, ParentOfPredicate, rten))
 
-	diffGraph, err := Diff(one, local, remote)
+	differ := &defaultDiffer{ParentOfPredicate}
+
+	diff, err := differ.Run(one, local, remote)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if got, want := diffGraph.size(), 10; got != want {
+	if got, want := diff.FullGraph().size(), 10; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+	if got, want := diff.HasDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
 
-	diffTriples, _ := diffGraph.TriplesForPredicateName("diff")
-	sort.Sort(&tripleSorter{diffTriples})
+	diffTriples := diff.TriplesInDiff()
 
 	if got, want := len(diffTriples), 2; got != want {
 		t.Fatalf("got %d, want %d", got, want)
@@ -224,14 +233,19 @@ func TestGraphDiffStoppingShortOnDifferentNode(t *testing.T) {
 	}
 
 	// Diff the other way around
-
-	diffGraph, err = Diff(one, remote, local)
+	diff, err = differ.Run(one, remote, local)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	diffTriples, _ = diffGraph.TriplesForPredicateName("diff")
-	sort.Sort(&tripleSorter{diffTriples})
+	if got, want := diff.FullGraph().size(), 10; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := diff.HasDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	diffTriples = diff.TriplesInDiff()
 
 	if got, want := len(diffTriples), 2; got != want {
 		t.Fatalf("got %d, want %d", got, want)

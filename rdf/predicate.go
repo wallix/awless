@@ -19,4 +19,6 @@ func init() {
 	if DiffPredicate, err = predicate.NewImmutable("diff"); err != nil {
 		panic(err)
 	}
+
+	DefaultDiffer = &defaultDiffer{ParentOfPredicate}
 }

@@ -70,12 +70,10 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		infraDiffGraph, err := rdf.Diff(root, localInfra, remoteInfra)
+		infraDiff, err := rdf.DefaultDiffer.Run(root, localInfra, remoteInfra)
 		if err != nil {
 			return err
 		}
-
-		noDiffInfra := graphHasDiff(infraDiffGraph)
 
 		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 		if err != nil {
@@ -87,25 +85,23 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		accessDiffGraph, err := rdf.Diff(root, localAccess, remoteAccess)
+		accessDiff, err := rdf.DefaultDiffer.Run(root, localAccess, remoteAccess)
 		if err != nil {
 			return err
 		}
 
-		noDiffAccess := graphHasDiff(accessDiffGraph)
-
-		if !noDiffAccess {
+		if accessDiff.HasDiff() {
 			fmt.Println("------ ACCESS ------")
-			accessDiffGraph.VisitDepthFirst(root, printWithDiff)
+			accessDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
 		}
 
-		if !noDiffInfra {
+		if infraDiff.HasDiff() {
 			fmt.Println()
 			fmt.Println("------ INFRA ------")
-			infraDiffGraph.VisitDepthFirst(root, printWithDiff)
+			infraDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
 		}
 
-		if !noDiffInfra || !noDiffAccess {
+		if infraDiff.HasDiff() || accessDiff.HasDiff() {
 			var yesorno string
 			fmt.Print("\nDo you want to perform a sync? (y/n): ")
 			fmt.Scanln(&yesorno)
@@ -116,15 +112,6 @@ var diffCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func graphHasDiff(g *rdf.Graph) bool {
-	triples, err := g.TriplesForPredicateName("diff")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, fmt.Sprintf("graph has diff:%s", err.Error()))
-		return false
-	}
-	return len(triples) == 0
 }
 
 func printWithDiff(g *rdf.Graph, n *node.Node, distance int) {
