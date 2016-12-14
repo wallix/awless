@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wallix/awless/cloud/mockup"
+	"github.com/wallix/awless/cloud/mocks"
 )
 
 func init() {
-	mockup.InitMockup()
+	mocks.InitServices()
 }
 
 func TestOpenDbGeneratesIdForNewDb(t *testing.T) {

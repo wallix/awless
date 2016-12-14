@@ -1,4 +1,4 @@
-package mockup
+package mocks
 
 import (
 	"crypto/sha256"
@@ -7,18 +7,16 @@ import (
 	"github.com/wallix/awless/cloud"
 )
 
-type Mockup struct {
-}
+type Mock struct{}
 
-func (m *Mockup) GetUserId() (string, error) {
+func (m *Mock) GetUserId() (string, error) {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte("user"))), nil
 }
 
-func (m *Mockup) GetAccountId() (string, error) {
+func (m *Mock) GetAccountId() (string, error) {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte("account"))), nil
 }
 
-func InitMockup() {
-	mockup := &Mockup{}
-	cloud.Current = mockup
+func InitServices() {
+	cloud.Current = &Mock{}
 }
