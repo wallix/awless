@@ -1,36 +1,18 @@
 package stats
 
 import (
-	"io/ioutil"
-	"log"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/cloud/mockup"
 )
 
 func init() {
-	config.InitAwlessEnv()
-	sess, err := aws.InitSession("eu-west-1")
-	if err != nil {
-		log.Fatal(err)
-	}
-	aws.InitServices(sess)
+	mockup.InitMockup()
 }
 
 func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
-	f, e := ioutil.TempFile(".", "test.db")
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer os.Remove(f.Name())
-
-	db, err := OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	db, close := newTestDb()
 
 	newId, err := db.GetStringValue(AWLESS_ID_KEY)
 	if err != nil {
@@ -39,13 +21,11 @@ func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
 	if got, want := len(newId), 64; got != want {
 		t.Fatalf("got %d; want %d", got, want)
 	}
-	db.Close()
+	close()
 
-	db, err = OpenDB(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
+	db, close = newTestDb()
+	defer close()
+
 	id, _ := db.GetStringValue(AWLESS_ID_KEY)
 	if got, want := id, newId; got != want {
 		t.Fatalf("got %s; want %s", got, want)
