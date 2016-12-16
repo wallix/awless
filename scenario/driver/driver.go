@@ -1,7 +1,10 @@
 package driver
 
+import "log"
+
 type Driver interface {
 	Lookup(...Token) DriverFn
+	SetLogger(*log.Logger)
 }
 
 type DriverFn func(map[Token]interface{}) error

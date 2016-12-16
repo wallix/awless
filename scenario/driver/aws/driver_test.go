@@ -55,7 +55,7 @@ CREATE INSTANCE COUNT 2 BASE linux REFERENCES subnet_1
 		verifyVpc:      verifyVpc,
 	}
 
-	runner := &driver.Runner{NewAwsDriver(mock)}
+	runner := &driver.Runner{NewDriver(mock)}
 
 	if err := runner.Run(scen); err != nil {
 		t.Fatal(err)

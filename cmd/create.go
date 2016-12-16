@@ -3,6 +3,8 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -82,7 +84,10 @@ var createInstanceCmd = &cobra.Command{
 			lex := &scenario.Lexer{}
 			scen := lex.ParseScenario(scen)
 
-			runner := &driver.Runner{Driver: aws.NewAwsDriver(awscloud.InfraService)}
+			awsDriver := aws.NewDriver(awscloud.InfraService)
+			awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
+
+			runner := &driver.Runner{Driver: awsDriver}
 
 			return runner.Run(scen)
 		}

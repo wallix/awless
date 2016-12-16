@@ -2,6 +2,8 @@ package aws
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"reflect"
 	"strings"
 
@@ -14,13 +16,19 @@ import (
 type AwsDriver struct {
 	api        ec2iface.EC2API
 	references map[driver.Token]map[string]string
+	logger     *log.Logger
 }
 
-func NewAwsDriver(api ec2iface.EC2API) *AwsDriver {
+func NewDriver(api ec2iface.EC2API) *AwsDriver {
 	return &AwsDriver{
 		api:        api,
 		references: make(map[driver.Token]map[string]string),
+		logger:     log.New(ioutil.Discard, "", 0),
 	}
+}
+
+func (d *AwsDriver) SetLogger(l *log.Logger) {
+	d.logger = l
 }
 
 func (d *AwsDriver) Lookup(tokens ...driver.Token) driver.DriverFn {
@@ -46,10 +54,13 @@ func (d *AwsDriver) Create_Vpc(params map[driver.Token]interface{}) error {
 
 	output, err := d.api.CreateVpc(input)
 	if err != nil {
+		d.logger.Printf("error creating vpc\n%s\n", err)
 		return err
 	}
+	d.logger.Println("vpc created")
 
 	if refname, ok := params[driver.REF]; ok {
+		d.logger.Printf("vpc referenced with '%s'", refname)
 		d.addReference(driver.VPC, refname, aws.StringValue(output.Vpc.VpcId))
 	}
 
@@ -64,10 +75,13 @@ func (d *AwsDriver) Create_Subnet(params map[driver.Token]interface{}) error {
 
 	output, err := d.api.CreateSubnet(input)
 	if err != nil {
+		d.logger.Printf("error creating subnet\n%s\n", err)
 		return err
 	}
+	d.logger.Println("subnet created")
 
 	if refname, ok := params[driver.REF]; ok {
+		d.logger.Printf("subnet referenced with '%s'", refname)
 		d.addReference(driver.SUBNET, refname, aws.StringValue(output.Subnet.SubnetId))
 	}
 
@@ -90,10 +104,13 @@ func (d *AwsDriver) Create_Instance(params map[driver.Token]interface{}) error {
 
 	output, err := d.api.RunInstances(input)
 	if err != nil {
+		d.logger.Printf("error creating instance\n%s\n", err)
 		return err
 	}
+	d.logger.Println("instance created")
 
 	if refname, ok := params[driver.REF]; ok {
+		d.logger.Printf("instance referenced with '%s'", refname)
 		d.addReference(driver.INSTANCE, refname, aws.StringValue(output.Instances[0].InstanceId))
 	}
 
