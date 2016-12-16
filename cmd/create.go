@@ -82,7 +82,7 @@ var createInstanceCmd = &cobra.Command{
 			lex := &scenario.Lexer{}
 			scen := lex.ParseScenario(scen)
 
-			runner := &driver.Runner{aws.NewAwsDriver(awscloud.InfraService)}
+			runner := &driver.Runner{Driver: aws.NewAwsDriver(awscloud.InfraService)}
 
 			return runner.Run(scen)
 		}

@@ -2,14 +2,12 @@ package rdf
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/badwolf/storage"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/google/badwolf/triple/predicate"
-	"github.com/wallix/awless/cloud"
 )
 
 type QueryType int
@@ -131,29 +129,4 @@ func (g *Graph) returnTriples(kind QueryType, objects ...interface{}) ([]*triple
 	}
 
 	return triples, <-errc
-}
-
-func (g *Graph) LoadPropertiesTriples(node *node.Node) (cloud.Properties, error) {
-	triples, err := g.TriplesForSubjectPredicate(node, PropertyPredicate)
-	if err != nil {
-		return nil, err
-	}
-	properties := make(cloud.Properties)
-	for _, t := range triples {
-		oL, e := t.Object().Literal()
-		if e != nil {
-			return properties, e
-		}
-		propStr, e := oL.Text()
-		if e != nil {
-			return properties, e
-		}
-		var prop cloud.Property
-		e = json.Unmarshal([]byte(propStr), &prop)
-		if e != nil {
-			return properties, e
-		}
-		properties[prop.Key] = prop.Value
-	}
-	return properties, nil
 }

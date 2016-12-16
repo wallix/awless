@@ -1,13 +1,10 @@
 package rdf
 
 import (
-	"encoding/json"
-	"reflect"
 	"testing"
 
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/cloud"
 )
 
 func TestGetTriplesAndNodesForType(t *testing.T) {
@@ -264,57 +261,6 @@ func TestCountTriples(t *testing.T) {
 	}
 }
 
-func TestLoadPropertiesTriples(t *testing.T) {
-	g := NewGraph()
-
-	aLiteral, err := literal.DefaultBuilder().Build(literal.Text, mustJsonMarshal(cloud.Property{Key: "prop1", Value: "val1"}))
-	if err != nil {
-		t.Fatal(err)
-	}
-	bLiteral, err := literal.DefaultBuilder().Build(literal.Text, mustJsonMarshal(cloud.Property{Key: "prop2", Value: "val2"}))
-	if err != nil {
-		t.Fatal(err)
-	}
-	cLiteral, err := literal.DefaultBuilder().Build(literal.Text, mustJsonMarshal(cloud.Property{Key: "prop3", Value: "val3"}))
-	if err != nil {
-		t.Fatal(err)
-	}
-	dLiteral, err := literal.DefaultBuilder().Build(literal.Text, mustJsonMarshal(cloud.Property{Key: "prop4", Value: "val4"}))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	one, _ := node.NewNodeFromStrings("/one", "1")
-	g.Add(noErrLiteralTriple(one, PropertyPredicate, aLiteral))
-	g.Add(noErrLiteralTriple(one, PropertyPredicate, bLiteral))
-	g.Add(noErrLiteralTriple(one, PropertyPredicate, cLiteral))
-	two, _ := node.NewNodeFromStrings("/two", "2")
-	g.Add(noErrLiteralTriple(two, PropertyPredicate, dLiteral))
-
-	properties, err := g.LoadPropertiesTriples(one)
-	if err != nil {
-		t.Fatal(err)
-	}
-	expected := cloud.Properties{
-		"prop1": "val1",
-		"prop2": "val2",
-		"prop3": "val3",
-	}
-
-	if got, want := properties, expected; !reflect.DeepEqual(properties, expected) {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-
-	properties, err = g.LoadPropertiesTriples(two)
-	expected = cloud.Properties{
-		"prop4": "val4",
-	}
-
-	if got, want := properties, expected; !reflect.DeepEqual(properties, expected) {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-}
-
 func sameElementsInSlice(a, b []*node.Node) bool {
 	if a == nil && b == nil {
 		return true
@@ -337,12 +283,4 @@ func sameElementsInSlice(a, b []*node.Node) bool {
 		}
 	}
 	return true
-}
-
-func mustJsonMarshal(i interface{}) string {
-	b, err := json.Marshal(i)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
 }

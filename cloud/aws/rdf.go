@@ -1,14 +1,11 @@
 package aws
 
 import (
-	"encoding/json"
 	"fmt"
-	"reflect"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
@@ -22,7 +19,7 @@ func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
 	var triples []*triple.Triple
 	for _, res := range out.Reservations {
 		for _, inst := range res.Instances {
-			_, err := addNode(rdf.INSTANCE, awssdk.StringValue(inst.InstanceId), inst, &triples)
+			_, err := cloud.AddNodeWithPropertiesToTriples(rdf.INSTANCE, awssdk.StringValue(inst.InstanceId), inst, awsResourcesProperties, &triples)
 			if err != nil {
 				return nil, err
 			}
@@ -38,7 +35,7 @@ func (inf *Infra) VpcsGraph() (*rdf.Graph, error) {
 	}
 	var triples []*triple.Triple
 	for _, vpc := range out.Vpcs {
-		_, err := addNode(rdf.VPC, awssdk.StringValue(vpc.VpcId), vpc, &triples)
+		_, err := cloud.AddNodeWithPropertiesToTriples(rdf.VPC, awssdk.StringValue(vpc.VpcId), vpc, awsResourcesProperties, &triples)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +50,7 @@ func (inf *Infra) SubnetsGraph() (*rdf.Graph, error) {
 	}
 	var triples []*triple.Triple
 	for _, subnet := range out.Subnets {
-		_, err := addNode(rdf.SUBNET, awssdk.StringValue(subnet.SubnetId), subnet, &triples)
+		_, err := cloud.AddNodeWithPropertiesToTriples(rdf.SUBNET, awssdk.StringValue(subnet.SubnetId), subnet, awsResourcesProperties, &triples)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +93,7 @@ func buildAccessRdfTriples(region string, access *AwsAccess) ([]*triple.Triple, 
 	usersIndex := make(map[string]*node.Node)
 	for _, user := range access.Users {
 		userId := awssdk.StringValue(user.UserId)
-		n, err := addNode(rdf.USER, userId, user, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.USER, userId, user, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -113,7 +110,7 @@ func buildAccessRdfTriples(region string, access *AwsAccess) ([]*triple.Triple, 
 	rolesIndex := make(map[string]*node.Node)
 	for _, role := range access.Roles {
 		roleId := awssdk.StringValue(role.RoleId)
-		n, err := addNode(rdf.ROLE, roleId, role, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.ROLE, roleId, role, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -130,7 +127,7 @@ func buildAccessRdfTriples(region string, access *AwsAccess) ([]*triple.Triple, 
 	groupsIndex := make(map[string]*node.Node)
 	for _, group := range access.Groups {
 		groupId := awssdk.StringValue(group.GroupId)
-		n, err := addNode(rdf.GROUP, groupId, group, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.GROUP, groupId, group, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -157,7 +154,7 @@ func buildAccessRdfTriples(region string, access *AwsAccess) ([]*triple.Triple, 
 
 	for _, policy := range access.LocalPolicies {
 		policyId := awssdk.StringValue(policy.PolicyId)
-		n, err := addNode(rdf.POLICY, policyId, policy, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.POLICY, policyId, policy, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -220,7 +217,7 @@ func buildInfraRdfTriples(region string, awsInfra *AwsInfra) (triples []*triple.
 	triples = append(triples, t)
 
 	for _, vpc := range awsInfra.Vpcs {
-		n, err := addNode(rdf.VPC, awssdk.StringValue(vpc.VpcId), vpc, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.VPC, awssdk.StringValue(vpc.VpcId), vpc, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -233,7 +230,7 @@ func buildInfraRdfTriples(region string, awsInfra *AwsInfra) (triples []*triple.
 	}
 
 	for _, subnet := range awsInfra.Subnets {
-		n, err := addNode(rdf.SUBNET, awssdk.StringValue(subnet.SubnetId), subnet, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.SUBNET, awssdk.StringValue(subnet.SubnetId), subnet, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, fmt.Errorf("subnet %s", err)
 		}
@@ -251,7 +248,7 @@ func buildInfraRdfTriples(region string, awsInfra *AwsInfra) (triples []*triple.
 	}
 
 	for _, instance := range awsInfra.Instances {
-		n, err := addNode(rdf.INSTANCE, awssdk.StringValue(instance.InstanceId), instance, &triples)
+		n, err := cloud.AddNodeWithPropertiesToTriples(rdf.INSTANCE, awssdk.StringValue(instance.InstanceId), instance, awsResourcesProperties, &triples)
 		if err != nil {
 			return triples, err
 		}
@@ -277,44 +274,4 @@ func findNodeById(nodes []*node.Node, id string) *node.Node {
 		}
 	}
 	return nil
-}
-
-func addNode(nodeType, id string, awsNode interface{}, triples *[]*triple.Triple) (*node.Node, error) {
-	n, err := node.NewNodeFromStrings(nodeType, id)
-	if err != nil {
-		return nil, err
-	}
-	var lit *literal.Literal
-	if lit, err = literal.DefaultBuilder().Build(literal.Text, nodeType); err != nil {
-		return nil, err
-	}
-	t, err := triple.New(n, rdf.HasTypePredicate, triple.NewLiteralObject(lit))
-	if err != nil {
-		return nil, err
-	}
-	*triples = append(*triples, t)
-
-	var propL *literal.Literal
-	nodeV := reflect.ValueOf(awsNode).Elem()
-
-	for propertyId, awsId := range awsResourcesProperties[nodeType] {
-		sourceField := nodeV.FieldByName(awsId)
-		if sourceField.IsValid() && !sourceField.IsNil() {
-			prop := cloud.Property{Key: propertyId, Value: sourceField.Interface()}
-			json, err := json.Marshal(prop)
-			if err != nil {
-				return nil, err
-			}
-			if propL, err = literal.DefaultBuilder().Build(literal.Text, string(json)); err != nil {
-				return nil, err
-			}
-			if propT, err := triple.New(n, rdf.PropertyPredicate, triple.NewLiteralObject(propL)); err != nil {
-				return nil, err
-			} else {
-				*triples = append(*triples, propT)
-			}
-		}
-	}
-
-	return n, nil
 }
