@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
-	"text/tabwriter"
+
+	"github.com/olekukonko/tablewriter"
 
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
@@ -34,9 +34,10 @@ func display(item interface{}, err error, format ...string) {
 }
 
 func lineDisplay(item interface{}) {
-	w := tabwriter.NewWriter(os.Stdout, TABWRITERWIDTH, 1, 1, ' ', 0)
-	aws.TabularDisplay(item, w)
-	w.Flush()
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoFormatHeaders(false)
+	aws.TabularDisplay(item, table)
+	table.Render()
 }
 
 func displayGraph(graph *rdf.Graph, resourceType string, properties []string, err error) {
@@ -44,15 +45,9 @@ func displayGraph(graph *rdf.Graph, resourceType string, properties []string, er
 		fmt.Println(err.Error())
 		return
 	}
-	w := tabwriter.NewWriter(os.Stdout, TABWRITERWIDTH, 1, 1, ' ', 0)
-	var header bytes.Buffer
-	for i, prop := range properties {
-		header.WriteString(prop)
-		if i < len(properties)-1 {
-			header.WriteString("\t")
-		}
-	}
-	fmt.Fprintln(w, header.String())
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoFormatHeaders(false)
+	table.SetHeader(properties)
 	nodes, err := graph.NodesForType(resourceType)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -64,17 +59,14 @@ func displayGraph(graph *rdf.Graph, resourceType string, properties []string, er
 			fmt.Println(err.Error())
 			return
 		}
-		var line bytes.Buffer
-		for i, propName := range properties {
-			line.WriteString(displayProperty(nodeProperties, propName))
-			if i < len(properties)-1 {
-				line.WriteString("\t")
-			}
+		var line []string
+		for _, propName := range properties {
+			line = append(line, displayProperty(nodeProperties, propName))
 		}
-		fmt.Fprintln(w, line.String())
+		table.Append(line)
 	}
 
-	w.Flush()
+	table.Render()
 }
 
 func displayProperty(properties cloud.Properties, name string) string {
