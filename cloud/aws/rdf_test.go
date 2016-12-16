@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"fmt"
 	"testing"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -284,6 +285,34 @@ func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
 	result = marshalTriples(triples)
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
+	}
+}
+
+func BenchmarkBuildInfraRdfTriples(b *testing.B) {
+	awsInfra := &AwsInfra{}
+
+	for i := 0; i < 10; i++ {
+		vpcId := fmt.Sprintf("vpc_%d", i+1)
+		vpc := &ec2.Vpc{VpcId: awssdk.String(vpcId)}
+		awsInfra.Vpcs = append(awsInfra.Vpcs, vpc)
+		for j := 0; j < 10; j++ {
+			subnetId := fmt.Sprintf("%s_sub_%d", vpcId, j+1)
+			subnet := &ec2.Subnet{SubnetId: awssdk.String(subnetId), VpcId: awssdk.String(vpcId)}
+			awsInfra.Subnets = append(awsInfra.Subnets, subnet)
+			for k := 0; k < 1000; k++ {
+				inst := &ec2.Instance{InstanceId: awssdk.String(fmt.Sprintf("%s_inst_%d", subnetId, k)), SubnetId: awssdk.String(subnetId), VpcId: awssdk.String(vpcId), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String(fmt.Sprintf("instance_%d_name", k))}}}
+				awsInfra.Instances = append(awsInfra.Instances, inst)
+			}
+		}
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := buildInfraRdfTriples("eu-west-1", awsInfra)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
