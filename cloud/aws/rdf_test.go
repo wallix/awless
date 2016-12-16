@@ -7,11 +7,9 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/google/badwolf/triple"
-	"github.com/wallix/awless/rdf"
 )
 
-func TestBuildAccessRdfTriples(t *testing.T) {
+func TestBuildAccessRdfGraph(t *testing.T) {
 	awsAccess := &AwsAccess{}
 
 	awsAccess.Groups = []*iam.Group{
@@ -73,12 +71,12 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 		"policy_4": []string{"group_4"},
 	}
 
-	triples, err := buildAccessRdfTriples("eu-west-1", awsAccess)
+	g, err := BuildAwsAccessGraph("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := marshalTriples(triples)
+	result := g.MustMarshal()
 	expect := `/group<group_1>	"has_type"@[]	"/group"^^type:text
 /group<group_1>	"parent_of"@[]	/user<usr_1>
 /group<group_1>	"parent_of"@[]	/user<usr_2>
@@ -187,7 +185,7 @@ func TestBuildAccessRdfTriples(t *testing.T) {
 
 }
 
-func TestBuildInfraRdfTriples(t *testing.T) {
+func TestBuildInfraRdfGraph(t *testing.T) {
 	awsInfra := &AwsInfra{}
 
 	awsInfra.Instances = []*ec2.Instance{
@@ -210,12 +208,12 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 		&ec2.Subnet{SubnetId: awssdk.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	triples, err := buildInfraRdfTriples("eu-west-1", awsInfra)
+	g, err := BuildAwsInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := marshalTriples(triples)
+	result := g.MustMarshal()
 	expect := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"inst_1"}"^^type:text
 /instance<inst_1>	"property"@[]	"{"Key":"SubnetId","Value":"sub_1"}"^^type:text
@@ -265,30 +263,30 @@ func TestBuildInfraRdfTriples(t *testing.T) {
 	}
 }
 
-func TestBuildEmptyRdfTriplesWhenNoData(t *testing.T) {
+func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	expect := `/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`
-	triples, err := buildAccessRdfTriples("eu-west-1", NewAwsAccess())
+	g, err := BuildAwsAccessGraph("eu-west-1", NewAwsAccess())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result := marshalTriples(triples)
+	result := g.MustMarshal()
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	triples, err = buildInfraRdfTriples("eu-west-1", &AwsInfra{})
+	g, err = BuildAwsInfraGraph("eu-west-1", &AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result = marshalTriples(triples)
+	result = g.MustMarshal()
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 }
 
-func BenchmarkBuildInfraRdfTriples(b *testing.B) {
+func BenchmarkBuildInfraRdfGraph(b *testing.B) {
 	awsInfra := &AwsInfra{}
 
 	for i := 0; i < 10; i++ {
@@ -309,14 +307,9 @@ func BenchmarkBuildInfraRdfTriples(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := buildInfraRdfTriples("eu-west-1", awsInfra)
+		_, err := BuildAwsInfraGraph("eu-west-1", awsInfra)
 		if err != nil {
 			b.Fatal(err)
 		}
 	}
-}
-
-func marshalTriples(triples []*triple.Triple) string {
-	g := rdf.NewGraphFromTriples(triples)
-	return g.MustMarshal()
 }

@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
 )
@@ -174,8 +174,8 @@ func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, in
 	}
 	propertyValuesCountMap := make(map[string]int)
 	for _, inst := range nodes {
-		var instProperties cloud.Properties
-		instProperties, err = cloud.LoadPropertiesTriples(infra, inst)
+		var instProperties aws.Properties
+		instProperties, err = aws.LoadPropertiesFromGraph(infra, inst)
 		if err != nil {
 			return nil, err
 		}

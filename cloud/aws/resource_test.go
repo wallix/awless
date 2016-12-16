@@ -1,4 +1,4 @@
-package cloud
+package aws
 
 import (
 	"encoding/json"
@@ -39,7 +39,7 @@ func TestLoadPropertiesTriples(t *testing.T) {
 	two, _ := node.NewNodeFromStrings("/two", "2")
 	g.Add(noErrLiteralTriple(two, rdf.PropertyPredicate, dLiteral))
 
-	properties, err := LoadPropertiesTriples(g, one)
+	properties, err := LoadPropertiesFromGraph(g, one)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestLoadPropertiesTriples(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
-	properties, err = LoadPropertiesTriples(g, two)
+	properties, err = LoadPropertiesFromGraph(g, two)
 	expected = Properties{
 		"prop4": "val4",
 	}

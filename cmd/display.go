@@ -8,7 +8,6 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
 )
@@ -54,7 +53,7 @@ func displayGraph(graph *rdf.Graph, resourceType string, properties []string, er
 		return
 	}
 	for _, node := range nodes {
-		nodeProperties, err := cloud.LoadPropertiesTriples(graph, node)
+		nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -69,7 +68,7 @@ func displayGraph(graph *rdf.Graph, resourceType string, properties []string, er
 	table.Render()
 }
 
-func displayProperty(properties cloud.Properties, name string) string {
+func displayProperty(properties aws.Properties, name string) string {
 	if s := strings.SplitN(name, "[].", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
 			return trucateToSize(displaySliceProperty(i, s[1]), TABWRITERWIDTH)
