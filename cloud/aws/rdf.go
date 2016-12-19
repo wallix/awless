@@ -5,6 +5,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/rdf"
@@ -12,25 +13,15 @@ import (
 
 func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
 	g := rdf.NewGraph()
-	out, err := inf.Instances()
+	instances, err := inf.Instances()
 	if err != nil {
 		return nil, err
 	}
-	instances, ok := out.(*ec2.DescribeInstancesOutput)
-	if !ok {
-		return nil, fmt.Errorf("invalid instances type %T", out)
-	}
-	for _, res := range instances.Reservations {
+	for _, res := range instances.(*ec2.DescribeInstancesOutput).Reservations {
 		for _, inst := range res.Instances {
-			res, err := NewResource(inst)
-			if err != nil {
-				return nil, err
+			if err := addCloudResourceToGraph(g, inst); err != nil {
+				return g, err
 			}
-			triples, err := res.MarshalToTriples()
-			if err != nil {
-				return nil, err
-			}
-			g.Add(triples...)
 		}
 	}
 	return g, nil
@@ -38,40 +29,84 @@ func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
 
 func (inf *Infra) VpcsGraph() (*rdf.Graph, error) {
 	g := rdf.NewGraph()
-	out, err := inf.DescribeVpcs(&ec2.DescribeVpcsInput{})
+	out, err := inf.Vpcs()
 	if err != nil {
 		return nil, err
 	}
-	for _, vpc := range out.Vpcs {
-		res, err := NewResource(vpc)
-		if err != nil {
-			return nil, err
+	for _, vpc := range out.(*ec2.DescribeVpcsOutput).Vpcs {
+		if err := addCloudResourceToGraph(g, vpc); err != nil {
+			return g, err
 		}
-		triples, err := res.MarshalToTriples()
-		if err != nil {
-			return nil, err
-		}
-		g.Add(triples...)
 	}
 	return g, nil
 }
 
 func (inf *Infra) SubnetsGraph() (*rdf.Graph, error) {
 	g := rdf.NewGraph()
-	out, err := inf.DescribeSubnets(&ec2.DescribeSubnetsInput{})
+	out, err := inf.Subnets()
 	if err != nil {
 		return nil, err
 	}
-	for _, subnet := range out.Subnets {
-		res, err := NewResource(subnet)
-		if err != nil {
-			return nil, err
+	for _, subnet := range out.(*ec2.DescribeSubnetsOutput).Subnets {
+		if err := addCloudResourceToGraph(g, subnet); err != nil {
+			return g, err
 		}
-		triples, err := res.MarshalToTriples()
-		if err != nil {
-			return nil, err
+	}
+	return g, nil
+}
+
+func (access *Access) UsersGraph() (*rdf.Graph, error) {
+	g := rdf.NewGraph()
+	out, err := access.Users()
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range out.(*iam.ListUsersOutput).Users {
+		if err := addCloudResourceToGraph(g, user); err != nil {
+			return g, err
 		}
-		g.Add(triples...)
+	}
+	return g, nil
+}
+
+func (access *Access) RolesGraph() (*rdf.Graph, error) {
+	g := rdf.NewGraph()
+	out, err := access.Roles()
+	if err != nil {
+		return nil, err
+	}
+	for _, role := range out.(*iam.ListRolesOutput).Roles {
+		if err := addCloudResourceToGraph(g, role); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
+func (access *Access) GroupsGraph() (*rdf.Graph, error) {
+	g := rdf.NewGraph()
+	out, err := access.Groups()
+	if err != nil {
+		return nil, err
+	}
+	for _, group := range out.(*iam.ListGroupsOutput).Groups {
+		if err := addCloudResourceToGraph(g, group); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
+func (access *Access) PoliciesGraph() (*rdf.Graph, error) {
+	g := rdf.NewGraph()
+	out, err := access.LocalPolicies()
+	if err != nil {
+		return nil, err
+	}
+	for _, pol := range out.(*iam.ListPoliciesOutput).Policies {
+		if err := addCloudResourceToGraph(g, pol); err != nil {
+			return g, err
+		}
 	}
 	return g, nil
 }

@@ -82,6 +82,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 /group<group_1>	"parent_of"@[]	/user<usr_2>
 /group<group_1>	"parent_of"@[]	/user<usr_3>
 /group<group_1>	"property"@[]	"{"Key":"Id","Value":"group_1"}"^^type:text
+/group<group_1>	"property"@[]	"{"Key":"Name","Value":"ngroup_1"}"^^type:text
 /group<group_2>	"has_type"@[]	"/group"^^type:text
 /group<group_2>	"parent_of"@[]	/user<usr_1>
 /group<group_2>	"parent_of"@[]	/user<usr_4>
@@ -89,14 +90,17 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 /group<group_2>	"parent_of"@[]	/user<usr_6>
 /group<group_2>	"parent_of"@[]	/user<usr_7>
 /group<group_2>	"property"@[]	"{"Key":"Id","Value":"group_2"}"^^type:text
+/group<group_2>	"property"@[]	"{"Key":"Name","Value":"ngroup_2"}"^^type:text
 /group<group_3>	"has_type"@[]	"/group"^^type:text
 /group<group_3>	"property"@[]	"{"Key":"Id","Value":"group_3"}"^^type:text
+/group<group_3>	"property"@[]	"{"Key":"Name","Value":"ngroup_3"}"^^type:text
 /group<group_4>	"has_type"@[]	"/group"^^type:text
 /group<group_4>	"parent_of"@[]	/user<usr_3>
 /group<group_4>	"parent_of"@[]	/user<usr_7>
 /group<group_4>	"parent_of"@[]	/user<usr_8>
 /group<group_4>	"parent_of"@[]	/user<usr_9>
 /group<group_4>	"property"@[]	"{"Key":"Id","Value":"group_4"}"^^type:text
+/group<group_4>	"property"@[]	"{"Key":"Name","Value":"ngroup_4"}"^^type:text
 /policy<policy_1>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_1>	"parent_of"@[]	/group<group_1>
 /policy<policy_1>	"parent_of"@[]	/group<group_2>
@@ -106,6 +110,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 /policy<policy_1>	"parent_of"@[]	/user<usr_2>
 /policy<policy_1>	"parent_of"@[]	/user<usr_3>
 /policy<policy_1>	"property"@[]	"{"Key":"Id","Value":"policy_1"}"^^type:text
+/policy<policy_1>	"property"@[]	"{"Key":"Name","Value":"npolicy_1"}"^^type:text
 /policy<policy_2>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_2>	"parent_of"@[]	/group<group_3>
 /policy<policy_2>	"parent_of"@[]	/role<role_3>
@@ -115,8 +120,10 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 /policy<policy_2>	"parent_of"@[]	/user<usr_6>
 /policy<policy_2>	"parent_of"@[]	/user<usr_7>
 /policy<policy_2>	"property"@[]	"{"Key":"Id","Value":"policy_2"}"^^type:text
+/policy<policy_2>	"property"@[]	"{"Key":"Name","Value":"npolicy_2"}"^^type:text
 /policy<policy_3>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_3>	"property"@[]	"{"Key":"Id","Value":"policy_3"}"^^type:text
+/policy<policy_3>	"property"@[]	"{"Key":"Name","Value":"npolicy_3"}"^^type:text
 /policy<policy_4>	"has_type"@[]	"/policy"^^type:text
 /policy<policy_4>	"parent_of"@[]	/group<group_4>
 /policy<policy_4>	"parent_of"@[]	/role<role_4>
@@ -125,6 +132,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 /policy<policy_4>	"parent_of"@[]	/user<usr_8>
 /policy<policy_4>	"parent_of"@[]	/user<usr_9>
 /policy<policy_4>	"property"@[]	"{"Key":"Id","Value":"policy_4"}"^^type:text
+/policy<policy_4>	"property"@[]	"{"Key":"Name","Value":"npolicy_4"}"^^type:text
 /region<eu-west-1>	"has_type"@[]	"/region"^^type:text
 /region<eu-west-1>	"parent_of"@[]	/group<group_1>
 /region<eu-west-1>	"parent_of"@[]	/group<group_2>

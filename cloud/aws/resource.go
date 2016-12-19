@@ -104,6 +104,19 @@ func (res *Resource) buildRdfSubject() (*node.Node, error) {
 	return node.NewNodeFromStrings(res.kind, res.id)
 }
 
+func addCloudResourceToGraph(g *rdf.Graph, cloudResource interface{}) error {
+	res, err := NewResource(cloudResource)
+	if err != nil {
+		return err
+	}
+	triples, err := res.MarshalToTriples()
+	if err != nil {
+		return err
+	}
+	g.Add(triples...)
+	return nil
+}
+
 func NewPropertyTriple(subject *node.Node, propertyKey string, propertyValue interface{}) (*triple.Triple, error) {
 	prop := Property{Key: propertyKey, Value: propertyValue}
 	json, err := json.Marshal(prop)
