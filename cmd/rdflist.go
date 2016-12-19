@@ -10,17 +10,17 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-var infraResourcesToDisplay = map[string][]string{
-	"instance": []string{"Id", "Tags[].Name", "State.Name", "Type", "PublicIp", "PrivateIp"},
-	"vpc":      []string{"Id", "IsDefault", "State", "CidrBlock"},
-	"subnet":   []string{"Id", "MapPublicIpOnLaunch", "State", "CidrBlock"},
+var infraResourcesToDisplay = map[string][]PropertyDisplayer{
+	"instance": []PropertyDisplayer{{Property: "Id"}, {Property: "Tags[].Name", Label: "Name"}, {Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}}, {Property: "Type"}, {Property: "PublicIp", Label: "Public IP"}, {Property: "PrivateIp", Label: "Private IP"}},
+	"vpc":      []PropertyDisplayer{{Property: "Id"}, {Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}}, {Property: "State"}, {Property: "CidrBlock"}},
+	"subnet":   []PropertyDisplayer{{Property: "Id"}, {Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}}, {Property: "State", ColoredValues: map[string]string{"available": "green"}}, {Property: "CidrBlock"}},
 }
 
-var accessResourcesToDisplay = map[string][]string{
-	"user":   []string{"Id", "Name", "Arn", "Path", "PasswordLastUsed"},
-	"role":   []string{"Id", "Name", "Arn", "CreateDate", "Path"},
-	"policy": []string{"Id", "Name", "Arn", "Description", "isAttachable", "CreateDate", "UpdateDate", "Path"},
-	"group":  []string{"Id", "Name", "Arn", "CreateDate", "Path"},
+var accessResourcesToDisplay = map[string][]PropertyDisplayer{
+	"user":   []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Path"}, {Property: "PasswordLastUsed"}},
+	"role":   []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
+	"policy": []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Description"}, {Property: "isAttachable"}, {Property: "CreateDate"}, {Property: "UpdateDate"}, {Property: "Path"}},
+	"group":  []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
 }
 
 func init() {
@@ -38,7 +38,7 @@ var rdfListCmd = &cobra.Command{
 	Short: "List various type of items: instances, vpc, subnet ...",
 }
 
-var rdfListInfraResourceCmd = func(resource string, properties []string) *cobra.Command {
+var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplayer) *cobra.Command {
 	resources := pluralize(resource)
 	nodeType := "/" + resource
 	return &cobra.Command{
@@ -51,7 +51,7 @@ var rdfListInfraResourceCmd = func(resource string, properties []string) *cobra.
 	}
 }
 
-var rdfListAccessResourceCmd = func(resource string, properties []string) *cobra.Command {
+var rdfListAccessResourceCmd = func(resource string, properties []PropertyDisplayer) *cobra.Command {
 	resources := pluralize(resource)
 	nodeType := "/" + resource
 	return &cobra.Command{
@@ -64,7 +64,7 @@ var rdfListAccessResourceCmd = func(resource string, properties []string) *cobra
 	}
 }
 
-func ListCloudResource(cloudService interface{}, resources string, nodeType string, properties []string) {
+func ListCloudResource(cloudService interface{}, resources string, nodeType string, properties []PropertyDisplayer) {
 	fnName := fmt.Sprintf("%sGraph", humanize(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {

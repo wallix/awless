@@ -6,11 +6,28 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
 )
+
+type PropertyDisplayer struct {
+	Property      string
+	Label         string
+	ColoredValues map[string]string
+}
+
+type StringColoredDisplayer struct {
+}
+
+func (p *PropertyDisplayer) DisplayName() string {
+	if p.Label == "" {
+		return p.Property
+	}
+	return p.Label
+}
 
 const TABWRITERWIDTH = 20
 
@@ -39,14 +56,18 @@ func lineDisplay(item interface{}) {
 	table.Render()
 }
 
-func displayGraph(graph *rdf.Graph, resourceType string, properties []string, err error) {
+func displayGraph(graph *rdf.Graph, resourceType string, properties []PropertyDisplayer, err error) {
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAutoFormatHeaders(false)
-	table.SetHeader(properties)
+	var headers []string
+	for _, prop := range properties {
+		headers = append(headers, prop.DisplayName())
+	}
+	table.SetHeader(headers)
 	nodes, err := graph.NodesForType(resourceType)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -59,8 +80,8 @@ func displayGraph(graph *rdf.Graph, resourceType string, properties []string, er
 			return
 		}
 		var line []string
-		for _, propName := range properties {
-			line = append(line, displayProperty(nodeProperties, propName))
+		for _, prop := range properties {
+			line = append(line, displayProperty(nodeProperties, prop))
 		}
 		table.Append(line)
 	}
@@ -68,23 +89,28 @@ func displayGraph(graph *rdf.Graph, resourceType string, properties []string, er
 	table.Render()
 }
 
-func displayProperty(properties aws.Properties, name string) string {
-	if s := strings.SplitN(name, "[].", 2); len(s) >= 2 {
+func displayProperty(properties aws.Properties, propertyDisplayer PropertyDisplayer) string {
+	var res string
+	if s := strings.SplitN(propertyDisplayer.Property, "[].", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
-			return trucateToSize(displaySliceProperty(i, s[1]), TABWRITERWIDTH)
+			res = displaySliceProperty(i, s[1])
 		}
-	} else if s := strings.SplitN(name, "[]length", 2); len(s) >= 2 {
+	} else if s := strings.SplitN(propertyDisplayer.Property, "[]length", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
-			return trucateToSize(displaySliceLength(i), TABWRITERWIDTH)
+			res = displaySliceLength(i)
 		}
-	} else if s := strings.SplitN(name, ".", 2); len(s) >= 2 {
+	} else if s := strings.SplitN(propertyDisplayer.Property, ".", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].(map[string]interface{}); ok {
-			return trucateToSize(displayAttributeProperty(i, s[1]), TABWRITERWIDTH)
+			res = displayAttributeProperty(i, s[1])
 		}
 	} else {
-		return trucateToSize(displayStringProperty(properties[name]), TABWRITERWIDTH)
+		res = displayStringProperty(properties[propertyDisplayer.Property])
 	}
-	return ""
+	if propertyDisplayer.ColoredValues != nil {
+		return colorDisplay(trucateToSize(res, TABWRITERWIDTH), propertyDisplayer.ColoredValues)
+	} else {
+		return trucateToSize(res, TABWRITERWIDTH)
+	}
 }
 
 func displayStringProperty(prop interface{}) string {
@@ -135,6 +161,29 @@ func trucateToSize(str string, maxSize int) string {
 	if len(str) > maxSize {
 		len := len(str)
 		return "..." + str[len-maxSize+3:len-1]
+	}
+	return str
+}
+
+func stringToColor(str string) color.Attribute {
+	switch strings.ToLower(str) {
+	case "red":
+		return color.FgRed
+	case "yellow":
+		return color.FgYellow
+	case "blue":
+		return color.FgBlue
+	case "green":
+		return color.FgGreen
+	default:
+		return color.FgBlack
+	}
+}
+
+func colorDisplay(str string, coloredValues map[string]string) string {
+	col := coloredValues[str]
+	if col != "" {
+		return color.New(stringToColor(col)).SprintFunc()(str)
 	}
 	return str
 }
