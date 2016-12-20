@@ -82,7 +82,7 @@ func runCompletionZsh(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	zsh_initialization := `
+	zshInitialization := `
 __awless_bash_source() {
 	alias shopt=':'
 	alias _expand=_bash_expand
@@ -213,17 +213,17 @@ __awless_convert_bash_to_zsh() {
 	-e "s/\\\$(type${RWORD}/\$(__awless_type/g" \
 	<<'BASH_COMPLETION_EOF'
 `
-	out.Write([]byte(zsh_initialization))
+	out.Write([]byte(zshInitialization))
 
 	buf := new(bytes.Buffer)
 	RootCmd.GenBashCompletion(buf)
 	out.Write(buf.Bytes())
 
-	zsh_tail := `
+	zshTail := `
 BASH_COMPLETION_EOF
 }
 __awless_bash_source <(__awless_convert_bash_to_zsh)
 `
-	out.Write([]byte(zsh_tail))
+	out.Write([]byte(zshTail))
 	return nil
 }

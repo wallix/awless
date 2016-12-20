@@ -108,9 +108,8 @@ func displayProperty(properties aws.Properties, propertyDisplayer PropertyDispla
 	}
 	if propertyDisplayer.ColoredValues != nil {
 		return colorDisplay(trucateToSize(res, TABWRITERWIDTH), propertyDisplayer.ColoredValues)
-	} else {
-		return trucateToSize(res, TABWRITERWIDTH)
 	}
+	return trucateToSize(res, TABWRITERWIDTH)
 }
 
 func displayStringProperty(prop interface{}) string {
