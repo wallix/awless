@@ -16,6 +16,7 @@ import (
 
 func init() {
 	createCmd.AddCommand(createInstanceCmd)
+	createCmd.AddCommand(createAliasCmd)
 
 	RootCmd.AddCommand(createCmd)
 }
@@ -23,6 +24,21 @@ func init() {
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create various type of resources by id: users, groups, instances, vpcs, ...",
+}
+
+var createAliasCmd = &cobra.Command{
+	Use:   "alias [name] [alias of]",
+	Short: "Create alias",
+
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 2 {
+			return fmt.Errorf("Not enough args, need two args, alias name and the resource id\n")
+		}
+		if len(args) > 2 {
+			return fmt.Errorf("Two many args, need two args, alias name and the resource id\n")
+		}
+		return statsDB.AddAlias(args[0], args[1])
+	},
 }
 
 var createInstanceCmd = &cobra.Command{

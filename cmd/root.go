@@ -16,6 +16,38 @@ var (
 	verboseFlag bool
 )
 
+const (
+	bash_completion_func = `
+__awless_get_all_ids()
+{
+		local all_ids_output
+		if all_ids_output=$(awless rdflist all --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__awless_get_alias_ids()
+{
+		local ids_output
+		if ids_output=$(awless rdflist aliases --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__custom_func() {
+    case ${last_command} in
+        awless_create_alias )
+            __awless_get_all_ids
+            return
+            ;;
+				awless_delete_alias )
+            __awless_get_alias_ids
+            return
+            ;;
+        *)
+            ;;
+    esac
+}`
+)
+
 var RootCmd = &cobra.Command{
 	Use:   "awless",
 	Short: "Manage your cloud",
@@ -26,6 +58,7 @@ var RootCmd = &cobra.Command{
 			statsDB.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
 		}
 	},
+	BashCompletionFunction: bash_completion_func,
 }
 
 func InitCli() {

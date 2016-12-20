@@ -2,12 +2,19 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
+)
+
+var (
+	printOnlyID    bool
+	localResources bool
 )
 
 var infraResourcesToDisplay = map[string][]PropertyDisplayer{
@@ -31,11 +38,25 @@ func init() {
 	for resource, properties := range accessResourcesToDisplay {
 		rdfListCmd.AddCommand(rdfListAccessResourceCmd(resource, properties))
 	}
+	rdfListCmd.AddCommand(rdfListAliasesCmd)
+	rdfListCmd.AddCommand(rdfListAllCmd)
+
+	rdfListCmd.PersistentFlags().BoolVar(&printOnlyID, "ids", false, "List only ids")
+	rdfListCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
 }
 
 var rdfListCmd = &cobra.Command{
 	Use:   "rdflist",
 	Short: "List various type of items: instances, vpc, subnet ...",
+}
+
+var rdfListAliasesCmd = &cobra.Command{
+	Use:   "aliases",
+	Short: "List aliases",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		displayAliases(statsDB.GetAliases())
+	},
 }
 
 var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplayer) *cobra.Command {
@@ -46,7 +67,12 @@ var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplay
 		Short: "List AWS EC2 " + resources,
 
 		Run: func(cmd *cobra.Command, args []string) {
-			ListCloudResource(aws.InfraService, resources, nodeType, properties)
+			if localResources {
+				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+				displayGraph(localInfra, nodeType, properties, err)
+			} else {
+				listCloudResource(aws.InfraService, resources, nodeType, properties)
+			}
 		},
 	}
 }
@@ -59,12 +85,46 @@ var rdfListAccessResourceCmd = func(resource string, properties []PropertyDispla
 		Short: "List AWS IAM " + resources,
 
 		Run: func(cmd *cobra.Command, args []string) {
-			ListCloudResource(aws.AccessService, resources, nodeType, properties)
+			if localResources {
+				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+				displayGraph(localAccess, nodeType, properties, err)
+			} else {
+				listCloudResource(aws.AccessService, resources, nodeType, properties)
+			}
 		},
 	}
 }
 
-func ListCloudResource(cloudService interface{}, resources string, nodeType string, properties []PropertyDisplayer) {
+var rdfListAllCmd = &cobra.Command{
+	Use:   "all",
+	Short: "List all kind of ressources",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		displayAliases(statsDB.GetAliases())
+		for resource, properties := range infraResourcesToDisplay {
+			resources := pluralize(resource)
+			nodeType := "/" + resource
+			if localResources {
+				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+				displayGraph(localInfra, nodeType, properties, err)
+			} else {
+				listCloudResource(aws.InfraService, resources, nodeType, properties)
+			}
+		}
+		for resource, properties := range accessResourcesToDisplay {
+			resources := pluralize(resource)
+			nodeType := "/" + resource
+			if localResources {
+				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+				displayGraph(localAccess, nodeType, properties, err)
+			} else {
+				listCloudResource(aws.AccessService, resources, nodeType, properties)
+			}
+		}
+	},
+}
+
+func listCloudResource(cloudService interface{}, resources string, nodeType string, properties []PropertyDisplayer) {
 	fnName := fmt.Sprintf("%sGraph", humanize(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {

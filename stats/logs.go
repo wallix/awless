@@ -47,10 +47,6 @@ func (db *DB) GetLogs() (logs []*Log, err error) {
 		return logs, nil
 	}
 	err = json.Unmarshal(b, &logs)
-	if err != nil {
-		return logs, err
-	}
-
 	return logs, err
 }
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/stats"
 )
 
 type PropertyDisplayer struct {
@@ -56,37 +57,75 @@ func lineDisplay(item interface{}) {
 	table.Render()
 }
 
+func displayAliases(aliases stats.Aliases, err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return
+	}
+	if printOnlyID {
+		names := make([]string, 0, len(aliases))
+		for name := range aliases {
+			names = append(names, name)
+		}
+		fmt.Fprintln(os.Stdout, strings.Join(names, " "))
+	} else {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Name", "Alias of"})
+		for name, target := range aliases {
+			table.Append([]string{name, target})
+		}
+		table.Render()
+	}
+}
+
 func displayGraph(graph *rdf.Graph, resourceType string, properties []PropertyDisplayer, err error) {
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoFormatHeaders(false)
-	var headers []string
-	for _, prop := range properties {
-		headers = append(headers, prop.DisplayName())
-	}
-	table.SetHeader(headers)
-	nodes, err := graph.NodesForType(resourceType)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	for _, node := range nodes {
-		nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
+	if printOnlyID {
+		nodes, err := graph.NodesForType(resourceType)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		var line []string
-		for _, prop := range properties {
-			line = append(line, displayProperty(nodeProperties, prop))
+		ids := make([]string, 0, len(nodes))
+		for _, node := range nodes {
+			nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			ids = append(ids, fmt.Sprint(nodeProperties["Id"]))
 		}
-		table.Append(line)
-	}
+		fmt.Fprintln(os.Stdout, strings.Join(ids, " "))
+	} else {
+		table := tablewriter.NewWriter(os.Stdout)
+		var headers []string
+		for _, prop := range properties {
+			headers = append(headers, prop.DisplayName())
+		}
+		table.SetHeader(headers)
+		nodes, err := graph.NodesForType(resourceType)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		for _, node := range nodes {
+			nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			var line []string
+			for _, prop := range properties {
+				line = append(line, displayProperty(nodeProperties, prop))
+			}
+			table.Append(line)
+		}
 
-	table.Render()
+		table.Render()
+	}
 }
 
 func displayProperty(properties aws.Properties, propertyDisplayer PropertyDisplayer) string {
