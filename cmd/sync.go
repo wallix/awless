@@ -9,12 +9,12 @@ import (
 	"sync"
 
 	"github.com/google/badwolf/triple/node"
-	"github.com/libgit2/git2go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/revision"
 )
 
 func init() {
@@ -97,67 +97,9 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 		return nil, nil, err
 	}
 
-	if err := saveSyncRevision(); err != nil {
+	if err := revision.CommitIfChanges(config.GitDir, config.InfraFilename, config.AccessFilename); err != nil {
 		return nil, nil, err
 	}
 
 	return infrag, accessg, nil
-}
-
-func saveSyncRevision() error {
-	if _, err := os.Stat(filepath.Join(config.GitDir, ".git")); os.IsNotExist(err) {
-		if _, err := git.InitRepository(config.GitDir, false); err != nil {
-			return err
-		}
-	}
-
-	repo, err := git.OpenRepository(config.GitDir)
-	if err != nil {
-		return err
-	}
-
-	idx, err := repo.Index()
-	if err != nil {
-		return err
-	}
-
-	if err = idx.AddByPath(config.InfraFilename); err != nil {
-		return err
-	}
-	if err = idx.AddByPath(config.AccessFilename); err != nil {
-		return err
-	}
-
-	treeId, err := idx.WriteTree()
-	if err != nil {
-		return err
-	}
-
-	if err = idx.Write(); err != nil {
-		return err
-	}
-
-	tree, err := repo.LookupTree(treeId)
-	if err != nil {
-		return err
-	}
-
-	var parents []*git.Commit
-
-	head, err := repo.Head()
-	if err == nil {
-		headCommit, e := repo.LookupCommit(head.Target())
-		if e != nil {
-			return e
-		}
-		parents = append(parents, headCommit)
-	}
-
-	sig := &git.Signature{Name: "awless", Email: "git@awless.io"}
-
-	if _, err = repo.CreateCommit("HEAD", sig, sig, "new sync", tree, parents...); err != nil {
-		return err
-	}
-
-	return nil
 }

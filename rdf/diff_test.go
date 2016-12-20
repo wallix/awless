@@ -1,8 +1,11 @@
 package rdf
 
 import (
+	"reflect"
 	"testing"
 
+	"github.com/google/badwolf/triple"
+	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 )
 
@@ -38,6 +41,24 @@ func TestGraphDiff(t *testing.T) {
 	eight, _ := node.NewNodeFromStrings("/eight", "8")
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
+	literalA, err := literal.DefaultBuilder().Build(literal.Text, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	literalB, err := literal.DefaultBuilder().Build(literal.Text, "b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	local.Add(noErrLiteralTriple(one, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(two, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(three, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(four, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(five, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(six, HasTypePredicate, literalB))
+	local.Add(noErrLiteralTriple(seven, HasTypePredicate, literalB))
+	local.Add(noErrLiteralTriple(eight, HasTypePredicate, literalB))
+	local.Add(noErrLiteralTriple(nine, HasTypePredicate, literalB))
+	local.Add(noErrLiteralTriple(ten, HasTypePredicate, literalB))
 
 	local.Add(noErrTriple(one, ParentOfPredicate, two))
 	local.Add(noErrTriple(one, ParentOfPredicate, three))
@@ -65,6 +86,17 @@ func TestGraphDiff(t *testing.T) {
 	rten, _ := node.NewNodeFromStrings("/ten", "10")
 	releven, _ := node.NewNodeFromStrings("/eleven", "11")
 
+	remote.Add(noErrLiteralTriple(rone, HasTypePredicate, literalA))
+	remote.Add(noErrLiteralTriple(rtwo, HasTypePredicate, literalA))
+	remote.Add(noErrLiteralTriple(rthree, HasTypePredicate, literalB))
+	remote.Add(noErrLiteralTriple(rfour, HasTypePredicate, literalA))
+	remote.Add(noErrLiteralTriple(rfive, HasTypePredicate, literalA))
+	remote.Add(noErrLiteralTriple(rsix, HasTypePredicate, literalB))
+	remote.Add(noErrLiteralTriple(rseven, HasTypePredicate, literalB))
+	remote.Add(noErrLiteralTriple(rnine, HasTypePredicate, literalB))
+	remote.Add(noErrLiteralTriple(rten, HasTypePredicate, literalB))
+	remote.Add(noErrLiteralTriple(releven, HasTypePredicate, literalB))
+
 	remote.Add(noErrTriple(rone, ParentOfPredicate, rtwo))
 	remote.Add(noErrTriple(rone, ParentOfPredicate, rthree))
 	remote.Add(noErrTriple(rone, ParentOfPredicate, rfour))
@@ -82,7 +114,7 @@ func TestGraphDiff(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := diff.FullGraph().size(), 12; got != want {
+	if got, want := diff.FullGraph().size(), 24; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
@@ -90,24 +122,24 @@ func TestGraphDiff(t *testing.T) {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
-	diffTriples := diff.TriplesInDiff()
+	missing := noErrLiteralTriple(releven, DiffPredicate, MissingLiteral)
+	extra := noErrLiteralTriple(eight, DiffPredicate, ExtraLiteral)
+	if got, want := diff.TriplesInDiff(), []*triple.Triple{extra, missing}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
 
-	if got, want := len(diffTriples), 2; got != want {
-		t.Fatalf("got %d, want %d", got, want)
+	t1 := noErrTriple(three, ParentOfPredicate, eight)
+	t2 := noErrTriple(rnine, ParentOfPredicate, releven)
+	t3 := noErrLiteralTriple(eight, HasTypePredicate, literalB)
+	t4 := noErrLiteralTriple(releven, HasTypePredicate, literalB)
+	t5 := noErrLiteralTriple(three, HasTypePredicate, literalA)
+	t6 := noErrLiteralTriple(rthree, HasTypePredicate, literalB)
+
+	if got, want := diff.Inserted(), []*triple.Triple{t3, t5, t1}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
-	if got, want := diffTriples[0].Subject().ID(), eight.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	lit, _ := diffTriples[0].Object().Literal()
-	if got, want := lit.String(), `"extra"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := diffTriples[1].Subject().ID(), releven.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	lit, _ = diffTriples[1].Object().Literal()
-	if got, want := lit.String(), `"missing"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	if got, want := diff.Deleted(), []*triple.Triple{t4, t2, t6}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
 
 	// Diff the other way around
@@ -117,151 +149,112 @@ func TestGraphDiff(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := diff.FullGraph().size(), 12; got != want {
+	if got, want := diff.FullGraph().size(), 24; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 	if got, want := diff.HasDiff(), true; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
-	diffTriples = diff.TriplesInDiff()
-
-	if got, want := len(diffTriples), 2; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := diffTriples[0].Subject().ID(), eight.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	lit, _ = diffTriples[0].Object().Literal()
-	if got, want := lit.String(), `"missing"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := diffTriples[1].Subject().ID(), releven.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	lit, _ = diffTriples[1].Object().Literal()
-	if got, want := lit.String(), `"extra"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	missing = noErrLiteralTriple(eight, DiffPredicate, MissingLiteral)
+	extra = noErrLiteralTriple(releven, DiffPredicate, ExtraLiteral)
+	if got, want := diff.TriplesInDiff(), []*triple.Triple{missing, extra}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }
 
-func TestGraphDiffStoppingShortOnDifferentNode(t *testing.T) {
+func TestDiffBuildFromGraph(t *testing.T) {
 	local := NewGraph()
 	//       1
-	//   2       3       9
-	// 5   6   7  8        10
-	//                       11
-	one, _ := node.NewNodeFromStrings("/one", "1")
-	two, _ := node.NewNodeFromStrings("/two", "2")
-	three, _ := node.NewNodeFromStrings("/three", "3")
-	five, _ := node.NewNodeFromStrings("/five", "5")
-	six, _ := node.NewNodeFromStrings("/six", "6")
-	seven, _ := node.NewNodeFromStrings("/seven", "7")
-	eight, _ := node.NewNodeFromStrings("/eight", "8")
-	nine, _ := node.NewNodeFromStrings("/nine", "9")
-	ten, _ := node.NewNodeFromStrings("/ten", "10")
-	eleven, _ := node.NewNodeFromStrings("/eleven", "11")
+	//   2   3   4
+	// 5
+	one, _ := node.NewNodeFromStrings("/a", "1")
+	two, _ := node.NewNodeFromStrings("/a", "2")
+	three, _ := node.NewNodeFromStrings("/b", "3")
+	four, _ := node.NewNodeFromStrings("/b", "4")
+	five, _ := node.NewNodeFromStrings("/b", "5")
 
 	local.Add(noErrTriple(one, ParentOfPredicate, two))
 	local.Add(noErrTriple(one, ParentOfPredicate, three))
-	local.Add(noErrTriple(one, ParentOfPredicate, nine))
+	local.Add(noErrTriple(one, ParentOfPredicate, four))
 	local.Add(noErrTriple(two, ParentOfPredicate, five))
-	local.Add(noErrTriple(two, ParentOfPredicate, six))
-	local.Add(noErrTriple(three, ParentOfPredicate, seven))
-	local.Add(noErrTriple(three, ParentOfPredicate, eight))
-	local.Add(noErrTriple(nine, ParentOfPredicate, ten))
-	local.Add(noErrTriple(ten, ParentOfPredicate, eleven))
 
-	remote := NewGraph()
-	//       1
-	//   2       3       4
-	// 5   6   7   8        9
-	//                        10
-	rone, _ := node.NewNodeFromStrings("/one", "1")
-	rtwo, _ := node.NewNodeFromStrings("/two", "2")
-	rthree, _ := node.NewNodeFromStrings("/three", "3")
-	rfour, _ := node.NewNodeFromStrings("/four", "4")
-	rfive, _ := node.NewNodeFromStrings("/five", "5")
-	rsix, _ := node.NewNodeFromStrings("/six", "6")
-	rseven, _ := node.NewNodeFromStrings("/seven", "7")
-	reight, _ := node.NewNodeFromStrings("/eight", "8")
-	rnine, _ := node.NewNodeFromStrings("/nine", "9")
-	rten, _ := node.NewNodeFromStrings("/ten", "10")
-
-	remote.Add(noErrTriple(rone, ParentOfPredicate, rtwo))
-	remote.Add(noErrTriple(rone, ParentOfPredicate, rthree))
-	remote.Add(noErrTriple(rone, ParentOfPredicate, rfour))
-	remote.Add(noErrTriple(rtwo, ParentOfPredicate, rfive))
-	remote.Add(noErrTriple(rtwo, ParentOfPredicate, rsix))
-	remote.Add(noErrTriple(rthree, ParentOfPredicate, rseven))
-	remote.Add(noErrTriple(rthree, ParentOfPredicate, reight))
-	remote.Add(noErrTriple(rfour, ParentOfPredicate, rnine))
-	remote.Add(noErrTriple(rnine, ParentOfPredicate, rten))
-
-	differ := &defaultDiffer{ParentOfPredicate}
-
-	diff, err := differ.Run(one, local, remote)
+	literalA, err := literal.DefaultBuilder().Build(literal.Text, "a")
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if got, want := diff.FullGraph().size(), 10; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := diff.HasDiff(), true; got != want {
-		t.Fatalf("got %t, want %t", got, want)
-	}
-
-	diffTriples := diff.TriplesInDiff()
-
-	if got, want := len(diffTriples), 2; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := diffTriples[0].Subject().ID(), rfour.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	lit, _ := diffTriples[0].Object().Literal()
-	if got, want := lit.String(), `"missing"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := diffTriples[1].Subject().ID(), nine.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	lit, _ = diffTriples[1].Object().Literal()
-	if got, want := lit.String(), `"extra"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-
-	// Diff the other way around
-	diff, err = differ.Run(one, remote, local)
+	literalB, err := literal.DefaultBuilder().Build(literal.Text, "b")
 	if err != nil {
 		t.Fatal(err)
 	}
+	local.Add(noErrLiteralTriple(one, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(two, HasTypePredicate, literalA))
+	local.Add(noErrLiteralTriple(three, HasTypePredicate, literalB))
+	local.Add(noErrLiteralTriple(four, HasTypePredicate, literalB))
+	local.Add(noErrLiteralTriple(five, HasTypePredicate, literalB))
 
-	if got, want := diff.FullGraph().size(), 10; got != want {
+	d := NewEmptyDiffFromGraph(local)
+	if got, want := d.FullGraph().MustMarshal(), local.MustMarshal(); got != want {
+		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
+	}
+	if got, want := len(d.Deleted()), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := diff.HasDiff(), true; got != want {
+	if got, want := len(d.Inserted()), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	t1 := noErrTriple(one, ParentOfPredicate, three)
+	t2 := noErrLiteralTriple(three, HasTypePredicate, literalB)
+	t3 := noErrLiteralTriple(three, HasTypePredicate, literalA) //Triple not in graph
+	d.AddDeleted(t1, ParentOfPredicate)
+	d.AddDeleted(t2, ParentOfPredicate)
+	d.AddDeleted(t3, ParentOfPredicate)
+	if got, want := d.FullGraph().MustMarshal(), local.MustMarshal(); got != want {
+		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
+	}
+	if got, want := len(d.Inserted()), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := d.Deleted(), []*triple.Triple{t1, t2}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+	if got, want := d.HasDeletedTriple(t1), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := d.HasDeletedTriple(t2), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := d.HasDeletedTriple(t3), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
-	diffTriples = diff.TriplesInDiff()
-
-	if got, want := len(diffTriples), 2; got != want {
-		t.Fatalf("got %d, want %d", got, want)
+	six, _ := node.NewNodeFromStrings("/b", "6")
+	t4 := noErrTriple(three, ParentOfPredicate, six)
+	t5 := noErrLiteralTriple(six, HasTypePredicate, literalB)
+	t6 := noErrLiteralTriple(three, HasTypePredicate, literalB) //Triple already in graph
+	d.AddInserted(t4, ParentOfPredicate)
+	d.AddInserted(t5, ParentOfPredicate)
+	d.AddInserted(t6, ParentOfPredicate)
+	local.Add(t4)
+	if got, want := d.FullGraph().MustMarshal(), local.MustMarshal(); got != want {
+		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
 	}
-	if got, want := diffTriples[0].Subject().ID(), rfour.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	if got, want := d.Inserted(), []*triple.Triple{t4, t5}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
-	lit, _ = diffTriples[0].Object().Literal()
-	if got, want := lit.String(), `"extra"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	if got, want := d.HasInsertedTriple(t4), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
-	if got, want := diffTriples[1].Subject().ID(), nine.ID(); got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	if got, want := d.HasInsertedTriple(t5), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
-	lit, _ = diffTriples[1].Object().Literal()
-	if got, want := lit.String(), `"missing"^^type:text`; got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	if got, want := d.HasInsertedTriple(t6), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	deleted := noErrLiteralTriple(three, DiffPredicate, MissingLiteral)
+	created := noErrLiteralTriple(six, DiffPredicate, ExtraLiteral)
+	if got, want := d.TriplesInDiff(), []*triple.Triple{deleted, created}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }

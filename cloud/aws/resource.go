@@ -100,23 +100,6 @@ func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
 	return triples, nil
 }
 
-func (res *Resource) buildRdfSubject() (*node.Node, error) {
-	return node.NewNodeFromStrings(res.kind, res.id)
-}
-
-func addCloudResourceToGraph(g *rdf.Graph, cloudResource interface{}) error {
-	res, err := NewResource(cloudResource)
-	if err != nil {
-		return err
-	}
-	triples, err := res.MarshalToTriples()
-	if err != nil {
-		return err
-	}
-	g.Add(triples...)
-	return nil
-}
-
 func NewPropertyTriple(subject *node.Node, propertyKey string, propertyValue interface{}) (*triple.Triple, error) {
 	prop := Property{Key: propertyKey, Value: propertyValue}
 	json, err := json.Marshal(prop)
@@ -141,20 +124,48 @@ func LoadPropertiesFromGraph(g *rdf.Graph, node *node.Node) (Properties, error) 
 	}
 	properties := make(Properties)
 	for _, t := range triples {
-		oL, e := t.Object().Literal()
-		if e != nil {
-			return properties, e
-		}
-		propStr, e := oL.Text()
-		if e != nil {
-			return properties, e
-		}
-		var prop Property
-		e = json.Unmarshal([]byte(propStr), &prop)
-		if e != nil {
-			return properties, e
+		prop, err := NewPropertyFromTriple(t)
+		if err != nil {
+			return properties, err
 		}
 		properties[prop.Key] = prop.Value
 	}
 	return properties, nil
+}
+
+func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
+	if t.Predicate().String() != rdf.PropertyPredicate.String() {
+		return nil, fmt.Errorf("This triple has not a property prediate: %s", t.Predicate().String())
+	}
+	oL, err := t.Object().Literal()
+	if err != nil {
+		return nil, err
+	}
+	propStr, err := oL.Text()
+	if err != nil {
+		return nil, err
+	}
+	var prop Property
+	err = json.Unmarshal([]byte(propStr), &prop)
+	if err != nil {
+		return nil, err
+	}
+	return &prop, nil
+}
+
+func (res *Resource) buildRdfSubject() (*node.Node, error) {
+	return node.NewNodeFromStrings(res.kind, res.id)
+}
+
+func addCloudResourceToGraph(g *rdf.Graph, cloudResource interface{}) error {
+	res, err := NewResource(cloudResource)
+	if err != nil {
+		return err
+	}
+	triples, err := res.MarshalToTriples()
+	if err != nil {
+		return err
+	}
+	g.Add(triples...)
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/badwolf/storage"
@@ -122,6 +123,11 @@ func (g *Graph) IsEmpty() bool {
 	return g.size() == 0
 }
 
+func (g *Graph) HasTriple(t *triple.Triple) bool {
+	ok, err := g.Exist(context.Background(), t)
+	return ok && err == nil
+}
+
 func (g *Graph) copy() *Graph {
 	newg := NewGraph()
 
@@ -188,7 +194,9 @@ func (g *Graph) MustMarshal() string {
 	if err != nil {
 		panic(err)
 	}
-	return string(b)
+	toSort := strings.Split(string(b), "\n")
+	sort.Strings(toSort)
+	return strings.Join(toSort, "\n")
 }
 
 func randString() string {
