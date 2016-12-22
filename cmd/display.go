@@ -198,7 +198,7 @@ func trucateToSize(str string, maxSize int) string {
 	}
 	if len(str) > maxSize {
 		len := len(str)
-		return "..." + str[len-maxSize+3:len-1]
+		return "..." + str[len-maxSize+3:len]
 	}
 	return str
 }
