@@ -71,7 +71,7 @@ var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplay
 				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 				displayGraph(localInfra, nodeType, properties, err)
 			} else {
-				listCloudResource(aws.InfraService, resources, nodeType, properties)
+				listRemoteCloudResource(aws.InfraService, resources, nodeType, properties)
 			}
 		},
 	}
@@ -89,7 +89,7 @@ var rdfListAccessResourceCmd = func(resource string, properties []PropertyDispla
 				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 				displayGraph(localAccess, nodeType, properties, err)
 			} else {
-				listCloudResource(aws.AccessService, resources, nodeType, properties)
+				listRemoteCloudResource(aws.AccessService, resources, nodeType, properties)
 			}
 		},
 	}
@@ -97,34 +97,24 @@ var rdfListAccessResourceCmd = func(resource string, properties []PropertyDispla
 
 var rdfListAllCmd = &cobra.Command{
 	Use:   "all",
-	Short: "List all kind of ressources",
+	Short: "List all local resources",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		displayAliases(statsDB.GetAliases())
-		for resource, properties := range infraResourcesToDisplay {
-			resources := pluralize(resource)
-			nodeType := "/" + resource
-			if localResources {
-				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-				displayGraph(localInfra, nodeType, properties, err)
-			} else {
-				listCloudResource(aws.InfraService, resources, nodeType, properties)
-			}
+		if !printOnlyID {
+			fmt.Println("Infrastructure")
 		}
-		for resource, properties := range accessResourcesToDisplay {
-			resources := pluralize(resource)
-			nodeType := "/" + resource
-			if localResources {
-				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-				displayGraph(localAccess, nodeType, properties, err)
-			} else {
-				listCloudResource(aws.AccessService, resources, nodeType, properties)
-			}
+		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+		displayGraphSeveralResourceTypes(localInfra, infraResourcesToDisplay, err)
+
+		if !printOnlyID {
+			fmt.Println("Access")
 		}
+		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+		displayGraphSeveralResourceTypes(localAccess, accessResourcesToDisplay, err)
 	},
 }
 
-func listCloudResource(cloudService interface{}, resources string, nodeType string, properties []PropertyDisplayer) {
+func listRemoteCloudResource(cloudService interface{}, resources string, nodeType string, properties []PropertyDisplayer) {
 	fnName := fmt.Sprintf("%sGraph", humanize(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {

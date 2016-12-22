@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/google/badwolf/triple/node"
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/wallix/awless/cloud/aws"
@@ -20,9 +22,6 @@ type PropertyDisplayer struct {
 	ColoredValues map[string]string
 }
 
-type StringColoredDisplayer struct {
-}
-
 func (p *PropertyDisplayer) DisplayName() string {
 	if p.Label == "" {
 		return p.Property
@@ -30,7 +29,7 @@ func (p *PropertyDisplayer) DisplayName() string {
 	return p.Label
 }
 
-const TABWRITERWIDTH = 20
+const TABWRITERWIDTH = 30
 
 func display(item interface{}, err error, format ...string) {
 	if err != nil {
@@ -73,6 +72,73 @@ func displayAliases(aliases stats.Aliases, err error) {
 		table.SetHeader([]string{"Name", "Alias of"})
 		for name, target := range aliases {
 			table.Append([]string{name, target})
+		}
+		table.Render()
+	}
+}
+func displayGraphSeveralResourceTypes(graph *rdf.Graph, properties map[string][]PropertyDisplayer, err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return
+	}
+	if printOnlyID {
+		var nodes []*node.Node
+		for t := range properties {
+			tmp, err := graph.NodesForType("/" + t)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			nodes = append(nodes, tmp...)
+		}
+		ids := make([]string, 0, len(nodes))
+		for _, node := range nodes {
+			nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			ids = append(ids, fmt.Sprint(nodeProperties["Id"]))
+		}
+		fmt.Fprintln(os.Stdout, strings.Join(ids, " "))
+	} else {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Type", "Name/Id", "Property", "Value"})
+
+		for t := range properties {
+			nodes, err := graph.NodesForType("/" + t)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			for _, node := range nodes {
+				firstLine := true
+				nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
+				if err != nil {
+					fmt.Println(err.Error())
+					return
+				}
+				for _, prop := range properties[t] {
+					var line []string
+					if firstLine {
+						line = append(line, t)
+						line = append(line, nameOrID(nodeProperties))
+					} else {
+						line = append(line, "")
+						line = append(line, "")
+					}
+					line = append(line, prop.DisplayName())
+					line = append(line, displayProperty(nodeProperties, prop))
+					table.Append(line)
+					firstLine = false
+				}
+				table.Append([]string{
+					generateString('-', 10),
+					generateString('-', TABWRITERWIDTH),
+					generateString('-', TABWRITERWIDTH),
+					generateString('-', TABWRITERWIDTH),
+				})
+			}
 		}
 		table.Render()
 	}
@@ -224,4 +290,16 @@ func colorDisplay(str string, coloredValues map[string]string) string {
 		return color.New(stringToColor(col)).SprintFunc()(str)
 	}
 	return str
+}
+
+func nameOrID(properties aws.Properties) string {
+	return fmt.Sprint(properties["Id"])
+}
+
+func generateString(ch rune, nb int) string {
+	var res bytes.Buffer
+	for i := 0; i < nb; i++ {
+		res.WriteRune(ch)
+	}
+	return res.String()
 }
