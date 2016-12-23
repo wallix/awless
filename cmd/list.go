@@ -41,7 +41,7 @@ var listUsersCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.AccessService.Users()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -51,7 +51,7 @@ var listGroupsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.AccessService.Groups()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -61,7 +61,7 @@ var listRolesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.AccessService.Roles()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -71,7 +71,7 @@ var listPoliciesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.AccessService.LocalPolicies()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -83,7 +83,7 @@ var listRegionsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.InfraService.Regions()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -93,7 +93,7 @@ var listVpcsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.InfraService.Vpcs()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -103,7 +103,7 @@ var listSubnetsCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.InfraService.Subnets()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -113,7 +113,7 @@ var listInstancesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.InfraService.Instances()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }
 
@@ -123,6 +123,6 @@ var listImagesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.InfraService.Images()
-		display(resp, err, displayFormat)
+		displayItem(resp, err, displayFormat)
 	},
 }

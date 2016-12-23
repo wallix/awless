@@ -42,7 +42,7 @@ var showVpcCmd = &cobra.Command{
 			return errors.New("show vpc: id required")
 		}
 		resp, err := aws.InfraService.Vpc(args[0])
-		display(resp, err)
+		displayItem(resp, err)
 		return nil
 	},
 }

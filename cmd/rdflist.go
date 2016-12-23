@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -17,17 +18,17 @@ var (
 	localResources bool
 )
 
-var infraResourcesToDisplay = map[string][]PropertyDisplayer{
-	"instance": []PropertyDisplayer{{Property: "Id"}, {Property: "Tags[].Name", Label: "Name"}, {Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}}, {Property: "Type"}, {Property: "PublicIp", Label: "Public IP"}, {Property: "PrivateIp", Label: "Private IP"}},
-	"vpc":      []PropertyDisplayer{{Property: "Id"}, {Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}}, {Property: "State"}, {Property: "CidrBlock"}},
-	"subnet":   []PropertyDisplayer{{Property: "Id"}, {Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}}, {Property: "State", ColoredValues: map[string]string{"available": "green"}}, {Property: "CidrBlock"}},
+var infraResourcesToDisplay = map[string][]*display.PropertyDisplayer{
+	"instance": []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Tags[].Name", Label: "Name"}, {Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}}, {Property: "Type"}, {Property: "PublicIp", Label: "Public IP"}, {Property: "PrivateIp", Label: "Private IP"}},
+	"vpc":      []*display.PropertyDisplayer{{Property: "Id"}, {Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}}, {Property: "State"}, {Property: "CidrBlock"}},
+	"subnet":   []*display.PropertyDisplayer{{Property: "Id"}, {Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}}, {Property: "State", ColoredValues: map[string]string{"available": "green"}}, {Property: "CidrBlock"}},
 }
 
-var accessResourcesToDisplay = map[string][]PropertyDisplayer{
-	"user":   []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Path"}, {Property: "PasswordLastUsed"}},
-	"role":   []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
-	"policy": []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Description"}, {Property: "isAttachable"}, {Property: "CreateDate"}, {Property: "UpdateDate"}, {Property: "Path"}},
-	"group":  []PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
+var accessResourcesToDisplay = map[string][]*display.PropertyDisplayer{
+	"user":   []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Path"}, {Property: "PasswordLastUsed"}},
+	"role":   []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
+	"policy": []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Description"}, {Property: "isAttachable"}, {Property: "CreateDate"}, {Property: "UpdateDate"}, {Property: "Path"}},
+	"group":  []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
 }
 
 func init() {
@@ -59,7 +60,7 @@ var rdfListAliasesCmd = &cobra.Command{
 	},
 }
 
-var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplayer) *cobra.Command {
+var rdfListInfraResourceCmd = func(resource string, properties []*display.PropertyDisplayer) *cobra.Command {
 	resources := pluralize(resource)
 	nodeType := "/" + resource
 	return &cobra.Command{
@@ -69,7 +70,7 @@ var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplay
 		Run: func(cmd *cobra.Command, args []string) {
 			if localResources {
 				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-				displayGraph(localInfra, nodeType, properties, err)
+				display.ResourceOfGraph(localInfra, nodeType, properties, printOnlyID, err)
 			} else {
 				listRemoteCloudResource(aws.InfraService, resources, nodeType, properties)
 			}
@@ -77,7 +78,7 @@ var rdfListInfraResourceCmd = func(resource string, properties []PropertyDisplay
 	}
 }
 
-var rdfListAccessResourceCmd = func(resource string, properties []PropertyDisplayer) *cobra.Command {
+var rdfListAccessResourceCmd = func(resource string, properties []*display.PropertyDisplayer) *cobra.Command {
 	resources := pluralize(resource)
 	nodeType := "/" + resource
 	return &cobra.Command{
@@ -87,7 +88,7 @@ var rdfListAccessResourceCmd = func(resource string, properties []PropertyDispla
 		Run: func(cmd *cobra.Command, args []string) {
 			if localResources {
 				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-				displayGraph(localAccess, nodeType, properties, err)
+				display.ResourceOfGraph(localAccess, nodeType, properties, printOnlyID, err)
 			} else {
 				listRemoteCloudResource(aws.AccessService, resources, nodeType, properties)
 			}
@@ -104,24 +105,24 @@ var rdfListAllCmd = &cobra.Command{
 			fmt.Println("Infrastructure")
 		}
 		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-		displayGraphSeveralResourceTypes(localInfra, infraResourcesToDisplay, err)
+		display.SeveralResourcesOfGraph(localInfra, infraResourcesToDisplay, printOnlyID, err)
 
 		if !printOnlyID {
 			fmt.Println("Access")
 		}
 		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-		displayGraphSeveralResourceTypes(localAccess, accessResourcesToDisplay, err)
+		display.SeveralResourcesOfGraph(localAccess, accessResourcesToDisplay, printOnlyID, err)
 	},
 }
 
-func listRemoteCloudResource(cloudService interface{}, resources string, nodeType string, properties []PropertyDisplayer) {
+func listRemoteCloudResource(cloudService interface{}, resources string, nodeType string, properties []*display.PropertyDisplayer) {
 	fnName := fmt.Sprintf("%sGraph", humanize(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {
 		methodI := method.Interface()
 		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
 			graph, err := graphFn()
-			displayGraph(graph, nodeType, properties, err)
+			display.ResourceOfGraph(graph, nodeType, properties, printOnlyID, err)
 			return
 		}
 	}
@@ -134,4 +135,11 @@ func pluralize(singular string) string {
 		return strings.TrimSuffix(singular, "y") + "ies"
 	}
 	return singular + "s"
+}
+
+func humanize(s string) string {
+	if len(s) > 1 {
+		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+	}
+	return strings.ToUpper(s)
 }

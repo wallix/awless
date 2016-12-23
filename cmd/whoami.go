@@ -16,7 +16,7 @@ var whoamiCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := aws.AccessService.CallerIdentity()
-		display(resp, err)
+		displayItem(resp, err)
 		return nil
 	},
 }
