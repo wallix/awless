@@ -96,5 +96,9 @@ func TestTableSpecialDisplays(t *testing.T) {
 	if got, want := print.String(), expected; got != want {
 		t.Fatalf("got\n%s\nwant\n%s\n", got, want)
 	}
-
+	print.Reset()
+	table.FprintColumnValues(&print, "c1", " ")
+	if got, want := print.String(), "v1.1 v4.1\n"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
 }

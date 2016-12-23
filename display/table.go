@@ -89,10 +89,26 @@ func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 
 // ColumnValues returns the values of a table column
 func (t *Table) ColumnValues(header string) []string {
-	return t.columns[header]
+	res := t.columns[header]
+	removeDuplicatesOfSlice(&res)
+	return res
 }
 
 // FprintColumnValues displays the values of a table column in a writer
 func (t *Table) FprintColumnValues(w io.Writer, header, sep string) {
 	fmt.Fprintln(w, strings.Join(t.ColumnValues(header), sep))
+}
+
+func removeDuplicatesOfSlice(data *[]string) {
+	length := len(*data) - 1
+	for i := 0; i < length; i++ {
+		for j := i + 1; j <= length; j++ {
+			if (*data)[i] == (*data)[j] {
+				(*data)[j] = (*data)[length]
+				(*data) = (*data)[0:length]
+				length--
+				j--
+			}
+		}
+	}
 }
