@@ -1,128 +1,201 @@
 package cmd
 
 import (
+	"fmt"
+	"path/filepath"
+	"reflect"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/display"
+	"github.com/wallix/awless/rdf"
 )
 
 var (
-	displayFormat string
+	listOnlyIDs    bool
+	listAllInfra   bool
+	listAllAccess  bool
+	localResources bool
+	sortBy         []string
 )
 
+var infraResourcesToDisplay = map[string][]*display.PropertyDisplayer{
+	"instance": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Tags[].Name", Label: "Name"},
+		{Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}},
+		{Property: "Type"},
+		{Property: "PublicIp", Label: "Public IP"},
+		{Property: "PrivateIp", Label: "Private IP"},
+	},
+	"vpc": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
+		{Property: "State"}, {Property: "CidrBlock"},
+	},
+	"subnet": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}},
+		{Property: "State", ColoredValues: map[string]string{"available": "green"}},
+		{Property: "CidrBlock"},
+	},
+}
+
+var accessResourcesToDisplay = map[string][]*display.PropertyDisplayer{
+	"user": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "Path"},
+		{Property: "PasswordLastUsed"},
+	},
+	"role": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "CreateDate"},
+		{Property: "Path"},
+	},
+	"policy": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "Description"},
+		{Property: "isAttachable"},
+		{Property: "CreateDate"},
+		{Property: "UpdateDate"},
+		{Property: "Path"},
+	},
+	"group": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "CreateDate"},
+		{Property: "Path"},
+	},
+}
+
 func init() {
-	listCmd.PersistentFlags().StringVarP(&displayFormat, "format", "f", "line", "Display entities as raw in the console")
-
-	// access
-	listCmd.AddCommand(listUsersCmd)
-	listCmd.AddCommand(listGroupsCmd)
-	listCmd.AddCommand(listRolesCmd)
-	listCmd.AddCommand(listPoliciesCmd)
-
-	// infra
-	listCmd.AddCommand(listRegionsCmd)
-	listCmd.AddCommand(listVpcsCmd)
-	listCmd.AddCommand(listSubnetsCmd)
-	listCmd.AddCommand(listInstancesCmd)
-	listCmd.AddCommand(listImagesCmd)
-
 	RootCmd.AddCommand(listCmd)
+	for resource, properties := range infraResourcesToDisplay {
+		listCmd.AddCommand(listInfraResourceCmd(resource, properties))
+	}
+	for resource, properties := range accessResourcesToDisplay {
+		listCmd.AddCommand(listAccessResourceCmd(resource, properties))
+	}
+	listCmd.AddCommand(listAliasesCmd)
+	listCmd.AddCommand(listAllCmd)
+
+	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
+	listCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
+	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort-by", []string{"Id"}, "Sort tables by column(s) name(s)")
+
+	listAllCmd.PersistentFlags().BoolVar(&listAllInfra, "infra", false, "List infrastructure resources")
+	listAllCmd.PersistentFlags().BoolVar(&listAllAccess, "access", false, "List access resources")
 }
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List various type of items: users, groups, instances, ...",
+	Short: "List various type of items: instances, vpc, subnet ...",
 }
 
-// access
-
-var listUsersCmd = &cobra.Command{
-	Use:   "users",
-	Short: "List users",
+var listAliasesCmd = &cobra.Command{
+	Use:   "aliases",
+	Short: "List aliases",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.AccessService.Users()
-		displayItem(resp, err, displayFormat)
+		displayAliases(statsDB.GetAliases())
 	},
 }
 
-var listGroupsCmd = &cobra.Command{
-	Use:   "groups",
-	Short: "List groups",
+var listInfraResourceCmd = func(resource string, properties []*display.PropertyDisplayer) *cobra.Command {
+	resources := pluralize(resource)
+	nodeType := "/" + resource
+	return &cobra.Command{
+		Use:   resources,
+		Short: "List AWS EC2 " + resources,
+
+		Run: func(cmd *cobra.Command, args []string) {
+			if localResources {
+				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+				display.ResourceOfGraph(localInfra, nodeType, properties, sortBy, listOnlyIDs, err)
+			} else {
+				listRemoteCloudResource(aws.InfraService, resources, nodeType, properties)
+			}
+		},
+	}
+}
+
+var listAccessResourceCmd = func(resource string, properties []*display.PropertyDisplayer) *cobra.Command {
+	resources := pluralize(resource)
+	nodeType := "/" + resource
+	return &cobra.Command{
+		Use:   resources,
+		Short: "List AWS IAM " + resources,
+
+		Run: func(cmd *cobra.Command, args []string) {
+			if localResources {
+				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+				display.ResourceOfGraph(localAccess, nodeType, properties, sortBy, listOnlyIDs, err)
+			} else {
+				listRemoteCloudResource(aws.AccessService, resources, nodeType, properties)
+			}
+		},
+	}
+}
+
+var listAllCmd = &cobra.Command{
+	Use:   "all",
+	Short: "List all local resources",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.AccessService.Groups()
-		displayItem(resp, err, displayFormat)
+		if !listAllInfra && !listAllAccess {
+			listAllInfra = true //By default, print only infra
+		}
+		if listAllInfra {
+			if !listOnlyIDs {
+				fmt.Println("Infrastructure")
+			}
+			localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+			display.SeveralResourcesOfGraph(localInfra, infraResourcesToDisplay, listOnlyIDs, err)
+		}
+		if listAllAccess {
+			if !listOnlyIDs {
+				fmt.Println("Access")
+			}
+			localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+			display.SeveralResourcesOfGraph(localAccess, accessResourcesToDisplay, listOnlyIDs, err)
+		}
 	},
 }
 
-var listRolesCmd = &cobra.Command{
-	Use:   "roles",
-	Short: "List roles",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.AccessService.Roles()
-		displayItem(resp, err, displayFormat)
-	},
+func listRemoteCloudResource(cloudService interface{}, resources string, nodeType string, properties []*display.PropertyDisplayer) {
+	fnName := fmt.Sprintf("%sGraph", humanize(resources))
+	method := reflect.ValueOf(cloudService).MethodByName(fnName)
+	if method.IsValid() && !method.IsNil() {
+		methodI := method.Interface()
+		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
+			graph, err := graphFn()
+			display.ResourceOfGraph(graph, nodeType, properties, sortBy, listOnlyIDs, err)
+			return
+		}
+	}
+	fmt.Println(fmt.Errorf("Unknown type of resource: %s", resources))
+	return
 }
 
-var listPoliciesCmd = &cobra.Command{
-	Use:   "policies",
-	Short: "List policies",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.AccessService.LocalPolicies()
-		displayItem(resp, err, displayFormat)
-	},
+func pluralize(singular string) string {
+	if strings.HasSuffix(singular, "y") {
+		return strings.TrimSuffix(singular, "y") + "ies"
+	}
+	return singular + "s"
 }
 
-// infra
-
-var listRegionsCmd = &cobra.Command{
-	Use:   "regions",
-	Short: "List regions",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.InfraService.Regions()
-		displayItem(resp, err, displayFormat)
-	},
-}
-
-var listVpcsCmd = &cobra.Command{
-	Use:   "vpcs",
-	Short: "List vpcs",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.InfraService.Vpcs()
-		displayItem(resp, err, displayFormat)
-	},
-}
-
-var listSubnetsCmd = &cobra.Command{
-	Use:   "subnets",
-	Short: "List subnets",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.InfraService.Subnets()
-		displayItem(resp, err, displayFormat)
-	},
-}
-
-var listInstancesCmd = &cobra.Command{
-	Use:   "instances",
-	Short: "List instances",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.InfraService.Instances()
-		displayItem(resp, err, displayFormat)
-	},
-}
-
-var listImagesCmd = &cobra.Command{
-	Use:   "images",
-	Short: "List images",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.InfraService.Images()
-		displayItem(resp, err, displayFormat)
-	},
+func humanize(s string) string {
+	if len(s) > 1 {
+		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+	}
+	return strings.ToUpper(s)
 }
