@@ -3,12 +3,14 @@ package display
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
 )
 
 const charsIdenticalValues = "//"
+const descSortingSymbol = " ▲"
 const tabWriterWidth = 30
 
 // Table is used to represent an Asci art table
@@ -17,6 +19,7 @@ type Table struct {
 	columnsDisplayers map[string]*PropertyDisplayer
 	columns           map[string][]string
 	nbRows            int
+	sortByColumns     []string
 }
 
 // NewTable creates a new Table from its header
@@ -24,8 +27,8 @@ func NewTable(headers []*PropertyDisplayer) *Table {
 	var t Table
 	t.columnsDisplayers = make(map[string]*PropertyDisplayer)
 	for _, d := range headers {
-		t.columnsHeaders = append(t.columnsHeaders, d.displayName())
-		t.columnsDisplayers[d.displayName()] = d
+		t.columnsHeaders = append(t.columnsHeaders, cleanColumnName(d.displayName()))
+		t.columnsDisplayers[cleanColumnName(d.displayName())] = d
 	}
 	t.columns = make(map[string][]string, len(headers))
 
@@ -46,27 +49,48 @@ func (t *Table) AddRow(row ...string) {
 
 // AddValue adds a value in the header column
 func (t *Table) AddValue(header, value string) {
-	t.columns[header] = append(t.columns[header], value)
-	if len(t.columns[header]) > t.nbRows {
-		t.nbRows = len(t.columns[header])
+	t.columns[cleanColumnName(header)] = append(t.columns[cleanColumnName(header)], value)
+	if len(t.columns[cleanColumnName(header)]) > t.nbRows {
+		t.nbRows = len(t.columns[cleanColumnName(header)])
+	}
+}
+
+//SetSortBy sets the columns that will be used to sort the rows of the table
+func (t *Table) SetSortBy(columns ...string) {
+	t.sortByColumns = []string{}
+	for _, c := range columns {
+		c = cleanColumnName(c)
+		if _, ok := t.columnsDisplayers[c]; ok {
+			t.sortByColumns = append(t.sortByColumns, c)
+		}
 	}
 }
 
 // Fprint displays the table in a writer
 func (t *Table) Fprint(w io.Writer) {
+	sort.Sort(byColumns(*t))
 	t.FprintColumns(w, t.columnsHeaders...)
 }
 
 // FprintColumns display some columns of the table in a writer
 func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 	table := tablewriter.NewWriter(w)
-	table.SetHeader(headers)
+	var displayHeaders []string
+	for _, h := range headers {
+		if len(t.sortByColumns) >= 1 && cleanColumnName(t.sortByColumns[0]) == h {
+			displayHeaders = append(displayHeaders, h+descSortingSymbol)
+		} else {
+			displayHeaders = append(displayHeaders, h)
+		}
+	}
+	table.SetHeader(displayHeaders)
 
 	var previousFullrow []string
 	for i := 0; i < t.nbRows; i++ {
 		var row []string
 		var fullrow []string
 		for j, header := range headers {
+			header = cleanColumnName(header)
 			var v string
 			var collapseIdenticalValues bool
 			if i < len(t.columns[header]) {
@@ -89,13 +113,15 @@ func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 
 // ColumnValues returns the values of a table column
 func (t *Table) ColumnValues(header string) []string {
-	res := t.columns[header]
+	sort.Sort(byColumns(*t))
+	res := t.columns[cleanColumnName(header)]
 	removeDuplicatesOfSlice(&res)
 	return res
 }
 
 // FprintColumnValues displays the values of a table column in a writer
 func (t *Table) FprintColumnValues(w io.Writer, header, sep string) {
+	sort.Sort(byColumns(*t))
 	fmt.Fprintln(w, strings.Join(t.ColumnValues(header), sep))
 }
 
@@ -111,4 +137,26 @@ func removeDuplicatesOfSlice(data *[]string) {
 			}
 		}
 	}
+}
+
+func cleanColumnName(name string) string {
+	return strings.ToLower(strings.TrimSpace(name))
+}
+
+type byColumns Table
+
+func (c byColumns) Len() int { return c.nbRows }
+func (c byColumns) Swap(i, j int) {
+	for _, col := range c.columns {
+		col[i], col[j] = col[j], col[i]
+	}
+}
+func (c byColumns) Less(i, j int) bool {
+	for _, col := range c.sortByColumns {
+		if c.columns[col][i] == c.columns[col][j] {
+			continue
+		}
+		return c.columns[col][i] < c.columns[col][j]
+	}
+	return false
 }

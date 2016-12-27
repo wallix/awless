@@ -21,7 +21,7 @@ const (
 __awless_get_all_ids()
 {
 		local all_ids_output
-		if all_ids_output=$(awless rdflist all --local --ids 2>/dev/null); then
+		if all_ids_output=$(awless rdflist all --local --ids --infra --access 2>/dev/null); then
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }

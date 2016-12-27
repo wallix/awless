@@ -9,7 +9,7 @@ import (
 )
 
 // ResourceOfGraph prints a RDF ResourceOfGraph of one type, according to display properties
-func ResourceOfGraph(graph *rdf.Graph, resourceType string, properties []*PropertyDisplayer, onlyIDs bool, err error) {
+func ResourceOfGraph(graph *rdf.Graph, resourceType string, properties []*PropertyDisplayer, sortBy []string, onlyIDs bool, err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
@@ -31,6 +31,7 @@ func ResourceOfGraph(graph *rdf.Graph, resourceType string, properties []*Proper
 			table.AddValue(prop.displayName(), propertyValue(nodeProperties, prop.Property))
 		}
 	}
+	table.SetSortBy(sortBy...)
 	if onlyIDs {
 		table.FprintColumnValues(os.Stdout, "Id", " ")
 	} else {

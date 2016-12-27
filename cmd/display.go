@@ -42,7 +42,7 @@ func displayAliases(aliases stats.Aliases, err error) {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
-	if printOnlyID {
+	if listOnlyIDs {
 		names := make([]string, 0, len(aliases))
 		for name := range aliases {
 			names = append(names, name)

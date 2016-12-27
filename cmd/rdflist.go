@@ -14,21 +14,67 @@ import (
 )
 
 var (
-	printOnlyID    bool
+	listOnlyIDs    bool
+	listAllInfra   bool
+	listAllAccess  bool
 	localResources bool
+	sortBy         []string
 )
 
 var infraResourcesToDisplay = map[string][]*display.PropertyDisplayer{
-	"instance": []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Tags[].Name", Label: "Name"}, {Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}}, {Property: "Type"}, {Property: "PublicIp", Label: "Public IP"}, {Property: "PrivateIp", Label: "Private IP"}},
-	"vpc":      []*display.PropertyDisplayer{{Property: "Id"}, {Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}}, {Property: "State"}, {Property: "CidrBlock"}},
-	"subnet":   []*display.PropertyDisplayer{{Property: "Id"}, {Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}}, {Property: "State", ColoredValues: map[string]string{"available": "green"}}, {Property: "CidrBlock"}},
+	"instance": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Tags[].Name", Label: "Name"},
+		{Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}},
+		{Property: "Type"},
+		{Property: "PublicIp", Label: "Public IP"},
+		{Property: "PrivateIp", Label: "Private IP"},
+	},
+	"vpc": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
+		{Property: "State"}, {Property: "CidrBlock"},
+	},
+	"subnet": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}},
+		{Property: "State", ColoredValues: map[string]string{"available": "green"}},
+		{Property: "CidrBlock"},
+	},
 }
 
 var accessResourcesToDisplay = map[string][]*display.PropertyDisplayer{
-	"user":   []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Path"}, {Property: "PasswordLastUsed"}},
-	"role":   []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
-	"policy": []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "Description"}, {Property: "isAttachable"}, {Property: "CreateDate"}, {Property: "UpdateDate"}, {Property: "Path"}},
-	"group":  []*display.PropertyDisplayer{{Property: "Id"}, {Property: "Name"}, {Property: "Arn"}, {Property: "CreateDate"}, {Property: "Path"}},
+	"user": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "Path"},
+		{Property: "PasswordLastUsed"},
+	},
+	"role": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "CreateDate"},
+		{Property: "Path"},
+	},
+	"policy": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "Description"},
+		{Property: "isAttachable"},
+		{Property: "CreateDate"},
+		{Property: "UpdateDate"},
+		{Property: "Path"},
+	},
+	"group": []*display.PropertyDisplayer{
+		{Property: "Id"},
+		{Property: "Name"},
+		{Property: "Arn"},
+		{Property: "CreateDate"},
+		{Property: "Path"},
+	},
 }
 
 func init() {
@@ -42,8 +88,12 @@ func init() {
 	rdfListCmd.AddCommand(rdfListAliasesCmd)
 	rdfListCmd.AddCommand(rdfListAllCmd)
 
-	rdfListCmd.PersistentFlags().BoolVar(&printOnlyID, "ids", false, "List only ids")
+	rdfListCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	rdfListCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
+	rdfListCmd.PersistentFlags().StringSliceVar(&sortBy, "sort-by", []string{"Id"}, "Sort tables by column(s) name(s)")
+
+	rdfListAllCmd.PersistentFlags().BoolVar(&listAllInfra, "infra", false, "List infrastructure resources")
+	rdfListAllCmd.PersistentFlags().BoolVar(&listAllAccess, "access", false, "List access resources")
 }
 
 var rdfListCmd = &cobra.Command{
@@ -70,7 +120,7 @@ var rdfListInfraResourceCmd = func(resource string, properties []*display.Proper
 		Run: func(cmd *cobra.Command, args []string) {
 			if localResources {
 				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-				display.ResourceOfGraph(localInfra, nodeType, properties, printOnlyID, err)
+				display.ResourceOfGraph(localInfra, nodeType, properties, sortBy, listOnlyIDs, err)
 			} else {
 				listRemoteCloudResource(aws.InfraService, resources, nodeType, properties)
 			}
@@ -88,7 +138,7 @@ var rdfListAccessResourceCmd = func(resource string, properties []*display.Prope
 		Run: func(cmd *cobra.Command, args []string) {
 			if localResources {
 				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-				display.ResourceOfGraph(localAccess, nodeType, properties, printOnlyID, err)
+				display.ResourceOfGraph(localAccess, nodeType, properties, sortBy, listOnlyIDs, err)
 			} else {
 				listRemoteCloudResource(aws.AccessService, resources, nodeType, properties)
 			}
@@ -101,17 +151,23 @@ var rdfListAllCmd = &cobra.Command{
 	Short: "List all local resources",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if !printOnlyID {
-			fmt.Println("Infrastructure")
+		if !listAllInfra && !listAllAccess {
+			listAllInfra = true //By default, print only infra
 		}
-		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-		display.SeveralResourcesOfGraph(localInfra, infraResourcesToDisplay, printOnlyID, err)
-
-		if !printOnlyID {
-			fmt.Println("Access")
+		if listAllInfra {
+			if !listOnlyIDs {
+				fmt.Println("Infrastructure")
+			}
+			localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+			display.SeveralResourcesOfGraph(localInfra, infraResourcesToDisplay, listOnlyIDs, err)
 		}
-		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-		display.SeveralResourcesOfGraph(localAccess, accessResourcesToDisplay, printOnlyID, err)
+		if listAllAccess {
+			if !listOnlyIDs {
+				fmt.Println("Access")
+			}
+			localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+			display.SeveralResourcesOfGraph(localAccess, accessResourcesToDisplay, listOnlyIDs, err)
+		}
 	},
 }
 
@@ -122,7 +178,7 @@ func listRemoteCloudResource(cloudService interface{}, resources string, nodeTyp
 		methodI := method.Interface()
 		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
 			graph, err := graphFn()
-			display.ResourceOfGraph(graph, nodeType, properties, printOnlyID, err)
+			display.ResourceOfGraph(graph, nodeType, properties, sortBy, listOnlyIDs, err)
 			return
 		}
 	}
