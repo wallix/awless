@@ -45,8 +45,8 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, properties map[string][]*Property
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
-	table := NewTable([]*PropertyDisplayer{{Property: "Type", CollapseIdenticalValues: true}, {Property: "Name/Id", CollapseIdenticalValues: true}, {Property: "Property"}, {Property: "Value"}})
-
+	table := NewTable([]*PropertyDisplayer{{Property: "Type"}, {Property: "Name/Id"}, {Property: "Property"}, {Property: "Value"}})
+	table.MergeIdenticalCells = true
 	for t := range properties {
 		nodes, err := graph.NodesForType("/" + t)
 		if err != nil {

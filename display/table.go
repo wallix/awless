@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/olekukonko/tablewriter"
+	"github.com/fxaguessy/tablewriter"
 )
 
 const charsIdenticalValues = "//"
@@ -15,11 +15,12 @@ const tabWriterWidth = 30
 
 // Table is used to represent an Asci art table
 type Table struct {
-	columnsHeaders    []string
-	columnsDisplayers map[string]*PropertyDisplayer
-	columns           map[string][]string
-	nbRows            int
-	sortByColumns     []string
+	columnsHeaders      []string
+	columnsDisplayers   map[string]*PropertyDisplayer
+	columns             map[string][]string
+	nbRows              int
+	sortByColumns       []string
+	MergeIdenticalCells bool
 }
 
 // NewTable creates a new Table from its header
@@ -75,6 +76,10 @@ func (t *Table) Fprint(w io.Writer) {
 // FprintColumns display some columns of the table in a writer
 func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 	table := tablewriter.NewWriter(w)
+	if t.MergeIdenticalCells {
+		table.SetAutoMergeCells(true)
+		table.SetRowLine(true)
+	}
 	var displayHeaders []string
 	for _, h := range headers {
 		if len(t.sortByColumns) >= 1 && cleanColumnName(t.sortByColumns[0]) == h {
@@ -85,27 +90,17 @@ func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 	}
 	table.SetHeader(displayHeaders)
 
-	var previousFullrow []string
 	for i := 0; i < t.nbRows; i++ {
 		var row []string
-		var fullrow []string
-		for j, header := range headers {
+		for _, header := range headers {
 			header = cleanColumnName(header)
 			var v string
-			var collapseIdenticalValues bool
 			if i < len(t.columns[header]) {
 				v = t.columnsDisplayers[header].display(t.columns[header][i])
-				collapseIdenticalValues = t.columnsDisplayers[header].CollapseIdenticalValues
 			}
-			fullrow = append(fullrow, v)
-			if collapseIdenticalValues && len(previousFullrow) > j && previousFullrow[j] != "" && previousFullrow[j] == v {
-				row = append(row, charsIdenticalValues)
-			} else {
-				row = append(row, v)
-			}
+			row = append(row, v)
 		}
 		table.Append(row)
-		previousFullrow = fullrow
 	}
 
 	table.Render()

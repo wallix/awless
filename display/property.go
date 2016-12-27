@@ -12,12 +12,11 @@ const truncateSize = 25
 
 // PropertyDisplayer describe how to display a property in a table
 type PropertyDisplayer struct {
-	Property                string
-	Label                   string
-	ColoredValues           map[string]string
-	DontTruncate            bool
-	TruncateRight           bool
-	CollapseIdenticalValues bool
+	Property      string
+	Label         string
+	ColoredValues map[string]string
+	DontTruncate  bool
+	TruncateRight bool
 }
 
 func (p *PropertyDisplayer) displayName() string {

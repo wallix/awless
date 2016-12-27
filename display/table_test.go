@@ -75,22 +75,27 @@ func TestTableDisplay(t *testing.T) {
 }
 
 func TestTableSpecialDisplays(t *testing.T) {
-	table := NewTable([]*PropertyDisplayer{{Property: "c1", CollapseIdenticalValues: true}, {Property: "c2"}, {Property: "c3"}})
+	table := NewTable([]*PropertyDisplayer{{Property: "c1"}, {Property: "c2"}, {Property: "c3"}})
 	table.AddRow("v1.1", "v1.2", "v1.3")
 	table.AddRow("v1.1", "v2.2", "v2.3")
 	table.AddRow("v1.1", "v3.2")
 	table.AddRow("v4.1", "v4.2", "v4.3")
 	table.AddRow("v4.1", "v4.2", "v5.3")
+	table.MergeIdenticalCells = true
 	var print bytes.Buffer
 	table.Fprint(&print)
 	expected := `+------+------+------+
 |  C1  |  C2  |  C3  |
 +------+------+------+
 | v1.1 | v1.2 | v1.3 |
-| //   | v2.2 | v2.3 |
-| //   | v3.2 |      |
++      +------+------+
+|      | v2.2 | v2.3 |
++      +------+------+
+|      | v3.2 |      |
++------+------+------+
 | v4.1 | v4.2 | v4.3 |
-| //   | v4.2 | v5.3 |
++      +      +------+
+|      |      | v5.3 |
 +------+------+------+
 `
 	if got, want := print.String(), expected; got != want {
