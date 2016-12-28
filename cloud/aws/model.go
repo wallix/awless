@@ -26,6 +26,7 @@ var awsResourcesProperties = map[string]map[string]string{
 		"PrivateIp": "PrivateIpAddress",
 		"ImageId":   "ImageId",
 		"State":     "State",
+		"KeyName":   "KeyName",
 	},
 	rdf.USER: {
 		"Id":               "UserId",

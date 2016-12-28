@@ -9,6 +9,7 @@ import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/shell"
 )
 
 func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
@@ -356,6 +357,34 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 	}
 
 	return g, nil
+}
+
+func InstanceCredentialsFromGraph(graph *rdf.Graph, instanceID string) (*shell.Credentials, error) {
+	instanceNode, err := node.NewNodeFromStrings(rdf.INSTANCE, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	t, err := triple.New(instanceNode, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.InstanceLiteral))
+	if err != nil {
+		return nil, err
+	}
+	if !graph.HasTriple(t) {
+		return nil, fmt.Errorf("Unknown instance")
+	}
+	instanceProperties, err := LoadPropertiesFromGraph(graph, instanceNode)
+	if err != nil {
+		return nil, err
+	}
+	ip, ok := instanceProperties["PublicIp"]
+	if !ok {
+		return nil, fmt.Errorf("This instance has no public IP address")
+	}
+
+	key, ok := instanceProperties["KeyName"]
+	if !ok {
+		return nil, fmt.Errorf("This instance has no key set")
+	}
+	return &shell.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
 }
 
 func findNodeById(nodes []*node.Node, id string) *node.Node {

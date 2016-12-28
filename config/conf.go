@@ -18,6 +18,7 @@ var (
 	databaseFilename     = "awless.db"
 	GitDir               = filepath.Join(os.Getenv("HOME"), ".awless", "aws", "rdf")
 	Dir                  = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
+	KeysDir              = filepath.Join(os.Getenv("HOME"), ".awless", "keys")
 	Path                 = filepath.Join(Dir, configFilename)
 	DatabasePath         = filepath.Join(os.Getenv("HOME"), ".awless", databaseFilename)
 	StatsServerUrl       = "http://52.213.243.16:8080"
@@ -47,6 +48,7 @@ func InitAwlessEnv() {
 	AwlessFirstInstall = os.IsNotExist(err)
 
 	os.MkdirAll(GitDir, 0700)
+	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
 		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)

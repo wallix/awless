@@ -3,9 +3,10 @@ package rdf
 import "github.com/google/badwolf/triple/literal"
 
 var (
-	ExtraLiteral   *literal.Literal
-	MissingLiteral *literal.Literal
-	RegionLiteral  *literal.Literal
+	ExtraLiteral    *literal.Literal
+	MissingLiteral  *literal.Literal
+	RegionLiteral   *literal.Literal
+	InstanceLiteral *literal.Literal
 )
 
 func init() {
@@ -18,6 +19,9 @@ func init() {
 		panic(err)
 	}
 	if MissingLiteral, err = literal.DefaultBuilder().Build(literal.Text, "missing"); err != nil {
+		panic(err)
+	}
+	if InstanceLiteral, err = literal.DefaultBuilder().Build(literal.Text, INSTANCE); err != nil {
 		panic(err)
 	}
 }
