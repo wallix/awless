@@ -48,7 +48,7 @@ func TableFromBuildCommit(commit *revision.CommitDiff, rootNode *node.Node) (*Ta
 		}
 	})
 
-	table.SetSortBy("Type", "Name/Id", "Property")
+	table.SetSortBy("Type", "Name/Id", "Property", "Value")
 	return table, nil
 }
 
