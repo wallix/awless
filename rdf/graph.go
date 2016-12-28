@@ -92,6 +92,45 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, i
 	return nil
 }
 
+func (g *Graph) VisitDepthFirstUnique(root *node.Node, each func(*Graph, *node.Node, int)) error {
+	return g.visitDepthFirstUnique(root, each, make(map[string]bool), 0)
+}
+
+func (g *Graph) visitDepthFirstUnique(root *node.Node, each func(*Graph, *node.Node, int), visited map[string]bool, distances ...int) error {
+	var dist int
+	if len(distances) > 0 {
+		dist = distances[0]
+	}
+
+	if _, found := visited[root.UUID().String()]; found {
+		return nil
+	}
+	visited[root.UUID().String()] = true
+	each(g, root, dist)
+
+	relations, err := g.TriplesForSubjectPredicate(root, ParentOfPredicate)
+	if err != nil {
+		return err
+	}
+
+	var childs []*node.Node
+	for _, relation := range relations {
+		n, err := relation.Object().Node()
+		if err != nil {
+			return err
+		}
+		childs = append(childs, n)
+	}
+
+	sort.Sort(&nodeSorter{childs})
+
+	for _, child := range childs {
+		g.visitDepthFirstUnique(child, each, visited, dist+1)
+	}
+
+	return nil
+}
+
 func (g *Graph) Substract(other *Graph) *Graph {
 	sub := g.copy()
 

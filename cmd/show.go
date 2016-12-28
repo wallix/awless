@@ -60,7 +60,7 @@ var showCloudRevisionsCmd = &cobra.Command{
 }
 
 func displayCommit(diff *revision.CommitDiff) {
-	fmt.Println("Id:", diff.Commit, "- Date: ", diff.Time.Format("Monday January 2, 15:04"))
+	fmt.Println("\tRevision: ", diff.Commit, "- Date: ", diff.Time.Format("Monday January 2, 15:04"))
 
 	root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
 	if err != nil {
@@ -78,6 +78,4 @@ func displayCommit(diff *revision.CommitDiff) {
 		}
 		table.Fprint(os.Stdout)
 	}
-
-	fmt.Println("----------------------------------------------------------------------")
 }

@@ -21,7 +21,7 @@ func TableFromBuildCommit(commit *revision.CommitDiff, rootNode *node.Node) (*Ta
 	})
 	table.MergeIdenticalCells = true
 
-	commit.GraphDiff.FullGraph().VisitDepthFirst(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
+	commit.GraphDiff.FullGraph().VisitDepthFirstUnique(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
 		var lit *literal.Literal
 		diffTriples, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
 		if len(diffTriples) > 0 && err == nil {
