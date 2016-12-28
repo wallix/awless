@@ -3,7 +3,7 @@ package revision
 import (
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -38,7 +38,7 @@ func TestHasChanges(t *testing.T) {
 	defer f.Close()
 	f.WriteString("test")
 
-	_, fileName := path.Split(f.Name())
+	_, fileName := filepath.Split(f.Name())
 	if err = rr.index.AddByPath(fileName); err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	f.WriteString("/a<1>  \"to\"@[] /b<1>\n")
 	f.WriteString("/b<1>  \"to\"@[] /c<1>\n")
 
-	_, fileName := path.Split(f.Name())
+	_, fileName := filepath.Split(f.Name())
 
 	err = rr.commitIfChanges(fileName)
 	if err != nil {

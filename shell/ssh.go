@@ -4,7 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -16,7 +16,7 @@ type Credentials struct {
 }
 
 func NewClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
-	keyPath := path.Join(keyDirectory, cred.KeyName)
+	keyPath := filepath.Join(keyDirectory, cred.KeyName)
 	privateKey, err := ioutil.ReadFile(keyPath)
 	if os.IsNotExist(err) {
 		privateKey, err = ioutil.ReadFile(keyPath + ".pem")
