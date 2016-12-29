@@ -184,7 +184,7 @@ func newCommitDiff(parent, commit *git.Commit, repo *git.Repository, forFiles []
 	if err != nil {
 		return nil, err
 	}
-	parentGraph, err := gitTreeToGraph(parentTree, repo)
+	parentGraph, err := gitTreeToGraph(parentTree, repo, forFiles)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (c *CommitDiff) appendDiffFunction(forFiles []string) func(delta git.DiffDe
 	}
 }
 
-func gitTreeToGraph(tree *git.Tree, repo *git.Repository) (*rdf.Graph, error) {
+func gitTreeToGraph(tree *git.Tree, repo *git.Repository, files []string) (*rdf.Graph, error) {
 	g := rdf.NewGraph()
 	if tree == nil {
 		return g, nil
@@ -242,7 +242,7 @@ func gitTreeToGraph(tree *git.Tree, repo *git.Repository) (*rdf.Graph, error) {
 	nbEntries := tree.EntryCount()
 	for i := uint64(0); i < nbEntries; i++ {
 		entry := tree.EntryByIndex(i)
-		if entry.Type == git.ObjectBlob {
+		if entry.Type == git.ObjectBlob && contains(files, entry.Name) {
 			blob, err := repo.LookupBlob(entry.Id)
 			if err != nil {
 				return g, err

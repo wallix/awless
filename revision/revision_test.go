@@ -198,12 +198,21 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := len(lastsDiffs[0].GraphDiff.Inserted()), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+	fullGraph = `/c<1>	"to"@[]	/d<1>`
+	if got, want := lastsDiffs[0].GraphDiff.FullGraph().MustMarshal(), fullGraph; got != want {
+		t.Fatalf("got --\n%s\n--, want --\n%s\n--", got, want)
+	}
 	lastsDiffs, err = rr.lastsDiffs(1, fileName2)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := len(lastsDiffs[0].GraphDiff.Deleted()), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
+	}
+	fullGraph = `/w<1>	"to"@[]	/x<1>
+/x<1>	"to"@[]	/y<1>`
+	if got, want := lastsDiffs[0].GraphDiff.FullGraph().MustMarshal(), fullGraph; got != want {
+		t.Fatalf("got --\n%s\n--, want --\n%s\n--", got, want)
 	}
 	expect = []*triple.Triple{parseTriple("/w<1>  \"to\"@[] /x<1>"), parseTriple("/x<1>  \"to\"@[] /y<1>")}
 	if got, want := lastsDiffs[0].GraphDiff.Inserted(), expect; !reflect.DeepEqual(got, want) {
