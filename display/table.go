@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fxaguessy/tablewriter"
+	"github.com/olekukonko/tablewriter"
 )
 
 const charsIdenticalValues = "//"
