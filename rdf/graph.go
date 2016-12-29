@@ -92,11 +92,11 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, i
 	return nil
 }
 
-func (g *Graph) VisitDepthFirstUnique(root *node.Node, each func(*Graph, *node.Node, int)) error {
+func (g *Graph) VisitDepthFirstUnique(root *node.Node, each func(*Graph, *node.Node, int) error) error {
 	return g.visitDepthFirstUnique(root, each, make(map[string]bool), 0)
 }
 
-func (g *Graph) visitDepthFirstUnique(root *node.Node, each func(*Graph, *node.Node, int), visited map[string]bool, distances ...int) error {
+func (g *Graph) visitDepthFirstUnique(root *node.Node, each func(*Graph, *node.Node, int) error, visited map[string]bool, distances ...int) error {
 	var dist int
 	if len(distances) > 0 {
 		dist = distances[0]

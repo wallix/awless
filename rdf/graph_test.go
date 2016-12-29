@@ -92,11 +92,12 @@ func TestVisitDepthFirstUnique(t *testing.T) {
 	g.Add(noErrTriple(nine, ParentOfPredicate, ten))
 
 	var result bytes.Buffer
-	each := func(g *Graph, n *node.Node, distance int) {
+	each := func(g *Graph, n *node.Node, distance int) error {
 		for i := 0; i < distance; i++ {
 			result.WriteByte('/')
 		}
 		result.WriteString(n.ID().String())
+		return nil
 	}
 
 	g.VisitDepthFirstUnique(one, each)

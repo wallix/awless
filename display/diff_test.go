@@ -28,10 +28,14 @@ func TestDisplayCommit(t *testing.T) {
 	t9 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_3>`)
 	t10 := parseTriple(`/instance<inst_3>	"has_type"@[]	"/instance"^^type:text`)
 	t11 := parseTriple(`/instance<inst_3>	"property"@[]	"{"Key":"Id","Value":"inst_3"}"^^type:text`)
+	t12 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_4>`)
+	t13 := parseTriple(`/instance<inst_4>	"has_type"@[]	"/instance"^^type:text`)
 	diff.AddInserted(t8, rdf.ParentOfPredicate)
 	diff.AddInserted(t9, rdf.ParentOfPredicate)
 	diff.AddInserted(t10, rdf.ParentOfPredicate)
 	diff.AddInserted(t11, rdf.ParentOfPredicate)
+	diff.AddInserted(t12, rdf.ParentOfPredicate)
+	diff.AddInserted(t13, rdf.ParentOfPredicate)
 
 	rootNode, err := node.NewNodeFromStrings("/region", "eu-west-1")
 	if err != nil {
@@ -46,15 +50,15 @@ func TestDisplayCommit(t *testing.T) {
 	expected := `+-----------+---------+----------+--------+
 |  TYPE ▲   | NAME/ID | PROPERTY | VALUE  |
 +-----------+---------+----------+--------+
-| /instance | inst_1  |          |        |
-+           +         +----------+--------+
-|           |         | Id       | inst_1 |
+| /instance | inst_1  | Id       | inst_1 |
 +           +         +          +--------+
 |           |         |          | new_id |
 +           +---------+----------+--------+
 |           | inst_2  |          |        |
 +           +---------+----------+--------+
-|           | inst_3  |          |        |
+|           | inst_3  | Id       | inst_3 |
++           +---------+----------+--------+
+|           | inst_4  |          |        |
 +-----------+---------+----------+--------+
 `
 	if got, want := print.String(), expected; got != want {

@@ -58,42 +58,47 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node) (*Table, error) {
 	})
 	table.MergeIdenticalCells = true
 
-	diff.FullGraph().VisitDepthFirstUnique(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
+	err := diff.FullGraph().VisitDepthFirstUnique(rootNode, func(g *rdf.Graph, n *node.Node, distance int) error {
 		var lit *literal.Literal
 		diffTriples, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
 		if len(diffTriples) > 0 && err == nil {
 			lit, _ = diffTriples[0].Object().Literal()
 		}
 
-		var commonResource, changedProperties bool
-		var displayF func(a ...interface{}) string
+		var displayProperties, changedProperties, newResource bool
 
 		switch lit {
 		case rdf.ExtraLiteral:
-			displayF = color.New(color.FgGreen).SprintFunc()
+			displayProperties = true
+			newResource = true
 		case rdf.MissingLiteral:
-			displayF = color.New(color.FgRed).SprintFunc()
+			table.AddRow(fmt.Sprint(n.Type()), color.New(color.FgRed).SprintFunc()(n.ID()))
 		default:
-			commonResource = true
-			displayF = fmt.Sprint
+			displayProperties = true
 		}
-		if commonResource {
-			changedProperties = addDiffProperties(table, g, n, diff)
+		if displayProperties {
+			changedProperties, err = addDiffProperties(table, g, n, diff, newResource)
+			if err != nil {
+				return err
+			}
 		}
-		if !commonResource || changedProperties {
-			table.AddRow(displayF(n.Type()), displayF(n.ID()))
+		if !changedProperties && newResource {
+			table.AddRow(fmt.Sprint(n.Type()), color.New(color.FgGreen).SprintFunc()(n.ID()))
 		}
+		return nil
 	})
+	if err != nil {
+		return table, err
+	}
 
 	table.SetSortBy("Type", "Name/Id", "Property", "Value")
 	return table, nil
 }
 
-func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff) (hasChanges bool) {
+func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff, newResource bool) (hasChanges bool, err error) {
 	propertiesT, err := g.TriplesForSubjectPredicate(n, rdf.PropertyPredicate)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return false
+		return false, err
 	}
 
 	for _, t := range propertiesT {
@@ -101,23 +106,25 @@ func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff)
 			hasChanges = true
 			prop, err := aws.NewPropertyFromTriple(t)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				return hasChanges
+				return hasChanges, err
 			}
-			displayF := color.New(color.FgGreen).SprintFunc()
-			table.AddRow(fmt.Sprint(n.Type()), fmt.Sprint(n.ID()), displayF(prop.Key), displayF(prop.Value))
+			resourceDisplayF := fmt.Sprint
+			propertyDisplayF := color.New(color.FgGreen).SprintFunc()
+			if newResource {
+				resourceDisplayF = propertyDisplayF
+			}
+			table.AddRow(fmt.Sprint(n.Type()), resourceDisplayF(n.ID()), propertyDisplayF(prop.Key), propertyDisplayF(prop.Value))
 		}
 		if diff.HasDeletedTriple(t) {
 			hasChanges = true
 			prop, err := aws.NewPropertyFromTriple(t)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				return hasChanges
+				return hasChanges, err
 			}
 
 			displayF := color.New(color.FgRed).SprintFunc()
 			table.AddRow(fmt.Sprint(n.Type()), fmt.Sprint(n.ID()), displayF(prop.Key), displayF(prop.Value))
 		}
 	}
-	return hasChanges
+	return hasChanges, nil
 }
