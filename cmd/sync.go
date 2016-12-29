@@ -97,7 +97,11 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 		return nil, nil, err
 	}
 
-	if err := revision.CommitIfChanges(config.GitDir, config.InfraFilename, config.AccessFilename); err != nil {
+	r, err := revision.OpenRepository(config.GitDir)
+	if err != nil {
+		return nil, nil, err
+	}
+	if err := r.CommitIfChanges(config.InfraFilename, config.AccessFilename); err != nil {
 		return nil, nil, err
 	}
 

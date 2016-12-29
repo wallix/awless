@@ -14,8 +14,11 @@ import (
 )
 
 var (
-	numberRevisionsToShow   int
-	showRevisionsProperties bool
+	numberRevisionsToShow    int
+	showRevisionsProperties  bool
+	showRevisionsGroupAll    bool
+	showRevisionsGroupByDay  bool
+	showRevisionsGroupByWeek bool
 )
 
 func init() {
@@ -23,6 +26,9 @@ func init() {
 	showCmd.AddCommand(showCloudRevisionsCmd)
 	showCloudRevisionsCmd.PersistentFlags().IntVarP(&numberRevisionsToShow, "number", "n", 10, "Number of revision to show")
 	showCloudRevisionsCmd.PersistentFlags().BoolVarP(&showRevisionsProperties, "properties", "p", false, "Full diff with resources properties")
+	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupAll, "group-all", false, "Group all revisions")
+	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByWeek, "group-by-week", false, "Group revisions by week")
+	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByWeek, "group-by-day", false, "Group revisions by day")
 
 	RootCmd.AddCommand(showCmd)
 }
@@ -55,11 +61,25 @@ var showCloudRevisionsCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		accessDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, root, config.AccessFilename)
+		r, err := revision.OpenRepository(config.GitDir)
 		if err != nil {
 			return err
 		}
-		infraDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, root, config.InfraFilename)
+		param := revision.NoGroup
+		if showRevisionsGroupAll {
+			param = revision.GroupAll
+		}
+		if showRevisionsGroupByDay {
+			param = revision.GroupByDay
+		}
+		if showRevisionsGroupByWeek {
+			param = revision.GroupByWeek
+		}
+		accessDiffs, err := r.LastDiffs(numberRevisionsToShow, root, param, config.AccessFilename)
+		if err != nil {
+			return err
+		}
+		infraDiffs, err := r.LastDiffs(numberRevisionsToShow, root, param, config.InfraFilename)
 		if err != nil {
 			return err
 		}
@@ -72,7 +92,13 @@ var showCloudRevisionsCmd = &cobra.Command{
 }
 
 func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node) {
-	fmt.Println("\t", commitType, "- Revision: ", diff.Commit, "- Date: ", diff.Time.Format("Monday January 2, 15:04"))
+	parentCommit := diff.ParentCommit
+	parentText := "repository creation"
+	if parentCommit != "" {
+		parentText = parentCommit[:7] + " on " + diff.ParentTime.Format("Monday January 2, 15:04")
+	}
+	fmt.Println("\t", commitType, "from", parentText,
+		"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 
 	if showRevisionsProperties {
 		if diff.GraphDiff.HasDiff() {

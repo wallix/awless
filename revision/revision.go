@@ -20,36 +20,29 @@ type Repository struct {
 
 // CommitDiff represents the deleted/inserted RDF triples of a git commit
 type CommitDiff struct {
-	Time      time.Time
-	Commit    string
-	GraphDiff *rdf.Diff
+	ParentTime   time.Time
+	ChildTime    time.Time
+	ParentCommit string
+	ChildCommit  string
+	GraphDiff    *rdf.Diff
 }
 
-// CommitIfChanges creates a new git commit if there are changes in the infra and access RDF files
-func CommitIfChanges(repositoryPath string, files ...string) error {
-	rr, err := openRepository(repositoryPath)
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		rr.addFile(file)
-	}
+type fetchParameter int
 
-	return rr.commitIfChanges()
+const (
+	GroupAll fetchParameter = iota
+	GroupByDay
+	GroupByWeek
+	NoGroup
+)
+
+type commitPair struct {
+	parent *git.Commit
+	child  *git.Commit
 }
 
-// LastDiffs list the last numberCommits commits for the files in parmeters (if no file in parameter, for all repository files)
-func LastDiffs(repositoryPath string, numberCommits int, root *node.Node, files ...string) ([]*CommitDiff, error) {
-	var diffs []*CommitDiff
-	rr, err := openRepository(repositoryPath)
-	if err != nil {
-		return diffs, err
-	}
-
-	return rr.lastsDiffs(numberCommits, root, files...)
-}
-
-func openRepository(path string) (*Repository, error) {
+// OpenRepository opens a new or existing git repository
+func OpenRepository(path string) (*Repository, error) {
 	if _, err := os.Stat(filepath.Join(path, ".git")); os.IsNotExist(err) {
 		if _, err := git.InitRepository(path, false); err != nil {
 			return nil, err
@@ -66,6 +59,29 @@ func openRepository(path string) (*Repository, error) {
 		return nil, err
 	}
 	return &Repository{gitRepository: repo, index: idx}, nil
+}
+
+// CommitIfChanges creates a new git commit if there are changes in the infra and access RDF files
+func (rr *Repository) CommitIfChanges(files ...string) error {
+	for _, file := range files {
+		rr.addFile(file)
+	}
+
+	return rr.commitIfChanges()
+}
+
+// LastDiffs list the last numberCommits commits for the files in parmeters (if no file in parameter, for all repository files)
+func (rr *Repository) LastDiffs(numberCommits int, root *node.Node, param fetchParameter, files ...string) ([]*CommitDiff, error) {
+	var diffs []*CommitDiff
+	if len(files) == 0 {
+		files = rr.files
+	}
+
+	commits, err := rr.lastCommits(numberCommits)
+	if err != nil {
+		return diffs, err
+	}
+	return generateCommitDiffs(generateCommitPairs(commits, param), rr.gitRepository, root, files)
 }
 
 func (rr *Repository) hasChanges() (bool, error) {
@@ -127,48 +143,108 @@ func (rr *Repository) commitIfChanges() error {
 	return nil
 }
 
-func (rr *Repository) lastsDiffs(numberCommits int, root *node.Node, files ...string) ([]*CommitDiff, error) {
-	if len(files) == 0 {
-		files = rr.files
-	}
-	var result []*CommitDiff
+func (rr *Repository) lastCommits(n int) ([]*git.Commit, error) {
+	var res []*git.Commit
 	head, err := rr.gitRepository.Head()
 	if err != nil {
-		return result, nil //Empty repository
+		return res, nil //Empty repository
 	}
 
-	headCommit, err := rr.gitRepository.LookupCommit(head.Target())
+	commit, err := rr.gitRepository.LookupCommit(head.Target())
 	if err != nil {
-		return result, err
+		return res, err
 	}
+	res = append(res, commit)
 
-	commit := headCommit
-	for i := 0; i < numberCommits; i++ {
+	for i := 0; i < n; i++ {
 		numberParents := commit.ParentCount()
 		var parent *git.Commit
+
 		if numberParents > 1 {
-			return result, fmt.Errorf("The %s commit has more than 1 parent (%d parents)", commit.Id().String(), numberParents)
-		} else if numberParents == 1 {
+			return res, fmt.Errorf("The %s commit has more than 1 parent (%d parents)", commit.Id().String(), numberParents)
+		}
+		if numberParents == 1 {
 			parent = commit.Parent(0)
+			commit = parent
 		}
-		diff, err := newCommitDiff(parent, commit, rr.gitRepository, root, files)
-		if err != nil {
-			return result, err
-		}
-		result = append(result, diff)
+		res = append(res, parent)
+
 		if numberParents == 0 {
 			break
 		}
-		commit = parent
 	}
 
-	return result, nil
+	return res, err
+}
+
+func generateCommitPairs(commits []*git.Commit, param fetchParameter) []*commitPair {
+	var res []*commitPair
+
+	switch param {
+	case GroupAll:
+		return []*commitPair{{parent: commits[len(commits)-1], child: commits[0]}}
+	case GroupByDay:
+		if len(commits) == 0 {
+			return res
+		}
+		commit := commits[0]
+		previousAddedCommit := commit
+		time := commits[0].Committer().When
+		for i := 1; i < len(commits); i++ {
+			newCommit := commits[i]
+			if newCommit != nil && time.Sub(newCommit.Committer().When).Hours() > 24. {
+				res = append(res, &commitPair{parent: newCommit, child: commit})
+				time = newCommit.Committer().When
+				previousAddedCommit = newCommit
+			}
+			commit = newCommit
+		}
+		res = append(res, &commitPair{parent: commit, child: previousAddedCommit})
+	case GroupByWeek:
+		if len(commits) == 0 {
+			return res
+		}
+		commit := commits[0]
+		previousAddedCommit := commit
+		time := commits[0].Committer().When
+		for i := 1; i < len(commits); i++ {
+			newCommit := commits[i]
+			if newCommit != nil && time.Sub(newCommit.Committer().When).Hours() > 7*24. {
+				res = append(res, &commitPair{parent: newCommit, child: commit})
+				time = newCommit.Committer().When
+				previousAddedCommit = newCommit
+			}
+			commit = newCommit
+		}
+		res = append(res, &commitPair{parent: commit, child: previousAddedCommit})
+	default:
+		for i := 0; i < len(commits)-1; i++ {
+			res = append(res, &commitPair{parent: commits[i+1], child: commits[i]})
+		}
+	}
+	return res
+}
+
+func generateCommitDiffs(pairs []*commitPair, repo *git.Repository, root *node.Node, forFiles []string) ([]*CommitDiff, error) {
+	var res []*CommitDiff
+	for _, commitPair := range pairs {
+		diff, err := newCommitDiff(commitPair.parent, commitPair.child, repo, root, forFiles)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, diff)
+	}
+	return res, nil
 }
 
 func newCommitDiff(parent, commit *git.Commit, repo *git.Repository, root *node.Node, forFiles []string) (*CommitDiff, error) {
 	var parentTree *git.Tree
 	var err error
+	var parentTime time.Time
+	var parentCommit string
 	if parent != nil {
+		parentTime = parent.Committer().When
+		parentCommit = parent.Id().String()
 		parentTree, err = parent.Tree()
 		if err != nil {
 			return nil, err
@@ -192,9 +268,11 @@ func newCommitDiff(parent, commit *git.Commit, repo *git.Repository, root *node.
 	}
 
 	res := &CommitDiff{
-		Time:      commit.Committer().When,
-		Commit:    commit.Id().String(),
-		GraphDiff: diff,
+		ChildTime:    commit.Committer().When,
+		ChildCommit:  commit.Id().String(),
+		ParentTime:   parentTime,
+		ParentCommit: parentCommit,
+		GraphDiff:    diff,
 	}
 
 	return res, nil
