@@ -10,7 +10,7 @@ import (
 )
 
 const charsIdenticalValues = "//"
-const descSortingSymbol = " ▲"
+const ascSymbol = " ▲"
 const tabWriterWidth = 30
 
 // Table is used to represent an Asci art table
@@ -83,7 +83,7 @@ func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 	var displayHeaders []string
 	for _, h := range headers {
 		if len(t.sortByColumns) >= 1 && cleanColumnName(t.sortByColumns[0]) == h {
-			displayHeaders = append(displayHeaders, h+descSortingSymbol)
+			displayHeaders = append(displayHeaders, h+ascSymbol)
 		} else {
 			displayHeaders = append(displayHeaders, h)
 		}

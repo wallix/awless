@@ -14,12 +14,16 @@ import (
 	"github.com/wallix/awless/revision"
 )
 
-var numberRevisionToShow *int
+var (
+	numberRevisionsToShow   int
+	showRevisionsProperties bool
+)
 
 func init() {
 	showCmd.AddCommand(showVpcCmd)
 	showCmd.AddCommand(showCloudRevisionsCmd)
-	numberRevisionToShow = showCloudRevisionsCmd.Flags().IntP("number", "n", 10, "Number of revision to show")
+	showCloudRevisionsCmd.PersistentFlags().IntVarP(&numberRevisionsToShow, "number", "n", 10, "Number of revision to show")
+	showCloudRevisionsCmd.PersistentFlags().BoolVarP(&showRevisionsProperties, "properties", "p", false, "Full diff with resources properties")
 
 	RootCmd.AddCommand(showCmd)
 }
@@ -48,7 +52,7 @@ var showCloudRevisionsCmd = &cobra.Command{
 	Short: "Show cloud revision history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		diffs, err := revision.LastDiffs(config.GitDir, *numberRevisionToShow)
+		diffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow)
 		if err != nil {
 			return err
 		}
@@ -68,9 +72,17 @@ func displayCommit(diff *revision.CommitDiff) {
 		return
 	}
 
-	if len(diff.GraphDiff.Inserted()) == 0 && len(diff.GraphDiff.Deleted()) == 0 {
-		fmt.Println("No changes.")
+	if showRevisionsProperties {
+		if diff.GraphDiff.HasDiff() {
+			display.FullDiff(diff.GraphDiff, root)
+		} else {
+			fmt.Println("No changes.")
+		}
 	} else {
-		display.FullDiff(diff.GraphDiff, root)
+		if diff.GraphDiff.HasResourceDiff() {
+			display.ResourceDiff(diff.GraphDiff, root)
+		} else {
+			fmt.Println("No resource changes.")
+		}
 	}
 }
