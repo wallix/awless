@@ -71,11 +71,6 @@ func displayCommit(diff *revision.CommitDiff) {
 	if len(diff.GraphDiff.Inserted()) == 0 && len(diff.GraphDiff.Deleted()) == 0 {
 		fmt.Println("No changes.")
 	} else {
-		table, err := display.TableFromBuildCommit(diff, root)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
-			return
-		}
-		table.Fprint(os.Stdout)
+		display.FullDiff(diff.GraphDiff, root)
 	}
 }

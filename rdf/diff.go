@@ -26,14 +26,24 @@ func (d *Diff) FullGraph() *Graph {
 	return d.graph
 }
 
-func (d *Diff) TriplesInDiff() []*triple.Triple {
+func (d *Diff) TriplesInDiff(forceUpdate ...bool) []*triple.Triple {
+	if len(forceUpdate) > 0 && forceUpdate[0] {
+		d.setTriplesInDiff()
+	}
 	d.once.Do(d.setTriplesInDiff)
 	return d.triples
 }
 
-func (d *Diff) HasDiff() bool {
+func (d *Diff) HasResourceDiff(forceUpdate ...bool) bool {
+	if len(forceUpdate) > 0 && forceUpdate[0] {
+		d.setTriplesInDiff()
+	}
 	d.once.Do(d.setTriplesInDiff)
 	return len(d.triples) > 0
+}
+
+func (d *Diff) HasDiff(forceUpdate ...bool) bool {
+	return d.HasResourceDiff(forceUpdate...) || len(d.Inserted()) != 0 || len(d.Deleted()) != 0
 }
 
 func NewEmptyDiffFromGraph(g *Graph) *Diff {

@@ -15,12 +15,15 @@ func TestEmptyGraphDiffOrGivenNilRootNode(t *testing.T) {
 	any, _ := node.NewNodeFromStrings("/any", "any")
 	diff, _ := differ.Run(any, NewGraph(), NewGraph())
 
+	if got, want := diff.HasResourceDiff(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
 	if got, want := diff.HasDiff(), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
 	diff, _ = differ.Run(nil, NewGraph(), NewGraph())
-	if got, want := diff.HasDiff(), false; got != want {
+	if got, want := diff.HasResourceDiff(), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 }
@@ -118,6 +121,9 @@ func TestGraphDiff(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
+	if got, want := diff.HasResourceDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
 	if got, want := diff.HasDiff(), true; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
@@ -151,6 +157,9 @@ func TestGraphDiff(t *testing.T) {
 
 	if got, want := diff.FullGraph().size(), 24; got != want {
 		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := diff.HasResourceDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
 	if got, want := diff.HasDiff(), true; got != want {
 		t.Fatalf("got %t, want %t", got, want)
@@ -197,18 +206,30 @@ func TestDiffBuildFromGraph(t *testing.T) {
 	if got, want := d.FullGraph().MustMarshal(), local.MustMarshal(); got != want {
 		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
 	}
-	if got, want := len(d.Deleted()), 0; got != want {
-		t.Fatalf("got %d, want %d", got, want)
+	if got, want := d.HasResourceDiff(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
-	if got, want := len(d.Inserted()), 0; got != want {
-		t.Fatalf("got %d, want %d", got, want)
+	if got, want := d.HasDiff(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
 
 	t1 := noErrTriple(one, ParentOfPredicate, three)
 	t2 := noErrLiteralTriple(three, HasTypePredicate, literalB)
 	t3 := noErrLiteralTriple(three, HasTypePredicate, literalA) //Triple not in graph
-	d.AddDeleted(t1, ParentOfPredicate)
 	d.AddDeleted(t2, ParentOfPredicate)
+	if got, want := d.HasResourceDiff(), false; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := d.HasDiff(), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	d.AddDeleted(t1, ParentOfPredicate)
+	if got, want := d.HasResourceDiff(true), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := d.HasDiff(true), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
 	d.AddDeleted(t3, ParentOfPredicate)
 	if got, want := d.FullGraph().MustMarshal(), local.MustMarshal(); got != want {
 		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
@@ -254,7 +275,7 @@ func TestDiffBuildFromGraph(t *testing.T) {
 	}
 	deleted := noErrLiteralTriple(three, DiffPredicate, MissingLiteral)
 	created := noErrLiteralTriple(six, DiffPredicate, ExtraLiteral)
-	if got, want := d.TriplesInDiff(), []*triple.Triple{deleted, created}; !reflect.DeepEqual(got, want) {
+	if got, want := d.TriplesInDiff(true), []*triple.Triple{deleted, created}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }

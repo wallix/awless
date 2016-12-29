@@ -1,6 +1,7 @@
 package display
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 
@@ -9,10 +10,46 @@ import (
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
-	"github.com/wallix/awless/revision"
 )
 
-func TableFromBuildCommit(commit *revision.CommitDiff, rootNode *node.Node) (*Table, error) {
+func FullDiff(diff *rdf.Diff, rootNode *node.Node) {
+	table, err := tableFromDiff(diff, rootNode)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return
+	}
+	table.Fprint(os.Stdout)
+}
+
+func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
+	diff.FullGraph().VisitDepthFirst(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
+		var lit *literal.Literal
+		diff, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
+		if len(diff) > 0 && err == nil {
+			lit, _ = diff[0].Object().Literal()
+		}
+
+		var tabs bytes.Buffer
+		for i := 0; i < distance; i++ {
+			tabs.WriteByte('\t')
+		}
+
+		switch lit {
+		case rdf.ExtraLiteral:
+			color.Set(color.FgGreen)
+			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+			color.Unset()
+		case rdf.MissingLiteral:
+			color.Set(color.FgRed)
+			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+			color.Unset()
+		default:
+			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+		}
+	})
+}
+
+func tableFromDiff(diff *rdf.Diff, rootNode *node.Node) (*Table, error) {
 	table := NewTable([]*PropertyDisplayer{
 		{Property: "Type", DontTruncate: true},
 		{Property: "Name/Id", DontTruncate: true},
@@ -21,7 +58,7 @@ func TableFromBuildCommit(commit *revision.CommitDiff, rootNode *node.Node) (*Ta
 	})
 	table.MergeIdenticalCells = true
 
-	commit.GraphDiff.FullGraph().VisitDepthFirstUnique(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
+	diff.FullGraph().VisitDepthFirstUnique(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
 		var lit *literal.Literal
 		diffTriples, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
 		if len(diffTriples) > 0 && err == nil {
@@ -41,7 +78,7 @@ func TableFromBuildCommit(commit *revision.CommitDiff, rootNode *node.Node) (*Ta
 			displayF = fmt.Sprint
 		}
 		if commonResource {
-			changedProperties = addDiffProperties(table, g, n, commit)
+			changedProperties = addDiffProperties(table, g, n, diff)
 		}
 		if !commonResource || changedProperties {
 			table.AddRow(displayF(n.Type()), displayF(n.ID()))
@@ -52,7 +89,7 @@ func TableFromBuildCommit(commit *revision.CommitDiff, rootNode *node.Node) (*Ta
 	return table, nil
 }
 
-func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *revision.CommitDiff) (hasChanges bool) {
+func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff) (hasChanges bool) {
 	propertiesT, err := g.TriplesForSubjectPredicate(n, rdf.PropertyPredicate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -60,7 +97,7 @@ func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *revision.
 	}
 
 	for _, t := range propertiesT {
-		if diff.GraphDiff.HasInsertedTriple(t) {
+		if diff.HasInsertedTriple(t) {
 			hasChanges = true
 			prop, err := aws.NewPropertyFromTriple(t)
 			if err != nil {
@@ -70,7 +107,7 @@ func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *revision.
 			displayF := color.New(color.FgGreen).SprintFunc()
 			table.AddRow(fmt.Sprint(n.Type()), fmt.Sprint(n.ID()), displayF(prop.Key), displayF(prop.Value))
 		}
-		if diff.GraphDiff.HasDeletedTriple(t) {
+		if diff.HasDeletedTriple(t) {
 			hasChanges = true
 			prop, err := aws.NewPropertyFromTriple(t)
 			if err != nil {

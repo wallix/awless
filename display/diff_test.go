@@ -3,17 +3,14 @@ package display
 import (
 	"bytes"
 	"testing"
-	"time"
 
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/rdf"
-	"github.com/wallix/awless/revision"
 )
 
 func TestDisplayCommit(t *testing.T) {
-	now := time.Now()
 	t0 := parseTriple(`/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`)
 	t1 := parseTriple(`/instance<inst_1>	"has_type"@[]	"/instance"^^type:text`)
 	t2 := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"inst_1"}"^^type:text`)
@@ -35,13 +32,12 @@ func TestDisplayCommit(t *testing.T) {
 	diff.AddInserted(t9, rdf.ParentOfPredicate)
 	diff.AddInserted(t10, rdf.ParentOfPredicate)
 	diff.AddInserted(t11, rdf.ParentOfPredicate)
-	revisionDiff := revision.CommitDiff{Time: now, Commit: "Commit msg", GraphDiff: diff}
 
 	rootNode, err := node.NewNodeFromStrings("/region", "eu-west-1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	table, err := TableFromBuildCommit(&revisionDiff, rootNode)
+	table, err := tableFromDiff(diff, rootNode)
 	if err != nil {
 		t.Fatal(err)
 	}

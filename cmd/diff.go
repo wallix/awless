@@ -1,26 +1,26 @@
 package cmd
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/fatih/color"
-	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 )
 
+var diffProperties bool
+
 func init() {
 	RootCmd.AddCommand(diffCmd)
+	diffCmd.PersistentFlags().BoolVarP(&diffProperties, "properties", "p", false, "Full diff with resources properties")
 }
 
 var diffCmd = &cobra.Command{
@@ -89,19 +89,34 @@ var diffCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		var hasDiff bool
+		if diffProperties {
+			if accessDiff.HasDiff() {
+				hasDiff = true
+				fmt.Println("------ ACCESS ------")
+				display.FullDiff(accessDiff, root)
+			}
+			if infraDiff.HasDiff() {
+				hasDiff = true
+				fmt.Println()
+				fmt.Println("------ INFRA ------")
+				display.FullDiff(infraDiff, root)
+			}
+		} else {
+			if accessDiff.HasResourceDiff() {
+				hasDiff = true
+				fmt.Println("------ ACCESS ------")
+				display.ResourceDiff(accessDiff, root)
+			}
 
-		if accessDiff.HasDiff() {
-			fmt.Println("------ ACCESS ------")
-			accessDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
+			if infraDiff.HasResourceDiff() {
+				hasDiff = true
+				fmt.Println()
+				fmt.Println("------ INFRA ------")
+				display.ResourceDiff(infraDiff, root)
+			}
 		}
-
-		if infraDiff.HasDiff() {
-			fmt.Println()
-			fmt.Println("------ INFRA ------")
-			infraDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
-		}
-
-		if infraDiff.HasDiff() || accessDiff.HasDiff() {
+		if hasDiff {
 			var yesorno string
 			fmt.Print("\nDo you want to perform a sync? (y/n): ")
 			fmt.Scanln(&yesorno)
@@ -112,30 +127,4 @@ var diffCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func printWithDiff(g *rdf.Graph, n *node.Node, distance int) {
-	var lit *literal.Literal
-	diff, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
-	if len(diff) > 0 && err == nil {
-		lit, _ = diff[0].Object().Literal()
-	}
-
-	var tabs bytes.Buffer
-	for i := 0; i < distance; i++ {
-		tabs.WriteByte('\t')
-	}
-
-	switch lit {
-	case rdf.ExtraLiteral:
-		color.Set(color.FgGreen)
-		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
-		color.Unset()
-	case rdf.MissingLiteral:
-		color.Set(color.FgRed)
-		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
-		color.Unset()
-	default:
-		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
-	}
 }
