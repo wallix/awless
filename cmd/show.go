@@ -52,19 +52,24 @@ var showCloudRevisionsCmd = &cobra.Command{
 	Short: "Show cloud revision history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		diffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow)
+		accessDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, config.AccessFilename)
 		if err != nil {
 			return err
 		}
-		for _, diff := range diffs {
-			displayCommit(diff)
+		infraDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, config.InfraFilename)
+		if err != nil {
+			return err
+		}
+		for i := range accessDiffs {
+			displayCommit(accessDiffs[i], "Access")
+			displayCommit(infraDiffs[i], "Infra")
 		}
 		return nil
 	},
 }
 
-func displayCommit(diff *revision.CommitDiff) {
-	fmt.Println("\tRevision: ", diff.Commit, "- Date: ", diff.Time.Format("Monday January 2, 15:04"))
+func displayCommit(diff *revision.CommitDiff, commitType string) {
+	fmt.Println("\t", commitType, "- Revision: ", diff.Commit, "- Date: ", diff.Time.Format("Monday January 2, 15:04"))
 
 	root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
 	if err != nil {

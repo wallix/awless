@@ -39,7 +39,8 @@ func TestHasChanges(t *testing.T) {
 	f.WriteString("test")
 
 	_, fileName := filepath.Split(f.Name())
-	if err = rr.index.AddByPath(fileName); err != nil {
+
+	if err = rr.addFile(fileName); err != nil {
 		t.Fatal(err)
 	}
 
@@ -51,7 +52,7 @@ func TestHasChanges(t *testing.T) {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
-	rr.commitIfChanges(fileName)
+	rr.commitIfChanges()
 
 	hasChanges, err = rr.hasChanges()
 	if err != nil {
@@ -91,8 +92,11 @@ func TestCommitsAndDiffs(t *testing.T) {
 	f.WriteString("/b<1>  \"to\"@[] /c<1>\n")
 
 	_, fileName := filepath.Split(f.Name())
+	if err = rr.addFile(fileName); err != nil {
+		t.Fatal(err)
+	}
 
-	err = rr.commitIfChanges(fileName)
+	err = rr.commitIfChanges()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +125,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	}
 	f.WriteString("/c<1>  \"to\"@[] /d<1>\n")
 
-	err = rr.commitIfChanges(fileName)
+	err = rr.commitIfChanges()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +152,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 		t.Fatalf("got --\n%s\n--, want --\n%s\n--", got, want)
 	}
 
-	err = rr.commitIfChanges(fileName)
+	err = rr.commitIfChanges()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,6 +172,54 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := len(lastsDiffs), 1; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+
+	f2, err := ioutil.TempFile(dir, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f2.Close()
+	f2.WriteString("/w<1>  \"to\"@[] /x<1>\n")
+	f2.WriteString("/x<1>  \"to\"@[] /y<1>\n")
+	_, fileName2 := filepath.Split(f2.Name())
+	if err = rr.addFile(fileName2); err != nil {
+		t.Fatal(err)
+	}
+	err = rr.commitIfChanges()
+	if err != nil {
+		t.Fatal(err)
+	}
+	lastsDiffs, err = rr.lastsDiffs(1, fileName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(lastsDiffs[0].GraphDiff.Deleted()), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := len(lastsDiffs[0].GraphDiff.Inserted()), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	lastsDiffs, err = rr.lastsDiffs(1, fileName2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(lastsDiffs[0].GraphDiff.Deleted()), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	expect = []*triple.Triple{parseTriple("/w<1>  \"to\"@[] /x<1>"), parseTriple("/x<1>  \"to\"@[] /y<1>")}
+	if got, want := lastsDiffs[0].GraphDiff.Inserted(), expect; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+	lastsDiffs, err = rr.lastsDiffs(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(lastsDiffs[0].GraphDiff.Deleted()), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := lastsDiffs[0].GraphDiff.Inserted(), expect; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+
 }
 
 func parseTriple(s string) *triple.Triple {
