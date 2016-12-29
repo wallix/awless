@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
+	"github.com/google/badwolf/triple/node"
 	git "github.com/libgit2/git2go"
 	"github.com/wallix/awless/rdf"
 )
@@ -41,14 +39,14 @@ func CommitIfChanges(repositoryPath string, files ...string) error {
 }
 
 // LastDiffs list the last numberCommits commits for the files in parmeters (if no file in parameter, for all repository files)
-func LastDiffs(repositoryPath string, numberCommits int, files ...string) ([]*CommitDiff, error) {
+func LastDiffs(repositoryPath string, numberCommits int, root *node.Node, files ...string) ([]*CommitDiff, error) {
 	var diffs []*CommitDiff
 	rr, err := openRepository(repositoryPath)
 	if err != nil {
 		return diffs, err
 	}
 
-	return rr.lastsDiffs(numberCommits, files...)
+	return rr.lastsDiffs(numberCommits, root, files...)
 }
 
 func openRepository(path string) (*Repository, error) {
@@ -129,7 +127,7 @@ func (rr *Repository) commitIfChanges() error {
 	return nil
 }
 
-func (rr *Repository) lastsDiffs(numberCommits int, files ...string) ([]*CommitDiff, error) {
+func (rr *Repository) lastsDiffs(numberCommits int, root *node.Node, files ...string) ([]*CommitDiff, error) {
 	if len(files) == 0 {
 		files = rr.files
 	}
@@ -153,7 +151,7 @@ func (rr *Repository) lastsDiffs(numberCommits int, files ...string) ([]*CommitD
 		} else if numberParents == 1 {
 			parent = commit.Parent(0)
 		}
-		diff, err := newCommitDiff(parent, commit, rr.gitRepository, files)
+		diff, err := newCommitDiff(parent, commit, rr.gitRepository, root, files)
 		if err != nil {
 			return result, err
 		}
@@ -167,7 +165,7 @@ func (rr *Repository) lastsDiffs(numberCommits int, files ...string) ([]*CommitD
 	return result, nil
 }
 
-func newCommitDiff(parent, commit *git.Commit, repo *git.Repository, forFiles []string) (*CommitDiff, error) {
+func newCommitDiff(parent, commit *git.Commit, repo *git.Repository, root *node.Node, forFiles []string) (*CommitDiff, error) {
 	var parentTree *git.Tree
 	var err error
 	if parent != nil {
@@ -180,58 +178,26 @@ func newCommitDiff(parent, commit *git.Commit, repo *git.Repository, forFiles []
 	if err != nil {
 		return nil, err
 	}
-	gitDiff, err := repo.DiffTreeToTree(parentTree, commitTree, &git.DiffOptions{})
-	if err != nil {
-		return nil, err
-	}
 	parentGraph, err := gitTreeToGraph(parentTree, repo, forFiles)
 	if err != nil {
 		return nil, err
 	}
+	commitGraph, err := gitTreeToGraph(commitTree, repo, forFiles)
+	if err != nil {
+		return nil, err
+	}
+	diff, err := rdf.DefaultDiffer.Run(root, commitGraph, parentGraph)
+	if err != nil {
+		return nil, err
+	}
+
 	res := &CommitDiff{
 		Time:      commit.Committer().When,
 		Commit:    commit.Id().String(),
-		GraphDiff: rdf.NewEmptyDiffFromGraph(parentGraph),
+		GraphDiff: diff,
 	}
 
-	err = gitDiff.ForEach(res.appendDiffFunction(forFiles), git.DiffDetailLines)
-
-	if err != nil {
-		return res, err
-	}
 	return res, nil
-}
-
-func (c *CommitDiff) appendDiffFunction(forFiles []string) func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-	return func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-		return func(git.DiffHunk) (git.DiffForEachLineCallback, error) {
-			return func(line git.DiffLine) error {
-				if delta.Flags == git.DiffFlagNotBinary && (contains(forFiles, delta.NewFile.Path) || contains(forFiles, delta.OldFile.Path)) {
-					if line.Origin == git.DiffLineAddition {
-						str := strings.TrimSpace(line.Content)
-						if str != "" {
-							t, e := triple.Parse(str, literal.DefaultBuilder())
-							if e != nil {
-								return e
-							}
-							c.GraphDiff.AddInserted(t, rdf.ParentOfPredicate)
-						}
-					}
-					if line.Origin == git.DiffLineDeletion {
-						str := strings.TrimSpace(line.Content)
-						if str != "" {
-							t, e := triple.Parse(str, literal.DefaultBuilder())
-							if e != nil {
-								return e
-							}
-							c.GraphDiff.AddDeleted(t, rdf.ParentOfPredicate)
-						}
-					}
-				}
-				return nil
-			}, nil
-		}, nil
-	}
 }
 
 func gitTreeToGraph(tree *git.Tree, repo *git.Repository, files []string) (*rdf.Graph, error) {

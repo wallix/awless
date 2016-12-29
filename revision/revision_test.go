@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
+	"github.com/google/badwolf/triple/node"
 )
 
 func TestHasChanges(t *testing.T) {
@@ -69,13 +70,17 @@ func TestCommitsAndDiffs(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
+	root, err := node.NewNodeFromStrings("/region", "eu-west-1")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	rr, err := openRepository(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	lastsDiffs, err := rr.lastsDiffs(10)
+	lastsDiffs, err := rr.lastsDiffs(10, root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +106,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	lastsDiffs, err = rr.lastsDiffs(10)
+	lastsDiffs, err = rr.lastsDiffs(10, root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +135,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	lastsDiffs, err = rr.lastsDiffs(10)
+	lastsDiffs, err = rr.lastsDiffs(10, root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +162,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	lastsDiffs, err = rr.lastsDiffs(10)
+	lastsDiffs, err = rr.lastsDiffs(10, root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +170,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	lastsDiffs, err = rr.lastsDiffs(1)
+	lastsDiffs, err = rr.lastsDiffs(1, root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,7 +193,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lastsDiffs, err = rr.lastsDiffs(1, fileName)
+	lastsDiffs, err = rr.lastsDiffs(1, root, fileName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +207,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := lastsDiffs[0].GraphDiff.FullGraph().MustMarshal(), fullGraph; got != want {
 		t.Fatalf("got --\n%s\n--, want --\n%s\n--", got, want)
 	}
-	lastsDiffs, err = rr.lastsDiffs(1, fileName2)
+	lastsDiffs, err = rr.lastsDiffs(1, root, fileName2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,7 +223,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := lastsDiffs[0].GraphDiff.Inserted(), expect; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
-	lastsDiffs, err = rr.lastsDiffs(1)
+	lastsDiffs, err = rr.lastsDiffs(1, root)
 	if err != nil {
 		t.Fatal(err)
 	}

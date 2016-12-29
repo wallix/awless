@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
@@ -52,30 +51,28 @@ var showCloudRevisionsCmd = &cobra.Command{
 	Short: "Show cloud revision history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		accessDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, config.AccessFilename)
+		root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
 		if err != nil {
 			return err
 		}
-		infraDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, config.InfraFilename)
+		accessDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, root, config.AccessFilename)
+		if err != nil {
+			return err
+		}
+		infraDiffs, err := revision.LastDiffs(config.GitDir, numberRevisionsToShow, root, config.InfraFilename)
 		if err != nil {
 			return err
 		}
 		for i := range accessDiffs {
-			displayCommit(accessDiffs[i], "Access")
-			displayCommit(infraDiffs[i], "Infra")
+			displayCommit(accessDiffs[i], "Access", root)
+			displayCommit(infraDiffs[i], "Infra", root)
 		}
 		return nil
 	},
 }
 
-func displayCommit(diff *revision.CommitDiff, commitType string) {
+func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node) {
 	fmt.Println("\t", commitType, "- Revision: ", diff.Commit, "- Date: ", diff.Time.Format("Monday January 2, 15:04"))
-
-	root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
 
 	if showRevisionsProperties {
 		if diff.GraphDiff.HasDiff() {
