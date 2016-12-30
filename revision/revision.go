@@ -125,6 +125,10 @@ func (rr *Repository) commitIfChanges(overwriteTime ...time.Time) error {
 		return err
 	}
 
+	if err = rr.index.Write(); err != nil {
+		return err
+	}
+
 	if hasChanges, e := rr.hasChanges(); e != nil {
 		return e
 	} else if !hasChanges {
