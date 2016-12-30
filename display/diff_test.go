@@ -7,6 +7,7 @@ import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -41,25 +42,25 @@ func TestDisplayCommit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	table, err := tableFromDiff(diff, rootNode)
+	table, err := tableFromDiff(diff, rootNode, aws.InfraServiceName)
 	if err != nil {
 		t.Fatal(err)
 	}
 	var print bytes.Buffer
 	table.Fprint(&print)
-	expected := `+-----------+---------+----------+--------+
-|  TYPE ▲   | NAME/ID | PROPERTY | VALUE  |
-+-----------+---------+----------+--------+
-| /instance | inst_1  | Id       | inst_1 |
-+           +         +          +--------+
-|           |         |          | new_id |
-+           +---------+----------+--------+
-|           | inst_2  |          |        |
-+           +---------+----------+--------+
-|           | inst_3  | Id       | inst_3 |
-+           +---------+----------+--------+
-|           | inst_4  |          |        |
-+-----------+---------+----------+--------+
+	expected := `+-----------+----------+----------+----------+
+|  TYPE ▲   | NAME/ID  | PROPERTY |  VALUE   |
++-----------+----------+----------+----------+
+| /instance | + inst_3 | Id       | + inst_3 |
++           +----------+----------+----------+
+|           | + inst_4 |          |          |
++           +----------+----------+----------+
+|           | - inst_2 |          |          |
++           +----------+----------+----------+
+|           | inst_1   | Id       | + new_id |
++           +          +          +----------+
+|           |          |          | - inst_1 |
++-----------+----------+----------+----------+
 `
 	if got, want := print.String(), expected; got != want {
 		t.Fatalf("got\n%s\nwant\n%s\n", got, want)

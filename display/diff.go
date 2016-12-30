@@ -12,8 +12,8 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-func FullDiff(diff *rdf.Diff, rootNode *node.Node) {
-	table, err := tableFromDiff(diff, rootNode)
+func FullDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) {
+	table, err := tableFromDiff(diff, rootNode, cloudService)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
@@ -37,11 +37,11 @@ func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
 		switch lit {
 		case rdf.ExtraLiteral:
 			color.Set(color.FgGreen)
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 			color.Unset()
 		case rdf.MissingLiteral:
 			color.Set(color.FgRed)
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 			color.Unset()
 		default:
 			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
@@ -49,7 +49,7 @@ func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
 	})
 }
 
-func tableFromDiff(diff *rdf.Diff, rootNode *node.Node) (*Table, error) {
+func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) (*Table, error) {
 	table := NewTable([]*PropertyDisplayer{
 		{Property: "Type", DontTruncate: true},
 		{Property: "Name/Id", DontTruncate: true},
@@ -72,18 +72,18 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node) (*Table, error) {
 			displayProperties = true
 			newResource = true
 		case rdf.MissingLiteral:
-			table.AddRow(fmt.Sprint(n.Type()), color.New(color.FgRed).SprintFunc()(n.ID()))
+			table.AddRow(fmt.Sprint(n.Type()), color.New(color.FgRed).SprintFunc()("- "+n.ID().String()))
 		default:
 			displayProperties = true
 		}
 		if displayProperties {
-			changedProperties, err = addDiffProperties(table, g, n, diff, newResource)
+			changedProperties, err = addDiffProperties(table, g, n, diff, cloudService, newResource)
 			if err != nil {
 				return err
 			}
 		}
 		if !changedProperties && newResource {
-			table.AddRow(fmt.Sprint(n.Type()), color.New(color.FgGreen).SprintFunc()(n.ID()))
+			table.AddRow(fmt.Sprint(n.Type()), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
 		}
 		return nil
 	})
@@ -95,35 +95,51 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node) (*Table, error) {
 	return table, nil
 }
 
-func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff, newResource bool) (hasChanges bool, err error) {
+func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff, cloudService string, newResource bool) (hasChanges bool, err error) {
 	propertiesT, err := g.TriplesForSubjectPredicate(n, rdf.PropertyPredicate)
 	if err != nil {
 		return false, err
 	}
+	var resourceD *ResourceDisplayer
+	if serviceD, ok := PropertiesDisplayer.Services[cloudService]; ok && serviceD != nil {
+		resourceType := rdf.ToResourceType(n.Type().String())
+		resourceD = serviceD.Resources[resourceType]
+	}
 
 	for _, t := range propertiesT {
+		properties := make(aws.Properties)
+		prop, err := aws.NewPropertyFromTriple(t)
+		if err != nil {
+			return hasChanges, err
+		}
+		properties[prop.Key] = prop.Value
+
+		propD := &PropertyDisplayer{Property: prop.Key}
+		if resourceD != nil && resourceD.Properties[prop.Key] != nil {
+			propD = resourceD.Properties[prop.Key]
+		}
 		if diff.HasInsertedTriple(t) {
 			hasChanges = true
-			prop, err := aws.NewPropertyFromTriple(t)
-			if err != nil {
-				return hasChanges, err
-			}
 			resourceDisplayF := fmt.Sprint
-			propertyDisplayF := color.New(color.FgGreen).SprintFunc()
 			if newResource {
-				resourceDisplayF = propertyDisplayF
+				resourceDisplayF = func(i ...interface{}) string { return color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(i...)) }
 			}
-			table.AddRow(fmt.Sprint(n.Type()), resourceDisplayF(n.ID()), propertyDisplayF(prop.Key), propertyDisplayF(prop.Value))
+			table.AddRow(
+				fmt.Sprint(n.Type()),
+				resourceDisplayF(n.ID()),
+				propD.displayName(),
+				propD.displayForceColor("+ "+propertyValue(properties, propD.Property), color.FgGreen),
+			)
 		}
 		if diff.HasDeletedTriple(t) {
 			hasChanges = true
-			prop, err := aws.NewPropertyFromTriple(t)
-			if err != nil {
-				return hasChanges, err
-			}
 
-			displayF := color.New(color.FgRed).SprintFunc()
-			table.AddRow(fmt.Sprint(n.Type()), fmt.Sprint(n.ID()), displayF(prop.Key), displayF(prop.Value))
+			table.AddRow(
+				fmt.Sprint(n.Type()),
+				fmt.Sprint(n.ID()),
+				propD.displayName(),
+				propD.displayForceColor("- "+propertyValue(properties, propD.Property), color.FgRed),
+			)
 		}
 	}
 	return hasChanges, nil

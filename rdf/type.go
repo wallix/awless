@@ -1,5 +1,7 @@
 package rdf
 
+import "strings"
+
 const (
 	REGION   = "/region"
 	VPC      = "/vpc"
@@ -10,3 +12,14 @@ const (
 	GROUP    = "/group"
 	POLICY   = "/policy"
 )
+
+func ToRDFType(resourceType string) string {
+	return "/" + strings.ToLower(resourceType)
+}
+
+func ToResourceType(rdfType string) string {
+	if rdfType[0] == '/' {
+		return rdfType[1:]
+	}
+	return rdfType
+}

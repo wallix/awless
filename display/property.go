@@ -5,10 +5,103 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/wallix/awless/cloud/aws"
 )
 
 const truncateSize = 25
+
+var (
+	PropertiesDisplayer = AwlessResourcesDisplayer{
+		Services: map[string]*ServiceDisplayer{
+			aws.InfraServiceName: &ServiceDisplayer{
+				Resources: map[string]*ResourceDisplayer{
+					"instance": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id":        {Property: "Id"},
+							"Name":      {Property: "Tags[].Name", Label: "Name"},
+							"State":     {Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}},
+							"Type":      {Property: "Type"},
+							"PublicIp":  {Property: "PublicIp"},
+							"PrivateIp": {Property: "PrivateIp"},
+						},
+					},
+					"vpc": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id":        {Property: "Id"},
+							"IsDefault": {Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
+							"State":     {Property: "State"},
+							"CidrBlock": {Property: "CidrBlock"},
+						},
+					},
+					"subnet": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id": {Property: "Id"},
+							"MapPublicIpOnLaunch": {Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}},
+							"State":               {Property: "State", ColoredValues: map[string]string{"available": "green"}},
+							"CidrBlock":           {Property: "CidrBlock"},
+						},
+					},
+				},
+			},
+			aws.AccessServiceName: &ServiceDisplayer{
+				Resources: map[string]*ResourceDisplayer{
+					"user": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id":               {Property: "Id"},
+							"Name":             {Property: "Name"},
+							"Arn":              {Property: "Arn"},
+							"Path":             {Property: "Path"},
+							"PasswordLastUsed": {Property: "PasswordLastUsed"},
+						},
+					},
+					"role": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id":         {Property: "Id"},
+							"Name":       {Property: "Name"},
+							"Arn":        {Property: "Arn"},
+							"CreateDate": {Property: "CreateDate"},
+							"Path":       {Property: "Path"},
+						},
+					},
+					"policy": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id":           {Property: "Id"},
+							"Name":         {Property: "Name"},
+							"Arn":          {Property: "Arn"},
+							"Description":  {Property: "Description"},
+							"isAttachable": {Property: "isAttachable"},
+							"CreateDate":   {Property: "CreateDate"},
+							"UpdateDate":   {Property: "UpdateDate"},
+							"Path":         {Property: "Path"},
+						},
+					},
+					"group": &ResourceDisplayer{
+						Properties: map[string]*PropertyDisplayer{
+							"Id":         {Property: "Id"},
+							"Name":       {Property: "Name"},
+							"Arn":        {Property: "Arn"},
+							"CreateDate": {Property: "CreateDate"},
+							"Path":       {Property: "Path"},
+						},
+					},
+				},
+			},
+		},
+	}
+)
+
+type AwlessResourcesDisplayer struct {
+	Services map[string]*ServiceDisplayer
+}
+
+type ServiceDisplayer struct {
+	Resources map[string]*ResourceDisplayer
+}
+
+type ResourceDisplayer struct {
+	Properties map[string]*PropertyDisplayer
+}
 
 // PropertyDisplayer describe how to display a property in a table
 type PropertyDisplayer struct {
@@ -38,6 +131,17 @@ func (p *PropertyDisplayer) display(value string) string {
 		return colorDisplay(value, p.ColoredValues)
 	}
 	return value
+}
+
+func (p *PropertyDisplayer) displayForceColor(value string, c color.Attribute) string {
+	if !p.DontTruncate {
+		if p.TruncateRight {
+			value = truncateRight(value, truncateSize)
+		} else {
+			value = truncateLeft(value, truncateSize)
+		}
+	}
+	return color.New(c).SprintFunc()(value)
 }
 
 func propertyValue(properties aws.Properties, displayName string) string {

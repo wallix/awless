@@ -84,14 +84,14 @@ var showCloudRevisionsCmd = &cobra.Command{
 			return err
 		}
 		for i := range accessDiffs {
-			displayCommit(accessDiffs[i], "Access", root)
-			displayCommit(infraDiffs[i], "Infra", root)
+			displayCommit(accessDiffs[i], aws.AccessServiceName, root)
+			displayCommit(infraDiffs[i], aws.InfraServiceName, root)
 		}
 		return nil
 	},
 }
 
-func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node) {
+func displayCommit(diff *revision.CommitDiff, cloudService string, root *node.Node) {
 	parentCommit := diff.ParentCommit
 	parentText := "repository creation"
 	if parentCommit != "" {
@@ -100,23 +100,23 @@ func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node
 
 	if showRevisionsProperties {
 		if diff.GraphDiff.HasDiff() {
-			fmt.Println("▶", commitType, "properties, from", parentText,
+			fmt.Println("▶", cloudService, "properties, from", parentText,
 				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
-			display.FullDiff(diff.GraphDiff, root)
+			display.FullDiff(diff.GraphDiff, root, cloudService)
 			fmt.Println()
 		} else if verboseFlag {
-			fmt.Println("▶", commitType, "properties, from", parentText,
+			fmt.Println("▶", cloudService, "properties, from", parentText,
 				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			fmt.Println("No changes.")
 		}
 	} else {
 		if diff.GraphDiff.HasResourceDiff() {
-			fmt.Println("▶", commitType, "resources, from", parentText,
+			fmt.Println("▶", cloudService, "resources, from", parentText,
 				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			display.ResourceDiff(diff.GraphDiff, root)
 			fmt.Println()
 		} else if verboseFlag {
-			fmt.Println("▶", commitType, "resources, from", parentText,
+			fmt.Println("▶", cloudService, "resources, from", parentText,
 				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			fmt.Println("No resource changes.")
 		}

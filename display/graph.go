@@ -9,12 +9,16 @@ import (
 )
 
 // ResourceOfGraph prints a RDF ResourceOfGraph of one type, according to display properties
-func ResourceOfGraph(graph *rdf.Graph, resourceType string, properties []*PropertyDisplayer, sortBy []string, onlyIDs bool, err error) {
+func ResourceOfGraph(graph *rdf.Graph, resourceType string, displayer *ResourceDisplayer, sortBy []string, onlyIDs bool, err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
-	table := NewTable(properties)
+	var columnDisplayer []*PropertyDisplayer
+	for _, v := range displayer.Properties {
+		columnDisplayer = append(columnDisplayer, v)
+	}
+	table := NewTable(columnDisplayer)
 
 	nodes, err := graph.NodesForType(resourceType)
 	if err != nil {
@@ -27,7 +31,7 @@ func ResourceOfGraph(graph *rdf.Graph, resourceType string, properties []*Proper
 			fmt.Println(err.Error())
 			return
 		}
-		for _, prop := range properties {
+		for _, prop := range displayer.Properties {
 			table.AddValue(prop.displayName(), propertyValue(nodeProperties, prop.Property))
 		}
 	}
@@ -40,14 +44,14 @@ func ResourceOfGraph(graph *rdf.Graph, resourceType string, properties []*Proper
 }
 
 // SeveralResourcesOfGraph prints a RDF graph with different type of resources according to there display properties
-func SeveralResourcesOfGraph(graph *rdf.Graph, properties map[string][]*PropertyDisplayer, onlyIDs bool, err error) {
+func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, onlyIDs bool, err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
 	table := NewTable([]*PropertyDisplayer{{Property: "Type"}, {Property: "Name/Id"}, {Property: "Property"}, {Property: "Value"}})
 	table.MergeIdenticalCells = true
-	for t := range properties {
+	for t := range displayer.Resources {
 		nodes, err := graph.NodesForType("/" + t)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -59,7 +63,7 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, properties map[string][]*Property
 				fmt.Println(err.Error())
 				return
 			}
-			for _, prop := range properties[t] {
+			for _, prop := range displayer.Resources[t].Properties {
 				table.AddValue("Type", t)
 				table.AddValue("Name/Id", nameOrID(nodeProperties))
 				table.AddValue("Property", prop.displayName())

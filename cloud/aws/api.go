@@ -9,6 +9,11 @@ import (
 	"github.com/wallix/awless/cloud"
 )
 
+const (
+	InfraServiceName  = "aws-infra"
+	AccessServiceName = "aws-access"
+)
+
 var (
 	AccessService *Access
 	InfraService  *Infra

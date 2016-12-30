@@ -94,13 +94,13 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println("------ ACCESS ------")
-				display.FullDiff(accessDiff, root)
+				display.FullDiff(accessDiff, root, aws.AccessServiceName)
 			}
 			if infraDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				display.FullDiff(infraDiff, root)
+				display.FullDiff(infraDiff, root, aws.InfraServiceName)
 			}
 		} else {
 			if accessDiff.HasResourceDiff() {
