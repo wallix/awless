@@ -105,6 +105,8 @@ func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node
 			display.FullDiff(diff.GraphDiff, root)
 			fmt.Println()
 		} else if verboseFlag {
+			fmt.Println("▶", commitType, "properties, from", parentText,
+				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			fmt.Println("No changes.")
 		}
 	} else {
@@ -114,6 +116,8 @@ func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node
 			display.ResourceDiff(diff.GraphDiff, root)
 			fmt.Println()
 		} else if verboseFlag {
+			fmt.Println("▶", commitType, "resources, from", parentText,
+				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			fmt.Println("No resource changes.")
 		}
 	}

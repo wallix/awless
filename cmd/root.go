@@ -25,13 +25,6 @@ __awless_get_all_ids()
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }
-__awless_get_alias_ids()
-{
-		local ids_output
-		if ids_output=$(awless list aliases --local --ids 2>/dev/null); then
-		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
-		fi
-}
 __awless_get_instances_ids()
 {
 		local ids_output
@@ -41,16 +34,8 @@ __awless_get_instances_ids()
 }
 __custom_func() {
     case ${last_command} in
-        awless_create_alias )
-            __awless_get_all_ids
-            return
-            ;;
 				awless_ssh )
             __awless_get_instances_ids
-            return
-            ;;
-				awless_delete_alias )
-            __awless_get_alias_ids
             return
             ;;
         *)

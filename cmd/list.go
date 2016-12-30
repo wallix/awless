@@ -85,7 +85,6 @@ func init() {
 	for resource, properties := range accessResourcesToDisplay {
 		listCmd.AddCommand(listAccessResourceCmd(resource, properties))
 	}
-	listCmd.AddCommand(listAliasesCmd)
 	listCmd.AddCommand(listAllCmd)
 
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
@@ -99,15 +98,6 @@ func init() {
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List various type of items: instances, vpc, subnet ...",
-}
-
-var listAliasesCmd = &cobra.Command{
-	Use:   "aliases",
-	Short: "List aliases",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		displayAliases(statsDB.GetAliases())
-	},
 }
 
 var listInfraResourceCmd = func(resource string, properties []*display.PropertyDisplayer) *cobra.Command {
