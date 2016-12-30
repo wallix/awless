@@ -72,6 +72,8 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 		}
 	}
 
+	table.SetSortBy("Type", "Name/Id", "Property", "Value")
+
 	if onlyIDs {
 		table.FprintColumnValues(os.Stdout, "Name/Id", " ")
 	} else {
