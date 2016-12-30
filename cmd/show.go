@@ -28,7 +28,7 @@ func init() {
 	showCloudRevisionsCmd.PersistentFlags().BoolVarP(&showRevisionsProperties, "properties", "p", false, "Full diff with resources properties")
 	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupAll, "group-all", false, "Group all revisions")
 	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByWeek, "group-by-week", false, "Group revisions by week")
-	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByWeek, "group-by-day", false, "Group revisions by day")
+	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByDay, "group-by-day", false, "Group revisions by day")
 
 	RootCmd.AddCommand(showCmd)
 }
@@ -97,19 +97,23 @@ func displayCommit(diff *revision.CommitDiff, commitType string, root *node.Node
 	if parentCommit != "" {
 		parentText = parentCommit[:7] + " on " + diff.ParentTime.Format("Monday January 2, 15:04")
 	}
-	fmt.Println("\t", commitType, "from", parentText,
-		"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 
 	if showRevisionsProperties {
 		if diff.GraphDiff.HasDiff() {
+			fmt.Println("▶", commitType, "properties, from", parentText,
+				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			display.FullDiff(diff.GraphDiff, root)
-		} else {
+			fmt.Println()
+		} else if verboseFlag {
 			fmt.Println("No changes.")
 		}
 	} else {
 		if diff.GraphDiff.HasResourceDiff() {
+			fmt.Println("▶", commitType, "resources, from", parentText,
+				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
 			display.ResourceDiff(diff.GraphDiff, root)
-		} else {
+			fmt.Println()
+		} else if verboseFlag {
 			fmt.Println("No resource changes.")
 		}
 	}

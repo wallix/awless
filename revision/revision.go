@@ -41,6 +41,18 @@ type commitPair struct {
 	child  *git.Commit
 }
 
+func (p *commitPair) String() string {
+	pc := "<nil>"
+	cc := "<nil>"
+	if p.parent != nil {
+		pc = p.parent.Id().String()
+	}
+	if p.child != nil {
+		cc = p.child.Id().String()
+	}
+	return fmt.Sprintf("[%s -> %s]", pc, cc)
+}
+
 // OpenRepository opens a new or existing git repository
 func OpenRepository(path string) (*Repository, error) {
 	if _, err := os.Stat(filepath.Join(path, ".git")); os.IsNotExist(err) {
@@ -101,7 +113,7 @@ func (rr *Repository) addFile(path string) error {
 	return rr.index.AddByPath(path)
 }
 
-func (rr *Repository) commitIfChanges() error {
+func (rr *Repository) commitIfChanges(overwriteTime ...time.Time) error {
 	for _, filePath := range rr.files {
 		if err := rr.index.AddByPath(filePath); err != nil {
 			return err
@@ -134,8 +146,11 @@ func (rr *Repository) commitIfChanges() error {
 		}
 		parents = append(parents, headCommit)
 	}
-
-	sig := &git.Signature{Name: "awless", Email: "git@awless.io", When: time.Now()}
+	time := time.Now()
+	if len(overwriteTime) > 0 {
+		time = overwriteTime[0]
+	}
+	sig := &git.Signature{Name: "awless", Email: "git@awless.io", When: time}
 	if _, err = rr.gitRepository.CreateCommit("HEAD", sig, sig, "new sync", tree, parents...); err != nil {
 		return err
 	}
@@ -179,48 +194,39 @@ func (rr *Repository) lastCommits(n int) ([]*git.Commit, error) {
 
 func generateCommitPairs(commits []*git.Commit, param fetchParameter) []*commitPair {
 	var res []*commitPair
+	var mustGroupF func(t1, t2 time.Time) bool
 
 	switch param {
 	case GroupAll:
 		return []*commitPair{{parent: commits[len(commits)-1], child: commits[0]}}
 	case GroupByDay:
-		if len(commits) == 0 {
-			return res
+		mustGroupF = func(t1, t2 time.Time) bool {
+			return t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day()
 		}
-		commit := commits[0]
-		previousAddedCommit := commit
-		time := commits[0].Committer().When
-		for i := 1; i < len(commits); i++ {
-			newCommit := commits[i]
-			if newCommit != nil && time.Sub(newCommit.Committer().When).Hours() > 24. {
-				res = append(res, &commitPair{parent: newCommit, child: commit})
-				time = newCommit.Committer().When
-				previousAddedCommit = newCommit
-			}
-			commit = newCommit
-		}
-		res = append(res, &commitPair{parent: commit, child: previousAddedCommit})
 	case GroupByWeek:
-		if len(commits) == 0 {
-			return res
+		mustGroupF = func(t1, t2 time.Time) bool {
+			y1, w1 := t1.ISOWeek()
+			y2, w2 := t2.ISOWeek()
+			return y1 == y2 && w1 == w2
 		}
-		commit := commits[0]
-		previousAddedCommit := commit
-		time := commits[0].Committer().When
-		for i := 1; i < len(commits); i++ {
-			newCommit := commits[i]
-			if newCommit != nil && time.Sub(newCommit.Committer().When).Hours() > 7*24. {
-				res = append(res, &commitPair{parent: newCommit, child: commit})
-				time = newCommit.Committer().When
-				previousAddedCommit = newCommit
-			}
-			commit = newCommit
-		}
-		res = append(res, &commitPair{parent: commit, child: previousAddedCommit})
 	default:
 		for i := 0; i < len(commits)-1; i++ {
 			res = append(res, &commitPair{parent: commits[i+1], child: commits[i]})
 		}
+	}
+	if mustGroupF != nil && len(commits) > 0 {
+		commit := commits[0]
+		time := commit.Committer().When
+		lastAddedCommit := commit
+		for i := 1; i < len(commits); i++ {
+			commit = commits[i]
+			if commit != nil && !mustGroupF(time, commit.Committer().When) {
+				res = append(res, &commitPair{parent: commits[i-1], child: lastAddedCommit})
+				time = commit.Committer().When
+				lastAddedCommit = commits[i-1]
+			}
+		}
+		res = append(res, &commitPair{parent: commit, child: lastAddedCommit})
 	}
 	return res
 }
