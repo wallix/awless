@@ -33,7 +33,7 @@ Awless provides:
 - Several output formats either human (list, trees,...) or machine readable (json): `--format`
 - The ability to download a local snapshot of the infrastructure deployed in the remote cloud: `awless sync`
 - The analysis of what has changed on the cloud since the last local snapshot: `awless diff`
-- A git-based versioning of what has been deployed in the cloud: `awless ...`
+- A git-based versioning of what has been deployed in the cloud: `awless show revisions`
 - The simple and secure creation of virtual resources using pre-defined scenarios: `awless create`
 - Commands and flags autocomplete for Unix/Linux's bash and zsh `awless completion`
 
@@ -105,7 +105,7 @@ For Mac OS X, with brew
 For Ubuntu
 
     $ sudo apt-get install bash-completion
-    $ sudo awless completion bash > /etc/bash_completion.d/awless
+    $ awless completion bash | sudo tee /etc/bash_completion.d/awless > /dev/null
 
 ## Zsh
 
@@ -142,21 +142,29 @@ It allows to use advanced algorithms while being agnostic of the handled data.
 
 ## Source install
 
+`awless` requires `libgit2` to be built. 
+You can install `libgit2` with your favorite package manager:
+
+    brew install libgit2 # macOS
+    apt-get install libgit2-dev # Debian / Ubuntu
+
 Until we inline dependencies fetch the following:
 
-    $ go get github.com/aws/aws-sdk-go/...
-    $ go get github.com/fatih/color
-    $ go get github.com/boltdb/bolt
-    $ go get github.com/spf13/viper
-    $ go get github.com/spf13/cobra
-    $ go get github.com/google/badwolf/...
-		$ go get github.com/olekukonko/tablewriter
+    go get github.com/aws/aws-sdk-go/...
+    go get github.com/fatih/color
+    go get github.com/boltdb/bolt
+    go get github.com/spf13/viper
+    go get github.com/spf13/cobra
+    go get github.com/google/badwolf/...
+    go get github.com/olekukonko/tablewriter
+    go get github.com/libgit2/git2go
+    go get golang.org/x/crypto/ssh
 
-    $ go get github.com/wallix/awless
+    go get github.com/wallix/awless
 
 or install as a global executable
 
-    $ go install github.com/wallix/awless
+    go install github.com/wallix/awless
 
 ## Test
 
