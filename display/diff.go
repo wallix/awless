@@ -12,6 +12,7 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
+// FullDiff displays a table of a diff with both resources and properties diffs (inserted and deleted triples)
 func FullDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) {
 	table, err := tableFromDiff(diff, rootNode, cloudService)
 	if err != nil {
@@ -21,6 +22,7 @@ func FullDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) {
 	table.Fprint(os.Stdout)
 }
 
+// ResourceDiff displays a tree view of a diff with only the changed resources
 func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
 	diff.FullGraph().VisitDepthFirst(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
 		var lit *literal.Literal
@@ -77,7 +79,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) (*T
 			displayProperties = true
 		}
 		if displayProperties {
-			changedProperties, err = addDiffProperties(table, g, n, diff, cloudService, newResource)
+			changedProperties, err = addDiffProperties(table, n, diff, cloudService, newResource)
 			if err != nil {
 				return err
 			}
@@ -95,52 +97,104 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) (*T
 	return table, nil
 }
 
-func addDiffProperties(table *Table, g *rdf.Graph, n *node.Node, diff *rdf.Diff, cloudService string, newResource bool) (hasChanges bool, err error) {
-	propertiesT, err := g.TriplesForSubjectPredicate(n, rdf.PropertyPredicate)
+func addDiffProperties(table *Table, n *node.Node, diff *rdf.Diff, cloudService string, newResource bool) (hasChanges bool, err error) {
+	insertedG := rdf.NewGraphFromTriples(diff.Inserted())
+	insertedProp, err := aws.LoadPropertiesFromGraph(insertedG, n)
 	if err != nil {
 		return false, err
 	}
-	var resourceD *ResourceDisplayer
+
+	deletedG := rdf.NewGraphFromTriples(diff.Deleted())
+	deletedProp, err := aws.LoadPropertiesFromGraph(deletedG, n)
+	if err != nil {
+		return false, err
+	}
+
+	visitedInsertedProp, visitedDeletedProp := make(map[string]bool), make(map[string]bool)
+	resourceType := rdf.ToResourceType(rdf.ToResourceType(n.Type().String()))
+
 	if serviceD, ok := PropertiesDisplayer.Services[cloudService]; ok && serviceD != nil {
-		resourceType := rdf.ToResourceType(rdf.ToResourceType(n.Type().String()))
-		resourceD = serviceD.Resources[resourceType]
-	}
+		if resourceD := serviceD.Resources[resourceType]; resourceD != nil {
 
-	for _, t := range propertiesT {
-		properties := make(aws.Properties)
-		prop, err := aws.NewPropertyFromTriple(t)
-		if err != nil {
-			return hasChanges, err
-		}
-		properties[prop.Key] = prop.Value
-
-		propD := &PropertyDisplayer{Property: prop.Key}
-		if resourceD != nil && resourceD.Properties[prop.Key] != nil {
-			propD = resourceD.Properties[prop.Key]
-		}
-		if diff.HasInsertedTriple(t) {
-			hasChanges = true
-			resourceDisplayF := fmt.Sprint
-			if newResource {
-				resourceDisplayF = func(i ...interface{}) string { return color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(i...)) }
+			for _, prop := range resourceD.Properties {
+				if propVal := prop.propertyValue(insertedProp); propVal != "" {
+					addDiffProperty(
+						table,
+						prop.displayName(),
+						prop.firstLevelProperty(),
+						prop.displayForceColor("+ "+propVal, color.FgGreen),
+						n.ID().String(),
+						resourceType,
+						newResource,
+						visitedInsertedProp,
+					)
+					hasChanges = true
+				}
+				if propVal := prop.propertyValue(deletedProp); propVal != "" {
+					addDiffProperty(
+						table,
+						prop.displayName(),
+						prop.firstLevelProperty(),
+						prop.displayForceColor("- "+propVal, color.FgRed),
+						n.ID().String(),
+						resourceType,
+						newResource,
+						visitedDeletedProp,
+					)
+					hasChanges = true
+				}
 			}
-			table.AddRow(
-				fmt.Sprint(rdf.ToResourceType(n.Type().String())),
-				resourceDisplayF(n.ID()),
-				propD.displayName(),
-				propD.displayForceColor("+ "+propertyValue(properties, propD.Property), color.FgGreen),
-			)
-		}
-		if diff.HasDeletedTriple(t) {
-			hasChanges = true
-
-			table.AddRow(
-				fmt.Sprint(rdf.ToResourceType(n.Type().String())),
-				fmt.Sprint(n.ID()),
-				propD.displayName(),
-				propD.displayForceColor("- "+propertyValue(properties, propD.Property), color.FgRed),
-			)
 		}
 	}
+
+	// Render inserted/deleted properties with no displayer
+	for key, val := range insertedProp {
+		if visited, ok := visitedInsertedProp[key]; ok && visited {
+			continue
+		}
+		addDiffProperty(
+			table,
+			key,
+			key,
+			color.New(color.FgGreen).SprintFunc()("+ "+fmt.Sprint(val)),
+			n.ID().String(),
+			resourceType,
+			newResource,
+			visitedInsertedProp,
+		)
+		hasChanges = true
+	}
+
+	for key, val := range deletedProp {
+		if visited, ok := visitedDeletedProp[key]; ok && visited {
+			continue
+		}
+		addDiffProperty(
+			table,
+			key,
+			key,
+			color.New(color.FgRed).SprintFunc()("- "+fmt.Sprint(val)),
+			n.ID().String(),
+			resourceType,
+			newResource,
+			visitedDeletedProp,
+		)
+		hasChanges = true
+	}
+
 	return hasChanges, nil
+}
+
+func addDiffProperty(table *Table, name, visitedName, value, resourceID, resourceType string, newResource bool, visited map[string]bool) {
+	visited[visitedName] = true
+	resourceDisplayF := fmt.Sprint
+	if newResource {
+		resourceDisplayF = func(i ...interface{}) string { return color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(i...)) }
+	}
+	table.AddRow(
+		resourceType,
+		resourceDisplayF(resourceID),
+		name,
+		value,
+	)
 }

@@ -12,34 +12,35 @@ import (
 const truncateSize = 25
 
 var (
+	// PropertiesDisplayer contains all the display properties of resources
 	PropertiesDisplayer = AwlessResourcesDisplayer{
 		Services: map[string]*ServiceDisplayer{
 			aws.InfraServiceName: &ServiceDisplayer{
 				Resources: map[string]*ResourceDisplayer{
 					"instance": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id":        {Property: "Id"},
-							"Name":      {Property: "Tags[].Name", Label: "Name"},
-							"State":     {Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}},
-							"Type":      {Property: "Type"},
-							"PublicIp":  {Property: "PublicIp"},
-							"PrivateIp": {Property: "PrivateIp"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "Tags[].Name", Label: "Name"},
+							{Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}},
+							{Property: "Type"},
+							{Property: "PublicIp"},
+							{Property: "PrivateIp"},
 						},
 					},
 					"vpc": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id":        {Property: "Id"},
-							"IsDefault": {Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
-							"State":     {Property: "State"},
-							"CidrBlock": {Property: "CidrBlock"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
+							{Property: "State"},
+							{Property: "CidrBlock"},
 						},
 					},
 					"subnet": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id": {Property: "Id"},
-							"MapPublicIpOnLaunch": {Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}},
-							"State":               {Property: "State", ColoredValues: map[string]string{"available": "green"}},
-							"CidrBlock":           {Property: "CidrBlock"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}},
+							{Property: "State", ColoredValues: map[string]string{"available": "green"}},
+							{Property: "CidrBlock"},
 						},
 					},
 				},
@@ -47,42 +48,42 @@ var (
 			aws.AccessServiceName: &ServiceDisplayer{
 				Resources: map[string]*ResourceDisplayer{
 					"user": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id":               {Property: "Id"},
-							"Name":             {Property: "Name"},
-							"Arn":              {Property: "Arn"},
-							"Path":             {Property: "Path"},
-							"PasswordLastUsed": {Property: "PasswordLastUsed"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "Name"},
+							{Property: "Arn"},
+							{Property: "Path"},
+							{Property: "PasswordLastUsed"},
 						},
 					},
 					"role": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id":         {Property: "Id"},
-							"Name":       {Property: "Name"},
-							"Arn":        {Property: "Arn"},
-							"CreateDate": {Property: "CreateDate"},
-							"Path":       {Property: "Path"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "Name"},
+							{Property: "Arn"},
+							{Property: "CreateDate"},
+							{Property: "Path"},
 						},
 					},
 					"policy": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id":           {Property: "Id"},
-							"Name":         {Property: "Name"},
-							"Arn":          {Property: "Arn"},
-							"Description":  {Property: "Description"},
-							"isAttachable": {Property: "isAttachable"},
-							"CreateDate":   {Property: "CreateDate"},
-							"UpdateDate":   {Property: "UpdateDate"},
-							"Path":         {Property: "Path"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "Name"},
+							{Property: "Arn"},
+							{Property: "Description"},
+							{Property: "isAttachable"},
+							{Property: "CreateDate"},
+							{Property: "UpdateDate"},
+							{Property: "Path"},
 						},
 					},
 					"group": &ResourceDisplayer{
-						Properties: map[string]*PropertyDisplayer{
-							"Id":         {Property: "Id"},
-							"Name":       {Property: "Name"},
-							"Arn":        {Property: "Arn"},
-							"CreateDate": {Property: "CreateDate"},
-							"Path":       {Property: "Path"},
+						Properties: []*PropertyDisplayer{
+							{Property: "Id"},
+							{Property: "Name"},
+							{Property: "Arn"},
+							{Property: "CreateDate"},
+							{Property: "Path"},
 						},
 					},
 				},
@@ -91,16 +92,19 @@ var (
 	}
 )
 
+// AwlessResourcesDisplayer contains how to display awless cloud services
 type AwlessResourcesDisplayer struct {
 	Services map[string]*ServiceDisplayer
 }
 
+// ServiceDisplayer contains how to display the resources of a cloud service
 type ServiceDisplayer struct {
 	Resources map[string]*ResourceDisplayer
 }
 
+// ResourceDisplayer contains how to display the properties of a cloud resource
 type ResourceDisplayer struct {
-	Properties map[string]*PropertyDisplayer
+	Properties []*PropertyDisplayer
 }
 
 // PropertyDisplayer describe how to display a property in a table
@@ -144,22 +148,22 @@ func (p *PropertyDisplayer) displayForceColor(value string, c color.Attribute) s
 	return color.New(c).SprintFunc()(value)
 }
 
-func propertyValue(properties aws.Properties, displayName string) string {
+func (p *PropertyDisplayer) propertyValue(properties aws.Properties) string {
 	var res string
-	if s := strings.SplitN(displayName, "[].", 2); len(s) >= 2 {
+	if s := strings.SplitN(p.Property, "[].", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
 			res = propertyValueSlice(i, s[1])
 		}
-	} else if s := strings.SplitN(displayName, "[]length", 2); len(s) >= 2 {
+	} else if s := strings.SplitN(p.Property, "[]length", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
 			res = propertyValueSliceLength(i)
 		}
-	} else if s := strings.SplitN(displayName, ".", 2); len(s) >= 2 {
+	} else if s := strings.SplitN(p.Property, ".", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].(map[string]interface{}); ok {
 			res = propertyValueAttribute(i, s[1])
 		}
 	} else {
-		res = propertyValueString(properties[displayName])
+		res = propertyValueString(properties[p.Property])
 	}
 	return res
 }
@@ -196,4 +200,15 @@ func propertyValueSliceLength(prop []interface{}) string {
 
 func propertyValueAttribute(attr map[string]interface{}, key string) string {
 	return fmt.Sprint(attr[key])
+}
+
+func (p *PropertyDisplayer) firstLevelProperty() string {
+	if s := strings.SplitN(p.Property, "[].", 2); len(s) >= 2 {
+		return s[0]
+	} else if s := strings.SplitN(p.Property, "[]length", 2); len(s) >= 2 {
+		return s[0]
+	} else if s := strings.SplitN(p.Property, ".", 2); len(s) >= 2 {
+		return s[0]
+	}
+	return p.Property
 }

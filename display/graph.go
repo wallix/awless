@@ -31,8 +31,8 @@ func ResourceOfGraph(graph *rdf.Graph, resourceType string, displayer *ResourceD
 			fmt.Println(err.Error())
 			return
 		}
-		for _, prop := range displayer.Properties {
-			table.AddValue(prop.displayName(), propertyValue(nodeProperties, prop.Property))
+		for _, propD := range displayer.Properties {
+			table.AddValue(propD.displayName(), propD.propertyValue(nodeProperties))
 		}
 	}
 	table.SetSortBy(sortBy...)
@@ -63,11 +63,11 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 				fmt.Println(err.Error())
 				return
 			}
-			for _, prop := range displayer.Resources[t].Properties {
+			for _, propD := range displayer.Resources[t].Properties {
 				table.AddValue("Type", t)
 				table.AddValue("Name/Id", nameOrID(nodeProperties))
-				table.AddValue("Property", prop.displayName())
-				table.AddValue("Value", propertyValue(nodeProperties, prop.Property))
+				table.AddValue("Property", propD.displayName())
+				table.AddValue("Value", propD.propertyValue(nodeProperties))
 			}
 		}
 	}
