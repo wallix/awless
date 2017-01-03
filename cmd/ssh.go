@@ -19,7 +19,7 @@ var sshCmd = &cobra.Command{
 	Short: "Launch a SSH (Secure Shell) session connecting to an instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return fmt.Errorf("ssh: instance id required")
+			return fmt.Errorf("instance-id required")
 		}
 		var instanceID string
 		var user string
@@ -30,13 +30,9 @@ var sshCmd = &cobra.Command{
 			instanceID = args[0]
 		}
 		instancesGraph, err := aws.InfraService.InstancesGraph()
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 		cred, err := aws.InstanceCredentialsFromGraph(instancesGraph, instanceID)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 		if user == "" {
 			cred.User = "ec2-user" //TODO find a way to fetch the default user
 		} else {
@@ -44,12 +40,10 @@ var sshCmd = &cobra.Command{
 		}
 
 		client, err := shell.NewClient(config.KeysDir, cred)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 
 		if err := shell.InteractiveTerminal(client); err != nil {
-			return err
+			exitOn(err)
 		}
 
 		return nil

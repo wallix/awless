@@ -69,9 +69,7 @@ func runCompletionBash(cmd *cobra.Command, args []string) error {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 	_, err := out.Write([]byte(boilerPlate))
-	if err != nil {
-		return err
-	}
+	exitOn(err)
 	return RootCmd.GenBashCompletion(out)
 }
 
@@ -79,9 +77,7 @@ func runCompletionZsh(cmd *cobra.Command, args []string) error {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 	_, err := out.Write([]byte(boilerPlate))
-	if err != nil {
-		return err
-	}
+	exitOn(err)
 	zshInitialization := `
 __awless_bash_source() {
 	alias shopt=':'

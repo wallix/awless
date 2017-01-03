@@ -9,11 +9,7 @@ import (
 )
 
 // ResourceOfGraph prints a RDF ResourceOfGraph of one type, according to display properties
-func ResourceOfGraph(graph *rdf.Graph, resourceType string, displayer *ResourceDisplayer, sortBy []string, onlyIDs bool, err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
+func ResourceOfGraph(graph *rdf.Graph, resourceType string, displayer *ResourceDisplayer, sortBy []string, onlyIDs bool) {
 	var columnDisplayer []*PropertyDisplayer
 	for _, v := range displayer.Properties {
 		columnDisplayer = append(columnDisplayer, v)
@@ -44,11 +40,7 @@ func ResourceOfGraph(graph *rdf.Graph, resourceType string, displayer *ResourceD
 }
 
 // SeveralResourcesOfGraph prints a RDF graph with different type of resources according to there display properties
-func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, onlyIDs bool, err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
+func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, onlyIDs bool) {
 	table := NewTable([]*PropertyDisplayer{{Property: "Type"}, {Property: "Name/Id"}, {Property: "Property"}, {Property: "Value"}})
 	table.MergeIdenticalCells = true
 	for t := range displayer.Resources {

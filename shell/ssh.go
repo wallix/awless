@@ -1,10 +1,12 @@
 package shell
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -20,7 +22,9 @@ func NewClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
 	privateKey, err := ioutil.ReadFile(keyPath)
 	if os.IsNotExist(err) {
 		privateKey, err = ioutil.ReadFile(keyPath + ".pem")
-		if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("You don't have the '%s' key in your awless key folder '%s'.", cred.KeyName, keyDirectory)
+		} else if err != nil {
 			return nil, err
 		}
 	}
@@ -38,6 +42,7 @@ func NewClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
+		Timeout: 2 * time.Second,
 	}
 
 	return ssh.Dial("tcp", cred.IP+":22", config)

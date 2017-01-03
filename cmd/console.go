@@ -7,7 +7,10 @@ import (
 
 func exitOn(err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		if statsDB != nil {
+			statsDB.AddLog(err.Error())
+		}
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
 	}
 }

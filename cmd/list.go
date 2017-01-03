@@ -54,7 +54,8 @@ var listInfraResourceCmd = func(resource string, displayer *display.ResourceDisp
 		Run: func(cmd *cobra.Command, args []string) {
 			if localResources {
 				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-				display.ResourceOfGraph(localInfra, nodeType, displayer, sortBy, listOnlyIDs, err)
+				exitOn(err)
+				display.ResourceOfGraph(localInfra, nodeType, displayer, sortBy, listOnlyIDs)
 			} else {
 				listRemoteCloudResource(aws.InfraService, resources, nodeType, displayer)
 			}
@@ -72,7 +73,8 @@ var listAccessResourceCmd = func(resource string, displayer *display.ResourceDis
 		Run: func(cmd *cobra.Command, args []string) {
 			if localResources {
 				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-				display.ResourceOfGraph(localAccess, nodeType, displayer, sortBy, listOnlyIDs, err)
+				exitOn(err)
+				display.ResourceOfGraph(localAccess, nodeType, displayer, sortBy, listOnlyIDs)
 			} else {
 				listRemoteCloudResource(aws.AccessService, resources, nodeType, displayer)
 			}
@@ -93,14 +95,16 @@ var listAllCmd = &cobra.Command{
 				fmt.Println("Infrastructure")
 			}
 			localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-			display.SeveralResourcesOfGraph(localInfra, display.PropertiesDisplayer.Services[aws.InfraServiceName], listOnlyIDs, err)
+			exitOn(err)
+			display.SeveralResourcesOfGraph(localInfra, display.PropertiesDisplayer.Services[aws.InfraServiceName], listOnlyIDs)
 		}
 		if listAllAccess {
 			if !listOnlyIDs {
 				fmt.Println("Access")
 			}
 			localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-			display.SeveralResourcesOfGraph(localAccess, display.PropertiesDisplayer.Services[aws.AccessServiceName], listOnlyIDs, err)
+			exitOn(err)
+			display.SeveralResourcesOfGraph(localAccess, display.PropertiesDisplayer.Services[aws.AccessServiceName], listOnlyIDs)
 		}
 	},
 }
@@ -112,11 +116,12 @@ func listRemoteCloudResource(cloudService interface{}, resources string, nodeTyp
 		methodI := method.Interface()
 		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
 			graph, err := graphFn()
-			display.ResourceOfGraph(graph, nodeType, displayer, sortBy, listOnlyIDs, err)
+			exitOn(err)
+			display.ResourceOfGraph(graph, nodeType, displayer, sortBy, listOnlyIDs)
 			return
 		}
 	}
-	fmt.Println(fmt.Errorf("Unknown type of resource: %s", resources))
+	exitOn(fmt.Errorf("Unknown type of resource: %s", resources))
 	return
 }
 
