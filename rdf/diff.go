@@ -20,6 +20,7 @@ type Diff struct {
 	triples         []*triple.Triple
 	deletedTriples  map[string]*triple.Triple
 	insertedTriples map[string]*triple.Triple
+	commonTriples   map[string]*triple.Triple
 }
 
 func (d *Diff) FullGraph() *Graph {
@@ -51,6 +52,7 @@ func NewEmptyDiffFromGraph(g *Graph) *Diff {
 		graph:           g,
 		deletedTriples:  make(map[string]*triple.Triple),
 		insertedTriples: make(map[string]*triple.Triple),
+		commonTriples:   make(map[string]*triple.Triple),
 	}
 	return &d
 }
@@ -76,6 +78,11 @@ func (d *Diff) AddInserted(t *triple.Triple, existencePredicate *predicate.Predi
 	}
 }
 
+func (d *Diff) AddCommon(t *triple.Triple) {
+	uuid := t.UUID()
+	d.commonTriples[uuid.String()] = t
+}
+
 func (d *Diff) Deleted() []*triple.Triple {
 	var res []*triple.Triple
 	for _, v := range d.deletedTriples {
@@ -85,6 +92,23 @@ func (d *Diff) Deleted() []*triple.Triple {
 	return res
 }
 
+func (d *Diff) DeletedGraph() *Graph {
+	return NewGraphFromTriples(d.Deleted())
+}
+
+func (d *Diff) Common() []*triple.Triple {
+	var res []*triple.Triple
+	for _, v := range d.commonTriples {
+		res = append(res, v)
+	}
+	sort.Sort(&tripleSorter{res})
+	return res
+}
+
+func (d *Diff) CommonGraph() *Graph {
+	return NewGraphFromTriples(d.Common())
+}
+
 func (d *Diff) Inserted() []*triple.Triple {
 	var res []*triple.Triple
 	for _, v := range d.insertedTriples {
@@ -92,6 +116,10 @@ func (d *Diff) Inserted() []*triple.Triple {
 	}
 	sort.Sort(&tripleSorter{res})
 	return res
+}
+
+func (d *Diff) InsertedGraph() *Graph {
+	return NewGraphFromTriples(d.Inserted())
 }
 
 func (d *Diff) HasDeletedTriple(t *triple.Triple) bool {
@@ -125,6 +153,7 @@ func (d *defaultDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*Diff
 		graph:           NewGraph(),
 		deletedTriples:  make(map[string]*triple.Triple),
 		insertedTriples: make(map[string]*triple.Triple),
+		commonTriples:   make(map[string]*triple.Triple),
 	}
 
 	remoteT, err := remote.allTriples()
@@ -133,7 +162,7 @@ func (d *defaultDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*Diff
 	}
 	diff.graph.Add(remoteT...)
 
-	extras, missings, _, err := compareTriplesOf(local, remote)
+	extras, missings, commons, err := compareTriplesOf(local, remote)
 	if err != nil {
 		return diff, err
 	}
@@ -144,6 +173,10 @@ func (d *defaultDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*Diff
 
 	for _, missing := range missings {
 		diff.AddDeleted(missing, d.predicate)
+	}
+
+	for _, common := range commons {
+		diff.AddCommon(common)
 	}
 
 	return diff, nil

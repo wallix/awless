@@ -153,6 +153,31 @@ func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 	return &prop, nil
 }
 
+func NameFromProperties(p Properties) string {
+	if n, ok := p["Name"]; ok {
+		return fmt.Sprint(n)
+	}
+	if t, ok := p["Tags"]; ok {
+		switch tt := t.(type) {
+		case []interface{}:
+			for _, tag := range tt {
+				//map [key: result]
+				if m, ok := tag.(map[string]interface{}); ok && m["Name"] != nil {
+					return fmt.Sprint(m["Name"])
+				}
+
+				//map["Key": key, "Value": result]
+				if m, ok := tag.(map[string]interface{}); ok && m["Key"] == "Name" {
+					return fmt.Sprint(m["Value"])
+				}
+			}
+		}
+
+		return fmt.Sprint(t)
+	}
+	return ""
+}
+
 func (res *Resource) buildRdfSubject() (*node.Node, error) {
 	return node.NewNodeFromStrings(res.kind, res.id)
 }

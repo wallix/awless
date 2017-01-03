@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
@@ -63,6 +65,78 @@ func TestLoadPropertiesTriples(t *testing.T) {
 	}
 }
 
+func TestResourceName(t *testing.T) {
+	properties := Properties{}
+	if got, want := NameFromProperties(properties), ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	properties = Properties{
+		"Id":    "my_id",
+		"Name":  "my_name",
+		"Other": "my_other",
+	}
+	if got, want := NameFromProperties(properties), "my_name"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	properties = Properties{
+		"Id":    "my_id",
+		"Other": "my_other",
+	}
+	if got, want := NameFromProperties(properties), ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	awsInfra := &AwsInfra{}
+
+	awsInfra.Instances = []*ec2.Instance{
+		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
+		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+	}
+
+	awsInfra.Vpcs = []*ec2.Vpc{
+		&ec2.Vpc{VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Other"), Value: awssdk.String("Tag")}}},
+		&ec2.Vpc{VpcId: awssdk.String("vpc_2"), Tags: []*ec2.Tag{}},
+	}
+
+	awsInfra.Subnets = []*ec2.Subnet{
+		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Subnet{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+	}
+
+	g, err := BuildAwsInfraGraph("eu-west-1", awsInfra)
+	if err != nil {
+		t.Fatal(err)
+	}
+	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.INSTANCE, "inst_1"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := NameFromProperties(properties), "instance1-name"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.INSTANCE, "inst_2"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := NameFromProperties(properties), ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.INSTANCE, "vpc_1"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := NameFromProperties(properties), ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
+
 func mustJsonMarshal(i interface{}) string {
 	b, err := json.Marshal(i)
 	if err != nil {
@@ -77,4 +151,16 @@ func noErrLiteralTriple(s *node.Node, p *predicate.Predicate, l *literal.Literal
 		panic(err)
 	}
 	return tri
+}
+
+func newNode(t, id string) *node.Node {
+	nodeT, err := node.NewType(t)
+	if err != nil {
+		panic(err)
+	}
+	nodeID, err := node.NewID(id)
+	if err != nil {
+		panic(err)
+	}
+	return node.NewNode(nodeT, nodeID)
 }

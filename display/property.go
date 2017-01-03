@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud/aws"
 )
 
@@ -23,8 +24,8 @@ var (
 							{Property: "Tags[].Name", Label: "Name"},
 							{Property: "State.Name", Label: "State", ColoredValues: map[string]string{"running": "green", "stopped": "red"}},
 							{Property: "Type"},
-							{Property: "PublicIp"},
-							{Property: "PrivateIp"},
+							{Property: "KeyName", Label: "Access Key"},
+							{Property: "PublicIp", Label: "Public Ip"},
 						},
 					},
 					"vpc": &ResourceDisplayer{
@@ -38,7 +39,7 @@ var (
 					"subnet": &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
-							{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "red"}},
+							{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "yellow"}},
 							{Property: "State", ColoredValues: map[string]string{"available": "green"}},
 							{Property: "CidrBlock"},
 						},
@@ -211,4 +212,15 @@ func (p *PropertyDisplayer) firstLevelProperty() string {
 		return s[0]
 	}
 	return p.Property
+}
+
+func nameOrID(node *node.Node, properties aws.Properties) string {
+	if name := aws.NameFromProperties(properties); name != "" {
+		return name
+	}
+	if id := fmt.Sprint(properties["Id"]); properties["Id"] != nil && id != "" {
+		return id
+	}
+
+	return fmt.Sprint(node.ID().String())
 }

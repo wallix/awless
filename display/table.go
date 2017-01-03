@@ -80,6 +80,7 @@ func (t *Table) FprintColumns(w io.Writer, headers ...string) {
 		table.SetAutoMergeCells(true)
 		table.SetRowLine(true)
 	}
+	table.SetAutoWrapText(false)
 	var displayHeaders []string
 	for _, h := range headers {
 		if len(t.sortByColumns) >= 1 && cleanColumnName(t.sortByColumns[0]) == h {

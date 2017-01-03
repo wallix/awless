@@ -148,6 +148,28 @@ func TestGraphDiff(t *testing.T) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
 
+	commons := []*triple.Triple{
+		noErrLiteralTriple(five, HasTypePredicate, literalA),
+		noErrLiteralTriple(four, HasTypePredicate, literalA),
+		noErrTriple(four, ParentOfPredicate, nine),
+		noErrLiteralTriple(nine, HasTypePredicate, literalB),
+		noErrTriple(nine, ParentOfPredicate, ten),
+		noErrLiteralTriple(one, HasTypePredicate, literalA),
+		noErrTriple(one, ParentOfPredicate, four),
+		noErrTriple(one, ParentOfPredicate, three),
+		noErrTriple(one, ParentOfPredicate, two),
+		noErrLiteralTriple(seven, HasTypePredicate, literalB),
+		noErrLiteralTriple(six, HasTypePredicate, literalB),
+		noErrLiteralTriple(ten, HasTypePredicate, literalB),
+		noErrTriple(three, ParentOfPredicate, seven),
+		noErrLiteralTriple(two, HasTypePredicate, literalA),
+		noErrTriple(two, ParentOfPredicate, five),
+		noErrTriple(two, ParentOfPredicate, six),
+	}
+	if got, want := diff.Common(), commons; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+
 	// Diff the other way around
 
 	diff, err = differ.Run(one, remote, local)
@@ -168,6 +190,10 @@ func TestGraphDiff(t *testing.T) {
 	missing = noErrLiteralTriple(eight, DiffPredicate, MissingLiteral)
 	extra = noErrLiteralTriple(releven, DiffPredicate, ExtraLiteral)
 	if got, want := diff.TriplesInDiff(), []*triple.Triple{missing, extra}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+
+	if got, want := diff.Common(), commons; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }

@@ -65,9 +65,9 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 			}
 			for _, propD := range displayer.Resources[t].Properties {
 				table.AddValue("Type", t)
-				table.AddValue("Name/Id", nameOrID(nodeProperties))
+				table.AddValue("Name/Id", nameOrID(node, nodeProperties))
 				table.AddValue("Property", propD.displayName())
-				table.AddValue("Value", propD.propertyValue(nodeProperties))
+				table.AddValue("Value", propD.display(propD.propertyValue(nodeProperties)))
 			}
 		}
 	}
@@ -79,8 +79,4 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 	} else {
 		table.Fprint(os.Stdout)
 	}
-}
-
-func nameOrID(properties aws.Properties) string {
-	return fmt.Sprint(properties["Id"])
 }
