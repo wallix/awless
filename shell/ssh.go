@@ -24,8 +24,6 @@ func NewClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
 		privateKey, err = ioutil.ReadFile(keyPath + ".pem")
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("You don't have the '%s' key in your awless key folder '%s'.", cred.KeyName, keyDirectory)
-		} else if err != nil {
-			return nil, err
 		}
 	}
 	if err != nil {

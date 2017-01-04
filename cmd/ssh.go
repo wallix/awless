@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strings"
+
+	"golang.org/x/crypto/ssh"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
@@ -33,19 +36,32 @@ var sshCmd = &cobra.Command{
 		exitOn(err)
 		cred, err := aws.InstanceCredentialsFromGraph(instancesGraph, instanceID)
 		exitOn(err)
-		if user == "" {
-			cred.User = "ec2-user" //TODO find a way to fetch the default user
-		} else {
+		var client *ssh.Client
+		if user != "" {
 			cred.User = user
-		}
-
-		client, err := shell.NewClient(config.KeysDir, cred)
-		exitOn(err)
-
-		if err := shell.InteractiveTerminal(client); err != nil {
+			client, err = shell.NewClient(config.KeysDir, cred)
 			exitOn(err)
+			if verboseFlag {
+				log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
+			}
+			if err = shell.InteractiveTerminal(client); err != nil {
+				exitOn(err)
+			}
+			return nil
 		}
-
-		return nil
+		for _, user := range aws.DefaultAMIUsers {
+			cred.User = user
+			client, err = shell.NewClient(config.KeysDir, cred)
+			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
+				continue
+			}
+			exitOn(err)
+			log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
+			if err = shell.InteractiveTerminal(client); err != nil {
+				exitOn(err)
+			}
+			return nil
+		}
+		return err
 	},
 }
