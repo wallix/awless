@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
@@ -10,6 +11,7 @@ import (
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/display"
+	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision"
 )
 
@@ -22,7 +24,15 @@ var (
 )
 
 func init() {
-	showCmd.AddCommand(showVpcCmd)
+	//Resources
+	for resource, properties := range display.PropertiesDisplayer.Services[aws.InfraServiceName].Resources {
+		showCmd.AddCommand(showInfraResourceCmd(resource, properties))
+	}
+	for resource, properties := range display.PropertiesDisplayer.Services[aws.AccessServiceName].Resources {
+		showCmd.AddCommand(showAccessResourceCmd(resource, properties))
+	}
+
+	//Revisions
 	showCmd.AddCommand(showCloudRevisionsCmd)
 	showCloudRevisionsCmd.PersistentFlags().IntVarP(&numberRevisionsToShow, "number", "n", 10, "Number of revision to show")
 	showCloudRevisionsCmd.PersistentFlags().BoolVarP(&showRevisionsProperties, "properties", "p", false, "Full diff with resources properties")
@@ -38,18 +48,64 @@ var showCmd = &cobra.Command{
 	Short: "Show various type of items by id: users, groups, instances, vpcs, ...",
 }
 
-var showVpcCmd = &cobra.Command{
-	Use:   "vpc",
-	Short: "Show a vpc from a given id",
+var showInfraResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {
+	resources := pluralize(resource)
+	command := &cobra.Command{
+		Use:   resource + " id",
+		Short: "Show the properties of a AWS EC2 " + resource,
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("show vpc: id required")
-		}
-		resp, err := aws.InfraService.Vpc(args[0])
-		displayItem(resp, err)
-		return nil
-	},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("id required")
+			}
+			id := args[0]
+			var g *rdf.Graph
+			var err error
+			if localResources {
+				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+
+			} else {
+				g, err = remoteResourceGraph(aws.InfraService, resources)
+			}
+			exitOn(err)
+			err = display.OneResourceOfGraph(os.Stdout, g, resource, id, displayer)
+			exitOn(err)
+			return nil
+		},
+	}
+
+	command.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
+	return command
+}
+
+var showAccessResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {
+	resources := pluralize(resource)
+	command := &cobra.Command{
+		Use:   resource + " id",
+		Short: "Show the properties of a AWS IAM " + resource,
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("id required")
+			}
+			id := args[0]
+			var g *rdf.Graph
+			var err error
+			if localResources {
+				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+
+			} else {
+				g, err = remoteResourceGraph(aws.AccessService, resources)
+			}
+			exitOn(err)
+			err = display.OneResourceOfGraph(os.Stdout, g, resource, id, displayer)
+			exitOn(err)
+			return nil
+		},
+	}
+
+	command.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
+	return command
 }
 
 var showCloudRevisionsCmd = &cobra.Command{

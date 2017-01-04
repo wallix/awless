@@ -52,13 +52,16 @@ var listInfraResourceCmd = func(resource string, displayer *display.ResourceDisp
 		Short: "List AWS EC2 " + resources,
 
 		Run: func(cmd *cobra.Command, args []string) {
+			var g *rdf.Graph
+			var err error
 			if localResources {
-				localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-				exitOn(err)
-				display.ResourceOfGraph(localInfra, nodeType, displayer, sortBy, listOnlyIDs)
+				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+
 			} else {
-				listRemoteCloudResource(aws.InfraService, resources, nodeType, displayer)
+				g, err = remoteResourceGraph(aws.InfraService, resources)
 			}
+			exitOn(err)
+			display.ResourcesOfGraph(g, nodeType, displayer, sortBy, listOnlyIDs)
 		},
 	}
 }
@@ -71,13 +74,15 @@ var listAccessResourceCmd = func(resource string, displayer *display.ResourceDis
 		Short: "List AWS IAM " + resources,
 
 		Run: func(cmd *cobra.Command, args []string) {
+			var g *rdf.Graph
+			var err error
 			if localResources {
-				localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-				exitOn(err)
-				display.ResourceOfGraph(localAccess, nodeType, displayer, sortBy, listOnlyIDs)
+				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 			} else {
-				listRemoteCloudResource(aws.AccessService, resources, nodeType, displayer)
+				g, err = remoteResourceGraph(aws.AccessService, resources)
 			}
+			exitOn(err)
+			display.ResourcesOfGraph(g, nodeType, displayer, sortBy, listOnlyIDs)
 		},
 	}
 }
@@ -109,20 +114,16 @@ var listAllCmd = &cobra.Command{
 	},
 }
 
-func listRemoteCloudResource(cloudService interface{}, resources string, nodeType string, displayer *display.ResourceDisplayer) {
+func remoteResourceGraph(cloudService interface{}, resources string) (*rdf.Graph, error) {
 	fnName := fmt.Sprintf("%sGraph", humanize(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {
 		methodI := method.Interface()
 		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
-			graph, err := graphFn()
-			exitOn(err)
-			display.ResourceOfGraph(graph, nodeType, displayer, sortBy, listOnlyIDs)
-			return
+			return graphFn()
 		}
 	}
-	exitOn(fmt.Errorf("Unknown type of resource: %s", resources))
-	return
+	return nil, (fmt.Errorf("Unknown type of resource: %s", resources))
 }
 
 func pluralize(singular string) string {

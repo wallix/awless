@@ -25,10 +25,52 @@ __awless_get_all_ids()
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }
+__awless_get_groups_ids()
+{
+		local ids_output
+		if ids_output=$(awless list groups --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
 __awless_get_instances_ids()
 {
 		local ids_output
 		if ids_output=$(awless list instances --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__awless_get_policies_ids()
+{
+		local ids_output
+		if ids_output=$(awless list policies --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__awless_get_roles_ids()
+{
+		local ids_output
+		if ids_output=$(awless list roles --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__awless_get_subnets_ids()
+{
+		local ids_output
+		if ids_output=$(awless list subnets --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__awless_get_users_ids()
+{
+		local ids_output
+		if ids_output=$(awless list users --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
+		fi
+}
+__awless_get_vpcs_ids()
+{
+		local ids_output
+		if ids_output=$(awless list vpcs --local --ids 2>/dev/null); then
 		COMPREPLY=( $( compgen -W "${ids_output[*]}" -- "$cur" ) )
 		fi
 }
@@ -38,6 +80,34 @@ __custom_func() {
             __awless_get_instances_ids
             return
             ;;
+				awless_show_group )
+            __awless_get_groups_ids
+            return
+            ;;
+				awless_show_instance )
+            __awless_get_instances_ids
+            return
+            ;;
+				awless_show_policy )
+            __awless_get_policies_ids
+            return
+            ;;
+				awless_show_role )
+            __awless_get_roles_ids
+            return
+            ;;
+				awless_show_subnet )
+						__awless_get_subnets_ids
+						return
+						;;
+				awless_show_user )
+						__awless_get_users_ids
+						return
+						;;
+				awless_show_vpc )
+						__awless_get_vpcs_ids
+						return
+						;;
         *)
             ;;
     esac
