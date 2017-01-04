@@ -92,7 +92,7 @@ Generate awless CLI completion code for bash or zsh
 
 # Bash and Zsh autocomplete
 
-You can easily generate `awless` completion, either for bash or zsh, thanks to [cobra](https://github.com/spf13/cobra) (bash) and [kubernetes](https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/completion.go) (zsh).  
+You can easily generate `awless` completion, either for bash or zsh, thanks to [cobra](https://github.com/spf13/cobra) (bash) and [kubernetes](https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/completion.go) (zsh).
 
 ## Bash
 
@@ -142,23 +142,13 @@ It allows to use advanced algorithms while being agnostic of the handled data.
 
 ## Source install
 
-`awless` requires `libgit2` to be built. 
+`awless` requires `libgit2` to be built.
 You can install `libgit2` with your favorite package manager:
 
     brew install libgit2 # macOS
     apt-get install libgit2-dev # Debian / Ubuntu
 
-Until we inline dependencies fetch the following:
-
-    go get github.com/aws/aws-sdk-go/...
-    go get github.com/fatih/color
-    go get github.com/boltdb/bolt
-    go get github.com/spf13/viper
-    go get github.com/spf13/cobra
-    go get github.com/google/badwolf/...
-    go get github.com/olekukonko/tablewriter
-    go get github.com/libgit2/git2go
-    go get golang.org/x/crypto/ssh
+Then
 
     go get github.com/wallix/awless
 
@@ -169,9 +159,15 @@ or install as a global executable
 ## Test
 
     $ cd awless
-    $ go test -race ./...
+    $ go test -race -cover ./...
 
 ## Run
+
+If installed as a global executable
+
+    $ awless list instances
+
+Or from your local pulled repo
 
     $ go run main.go list instances
 
