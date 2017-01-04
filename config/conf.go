@@ -33,7 +33,7 @@ SwIDAQAB
 -----END PUBLIC KEY-----`
 	Salt                                = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
 	StatsExpirationDuration             = 24 * time.Hour
-	Version                             = "0.2"
+	Version                             = "0.0.1"
 	InfraFilename                       = "infra.rdf"
 	AccessFilename                      = "access.rdf"
 	AwlessFirstInstall, AwlessFirstSync bool
