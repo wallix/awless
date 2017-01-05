@@ -140,41 +140,9 @@ var showCloudRevisionsCmd = &cobra.Command{
 			return err
 		}
 		for i := range accessDiffs {
-			displayCommit(accessDiffs[i], aws.AccessServiceName, root)
-			displayCommit(infraDiffs[i], aws.InfraServiceName, root)
+			display.RevisionDiff(accessDiffs[i], aws.AccessServiceName, root, verboseFlag, showRevisionsProperties)
+			display.RevisionDiff(infraDiffs[i], aws.InfraServiceName, root, verboseFlag, showRevisionsProperties)
 		}
 		return nil
 	},
-}
-
-func displayCommit(diff *revision.CommitDiff, cloudService string, root *node.Node) {
-	parentCommit := diff.ParentCommit
-	parentText := "repository creation"
-	if parentCommit != "" {
-		parentText = parentCommit[:7] + " on " + diff.ParentTime.Format("Monday January 2, 15:04")
-	}
-
-	if showRevisionsProperties {
-		if diff.GraphDiff.HasDiff() {
-			fmt.Println("▶", cloudService, "properties, from", parentText,
-				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
-			display.FullDiff(diff.GraphDiff, root, cloudService)
-			fmt.Println()
-		} else if verboseFlag {
-			fmt.Println("▶", cloudService, "properties, from", parentText,
-				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
-			fmt.Println("No changes.")
-		}
-	} else {
-		if diff.GraphDiff.HasResourceDiff() {
-			fmt.Println("▶", cloudService, "resources, from", parentText,
-				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
-			display.ResourceDiff(diff.GraphDiff, root)
-			fmt.Println()
-		} else if verboseFlag {
-			fmt.Println("▶", cloudService, "resources, from", parentText,
-				"to", diff.ChildCommit[:7], "on", diff.ChildTime.Format("Monday January 2, 15:04"))
-			fmt.Println("No resource changes.")
-		}
-	}
 }
