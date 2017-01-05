@@ -1,0 +1,43 @@
+# PEG for awless script syntax
+package ast
+
+# parser declaration
+
+type Peg Peg {
+ *Script
+}
+
+Script   <- Spacing Statement+ EndOfFile
+Statement <- Spacing (Expr / Declaration) Spacing EndOfLine*
+Action <- 'create' / 'delete'
+Entity <- 'vpc' / 'subnet' / 'instance'
+Declaration <- <Identifier> { p.AddDeclarationIdentifier(text) }
+               Equal
+               Expr
+Expr <- <Action> { p.AddAction(text) }
+        MustWhiteSpacing
+        (<Entity> MustWhiteSpacing { p.AddEntity(text) })?
+        Params*
+
+Params <- Param+ { p.EndOfParams() }
+Param <- <Identifier> { p.AddParamKey(text) }
+         Equal
+         Value
+         WhiteSpacing
+
+Identifier <- [a-zA-Z]+
+Value <- <StringValue> { p.AddParamValue(text) }
+         / <IntValue> { p.AddParamIntValue(text) }
+         / HoleValue {  p.AddParamHoleValue(text) }
+StringValue <- [a-zA-Z]+
+IntValue <- [0-9]+
+HoleValue <- '{' <Identifier> '}'
+
+Spacing <- Space*
+WhiteSpacing <- Whitespace*
+MustWhiteSpacing <- Whitespace+
+Equal <- Spacing '=' Spacing
+Space   <- Whitespace / EndOfLine
+Whitespace   <- ' ' / '\t'
+EndOfLine <- '\r\n' / '\n' / '\r'
+EndOfFile <- !.
