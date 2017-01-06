@@ -14,16 +14,14 @@ import (
 )
 
 type AwsDriver struct {
-	api        ec2iface.EC2API
-	references map[string]map[string]string
-	logger     *log.Logger
+	api    ec2iface.EC2API
+	logger *log.Logger
 }
 
 func NewDriver(api ec2iface.EC2API) *AwsDriver {
 	return &AwsDriver{
-		api:        api,
-		references: make(map[string]map[string]string),
-		logger:     log.New(ioutil.Discard, "", 0),
+		api:    api,
+		logger: log.New(ioutil.Discard, "", 0),
 	}
 }
 
@@ -39,7 +37,7 @@ func (d *AwsDriver) Lookup(lookups ...string) driver.DriverFn {
 	fnName := fmt.Sprintf("%s_%s", humanize(lookups[0]), humanize(lookups[1]))
 	method := reflect.ValueOf(d).MethodByName(fnName).Interface()
 
-	driverFn, converted := method.(func(map[string]interface{}) error)
+	driverFn, converted := method.(func(map[string]interface{}) (interface{}, error))
 	if !converted {
 		panic(fmt.Sprintf("method '%s' found on '%T' is not a driver function", fnName, d))
 	}
@@ -47,48 +45,38 @@ func (d *AwsDriver) Lookup(lookups ...string) driver.DriverFn {
 	return driverFn
 }
 
-func (d *AwsDriver) Create_Vpc(params map[string]interface{}) error {
+func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
 
-	setField(d.lookupValue(driver.CIDR, params), input, "CidrBlock")
+	setField(params["cidr"], input, "CidrBlock")
 
 	output, err := d.api.CreateVpc(input)
 	if err != nil {
 		d.logger.Printf("error creating vpc\n%s\n", err)
-		return err
+		return nil, err
 	}
 	d.logger.Println("vpc created")
 
-	if refname, ok := params[driver.REF]; ok {
-		d.logger.Printf("vpc referenced with '%s'", refname)
-		d.addReference(driver.VPC, refname, aws.StringValue(output.Vpc.VpcId))
-	}
-
-	return nil
+	return aws.StringValue(output.Vpc.VpcId), nil
 }
 
-func (d *AwsDriver) Create_Subnet(params map[string]interface{}) error {
+func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
 
-	setField(d.lookupValue(driver.CIDR, params), input, "CidrBlock")
-	setField(d.lookupValue(driver.VPC, params), input, "VpcId")
+	setField(params["cidr"], input, "CidrBlock")
+	setField(params["vpc"], input, "VpcId")
 
 	output, err := d.api.CreateSubnet(input)
 	if err != nil {
 		d.logger.Printf("error creating subnet\n%s\n", err)
-		return err
+		return nil, err
 	}
 	d.logger.Println("subnet created")
 
-	if refname, ok := params[driver.REF]; ok {
-		d.logger.Printf("subnet referenced with '%s'", refname)
-		d.addReference(driver.SUBNET, refname, aws.StringValue(output.Subnet.SubnetId))
-	}
-
-	return nil
+	return aws.StringValue(output.Subnet.SubnetId), nil
 }
 
-func (d *AwsDriver) Create_Instance(params map[string]interface{}) error {
+func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{
 		ImageId:      aws.String("ami-9398d3e0"),
 		MaxCount:     aws.Int64(1),
@@ -96,43 +84,20 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) error {
 		InstanceType: aws.String("t2.micro"),
 	}
 
-	setField(d.lookupValue(driver.BASE, params), input, "ImageId")
-	setField(d.lookupValue(driver.TYPE, params), input, "InstanceType")
-	setField(d.lookupValue(driver.COUNT, params), input, "MaxCount")
-	setField(d.lookupValue(driver.COUNT, params), input, "MinCount")
-	setField(d.lookupValue(driver.SUBNET, params), input, "SubnetId")
+	setField(params["base"], input, "ImageId")
+	setField(params["type"], input, "InstanceType")
+	setField(params["count"], input, "MaxCount")
+	setField(params["count"], input, "MinCount")
+	setField(params["subnet"], input, "SubnetId")
 
 	output, err := d.api.RunInstances(input)
 	if err != nil {
 		d.logger.Printf("error creating instance\n%s\n", err)
-		return err
+		return nil, err
 	}
 	d.logger.Println("instance created")
 
-	if refname, ok := params[driver.REF]; ok {
-		d.logger.Printf("instance referenced with '%s'", refname)
-		d.addReference(driver.INSTANCE, refname, aws.StringValue(output.Instances[0].InstanceId))
-	}
-
-	return nil
-}
-
-func (d *AwsDriver) lookupValue(tok string, params map[string]interface{}) interface{} {
-	if backref, ok := params[driver.REFERENCES]; ok {
-		if refs, ok := d.references[tok]; ok {
-			return refs[backref.(string)]
-		}
-	}
-
-	return params[tok]
-}
-
-func (d *AwsDriver) addReference(t string, refName interface{}, resourceId string) {
-	if d.references[t] == nil {
-		d.references[t] = make(map[string]string)
-	}
-
-	d.references[t][refName.(string)] = resourceId
+	return aws.StringValue(output.Instances[0].InstanceId), nil
 }
 
 func humanize(s string) string {

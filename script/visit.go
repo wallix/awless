@@ -11,7 +11,7 @@ func Visit(s *ast.Script, d driver.Driver) (err error) {
 		case *ast.ExpressionNode:
 			expr := sts.(*ast.ExpressionNode)
 			fn := d.Lookup(expr.Action, expr.Entity)
-			err = fn(expr.Params)
+			_, err = fn(expr.Params)
 		}
 	}
 

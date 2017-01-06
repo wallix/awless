@@ -62,16 +62,16 @@ type mockDriver struct {
 
 func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
 	if lookups[0] == r.action && lookups[1] == r.entity {
-		return func(params map[string]interface{}) error {
+		return func(params map[string]interface{}) (interface{}, error) {
 			if got, want := params, r.expectedParams; !reflect.DeepEqual(got, want) {
-				return fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", r.action, r.entity, got, want)
+				return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", r.action, r.entity, got, want)
 			}
-			return nil
+			return nil, nil
 		}
 	}
 
-	return func(params map[string]interface{}) error {
-		return errors.New("Unexpected lookup fallthrough")
+	return func(params map[string]interface{}) (interface{}, error) {
+		return nil, errors.New("Unexpected lookup fallthrough")
 	}
 }
 
