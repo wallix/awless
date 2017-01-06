@@ -16,6 +16,7 @@ type Script struct {
 
 type IdentifierNode struct {
 	Ident string
+	Val   interface{}
 }
 
 type DeclarationNode struct {
@@ -46,7 +47,7 @@ func (s *Script) AddEntity(text string) {
 
 func (s *Script) AddDeclarationIdentifier(text string) {
 	decl := &DeclarationNode{
-		Left:  &IdentifierNode{text},
+		Left:  &IdentifierNode{Ident: text},
 		Right: &ExpressionNode{},
 	}
 	s.addStatement(decl)
