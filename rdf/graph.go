@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"math/rand"
 	"sort"
 	"strings"
@@ -239,5 +240,5 @@ func (g *Graph) MustMarshal() string {
 }
 
 func randString() string {
-	return fmt.Sprintf("%d", rand.Intn(1e16))
+	return fmt.Sprintf("%d", rand.Intn(math.MaxInt32))
 }
