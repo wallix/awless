@@ -25,10 +25,9 @@ type DeclarationNode struct {
 }
 
 type ExpressionNode struct {
-	Action string
-	Entity string
-	Params map[string]interface{}
-	Holes  map[string]string
+	Action, Entity string
+	Params         map[string]interface{}
+	Holes          map[string]string
 }
 
 func (s *Script) AddAction(text string) {

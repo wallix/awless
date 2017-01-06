@@ -11,7 +11,37 @@ import (
 	"github.com/wallix/awless/script/driver"
 )
 
-func TestVisitHoles(t *testing.T) {
+func TestInteractiveHolesResolution(t *testing.T) {
+	s := &ast.Script{}
+
+	expr := &ast.ExpressionNode{
+		Holes: map[string]string{"age": "age_of_president", "name": "name_of_president"},
+	}
+	s.Statements = append(s.Statements, expr)
+
+	each := func(question string) interface{} {
+		if question == "Age_of_president" {
+			return 70
+		}
+		if question == "Name_of_president" {
+			return "trump"
+		}
+
+		return nil
+	}
+
+	VisitExpressionNodes(s, InteractiveResolveHoles(each))
+
+	expected := map[string]interface{}{"age": 70, "name": "trump"}
+	if got, want := expr.Params, expected; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := len(expr.Holes), 0; got != want {
+		t.Fatalf("length of holes: got %d, want %d", got, want)
+	}
+}
+
+func TestHolesResolution(t *testing.T) {
 	s := &ast.Script{}
 
 	expr := &ast.ExpressionNode{
@@ -33,7 +63,7 @@ func TestVisitHoles(t *testing.T) {
 		"presidentWife": "melania",
 	}
 
-	VisitHoles(s, fills)
+	VisitExpressionNodes(s, ResolveHolesWith(fills))
 
 	expected := map[string]interface{}{"name": "trump", "rank": 45}
 	if got, want := expr.Params, expected; !reflect.DeepEqual(got, want) {

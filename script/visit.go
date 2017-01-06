@@ -1,6 +1,8 @@
 package script
 
 import (
+	"strings"
+
 	"github.com/wallix/awless/script/ast"
 	"github.com/wallix/awless/script/driver"
 )
@@ -23,7 +25,7 @@ func Visit(s *ast.Script, d driver.Driver) (err error) {
 	return err
 }
 
-func VisitHoles(s *ast.Script, fills map[string]interface{}) {
+func VisitExpressionNodes(s *ast.Script, fn func(n *ast.ExpressionNode)) {
 	for _, sts := range s.Statements {
 		var expr *ast.ExpressionNode
 
@@ -35,15 +37,42 @@ func VisitHoles(s *ast.Script, fills map[string]interface{}) {
 		}
 
 		if expr != nil {
-			for key, hole := range expr.Holes {
-				if val, ok := fills[hole]; ok {
-					if expr.Params == nil {
-						expr.Params = make(map[string]interface{})
-					}
-					expr.Params[key] = val
-					delete(expr.Holes, key)
+			fn(expr)
+		}
+	}
+}
+
+func ResolveHolesWith(fills map[string]interface{}) func(expr *ast.ExpressionNode) {
+	return func(expr *ast.ExpressionNode) {
+		for key, hole := range expr.Holes {
+			if val, ok := fills[hole]; ok {
+				if expr.Params == nil {
+					expr.Params = make(map[string]interface{})
 				}
+				expr.Params[key] = val
+				delete(expr.Holes, key)
 			}
 		}
 	}
+}
+
+func InteractiveResolveHoles(fn func(question string) interface{}) func(expr *ast.ExpressionNode) {
+	return func(expr *ast.ExpressionNode) {
+		for key, hole := range expr.Holes {
+			if expr.Params == nil {
+				expr.Params = make(map[string]interface{})
+			}
+			res := fn(humanize(hole))
+			expr.Params[key] = res
+			delete(expr.Holes, key)
+		}
+	}
+}
+
+func humanize(s string) string {
+	if len(s) > 1 {
+		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+	}
+
+	return strings.ToUpper(s)
 }

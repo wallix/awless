@@ -25,7 +25,7 @@ Param <- <Identifier> { p.AddParamKey(text) }
          Value
          WhiteSpacing
 
-Identifier <- [a-zA-Z]+
+Identifier <- [a-zA-Z_]+
 Value <- HoleValue {  p.AddParamHoleValue(text) }
         / <IntValue> { p.AddParamIntValue(text) }
         / <StringValue> { p.AddParamValue(text) }

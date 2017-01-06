@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	awscloud "github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/script"
+	"github.com/wallix/awless/script/ast"
 	"github.com/wallix/awless/script/driver/aws"
 )
 
@@ -30,49 +30,40 @@ var createInstanceCmd = &cobra.Command{
 	Short:   "Create an instance",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var buff bytes.Buffer
+		temp := `create instance subnet={instance_subnet} count={instance_count} base={instance_image} type={instance_type}`
 
-		buff.WriteString("create instance")
-
-		var count int
-		fmt.Print("Number of instances? ")
-		_, err := fmt.Scanln(&count)
-		if err != nil {
-			return err
-		}
-		buff.WriteString(fmt.Sprintf(" count=%d", count))
-
-		types := []string{
-			"t2.nano:   vCPU=1, CPU/hour=3, Mem Gio=0,5, EBS only",
-			"t2.micro:  vCPU=1, CPU/hour=6, Mem Gio=1, EBS only",
-			"t2.small:  vCPU=1, CPU/hour=12, Mem Gio=2, EBS only",
-			"t2.medium: vCPU=2, CPU/hour=24, Mem Gio=4, EBS only",
-			"t2.large:  vCPU=2, CPU/hour=36, Mem Gio=8, EBS only",
-			"t2.xlarge: vCPU=4, CPU/hour=54, Mem Gio=16, EBS only",
-			"t2.2xlarge: vCPU=8, CPU/hour=81, Mem Gio=32, EBS only",
-		}
-
-		var typ int
-		fmt.Println()
-		for index, typ := range types {
-			fmt.Printf("%d. %s\n", index+1, typ)
-		}
-		fmt.Print("\nType of instance? ")
-
-		_, err = fmt.Scanln(&typ)
+		scr, err := script.Parse(temp)
 		if err != nil {
 			return err
 		}
 
-		mytype := strings.Split(types[typ], ":")[0]
+		defaults := map[string]interface{}{
+			"instance_type":  "t2.micro",
+			"instance_image": "ami-9398d3e0",
+			"instance_count": 1,
+		}
 
-		buff.WriteString(fmt.Sprintf(" type=%s", mytype))
+		script.VisitExpressionNodes(scr, script.ResolveHolesWith(defaults))
 
-		scriptText := buff.String()
+		prompt := func(question string) interface{} {
+			var resp string
+			fmt.Printf("%s ? ", question)
+			_, err := fmt.Scanln(&resp)
+			if err != nil {
+				return err
+			}
+
+			return resp
+		}
+
+		script.VisitExpressionNodes(scr, script.InteractiveResolveHoles(prompt))
 
 		var yesorno string
-		fmt.Print("\nDone\n\n")
-		fmt.Print(scriptText)
+		fmt.Print("\nDone. Params are:\n\n")
+		script.VisitExpressionNodes(scr, func(expr *ast.ExpressionNode) {
+			fmt.Print(expr.Params)
+			fmt.Println()
+		})
 		fmt.Print("\n\nAbout to run? (y/n): ")
 		_, err = fmt.Scanln(&yesorno)
 		if err != nil {
@@ -80,15 +71,10 @@ var createInstanceCmd = &cobra.Command{
 		}
 
 		if strings.TrimSpace(yesorno) == "y" {
-			s, err := script.Parse(scriptText)
-			if err != nil {
-				return err
-			}
-
 			awsDriver := aws.NewDriver(awscloud.InfraService)
 			awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 
-			return script.Visit(s, awsDriver)
+			return script.Visit(scr, awsDriver)
 		}
 
 		return nil
