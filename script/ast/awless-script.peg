@@ -26,10 +26,11 @@ Param <- <Identifier> { p.AddParamKey(text) }
          WhiteSpacing
 
 Identifier <- [a-zA-Z]+
-Value <- <StringValue> { p.AddParamValue(text) }
-         / <IntValue> { p.AddParamIntValue(text) }
-         / HoleValue {  p.AddParamHoleValue(text) }
-StringValue <- [a-zA-Z]+
+Value <- HoleValue {  p.AddParamHoleValue(text) }
+        / <IntValue> { p.AddParamIntValue(text) }
+        / <StringValue> { p.AddParamValue(text) }
+
+StringValue <- [a-zA-Z0-9\\.]+
 IntValue <- [0-9]+
 HoleValue <- '{' <Identifier> '}'
 

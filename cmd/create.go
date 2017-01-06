@@ -9,9 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	awscloud "github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/scenario"
-	"github.com/wallix/awless/scenario/driver"
-	"github.com/wallix/awless/scenario/driver/aws"
+	"github.com/wallix/awless/script"
+	"github.com/wallix/awless/script/driver/aws"
 )
 
 func init() {
@@ -33,7 +32,7 @@ var createInstanceCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var buff bytes.Buffer
 
-		buff.WriteString("CREATE INSTANCE")
+		buff.WriteString("create instance")
 
 		var count int
 		fmt.Print("Number of instances? ")
@@ -41,7 +40,7 @@ var createInstanceCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		buff.WriteString(fmt.Sprintf(" COUNT %d", count))
+		buff.WriteString(fmt.Sprintf(" count=%d", count))
 
 		types := []string{
 			"t2.nano:   vCPU=1, CPU/hour=3, Mem Gio=0,5, EBS only",
@@ -67,13 +66,13 @@ var createInstanceCmd = &cobra.Command{
 
 		mytype := strings.Split(types[typ], ":")[0]
 
-		buff.WriteString(fmt.Sprintf(" TYPE %s", mytype))
+		buff.WriteString(fmt.Sprintf(" type=%s", mytype))
 
-		scen := buff.String()
+		scriptText := buff.String()
 
 		var yesorno string
 		fmt.Print("\nDone\n\n")
-		fmt.Print(scen)
+		fmt.Print(scriptText)
 		fmt.Print("\n\nAbout to run? (y/n): ")
 		_, err = fmt.Scanln(&yesorno)
 		if err != nil {
@@ -81,15 +80,15 @@ var createInstanceCmd = &cobra.Command{
 		}
 
 		if strings.TrimSpace(yesorno) == "y" {
-			lex := &scenario.Lexer{}
-			scen := lex.ParseScenario(scen)
+			s, err := script.Parse(scriptText)
+			if err != nil {
+				return err
+			}
 
 			awsDriver := aws.NewDriver(awscloud.InfraService)
 			awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 
-			runner := &driver.Runner{Driver: awsDriver}
-
-			return runner.Run(scen)
+			return script.Visit(s, awsDriver)
 		}
 
 		return nil

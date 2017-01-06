@@ -16,8 +16,8 @@ func TestScriptParsing(t *testing.T) {
 			input: `
 			myvpc  =   create   vpc  count=1 num=3
 mysubnet = delete subnet vpc={one} name=bill
-create instance count=1
-			`,
+create instance count=1 type=t2.micro
+		`,
 
 			verifyFn: func(s *ast.Script) {
 				assertStatementsCount(t, s, 3)
@@ -29,7 +29,7 @@ create instance count=1
 					map[string]string{"vpc": "one"},
 				)
 				assertExpressionNode(t, 2, s.Statements, "create", "instance",
-					map[string]interface{}{"count": 1}, map[string]string{},
+					map[string]interface{}{"count": 1, "type": "t2.micro"}, map[string]string{},
 				)
 			},
 		},
