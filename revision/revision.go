@@ -3,8 +3,9 @@ package revision
 import (
 	"time"
 
-	git "github.com/libgit2/git2go"
 	"github.com/wallix/awless/rdf"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // Revision references a commit of the local RDF resources
@@ -18,8 +19,8 @@ type revisionPair struct {
 	to   *Revision
 }
 
-func NewRevision(c *git.Commit) *Revision {
-	return &Revision{Time: c.Committer().When, ID: c.Id().String()}
+func NewRevision(c *object.Commit) *Revision {
+	return &Revision{Time: c.Committer.When, ID: c.ID().String()}
 }
 
 var initRevision = &Revision{}
@@ -68,11 +69,8 @@ func (rr *Repository) revisionToRDFGraph(revision *Revision, files ...string) (*
 	if revision == initRevision {
 		return g, nil
 	}
-	rOid, err := git.NewOid(revision.ID)
-	if err != nil {
-		return g, err
-	}
-	commit, err := rr.gitRepository.LookupCommit(rOid)
+
+	commit, err := rr.gitRepository.Commit(plumbing.NewHash(revision.ID))
 	if err != nil {
 		return g, err
 	}
@@ -80,21 +78,18 @@ func (rr *Repository) revisionToRDFGraph(revision *Revision, files ...string) (*
 	if err != nil {
 		return g, err
 	}
-	nbEntries := tree.EntryCount()
-	for i := uint64(0); i < nbEntries; i++ {
-		entry := tree.EntryByIndex(i)
-		if entry.Type == git.ObjectBlob && contains(files, entry.Name) {
-			blob, err := rr.gitRepository.LookupBlob(entry.Id)
-			if err != nil {
-				return g, err
+
+	err = tree.Files().ForEach(func(f *object.File) error {
+		if contains(files, f.Name) {
+			content, e := f.Contents()
+			if e != nil {
+				return e
 			}
-			err = g.Unmarshal(blob.Contents())
-			if err != nil {
-				return g, err
-			}
+			return g.Unmarshal([]byte(content))
 		}
-	}
-	return g, nil
+		return nil
+	})
+	return g, err
 }
 
 func contains(s []string, e string) bool {

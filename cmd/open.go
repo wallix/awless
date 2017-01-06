@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"runtime"
@@ -28,9 +29,11 @@ var openCmd = &cobra.Command{
 			verb = "xdg-open"
 		}
 
+		var stderr bytes.Buffer
 		cmd := exec.Command(verb, console)
-		if err := cmd.Run(); err != nil {
-			return err
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil || stderr.String() != "" {
+			return fmt.Errorf("%s:%s", err, stderr.String())
 		}
 		return nil
 	},

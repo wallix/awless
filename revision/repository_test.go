@@ -115,6 +115,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := len(lastsDiffs[0].GraphDiff.Deleted()), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+
 	expect := []*triple.Triple{parseTriple("/a<1>  \"to\"@[] /b<1>"), parseTriple("/b<1>  \"to\"@[] /c<1>")}
 	if got, want := lastsDiffs[0].GraphDiff.Inserted(), expect; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v, want %+v", got, want)
@@ -173,6 +174,14 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if got, want := len(lastsDiffs), 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	lastsDiffs, err = rr.LastDiffs(2, root, NoGroup)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := len(lastsDiffs), 1; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
@@ -192,7 +201,9 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lastsDiffs, err = rr.LastDiffs(1, root, NoGroup, fileName)
+
+	//Test if fileName has an impact on lastdiff
+	lastsDiffs, err = rr.LastDiffs(2, root, NoGroup, fileName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +217,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := lastsDiffs[0].GraphDiff.FullGraph().MustMarshal(), fullGraph; got != want {
 		t.Fatalf("got --\n%s\n--, want --\n%s\n--", got, want)
 	}
-	lastsDiffs, err = rr.LastDiffs(1, root, NoGroup, fileName2)
+	lastsDiffs, err = rr.LastDiffs(2, root, NoGroup, fileName2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,7 +233,7 @@ func TestCommitsAndDiffs(t *testing.T) {
 	if got, want := lastsDiffs[0].GraphDiff.Inserted(), expect; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
-	lastsDiffs, err = rr.LastDiffs(1, root, NoGroup)
+	lastsDiffs, err = rr.LastDiffs(2, root, NoGroup)
 	if err != nil {
 		t.Fatal(err)
 	}
