@@ -34,7 +34,7 @@ func init() {
 	listCmd.AddCommand(listAllCmd)
 
 	listCmd.AddCommand(listInstancesCmd)
-	listCmd.Flags().StringVar(&listingFormat, "format", "csv", "Format for the display of resources: csv, table, ...")
+	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "csv", "Format for the display of resources: csv, table, ...")
 
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	listCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
