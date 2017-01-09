@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	listingFormat string
+
 	listOnlyIDs    bool
 	listAllInfra   bool
 	listAllAccess  bool
@@ -31,6 +33,9 @@ func init() {
 	}
 	listCmd.AddCommand(listAllCmd)
 
+	listCmd.AddCommand(listInstancesCmd)
+	listCmd.Flags().StringVar(&listingFormat, "format", "csv", "Format for the display of resources: csv, table, ...")
+
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	listCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
 	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort-by", []string{"Id"}, "Sort tables by column(s) name(s)")
@@ -42,6 +47,32 @@ func init() {
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List various type of items: instances, vpc, subnet ...",
+}
+
+var listInstancesCmd = &cobra.Command{
+	Use:   "csvinstances",
+	Short: "List aws instances",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		g, err := aws.InfraService.InstancesGraph()
+
+		exitOn(err)
+
+		displayer := display.BuildDisplayer(display.Options{
+			RdfType: rdf.INSTANCE, Format: listingFormat,
+		})
+		displayer.SetGraph(g)
+		displayer.SetHeaders([]display.Header{
+			display.StringHeader{Prop: "Id"},
+			display.StringHeader{Prop: "Name"},
+			display.StringHeader{Prop: "State"},
+			display.StringHeader{Prop: "Type"},
+			display.StringHeader{Prop: "KeyName", Friendly: "Access Key"},
+			display.StringHeader{Prop: "PublicIp", Friendly: "Public IP"},
+		})
+
+		fmt.Println(displayer.Print())
+	},
 }
 
 var listInfraResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {

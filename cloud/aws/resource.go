@@ -24,16 +24,36 @@ type Properties map[string]interface{}
 type Resource struct {
 	kind       string
 	id         string
-	source     interface{}
 	properties Properties
 }
 
+func NewAwsResource(id, kind string) *Resource {
+	return &Resource{id: id, kind: kind, properties: make(Properties)}
+}
+
 func NewResource(source interface{}) (*Resource, error) {
-	res := Resource{}
+	value := reflect.ValueOf(source)
+	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
+		return nil, fmt.Errorf("can not fetch cloud resource. %v is not a valid pointer.", value)
+	}
+	nodeV := value.Elem()
+
+	res := &Resource{properties: make(Properties)}
 	switch ss := source.(type) {
 	case *ec2.Instance:
 		res.kind = rdf.INSTANCE
 		res.id = awssdk.StringValue(ss.InstanceId)
+
+		for prop, trans := range instanceDef {
+			sourceField := nodeV.FieldByName(trans.name)
+			if sourceField.IsValid() && !sourceField.IsNil() {
+				val, err := trans.transform(sourceField.Interface())
+				if err != nil {
+					return res, err
+				}
+				res.properties[prop] = val
+			}
+		}
 	case *ec2.Vpc:
 		res.kind = rdf.VPC
 		res.id = awssdk.StringValue(ss.VpcId)
@@ -55,22 +75,30 @@ func NewResource(source interface{}) (*Resource, error) {
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
-	res.source = source
 
-	value := reflect.ValueOf(source)
-	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
-		return nil, fmt.Errorf("can not fetch cloud resource. %v is not a valid pointer.", value)
-	}
-
-	nodeV := value.Elem()
-	res.properties = make(Properties)
 	for propertyId, cloudId := range awsResourcesProperties[res.kind] {
 		sourceField := nodeV.FieldByName(cloudId)
 		if sourceField.IsValid() && !sourceField.IsNil() {
 			res.properties[propertyId] = sourceField.Interface()
 		}
 	}
-	return &res, nil
+
+	return res, nil
+}
+
+func (res *Resource) UnmarshalFromGraph(g *rdf.Graph) (err error) {
+	var node *node.Node
+	if node, err = res.buildRdfSubject(); err != nil {
+		return err
+	}
+
+	res.properties, err = LoadPropertiesFromGraph(g, node)
+
+	return
+}
+
+func (res *Resource) Properties() Properties {
+	return res.properties
 }
 
 func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {

@@ -224,8 +224,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	result := g.MustMarshal()
 	expect := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"inst_1"}"^^type:text
+/instance<inst_1>	"property"@[]	"{"Key":"Name","Value":"instance1-name"}"^^type:text
 /instance<inst_1>	"property"@[]	"{"Key":"SubnetId","Value":"sub_1"}"^^type:text
-/instance<inst_1>	"property"@[]	"{"Key":"Tags","Value":[{"Key":"Name","Value":"instance1-name"}]}"^^type:text
 /instance<inst_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
 /instance<inst_2>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_2>	"property"@[]	"{"Key":"Id","Value":"inst_2"}"^^type:text

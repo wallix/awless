@@ -14,6 +14,31 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
+func TestUnmarshalResource(t *testing.T) {
+	res := Resource{id: "inst_1", kind: rdf.INSTANCE}
+
+	g := rdf.NewGraph()
+	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Tags","Value":[{"Key":"Name","Value":"redis"}]}"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Type","Value":"t2.micro"}"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"PublicIp","Value":"1.2.3.4"}"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"State","Value":{"Code": 16,"Name":"running"}}"^^type:text`))
+
+	res.UnmarshalFromGraph(g)
+
+	expected := Properties{"Id": "inst_1", "Type": "t2.micro", "PublicIp": "1.2.3.4",
+		"State": map[string]interface{}{"Code": float64(16), "Name": "running"},
+		"Tags": []interface{}{
+			map[string]interface{}{"Key": "Name", "Value": "redis"},
+		},
+	}
+
+	if got, want := res.properties, expected; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
+	}
+}
+
 func TestLoadPropertiesTriples(t *testing.T) {
 	g := rdf.NewGraph()
 
@@ -163,4 +188,13 @@ func newNode(t, id string) *node.Node {
 		panic(err)
 	}
 	return node.NewNode(nodeT, nodeID)
+}
+
+func parseTriple(s string) *triple.Triple {
+	t, err := triple.Parse(s, literal.DefaultBuilder())
+	if err != nil {
+		panic(err)
+	}
+
+	return t
 }
