@@ -36,9 +36,18 @@ func setField(s, i interface{}, fieldName string) {
 		case reflect.TypeOf(stringptr):
 			fieldVal.Set(reflect.ValueOf(aws.String(s.(string))))
 		case reflect.TypeOf(int64ptr):
-			r, err := strconv.Atoi(s.(string))
-			if err != nil {
-				panic(err)
+			var r int64
+			var err error
+			switch s.(type) {
+			case string:
+				r, err = strconv.ParseInt(s.(string), 10, 64)
+				if err != nil {
+					panic(err)
+				}
+			case int:
+				r = int64(s.(int))
+			case int64:
+				r = s.(int64)
 			}
 			fieldVal.Set(reflect.ValueOf(aws.Int64(int64(r))))
 		}

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 )
 
@@ -28,6 +29,18 @@ type ExpressionNode struct {
 	Action, Entity string
 	Params         map[string]interface{}
 	Holes          map[string]string
+}
+
+func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) {
+	for key, hole := range n.Holes {
+		if val, ok := fills[hole]; ok {
+			if n.Params == nil {
+				n.Params = make(map[string]interface{})
+			}
+			n.Params[key] = val
+			delete(n.Holes, key)
+		}
+	}
 }
 
 func (s *Script) AddAction(text string) {
@@ -75,9 +88,27 @@ func (s *Script) AddParamIntValue(text string) {
 	expr := s.currentExpression()
 	num, err := strconv.Atoi(text)
 	if err != nil {
-		panic(fmt.Sprintf("cannot convert %s to int", text))
+		panic(fmt.Sprintf("cannot convert '%s' to int", text))
 	}
 	expr.Params[s.currentKey] = num
+}
+
+func (s *Script) AddParamCidrValue(text string) {
+	expr := s.currentExpression()
+	_, ipnet, err := net.ParseCIDR(text)
+	if err != nil {
+		panic(fmt.Sprintf("cannot convert '%s' to net cidr", text))
+	}
+	expr.Params[s.currentKey] = ipnet.String()
+}
+
+func (s *Script) AddParamIpValue(text string) {
+	expr := s.currentExpression()
+	ip := net.ParseIP(text)
+	if ip == nil {
+		panic(fmt.Sprintf("cannot convert '%s' to net ip", text))
+	}
+	expr.Params[s.currentKey] = ip.String()
 }
 
 func (s *Script) AddParamHoleValue(text string) {

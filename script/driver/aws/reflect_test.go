@@ -13,7 +13,7 @@ func TestSetFieldsOnAwsStruct(t *testing.T) {
 	setField("ami", awsparams, "ImageId")
 	setField("t2.micro", awsparams, "InstanceType")
 	setField("5", awsparams, "MaxCount")
-	setField("3", awsparams, "MinCount")
+	setField(3, awsparams, "MinCount")
 
 	if got, want := aws.StringValue(awsparams.ImageId), "ami"; got != want {
 		t.Fatalf("got %s, want %s", got, want)

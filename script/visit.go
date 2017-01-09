@@ -7,22 +7,34 @@ import (
 	"github.com/wallix/awless/script/driver"
 )
 
-func Visit(s *ast.Script, d driver.Driver) (err error) {
+func Visit(s *ast.Script, d driver.Driver) error {
+	vars := map[string]interface{}{}
+
 	for _, sts := range s.Statements {
 		switch sts.(type) {
 		case *ast.ExpressionNode:
 			expr := sts.(*ast.ExpressionNode)
 			fn := d.Lookup(expr.Action, expr.Entity)
-			_, err = fn(expr.Params)
+			expr.ProcessHoles(vars)
+			_, err := fn(expr.Params)
+			if err != nil {
+				return err
+			}
 		case *ast.DeclarationNode:
 			ident := sts.(*ast.DeclarationNode).Left
 			expr := sts.(*ast.DeclarationNode).Right
 			fn := d.Lookup(expr.Action, expr.Entity)
-			ident.Val, err = fn(expr.Params)
+			expr.ProcessHoles(vars)
+			identVal, err := fn(expr.Params)
+			ident.Val = identVal
+			if err != nil {
+				return err
+			}
+			vars[ident.Ident] = ident.Val
 		}
 	}
 
-	return err
+	return nil
 }
 
 func VisitExpressionNodes(s *ast.Script, fn func(n *ast.ExpressionNode)) {
@@ -44,15 +56,7 @@ func VisitExpressionNodes(s *ast.Script, fn func(n *ast.ExpressionNode)) {
 
 func ResolveHolesWith(fills map[string]interface{}) func(expr *ast.ExpressionNode) {
 	return func(expr *ast.ExpressionNode) {
-		for key, hole := range expr.Holes {
-			if val, ok := fills[hole]; ok {
-				if expr.Params == nil {
-					expr.Params = make(map[string]interface{})
-				}
-				expr.Params[key] = val
-				delete(expr.Holes, key)
-			}
-		}
+		expr.ProcessHoles(fills)
 	}
 }
 

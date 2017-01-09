@@ -14,22 +14,22 @@ func TestScriptParsing(t *testing.T) {
 	}{
 		{
 			input: `
-			myvpc  =   create   vpc  count=1 num=3
+			myvpc  =   create   vpc  cidr=10.0.0.0/24 num=3
 mysubnet = delete subnet vpc={one} name=bill
-create instance count=1 type=t2.micro
+create instance count=1 type=t2.micro base=ami-9398d3e0 ip=127.0.0.1
 		`,
 
 			verifyFn: func(s *ast.Script) {
 				assertStatementsCount(t, s, 3)
 				assertDeclarationNode(t, 0, s.Statements, "myvpc", "create", "vpc",
-					map[string]interface{}{"count": 1, "num": 3}, map[string]string{},
+					map[string]interface{}{"cidr": "10.0.0.0/24", "num": 3}, map[string]string{},
 				)
 				assertDeclarationNode(t, 1, s.Statements, "mysubnet", "delete", "subnet",
 					map[string]interface{}{"name": "bill"},
 					map[string]string{"vpc": "one"},
 				)
 				assertExpressionNode(t, 2, s.Statements, "create", "instance",
-					map[string]interface{}{"count": 1, "type": "t2.micro"}, map[string]string{},
+					map[string]interface{}{"count": 1, "type": "t2.micro", "ip": "127.0.0.1", "base": "ami-9398d3e0"}, map[string]string{},
 				)
 			},
 		},
