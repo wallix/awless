@@ -1,28 +1,94 @@
 package display
 
-import "fmt"
+import (
+	"fmt"
+	"time"
 
-type Header interface {
+	"github.com/fatih/color"
+)
+
+const ascSymbol = " ▲"
+
+//const truncateSize = 25
+
+type TimeFormat int
+
+const (
+	Humanize TimeFormat = iota
+	Basic
+	Short
+)
+
+type ColumnDefinition interface {
 	propKey() string
-	title() string
+	title(bool) string
 	format(i interface{}) string
 }
 
-type StringHeader struct {
+type StringColumnDefinition struct {
 	Prop, Friendly string
+	DontTruncate   bool
+	TruncateRight  bool
 }
 
-func (h StringHeader) format(i interface{}) string {
+func (h StringColumnDefinition) format(i interface{}) string {
 	if i == nil {
 		return ""
 	}
-
+	if !h.DontTruncate {
+		if h.TruncateRight {
+			return truncateRight(fmt.Sprint(i), truncateSize)
+		} else {
+			return truncateLeft(fmt.Sprint(i), truncateSize)
+		}
+	}
 	return fmt.Sprint(i)
 }
-func (h StringHeader) propKey() string { return h.Prop }
-func (h StringHeader) title() string {
-	if h.Friendly == "" {
-		return h.Prop
+func (h StringColumnDefinition) propKey() string { return h.Prop }
+func (h StringColumnDefinition) title(displayAscSymbol bool) string {
+	t := h.Friendly
+	if t == "" {
+		t = h.Prop
 	}
-	return h.Friendly
+	if displayAscSymbol {
+		t += ascSymbol
+	}
+	return t
+}
+
+type ColoredValueColumnDefinition struct {
+	StringColumnDefinition
+	ColoredValues map[string]color.Attribute
+}
+
+func (h ColoredValueColumnDefinition) format(i interface{}) string {
+	str := h.StringColumnDefinition.format(i)
+	col, ok := h.ColoredValues[str]
+	if ok {
+		return color.New(col).SprintFunc()(str)
+	}
+	return str
+}
+
+type TimeColumnDefinition struct {
+	StringColumnDefinition
+	Format TimeFormat
+}
+
+func (h TimeColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	ii, ok := i.(time.Time)
+	if !ok {
+		return "invalid time"
+	}
+	switch h.Format {
+	case Humanize:
+		return humanizeTime(ii)
+	case Short:
+		return ii.Format("1/2/06 15:04")
+	default:
+		return ii.Format("Mon, Jan 2, 2006 15:04")
+	}
 }

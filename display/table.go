@@ -9,10 +9,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-const charsIdenticalValues = "//"
-const ascSymbol = " ▲"
-const tabWriterWidth = 30
-
 // Table is used to represent an Asci art table
 type Table struct {
 	columnsHeaders      []string

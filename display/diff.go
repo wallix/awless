@@ -39,14 +39,14 @@ func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
 		switch lit {
 		case rdf.ExtraLiteral:
 			color.Set(color.FgGreen)
-			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), rdf.ToResourceType(n.Type().String()), n.ID())
+			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), n.ID())
 			color.Unset()
 		case rdf.MissingLiteral:
 			color.Set(color.FgRed)
-			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), rdf.ToResourceType(n.Type().String()), n.ID())
+			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), n.ID())
 			color.Unset()
 		default:
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), rdf.ToResourceType(n.Type().String()), n.ID())
+			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), n.ID())
 		}
 	})
 }
@@ -67,7 +67,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 			lit, _ = diffTriples[0].Object().Literal()
 		}
 
-		rType := rdf.ToResourceType(n.Type().String())
+		rType := rdf.NewResourceTypeFromRdfType(n.Type().String())
 		commonProps, err := aws.LoadPropertiesFromGraph(diff.CommonGraph(), n)
 		if err != nil {
 			return err
@@ -94,7 +94,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 		case rdf.MissingLiteral:
 			rName = nameOrID(n, deletedProps)
 			table.AddRow(
-				rdf.ToResourceType(n.Type().String()),
+				rdf.NewResourceTypeFromRdfType(n.Type().String()).String(),
 				color.New(color.FgRed).SprintFunc()("- "+rName),
 			)
 		default:
@@ -108,7 +108,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 			}
 		}
 		if !propsChanges && rNew {
-			table.AddRow(fmt.Sprint(rdf.ToResourceType(n.Type().String())), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
+			table.AddRow(rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
 		}
 		return nil
 	})
@@ -120,7 +120,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 	return table, nil
 }
 
-func addDiffProperties(table *Table, service, rType, rName string, rNew bool, insertedProps, deletedProps aws.Properties) (bool, error) {
+func addDiffProperties(table *Table, service string, rType rdf.ResourceType, rName string, rNew bool, insertedProps, deletedProps aws.Properties) (bool, error) {
 	visitedInsertedProp, visitedDeletedProp := make(map[string]bool), make(map[string]bool)
 	changes := false
 
@@ -196,14 +196,14 @@ func addDiffProperties(table *Table, service, rType, rName string, rNew bool, in
 	return changes, nil
 }
 
-func addDiffProperty(table *Table, name, visitedName, value, resourceID, resourceType string, rNew bool, visited map[string]bool) {
+func addDiffProperty(table *Table, name, visitedName, value, resourceID string, resourceType rdf.ResourceType, rNew bool, visited map[string]bool) {
 	visited[visitedName] = true
 	resourceDisplayF := fmt.Sprint
 	if rNew {
 		resourceDisplayF = func(i ...interface{}) string { return color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(i...)) }
 	}
 	table.AddRow(
-		resourceType,
+		resourceType.String(),
 		resourceDisplayF(resourceID),
 		name,
 		value,

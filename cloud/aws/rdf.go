@@ -115,7 +115,7 @@ func (access *Access) PoliciesGraph() (*rdf.Graph, error) {
 func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 	g := rdf.NewGraph()
 
-	regionN, err := node.NewNodeFromStrings(rdf.REGION, region)
+	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFType(), region)
 	if err != nil {
 		return g, err
 	}
@@ -270,7 +270,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 	g = rdf.NewGraph()
 	var vpcNodes, subnetNodes []*node.Node
 
-	regionN, err := node.NewNodeFromStrings(rdf.REGION, region)
+	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFType(), region)
 	if err != nil {
 		return g, err
 	}
@@ -360,7 +360,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 }
 
 func InstanceCredentialsFromGraph(graph *rdf.Graph, instanceID string) (*shell.Credentials, error) {
-	instanceNode, err := node.NewNodeFromStrings(rdf.INSTANCE, instanceID)
+	instanceNode, err := node.NewNodeFromStrings(rdf.Instance.ToRDFType(), instanceID)
 	if err != nil {
 		return nil, err
 	}

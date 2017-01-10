@@ -48,11 +48,11 @@ var showCmd = &cobra.Command{
 	Short: "Show various type of items by id: users, groups, instances, vpcs, ...",
 }
 
-var showInfraResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {
-	resources := pluralize(resource)
+var showInfraResourceCmd = func(resource rdf.ResourceType, displayer *display.ResourceDisplayer) *cobra.Command {
+	resources := pluralize(resource.String())
 	command := &cobra.Command{
-		Use:   resource + " id",
-		Short: "Show the properties of a AWS EC2 " + resource,
+		Use:   resource.String() + " id",
+		Short: "Show the properties of a AWS EC2 " + resource.String(),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -65,7 +65,7 @@ var showInfraResourceCmd = func(resource string, displayer *display.ResourceDisp
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 
 			} else {
-				g, err = remoteResourceGraph(aws.InfraService, resources)
+				g, err = fetchRemoteResource(aws.InfraService, resources)
 			}
 			exitOn(err)
 			err = display.OneResourceOfGraph(os.Stdout, g, resource, id, displayer)
@@ -78,11 +78,11 @@ var showInfraResourceCmd = func(resource string, displayer *display.ResourceDisp
 	return command
 }
 
-var showAccessResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {
-	resources := pluralize(resource)
+var showAccessResourceCmd = func(resource rdf.ResourceType, displayer *display.ResourceDisplayer) *cobra.Command {
+	resources := pluralize(resource.String())
 	command := &cobra.Command{
-		Use:   resource + " id",
-		Short: "Show the properties of a AWS IAM " + resource,
+		Use:   resource.String() + " id",
+		Short: "Show the properties of a AWS IAM " + resource.String(),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -95,7 +95,7 @@ var showAccessResourceCmd = func(resource string, displayer *display.ResourceDis
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 
 			} else {
-				g, err = remoteResourceGraph(aws.AccessService, resources)
+				g, err = fetchRemoteResource(aws.AccessService, resources)
 			}
 			exitOn(err)
 			err = display.OneResourceOfGraph(os.Stdout, g, resource, id, displayer)

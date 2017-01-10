@@ -45,7 +45,7 @@ func (g *Graph) TriplesForPredicateName(name string) ([]*triple.Triple, error) {
 	return g.returnTriples(PREDICATE_ONLY, predicate)
 }
 
-func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Node, predicate *predicate.Predicate, objectType string) (int, error) {
+func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Node, predicate *predicate.Predicate, objectType ResourceType) (int, error) {
 	all, err := g.returnTriples(SUBJECT_PREDICATE, predicate, subject)
 	if err != nil {
 		return 0, err
@@ -71,7 +71,7 @@ func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Nod
 			childType, e := childTypeL.Text()
 			if e != nil {
 				return 0, e
-			} else if childType == objectType {
+			} else if childType == objectType.ToRDFType() {
 				count++
 			}
 		}
@@ -80,11 +80,11 @@ func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Nod
 	return count, err
 }
 
-func (g *Graph) NodesForType(t string) ([]*node.Node, error) {
+func (g *Graph) NodesForType(t ResourceType) ([]*node.Node, error) {
 	var nodes []*node.Node
 	errc := make(chan error)
 	nodec := make(chan *node.Node)
-	literal, err := literal.DefaultBuilder().Build(literal.Text, t)
+	literal, err := literal.DefaultBuilder().Build(literal.Text, t.ToRDFType())
 	if err != nil {
 		return nodes, err
 	}

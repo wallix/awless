@@ -15,7 +15,7 @@ import (
 )
 
 func TestUnmarshalResource(t *testing.T) {
-	res := Resource{id: "inst_1", kind: rdf.INSTANCE}
+	res := Resource{id: "inst_1", kind: rdf.Instance}
 
 	g := rdf.NewGraph()
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
@@ -36,6 +36,45 @@ func TestUnmarshalResource(t *testing.T) {
 
 	if got, want := res.properties, expected; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
+	}
+}
+
+func TestLoadResources(t *testing.T) {
+	g := rdf.NewGraph()
+	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
+	/instance<inst_2>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
+  /instance<inst_2>  "property"@[] "{"Key":"Name","Value":"redis2"}"^^type:text
+	/instance<inst_3>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
+  /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"redis3"}"^^type:text
+	/instance<subnet>  "has_type"@[] "/subnet"^^type:text
+  /instance<subnet>  "property"@[] "{"Key":"Id","Value":"my subnet"}"^^type:text`))
+
+	expected := []*Resource{
+		{kind: rdf.Instance, id: "inst_1", properties: Properties{"Id": "inst_1", "Name": "redis"}},
+		{kind: rdf.Instance, id: "inst_2", properties: Properties{"Id": "inst_2", "Name": "redis2"}},
+		{kind: rdf.Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3"}},
+	}
+	res, err := LoadResourcesFromGraph(g, rdf.Instance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(res), len(expected); got != want {
+		t.Fatalf("got %d want %d", got, want)
+	}
+	for _, r := range expected {
+		found := false
+		for _, r2 := range res {
+			if r2.kind == r.kind && r2.id == r.id && reflect.DeepEqual(r2.properties, r.properties) {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("%+v not found", r)
+		}
 	}
 }
 
@@ -134,7 +173,7 @@ func TestResourceName(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.INSTANCE, "inst_1"))
+	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.Instance.ToRDFType(), "inst_1"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +182,7 @@ func TestResourceName(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
-	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.INSTANCE, "inst_2"))
+	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.Instance.ToRDFType(), "inst_2"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +191,7 @@ func TestResourceName(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
-	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.INSTANCE, "vpc_1"))
+	properties, err = LoadPropertiesFromGraph(g, newNode(rdf.Instance.ToRDFType(), "vpc_1"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,13 +227,4 @@ func newNode(t, id string) *node.Node {
 		panic(err)
 	}
 	return node.NewNode(nodeT, nodeID)
-}
-
-func parseTriple(s string) *triple.Triple {
-	t, err := triple.Parse(s, literal.DefaultBuilder())
-	if err != nil {
-		panic(err)
-	}
-
-	return t
 }

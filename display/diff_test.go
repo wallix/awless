@@ -36,8 +36,8 @@ func TestDisplayCommit(t *testing.T) {
 	t14 := parseTriple(`/instance<inst_4>	"property"@[]	"{"Key":"Test","Value":"test_1"}"^^type:text`)
 	t15 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_5>`)
 	t16 := parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`)
-	t17 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /testtype<test_1>`)
-	t18 := parseTriple(`/testtype<test_1>	"property"@[]	"{"Key":"prop","Value":"val"}"^^type:text`)
+	t17 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /subnet<test_1>`)
+	t18 := parseTriple(`/subnet<test_1>	"property"@[]	"{"Key":"prop","Value":"val"}"^^type:text`)
 	diff.AddInserted(t8, rdf.ParentOfPredicate)
 	diff.AddInserted(t9, rdf.ParentOfPredicate)
 	diff.AddInserted(t10, rdf.ParentOfPredicate)
@@ -50,7 +50,7 @@ func TestDisplayCommit(t *testing.T) {
 	diff.AddInserted(t17, rdf.ParentOfPredicate)
 	diff.AddInserted(t18, rdf.ParentOfPredicate)
 
-	rootNode, err := node.NewNodeFromStrings("/region", "eu-west-1")
+	rootNode, err := node.NewNodeFromStrings(rdf.Region.ToRDFType(), "eu-west-1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestDisplayCommit(t *testing.T) {
 +          +          +          +----------+
 |          |          |          | - inst_1 |
 +----------+----------+----------+----------+
-| testtype | + test_1 | prop     | + val    |
+| subnet   | + test_1 | prop     | + val    |
 +----------+----------+----------+----------+
 `
 	if got, want := print.String(), expected; got != want {

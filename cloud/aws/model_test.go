@@ -31,19 +31,24 @@ func TestTransformFunctions(t *testing.T) {
 
 	val, _ = extractValueFn(awssdk.Int(2))
 	if got, want := val.(int), 2; got != want {
-		t.Fatalf("got %s, want %s", got, want)
+		t.Fatalf("got %d, want %d", got, want)
 	}
 
 	val, _ = extractValueFn(awssdk.Int64(4))
 	if got, want := val.(int64), int64(4); got != want {
-		t.Fatalf("got %s, want %s", got, want)
+		t.Fatalf("got %d, want %d", got, want)
+	}
+
+	val, _ = extractValueFn(awssdk.Bool(true))
+	if got, want := val.(bool), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
 	}
 
 	data := &ec2.InstanceState{Code: awssdk.Int64(12), Name: awssdk.String("running")}
 
 	val, _ = extractFieldFn("Code")(data)
 	if got, want := val.(int64), int64(12); got != want {
-		t.Fatalf("got %s, want %s", got, want)
+		t.Fatalf("got %d, want %d", got, want)
 	}
 	val, _ = extractFieldFn("Name")(data)
 	if got, want := val.(string), "running"; got != want {

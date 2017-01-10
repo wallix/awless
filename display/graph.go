@@ -11,42 +11,11 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-// ResourcesOfGraph prints a RDF ResourcesOfGraph of one type, according to display properties
-func ResourcesOfGraph(graph *rdf.Graph, resourceType string, displayer *ResourceDisplayer, sortBy []string, onlyIDs bool) {
-	var columnDisplayer []*PropertyDisplayer
-	for _, v := range displayer.Properties {
-		columnDisplayer = append(columnDisplayer, v)
-	}
-	table := NewTable(columnDisplayer)
-
-	nodes, err := graph.NodesForType(resourceType)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	for _, node := range nodes {
-		nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		for _, propD := range displayer.Properties {
-			table.AddValue(propD.displayName(), propD.propertyValue(nodeProperties))
-		}
-	}
-	table.SetSortBy(sortBy...)
-	if onlyIDs {
-		table.FprintColumnValues(os.Stdout, "Id", " ")
-	} else {
-		table.Fprint(os.Stdout)
-	}
-}
-
 // OneResourceOfGraph prints a resource of a RDF graph according to its display properties
-func OneResourceOfGraph(w io.Writer, graph *rdf.Graph, resType, resID string, displayer *ResourceDisplayer) error {
+func OneResourceOfGraph(w io.Writer, graph *rdf.Graph, resType rdf.ResourceType, resID string, displayer *ResourceDisplayer) error {
 	table := NewTable([]*PropertyDisplayer{{Property: "Property", DontTruncate: true}, {Property: "Value", DontTruncate: true}})
 	table.MergeIdenticalCells = false
-	node, err := node.NewNodeFromStrings(rdf.ToRDFType(resType), resID)
+	node, err := node.NewNodeFromStrings(resType.ToRDFType(), resID)
 	if err != nil {
 		return err
 	}
@@ -79,7 +48,7 @@ func OneResourceOfGraph(w io.Writer, graph *rdf.Graph, resType, resID string, di
 
 	table.SetSortBy("Property", "Value")
 
-	fmt.Fprintf(w, "%s '%s'\n", strings.Title(resType), nameOrID(node, properties))
+	fmt.Fprintf(w, "%s '%s'\n", strings.Title(resType.String()), nameOrID(node, properties))
 	table.Fprint(w)
 	return nil
 }
@@ -89,7 +58,7 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 	table := NewTable([]*PropertyDisplayer{{Property: "Type", DontTruncate: true}, {Property: "Name/Id", DontTruncate: true}, {Property: "Property", DontTruncate: true}, {Property: "Value", DontTruncate: true}})
 	table.MergeIdenticalCells = true
 	for t := range displayer.Resources {
-		nodes, err := graph.NodesForType("/" + t)
+		nodes, err := graph.NodesForType(t)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -101,7 +70,7 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 				return
 			}
 			for _, propD := range displayer.Resources[t].Properties {
-				table.AddValue("Type", t)
+				table.AddValue("Type", t.String())
 				table.AddValue("Name/Id", nameOrID(node, nodeProperties))
 				table.AddValue("Property", propD.displayName())
 				table.AddValue("Value", propD.display(propD.propertyValue(nodeProperties)))

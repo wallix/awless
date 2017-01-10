@@ -19,19 +19,13 @@ type transformFn func(i interface{}) (interface{}, error)
 
 var ErrTagNotFound = errors.New("aws tag key not found")
 var ErrFieldNotFound = errors.New("aws struct field not found")
-var ErrUnknownType = errors.New("aws type unknown")
 
 var extractValueFn = func(i interface{}) (interface{}, error) {
-	switch ii := i.(type) {
-	case *string:
-		return awssdk.StringValue(ii), nil
-	case *int:
-		return awssdk.IntValue(ii), nil
-	case *int64:
-		return awssdk.Int64Value(ii), nil
-	default:
-		return nil, ErrUnknownType
+	iv := reflect.ValueOf(i)
+	if iv.Kind() == reflect.Ptr {
+		return iv.Elem().Interface(), nil
 	}
+	return nil, fmt.Errorf("aws type unknown: %T", i)
 }
 
 var extractFieldFn = func(field string) transformFn {
@@ -65,62 +59,63 @@ var extractTagFn = func(key string) transformFn {
 	}
 }
 
-var instanceDef = map[string]*propertyTransform{
-	"Id":        {name: "InstanceId", transform: extractValueFn},
-	"Name":      {name: "Tags", transform: extractTagFn("Name")},
-	"Type":      {name: "InstanceType", transform: extractValueFn},
-	"SubnetId":  {name: "SubnetId", transform: extractValueFn},
-	"VpcId":     {name: "VpcId", transform: extractValueFn},
-	"PublicIp":  {name: "PublicIpAddress", transform: extractValueFn},
-	"PrivateIp": {name: "PrivateIpAddress", transform: extractValueFn},
-	"ImageId":   {name: "ImageId", transform: extractValueFn},
-	"State":     {name: "State", transform: extractFieldFn("Name")},
-	"KeyName":   {name: "KeyName", transform: extractValueFn},
-}
-
-var awsResourcesProperties = map[string]map[string]string{
-	rdf.VPC: {
-		"Id":        "VpcId",
-		"IsDefault": "IsDefault",
-		"State":     "State",
-		"CidrBlock": "CidrBlock",
+var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
+	rdf.Instance: {
+		"Id":        {name: "InstanceId", transform: extractValueFn},
+		"Name":      {name: "Tags", transform: extractTagFn("Name")},
+		"Type":      {name: "InstanceType", transform: extractValueFn},
+		"SubnetId":  {name: "SubnetId", transform: extractValueFn},
+		"VpcId":     {name: "VpcId", transform: extractValueFn},
+		"PublicIp":  {name: "PublicIpAddress", transform: extractValueFn},
+		"PrivateIp": {name: "PrivateIpAddress", transform: extractValueFn},
+		"ImageId":   {name: "ImageId", transform: extractValueFn},
+		"State":     {name: "State", transform: extractFieldFn("Name")},
+		"KeyName":   {name: "KeyName", transform: extractValueFn},
 	},
-	rdf.SUBNET: {
-		"Id":                  "SubnetId",
-		"VpcId":               "VpcId",
-		"MapPublicIpOnLaunch": "MapPublicIpOnLaunch",
-		"State":               "State",
-		"CidrBlock":           "CidrBlock",
+	rdf.Vpc: {
+		"Id":        {name: "VpcId", transform: extractValueFn},
+		"Name":      {name: "Tags", transform: extractTagFn("Name")},
+		"IsDefault": {name: "IsDefault", transform: extractValueFn},
+		"State":     {name: "State", transform: extractValueFn},
+		"CidrBlock": {name: "CidrBlock", transform: extractValueFn},
 	},
-	rdf.USER: {
-		"Id":               "UserId",
-		"Name":             "UserName",
-		"Arn":              "Arn",
-		"Path":             "Path",
-		"PasswordLastUsed": "PasswordLastUsed",
+	rdf.Subnet: {
+		"Id":                  {name: "SubnetId", transform: extractValueFn},
+		"Name":                {name: "Tags", transform: extractTagFn("Name")},
+		"VpcId":               {name: "VpcId", transform: extractValueFn},
+		"MapPublicIpOnLaunch": {name: "MapPublicIpOnLaunch", transform: extractValueFn},
+		"State":               {name: "State", transform: extractValueFn},
+		"CidrBlock":           {name: "CidrBlock", transform: extractValueFn},
 	},
-	rdf.ROLE: {
-		"Id":         "RoleId",
-		"Name":       "RoleName",
-		"Arn":        "Arn",
-		"CreateDate": "CreateDate",
-		"Path":       "Path",
+	rdf.User: {
+		"Id":               {name: "UserId", transform: extractValueFn},
+		"Name":             {name: "UserName", transform: extractValueFn},
+		"Arn":              {name: "Arn", transform: extractValueFn},
+		"Path":             {name: "Path", transform: extractValueFn},
+		"PasswordLastUsed": {name: "PasswordLastUsed", transform: extractValueFn},
 	},
-	rdf.GROUP: {
-		"Id":         "GroupId",
-		"Name":       "GroupName",
-		"Arn":        "Arn",
-		"CreateDate": "CreateDate",
-		"Path":       "Path",
+	rdf.Role: {
+		"Id":         {name: "RoleId", transform: extractValueFn},
+		"Name":       {name: "RoleName", transform: extractValueFn},
+		"Arn":        {name: "Arn", transform: extractValueFn},
+		"CreateDate": {name: "CreateDate", transform: extractValueFn},
+		"Path":       {name: "Path", transform: extractValueFn},
 	},
-	rdf.POLICY: {
-		"Id":           "PolicyId",
-		"Name":         "PolicyName",
-		"Arn":          "Arn",
-		"CreateDate":   "CreateDate",
-		"UpdateDate":   "UpdateDate",
-		"Description":  "Description",
-		"IsAttachable": "IsAttachable",
-		"Path":         "Path",
+	rdf.Group: {
+		"Id":         {name: "GroupId", transform: extractValueFn},
+		"Name":       {name: "GroupName", transform: extractValueFn},
+		"Arn":        {name: "Arn", transform: extractValueFn},
+		"CreateDate": {name: "CreateDate", transform: extractValueFn},
+		"Path":       {name: "Path", transform: extractValueFn},
+	},
+	rdf.Policy: {
+		"Id":           {name: "PolicyId", transform: extractValueFn},
+		"Name":         {name: "PolicyName", transform: extractValueFn},
+		"Arn":          {name: "Arn", transform: extractValueFn},
+		"CreateDate":   {name: "CreateDate", transform: extractValueFn},
+		"UpdateDate":   {name: "UpdateDate", transform: extractValueFn},
+		"Description":  {name: "Description", transform: extractValueFn},
+		"IsAttachable": {name: "IsAttachable", transform: extractValueFn},
+		"Path":         {name: "Path", transform: extractValueFn},
 	},
 }

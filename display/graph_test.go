@@ -32,7 +32,7 @@ func TestPrintOneResource(t *testing.T) {
 +------------+------------+
 `
 	var res bytes.Buffer
-	err := OneResourceOfGraph(&res, g, "instance", "inst_1", PropertiesDisplayer.Services[aws.InfraServiceName].Resources["instance"])
+	err := OneResourceOfGraph(&res, g, rdf.Instance, "inst_1", PropertiesDisplayer.Services[aws.InfraServiceName].Resources[rdf.Instance])
 	if err != nil {
 		t.Fatal(err)
 	}

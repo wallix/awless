@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/rdf"
 )
 
 const truncateSize = 25
@@ -17,8 +18,8 @@ var (
 	PropertiesDisplayer = AwlessResourcesDisplayer{
 		Services: map[string]*ServiceDisplayer{
 			aws.InfraServiceName: &ServiceDisplayer{
-				Resources: map[string]*ResourceDisplayer{
-					"instance": &ResourceDisplayer{
+				Resources: map[rdf.ResourceType]*ResourceDisplayer{
+					rdf.Instance: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Tags[].Name", Label: "Name"},
@@ -28,7 +29,7 @@ var (
 							{Property: "PublicIp", Label: "Public Ip"},
 						},
 					},
-					"vpc": &ResourceDisplayer{
+					rdf.Vpc: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
@@ -36,7 +37,7 @@ var (
 							{Property: "CidrBlock"},
 						},
 					},
-					"subnet": &ResourceDisplayer{
+					rdf.Subnet: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "yellow"}},
@@ -47,8 +48,8 @@ var (
 				},
 			},
 			aws.AccessServiceName: &ServiceDisplayer{
-				Resources: map[string]*ResourceDisplayer{
-					"user": &ResourceDisplayer{
+				Resources: map[rdf.ResourceType]*ResourceDisplayer{
+					rdf.User: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -57,7 +58,7 @@ var (
 							{Property: "PasswordLastUsed"},
 						},
 					},
-					"role": &ResourceDisplayer{
+					rdf.Role: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -66,7 +67,7 @@ var (
 							{Property: "Path"},
 						},
 					},
-					"policy": &ResourceDisplayer{
+					rdf.Policy: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -78,7 +79,7 @@ var (
 							{Property: "Path"},
 						},
 					},
-					"group": &ResourceDisplayer{
+					rdf.Group: &ResourceDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -100,7 +101,7 @@ type AwlessResourcesDisplayer struct {
 
 // ServiceDisplayer contains how to display the resources of a cloud service
 type ServiceDisplayer struct {
-	Resources map[string]*ResourceDisplayer
+	Resources map[rdf.ResourceType]*ResourceDisplayer
 }
 
 // ResourceDisplayer contains how to display the properties of a cloud resource

@@ -9,30 +9,30 @@ import (
 
 func TestGetTriplesAndNodesForType(t *testing.T) {
 	graph := NewGraph()
-	aLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/a")
+	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFType())
 	if err != nil {
 		t.Fatal(err)
 	}
-	bLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/b")
+	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFType())
 	if err != nil {
 		t.Fatal(err)
 	}
-	azero, _ := node.NewNodeFromStrings("/a", "0")
-	graph.Add(noErrLiteralTriple(azero, HasTypePredicate, aLiteral))
-	aone, _ := node.NewNodeFromStrings("/a", "1")
-	graph.Add(noErrLiteralTriple(aone, HasTypePredicate, aLiteral))
+	azero, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "0")
+	graph.Add(noErrLiteralTriple(azero, HasTypePredicate, iLiteral))
+	aone, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "1")
+	graph.Add(noErrLiteralTriple(aone, HasTypePredicate, iLiteral))
 
-	bzero, _ := node.NewNodeFromStrings("/b", "0")
-	graph.Add(noErrLiteralTriple(bzero, HasTypePredicate, bLiteral))
-	bone, _ := node.NewNodeFromStrings("/b", "1")
-	graph.Add(noErrLiteralTriple(bone, HasTypePredicate, bLiteral))
-	btwo, _ := node.NewNodeFromStrings("/b", "2")
-	graph.Add(noErrLiteralTriple(btwo, HasTypePredicate, bLiteral))
+	bzero, _ := node.NewNodeFromStrings(Subnet.ToRDFType(), "0")
+	graph.Add(noErrLiteralTriple(bzero, HasTypePredicate, sLiteral))
+	bone, _ := node.NewNodeFromStrings(Subnet.ToRDFType(), "1")
+	graph.Add(noErrLiteralTriple(bone, HasTypePredicate, sLiteral))
+	btwo, _ := node.NewNodeFromStrings(Subnet.ToRDFType(), "2")
+	graph.Add(noErrLiteralTriple(btwo, HasTypePredicate, sLiteral))
 
-	atwo, _ := node.NewNodeFromStrings("/a", "2")
-	graph.Add(noErrLiteralTriple(atwo, HasTypePredicate, aLiteral))
-	athree, _ := node.NewNodeFromStrings("/a", "3")
-	graph.Add(noErrLiteralTriple(athree, HasTypePredicate, aLiteral))
+	atwo, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "2")
+	graph.Add(noErrLiteralTriple(atwo, HasTypePredicate, iLiteral))
+	athree, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "3")
+	graph.Add(noErrLiteralTriple(athree, HasTypePredicate, iLiteral))
 
 	graph.Add(noErrTriple(azero, ParentOfPredicate, aone))
 	graph.Add(noErrTriple(aone, ParentOfPredicate, bone))
@@ -41,23 +41,23 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	graph.Add(noErrTriple(azero, ParentOfPredicate, bzero))
 	graph.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
-	aTriples, err := graph.TriplesForType("/a")
+	aTriples, err := graph.TriplesForType(Instance.ToRDFType())
 	if err != nil {
 		t.Fatal(err)
 	}
 	result := NewGraphFromTriples(aTriples)
 
 	expect := NewGraph()
-	expect.Add(noErrLiteralTriple(azero, HasTypePredicate, aLiteral))
-	expect.Add(noErrLiteralTriple(aone, HasTypePredicate, aLiteral))
-	expect.Add(noErrLiteralTriple(atwo, HasTypePredicate, aLiteral))
-	expect.Add(noErrLiteralTriple(athree, HasTypePredicate, aLiteral))
+	expect.Add(noErrLiteralTriple(azero, HasTypePredicate, iLiteral))
+	expect.Add(noErrLiteralTriple(aone, HasTypePredicate, iLiteral))
+	expect.Add(noErrLiteralTriple(atwo, HasTypePredicate, iLiteral))
+	expect.Add(noErrLiteralTriple(athree, HasTypePredicate, iLiteral))
 
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	bTriples, err := graph.TriplesForType("/b")
+	bTriples, err := graph.TriplesForType(Subnet.ToRDFType())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,16 +65,16 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 
 	expect = NewGraph()
 
-	expect.Add(noErrLiteralTriple(bzero, HasTypePredicate, bLiteral))
-	expect.Add(noErrLiteralTriple(bone, HasTypePredicate, bLiteral))
-	expect.Add(noErrLiteralTriple(btwo, HasTypePredicate, bLiteral))
+	expect.Add(noErrLiteralTriple(bzero, HasTypePredicate, sLiteral))
+	expect.Add(noErrLiteralTriple(bone, HasTypePredicate, sLiteral))
+	expect.Add(noErrLiteralTriple(btwo, HasTypePredicate, sLiteral))
 
 	if got, want := result.MustMarshal(), expect.MustMarshal(); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
 	aNodesExpect := []*node.Node{azero, aone, atwo, athree}
-	aNodes, err := graph.NodesForType("/a")
+	aNodes, err := graph.NodesForType(Instance)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 		t.Fatalf("got %#v\nwant%#v\n", got, want)
 	}
 	bNodesExpect := []*node.Node{bzero, bone, btwo}
-	bNodes, err := graph.NodesForType("/b")
+	bNodes, err := graph.NodesForType(Subnet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,34 +159,34 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 func TestCountTriples(t *testing.T) {
 	g := NewGraph()
 
-	aLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/a")
+	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFType())
 	if err != nil {
 		t.Fatal(err)
 	}
-	bLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/b")
+	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFType())
 	if err != nil {
 		t.Fatal(err)
 	}
 	one, _ := node.NewNodeFromStrings("/one", "1")
-	g.Add(noErrLiteralTriple(one, HasTypePredicate, aLiteral))
+	g.Add(noErrLiteralTriple(one, HasTypePredicate, iLiteral))
 	two, _ := node.NewNodeFromStrings("/two", "2")
-	g.Add(noErrLiteralTriple(two, HasTypePredicate, aLiteral))
+	g.Add(noErrLiteralTriple(two, HasTypePredicate, iLiteral))
 	three, _ := node.NewNodeFromStrings("/three", "3")
-	g.Add(noErrLiteralTriple(three, HasTypePredicate, aLiteral))
+	g.Add(noErrLiteralTriple(three, HasTypePredicate, iLiteral))
 	four, _ := node.NewNodeFromStrings("/four", "4")
-	g.Add(noErrLiteralTriple(four, HasTypePredicate, aLiteral))
+	g.Add(noErrLiteralTriple(four, HasTypePredicate, iLiteral))
 	five, _ := node.NewNodeFromStrings("/five", "5")
-	g.Add(noErrLiteralTriple(five, HasTypePredicate, aLiteral))
+	g.Add(noErrLiteralTriple(five, HasTypePredicate, iLiteral))
 	six, _ := node.NewNodeFromStrings("/six", "6")
-	g.Add(noErrLiteralTriple(six, HasTypePredicate, bLiteral))
+	g.Add(noErrLiteralTriple(six, HasTypePredicate, sLiteral))
 	seven, _ := node.NewNodeFromStrings("/seven", "7")
-	g.Add(noErrLiteralTriple(seven, HasTypePredicate, bLiteral))
+	g.Add(noErrLiteralTriple(seven, HasTypePredicate, sLiteral))
 	eight, _ := node.NewNodeFromStrings("/eight", "8")
-	g.Add(noErrLiteralTriple(eight, HasTypePredicate, bLiteral))
+	g.Add(noErrLiteralTriple(eight, HasTypePredicate, sLiteral))
 	nine, _ := node.NewNodeFromStrings("/nine", "9")
-	g.Add(noErrLiteralTriple(nine, HasTypePredicate, bLiteral))
+	g.Add(noErrLiteralTriple(nine, HasTypePredicate, sLiteral))
 	ten, _ := node.NewNodeFromStrings("/ten", "10")
-	g.Add(noErrLiteralTriple(ten, HasTypePredicate, bLiteral))
+	g.Add(noErrLiteralTriple(ten, HasTypePredicate, sLiteral))
 
 	g.Add(noErrTriple(one, ParentOfPredicate, two))
 	g.Add(noErrTriple(one, ParentOfPredicate, three))
@@ -229,7 +229,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, "/a")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, Instance)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,14 +237,14 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, "/b")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, Subnet)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := count, 1; got != want {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, "/a")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, Instance)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -252,7 +252,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, "/b")
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, Subnet)
 	if err != nil {
 		t.Fatal(err)
 	}

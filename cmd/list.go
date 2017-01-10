@@ -25,20 +25,19 @@ var (
 
 func init() {
 	RootCmd.AddCommand(listCmd)
-	for resource, properties := range display.PropertiesDisplayer.Services[aws.InfraServiceName].Resources {
-		listCmd.AddCommand(listInfraResourceCmd(resource, properties))
+	for _, resource := range []rdf.ResourceType{rdf.Instance, rdf.Vpc, rdf.Subnet} {
+		listCmd.AddCommand(listInfraResourceCmd(resource))
 	}
-	for resource, properties := range display.PropertiesDisplayer.Services[aws.AccessServiceName].Resources {
-		listCmd.AddCommand(listAccessResourceCmd(resource, properties))
+	for _, resource := range []rdf.ResourceType{rdf.User, rdf.Role, rdf.Policy, rdf.Group} {
+		listCmd.AddCommand(listAccessResourceCmd(resource))
 	}
 	listCmd.AddCommand(listAllCmd)
 
-	listCmd.AddCommand(listInstancesCmd)
-	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "csv", "Format for the display of resources: csv, table, ...")
+	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Format for the display of resources: table or csv")
 
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	listCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
-	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort-by", []string{"Id"}, "Sort tables by column(s) name(s)")
+	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort", []string{"Id"}, "Sort tables by column(s) name(s)")
 
 	listAllCmd.PersistentFlags().BoolVar(&listAllInfra, "infra", false, "List infrastructure resources")
 	listAllCmd.PersistentFlags().BoolVar(&listAllAccess, "access", false, "List access resources")
@@ -49,35 +48,8 @@ var listCmd = &cobra.Command{
 	Short: "List various type of items: instances, vpc, subnet ...",
 }
 
-var listInstancesCmd = &cobra.Command{
-	Use:   "csvinstances",
-	Short: "List aws instances",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		g, err := aws.InfraService.InstancesGraph()
-
-		exitOn(err)
-
-		displayer := display.BuildDisplayer(display.Options{
-			RdfType: rdf.INSTANCE, Format: listingFormat,
-		})
-		displayer.SetGraph(g)
-		displayer.SetHeaders([]display.Header{
-			display.StringHeader{Prop: "Id"},
-			display.StringHeader{Prop: "Name"},
-			display.StringHeader{Prop: "State"},
-			display.StringHeader{Prop: "Type"},
-			display.StringHeader{Prop: "KeyName", Friendly: "Access Key"},
-			display.StringHeader{Prop: "PublicIp", Friendly: "Public IP"},
-		})
-
-		fmt.Println(displayer.Print())
-	},
-}
-
-var listInfraResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {
-	resources := pluralize(resource)
-	nodeType := rdf.ToRDFType(resource)
+var listInfraResourceCmd = func(resource rdf.ResourceType) *cobra.Command {
+	resources := pluralize(resource.String())
 	return &cobra.Command{
 		Use:   resources,
 		Short: "List AWS EC2 " + resources,
@@ -89,17 +61,17 @@ var listInfraResourceCmd = func(resource string, displayer *display.ResourceDisp
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 
 			} else {
-				g, err = remoteResourceGraph(aws.InfraService, resources)
+				g, err = fetchRemoteResource(aws.InfraService, resources)
 			}
 			exitOn(err)
-			display.ResourcesOfGraph(g, nodeType, displayer, sortBy, listOnlyIDs)
+
+			printResources(g, resource)
 		},
 	}
 }
 
-var listAccessResourceCmd = func(resource string, displayer *display.ResourceDisplayer) *cobra.Command {
-	resources := pluralize(resource)
-	nodeType := rdf.ToRDFType(resource)
+var listAccessResourceCmd = func(resource rdf.ResourceType) *cobra.Command {
+	resources := pluralize(resource.String())
 	return &cobra.Command{
 		Use:   resources,
 		Short: "List AWS IAM " + resources,
@@ -110,10 +82,10 @@ var listAccessResourceCmd = func(resource string, displayer *display.ResourceDis
 			if localResources {
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 			} else {
-				g, err = remoteResourceGraph(aws.AccessService, resources)
+				g, err = fetchRemoteResource(aws.AccessService, resources)
 			}
 			exitOn(err)
-			display.ResourcesOfGraph(g, nodeType, displayer, sortBy, listOnlyIDs)
+			printResources(g, resource)
 		},
 	}
 }
@@ -145,7 +117,25 @@ var listAllCmd = &cobra.Command{
 	},
 }
 
-func remoteResourceGraph(cloudService interface{}, resources string) (*rdf.Graph, error) {
+func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
+	var displayer display.Displayer
+	if listOnlyIDs {
+		displayer = display.BuildDisplayer(
+			[]display.ColumnDefinition{
+				display.StringColumnDefinition{Prop: "Id"},
+				display.StringColumnDefinition{Prop: "Name"},
+			},
+			display.Options{RdfType: nodeType, Format: "porcelain", SortBy: sortBy},
+		)
+	} else {
+		displayer = display.BuildDisplayer(display.DefaultsColumnDefinitions[nodeType],
+			display.Options{RdfType: nodeType, Format: listingFormat, SortBy: sortBy})
+	}
+	displayer.SetGraph(g)
+	fmt.Println(displayer.Print())
+}
+
+func fetchRemoteResource(cloudService interface{}, resources string) (*rdf.Graph, error) {
 	fnName := fmt.Sprintf("%sGraph", humanize(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {

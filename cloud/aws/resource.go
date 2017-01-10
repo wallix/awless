@@ -22,12 +22,12 @@ type Property struct {
 type Properties map[string]interface{}
 
 type Resource struct {
-	kind       string
+	kind       rdf.ResourceType
 	id         string
 	properties Properties
 }
 
-func NewAwsResource(id, kind string) *Resource {
+func InitResource(id string, kind rdf.ResourceType) *Resource {
 	return &Resource{id: id, kind: kind, properties: make(Properties)}
 }
 
@@ -38,48 +38,37 @@ func NewResource(source interface{}) (*Resource, error) {
 	}
 	nodeV := value.Elem()
 
-	res := &Resource{properties: make(Properties)}
+	var res *Resource
 	switch ss := source.(type) {
 	case *ec2.Instance:
-		res.kind = rdf.INSTANCE
-		res.id = awssdk.StringValue(ss.InstanceId)
-
-		for prop, trans := range instanceDef {
-			sourceField := nodeV.FieldByName(trans.name)
-			if sourceField.IsValid() && !sourceField.IsNil() {
-				val, err := trans.transform(sourceField.Interface())
-				if err != nil {
-					return res, err
-				}
-				res.properties[prop] = val
-			}
-		}
+		res = InitResource(awssdk.StringValue(ss.InstanceId), rdf.Instance)
 	case *ec2.Vpc:
-		res.kind = rdf.VPC
-		res.id = awssdk.StringValue(ss.VpcId)
+		res = InitResource(awssdk.StringValue(ss.VpcId), rdf.Vpc)
 	case *ec2.Subnet:
-		res.kind = rdf.SUBNET
-		res.id = awssdk.StringValue(ss.SubnetId)
+		res = InitResource(awssdk.StringValue(ss.SubnetId), rdf.Subnet)
 	case *iam.User:
-		res.kind = rdf.USER
-		res.id = awssdk.StringValue(ss.UserId)
+		res = InitResource(awssdk.StringValue(ss.UserId), rdf.User)
 	case *iam.Role:
-		res.kind = rdf.ROLE
-		res.id = awssdk.StringValue(ss.RoleId)
+		res = InitResource(awssdk.StringValue(ss.RoleId), rdf.Role)
 	case *iam.Group:
-		res.kind = rdf.GROUP
-		res.id = awssdk.StringValue(ss.GroupId)
+		res = InitResource(awssdk.StringValue(ss.GroupId), rdf.Group)
 	case *iam.Policy:
-		res.kind = rdf.POLICY
-		res.id = awssdk.StringValue(ss.PolicyId)
+		res = InitResource(awssdk.StringValue(ss.PolicyId), rdf.Policy)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
 
-	for propertyId, cloudId := range awsResourcesProperties[res.kind] {
-		sourceField := nodeV.FieldByName(cloudId)
+	for prop, trans := range awsResourcesDef[res.kind] {
+		sourceField := nodeV.FieldByName(trans.name)
 		if sourceField.IsValid() && !sourceField.IsNil() {
-			res.properties[propertyId] = sourceField.Interface()
+			val, err := trans.transform(sourceField.Interface())
+			if err == ErrTagNotFound {
+				continue
+			}
+			if err != nil {
+				return res, err
+			}
+			res.properties[prop] = val
 		}
 	}
 
@@ -108,7 +97,7 @@ func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
 		return triples, err
 	}
 	var lit *literal.Literal
-	if lit, err = literal.DefaultBuilder().Build(literal.Text, res.kind); err != nil {
+	if lit, err = literal.DefaultBuilder().Build(literal.Text, res.kind.ToRDFType()); err != nil {
 		return triples, err
 	}
 	t, err := triple.New(n, rdf.HasTypePredicate, triple.NewLiteralObject(lit))
@@ -126,6 +115,23 @@ func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
 	}
 
 	return triples, nil
+}
+
+func LoadResourcesFromGraph(g *rdf.Graph, t rdf.ResourceType) ([]*Resource, error) {
+	var res []*Resource
+	nodes, err := g.NodesForType(t)
+	if err != nil {
+		return res, err
+	}
+
+	for _, node := range nodes {
+		r := InitResource(node.ID().String(), t)
+		if err := r.UnmarshalFromGraph(g); err != nil {
+			return res, err
+		}
+		res = append(res, r)
+	}
+	return res, nil
 }
 
 func NewPropertyTriple(subject *node.Node, propertyKey string, propertyValue interface{}) (*triple.Triple, error) {
@@ -207,7 +213,7 @@ func NameFromProperties(p Properties) string {
 }
 
 func (res *Resource) buildRdfSubject() (*node.Node, error) {
-	return node.NewNodeFromStrings(res.kind, res.id)
+	return node.NewNodeFromStrings(res.kind.ToRDFType(), res.id)
 }
 
 func addCloudResourceToGraph(g *rdf.Graph, cloudResource interface{}) error {

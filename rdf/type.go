@@ -1,25 +1,64 @@
 package rdf
 
-import "strings"
+type ResourceType int
 
 const (
-	REGION   = "/region"
-	VPC      = "/vpc"
-	SUBNET   = "/subnet"
-	INSTANCE = "/instance"
-	USER     = "/user"
-	ROLE     = "/role"
-	GROUP    = "/group"
-	POLICY   = "/policy"
+	Region ResourceType = iota
+	Vpc
+	Subnet
+	Instance
+	User
+	Role
+	Group
+	Policy
 )
 
-func ToRDFType(resourceType string) string {
-	return "/" + strings.ToLower(resourceType)
+func NewResourceTypeFromRdfType(str string) ResourceType {
+	switch str {
+	case "/region":
+		return Region
+	case "/vpc":
+		return Vpc
+	case "/subnet":
+		return Subnet
+	case "/instance":
+		return Instance
+	case "/user":
+		return User
+	case "/role":
+		return Role
+	case "/group":
+		return Group
+	case "/policy":
+		return Policy
+	default:
+		panic("invalid resource type:" + str)
+	}
 }
 
-func ToResourceType(rdfType string) string {
-	if rdfType[0] == '/' {
-		return rdfType[1:]
+func (r ResourceType) String() string {
+	switch r {
+	case Region:
+		return "region"
+	case Vpc:
+		return "vpc"
+	case Subnet:
+		return "subnet"
+	case Instance:
+		return "instance"
+	case User:
+		return "user"
+	case Role:
+		return "role"
+	case Group:
+		return "group"
+	case Policy:
+		return "policy"
+	default:
+		panic("invalid resource type")
 	}
-	return rdfType
+}
+
+func (r ResourceType) ToRDFType() string {
+	return "/" + r.String()
 }

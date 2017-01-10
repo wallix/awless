@@ -168,7 +168,7 @@ func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err
 }
 
 func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, instanceStatType string, instancesStats []*InstancesStat) ([]*InstancesStat, error) {
-	nodes, err := infra.NodesForType(rdf.INSTANCE)
+	nodes, err := infra.NodesForType(rdf.Instance)
 	if err != nil {
 		return nil, err
 	}
@@ -221,19 +221,19 @@ func buildInfraMetrics(infra *rdf.Graph) (*InfraMetrics, error) {
 		Region: viper.GetString("region"),
 	}
 
-	c, min, max, err := computeCountMinMaxChildForType(infra, rdf.VPC)
+	c, min, max, err := computeCountMinMaxChildForType(infra, rdf.Vpc)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.NbVpcs, metrics.MinSubnetsPerVpc, metrics.MaxSubnetsPerVpc = c, min, max
 
-	c, min, max, err = computeCountMinMaxChildForType(infra, rdf.SUBNET)
+	c, min, max, err = computeCountMinMaxChildForType(infra, rdf.Subnet)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.NbSubnets, metrics.MinInstancesPerSubnet, metrics.MaxInstancesPerSubnet = c, min, max
 
-	c, _, _, err = computeCountMinMaxChildForType(infra, rdf.INSTANCE)
+	c, _, _, err = computeCountMinMaxChildForType(infra, rdf.Instance)
 	if err != nil {
 		return metrics, err
 	}
@@ -247,37 +247,37 @@ func buildAccessMetrics(access *rdf.Graph, time time.Time) (*AccessMetrics, erro
 		Date:   time,
 		Region: viper.GetString("region"),
 	}
-	c, min, max, err := computeCountMinMaxForTypeWithChildType(access, rdf.GROUP, rdf.USER)
+	c, min, max, err := computeCountMinMaxForTypeWithChildType(access, rdf.Group, rdf.User)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.NbGroups, metrics.MinUsersByGroup, metrics.MaxUsersByGroup = c, min, max
 
-	c, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.POLICY, rdf.USER)
+	c, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.Policy, rdf.User)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.NbPolicies, metrics.MinUsersByLocalPolicies, metrics.MaxUsersByLocalPolicies = c, min, max
 
-	_, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.POLICY, rdf.ROLE)
+	_, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.Policy, rdf.Role)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.MinRolesByLocalPolicies, metrics.MaxRolesByLocalPolicies = min, max
 
-	_, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.POLICY, rdf.GROUP)
+	_, min, max, err = computeCountMinMaxForTypeWithChildType(access, rdf.Policy, rdf.Group)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.MinGroupsByLocalPolicies, metrics.MaxGroupsByLocalPolicies = min, max
 
-	c, _, _, err = computeCountMinMaxChildForType(access, rdf.ROLE)
+	c, _, _, err = computeCountMinMaxChildForType(access, rdf.Role)
 	if err != nil {
 		return metrics, err
 	}
 	metrics.NbRoles = c
 
-	c, _, _, err = computeCountMinMaxChildForType(access, rdf.USER)
+	c, _, _, err = computeCountMinMaxChildForType(access, rdf.User)
 	if err != nil {
 		return metrics, err
 	}
@@ -286,7 +286,7 @@ func buildAccessMetrics(access *rdf.Graph, time time.Time) (*AccessMetrics, erro
 	return metrics, nil
 }
 
-func computeCountMinMaxChildForType(graph *rdf.Graph, t string) (int, int, int, error) {
+func computeCountMinMaxChildForType(graph *rdf.Graph, t rdf.ResourceType) (int, int, int, error) {
 	nodes, err := graph.NodesForType(t)
 	if err != nil {
 		return 0, 0, 0, err
@@ -316,7 +316,7 @@ func computeCountMinMaxChildForType(graph *rdf.Graph, t string) (int, int, int, 
 	return len(nodes), min, max, nil
 }
 
-func computeCountMinMaxForTypeWithChildType(graph *rdf.Graph, parentType, childType string) (int, int, int, error) {
+func computeCountMinMaxForTypeWithChildType(graph *rdf.Graph, parentType, childType rdf.ResourceType) (int, int, int, error) {
 	nodes, err := graph.NodesForType(parentType)
 	if err != nil {
 		return 0, 0, 0, err

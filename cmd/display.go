@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 
@@ -33,12 +32,4 @@ func lineDisplay(item interface{}) {
 	table.SetAutoFormatHeaders(false)
 	aws.TabularDisplay(item, table)
 	table.Render()
-}
-
-func generateString(ch rune, nb int) string {
-	var res bytes.Buffer
-	for i := 0; i < nb; i++ {
-		res.WriteRune(ch)
-	}
-	return res.String()
 }
