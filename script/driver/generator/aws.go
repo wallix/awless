@@ -32,27 +32,50 @@ var definitions = []struct {
 	Action, Entity                    string
 	Input, ApiMethod, OutputExtractor string
 }{
+	// VPC
 	{
-		Action: "create", Entity: "vpc", Input: "ec2.CreateVpcInput", ApiMethod: "CreateVpc", OutputExtractor: "Vpc.VpcId",
+		Action: "create", Entity: "vpc", Input: "CreateVpcInput", ApiMethod: "CreateVpc", OutputExtractor: "Vpc.VpcId",
 		ParamsMapping: map[string]string{
 			"CidrBlock": "cidr",
 		},
 	},
 	{
-		Action: "create", Entity: "subnet", Input: "ec2.CreateSubnetInput", ApiMethod: "CreateSubnet", OutputExtractor: "Subnet.SubnetId",
+		Action: "delete", Entity: "vpc", Input: "DeleteVpcInput", ApiMethod: "DeleteVpc",
+		ParamsMapping: map[string]string{
+			"VpcId": "id",
+		},
+	},
+
+	// SUBNET
+	{
+		Action: "create", Entity: "subnet", Input: "CreateSubnetInput", ApiMethod: "CreateSubnet", OutputExtractor: "Subnet.SubnetId",
 		ParamsMapping: map[string]string{
 			"CidrBlock": "cidr",
 			"VpcId":     "vpc",
 		},
 	},
 	{
-		Action: "create", Entity: "instance", Input: "ec2.RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "Instances[0].InstanceId",
+		Action: "delete", Entity: "subnet", Input: "DeleteSubnetInput", ApiMethod: "DeleteSubnet",
+		ParamsMapping: map[string]string{
+			"SubnetId": "id",
+		},
+	},
+
+	// INSTANCES
+	{
+		Action: "create", Entity: "instance", Input: "RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "Instances[0].InstanceId",
 		ParamsMapping: map[string]string{
 			"ImageId":      "base",
 			"MaxCount":     "count",
 			"MinCount":     "count",
 			"InstanceType": "type",
 			"SubnetId":     "subnet",
+		},
+	},
+	{
+		Action: "delete", Entity: "instance", Input: "TerminateInstancesInput", ApiMethod: "TerminateInstances",
+		ParamsMapping: map[string]string{
+			"InstanceIds": "id",
 		},
 	},
 }
@@ -75,8 +98,7 @@ import (
 )
 {{ range $index, $def := . }}
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
-  input := &{{ $def.Input }}{}
-
+  input := &ec2.{{ $def.Input }}{}
   {{ range $awsField, $field := $def.ParamsMapping }}
   setField(params["{{ $field }}"], input, "{{ $awsField }}")
   {{- end }}
@@ -87,8 +109,9 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
     return nil, err
   }
   d.logger.Println("{{ $def.Action }} {{ $def.Entity }} done")
-
-  return aws.StringValue(output.{{ $def.OutputExtractor }}), nil
+  {{ if eq $def.OutputExtractor "" }}
+  return output, nil {{ else}}
+  return aws.StringValue(output.{{ $def.OutputExtractor }}), nil {{ end }}
 }
 {{ end }}
 `

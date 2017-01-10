@@ -22,6 +22,21 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 	return aws.StringValue(output.Vpc.VpcId), nil
 }
 
+func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteVpcInput{}
+
+	setField(params["id"], input, "VpcId")
+
+	output, err := d.api.DeleteVpc(input)
+	if err != nil {
+		d.logger.Printf("delete vpc error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete vpc done")
+
+	return output, nil
+}
+
 func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
 
@@ -36,6 +51,21 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	d.logger.Println("create subnet done")
 
 	return aws.StringValue(output.Subnet.SubnetId), nil
+}
+
+func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteSubnetInput{}
+
+	setField(params["id"], input, "SubnetId")
+
+	output, err := d.api.DeleteSubnet(input)
+	if err != nil {
+		d.logger.Printf("delete subnet error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete subnet done")
+
+	return output, nil
 }
 
 func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{}, error) {
@@ -55,4 +85,19 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	d.logger.Println("create instance done")
 
 	return aws.StringValue(output.Instances[0].InstanceId), nil
+}
+
+func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.TerminateInstancesInput{}
+
+	setField(params["id"], input, "InstanceIds")
+
+	output, err := d.api.TerminateInstances(input)
+	if err != nil {
+		d.logger.Printf("delete instance error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete instance done")
+
+	return output, nil
 }

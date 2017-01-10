@@ -8,12 +8,7 @@ import (
 )
 
 func TestSetFieldsOnAwsStruct(t *testing.T) {
-	awsparams := &ec2.RunInstancesInput{
-	//  ImageId:      aws.String(ami),
-	//  MaxCount:     aws.Int64(1),
-	//  MinCount:     aws.Int64(1),
-	//  InstanceType: aws.String("t2.micro"),
-	}
+	awsparams := &ec2.RunInstancesInput{}
 
 	setField("ami", awsparams, "ImageId")
 	setField("t2.micro", awsparams, "InstanceType")
@@ -36,8 +31,10 @@ func TestSetFieldsOnAwsStruct(t *testing.T) {
 
 func TestSetFieldWithMultiType(t *testing.T) {
 	any := struct {
-		Field    string
-		IntField int
+		Field            string
+		IntField         int
+		StringArrayField []*string
+		Int64ArrayField  []*int64
 	}{Field: "initial"}
 
 	setField("expected", &any, "Field")
@@ -57,6 +54,30 @@ func TestSetFieldWithMultiType(t *testing.T) {
 
 	setField(nil, &any, "IntField")
 	if got, want := any.IntField, 5; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	setField("first", &any, "StringArrayField")
+	if got, want := len(any.StringArrayField), 1; got != want {
+		t.Fatalf("len: got %d, want %d", got, want)
+	}
+	if got, want := aws.StringValue(any.StringArrayField[0]), "first"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	setField(int64(321), &any, "Int64ArrayField")
+	if got, want := len(any.Int64ArrayField), 1; got != want {
+		t.Fatalf("len: got %d, want %d", got, want)
+	}
+	if got, want := aws.Int64Value(any.Int64ArrayField[0]), int64(321); got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	setField(567, &any, "Int64ArrayField")
+	if got, want := len(any.Int64ArrayField), 1; got != want {
+		t.Fatalf("len: got %d, want %d", got, want)
+	}
+	if got, want := aws.Int64Value(any.Int64ArrayField[0]), int64(567); got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 

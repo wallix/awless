@@ -44,4 +44,17 @@ func setField(s, i interface{}, fieldName string) {
 		}
 	}
 
+	if fieldVal.Kind() == reflect.Slice {
+		switch s.(type) {
+		case string:
+			slice := []*string{aws.String(s.(string))}
+			fieldVal.Set(reflect.ValueOf(slice))
+		case int64:
+			slice := []*int64{aws.Int64(s.(int64))}
+			fieldVal.Set(reflect.ValueOf(slice))
+		case int:
+			slice := []*int64{aws.Int64(int64(s.(int)))}
+			fieldVal.Set(reflect.ValueOf(slice))
+		}
+	}
 }
