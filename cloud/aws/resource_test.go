@@ -1,14 +1,10 @@
 package aws
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -84,32 +80,4 @@ func TestLoadResources(t *testing.T) {
 			t.Fatalf("%+v not found", r)
 		}
 	}
-}
-
-func mustJsonMarshal(i interface{}) string {
-	b, err := json.Marshal(i)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
-}
-
-func noErrLiteralTriple(s *node.Node, p *predicate.Predicate, l *literal.Literal) *triple.Triple {
-	tri, err := triple.New(s, p, triple.NewLiteralObject(l))
-	if err != nil {
-		panic(err)
-	}
-	return tri
-}
-
-func newNode(t, id string) *node.Node {
-	nodeT, err := node.NewType(t)
-	if err != nil {
-		panic(err)
-	}
-	nodeID, err := node.NewID(id)
-	if err != nil {
-		panic(err)
-	}
-	return node.NewNode(nodeT, nodeID)
 }

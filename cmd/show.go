@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/google/badwolf/triple/node"
@@ -25,11 +24,11 @@ var (
 
 func init() {
 	//Resources
-	for resource, properties := range display.PropertiesDisplayer.Services[aws.InfraServiceName].Resources {
-		showCmd.AddCommand(showInfraResourceCmd(resource, properties))
+	for _, resource := range []rdf.ResourceType{rdf.Instance, rdf.Vpc, rdf.Subnet} {
+		showCmd.AddCommand(showInfraResourceCmd(resource))
 	}
-	for resource, properties := range display.PropertiesDisplayer.Services[aws.AccessServiceName].Resources {
-		showCmd.AddCommand(showAccessResourceCmd(resource, properties))
+	for _, resource := range []rdf.ResourceType{rdf.User, rdf.Role, rdf.Policy, rdf.Group} {
+		showCmd.AddCommand(showAccessResourceCmd(resource))
 	}
 
 	//Revisions
@@ -48,11 +47,10 @@ var showCmd = &cobra.Command{
 	Short: "Show various type of items by id: users, groups, instances, vpcs, ...",
 }
 
-var showInfraResourceCmd = func(resource rdf.ResourceType, displayer *display.ResourceDisplayer) *cobra.Command {
-	resources := pluralize(resource.String())
+var showInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 	command := &cobra.Command{
-		Use:   resource.String() + " id",
-		Short: "Show the properties of a AWS EC2 " + resource.String(),
+		Use:   resourceType.String() + " id",
+		Short: "Show the properties of a AWS EC2 " + resourceType.String(),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -65,11 +63,10 @@ var showInfraResourceCmd = func(resource rdf.ResourceType, displayer *display.Re
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 
 			} else {
-				g, err = fetchRemoteResource(aws.InfraService, resources)
+				g, err = aws.InfraService.FetchRDFResources(resourceType)
 			}
 			exitOn(err)
-			err = display.OneResourceOfGraph(os.Stdout, g, resource, id, displayer)
-			exitOn(err)
+			printResource(g, resourceType, id)
 			return nil
 		},
 	}
@@ -78,11 +75,10 @@ var showInfraResourceCmd = func(resource rdf.ResourceType, displayer *display.Re
 	return command
 }
 
-var showAccessResourceCmd = func(resource rdf.ResourceType, displayer *display.ResourceDisplayer) *cobra.Command {
-	resources := pluralize(resource.String())
+var showAccessResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 	command := &cobra.Command{
-		Use:   resource.String() + " id",
-		Short: "Show the properties of a AWS IAM " + resource.String(),
+		Use:   resourceType.String() + " id",
+		Short: "Show the properties of a AWS IAM " + resourceType.String(),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -95,17 +91,33 @@ var showAccessResourceCmd = func(resource rdf.ResourceType, displayer *display.R
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 
 			} else {
-				g, err = fetchRemoteResource(aws.AccessService, resources)
+				g, err = aws.AccessService.FetchRDFResources(resourceType)
 			}
 			exitOn(err)
-			err = display.OneResourceOfGraph(os.Stdout, g, resource, id, displayer)
-			exitOn(err)
+			printResource(g, resourceType, id)
 			return nil
 		},
 	}
 
 	command.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
 	return command
+}
+
+func printResource(g *rdf.Graph, resourceType rdf.ResourceType, id string) {
+	resource := aws.InitResource(id, resourceType)
+	if !resource.ExistsInGraph(g) {
+		exitOn(fmt.Errorf("the %s '%s' has not been found", resourceType.String(), id))
+	}
+	err := resource.UnmarshalFromGraph(g)
+	if err != nil {
+		exitOn(err)
+	}
+
+	var displayer display.ResourceDisplayer
+	displayer = display.BuildResourceDisplayer(display.DefaultsColumnDefinitions[resourceType],
+		display.ResourceDisplayerOptions{Format: listingFormat})
+	displayer.SetResource(resource)
+	fmt.Println(displayer.Print())
 }
 
 var showCloudRevisionsCmd = &cobra.Command{

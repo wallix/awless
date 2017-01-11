@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
-	"reflect"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
@@ -116,9 +114,9 @@ var listAllCmd = &cobra.Command{
 }
 
 func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
-	var displayer display.Displayer
+	var displayer display.GraphDisplayer
 	if listOnlyIDs {
-		displayer = display.BuildDisplayer(
+		displayer = display.BuildGraphDisplayer(
 			[]display.ColumnDefinition{
 				display.StringColumnDefinition{Prop: "Id"},
 				display.StringColumnDefinition{Prop: "Name"},
@@ -126,28 +124,9 @@ func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
 			display.Options{RdfType: nodeType, Format: "porcelain", SortBy: sortBy},
 		)
 	} else {
-		displayer = display.BuildDisplayer(display.DefaultsColumnDefinitions[nodeType],
+		displayer = display.BuildGraphDisplayer(display.DefaultsColumnDefinitions[nodeType],
 			display.Options{RdfType: nodeType, Format: listingFormat, SortBy: sortBy})
 	}
 	displayer.SetGraph(g)
 	fmt.Println(displayer.Print())
-}
-
-func fetchRemoteResource(cloudService interface{}, resources string) (*rdf.Graph, error) {
-	fnName := fmt.Sprintf("%sGraph", strings.Title(resources))
-	method := reflect.ValueOf(cloudService).MethodByName(fnName)
-	if method.IsValid() && !method.IsNil() {
-		methodI := method.Interface()
-		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
-			return graphFn()
-		}
-	}
-	return nil, (fmt.Errorf("Unknown type of resource: %s", resources))
-}
-
-func pluralize(singular string) string {
-	if strings.HasSuffix(singular, "y") {
-		return strings.TrimSuffix(singular, "y") + "ies"
-	}
-	return singular + "s"
 }

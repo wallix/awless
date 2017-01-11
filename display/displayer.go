@@ -12,7 +12,7 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-type Displayer interface {
+type GraphDisplayer interface {
 	sorter
 	Print() string
 	SetGraph(*rdf.Graph)
@@ -29,7 +29,7 @@ type Options struct {
 	SortBy  []string
 }
 
-func BuildDisplayer(headers []ColumnDefinition, opts Options) Displayer {
+func BuildGraphDisplayer(headers []ColumnDefinition, opts Options) GraphDisplayer {
 	titlesIds := make(map[string]int)
 	for i, h := range headers {
 		titlesIds[strings.ToLower(h.title(false))] = i
@@ -41,11 +41,11 @@ func BuildDisplayer(headers []ColumnDefinition, opts Options) Displayer {
 
 	switch opts.Format {
 	case "csv":
-		return &csvDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
+		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
 	case "table":
-		return &tableDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
 	case "porcelain":
-		return &porcelainDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
+		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
 	default:
 		panic(fmt.Sprintf("unknown displayer for %s", opts.Format))
 	}
@@ -53,14 +53,14 @@ func BuildDisplayer(headers []ColumnDefinition, opts Options) Displayer {
 
 type table [][]interface{}
 
-type csvDisplayer struct {
+type csvGraphDisplayer struct {
 	sorter
 	g       *rdf.Graph
 	rdfType rdf.ResourceType
 	headers []ColumnDefinition
 }
 
-func (d *csvDisplayer) Print() string {
+func (d *csvGraphDisplayer) Print() string {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		panic(err)
@@ -98,18 +98,18 @@ func (d *csvDisplayer) Print() string {
 	return strings.Join(lines, "\n")
 }
 
-func (d *csvDisplayer) SetGraph(g *rdf.Graph) {
+func (d *csvGraphDisplayer) SetGraph(g *rdf.Graph) {
 	d.g = g
 }
 
-type tableDisplayer struct {
+type tableGraphDisplayer struct {
 	sorter
 	g       *rdf.Graph
 	rdfType rdf.ResourceType
 	headers []ColumnDefinition
 }
 
-func (d *tableDisplayer) Print() string {
+func (d *tableGraphDisplayer) Print() string {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		panic(err)
@@ -154,18 +154,18 @@ func (d *tableDisplayer) Print() string {
 	return w.String()
 }
 
-func (d *tableDisplayer) SetGraph(g *rdf.Graph) {
+func (d *tableGraphDisplayer) SetGraph(g *rdf.Graph) {
 	d.g = g
 }
 
-type porcelainDisplayer struct {
+type porcelainGraphDisplayer struct {
 	sorter
 	g       *rdf.Graph
 	rdfType rdf.ResourceType
 	headers []ColumnDefinition
 }
 
-func (d *porcelainDisplayer) Print() string {
+func (d *porcelainGraphDisplayer) Print() string {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		panic(err)
@@ -197,7 +197,7 @@ func (d *porcelainDisplayer) Print() string {
 	return strings.Join(lines, "\n")
 }
 
-func (d *porcelainDisplayer) SetGraph(g *rdf.Graph) {
+func (d *porcelainGraphDisplayer) SetGraph(g *rdf.Graph) {
 	d.g = g
 }
 

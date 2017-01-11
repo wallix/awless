@@ -42,7 +42,7 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer := BuildDisplayer(headers, Options{
+	displayer := BuildGraphDisplayer(headers, Options{
 		RdfType: rdf.Instance,
 		Format:  "csv",
 	})
@@ -57,7 +57,7 @@ inst_3, apache, running, t2.xlarge, `
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(headers, Options{
+	displayer = BuildGraphDisplayer(headers, Options{
 		RdfType: rdf.Instance,
 		Format:  "csv",
 		SortBy:  []string{"Name"},
@@ -83,7 +83,7 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer = BuildDisplayer(headers, Options{
+	displayer = BuildGraphDisplayer(headers, Options{
 		RdfType: rdf.Instance, Format: "table",
 	})
 	displayer.SetGraph(g)
@@ -99,7 +99,7 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(headers, Options{
+	displayer = BuildGraphDisplayer(headers, Options{
 		RdfType: rdf.Instance, Format: "table",
 		SortBy: []string{"state", "id"},
 	})
@@ -116,7 +116,7 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(headers, Options{
+	displayer = BuildGraphDisplayer(headers, Options{
 		RdfType: rdf.Instance, Format: "table",
 		SortBy: []string{"state", "name"},
 	})
@@ -137,7 +137,7 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 	}
-	displayer = BuildDisplayer(headers, Options{
+	displayer = BuildGraphDisplayer(headers, Options{
 		RdfType: rdf.Instance, Format: "porcelain",
 	})
 	displayer.SetGraph(g)
