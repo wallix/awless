@@ -66,19 +66,19 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 		if len(diffTriples) > 0 && err == nil {
 			lit, _ = diffTriples[0].Object().Literal()
 		}
+		nCommon, nInserted, nDeleted := aws.InitFromRdfNode(n), aws.InitFromRdfNode(n), aws.InitFromRdfNode(n)
 
-		rType := rdf.NewResourceTypeFromRdfType(n.Type().String())
-		commonProps, err := aws.LoadPropertiesFromGraph(diff.CommonGraph(), n)
+		err = nCommon.UnmarshalFromGraph(diff.CommonGraph())
 		if err != nil {
 			return err
 		}
 
-		insertedProps, err := aws.LoadPropertiesFromGraph(diff.InsertedGraph(), n)
+		err = nInserted.UnmarshalFromGraph(diff.InsertedGraph())
 		if err != nil {
 			return err
 		}
 
-		deletedProps, err := aws.LoadPropertiesFromGraph(diff.DeletedGraph(), n)
+		err = nDeleted.UnmarshalFromGraph(diff.DeletedGraph())
 		if err != nil {
 			return err
 		}
@@ -90,19 +90,19 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 		case rdf.ExtraLiteral:
 			displayProperties = true
 			rNew = true
-			rName = nameOrID(n, insertedProps)
+			rName = nameOrID(nInserted)
 		case rdf.MissingLiteral:
-			rName = nameOrID(n, deletedProps)
+			rName = nameOrID(nDeleted)
 			table.AddRow(
 				rdf.NewResourceTypeFromRdfType(n.Type().String()).String(),
 				color.New(color.FgRed).SprintFunc()("- "+rName),
 			)
 		default:
-			rName = nameOrID(n, commonProps)
+			rName = nameOrID(nCommon)
 			displayProperties = true
 		}
 		if displayProperties {
-			propsChanges, err = addDiffProperties(table, service, rType, rName, rNew, insertedProps, deletedProps)
+			propsChanges, err = addDiffProperties(table, service, nCommon.Type(), rName, rNew, nInserted.Properties(), nDeleted.Properties())
 			if err != nil {
 				return err
 			}

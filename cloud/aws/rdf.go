@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"errors"
 	"fmt"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -11,6 +12,10 @@ import (
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/shell"
 )
+
+var ErrInstanceNotFound = errors.New("Unknown instance")
+var ErrNoPublicIP = errors.New("This instance has no public IP address")
+var ErrNoAccessKey = errors.New("This instance has no access key set")
 
 func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
 	g := rdf.NewGraph()
@@ -360,29 +365,24 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 }
 
 func InstanceCredentialsFromGraph(graph *rdf.Graph, instanceID string) (*shell.Credentials, error) {
-	instanceNode, err := node.NewNodeFromStrings(rdf.Instance.ToRDFType(), instanceID)
+	inst := InitResource(instanceID, rdf.Instance)
+	err := inst.UnmarshalFromGraph(graph)
 	if err != nil {
 		return nil, err
-	}
-	t, err := triple.New(instanceNode, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.InstanceLiteral))
-	if err != nil {
-		return nil, err
-	}
-	if !graph.HasTriple(t) {
-		return nil, fmt.Errorf("Unknown instance")
-	}
-	instanceProperties, err := LoadPropertiesFromGraph(graph, instanceNode)
-	if err != nil {
-		return nil, err
-	}
-	ip, ok := instanceProperties["PublicIp"]
-	if !ok {
-		return nil, fmt.Errorf("This instance has no public IP address")
 	}
 
-	key, ok := instanceProperties["KeyName"]
+	if !inst.ExistsInGraph(graph) {
+		return nil, ErrInstanceNotFound
+	}
+
+	ip, ok := inst.Properties()["PublicIp"]
 	if !ok {
-		return nil, fmt.Errorf("This instance has no key set")
+		return nil, ErrNoPublicIP
+	}
+
+	key, ok := inst.Properties()["KeyName"]
+	if !ok {
+		return nil, ErrNoAccessKey
 	}
 	return &shell.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
 }

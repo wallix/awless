@@ -368,15 +368,15 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	_, err = InstanceCredentialsFromGraph(g, "inst_12")
-	if got, want := err.Error(), "Unknown instance"; got != want {
+	if got, want := err, ErrInstanceNotFound; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	_, err = InstanceCredentialsFromGraph(g, "inst_3")
-	if got, want := err.Error(), "This instance has no public IP address"; got != want {
+	if got, want := err, ErrNoPublicIP; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	_, err = InstanceCredentialsFromGraph(g, "inst_2")
-	if got, want := err.Error(), "This instance has no key set"; got != want {
+	if got, want := err, ErrNoAccessKey; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }

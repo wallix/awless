@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
 )
@@ -215,13 +214,12 @@ func (p *PropertyDisplayer) firstLevelProperty() string {
 	return p.Property
 }
 
-func nameOrID(node *node.Node, properties aws.Properties) string {
-	if name := aws.NameFromProperties(properties); name != "" {
-		return name
+func nameOrID(res *aws.Resource) string {
+	if name, ok := res.Properties()["Name"]; ok && name != "" {
+		return fmt.Sprint(name)
 	}
-	if id := fmt.Sprint(properties["Id"]); properties["Id"] != nil && id != "" {
-		return id
+	if id, ok := res.Properties()["Id"]; ok && id != "" {
+		return fmt.Sprint(id)
 	}
-
-	return fmt.Sprint(node.ID().String())
+	return res.Id()
 }

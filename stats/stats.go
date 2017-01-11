@@ -173,16 +173,16 @@ func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, in
 		return nil, err
 	}
 	propertyValuesCountMap := make(map[string]int)
-	for _, inst := range nodes {
-		var instProperties aws.Properties
-		instProperties, err = aws.LoadPropertiesFromGraph(infra, inst)
-		if err != nil {
-			return nil, err
+	for _, i := range nodes {
+		inst := aws.InitFromRdfNode(i)
+		e := inst.UnmarshalFromGraph(infra)
+		if e != nil {
+			return nil, e
 		}
-		if instProperties[propertyName] != nil {
-			propertyValue, ok := instProperties[propertyName].(string)
+		if inst.Properties()[propertyName] != nil {
+			propertyValue, ok := inst.Properties()[propertyName].(string)
 			if !ok {
-				return nil, fmt.Errorf("Property value of '%s' is not a string: %T", instProperties[propertyName], instProperties[propertyName])
+				return nil, fmt.Errorf("Property value of '%s' is not a string: %T", inst.Properties()[propertyName], inst.Properties()[propertyName])
 			}
 			propertyValuesCountMap[propertyValue]++
 		}

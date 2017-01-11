@@ -31,6 +31,10 @@ func InitResource(id string, kind rdf.ResourceType) *Resource {
 	return &Resource{id: id, kind: kind, properties: make(Properties)}
 }
 
+func InitFromRdfNode(n *node.Node) *Resource {
+	return InitResource(n.ID().String(), rdf.NewResourceTypeFromRdfType(n.Type().String()))
+}
+
 func NewResource(source interface{}) (*Resource, error) {
 	value := reflect.ValueOf(source)
 	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
@@ -75,19 +79,56 @@ func NewResource(source interface{}) (*Resource, error) {
 	return res, nil
 }
 
-func (res *Resource) UnmarshalFromGraph(g *rdf.Graph) (err error) {
-	var node *node.Node
-	if node, err = res.buildRdfSubject(); err != nil {
+func (res *Resource) ExistsInGraph(g *rdf.Graph) bool {
+	r, err := res.buildRdfSubject()
+	if err != nil {
+		return false
+	}
+
+	nodes, err := g.NodesForType(res.kind)
+	if err != nil {
+		return false
+	}
+	for _, n := range nodes {
+		if n.UUID().String() == r.UUID().String() {
+			return true
+		}
+	}
+	return false
+}
+
+func (res *Resource) UnmarshalFromGraph(g *rdf.Graph) error {
+	node, err := res.buildRdfSubject()
+	if err != nil {
 		return err
 	}
 
-	res.properties, err = LoadPropertiesFromGraph(g, node)
+	triples, err := g.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
+	if err != nil {
+		return err
+	}
 
-	return
+	for _, t := range triples {
+		prop, err := NewPropertyFromTriple(t)
+		if err != nil {
+			return err
+		}
+		res.properties[prop.Key] = prop.Value
+	}
+
+	return nil
 }
 
 func (res *Resource) Properties() Properties {
 	return res.properties
+}
+
+func (res *Resource) Type() rdf.ResourceType {
+	return res.kind
+}
+
+func (res *Resource) Id() string {
+	return res.id
 }
 
 func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
@@ -151,22 +192,6 @@ func NewPropertyTriple(subject *node.Node, propertyKey string, propertyValue int
 	}
 }
 
-func LoadPropertiesFromGraph(g *rdf.Graph, node *node.Node) (Properties, error) {
-	triples, err := g.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
-	if err != nil {
-		return nil, err
-	}
-	properties := make(Properties)
-	for _, t := range triples {
-		prop, err := NewPropertyFromTriple(t)
-		if err != nil {
-			return properties, err
-		}
-		properties[prop.Key] = prop.Value
-	}
-	return properties, nil
-}
-
 func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 	if t.Predicate().String() != rdf.PropertyPredicate.String() {
 		return nil, fmt.Errorf("This triple has not a property prediate: %s", t.Predicate().String())
@@ -185,31 +210,6 @@ func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 		return nil, err
 	}
 	return &prop, nil
-}
-
-func NameFromProperties(p Properties) string {
-	if n, ok := p["Name"]; ok {
-		return fmt.Sprint(n)
-	}
-	if t, ok := p["Tags"]; ok {
-		switch tt := t.(type) {
-		case []interface{}:
-			for _, tag := range tt {
-				//map [key: result]
-				if m, ok := tag.(map[string]interface{}); ok && m["Name"] != nil {
-					return fmt.Sprint(m["Name"])
-				}
-
-				//map["Key": key, "Value": result]
-				if m, ok := tag.(map[string]interface{}); ok && m["Key"] == "Name" {
-					return fmt.Sprint(m["Value"])
-				}
-			}
-		}
-
-		return fmt.Sprint(t)
-	}
-	return ""
 }
 
 func (res *Resource) buildRdfSubject() (*node.Node, error) {

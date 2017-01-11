@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
 )
@@ -15,12 +14,9 @@ import (
 func OneResourceOfGraph(w io.Writer, graph *rdf.Graph, resType rdf.ResourceType, resID string, displayer *ResourceDisplayer) error {
 	table := NewTable([]*PropertyDisplayer{{Property: "Property", DontTruncate: true}, {Property: "Value", DontTruncate: true}})
 	table.MergeIdenticalCells = false
-	node, err := node.NewNodeFromStrings(resType.ToRDFType(), resID)
-	if err != nil {
-		return err
-	}
 
-	properties, err := aws.LoadPropertiesFromGraph(graph, node)
+	res := aws.InitResource(resID, resType)
+	err := res.UnmarshalFromGraph(graph)
 	if err != nil {
 		return err
 	}
@@ -29,13 +25,13 @@ func OneResourceOfGraph(w io.Writer, graph *rdf.Graph, resType rdf.ResourceType,
 	for _, propD := range displayer.Properties {
 		visitedProps[propD.firstLevelProperty()] = true
 		propD.DontTruncate = true
-		valueDisplay := propD.display(propD.propertyValue(properties))
+		valueDisplay := propD.display(propD.propertyValue(res.Properties()))
 		if valueDisplay != "" {
 			table.AddValue("Property", propD.displayName())
 			table.AddValue("Value", valueDisplay)
 		}
 	}
-	for key, val := range properties {
+	for key, val := range res.Properties() {
 		if visited, ok := visitedProps[key]; ok && visited {
 			continue
 		}
@@ -48,7 +44,7 @@ func OneResourceOfGraph(w io.Writer, graph *rdf.Graph, resType rdf.ResourceType,
 
 	table.SetSortBy("Property", "Value")
 
-	fmt.Fprintf(w, "%s '%s'\n", strings.Title(resType.String()), nameOrID(node, properties))
+	fmt.Fprintf(w, "%s '%s'\n", strings.Title(resType.String()), nameOrID(res))
 	table.Fprint(w)
 	return nil
 }
@@ -64,16 +60,17 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 			return
 		}
 		for _, node := range nodes {
-			nodeProperties, err := aws.LoadPropertiesFromGraph(graph, node)
+			res := aws.InitFromRdfNode(node)
+			err := res.UnmarshalFromGraph(graph)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
 			}
 			for _, propD := range displayer.Resources[t].Properties {
 				table.AddValue("Type", t.String())
-				table.AddValue("Name/Id", nameOrID(node, nodeProperties))
+				table.AddValue("Name/Id", nameOrID(res))
 				table.AddValue("Property", propD.displayName())
-				table.AddValue("Value", propD.display(propD.propertyValue(nodeProperties)))
+				table.AddValue("Value", propD.display(propD.propertyValue(res.Properties())))
 			}
 		}
 	}
