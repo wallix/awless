@@ -38,11 +38,11 @@ If you have previously used `aws` CLI or `aws-shell`, you don't need to do anyth
 Otherwise, get your AWS credentials from [IAM console](https://console.aws.amazon.com/iam/home?#home).
 Then, you can either download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws` (Windows).
 
-For more options, see [Installation](https://github.com/wallix/awless/wiki/Installation#) in the wiki.
+For more options, see [Installation (wiki)](https://github.com/wallix/awless/wiki/Installation#setup-your-aws-account-with-awless).
 
 ## Setup shell autocompletion
 
-Read the wiki page for setting autocompletion for [bash]() or [zsh]().
+Read the wiki page for setting autocompletion for [bash](https://github.com/wallix/awless/wiki/Setup-Autocomplete#bash) or [zsh](https://github.com/wallix/awless/wiki/Setup-Autocomplete#zsh).
 
 ## First `awless` commands
 
@@ -61,7 +61,7 @@ If you want, you can also query the local snapshot:
 
     $ awless list subnets --local
 
-See the [manual](https://github.com/wallix/awless/wiki/awless-Commands#List) for a complete reference of `awless list`.
+See the [manual](https://github.com/wallix/awless/wiki/Commands#awless-list) for a complete reference of `awless list`.
 
 ### Updating the local snapshot
 
@@ -81,7 +81,10 @@ Once the sync is done, changes (either to the local model or to the cloud infras
 
 ### Much more
 
-See the [wiki](https://github.com/wallix/awless/wiki/awless-Commands#List) for a more complete reference.
+		$ awless show revisions --group-by-week
+		$ awless ssh ubuntu@i-abcd1234
+
+See [commands (wiki)](https://github.com/wallix/awless/wiki/Commands) for a more complete reference.
 
 # About
 
