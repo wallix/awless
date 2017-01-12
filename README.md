@@ -1,29 +1,17 @@
 `awless` is a nice, easy-to-use command line interface (CLI) to manage Amazon Web Services.
-It is designed to keep simple and secure the display, creation, update and deletion of virtual resources.
 
-<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+`awless` is a straightforward replacement for AWS default CLI.
 
-- [Overview](#overview)
-- [Install](#install)
-- [Getting started](#getting-started)
-- [Usage](#usage)
-- [Bash and Zsh autocomplete](#bash-and-zsh-autocomplete)
-	- [Bash](#bash)
-	- [Zsh](#zsh)
-- [Contributing](#contributing)
-	- [Source install](#source-install)
-	- [Test](#test)
-	- [Build and Run](#build-and-run)
+# Why awless
 
-<!-- /TOC -->
+Using Amazon Web Services through the default CLI is often discouraging, namely because of its complexity and API variety.
 
-# Overview
+`awless` has been created with the idea to run the most frequent actions easily, by using simple commands (like `git`) or pre-defined scripts.
 
-Using Amazon Web Services through CLI is often discouraging, namely because of its complexity and API variety.
-`awless` has been created with the idea to run the most frequent actions much easier, by using simple and intuitive commands or pre-defined scripts, without editing any line of JSON or dealing with policies.
-It brings a new approach to manage virtualized infrastructures through CLI.
+There is no need to edit manually any line of JSON, deal with policies, etc.
+`awless` brings a new approach to manage virtualized infrastructures through CLI.
 
-Awless provides:
+# What awless can do
 
 - A simple command to list virtualized resources (subnets, instances, groups, users, etc.): `awless list`
 - Several output formats either human (tables, trees) or machine readable (csv, json): `--format`
@@ -35,150 +23,71 @@ Awless provides:
 
 # Install
 
-Download the latest awless executable
+Choose one of the following options:
 
-- (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
-- (Windows/Linux/macOS) with go `go get github.com/wallix/awless`
-- (macOS) using brew: `brew install awless`
+1. Download the latest `awless` executable (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
+2. Build the source with Go: Run `go get github.com/wallix/awless` (if `go` is already installed, on Windows/Linux/macOS)
+3. On macOS, use [homebrew](http://brew.sh):  `brew install awless`
 
 # Getting started
+
+## Setup your AWS account with `awless`
 
 If you have previously used `aws` CLI or `aws-shell`, you don't need to do anything! Your credentials will be automatically loaded by `awless` from the `~/.aws/credentials` folder.
 
 Otherwise, get your AWS credentials from [IAM console](https://console.aws.amazon.com/iam/home?#home).
 Then, you can either download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws` (Windows).
-Or, export the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your shell session:
 
-	export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-	export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-	
-You can find more information about how to get your AWS credentials on [Amazon Web Services user guide](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-set-up.html).
+For more options, see [Installation](https://github.com/wallix/awless/wiki/Installation#) in the wiki.
 
-# Usage
+## Setup shell autocompletion
 
-Get main help from the CLI
+Read the wiki page for setting autocompletion for [bash]() or [zsh]().
 
-    $ awless
+## First `awless` commands
 
-Get help on a specific command
+`awless` works by performing commands, which query either the AWS infrastructure or the local snapshot of the infrastructure.
 
-    $ awless help list
+### Listing resources
 
-Show config
+You can list various resources:
 
-    $ awless config
+    $ awless list instances
+    $ awless list users --format csv
+    $ awless list roles --sort name,id
 
-Sync your cloud
+Listing resources by default performs queries directly to AWS.
+If you want, you can also query the local snapshot:
+
+    $ awless list subnets --local
+
+See the [manual](https://github.com/wallix/awless/wiki/awless-Commands#List) for a complete reference of `awless list`.
+
+### Updating the local snapshot
+
+<!-- WHY!!! -->
+
+You can synchronize your local snapshot with the current cloud infrastructure on AWS using:
 
     $ awless sync
 
-Diff your local cloud to the remote one
+Once the sync is done, changes (either to the local model or to the cloud infrastructure) can be tracked easily:
 
     $ awless diff
 
-List various resources
+### Creating a new resource
 
-		$ awless list instances
-    $ awless list users --format csv # List results as CSV
-    $ awless list subnets --local # List the subnets of your local cloud snapshot
-		$ awless list roles --sort name,id # List roles sorted by name and id
-		...
-		
-Show details of resources
+<!-- TODO -->
 
-		$ awless show instance i-abcd1234
-    $ awless show user AKIAIOSFODNN7EXAMPLE --local # List the subnets of your local cloud snapshot
-		...
-		
-Show the history of changes to your cloud
- 	
-		$ awless show revisions # Last 10 revisions (= sync)
-		$ awless show revisions -n 3 --properties # Last 3 revisions with their properties
-		$ awless show revisions --group-by-week # Group changes by week
-		
-Connect to instances via SSH
+### Much more
 
-		$ awless ssh i-abcd1234 # Connect to instance by ssh using your keys stored in ~/.awless/keys
-		$ awless ssh ubuntu@i-abcd1234 # Use a specific user
+See the [wiki](https://github.com/wallix/awless/wiki/awless-Commands#List) for a more complete reference.
 
-Show or delete the history of commands entered in awless
+# About
 
-    $ awless history show
-    $ awless history delete
-		
-Display the current AWS user and account
+`awless` is an open source project created by Henri Binsztok, Quentin Bourgerie, Simon Caplette and François-Xavier Aguessy at Wallix.
+`awless` is released under the Apache License and sponsored by [Wallix](https://github.com/wallix).
 
-	$ awless whoami
+Contributors are welcome! Please head to [Contributing (wiki)](https://github.com/wallix/awless/wiki/Contributing) to learn more.
 
-Generate `awless` completion code for bash or zsh
 
-    $ awless completion bash
-    $ awless completion zsh
-
-# Bash and Zsh autocomplete
-
-You can easily generate `awless` completion, either for bash or zsh.
-
-## Bash
-
-For Mac OS X, with brew
-
-    $ brew install bash-completion
-    $ echo '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion\n' >> ~/.bashrc
-    $ awless completion bash > /usr/local/etc/bash_completion.d/awless
-
-For Ubuntu
-
-    $ sudo apt-get install bash-completion
-    $ awless completion bash | sudo tee /etc/bash_completion.d/awless > /dev/null
-
-## Zsh
-
-Test once with
-
-    $ source <(awless completion zsh)
-
-Or add to your ~/.zshrc
-
-    $ echo 'source <(awless completion zsh)\n' >> ~/.zshrc
-
-# Contributing
-
-## Source install
-
-You need first need to [install Go](https://golang.org/doc/install) to build `awless`.
-Then, to download awless sources
-
-    go get github.com/wallix/awless
-
-## Test
-
-    $ cd awless
-    $ go test -race -cover ./...
-		
-or (faster) if you have `govendor` (`get -u github.com/kardianos/govendor`)
-
-		$ govendor test +local
-
-## Build and Run
-
-To run from your local pulled repo
-
-    $ go run main.go list instances
-
-To build a local executable
-
-		$ go build .
-		
-		or
-		
-		$ GOARCH=amd64 GOOS=linux go build . # Cross compilation to Linux amd64
-		
-Then
-
-		$ ./awless list instances
-		
-Or if you want to install to your $GOPATH/bin
-
-		$ go install
-		$ awless list instances
