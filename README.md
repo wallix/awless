@@ -10,45 +10,49 @@ It is designed to keep simple and secure the display, creation, update and delet
 - [Bash and Zsh autocomplete](#bash-and-zsh-autocomplete)
 	- [Bash](#bash)
 	- [Zsh](#zsh)
-- [Concepts](#concepts)
-	- [Security](#security)
-	- [Infrastructures versioning](#infrastructures-versioning)
-	- [RDF](#rdf)
 - [Contributing](#contributing)
 	- [Source install](#source-install)
 	- [Test](#test)
-	- [Run](#run)
+	- [Build and Run](#build-and-run)
 
 <!-- /TOC -->
 
 # Overview
 
 Using Amazon Web Services through CLI is often discouraging, namely because of its complexity and API variety.
-`awless` has been created with the idea to make this much easier, by using simple and intuitive commands and without editing any line of JSON or dealing with policies.
-It brings a totally new approach to manage virtualized infrastructures through CLI.
+`awless` has been created with the idea to run the most frequent actions much easier, by using simple and intuitive commands or pre-defined scripts, without editing any line of JSON or dealing with policies.
+It brings a new approach to manage virtualized infrastructures through CLI.
 
 Awless provides:
 
 - A simple command to list virtualized resources (subnets, instances, groups, users, etc.): `awless list`
-- Several output formats either human (list, trees,...) or machine readable (json): `--format`
-- The ability to download a local snapshot of the infrastructure deployed in the remote cloud: `awless sync`
+- Several output formats either human (tables, trees) or machine readable (csv, json): `--format`
+- The ability to create a local snapshot of the infrastructure deployed in the remote cloud: `awless sync`
 - The analysis of what has changed on the cloud since the last local snapshot: `awless diff`
 - A git-based versioning of what has been deployed in the cloud: `awless show revisions`
 - The simple and secure creation of virtual resources using pre-defined scenarios: `awless create`
-- Commands and flags autocomplete for Unix/Linux's bash and zsh `awless completion`
+- Commands autocomplete for Unix/Linux's bash and zsh `awless completion`
 
 # Install
 
 Download the latest awless executable
 
 - (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
-- (Windows/Linux/macOS) with go `go install github.com/wallix/awless`
+- (Windows/Linux/macOS) with go `go get github.com/wallix/awless`
 - (macOS) using brew: `brew install awless`
 
 # Getting started
 
-Export in your shell session `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+If you have previously used `aws` CLI or `aws-shell`, you don't need to do anything! Your credentials will be automatically loaded by `awless` from the `~/.aws/credentials` folder.
 
+Otherwise, get your AWS credentials from [IAM console](https://console.aws.amazon.com/iam/home?#home).
+Then, you can either download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws` (Windows).
+Or, export the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your shell session:
+
+	export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+	export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+	
+You can find more information about how to get your AWS credentials on [Amazon Web Services user guide](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-set-up.html).
 
 # Usage
 
@@ -64,35 +68,56 @@ Show config
 
     $ awless config
 
-Sync your infra
+Sync your cloud
 
     $ awless sync
 
-Diff your local infra to the remote one
+Diff your local cloud to the remote one
 
     $ awless diff
 
-List various items
+List various resources
 
-    $ awless list users
-    $ awless list policies
-    $ awless list instances
-    $ awless list vpcs
-    $ awless list subnets
+		$ awless list instances
+    $ awless list users --format csv # List results as CSV
+    $ awless list subnets --local # List the subnets of your local cloud snapshot
+		$ awless list roles --sort name,id # List roles sorted by name and id
+		...
+		
+Show details of resources
+
+		$ awless show instance i-abcd1234
+    $ awless show user AKIAIOSFODNN7EXAMPLE --local # List the subnets of your local cloud snapshot
+		...
+		
+Show the history of changes to your cloud
+ 	
+		$ awless show revisions # Last 10 revisions (= sync)
+		$ awless show revisions -n 3 --properties # Last 3 revisions with their properties
+		$ awless show revisions --group-by-week # Group changes by week
+		
+Connect to instances via SSH
+
+		$ awless ssh i-abcd1234 # Connect to instance by ssh using your keys stored in ~/.awless/keys
+		$ awless ssh ubuntu@i-abcd1234 # Use a specific user
 
 Show or delete the history of commands entered in awless
 
     $ awless history show
     $ awless history delete
+		
+Display the current AWS user and account
 
-Generate awless CLI completion code for bash or zsh
+	$ awless whoami
+
+Generate `awless` completion code for bash or zsh
 
     $ awless completion bash
     $ awless completion zsh
 
 # Bash and Zsh autocomplete
 
-You can easily generate `awless` completion, either for bash or zsh, thanks to [cobra](https://github.com/spf13/cobra) (bash) and [kubernetes](https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/completion.go) (zsh).
+You can easily generate `awless` completion, either for bash or zsh.
 
 ## Bash
 
@@ -117,61 +142,43 @@ Or add to your ~/.zshrc
 
     $ echo 'source <(awless completion zsh)\n' >> ~/.zshrc
 
-# Concepts
-
-## Security
-
-A major drawback of complexity is often the lack of security.
-Managing virtualized infrastructures requires to well understand many network and security concepts, which may be time consuming.
-As a result, these infrastructures are often configured with non-secure default parameters.
-`awless` assists you in the creation of resources, ensuring that their security is properly configured.
-
-## Infrastructures versioning
-
-One main innovative feature of `awless` is the infrastructure versioning.
-As soon as you sync your infrastructure, `awless` will keep a local history of what is deployed in your cloud.
-This allows henceforth to track the changes in the cloud, keep an history of changes, show diff between versions, etc.
-
-## RDF
-
-Under the hood, `awless` processes and stores the cloud infrastructure in [RDF](https://www.w3.org/RDF/), using Google's [Badwolf](https://github.com/google/badwolf/) go library.
-It allows to use advanced algorithms while being agnostic of the handled data.
-
-
 # Contributing
 
 ## Source install
 
-`awless` requires `libgit2` to be built.
-You can install `libgit2` with your favorite package manager:
-
-    brew install libgit2 # macOS
-    apt-get install libgit2-dev # Debian / Ubuntu
-
-Then
+You need first need to [install Go](https://golang.org/doc/install) to build `awless`.
+Then, to download awless sources
 
     go get github.com/wallix/awless
-
-or install as a global executable
-
-    go install github.com/wallix/awless
 
 ## Test
 
     $ cd awless
     $ go test -race -cover ./...
+		
+or (faster) if you have `govendor` (`get -u github.com/kardianos/govendor`)
 
-## Run
+		$ govendor test +local
 
-If installed as a global executable
+## Build and Run
 
-    $ awless list instances
-
-Or from your local pulled repo
+To run from your local pulled repo
 
     $ go run main.go list instances
 
-or
+To build a local executable
 
-    $ go build .
-    $ ./awless list instances
+		$ go build .
+		
+		or
+		
+		$ GOARCH=amd64 GOOS=linux go build . # Cross compilation to Linux amd64
+		
+Then
+
+		$ ./awless list instances
+		
+Or if you want to install to your $GOPATH/bin
+
+		$ go install
+		$ awless list instances
