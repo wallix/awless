@@ -1,67 +1,36 @@
 package rdf
 
-import "strings"
+import (
+	"strings"
 
-type ResourceType int
-
-const (
-	Region ResourceType = iota
-	Vpc
-	Subnet
-	Instance
-	User
-	Role
-	Group
-	Policy
+	"github.com/google/badwolf/triple/node"
 )
 
-func NewResourceTypeFromRdfType(str string) ResourceType {
-	switch str {
-	case "/region":
-		return Region
-	case "/vpc":
-		return Vpc
-	case "/subnet":
-		return Subnet
-	case "/instance":
-		return Instance
-	case "/user":
-		return User
-	case "/role":
-		return Role
-	case "/group":
-		return Group
-	case "/policy":
-		return Policy
-	default:
-		panic("invalid resource type:" + str)
+type ResourceType string
+
+const (
+	Region   ResourceType = "region"
+	Vpc      ResourceType = "vpc"
+	Subnet   ResourceType = "subnet"
+	Instance ResourceType = "instance"
+	User     ResourceType = "user"
+	Role     ResourceType = "role"
+	Group    ResourceType = "group"
+	Policy   ResourceType = "policy"
+)
+
+func NewResourceType(t *node.Type) ResourceType {
+	if !strings.HasPrefix(t.String(), "/") {
+		panic("invalid resource type:" + t.String())
 	}
+	return ResourceType(strings.Split(t.String(), "/")[1])
 }
 
 func (r ResourceType) String() string {
-	switch r {
-	case Region:
-		return "region"
-	case Vpc:
-		return "vpc"
-	case Subnet:
-		return "subnet"
-	case Instance:
-		return "instance"
-	case User:
-		return "user"
-	case Role:
-		return "role"
-	case Group:
-		return "group"
-	case Policy:
-		return "policy"
-	default:
-		panic("invalid resource type")
-	}
+	return string(r)
 }
 
-func (r ResourceType) ToRDFType() string {
+func (r ResourceType) ToRDFString() string {
 	return "/" + r.String()
 }
 

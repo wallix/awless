@@ -32,7 +32,7 @@ func InitResource(id string, kind rdf.ResourceType) *Resource {
 }
 
 func InitFromRdfNode(n *node.Node) *Resource {
-	return InitResource(n.ID().String(), rdf.NewResourceTypeFromRdfType(n.Type().String()))
+	return InitResource(n.ID().String(), rdf.NewResourceType(n.Type()))
 }
 
 func NewResource(source interface{}) (*Resource, error) {
@@ -138,7 +138,7 @@ func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
 		return triples, err
 	}
 	var lit *literal.Literal
-	if lit, err = literal.DefaultBuilder().Build(literal.Text, res.kind.ToRDFType()); err != nil {
+	if lit, err = literal.DefaultBuilder().Build(literal.Text, res.kind.ToRDFString()); err != nil {
 		return triples, err
 	}
 	t, err := triple.New(n, rdf.HasTypePredicate, triple.NewLiteralObject(lit))
@@ -213,7 +213,7 @@ func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 }
 
 func (res *Resource) buildRdfSubject() (*node.Node, error) {
-	return node.NewNodeFromStrings(res.kind.ToRDFType(), res.id)
+	return node.NewNodeFromStrings(res.kind.ToRDFString(), res.id)
 }
 
 func addCloudResourceToGraph(g *rdf.Graph, cloudResource interface{}) error {

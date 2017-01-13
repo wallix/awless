@@ -50,7 +50,7 @@ func TestDisplayCommit(t *testing.T) {
 	diff.AddInserted(t17, rdf.ParentOfPredicate)
 	diff.AddInserted(t18, rdf.ParentOfPredicate)
 
-	rootNode, err := node.NewNodeFromStrings(rdf.Region.ToRDFType(), "eu-west-1")
+	rootNode, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), "eu-west-1")
 	if err != nil {
 		t.Fatal(err)
 	}

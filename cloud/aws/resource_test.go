@@ -32,7 +32,7 @@ func TestUnmarshalResource(t *testing.T) {
 		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
 	}
 
-	node, err := node.NewNodeFromStrings(rdf.Instance.ToRDFType(), "inst_1")
+	node, err := node.NewNodeFromStrings(rdf.Instance.ToRDFString(), "inst_1")
 	if err != nil {
 		t.Fatal(err)
 	}

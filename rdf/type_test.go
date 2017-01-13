@@ -1,9 +1,13 @@
 package rdf
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/badwolf/triple/node"
+)
 
 func TestResourceTypeToRdfType(t *testing.T) {
-	if got, want := Region.ToRDFType(), "/region"; got != want {
+	if got, want := Region.ToRDFString(), "/region"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	if got, want := Region.String(), "region"; got != want {
@@ -12,10 +16,14 @@ func TestResourceTypeToRdfType(t *testing.T) {
 
 	resourceTypes := []ResourceType{Region, Vpc, Subnet, Instance, User, Role, Group, Policy}
 	for _, r := range resourceTypes {
-		if got, want := NewResourceTypeFromRdfType(r.ToRDFType()), r; got != want {
+		ty, err := node.NewType(r.ToRDFString())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := NewResourceType(ty), r; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
-		if got, want := "/"+r.String(), r.ToRDFType(); got != want {
+		if got, want := "/"+r.String(), r.ToRDFString(); got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
 	}

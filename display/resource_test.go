@@ -30,7 +30,7 @@ func TestResourceDisplay(t *testing.T) {
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer := BuildResourceDisplayer(headers, ResourceDisplayerOptions{
+	displayer := BuildResourceDisplayer(headers, Options{
 		Format: "table",
 	})
 	displayer.SetResource(r)

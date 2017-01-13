@@ -14,11 +14,7 @@ type ResourceDisplayer interface {
 	SetResource(*aws.Resource)
 }
 
-type ResourceDisplayerOptions struct {
-	Format string
-}
-
-func BuildResourceDisplayer(headers []ColumnDefinition, opts ResourceDisplayerOptions) ResourceDisplayer {
+func BuildResourceDisplayer(headers []ColumnDefinition, opts Options) ResourceDisplayer {
 	switch opts.Format {
 	case "table":
 		return &tableResourceDisplayer{headers: headers}

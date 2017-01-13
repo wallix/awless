@@ -9,29 +9,29 @@ import (
 
 func TestGetTriplesAndNodesForType(t *testing.T) {
 	graph := NewGraph()
-	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFType())
+	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFString())
 	if err != nil {
 		t.Fatal(err)
 	}
-	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFType())
+	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFString())
 	if err != nil {
 		t.Fatal(err)
 	}
-	azero, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "0")
+	azero, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "0")
 	graph.Add(noErrLiteralTriple(azero, HasTypePredicate, iLiteral))
-	aone, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "1")
+	aone, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "1")
 	graph.Add(noErrLiteralTriple(aone, HasTypePredicate, iLiteral))
 
-	bzero, _ := node.NewNodeFromStrings(Subnet.ToRDFType(), "0")
+	bzero, _ := node.NewNodeFromStrings(Subnet.ToRDFString(), "0")
 	graph.Add(noErrLiteralTriple(bzero, HasTypePredicate, sLiteral))
-	bone, _ := node.NewNodeFromStrings(Subnet.ToRDFType(), "1")
+	bone, _ := node.NewNodeFromStrings(Subnet.ToRDFString(), "1")
 	graph.Add(noErrLiteralTriple(bone, HasTypePredicate, sLiteral))
-	btwo, _ := node.NewNodeFromStrings(Subnet.ToRDFType(), "2")
+	btwo, _ := node.NewNodeFromStrings(Subnet.ToRDFString(), "2")
 	graph.Add(noErrLiteralTriple(btwo, HasTypePredicate, sLiteral))
 
-	atwo, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "2")
+	atwo, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "2")
 	graph.Add(noErrLiteralTriple(atwo, HasTypePredicate, iLiteral))
-	athree, _ := node.NewNodeFromStrings(Instance.ToRDFType(), "3")
+	athree, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "3")
 	graph.Add(noErrLiteralTriple(athree, HasTypePredicate, iLiteral))
 
 	graph.Add(noErrTriple(azero, ParentOfPredicate, aone))
@@ -41,7 +41,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	graph.Add(noErrTriple(azero, ParentOfPredicate, bzero))
 	graph.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
-	aTriples, err := graph.TriplesForType(Instance.ToRDFType())
+	aTriples, err := graph.TriplesForType(Instance.ToRDFString())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	bTriples, err := graph.TriplesForType(Subnet.ToRDFType())
+	bTriples, err := graph.TriplesForType(Subnet.ToRDFString())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,11 +159,11 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 func TestCountTriples(t *testing.T) {
 	g := NewGraph()
 
-	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFType())
+	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFString())
 	if err != nil {
 		t.Fatal(err)
 	}
-	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFType())
+	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFString())
 	if err != nil {
 		t.Fatal(err)
 	}

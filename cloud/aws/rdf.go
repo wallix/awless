@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/shell"
 )
@@ -20,20 +21,16 @@ var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
 
 func (inf *Infra) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
-	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
-	method := reflect.ValueOf(inf).MethodByName(fnName)
-	if method.IsValid() && !method.IsNil() {
-		methodI := method.Interface()
-		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
-			return graphFn()
-		}
-	}
-	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
+	return fetchRDFResources(inf, resourceType)
 }
 
 func (access *Access) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
+	return fetchRDFResources(access, resourceType)
+}
+
+func fetchRDFResources(service cloud.Service, resourceType rdf.ResourceType) (*rdf.Graph, error) {
 	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
-	method := reflect.ValueOf(access).MethodByName(fnName)
+	method := reflect.ValueOf(service).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {
 		methodI := method.Interface()
 		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
@@ -146,7 +143,7 @@ func (access *Access) PoliciesGraph() (*rdf.Graph, error) {
 func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 	g := rdf.NewGraph()
 
-	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFType(), region)
+	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
 	if err != nil {
 		return g, err
 	}
@@ -301,7 +298,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 	g = rdf.NewGraph()
 	var vpcNodes, subnetNodes []*node.Node
 
-	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFType(), region)
+	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
 	if err != nil {
 		return g, err
 	}

@@ -71,7 +71,7 @@ func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Nod
 			childType, e := childTypeL.Text()
 			if e != nil {
 				return 0, e
-			} else if childType == objectType.ToRDFType() {
+			} else if childType == objectType.ToRDFString() {
 				count++
 			}
 		}
@@ -84,7 +84,7 @@ func (g *Graph) NodesForType(t ResourceType) ([]*node.Node, error) {
 	var nodes []*node.Node
 	errc := make(chan error)
 	nodec := make(chan *node.Node)
-	literal, err := literal.DefaultBuilder().Build(literal.Text, t.ToRDFType())
+	literal, err := literal.DefaultBuilder().Build(literal.Text, t.ToRDFString())
 	if err != nil {
 		return nodes, err
 	}

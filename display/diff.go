@@ -39,14 +39,14 @@ func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
 		switch lit {
 		case rdf.ExtraLiteral:
 			color.Set(color.FgGreen)
-			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), n.ID())
+			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), rdf.NewResourceType(n.Type()).String(), n.ID())
 			color.Unset()
 		case rdf.MissingLiteral:
 			color.Set(color.FgRed)
-			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), n.ID())
+			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), rdf.NewResourceType(n.Type()).String(), n.ID())
 			color.Unset()
 		default:
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), n.ID())
+			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), rdf.NewResourceType(n.Type()).String(), n.ID())
 		}
 	})
 }
@@ -94,7 +94,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 		case rdf.MissingLiteral:
 			rName = nameOrID(nDeleted)
 			table.AddRow(
-				rdf.NewResourceTypeFromRdfType(n.Type().String()).String(),
+				rdf.NewResourceType(n.Type()).String(),
 				color.New(color.FgRed).SprintFunc()("- "+rName),
 			)
 		default:
@@ -108,7 +108,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 			}
 		}
 		if !propsChanges && rNew {
-			table.AddRow(rdf.NewResourceTypeFromRdfType(n.Type().String()).String(), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
+			table.AddRow(rdf.NewResourceType(n.Type()).String(), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
 		}
 		return nil
 	})

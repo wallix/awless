@@ -115,7 +115,7 @@ func printResource(g *rdf.Graph, resourceType rdf.ResourceType, id string) {
 
 	var displayer display.ResourceDisplayer
 	displayer = display.BuildResourceDisplayer(display.DefaultsColumnDefinitions[resourceType],
-		display.ResourceDisplayerOptions{Format: listingFormat})
+		display.Options{Format: listingFormat})
 	displayer.SetResource(resource)
 	fmt.Println(displayer.Print())
 }
