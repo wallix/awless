@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -128,5 +129,6 @@ func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
 			display.Options{RdfType: nodeType, Format: listingFormat, SortBy: sortBy})
 	}
 	displayer.SetGraph(g)
-	fmt.Println(displayer.Print())
+	err := displayer.Print(os.Stdout)
+	exitOn(err)
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/google/badwolf/triple/node"
@@ -117,7 +118,8 @@ func printResource(g *rdf.Graph, resourceType rdf.ResourceType, id string) {
 	displayer = display.BuildResourceDisplayer(display.DefaultsColumnDefinitions[resourceType],
 		display.Options{Format: listingFormat})
 	displayer.SetResource(resource)
-	fmt.Println(displayer.Print())
+	err = displayer.Print(os.Stderr)
+	exitOn(err)
 }
 
 var showCloudRevisionsCmd = &cobra.Command{

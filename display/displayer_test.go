@@ -1,6 +1,7 @@
 package display
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/fatih/color"
@@ -52,8 +53,12 @@ func TestTabularDisplays(t *testing.T) {
 inst_1, redis, running, t2.micro, 1.2.3.4
 inst_2, django, stopped, t2.medium, 
 inst_3, apache, running, t2.xlarge, `
-
-	if got, want := displayer.Print(), expected; got != want {
+	var w bytes.Buffer
+	err := displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
@@ -69,7 +74,12 @@ inst_3, apache, running, t2.xlarge,
 inst_2, django, stopped, t2.medium, 
 inst_1, redis, running, t2.micro, 1.2.3.4`
 
-	if got, want := displayer.Print(), expected; got != want {
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
@@ -95,7 +105,12 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 | inst_3 | apache | running | t2.xlarge |           |
 +--------+--------+---------+-----------+-----------+
 `
-	if got, want := displayer.Print(), expected; got != want {
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
@@ -112,7 +127,12 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 | inst_2 | django | stopped | t2.medium |           |
 +--------+--------+---------+-----------+-----------+
 `
-	if got, want := displayer.Print(), expected; got != want {
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
@@ -129,7 +149,12 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 | inst_2 | django | stopped | t2.medium |           |
 +--------+--------+---------+-----------+-----------+
 `
-	if got, want := displayer.Print(), expected; got != want {
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
@@ -147,7 +172,12 @@ inst_2
 django
 inst_3
 apache`
-	if got, want := displayer.Print(), expected; got != want {
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 }
@@ -191,7 +221,12 @@ func TestDateLists(t *testing.T) {
 | user3 | my_username_3 | 12/10/16 08:35       |
 +-------+---------------+----------------------+
 `
-	if got, want := displayer.Print(), expected; got != want {
+	var w bytes.Buffer
+	err := displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
@@ -208,7 +243,12 @@ func TestDateLists(t *testing.T) {
 | user2 | my_username_2 | 12/22/16 11:13         |
 +-------+---------------+------------------------+
 `
-	if got, want := displayer.Print(), expected; got != want {
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 }

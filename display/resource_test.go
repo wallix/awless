@@ -1,6 +1,7 @@
 package display
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/google/badwolf/triple"
@@ -44,7 +45,12 @@ func TestResourceDisplay(t *testing.T) {
 | Prop 2     | prop 2     |
 +------------+------------+
 `
-	if got, want := displayer.Print(), expected; got != want {
+	var w bytes.Buffer
+	err := displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 }

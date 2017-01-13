@@ -1,8 +1,9 @@
 package display
 
 import (
-	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -15,7 +16,7 @@ import (
 
 type GraphDisplayer interface {
 	sorter
-	Print() string
+	Print(io.Writer) error
 	SetGraph(*rdf.Graph)
 }
 
@@ -40,15 +41,21 @@ func BuildGraphDisplayer(headers []ColumnDefinition, opts Options) GraphDisplaye
 		sortBy = opts.SortBy
 	}
 
+	sortIds, err := titlesToIDs(titlesIds, sortBy)
+	if err != nil {
+		fmt.Fprint(os.Stderr, err, "\n")
+	}
+
 	switch opts.Format {
 	case "csv":
-		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
+		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
 	case "table":
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
 	case "porcelain":
-		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: titlesToIDs(titlesIds, sortBy)}, rdfType: opts.RdfType, headers: headers}
+		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
 	default:
-		panic(fmt.Sprintf("unknown displayer for %s", opts.Format))
+		fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", opts.Format)
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
 	}
 }
 
@@ -61,10 +68,10 @@ type csvGraphDisplayer struct {
 	headers []ColumnDefinition
 }
 
-func (d *csvGraphDisplayer) Print() string {
+func (d *csvGraphDisplayer) Print(w io.Writer) error {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	values := make(table, len(resources))
@@ -96,7 +103,8 @@ func (d *csvGraphDisplayer) Print() string {
 		lines = append(lines, strings.Join(props, ", "))
 	}
 
-	return strings.Join(lines, "\n")
+	_, err = w.Write([]byte(strings.Join(lines, "\n")))
+	return err
 }
 
 func (d *csvGraphDisplayer) SetGraph(g *rdf.Graph) {
@@ -110,10 +118,10 @@ type tableGraphDisplayer struct {
 	headers []ColumnDefinition
 }
 
-func (d *tableGraphDisplayer) Print() string {
+func (d *tableGraphDisplayer) Print(w io.Writer) error {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	values := make(table, len(resources))
@@ -128,14 +136,12 @@ func (d *tableGraphDisplayer) Print() string {
 
 	d.sorter.sort(values)
 
-	var w bytes.Buffer
-
 	markColumnAsc := -1
-	if len(d.sorter.columns()) >= 0 {
+	if len(d.sorter.columns()) > 0 {
 		markColumnAsc = d.sorter.columns()[0]
 	}
 
-	table := tablewriter.NewWriter(&w)
+	table := tablewriter.NewWriter(w)
 	var displayHeaders []string
 	for i, h := range d.headers {
 		displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
@@ -151,8 +157,7 @@ func (d *tableGraphDisplayer) Print() string {
 	}
 
 	table.Render()
-
-	return w.String()
+	return nil
 }
 
 func (d *tableGraphDisplayer) SetGraph(g *rdf.Graph) {
@@ -166,10 +171,10 @@ type porcelainGraphDisplayer struct {
 	headers []ColumnDefinition
 }
 
-func (d *porcelainGraphDisplayer) Print() string {
+func (d *porcelainGraphDisplayer) Print(w io.Writer) error {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	values := make(table, len(resources))
@@ -195,7 +200,8 @@ func (d *porcelainGraphDisplayer) Print() string {
 		}
 	}
 
-	return strings.Join(lines, "\n")
+	_, err = w.Write([]byte(strings.Join(lines, "\n")))
+	return err
 }
 
 func (d *porcelainGraphDisplayer) SetGraph(g *rdf.Graph) {
@@ -268,14 +274,14 @@ func valueLowerOrEqual(a, b interface{}) bool {
 	}
 }
 
-func titlesToIDs(mapping map[string]int, titles []string) []int {
+func titlesToIDs(mapping map[string]int, titles []string) ([]int, error) {
 	var ids []int
 	for _, t := range titles {
 		id, ok := mapping[strings.ToLower(t)]
 		if !ok {
-			panic(fmt.Sprintf("Invalid column name '%s'", t))
+			return ids, fmt.Errorf("Invalid column name '%s'", t)
 		}
 		ids = append(ids, id)
 	}
-	return ids
+	return ids, nil
 }

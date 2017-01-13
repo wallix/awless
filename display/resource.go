@@ -1,8 +1,9 @@
 package display
 
 import (
-	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"sort"
 
 	"github.com/olekukonko/tablewriter"
@@ -10,7 +11,7 @@ import (
 )
 
 type ResourceDisplayer interface {
-	Print() string
+	Print(io.Writer) error
 	SetResource(*aws.Resource)
 }
 
@@ -19,8 +20,9 @@ func BuildResourceDisplayer(headers []ColumnDefinition, opts Options) ResourceDi
 	case "table":
 		return &tableResourceDisplayer{headers: headers}
 	default:
-		panic(fmt.Sprintf("unknown displayer for %s", opts.Format))
+		fmt.Fprintf(os.Stderr, "unknown displayer for %s", opts.Format)
 	}
+	return &tableResourceDisplayer{headers: headers}
 }
 
 type tableResourceDisplayer struct {
@@ -28,9 +30,7 @@ type tableResourceDisplayer struct {
 	headers []ColumnDefinition
 }
 
-func (d *tableResourceDisplayer) Print() string {
-	var w bytes.Buffer
-
+func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	values := make(table, len(d.r.Properties()))
 
 	i := 0
@@ -55,7 +55,7 @@ func (d *tableResourceDisplayer) Print() string {
 
 	sort.Sort(byCols{table: values, sortBy: []int{0}})
 
-	table := tablewriter.NewWriter(&w)
+	table := tablewriter.NewWriter(w)
 	table.SetHeader([]string{"Property" + ascSymbol, "Value"})
 
 	for i := range values {
@@ -64,7 +64,7 @@ func (d *tableResourceDisplayer) Print() string {
 
 	table.Render()
 
-	return w.String()
+	return nil
 }
 
 func (d *tableResourceDisplayer) SetResource(r *aws.Resource) {
