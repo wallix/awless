@@ -4,22 +4,20 @@
 
 # Why awless
 
-Using Amazon Web Services through the default CLI is often discouraging, namely because of its complexity and API variety.
-
-`awless` has been created with the idea to run the most frequent actions easily, by using simple commands (like `git`) or pre-defined scripts.
+`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and pre-defined scripts for resource creations (see `awless` scripts).
 
 There is no need to edit manually any line of JSON, deal with policies, etc.
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
 
-# What awless can do
+# Overview
 
-- A simple command to list virtualized resources (subnets, instances, groups, users, etc.): `awless list`
-- Several output formats either human (tables, trees) or machine readable (csv, json): `--format`
-- The ability to create a local snapshot of the infrastructure deployed in the remote cloud: `awless sync`
-- The analysis of what has changed on the cloud since the last local snapshot: `awless diff`
-- A git-based versioning of what has been deployed in the cloud: `awless show revisions`
-- The simple and secure creation of virtual resources using pre-defined scenarios: `awless create`
-- Commands autocomplete for Unix/Linux's bash and zsh `awless completion`
+- Clear and easy listing of virtualized resources (subnets, instances, groups, users, etc.): `awless list`
+- Multiple output formats either human (tabular, trees, ...) or machine readable (csv, json, ...): `--format`
+- Create a local snapshot of the infrastructure (ec2, iam, s3) deployed in the remote cloud: `awless sync`
+- Show what has changed on the cloud since the last local snapshot: `awless diff`
+- A local history and versioning of the snapshots: `awless show revisions`
+- Creation of cloud resources (instances, groups, users, policies) with smart and secure default through powerful awless script
+- CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 
 # Install
 
@@ -36,7 +34,7 @@ Choose one of the following options:
 If you have previously used `aws` CLI or `aws-shell`, you don't need to do anything! Your credentials will be automatically loaded by `awless` from the `~/.aws/credentials` folder.
 
 Otherwise, get your AWS credentials from [IAM console](https://console.aws.amazon.com/iam/home?#home).
-Then, you can either download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws` (Windows).
+Then, you can either download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws\credentials` (Windows).
 
 For more options, see [Installation (wiki)](https://github.com/wallix/awless/wiki/Installation#setup-your-aws-account-with-awless).
 
