@@ -29,7 +29,7 @@ var diffCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if config.AwlessFirstSync {
-			return errors.New("No local data for a diff. You might want to perfom a sync first with `awless sync`")
+			exitOn(errors.New("No local data for a diff. You might want to perfom a sync first with `awless sync`"))
 		}
 
 		var awsInfra *aws.AwsInfra

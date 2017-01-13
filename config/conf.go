@@ -100,12 +100,12 @@ func resolveRegion() (region string) {
 
 	if validRegion(region) {
 		fmt.Printf("Found existing AWS region '%s'\n", region)
-		fmt.Println("Setting it as your default region. Change it with `awless config set region eu-west-1`")
+		fmt.Println("Setting it as your default region. Show config with `awless config`")
 		fmt.Println()
 		return
 	}
 
-	fmt.Println("Could not find any AWS region in your environment. Please choose one:\n")
+	fmt.Println("Could not find any AWS region in your environment. Please choose one:")
 
 	fmt.Println(strings.Join(allRegions(), ", "))
 	fmt.Println()
