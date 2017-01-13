@@ -3,6 +3,8 @@ package aws
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -16,6 +18,30 @@ import (
 var ErrInstanceNotFound = errors.New("Unknown instance")
 var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
+
+func (inf *Infra) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
+	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
+	method := reflect.ValueOf(inf).MethodByName(fnName)
+	if method.IsValid() && !method.IsNil() {
+		methodI := method.Interface()
+		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
+			return graphFn()
+		}
+	}
+	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
+}
+
+func (access *Access) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
+	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
+	method := reflect.ValueOf(access).MethodByName(fnName)
+	if method.IsValid() && !method.IsNil() {
+		methodI := method.Interface()
+		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
+			return graphFn()
+		}
+	}
+	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
+}
 
 func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
 	g := rdf.NewGraph()

@@ -1,5 +1,7 @@
 package rdf
 
+import "strings"
+
 type ResourceType int
 
 const (
@@ -61,4 +63,15 @@ func (r ResourceType) String() string {
 
 func (r ResourceType) ToRDFType() string {
 	return "/" + r.String()
+}
+
+func (r ResourceType) PluralString() string {
+	return pluralize(r.String())
+}
+
+func pluralize(singular string) string {
+	if strings.HasSuffix(singular, "y") {
+		return strings.TrimSuffix(singular, "y") + "ies"
+	}
+	return singular + "s"
 }

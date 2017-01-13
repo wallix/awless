@@ -48,11 +48,10 @@ var listCmd = &cobra.Command{
 	Short: "List various type of items: instances, vpc, subnet ...",
 }
 
-var listInfraResourceCmd = func(resource rdf.ResourceType) *cobra.Command {
-	resources := pluralize(resource.String())
+var listInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 	return &cobra.Command{
-		Use:   resources,
-		Short: "List AWS EC2 " + resources,
+		Use:   resourceType.PluralString(),
+		Short: "List AWS EC2 " + resourceType.PluralString(),
 
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *rdf.Graph
@@ -61,20 +60,19 @@ var listInfraResourceCmd = func(resource rdf.ResourceType) *cobra.Command {
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 
 			} else {
-				g, err = fetchRemoteResource(aws.InfraService, resources)
+				g, err = aws.InfraService.FetchRDFResources(resourceType)
 			}
 			exitOn(err)
 
-			printResources(g, resource)
+			printResources(g, resourceType)
 		},
 	}
 }
 
-var listAccessResourceCmd = func(resource rdf.ResourceType) *cobra.Command {
-	resources := pluralize(resource.String())
+var listAccessResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 	return &cobra.Command{
-		Use:   resources,
-		Short: "List AWS IAM " + resources,
+		Use:   resourceType.PluralString(),
+		Short: "List AWS IAM " + resourceType.PluralString(),
 
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *rdf.Graph
@@ -82,10 +80,10 @@ var listAccessResourceCmd = func(resource rdf.ResourceType) *cobra.Command {
 			if localResources {
 				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 			} else {
-				g, err = fetchRemoteResource(aws.AccessService, resources)
+				g, err = aws.AccessService.FetchRDFResources(resourceType)
 			}
 			exitOn(err)
-			printResources(g, resource)
+			printResources(g, resourceType)
 		},
 	}
 }
@@ -136,7 +134,7 @@ func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
 }
 
 func fetchRemoteResource(cloudService interface{}, resources string) (*rdf.Graph, error) {
-	fnName := fmt.Sprintf("%sGraph", humanize(resources))
+	fnName := fmt.Sprintf("%sGraph", strings.Title(resources))
 	method := reflect.ValueOf(cloudService).MethodByName(fnName)
 	if method.IsValid() && !method.IsNil() {
 		methodI := method.Interface()
@@ -152,11 +150,4 @@ func pluralize(singular string) string {
 		return strings.TrimSuffix(singular, "y") + "ies"
 	}
 	return singular + "s"
-}
-
-func humanize(s string) string {
-	if len(s) > 1 {
-		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
-	}
-	return strings.ToUpper(s)
 }
