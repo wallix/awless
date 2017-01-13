@@ -1,7 +1,7 @@
 package aws
 
 import (
-	"fmt"
+	"errors"
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -25,7 +25,10 @@ func InitSession(region string) (*session.Session, error) {
 		return nil, err
 	}
 	if _, err = session.Config.Credentials.Get(); err != nil {
-		return nil, fmt.Errorf("Your AWS credentials seem undefined: %s", err)
+		return nil, errors.New(`Your AWS credentials seem undefined!
+AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY need to be exported in your CLI environment
+
+Installation documentation is at https://github.com/wallix/awless/wiki/Installation`)
 	}
 
 	return session, nil

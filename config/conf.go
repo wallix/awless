@@ -8,8 +8,15 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 
+	yaml "gopkg.in/yaml.v2"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/spf13/viper"
 )
 
@@ -51,8 +58,10 @@ func InitAwlessEnv() {
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
-		ioutil.WriteFile(Path, []byte("region: \"eu-west-1\"\n"), 0600)
-		fmt.Printf("Creating default config file at %s\n", Path)
+		fmt.Println("First install. Welcome!")
+		fmt.Println()
+		region := resolveRegion()
+		writeYAMLConfigFile(region)
 	}
 
 	viper.SetConfigFile(Path)
@@ -81,4 +90,71 @@ func LoadPublicKey() (*rsa.PublicKey, error) {
 	default:
 		return nil, fmt.Errorf("unknown type of public key")
 	}
+}
+
+func resolveRegion() (region string) {
+	os.Setenv("AWS_SDK_LOAD_CONFIG", "true")
+	if sess, err := session.NewSession(); err == nil {
+		region = aws.StringValue(sess.Config.Region)
+	}
+
+	if validRegion(region) {
+		fmt.Printf("Found existing AWS region '%s'\n", region)
+		fmt.Println("Setting it as your default region. Change it with `awless config set region eu-west-1`")
+		fmt.Println()
+		return
+	}
+
+	fmt.Println("Could not find any AWS region in your environment. Please choose one:\n")
+
+	fmt.Println(strings.Join(allRegions(), ", "))
+	fmt.Println()
+	fmt.Print("Copy/paste one region > ")
+	fmt.Scan(&region)
+	for !validRegion(region) {
+		fmt.Print("Invalid! Copy/paste one valid region > ")
+		fmt.Scan(&region)
+	}
+
+	return
+}
+
+func writeYAMLConfigFile(region string) {
+	data := struct {
+		Region        string `yaml:"region"`
+		InstanceType  string `yaml:"instance_type"`
+		InstanceBase  string `yaml:"instance_base"`
+		InstanceCount int    `yaml:"instance_count"`
+	}{
+		Region:        region,
+		InstanceType:  "t2.micro",
+		InstanceBase:  "ami-9398d3e0",
+		InstanceCount: 1,
+	}
+
+	content, err := yaml.Marshal(data)
+	if err != nil {
+		fmt.Printf("cannot marshal yaml as config file: %s\n", err)
+	}
+
+	ioutil.WriteFile(Path, content, 0600)
+}
+
+func allRegions() []string {
+	var regions []string
+	partitions := endpoints.DefaultResolver().(endpoints.EnumPartitions).Partitions()
+	for _, p := range partitions {
+		for id := range p.Regions() {
+			regions = append(regions, id)
+		}
+	}
+	return regions
+}
+
+func validRegion(given string) bool {
+	reg, _ := regexp.Compile("^(us|eu|ap|sa|ca)\\-\\w+\\-\\d+$")
+	regChina, _ := regexp.Compile("^cn\\-\\w+\\-\\d+$")
+	regUsGov, _ := regexp.Compile("^us\\-gov\\-\\w+\\-\\d+$")
+
+	return reg.MatchString(given) || regChina.MatchString(given) || regUsGov.MatchString(given)
 }

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
@@ -14,7 +15,8 @@ func main() {
 
 	sess, err := aws.InitSession(viper.GetString("region"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	aws.InitServices(sess)
