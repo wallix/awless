@@ -152,6 +152,67 @@ apache`
 	}
 }
 
+func TestDateLists(t *testing.T) {
+	instances := []byte(`/region<eu-west-1>	"has_type"@[]	"/region"^^type:text
+/region<eu-west-1>	"parent_of"@[]	/user<user1>
+/region<eu-west-1>	"parent_of"@[]	/user<user2>
+/region<eu-west-1>	"parent_of"@[]	/user<user3>
+/user<user1>	"has_type"@[]	"/user"^^type:text
+/user<user2>	"has_type"@[]	"/user"^^type:text
+/user<user3>	"has_type"@[]	"/user"^^type:text
+/user<user1>	"property"@[]	"{"Key":"Id","Value":"user1"}"^^type:text
+/user<user2>	"property"@[]	"{"Key":"Id","Value":"user2"}"^^type:text
+/user<user3>	"property"@[]	"{"Key":"Id","Value":"user3"}"^^type:text
+/user<user1>	"property"@[]	"{"Key":"Name","Value":"my_username_1"}"^^type:text
+/user<user2>	"property"@[]	"{"Key":"Name","Value":"my_username_2"}"^^type:text
+/user<user3>	"property"@[]	"{"Key":"Name","Value":"my_username_3"}"^^type:text
+/user<user2>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2016-12-22T11:13:23Z"}"^^type:text
+/user<user3>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2016-12-10T08:35:37Z"}"^^type:text`)
+
+	g := rdf.NewGraph()
+	g.Unmarshal(instances)
+
+	headers := []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Name"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate"}, Format: Short},
+	}
+
+	displayer := BuildGraphDisplayer(headers, Options{
+		RdfType: rdf.User, Format: "table",
+		SortBy: []string{"id"},
+	})
+	displayer.SetGraph(g)
+	expected := `+-------+---------------+----------------------+
+| ID ▲  |     NAME      | PASSWORDLASTUSEDDATE |
++-------+---------------+----------------------+
+| user1 | my_username_1 |                      |
+| user2 | my_username_2 | 12/22/16 11:13       |
+| user3 | my_username_3 | 12/10/16 08:35       |
++-------+---------------+----------------------+
+`
+	if got, want := displayer.Print(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+
+	displayer = BuildGraphDisplayer(headers, Options{
+		RdfType: rdf.User, Format: "table",
+		SortBy: []string{"passwordlastuseddate"},
+	})
+	displayer.SetGraph(g)
+	expected = `+-------+---------------+------------------------+
+|  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
++-------+---------------+------------------------+
+| user1 | my_username_1 |                        |
+| user3 | my_username_3 | 12/10/16 08:35         |
+| user2 | my_username_2 | 12/22/16 11:13         |
++-------+---------------+------------------------+
+`
+	if got, want := displayer.Print(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+}
+
 func TestCompareInterface(t *testing.T) {
 	if got, want := valueLowerOrEqual(interface{}(1), interface{}(4)), true; got != want {
 		t.Fatalf("got %t want %t", got, want)

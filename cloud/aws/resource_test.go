@@ -3,6 +3,7 @@ package aws
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/rdf"
@@ -54,13 +55,16 @@ func TestLoadResources(t *testing.T) {
 	/instance<inst_3>  "has_type"@[] "/instance"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"redis3"}"^^type:text
+  /instance<inst_3>  "property"@[] "{"Key":"CreationDate","Value":"2017-01-10T16:47:18Z"}"^^type:text
 	/instance<subnet>  "has_type"@[] "/subnet"^^type:text
   /instance<subnet>  "property"@[] "{"Key":"Id","Value":"my subnet"}"^^type:text`))
+
+	time, _ := time.Parse(time.RFC3339, "2017-01-10T16:47:18Z")
 
 	expected := []*Resource{
 		{kind: rdf.Instance, id: "inst_1", properties: Properties{"Id": "inst_1", "Name": "redis"}},
 		{kind: rdf.Instance, id: "inst_2", properties: Properties{"Id": "inst_2", "Name": "redis2"}},
-		{kind: rdf.Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3"}},
+		{kind: rdf.Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
 	}
 	res, err := LoadResourcesFromGraph(g, rdf.Instance)
 	if err != nil {

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
+	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -204,11 +206,21 @@ func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var prop Property
 	err = json.Unmarshal([]byte(propStr), &prop)
 	if err != nil {
 		return nil, err
 	}
+
+	switch {
+	case strings.HasSuffix(strings.ToLower(prop.Key), "time"), strings.HasSuffix(strings.ToLower(prop.Key), "date"):
+		t, err := time.Parse(time.RFC3339, fmt.Sprint(prop.Value))
+		if err == nil {
+			prop.Value = t
+		}
+	}
+
 	return &prop, nil
 }
 

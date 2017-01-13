@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/wallix/awless/cloud/aws"
@@ -258,6 +259,10 @@ func valueLowerOrEqual(a, b interface{}) bool {
 		aa := a.(string)
 		bb := b.(string)
 		return aa <= bb
+	case time.Time:
+		aa := a.(time.Time)
+		bb := b.(time.Time)
+		return aa.Before(bb)
 	default:
 		panic(fmt.Sprintf("can not compare values of type %T", a))
 	}
