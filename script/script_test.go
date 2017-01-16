@@ -21,16 +21,17 @@ func TestRunDriverOnScript(t *testing.T) {
 		}
 		s.Statements = append(s.Statements, n)
 
-		mDriver := &mockDriver{
+		mDriver := &mockDriver{[]*expectation{{
 			action: "create", entity: "vpc",
 			expectedParams: map[string]interface{}{"count": 1},
+		}},
 		}
 
 		if err := s.Run(mDriver); err != nil {
 			t.Fatal(err)
 		}
-		if !mDriver.lookupCalled() {
-			t.Fatal("driver lookup not called")
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
 		}
 	})
 
@@ -46,9 +47,10 @@ func TestRunDriverOnScript(t *testing.T) {
 		}
 		s.Statements = append(s.Statements, decl)
 
-		mDriver := &mockDriver{
+		mDriver := &mockDriver{[]*expectation{{
 			action: "create", entity: "vpc",
 			expectedParams: map[string]interface{}{"count": 1},
+		}},
 		}
 
 		if err := s.Run(mDriver); err != nil {
@@ -58,9 +60,8 @@ func TestRunDriverOnScript(t *testing.T) {
 		if got, want := decl.Left.Val, "mynewvpc"; got != want {
 			t.Fatalf("identifier: got %#v, want %#v", got, want)
 		}
-
-		if !mDriver.lookupCalled() {
-			t.Fatal("driver lookup not called")
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
 		}
 	})
 }
@@ -139,28 +140,38 @@ func TestResolveTemplate(t *testing.T) {
 	})
 }
 
-type mockDriver struct {
+type expectation struct {
 	lookupDone     bool
 	action, entity string
 	expectedParams map[string]interface{}
 }
 
-func (r *mockDriver) lookupCalled() bool {
-	defer func() {
-		r.lookupDone = false
-	}()
+type mockDriver struct {
+	expects []*expectation
+}
 
-	return r.lookupDone
+func (r *mockDriver) lookupsCalled() error {
+	for _, expect := range r.expects {
+		if expect.lookupDone == false {
+			fmt.Errorf("lookup for expectation %v not called", expect)
+		}
+	}
+
+	return nil
 }
 
 func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
-	r.lookupDone = true
-	if lookups[0] == r.action && lookups[1] == r.entity {
-		return func(params map[string]interface{}) (interface{}, error) {
-			if got, want := params, r.expectedParams; !reflect.DeepEqual(got, want) {
-				return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", r.action, r.entity, got, want)
+
+	for _, expect := range r.expects {
+		if lookups[0] == expect.action && lookups[1] == expect.entity {
+			expect.lookupDone = true
+
+			return func(params map[string]interface{}) (interface{}, error) {
+				if got, want := params, expect.expectedParams; !reflect.DeepEqual(got, want) {
+					return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", expect.action, expect.entity, got, want)
+				}
+				return "mynewvpc", nil
 			}
-			return "mynewvpc", nil
 		}
 	}
 
