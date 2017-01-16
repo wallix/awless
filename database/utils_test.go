@@ -17,15 +17,16 @@ func newTestDb() (*DB, func()) {
 		panic(e)
 	}
 
-	db, err := Open(f.Name())
+	err := Open(f.Name())
 	if err != nil {
 		panic(err)
 	}
 
 	todefer := func() {
 		os.Remove(f.Name())
-		db.Close()
+		Current.Close()
 	}
+	InitDB(true)
 
-	return db, todefer
+	return Current, todefer
 }

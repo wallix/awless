@@ -12,8 +12,6 @@ import (
 )
 
 var (
-	db *database.DB
-
 	verboseFlag bool
 )
 
@@ -22,9 +20,9 @@ var RootCmd = &cobra.Command{
 	Short: "Manage your cloud",
 	Long:  "Awless is a powerful command line tool to inspect, sync and manage your infrastructure",
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		if db != nil {
-			defer db.Close()
-			db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+		if database.Current != nil {
+			defer database.Current.Close()
+			database.Current.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
 		}
 	},
 	BashCompletionFunction: bash_completion_func,
@@ -33,31 +31,24 @@ var RootCmd = &cobra.Command{
 func InitCli() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
 
-	var err error
-
-	db, err = database.Open(config.DatabasePath)
-	if err != nil {
-		if db != nil {
-			db.AddLog("can not save history: " + err.Error())
-		}
-	} else if stats.CheckStatsToSend(db, config.StatsExpirationDuration) {
+	if stats.CheckStatsToSend(database.Current, config.StatsExpirationDuration) {
 		publicKey, err := config.LoadPublicKey()
 		if err != nil {
-			db.AddLog(err.Error())
+			database.Current.AddLog(err.Error())
 		} else {
 			if !config.AwlessFirstSync {
 				go func() {
 					localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 					if err != nil {
-						db.AddLog(err.Error())
+						database.Current.AddLog(err.Error())
 					}
 					localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 					if err != nil {
-						db.AddLog(err.Error())
+						database.Current.AddLog(err.Error())
 					}
 
-					if err := stats.SendStats(db, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
-						db.AddLog(err.Error())
+					if err := stats.SendStats(database.Current, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
+						database.Current.AddLog(err.Error())
 					}
 				}()
 			}
@@ -67,8 +58,8 @@ func InitCli() {
 
 func ExecuteRoot() error {
 	err := RootCmd.Execute()
-	if err != nil && db != nil {
-		db.AddLog(err.Error())
+	if err != nil && database.Current != nil {
+		database.Current.AddLog(err.Error())
 	}
 
 	return err

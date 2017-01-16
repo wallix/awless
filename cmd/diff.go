@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 )
@@ -55,7 +55,12 @@ var diffCmd = &cobra.Command{
 
 		wg.Wait()
 
-		root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
+		region, ok := database.Current.GetDefaultString("region")
+		if !ok {
+			return fmt.Errorf("invalid region '%s'", region)
+		}
+
+		root, err := node.NewNodeFromStrings("/region", region)
 		if err != nil {
 			return err
 		}
@@ -65,7 +70,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteInfra, err := aws.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+		remoteInfra, err := aws.BuildAwsInfraGraph(region, awsInfra)
 		if err != nil {
 			return err
 		}
@@ -80,7 +85,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		remoteAccess, err := aws.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
+		remoteAccess, err := aws.BuildAwsAccessGraph(region, awsAccess)
 		if err != nil {
 			return err
 		}
@@ -121,7 +126,7 @@ var diffCmd = &cobra.Command{
 			fmt.Print("\nDo you want to perform a sync? (y/n): ")
 			fmt.Scanln(&yesorno)
 			if strings.TrimSpace(yesorno) == "y" {
-				performSync()
+				performSync(region)
 			}
 		}
 

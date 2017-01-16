@@ -2,11 +2,13 @@ package aws
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/database"
 )
 
 const (
@@ -19,7 +21,14 @@ var (
 	InfraService  *Infra
 )
 
-func InitSession(region string) (*session.Session, error) {
+func InitSession() (*session.Session, error) {
+	if database.Current == nil {
+		return nil, fmt.Errorf("empty config database")
+	}
+	region, ok := database.Current.GetDefaultString("region")
+	if !ok {
+		return nil, fmt.Errorf("invalid region '%s'", fmt.Sprint(region))
+	}
 	session, err := session.NewSession(&awssdk.Config{Region: awssdk.String(region)})
 	if err != nil {
 		return nil, err

@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -76,10 +75,14 @@ func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromComman
 	if err != nil {
 		return nil, 0, err
 	}
+	region, ok := db.GetDefaultString("region")
+	if !ok {
+		return nil, 0, fmt.Errorf("invalid region '%s'", region)
+	}
 
 	im := &infraMetrics{}
 	if infra != nil {
-		im, err = buildInfraMetrics(infra)
+		im, err = buildInfraMetrics(region, infra)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -87,7 +90,7 @@ func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromComman
 
 	am := &accessMetrics{}
 	if access != nil {
-		am, err = buildAccessMetrics(access, time.Now())
+		am, err = buildAccessMetrics(region, access, time.Now())
 		if err != nil {
 			return nil, 0, err
 		}
@@ -266,10 +269,10 @@ type infraMetrics struct {
 	MaxInstancesPerSubnet int
 }
 
-func buildInfraMetrics(infra *rdf.Graph) (*infraMetrics, error) {
+func buildInfraMetrics(region string, infra *rdf.Graph) (*infraMetrics, error) {
 	metrics := &infraMetrics{
 		Date:   time.Now(),
-		Region: viper.GetString("region"),
+		Region: region,
 	}
 
 	c, min, max, err := computeCountMinMaxChildForType(infra, rdf.Vpc)
@@ -293,10 +296,10 @@ func buildInfraMetrics(infra *rdf.Graph) (*infraMetrics, error) {
 	return metrics, nil
 }
 
-func buildAccessMetrics(access *rdf.Graph, time time.Time) (*accessMetrics, error) {
+func buildAccessMetrics(region string, access *rdf.Graph, time time.Time) (*accessMetrics, error) {
 	metrics := &accessMetrics{
 		Date:   time,
-		Region: viper.GetString("region"),
+		Region: region,
 	}
 	c, min, max, err := computeCountMinMaxForTypeWithChildType(access, rdf.Group, rdf.User)
 	if err != nil {

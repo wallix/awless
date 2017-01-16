@@ -383,12 +383,6 @@
 			"revisionTime": "2015-10-24T10:54:09Z"
 		},
 		{
-			"checksumSHA1": "PcY9mPry2ntvgSrSBDAdTJ3E3gU=",
-			"path": "github.com/spf13/viper",
-			"revision": "c975dc1b4eacf4ec7fdbf0873638de5d090ba323",
-			"revisionTime": "2015-12-30T06:11:39Z"
-		},
-		{
 			"checksumSHA1": "8QeSG127zQqbA+YfkO1WkKx/iUI=",
 			"path": "github.com/src-d/gcfg",
 			"revision": "f187355171c936ac84a82793659ebb4936bc1c23",

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/database"
 )
 
 func init() {
@@ -27,8 +28,8 @@ var historyFlushCmd = &cobra.Command{
 	Short: "Empty the history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if db != nil {
-			err := db.EmptyHistory()
+		if database.Current != nil {
+			err := database.Current.EmptyHistory()
 			if err != nil {
 				return err
 			}
@@ -45,8 +46,8 @@ var historyShowCmd = &cobra.Command{
 	Short: "Show the history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if db != nil {
-			lines, err := db.GetHistory(0)
+		if database.Current != nil {
+			lines, err := database.Current.GetHistory(0)
 			if err != nil {
 				return err
 			}

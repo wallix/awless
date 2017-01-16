@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/wallix/awless/database"
 )
 
 func init() {
@@ -19,7 +19,11 @@ var openCmd = &cobra.Command{
 	Short: "Open your AWS console in your default browser",
 
 	RunE: func(c *cobra.Command, args []string) error {
-		console := fmt.Sprintf("https://%s.console.aws.amazon.com/console/home", viper.GetString("region"))
+		region, ok := database.Current.GetDefaultString("region")
+		if !ok {
+			exitOn(fmt.Errorf("invalid region '%s'", region))
+		}
+		console := fmt.Sprintf("https://%s.console.aws.amazon.com/console/home", region)
 
 		var verb string
 		switch runtime.GOOS {

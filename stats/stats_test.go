@@ -133,7 +133,7 @@ func TestStats(t *testing.T) {
 		},
 		InfraMetrics: &infraMetrics{
 			Date:                  now,
-			Region:                "",
+			Region:                "eu-west-1",
 			NbVpcs:                2,
 			NbSubnets:             3,
 			NbInstances:           3,
@@ -150,7 +150,7 @@ func TestStats(t *testing.T) {
 		},
 		AccessMetrics: &accessMetrics{
 			Date:                     now,
-			Region:                   "",
+			Region:                   "eu-west-1",
 			NbGroups:                 2,
 			NbPolicies:               2,
 			NbRoles:                  1,

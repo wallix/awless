@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	awscloud "github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/script"
 	"github.com/wallix/awless/script/driver/aws"
 )
@@ -44,7 +44,11 @@ var runCmd = &cobra.Command{
 			return err
 		}
 
-		scrpt.ResolveTemplate(viper.AllSettings())
+		defaults, err := database.Current.GetDefaults()
+		if err != nil {
+			return err
+		}
+		scrpt.ResolveTemplate(defaults)
 
 		awsDriver := aws.NewDriver(awscloud.InfraService)
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))

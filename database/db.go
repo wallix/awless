@@ -14,53 +14,54 @@ const (
 	salt = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
 )
 
+var (
+	Current *DB
+)
+
 // A DB stores awless config, logs...
 type DB struct {
 	*bolt.DB
 }
 
 // Open opens the database if it exists, else it creates a new database.
-func Open(name string) (*DB, error) {
+func Open(name string) error {
 	boltdb, err := bolt.Open(name, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		return nil, err
-	}
-	db := &DB{boltdb}
-
-	if id, err := db.GetStringValue(AwlessIdKey); err != nil {
-		return nil, err
-	} else if id == "" {
-		if err = db.newDB(); err != nil {
-			return nil, err
-		}
-
+		return err
 	}
 
-	return db, nil
+	Current = &DB{boltdb}
+
+	return nil
 }
 
-func (db *DB) newDB() error {
-	userID, err := cloud.Current.GetUserId()
-	if err != nil {
-		return err
+func InitDB(firstInstall bool) error {
+	if Current == nil {
+		return fmt.Errorf("database: empty current database")
 	}
-	newID, err := generateAnonymousID(userID)
-	if err != nil {
-		return err
-	}
-	if err = db.SetStringValue(AwlessIdKey, newID); err != nil {
-		return err
-	}
-	accountID, err := cloud.Current.GetAccountId()
-	if err != nil {
-		return err
-	}
-	aID, err := generateAnonymousID(accountID)
-	if err != nil {
-		return err
-	}
-	if err = db.SetStringValue(AwlessAIdKey, aID); err != nil {
-		return err
+	if firstInstall {
+		userID, err := cloud.Current.GetUserId()
+		if err != nil {
+			return err
+		}
+		newID, err := generateAnonymousID(userID)
+		if err != nil {
+			return err
+		}
+		if err = Current.SetStringValue(AwlessIdKey, newID); err != nil {
+			return err
+		}
+		accountID, err := cloud.Current.GetAccountId()
+		if err != nil {
+			return err
+		}
+		aID, err := generateAnonymousID(accountID)
+		if err != nil {
+			return err
+		}
+		if err = Current.SetStringValue(AwlessAIdKey, aID); err != nil {
+			return err
+		}
 	}
 
 	return nil

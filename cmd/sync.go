@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision"
 )
@@ -26,7 +26,11 @@ var syncCmd = &cobra.Command{
 	Short: "Manage your local infrastructure",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		infrag, accessg, err := performSync()
+		region, ok := database.Current.GetDefaultString("region")
+		if !ok {
+			exitOn(fmt.Errorf("invalid region '%s'", region))
+		}
+		infrag, accessg, err := performSync(region)
 		if err != nil {
 			return err
 		}
@@ -40,7 +44,7 @@ var syncCmd = &cobra.Command{
 				fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
 			}
 
-			root, err := node.NewNodeFromStrings("/region", viper.GetString("region"))
+			root, err := node.NewNodeFromStrings("/region", region)
 			if err != nil {
 				return err
 			}
@@ -53,7 +57,7 @@ var syncCmd = &cobra.Command{
 	},
 }
 
-func performSync() (*rdf.Graph, *rdf.Graph, error) {
+func performSync(region string) (*rdf.Graph, *rdf.Graph, error) {
 	var awsInfra *aws.AwsInfra
 	var awsAccess *aws.AwsAccess
 
@@ -77,7 +81,7 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 
 	wg.Wait()
 
-	infrag, err := aws.BuildAwsInfraGraph(viper.GetString("region"), awsInfra)
+	infrag, err := aws.BuildAwsInfraGraph(region, awsInfra)
 
 	tofile, err := infrag.Marshal()
 	if err != nil {
@@ -87,7 +91,7 @@ func performSync() (*rdf.Graph, *rdf.Graph, error) {
 		return nil, nil, err
 	}
 
-	accessg, err := aws.BuildAwsAccessGraph(viper.GetString("region"), awsAccess)
+	accessg, err := aws.BuildAwsAccessGraph(region, awsAccess)
 
 	tofile, err = accessg.Marshal()
 	if err != nil {

@@ -5,29 +5,25 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/spf13/viper"
+	"github.com/wallix/awless/database"
 )
 
 var (
-	configFilename       = "config.yaml"
 	databaseFilename     = "awless.db"
-	GitDir               = filepath.Join(os.Getenv("HOME"), ".awless", "aws", "rdf")
-	Dir                  = filepath.Join(os.Getenv("HOME"), ".awless", "aws")
-	KeysDir              = filepath.Join(os.Getenv("HOME"), ".awless", "keys")
-	Path                 = filepath.Join(Dir, configFilename)
-	DatabasePath         = filepath.Join(os.Getenv("HOME"), ".awless", databaseFilename)
+	AwlessHome           = filepath.Join(os.Getenv("HOME"), ".awless")
+	GitDir               = filepath.Join(AwlessHome, "aws", "rdf")
+	Dir                  = filepath.Join(AwlessHome, "aws")
+	KeysDir              = filepath.Join(AwlessHome, "keys")
+	DatabasePath         = filepath.Join(AwlessHome, databaseFilename)
 	StatsServerUrl       = "http://52.213.243.16:8080"
 	StatsServerPublicKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuUK69ARmXV0Xsj30+6S7
@@ -45,31 +41,30 @@ SwIDAQAB
 	AwlessFirstInstall, AwlessFirstSync bool
 )
 
-func InitAwlessEnv() {
+func InitAwlessEnv() error {
+	_, err := os.Stat(AwlessHome)
 	_, ierr := os.Stat(filepath.Join(GitDir, InfraFilename))
 	_, aerr := os.Stat(filepath.Join(GitDir, AccessFilename))
 	AwlessFirstSync = os.IsNotExist(ierr) || os.IsNotExist(aerr)
 
-	_, err := os.Stat(Path)
 	AwlessFirstInstall = os.IsNotExist(err)
 
 	os.MkdirAll(GitDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
 
+	err = database.Open(DatabasePath)
+	if err != nil {
+		return err
+	}
+
 	if AwlessFirstInstall {
 		fmt.Println("First install. Welcome!")
 		fmt.Println()
 		region := resolveRegion()
-		writeYAMLConfigFile(region)
+		addDefaults(region)
 	}
 
-	viper.SetConfigFile(Path)
-
-	if err = viper.ReadInConfig(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-		return
-	}
+	return nil
 }
 
 func LoadPublicKey() (*rsa.PublicKey, error) {
@@ -118,25 +113,20 @@ func resolveRegion() (region string) {
 	return
 }
 
-func writeYAMLConfigFile(region string) {
-	data := struct {
-		Region        string `yaml:"region"`
-		InstanceType  string `yaml:"instance_type"`
-		InstanceBase  string `yaml:"instance_base"`
-		InstanceCount int    `yaml:"instance_count"`
-	}{
-		Region:        region,
-		InstanceType:  "t2.micro",
-		InstanceBase:  "ami-9398d3e0",
-		InstanceCount: 1,
+func addDefaults(region string) error {
+	defaults := map[string]interface{}{
+		RegionKey:        region,
+		InstanceTypeKey:  "t2.micro",
+		InstanceBaseKey:  "ami-9398d3e0",
+		InstanceCountKey: 1,
 	}
-
-	content, err := yaml.Marshal(data)
-	if err != nil {
-		fmt.Printf("cannot marshal yaml as config file: %s\n", err)
+	for k, v := range defaults {
+		err := database.Current.SetDefault(k, v)
+		if err != nil {
+			return err
+		}
 	}
-
-	ioutil.WriteFile(Path, content, 0600)
+	return nil
 }
 
 func allRegions() []string {
