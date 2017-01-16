@@ -4,7 +4,7 @@ package ast
 # parser declaration
 
 type Peg Peg {
- *Script
+ *AST
 }
 
 Script   <- Spacing Statement+ EndOfFile

@@ -2,8 +2,8 @@ package script
 
 import "github.com/wallix/awless/script/ast"
 
-func Parse(text string) (*ast.Script, error) {
-	p := &ast.Peg{Script: &ast.Script{}, Buffer: string(text), Pretty: true}
+func Parse(text string) (*Script, error) {
+	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text), Pretty: true}
 	p.Init()
 
 	if err := p.Parse(); err != nil {
@@ -11,5 +11,5 @@ func Parse(text string) (*ast.Script, error) {
 	}
 	p.Execute()
 
-	return p.Script, nil
+	return &Script{p.AST}, nil
 }

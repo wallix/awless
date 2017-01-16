@@ -7,7 +7,11 @@ import (
 	"github.com/wallix/awless/script/driver"
 )
 
-func Visit(s *ast.Script, d driver.Driver) error {
+type Script struct {
+	*ast.AST
+}
+
+func (s Script) Run(d driver.Driver) error {
 	vars := map[string]interface{}{}
 
 	for _, sts := range s.Statements {
@@ -37,7 +41,38 @@ func Visit(s *ast.Script, d driver.Driver) error {
 	return nil
 }
 
-func VisitExpressionNodes(s *ast.Script, fn func(n *ast.ExpressionNode)) {
+func (s Script) ResolveTemplate(refs map[string]interface{}) error {
+	each := func(expr *ast.ExpressionNode) {
+		expr.ProcessHoles(refs)
+	}
+
+	s.visitExpressionNodes(each)
+
+	return nil
+}
+
+func (s Script) InteractiveResolveTemplate(each func(question string) interface{}) error {
+	fn := func(expr *ast.ExpressionNode) {
+		for key, hole := range expr.Holes {
+			if expr.Params == nil {
+				expr.Params = make(map[string]interface{})
+			}
+			res := each(capitalize(hole))
+			expr.Params[key] = res
+			delete(expr.Holes, key)
+		}
+	}
+
+	s.visitExpressionNodes(fn)
+
+	return nil
+}
+
+func (s Script) Compile() error {
+	return nil
+}
+
+func (s Script) visitExpressionNodes(fn func(n *ast.ExpressionNode)) {
 	for _, sts := range s.Statements {
 		var expr *ast.ExpressionNode
 
@@ -54,26 +89,7 @@ func VisitExpressionNodes(s *ast.Script, fn func(n *ast.ExpressionNode)) {
 	}
 }
 
-func ResolveHolesWith(fills map[string]interface{}) func(expr *ast.ExpressionNode) {
-	return func(expr *ast.ExpressionNode) {
-		expr.ProcessHoles(fills)
-	}
-}
-
-func InteractiveResolveHoles(fn func(question string) interface{}) func(expr *ast.ExpressionNode) {
-	return func(expr *ast.ExpressionNode) {
-		for key, hole := range expr.Holes {
-			if expr.Params == nil {
-				expr.Params = make(map[string]interface{})
-			}
-			res := fn(humanize(hole))
-			expr.Params[key] = res
-			delete(expr.Holes, key)
-		}
-	}
-}
-
-func humanize(s string) string {
+func capitalize(s string) string {
 	if len(s) > 1 {
 		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
 	}

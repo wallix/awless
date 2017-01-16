@@ -10,7 +10,7 @@ import (
 func TestScriptParsing(t *testing.T) {
 	tcases := []struct {
 		input    string
-		verifyFn func(s *ast.Script)
+		verifyFn func(s *Script)
 	}{
 		{
 			input: `
@@ -19,7 +19,7 @@ mysubnet = delete subnet vpc={one} name=bill
 create instance count=1 type=t2.micro base=ami-9398d3e0 ip=127.0.0.1
 		`,
 
-			verifyFn: func(s *ast.Script) {
+			verifyFn: func(s *Script) {
 				assertStatementsCount(t, s, 3)
 				assertDeclarationNode(t, 0, s.Statements, "myvpc", "create", "vpc",
 					map[string]interface{}{"cidr": "10.0.0.0/24", "num": 3}, map[string]string{},
@@ -57,7 +57,7 @@ func assertDeclarationNode(t *testing.T, index int, sts []ast.Node, expIdent, ex
 	verifyExpressionNode(t, index, decl.Right, expAction, expEntity, params, holes)
 }
 
-func assertStatementsCount(t *testing.T, s *ast.Script, count int) {
+func assertStatementsCount(t *testing.T, s *Script, count int) {
 	if got, want := len(s.Statements), count; got != want {
 		t.Fatalf("expected %d statements got %d\n%#v", want, got, s.Statements)
 	}

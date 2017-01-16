@@ -198,7 +198,7 @@ func (t *tokens32) Tokens() []token32 {
 }
 
 type Peg struct {
-	*Script
+	*AST
 
 	Buffer string
 	buffer []rune

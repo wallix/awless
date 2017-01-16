@@ -44,10 +44,11 @@ var runCmd = &cobra.Command{
 			return err
 		}
 
+		scrpt.ResolveTemplate(viper.AllSettings())
+
 		awsDriver := aws.NewDriver(awscloud.InfraService)
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 
-		script.VisitExpressionNodes(scrpt, script.ResolveHolesWith(viper.AllSettings()))
-		return script.Visit(scrpt, awsDriver)
+		return scrpt.Run(awsDriver)
 	},
 }

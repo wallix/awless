@@ -8,7 +8,7 @@ import (
 
 type Node interface{}
 
-type Script struct {
+type AST struct {
 	Statements []Node
 
 	currentStatement Node
@@ -43,7 +43,7 @@ func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) {
 	}
 }
 
-func (s *Script) AddAction(text string) {
+func (s *AST) AddAction(text string) {
 	expr := s.currentExpression()
 	if expr == nil {
 		s.addStatement(&ExpressionNode{Action: text})
@@ -52,12 +52,12 @@ func (s *Script) AddAction(text string) {
 	}
 }
 
-func (s *Script) AddEntity(text string) {
+func (s *AST) AddEntity(text string) {
 	expr := s.currentExpression()
 	expr.Entity = text
 }
 
-func (s *Script) AddDeclarationIdentifier(text string) {
+func (s *AST) AddDeclarationIdentifier(text string) {
 	decl := &DeclarationNode{
 		Left:  &IdentifierNode{Ident: text},
 		Right: &ExpressionNode{},
@@ -65,12 +65,12 @@ func (s *Script) AddDeclarationIdentifier(text string) {
 	s.addStatement(decl)
 }
 
-func (s *Script) EndOfParams() {
+func (s *AST) EndOfParams() {
 	s.currentStatement = nil
 	s.currentKey = ""
 }
 
-func (s *Script) AddParamKey(text string) {
+func (s *AST) AddParamKey(text string) {
 	expr := s.currentExpression()
 	if expr.Params == nil {
 		expr.Params = make(map[string]interface{})
@@ -79,12 +79,12 @@ func (s *Script) AddParamKey(text string) {
 	s.currentKey = text
 }
 
-func (s *Script) AddParamValue(text string) {
+func (s *AST) AddParamValue(text string) {
 	expr := s.currentExpression()
 	expr.Params[s.currentKey] = text
 }
 
-func (s *Script) AddParamIntValue(text string) {
+func (s *AST) AddParamIntValue(text string) {
 	expr := s.currentExpression()
 	num, err := strconv.Atoi(text)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *Script) AddParamIntValue(text string) {
 	expr.Params[s.currentKey] = num
 }
 
-func (s *Script) AddParamCidrValue(text string) {
+func (s *AST) AddParamCidrValue(text string) {
 	expr := s.currentExpression()
 	_, ipnet, err := net.ParseCIDR(text)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *Script) AddParamCidrValue(text string) {
 	expr.Params[s.currentKey] = ipnet.String()
 }
 
-func (s *Script) AddParamIpValue(text string) {
+func (s *AST) AddParamIpValue(text string) {
 	expr := s.currentExpression()
 	ip := net.ParseIP(text)
 	if ip == nil {
@@ -111,12 +111,12 @@ func (s *Script) AddParamIpValue(text string) {
 	expr.Params[s.currentKey] = ip.String()
 }
 
-func (s *Script) AddParamHoleValue(text string) {
+func (s *AST) AddParamHoleValue(text string) {
 	expr := s.currentExpression()
 	expr.Holes[s.currentKey] = text
 }
 
-func (s *Script) currentExpression() *ExpressionNode {
+func (s *AST) currentExpression() *ExpressionNode {
 	st := s.currentStatement
 	if st == nil {
 		return nil
@@ -132,7 +132,7 @@ func (s *Script) currentExpression() *ExpressionNode {
 	}
 }
 
-func (s *Script) addStatement(n Node) {
+func (s *AST) addStatement(n Node) {
 	s.currentStatement = n
 	s.Statements = append(s.Statements, n)
 }
