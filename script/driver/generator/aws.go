@@ -97,6 +97,27 @@ import (
   "github.com/wallix/awless/script/driver"
 )
 {{ range $index, $def := . }}
+
+func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
+  input := &ec2.{{ $def.Input }}{}
+
+  input.DryRun = aws.Bool(true)
+  {{ range $awsField, $field := $def.ParamsMapping }}
+  setField(params["{{ $field }}"], input, "{{ $awsField }}")
+  {{- end }}
+
+  _, err := d.api.{{ $def.ApiMethod }}(input)
+  if awsErr, ok := err.(awserr.Error); ok {
+    if awsErr.Code() == "DryRunOperation" {
+      d.logger.Println("dry run: {{ $def.Action }} {{ $def.Entity }} done")
+      return nil, nil
+    }
+  }
+
+  d.logger.Printf("dry run: {{ $def.Action }} {{ $def.Entity }} error: %s", err)
+  return nil, err
+}
+
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
   input := &ec2.{{ $def.Input }}{}
   {{ range $awsField, $field := $def.ParamsMapping }}

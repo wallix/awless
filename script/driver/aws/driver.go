@@ -13,6 +13,7 @@ import (
 
 type AwsDriver struct {
 	api    ec2iface.EC2API
+	dryRun bool
 	logger *log.Logger
 }
 
@@ -23,16 +24,22 @@ func NewDriver(api ec2iface.EC2API) *AwsDriver {
 	}
 }
 
-func (d *AwsDriver) SetLogger(l *log.Logger) {
-	d.logger = l
-}
+func (d *AwsDriver) SetDryRun(dry bool)      { d.dryRun = dry }
+func (d *AwsDriver) SetLogger(l *log.Logger) { d.logger = l }
 
 func (d *AwsDriver) Lookup(lookups ...string) driver.DriverFn {
 	if len(lookups) < 2 {
 		panic("need at least 2 string to lookup driver method")
 	}
 
-	fnName := fmt.Sprintf("%s_%s", humanize(lookups[0]), humanize(lookups[1]))
+	var format string
+	if d.dryRun {
+		format = "%s_%s_DryRun"
+	} else {
+		format = "%s_%s"
+	}
+
+	fnName := fmt.Sprintf(format, humanize(lookups[0]), humanize(lookups[1]))
 	method := reflect.ValueOf(d).MethodByName(fnName).Interface()
 
 	driverFn, converted := method.(func(map[string]interface{}) (interface{}, error))

@@ -41,8 +41,11 @@ func (s Script) Run(d driver.Driver) error {
 	return nil
 }
 
-func (s Script) Compile() error {
-	return nil
+func (s Script) Compile(d driver.Driver) error {
+	defer d.SetDryRun(false)
+	d.SetDryRun(true)
+
+	return s.Run(d)
 }
 
 func (s Script) ResolveTemplate(refs map[string]interface{}) error {

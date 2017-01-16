@@ -14,6 +14,8 @@ import (
 	"github.com/wallix/awless/script/driver/aws"
 )
 
+var isDryRun bool
+
 func init() {
 	RootCmd.AddCommand(runCmd)
 }
@@ -52,6 +54,10 @@ var runCmd = &cobra.Command{
 
 		awsDriver := aws.NewDriver(awscloud.InfraService)
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
+
+		if err := scrpt.Compile(awsDriver); err != nil {
+			return err
+		}
 
 		return scrpt.Run(awsDriver)
 	},

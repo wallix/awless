@@ -4,6 +4,7 @@ import "log"
 
 type Driver interface {
 	Lookup(...string) DriverFn
+	SetDryRun(bool)
 	SetLogger(*log.Logger)
 }
 

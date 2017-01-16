@@ -220,3 +220,4 @@ func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
 }
 
 func (r *mockDriver) SetLogger(*log.Logger) {}
+func (r *mockDriver) SetDryRun(bool)        {}
