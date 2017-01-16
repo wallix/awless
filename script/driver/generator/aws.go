@@ -108,9 +108,10 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 
   _, err := d.api.{{ $def.ApiMethod }}(input)
   if awsErr, ok := err.(awserr.Error); ok {
-    if awsErr.Code() == "DryRunOperation" {
+    switch code := awsErr.Code(); {
+    case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
       d.logger.Println("dry run: {{ $def.Action }} {{ $def.Entity }} done")
-      return nil, nil
+      return fmt.Sprintf("{{ $def.Entity }}_%d", rand.Intn(1e3)), nil
     }
   }
 

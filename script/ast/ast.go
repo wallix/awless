@@ -6,7 +6,9 @@ import (
 	"strconv"
 )
 
-type Node interface{}
+type Node interface {
+	clone() Node
+}
 
 type AST struct {
 	Statements []Node
@@ -20,15 +22,46 @@ type IdentifierNode struct {
 	Val   interface{}
 }
 
+func (n *IdentifierNode) clone() Node {
+	return &IdentifierNode{
+		Ident: n.Ident,
+		Val:   n.Val,
+	}
+}
+
 type DeclarationNode struct {
 	Left  *IdentifierNode
 	Right *ExpressionNode
+}
+
+func (n *DeclarationNode) clone() Node {
+	return &DeclarationNode{
+		Left:  n.Left.clone().(*IdentifierNode),
+		Right: n.Right.clone().(*ExpressionNode),
+	}
 }
 
 type ExpressionNode struct {
 	Action, Entity string
 	Params         map[string]interface{}
 	Holes          map[string]string
+}
+
+func (n *ExpressionNode) clone() Node {
+	expr := &ExpressionNode{
+		Action: n.Action, Entity: n.Entity,
+		Params: make(map[string]interface{}),
+		Holes:  make(map[string]string),
+	}
+
+	for k, v := range n.Params {
+		expr.Params[k] = v
+	}
+	for k, v := range n.Holes {
+		expr.Holes[k] = v
+	}
+
+	return expr
 }
 
 func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) {
@@ -130,6 +163,14 @@ func (s *AST) currentExpression() *ExpressionNode {
 	default:
 		panic("last expression: unexpected node type")
 	}
+}
+
+func (a *AST) Clone() *AST {
+	clone := &AST{}
+	for _, node := range a.Statements {
+		clone.Statements = append(clone.Statements, node.clone())
+	}
+	return clone
 }
 
 func (s *AST) addStatement(n Node) {

@@ -12,7 +12,7 @@ import (
 )
 
 func TestRunDriverOnScript(t *testing.T) {
-	t.Run("Driver run multiline statement", func(t *testing.T) {
+	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
 		s := &Script{&ast.AST{}}
 
 		s.Statements = append(s.Statements, &ast.DeclarationNode{
@@ -31,7 +31,7 @@ func TestRunDriverOnScript(t *testing.T) {
 		},
 		)
 
-		mDriver := &mockDriver{[]*expectation{{
+		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
 			action: "create", entity: "vpc",
 			expectedParams: map[string]interface{}{"count": 1},
 		}, {
@@ -44,7 +44,27 @@ func TestRunDriverOnScript(t *testing.T) {
 		},
 		}
 
-		if err := s.Run(mDriver); err != nil {
+		if _, err := s.Run(mDriver); err != nil {
+			t.Fatal(err)
+		}
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
+		}
+
+		mDriver = &mockDriver{prefix: "myother", expects: []*expectation{{
+			action: "create", entity: "vpc",
+			expectedParams: map[string]interface{}{"count": 1},
+		}, {
+			action: "create", entity: "subnet",
+			expectedParams: map[string]interface{}{"vpc": "myothervpc"},
+		}, {
+			action: "create", entity: "instance",
+			expectedParams: map[string]interface{}{"subnet": "myothersubnet"},
+		},
+		},
+		}
+
+		if _, err := s.Run(mDriver); err != nil {
 			t.Fatal(err)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -61,13 +81,13 @@ func TestRunDriverOnScript(t *testing.T) {
 		}
 		s.Statements = append(s.Statements, n)
 
-		mDriver := &mockDriver{[]*expectation{{
+		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
 			action: "create", entity: "vpc",
 			expectedParams: map[string]interface{}{"count": 1},
 		}},
 		}
 
-		if err := s.Run(mDriver); err != nil {
+		if _, err := s.Run(mDriver); err != nil {
 			t.Fatal(err)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -87,17 +107,19 @@ func TestRunDriverOnScript(t *testing.T) {
 		}
 		s.Statements = append(s.Statements, decl)
 
-		mDriver := &mockDriver{[]*expectation{{
+		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
 			action: "create", entity: "vpc",
 			expectedParams: map[string]interface{}{"count": 1},
 		}},
 		}
 
-		if err := s.Run(mDriver); err != nil {
+		executedScript, err := s.Run(mDriver)
+		if err != nil {
 			t.Fatal(err)
 		}
 
-		if got, want := decl.Left.Val, "mynewvpc"; got != want {
+		modifiedDecl := executedScript.Statements[0].(*ast.DeclarationNode)
+		if got, want := modifiedDecl.Left.Val, "mynewvpc"; got != want {
 			t.Fatalf("identifier: got %#v, want %#v", got, want)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -188,6 +210,7 @@ type expectation struct {
 
 type mockDriver struct {
 	expects []*expectation
+	prefix  string
 }
 
 func (r *mockDriver) lookupsCalled() error {
@@ -209,7 +232,7 @@ func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
 				if got, want := expect.expectedParams, params; !reflect.DeepEqual(got, want) {
 					return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", expect.action, expect.entity, got, want)
 				}
-				return "mynew" + expect.entity, nil
+				return r.prefix + expect.entity, nil
 			}
 		}
 	}

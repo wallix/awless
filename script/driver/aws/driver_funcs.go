@@ -3,6 +3,10 @@
 package aws
 
 import (
+	"fmt"
+	"math/rand"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -17,9 +21,10 @@ func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 
 	_, err := d.api.CreateVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "DryRunOperation" {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			d.logger.Println("dry run: create vpc done")
-			return nil, nil
+			return fmt.Sprintf("vpc_%d", rand.Intn(1e3)), nil
 		}
 	}
 
@@ -51,9 +56,10 @@ func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 
 	_, err := d.api.DeleteVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "DryRunOperation" {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			d.logger.Println("dry run: delete vpc done")
-			return nil, nil
+			return fmt.Sprintf("vpc_%d", rand.Intn(1e3)), nil
 		}
 	}
 
@@ -86,9 +92,10 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 
 	_, err := d.api.CreateSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "DryRunOperation" {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			d.logger.Println("dry run: create subnet done")
-			return nil, nil
+			return fmt.Sprintf("subnet_%d", rand.Intn(1e3)), nil
 		}
 	}
 
@@ -121,9 +128,10 @@ func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 
 	_, err := d.api.DeleteSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "DryRunOperation" {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			d.logger.Println("dry run: delete subnet done")
-			return nil, nil
+			return fmt.Sprintf("subnet_%d", rand.Intn(1e3)), nil
 		}
 	}
 
@@ -159,9 +167,10 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 
 	_, err := d.api.RunInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "DryRunOperation" {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			d.logger.Println("dry run: create instance done")
-			return nil, nil
+			return fmt.Sprintf("instance_%d", rand.Intn(1e3)), nil
 		}
 	}
 
@@ -197,9 +206,10 @@ func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 
 	_, err := d.api.TerminateInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == "DryRunOperation" {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			d.logger.Println("dry run: delete instance done")
-			return nil, nil
+			return fmt.Sprintf("instance_%d", rand.Intn(1e3)), nil
 		}
 	}
 
