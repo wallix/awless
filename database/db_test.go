@@ -1,24 +1,18 @@
-package stats
+package database
 
 import (
 	"testing"
 	"time"
-
-	"github.com/wallix/awless/cloud/mocks"
 )
-
-func init() {
-	mocks.InitServices()
-}
 
 func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
 	db, close := newTestDb()
 
-	newId, err := db.GetStringValue(AWLESS_ID_KEY)
+	newID, err := db.GetStringValue(AwlessIdKey)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, want := len(newId), 64; got != want {
+	if got, want := len(newID), 64; got != want {
 		t.Fatalf("got %d; want %d", got, want)
 	}
 	close()
@@ -26,8 +20,8 @@ func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
 	db, close = newTestDb()
 	defer close()
 
-	id, _ := db.GetStringValue(AWLESS_ID_KEY)
-	if got, want := id, newId; got != want {
+	id, _ := db.GetStringValue(AwlessIdKey)
+	if got, want := id, newID; got != want {
 		t.Fatalf("got %s; want %s", got, want)
 	}
 }

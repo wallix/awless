@@ -1,4 +1,4 @@
-package stats
+package database
 
 import (
 	"strings"
@@ -9,7 +9,7 @@ func TestSaveCommandHistory(t *testing.T) {
 	db, close := newTestDb()
 	defer close()
 
-	if err := db.FlushHistory(); err != nil {
+	if err := db.EmptyHistory(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -31,7 +31,7 @@ func TestSaveCommandHistory(t *testing.T) {
 		t.Fatalf("got %s; want %s", got, want)
 	}
 
-	if err := db.FlushHistory(); err != nil {
+	if err := db.EmptyHistory(); err != nil {
 		t.Fatal(err)
 	}
 

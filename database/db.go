@@ -1,4 +1,4 @@
-package stats
+package database
 
 import (
 	"crypto/sha256"
@@ -8,26 +8,29 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/config"
 )
 
-const AWLESS_BUCKET = "awless"
+const (
+	salt = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
+)
 
+// A DB stores awless config, logs...
 type DB struct {
 	*bolt.DB
 }
 
-func OpenDB(name string) (*DB, error) {
+// Open opens the database if it exists, else it creates a new database.
+func Open(name string) (*DB, error) {
 	boltdb, err := bolt.Open(name, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
 	}
 	db := &DB{boltdb}
 
-	if id, err := db.GetStringValue(AWLESS_ID_KEY); err != nil {
+	if id, err := db.GetStringValue(AwlessIdKey); err != nil {
 		return nil, err
 	} else if id == "" {
-		if err = db.NewDB(); err != nil {
+		if err = db.newDB(); err != nil {
 			return nil, err
 		}
 
@@ -36,33 +39,34 @@ func OpenDB(name string) (*DB, error) {
 	return db, nil
 }
 
-func (db *DB) NewDB() error {
-	userId, err := cloud.Current.GetUserId()
+func (db *DB) newDB() error {
+	userID, err := cloud.Current.GetUserId()
 	if err != nil {
 		return err
 	}
-	newId, err := generateAnonymousId(userId)
+	newID, err := generateAnonymousID(userID)
 	if err != nil {
 		return err
 	}
-	if err = db.SetStringValue(AWLESS_ID_KEY, newId); err != nil {
+	if err = db.SetStringValue(AwlessIdKey, newID); err != nil {
 		return err
 	}
-	accountId, err := cloud.Current.GetAccountId()
+	accountID, err := cloud.Current.GetAccountId()
 	if err != nil {
 		return err
 	}
-	aId, err := generateAnonymousId(accountId)
+	aID, err := generateAnonymousID(accountID)
 	if err != nil {
 		return err
 	}
-	if err = db.SetStringValue(AWLESS_AID_KEY, aId); err != nil {
+	if err = db.SetStringValue(AwlessAIdKey, aID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+// DeleteBucket deletes a bucket if it exists
 func (db *DB) DeleteBucket(name string) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(name))
@@ -74,10 +78,11 @@ func (db *DB) DeleteBucket(name string) error {
 	})
 }
 
+// GetValue gets a []byte value from database
 func (db *DB) GetValue(key string) ([]byte, error) {
 	var value []byte
 	err := db.View(func(tx *bolt.Tx) error {
-		if b := tx.Bucket([]byte(AWLESS_BUCKET)); b != nil {
+		if b := tx.Bucket([]byte(awlessBucket)); b != nil {
 			value = b.Get([]byte(key))
 		}
 		return nil
@@ -89,6 +94,7 @@ func (db *DB) GetValue(key string) ([]byte, error) {
 	return value, nil
 }
 
+// GetStringValue gets a string value from database
 func (db *DB) GetStringValue(key string) (string, error) {
 	str, err := db.GetValue(key)
 	if err != nil {
@@ -97,6 +103,7 @@ func (db *DB) GetStringValue(key string) (string, error) {
 	return string(str), nil
 }
 
+// GetTimeValue gets a time value from database
 func (db *DB) GetTimeValue(key string) (time.Time, error) {
 	var t time.Time
 	bin, err := db.GetValue(key)
@@ -110,6 +117,7 @@ func (db *DB) GetTimeValue(key string) (time.Time, error) {
 	return t, err
 }
 
+// GetIntValue gets a int value from database
 func (db *DB) GetIntValue(key string) (int, error) {
 	str, err := db.GetStringValue(key)
 	if err != nil {
@@ -121,9 +129,10 @@ func (db *DB) GetIntValue(key string) (int, error) {
 	return strconv.Atoi(str)
 }
 
+// SetValue sets a []byte value in database
 func (db *DB) SetValue(key string, value []byte) error {
 	return db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte(AWLESS_BUCKET))
+		b, err := tx.CreateBucketIfNotExists([]byte(awlessBucket))
 		if err != nil {
 			return err
 		}
@@ -131,10 +140,12 @@ func (db *DB) SetValue(key string, value []byte) error {
 	})
 }
 
+// SetStringValue sets a string value in database
 func (db *DB) SetStringValue(key, value string) error {
 	return db.SetValue(key, []byte(value))
 }
 
+// SetTimeValue sets a time value in database
 func (db *DB) SetTimeValue(key string, t time.Time) error {
 	bin, err := t.MarshalBinary()
 	if err != nil {
@@ -143,10 +154,11 @@ func (db *DB) SetTimeValue(key string, t time.Time) error {
 	return db.SetValue(key, bin)
 }
 
+// SetIntValue sets a int value in database
 func (db *DB) SetIntValue(key string, value int) error {
 	return db.SetStringValue(key, strconv.Itoa(value))
 }
 
-func generateAnonymousId(seed string) (string, error) {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(config.Salt+seed))), nil
+func generateAnonymousID(seed string) (string, error) {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(salt+seed))), nil
 }

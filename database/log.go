@@ -1,14 +1,11 @@
-package stats
+package database
 
 import (
 	"encoding/json"
 	"time"
 )
 
-const (
-	LOGS_KEY = "logs"
-)
-
+// A Log represents a log of an error that occured in awless
 type Log struct {
 	Msg  string
 	Hits int
@@ -16,7 +13,7 @@ type Log struct {
 }
 
 func (db *DB) FlushLogs() error {
-	return db.SetValue(LOGS_KEY, []byte{})
+	return db.SetValue(logsKey, []byte{})
 }
 
 func (db *DB) AddLog(msg string) error {
@@ -24,22 +21,22 @@ func (db *DB) AddLog(msg string) error {
 	if err != nil {
 		return err
 	}
-	log := findLogInSlice(msg, logs)
-	if log == nil {
-		log = &Log{Msg: msg, Date: time.Now()}
-		logs = append(logs, log)
+	l := findLogInSlice(msg, logs)
+	if l == nil {
+		l = &Log{Msg: msg, Date: time.Now()}
+		logs = append(logs, l)
 	}
-	log.Hits++
+	l.Hits++
 
 	b, err := json.Marshal(logs)
 	if err != nil {
 		return err
 	}
-	return db.SetValue(LOGS_KEY, b)
+	return db.SetValue(logsKey, b)
 }
 
 func (db *DB) GetLogs() (logs []*Log, err error) {
-	b, err := db.GetValue(LOGS_KEY)
+	b, err := db.GetValue(logsKey)
 	if err != nil {
 		return logs, err
 	}
@@ -51,9 +48,9 @@ func (db *DB) GetLogs() (logs []*Log, err error) {
 }
 
 func findLogInSlice(msg string, logs []*Log) *Log {
-	for _, log := range logs {
-		if log.Msg == msg {
-			return log
+	for _, l := range logs {
+		if l.Msg == msg {
+			return l
 		}
 	}
 	return nil

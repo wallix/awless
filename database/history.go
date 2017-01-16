@@ -1,4 +1,4 @@
-package stats
+package database
 
 import (
 	"encoding/binary"
@@ -8,33 +8,27 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-var historyBucketName = "line"
-
-type Line struct {
-	Id      int
-	Command []string
-	Time    time.Time
-}
-
-func (db *DB) FlushHistory() error {
+// EmptyHistory empties the history from database
+func (db *DB) EmptyHistory() error {
 	return db.DeleteBucket(historyBucketName)
 }
 
-func (db *DB) GetHistory(fromCommandId int) ([]*Line, error) {
-	var result []*Line
+// GetHistory gets the history from database
+func (db *DB) GetHistory(fromID int) ([]*line, error) {
+	var result []*line
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(historyBucketName))
 		if b == nil {
 			return nil
 		}
 		c := b.Cursor()
-		for k, v := c.Seek(itob(fromCommandId)); k != nil; k, v = c.Next() {
-			line := &Line{}
-			e := json.Unmarshal(v, line)
+		for k, v := c.Seek(itob(fromID)); k != nil; k, v = c.Next() {
+			l := &line{}
+			e := json.Unmarshal(v, l)
 			if e != nil {
 				return e
 			}
-			result = append(result, line)
+			result = append(result, l)
 		}
 		return nil
 	})
@@ -44,8 +38,14 @@ func (db *DB) GetHistory(fromCommandId int) ([]*Line, error) {
 	return result, nil
 }
 
+// AddHistoryCommand adds a command to history in database
+func (db *DB) AddHistoryCommand(command []string) error {
+	return db.AddHistoryCommandWithTime(command, time.Now())
+}
+
+// AddHistoryCommandWithTime adds a command to history in database where time can be set
 func (db *DB) AddHistoryCommandWithTime(command []string, time time.Time) error {
-	line := Line{Command: command, Time: time}
+	l := line{Command: command, Time: time}
 
 	err := db.Update(func(tx *bolt.Tx) error {
 		b, e := tx.CreateBucketIfNotExists([]byte(historyBucketName))
@@ -57,13 +57,13 @@ func (db *DB) AddHistoryCommandWithTime(command []string, time time.Time) error 
 		if e != nil {
 			return e
 		}
-		line.Id = int(id)
+		l.ID = int(id)
 
-		buf, e := json.Marshal(line)
+		buf, e := json.Marshal(l)
 		if e != nil {
 			return e
 		}
-		return b.Put(itob(line.Id), buf)
+		return b.Put(itob(l.ID), buf)
 	})
 
 	if err != nil {
@@ -72,13 +72,15 @@ func (db *DB) AddHistoryCommandWithTime(command []string, time time.Time) error 
 	return nil
 }
 
-func (db *DB) AddHistoryCommand(command []string) error {
-	return db.AddHistoryCommandWithTime(command, time.Now())
-}
-
 // itob returns an 8-byte big endian representation of v.
 func itob(v int) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, uint64(v))
 	return b
+}
+
+type line struct {
+	ID      int
+	Command []string
+	Time    time.Time
 }

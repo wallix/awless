@@ -27,8 +27,8 @@ var historyFlushCmd = &cobra.Command{
 	Short: "Empty the history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if statsDB != nil {
-			err := statsDB.FlushHistory()
+		if db != nil {
+			err := db.EmptyHistory()
 			if err != nil {
 				return err
 			}
@@ -45,8 +45,8 @@ var historyShowCmd = &cobra.Command{
 	Short: "Show the history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if statsDB != nil {
-			lines, err := statsDB.GetHistory(0)
+		if db != nil {
+			lines, err := db.GetHistory(0)
 			if err != nil {
 				return err
 			}

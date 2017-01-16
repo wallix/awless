@@ -1,24 +1,23 @@
-package stats
+package database
 
 import (
 	"io/ioutil"
 	"os"
 
 	"github.com/wallix/awless/cloud/mocks"
-	"github.com/wallix/awless/database"
 )
 
 func init() {
 	mocks.InitServices()
 }
 
-func newTestDb() (*database.DB, func()) {
+func newTestDb() (*DB, func()) {
 	f, e := ioutil.TempFile(".", "test.db")
 	if e != nil {
 		panic(e)
 	}
 
-	db, err := database.Open(f.Name())
+	db, err := Open(f.Name())
 	if err != nil {
 		panic(err)
 	}

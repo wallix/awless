@@ -38,7 +38,6 @@ oBCBtu8q6WeCMBlGMnmFtjRCHPgpIf9/3vylFlNn6LRRG/DLO2xY4Is/wj2KM98O
 pi+Bfy5FDK42Q/uJfUOJ5f6Ae/qIxxzKH7ixeXdCFvdzPvv4M4gGkqBAhpnFwLeX
 SwIDAQAB
 -----END PUBLIC KEY-----`
-	Salt                                = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
 	StatsExpirationDuration             = 24 * time.Hour
 	Version                             = "0.0.2"
 	InfraFilename                       = "infra.rdf"

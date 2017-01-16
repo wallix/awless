@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 )
 
 func TestStats(t *testing.T) {
@@ -116,13 +117,13 @@ func TestStats(t *testing.T) {
 	db.AddLog("log msg 3")
 	db.AddLog("log msg 1")
 
-	id, _ := db.GetStringValue(AWLESS_ID_KEY)
-	aId, _ := db.GetStringValue(AWLESS_AID_KEY)
-	expected := Stats{
-		Id:      id,
+	id, _ := db.GetStringValue(database.AwlessIdKey)
+	aId, _ := db.GetStringValue(database.AwlessAIdKey)
+	expected := stats{
+		ID:      id,
 		AId:     aId,
 		Version: config.Version,
-		Commands: []*DailyCommands{
+		Commands: []*dailyCommands{
 			{Command: "awless sync", Hits: 1, Date: yesterday},
 			{Command: "awless diff", Hits: 2, Date: yesterday},
 			{Command: "awless diff", Hits: 1, Date: now},
@@ -130,7 +131,7 @@ func TestStats(t *testing.T) {
 			{Command: "awless list instances", Hits: 2, Date: now},
 			{Command: "awless list vpcs", Hits: 1, Date: now},
 		},
-		InfraMetrics: &InfraMetrics{
+		InfraMetrics: &infraMetrics{
 			Date:                  now,
 			Region:                "",
 			NbVpcs:                2,
@@ -141,13 +142,13 @@ func TestStats(t *testing.T) {
 			MinInstancesPerSubnet: 1,
 			MaxInstancesPerSubnet: 1,
 		},
-		InstancesStats: []*InstancesStat{
+		InstancesStats: []*instancesStat{
 			{Type: "InstanceType", Date: now, Name: "t2.micro", Hits: 2},
 			{Type: "InstanceType", Date: now, Name: "t2.small", Hits: 1},
 			{Type: "ImageId", Date: now, Name: "ami-e98bd29a", Hits: 2},
 			{Type: "ImageId", Date: now, Name: "ami-9398d3e0", Hits: 1},
 		},
-		AccessMetrics: &AccessMetrics{
+		AccessMetrics: &accessMetrics{
 			Date:                     now,
 			Region:                   "",
 			NbGroups:                 2,
@@ -163,57 +164,57 @@ func TestStats(t *testing.T) {
 			MinGroupsByLocalPolicies: 1,
 			MaxGroupsByLocalPolicies: 2,
 		},
-		Logs: []*Log{
+		Logs: []*database.Log{
 			{Msg: "log msg 1", Hits: 3, Date: now},
 			{Msg: "log msg 2", Hits: 1, Date: now},
 			{Msg: "log msg 3", Hits: 1, Date: now},
 		},
 	}
 
-	stats, _, err := BuildStats(db, infra, access, 0)
+	s, _, err := BuildStats(db, infra, access, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Run("Timestamps", func(t *testing.T) {
-		if got, want := len(stats.Commands), len(expected.Commands); got != want {
+		if got, want := len(s.Commands), len(expected.Commands); got != want {
 			t.Fatalf("got %d want %d", got, want)
 		}
 		for i := range expected.Commands {
-			if got, want := stats.Commands[i].Date, expected.Commands[i].Date; !got.Equal(want) {
+			if got, want := s.Commands[i].Date, expected.Commands[i].Date; !got.Equal(want) {
 				t.Fatalf("got %v want %v", got, want)
 			}
 		}
-		if got, want := stats.AccessMetrics.Date, expected.AccessMetrics.Date; !SameDay(&got, &want) {
+		if got, want := s.AccessMetrics.Date, expected.AccessMetrics.Date; !sameDay(&got, &want) {
 			t.Fatalf("got %v want %v", got, want)
 		}
-		if got, want := stats.InfraMetrics.Date, expected.InfraMetrics.Date; !SameDay(&got, &want) {
+		if got, want := s.InfraMetrics.Date, expected.InfraMetrics.Date; !sameDay(&got, &want) {
 			t.Fatalf("got %v want %v", got, want)
 		}
-		if got, want := len(stats.InstancesStats), len(expected.InstancesStats); got != want {
+		if got, want := len(s.InstancesStats), len(expected.InstancesStats); got != want {
 			t.Fatalf("got %d want %d", got, want)
 		}
 		for i := range expected.InstancesStats {
-			if got, want := stats.InstancesStats[i].Date, expected.InstancesStats[i].Date; !SameDay(&got, &want) {
+			if got, want := s.InstancesStats[i].Date, expected.InstancesStats[i].Date; !sameDay(&got, &want) {
 				t.Fatalf("got %v want %v", got, want)
 			}
 		}
 		for i := range expected.Logs {
-			if got, want := stats.Logs[i].Date, expected.Logs[i].Date; !SameDay(&got, &want) {
+			if got, want := s.Logs[i].Date, expected.Logs[i].Date; !sameDay(&got, &want) {
 				t.Fatalf("got %v want %v", got, want)
 			}
 		}
 	})
 
 	t.Run("Ignoring timestamps", func(t *testing.T) {
-		sort.Sort(ByCommand(stats.Commands))
+		sort.Sort(ByCommand(s.Commands))
 		sort.Sort(ByCommand(expected.Commands))
-		sort.Sort(ByTypeAndName(stats.InstancesStats))
+		sort.Sort(ByTypeAndName(s.InstancesStats))
 		sort.Sort(ByTypeAndName(expected.InstancesStats))
-		nullifyTime(stats)
+		nullifyTime(s)
 		nullifyTime(&expected)
-		if got, want := reflect.DeepEqual(stats, &expected), true; got != want {
-			t.Fatalf("got\n%+v\nwant\n%+v\n", *stats, expected)
+		if got, want := reflect.DeepEqual(s, &expected), true; got != want {
+			t.Fatalf("got\n%+v\nwant\n%+v\n", *s, expected)
 		}
 	})
 
@@ -226,7 +227,7 @@ func TestStats(t *testing.T) {
 		processed := false
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var encrypted EncryptedData
+			var encrypted encryptedData
 			if e := json.NewDecoder(r.Body).Decode(&encrypted); e != nil {
 				t.Fatal(e)
 				return
@@ -252,7 +253,7 @@ func TestStats(t *testing.T) {
 			}
 			defer extracted.Close()
 
-			var received Stats
+			var received stats
 			if e := json.NewDecoder(extracted).Decode(&received); e != nil {
 				t.Fatal(e)
 				return
@@ -273,7 +274,7 @@ func TestStats(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		if err = db.SendStats(ts.URL, privateKey.PublicKey, infra, access); err != nil {
+		if err = SendStats(db, ts.URL, privateKey.PublicKey, infra, access); err != nil {
 			t.Fatal(err)
 		}
 
@@ -296,34 +297,34 @@ func TestIfDataToSend(t *testing.T) {
 	db, close := newTestDb()
 	defer close()
 
-	if got, want := db.CheckStatsToSend(1*time.Hour), true; got != want {
+	if got, want := CheckStatsToSend(db, 1*time.Hour), true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
 
-	db.SetTimeValue(SENT_TIME_KEY, time.Now().Add(-2*time.Hour))
-	if got, want := db.CheckStatsToSend(1*time.Hour), true; got != want {
+	db.SetTimeValue(database.SentTimeKey, time.Now().Add(-2*time.Hour))
+	if got, want := CheckStatsToSend(db, 1*time.Hour), true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
-	db.SetTimeValue(SENT_TIME_KEY, time.Now())
+	db.SetTimeValue(database.SentTimeKey, time.Now())
 
-	if got, want := db.CheckStatsToSend(1*time.Hour), false; got != want {
+	if got, want := CheckStatsToSend(db, 1*time.Hour), false; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
 }
 
-func (p *DailyCommands) String() string {
+func (p *dailyCommands) String() string {
 	return fmt.Sprintf("%+v", *p)
 }
 
-func (p *InstancesStat) String() string {
+func (p *instancesStat) String() string {
 	return fmt.Sprintf("%+v", *p)
 }
 
-func (p *InfraMetrics) String() string {
+func (p *infraMetrics) String() string {
 	return fmt.Sprintf("%+v", *p)
 }
 
-func (p *AccessMetrics) String() string {
+func (p *accessMetrics) String() string {
 	return fmt.Sprintf("%+v", *p)
 }
 
@@ -348,23 +349,23 @@ func aesDecrypt(encrypted, key []byte) ([]byte, error) {
 
 func nullifyTime(i interface{}) {
 	switch ii := i.(type) {
-	case *Stats:
+	case *stats:
 		nullifyTime(ii.AccessMetrics)
 		nullifyTime(ii.Commands)
 		nullifyTime(ii.InfraMetrics)
 		nullifyTime(ii.InstancesStats)
 		nullifyTime(ii.Logs)
-	case *AccessMetrics, *InfraMetrics, *DailyCommands, *InstancesStat, *Log:
+	case *accessMetrics, *infraMetrics, *dailyCommands, *instancesStat, *database.Log:
 		reflect.ValueOf(i).Elem().FieldByName("Date").Set(reflect.ValueOf(time.Time{}))
-	case []*DailyCommands:
+	case []*dailyCommands:
 		for _, v := range ii {
 			nullifyTime(v)
 		}
-	case []*InstancesStat:
+	case []*instancesStat:
 		for _, v := range ii {
 			nullifyTime(v)
 		}
-	case []*Log:
+	case []*database.Log:
 		for _, v := range ii {
 			nullifyTime(v)
 		}
@@ -373,7 +374,7 @@ func nullifyTime(i interface{}) {
 	}
 }
 
-type ByCommand []*DailyCommands
+type ByCommand []*dailyCommands
 
 func (a ByCommand) Len() int      { return len(a) }
 func (a ByCommand) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
@@ -381,7 +382,7 @@ func (a ByCommand) Less(i, j int) bool {
 	return a[i].Command < a[j].Command
 }
 
-type ByTypeAndName []*InstancesStat
+type ByTypeAndName []*instancesStat
 
 func (a ByTypeAndName) Len() int      { return len(a) }
 func (a ByTypeAndName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }

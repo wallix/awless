@@ -18,41 +18,148 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
 )
 
-const (
-	AWLESS_ID_KEY  = "awless_id"
-	AWLESS_AID_KEY = "awless_aid"
-	SENT_ID_KEY    = "sent_id"
-	SENT_TIME_KEY  = "sent_time"
-)
+func SendStats(db *database.DB, url string, publicKey rsa.PublicKey, localInfra, localAccess *rdf.Graph) error {
+	lastCommandId, err := db.GetIntValue(database.SentIdKey)
+	if err != nil {
+		return err
+	}
 
-type Stats struct {
-	Id             string
-	AId            string
-	Version        string
-	Commands       []*DailyCommands
-	InfraMetrics   *InfraMetrics
-	InstancesStats []*InstancesStat
-	AccessMetrics  *AccessMetrics
-	Logs           []*Log
+	s, lastCommandId, err := BuildStats(db, localInfra, localAccess, lastCommandId)
+	if err != nil {
+		return err
+	}
+
+	var zipped bytes.Buffer
+	zippedW := gzip.NewWriter(&zipped)
+	if err = json.NewEncoder(zippedW).Encode(s); err != nil {
+		return err
+	}
+	zippedW.Close()
+
+	sessionKey, encrypted, err := aesEncrypt(zipped.Bytes())
+	if err != nil {
+		return err
+	}
+	encryptedKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, &publicKey, sessionKey, nil)
+	if err != nil {
+		return err
+	}
+
+	payload, err := json.Marshal(encryptedData{encryptedKey, encrypted})
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{Timeout: 2 * time.Second}
+	if _, err := client.Post(url, "application/json", bytes.NewReader(payload)); err != nil {
+		return err
+	}
+
+	if err := db.SetIntValue(database.SentIdKey, lastCommandId); err != nil {
+		return err
+	}
+	if err := db.SetTimeValue(database.SentTimeKey, time.Now()); err != nil {
+		return err
+	}
+	if err := db.FlushLogs(); err != nil {
+		return err
+	}
+	return nil
 }
 
-type DailyCommands struct {
+func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) (*stats, int, error) {
+	commandsStat, lastCommandId, err := buildCommandsStat(db, fromCommandId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	im := &infraMetrics{}
+	if infra != nil {
+		im, err = buildInfraMetrics(infra)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
+	am := &accessMetrics{}
+	if access != nil {
+		am, err = buildAccessMetrics(access, time.Now())
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
+	is, err := buildInstancesStats(infra)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	id, err := db.GetStringValue(database.AwlessIdKey)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	aId, err := db.GetStringValue(database.AwlessAIdKey)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	logs, err := db.GetLogs()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	s := &stats{
+		ID:             id,
+		AId:            aId,
+		Version:        config.Version,
+		Commands:       commandsStat,
+		InfraMetrics:   im,
+		InstancesStats: is,
+		AccessMetrics:  am,
+		Logs:           logs,
+	}
+
+	return s, lastCommandId, nil
+}
+
+func CheckStatsToSend(db *database.DB, expirationDuration time.Duration) bool {
+	sent, err := db.GetTimeValue(database.SentTimeKey)
+	if err != nil {
+		sent = time.Time{}
+	}
+	return (time.Since(sent) > expirationDuration)
+}
+
+type stats struct {
+	ID             string
+	AId            string
+	Version        string
+	Commands       []*dailyCommands
+	InfraMetrics   *infraMetrics
+	InstancesStats []*instancesStat
+	AccessMetrics  *accessMetrics
+	Logs           []*database.Log
+}
+
+type dailyCommands struct {
 	Command string
 	Hits    int
 	Date    time.Time
 }
 
-type InstancesStat struct {
+type instancesStat struct {
 	Type string
 	Date time.Time
 	Hits int
 	Name string
 }
 
-type AccessMetrics struct {
+type accessMetrics struct {
 	Date                     time.Time
 	Region                   string
 	NbGroups                 int
@@ -69,64 +176,8 @@ type AccessMetrics struct {
 	MaxGroupsByLocalPolicies int
 }
 
-func BuildStats(db *DB, infra *rdf.Graph, access *rdf.Graph, fromCommandId int) (*Stats, int, error) {
-	commandsStat, lastCommandId, err := buildCommandsStat(db, fromCommandId)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	infraMetrics := &InfraMetrics{}
-	if infra != nil {
-		infraMetrics, err = buildInfraMetrics(infra)
-		if err != nil {
-			return nil, 0, err
-		}
-	}
-
-	accessMetrics := &AccessMetrics{}
-	if access != nil {
-		accessMetrics, err = buildAccessMetrics(access, time.Now())
-		if err != nil {
-			return nil, 0, err
-		}
-	}
-
-	instancesStats, err := buildInstancesStats(infra)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	id, err := db.GetStringValue(AWLESS_ID_KEY)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	aId, err := db.GetStringValue(AWLESS_AID_KEY)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	logs, err := db.GetLogs()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	stats := &Stats{
-		Id:             id,
-		AId:            aId,
-		Version:        config.Version,
-		Commands:       commandsStat,
-		InfraMetrics:   infraMetrics,
-		InstancesStats: instancesStats,
-		AccessMetrics:  accessMetrics,
-		Logs:           logs,
-	}
-
-	return stats, lastCommandId, nil
-}
-
-func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error) {
-	var commandsStat []*DailyCommands
+func buildCommandsStat(db *database.DB, fromCommandId int) ([]*dailyCommands, int, error) {
+	var commandsStat []*dailyCommands
 
 	commandsHistory, err := db.GetHistory(fromCommandId)
 	if err != nil {
@@ -141,7 +192,7 @@ func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error)
 	commands := make(map[string]int)
 
 	for _, command := range commandsHistory {
-		if !SameDay(&date, &command.Time) {
+		if !sameDay(&date, &command.Time) {
 			commandsStat = addDailyCommands(commandsStat, commands, &date)
 			date = command.Time
 			commands = make(map[string]int)
@@ -150,11 +201,11 @@ func buildCommandsStat(db *DB, fromCommandId int) ([]*DailyCommands, int, error)
 	}
 	commandsStat = addDailyCommands(commandsStat, commands, &date)
 
-	lastCommandId := commandsHistory[len(commandsHistory)-1].Id
+	lastCommandId := commandsHistory[len(commandsHistory)-1].ID
 	return commandsStat, lastCommandId, nil
 }
 
-func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err error) {
+func buildInstancesStats(infra *rdf.Graph) (instancesStats []*instancesStat, err error) {
 	instancesStats, err = addStatsForInstanceStringProperty(infra, "Type", "InstanceType", instancesStats)
 	if err != nil {
 		return instancesStats, err
@@ -167,7 +218,7 @@ func buildInstancesStats(infra *rdf.Graph) (instancesStats []*InstancesStat, err
 	return instancesStats, err
 }
 
-func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, instanceStatType string, instancesStats []*InstancesStat) ([]*InstancesStat, error) {
+func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, instanceStatType string, instancesStats []*instancesStat) ([]*instancesStat, error) {
 	nodes, err := infra.NodesForType(rdf.Instance)
 	if err != nil {
 		return nil, err
@@ -189,21 +240,21 @@ func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, in
 	}
 
 	for k, v := range propertyValuesCountMap {
-		instancesStats = append(instancesStats, &InstancesStat{Type: instanceStatType, Date: time.Now(), Hits: v, Name: k})
+		instancesStats = append(instancesStats, &instancesStat{Type: instanceStatType, Date: time.Now(), Hits: v, Name: k})
 	}
 
 	return instancesStats, err
 }
 
-func addDailyCommands(commandsStat []*DailyCommands, commands map[string]int, date *time.Time) []*DailyCommands {
+func addDailyCommands(commandsStat []*dailyCommands, commands map[string]int, date *time.Time) []*dailyCommands {
 	for command, hits := range commands {
-		dc := DailyCommands{Command: command, Hits: hits, Date: *date}
+		dc := dailyCommands{Command: command, Hits: hits, Date: *date}
 		commandsStat = append(commandsStat, &dc)
 	}
 	return commandsStat
 }
 
-type InfraMetrics struct {
+type infraMetrics struct {
 	Date                  time.Time
 	Region                string
 	NbVpcs                int
@@ -215,8 +266,8 @@ type InfraMetrics struct {
 	MaxInstancesPerSubnet int
 }
 
-func buildInfraMetrics(infra *rdf.Graph) (*InfraMetrics, error) {
-	metrics := &InfraMetrics{
+func buildInfraMetrics(infra *rdf.Graph) (*infraMetrics, error) {
+	metrics := &infraMetrics{
 		Date:   time.Now(),
 		Region: viper.GetString("region"),
 	}
@@ -242,8 +293,8 @@ func buildInfraMetrics(infra *rdf.Graph) (*InfraMetrics, error) {
 	return metrics, nil
 }
 
-func buildAccessMetrics(access *rdf.Graph, time time.Time) (*AccessMetrics, error) {
-	metrics := &AccessMetrics{
+func buildAccessMetrics(access *rdf.Graph, time time.Time) (*accessMetrics, error) {
+	metrics := &accessMetrics{
 		Date:   time,
 		Region: viper.GetString("region"),
 	}
@@ -346,70 +397,13 @@ func computeCountMinMaxForTypeWithChildType(graph *rdf.Graph, parentType, childT
 	return len(nodes), min, max, nil
 }
 
-func SameDay(date1, date2 *time.Time) bool {
+func sameDay(date1, date2 *time.Time) bool {
 	return (date1.Day() == date2.Day()) && (date1.Month() == date2.Month()) && (date1.Year() == date2.Year())
 }
 
-type EncryptedData struct {
+type encryptedData struct {
 	Key  []byte
 	Data []byte
-}
-
-func (db *DB) SendStats(url string, publicKey rsa.PublicKey, localInfra, localAccess *rdf.Graph) error {
-	lastCommandId, err := db.GetIntValue(SENT_ID_KEY)
-	if err != nil {
-		return err
-	}
-
-	stats, lastCommandId, err := BuildStats(db, localInfra, localAccess, lastCommandId)
-	if err != nil {
-		return err
-	}
-
-	var zipped bytes.Buffer
-	zippedW := gzip.NewWriter(&zipped)
-	if err = json.NewEncoder(zippedW).Encode(stats); err != nil {
-		return err
-	}
-	zippedW.Close()
-
-	sessionKey, encrypted, err := aesEncrypt(zipped.Bytes())
-	if err != nil {
-		return err
-	}
-	encryptedKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, &publicKey, sessionKey, nil)
-	if err != nil {
-		return err
-	}
-
-	payload, err := json.Marshal(EncryptedData{encryptedKey, encrypted})
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{Timeout: 2 * time.Second}
-	if _, err := client.Post(url, "application/json", bytes.NewReader(payload)); err != nil {
-		return err
-	}
-
-	if err := db.SetIntValue(SENT_ID_KEY, lastCommandId); err != nil {
-		return err
-	}
-	if err := db.SetTimeValue(SENT_TIME_KEY, time.Now()); err != nil {
-		return err
-	}
-	if err := db.FlushLogs(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (db *DB) CheckStatsToSend(expirationDuration time.Duration) bool {
-	sent, err := db.GetTimeValue(SENT_TIME_KEY)
-	if err != nil {
-		sent = time.Time{}
-	}
-	return (time.Since(sent) > expirationDuration)
 }
 
 func aesEncrypt(data []byte) ([]byte, []byte, error) {
