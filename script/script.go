@@ -41,6 +41,10 @@ func (s Script) Run(d driver.Driver) error {
 	return nil
 }
 
+func (s Script) Compile() error {
+	return nil
+}
+
 func (s Script) ResolveTemplate(refs map[string]interface{}) error {
 	each := func(expr *ast.ExpressionNode) {
 		expr.ProcessHoles(refs)
@@ -65,10 +69,6 @@ func (s Script) InteractiveResolveTemplate(each func(question string) interface{
 
 	s.visitExpressionNodes(fn)
 
-	return nil
-}
-
-func (s Script) Compile() error {
 	return nil
 }
 

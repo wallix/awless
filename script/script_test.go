@@ -12,6 +12,46 @@ import (
 )
 
 func TestRunDriverOnScript(t *testing.T) {
+	t.Run("Driver run multiline statement", func(t *testing.T) {
+		s := &Script{&ast.AST{}}
+
+		s.Statements = append(s.Statements, &ast.DeclarationNode{
+			Left: &ast.IdentifierNode{Ident: "myvar"},
+			Right: &ast.ExpressionNode{
+				Action: "create", Entity: "vpc",
+				Params: map[string]interface{}{"count": 1},
+			}}, &ast.DeclarationNode{
+			Left: &ast.IdentifierNode{Ident: "myothervar"},
+			Right: &ast.ExpressionNode{
+				Action: "create", Entity: "subnet",
+				Holes: map[string]string{"vpc": "myvar"},
+			}}, &ast.ExpressionNode{
+			Action: "create", Entity: "instance",
+			Holes: map[string]string{"subnet": "myothervar"},
+		},
+		)
+
+		mDriver := &mockDriver{[]*expectation{{
+			action: "create", entity: "vpc",
+			expectedParams: map[string]interface{}{"count": 1},
+		}, {
+			action: "create", entity: "subnet",
+			expectedParams: map[string]interface{}{"vpc": "mynewvpc"},
+		}, {
+			action: "create", entity: "instance",
+			expectedParams: map[string]interface{}{"subnet": "mynewsubnet"},
+		},
+		},
+		}
+
+		if err := s.Run(mDriver); err != nil {
+			t.Fatal(err)
+		}
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
 	t.Run("Driver visit expression nodes", func(t *testing.T) {
 		s := &Script{&ast.AST{}}
 
@@ -161,16 +201,15 @@ func (r *mockDriver) lookupsCalled() error {
 }
 
 func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
-
 	for _, expect := range r.expects {
 		if lookups[0] == expect.action && lookups[1] == expect.entity {
 			expect.lookupDone = true
 
 			return func(params map[string]interface{}) (interface{}, error) {
-				if got, want := params, expect.expectedParams; !reflect.DeepEqual(got, want) {
+				if got, want := expect.expectedParams, params; !reflect.DeepEqual(got, want) {
 					return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", expect.action, expect.entity, got, want)
 				}
-				return "mynewvpc", nil
+				return "mynew" + expect.entity, nil
 			}
 		}
 	}
