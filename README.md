@@ -1,10 +1,8 @@
 `awless` is a nice, easy-to-use command line interface (CLI) to manage Amazon Web Services.
 
-`awless` is a straightforward replacement for AWS default CLI.
-
 # Why awless
 
-`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and pre-defined scripts for resource creations (see `awless` scripts).
+`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and runnable scripts for resource creations (see `awless` scripts).
 
 There is no need to edit manually any line of JSON, deal with policies, etc.
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
