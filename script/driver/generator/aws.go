@@ -88,7 +88,7 @@ var definitions = []struct {
 	{
 		Action: "create", Entity: "instance", Input: "RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "Instances[0].InstanceId",
 		ParamsMapping: map[string]string{
-			"ImageId":      "base",
+			"ImageId":      "image",
 			"MaxCount":     "count",
 			"MinCount":     "count",
 			"InstanceType": "type",
@@ -109,7 +109,7 @@ package aws
 
 var AWSTemplates = map[string]string{
 {{- range $index, $def := . }}
-  "{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.ParamsMapping }} {{ $field }}={ {{ $def.Entity }}_{{ $field }} }{{ end }}",
+  "{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.ParamsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }}",
 {{- end }}
 }
 `
@@ -120,15 +120,12 @@ package aws
 
 import (
   "fmt"
-  "io/ioutil"
-  "log"
-  "reflect"
+  "math/rand"
   "strings"
 
   "github.com/aws/aws-sdk-go/aws"
+  "github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/aws/aws-sdk-go/service/ec2"
-  "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-  "github.com/wallix/awless/script/driver"
 )
 {{ range $index, $def := . }}
 

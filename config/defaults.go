@@ -3,6 +3,6 @@ package config
 const (
 	RegionKey        = "region"
 	InstanceTypeKey  = "instance.type"
-	InstanceBaseKey  = "instance.base"
+	InstanceImageKey = "instance.image"
 	InstanceCountKey = "instance.count"
 )

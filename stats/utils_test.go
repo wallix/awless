@@ -32,7 +32,7 @@ func newTestDb() (*database.DB, func()) {
 	defaults := map[string]interface{}{
 		config.RegionKey:        "eu-west-1",
 		config.InstanceTypeKey:  "t2.micro",
-		config.InstanceBaseKey:  "ami-9398d3e0",
+		config.InstanceImageKey: "ami-9398d3e0",
 		config.InstanceCountKey: 1,
 	}
 	for k, v := range defaults {

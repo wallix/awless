@@ -51,26 +51,18 @@ var runCmd = &cobra.Command{
 			if !ok {
 				return errors.New("Expecting an script expression not a script declaration")
 			}
-			templ := aws.AWSTemplates[expr.Action+expr.Entity]
-
-			tmplScrpt, err := script.Parse(templ)
-			if err != nil {
-				return fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err)
+			templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
+			templ, ok := aws.AWSTemplates[templName]
+			if !ok {
+				return errors.New("command unsupported on inline mode")
 			}
 
-			prompt := func(question string) interface{} {
-				var resp string
-				fmt.Printf("%s ? ", question)
-				_, err := fmt.Scanln(&resp)
-				if err != nil {
-					return err
-				}
-
-				return resp
+			scrpt, serr = script.Parse(templ)
+			if serr != nil {
+				return fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, serr)
 			}
 
-			tmplScrpt.InteractiveResolveTemplate(prompt)
-			scrpt = tmplScrpt
+			scrpt.ResolveTemplate(expr.Params)
 		}
 
 		defaults, err := database.Current.GetDefaults()
@@ -78,6 +70,18 @@ var runCmd = &cobra.Command{
 			return err
 		}
 		scrpt.ResolveTemplate(defaults)
+
+		prompt := func(question string) interface{} {
+			var resp string
+			fmt.Printf("%s ? ", question)
+			_, err := fmt.Scanln(&resp)
+			if err != nil {
+				return err
+			}
+
+			return resp
+		}
+		scrpt.InteractiveResolveTemplate(prompt)
 
 		awsDriver := aws.NewDriver(awscloud.InfraService)
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))

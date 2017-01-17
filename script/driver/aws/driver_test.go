@@ -72,13 +72,13 @@ func TestDriver(t *testing.T) {
 
 	t.Run("Create instance", func(t *testing.T) {
 		countInt := 2
-		base, typ, subnet, count := "ami-12", "t2.medium", "anysubnet", strconv.Itoa(countInt)
+		image, typ, subnet, count := "ami-12", "t2.medium", "anysubnet", strconv.Itoa(countInt)
 
 		awsMock.verifyInstanceInput = func(input *ec2.RunInstancesInput) error {
 			if got, want := aws.StringValue(input.SubnetId), subnet; got != want {
 				t.Fatalf("got %s, want %s", got, want)
 			}
-			if got, want := aws.StringValue(input.ImageId), base; got != want {
+			if got, want := aws.StringValue(input.ImageId), image; got != want {
 				t.Fatalf("got %s, want %s", got, want)
 			}
 			if got, want := aws.StringValue(input.InstanceType), typ; got != want {
@@ -93,7 +93,7 @@ func TestDriver(t *testing.T) {
 			return nil
 		}
 
-		id, err := driv.Create_Instance(map[string]interface{}{"base": base, "type": typ, "subnet": subnet, "count": count})
+		id, err := driv.Create_Instance(map[string]interface{}{"image": image, "type": typ, "subnet": subnet, "count": count})
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,8 +1,6 @@
 package script
 
 import (
-	"strings"
-
 	"github.com/wallix/awless/script/ast"
 	"github.com/wallix/awless/script/driver"
 )
@@ -65,7 +63,7 @@ func (s *Script) InteractiveResolveTemplate(each func(question string) interface
 			if expr.Params == nil {
 				expr.Params = make(map[string]interface{})
 			}
-			res := each(capitalize(hole))
+			res := each(hole)
 			expr.Params[key] = res
 			delete(expr.Holes, key)
 		}
@@ -91,12 +89,4 @@ func (s *Script) visitExpressionNodes(fn func(n *ast.ExpressionNode)) {
 			fn(expr)
 		}
 	}
-}
-
-func capitalize(s string) string {
-	if len(s) > 1 {
-		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
-	}
-
-	return strings.ToUpper(s)
 }

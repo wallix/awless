@@ -1,6 +1,0 @@
-vpc = create vpc cidr=10.0.0.0/24
-subnet = create subnet cidr=10.0.0.0/25 vpc={vpc}
-instance = create instance subnet=subnet base=ami-9398d3e0 count=1
-delete instance id={instance}
-delete subnet id={subnet}
-delete vpc id={vpc}

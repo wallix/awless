@@ -1483,15 +1483,27 @@ func (p *Peg) Init() {
 		nil,
 		/* 7 Param <- <(<Identifier> Action4 Equal Value WhiteSpacing)> */
 		nil,
-		/* 8 Identifier <- <((&('_') '_') | (&('A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z') [A-Z]) | (&('a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z') [a-z]))+> */
+		/* 8 Identifier <- <((&('.') '.') | (&('_') '_') | (&('-') '-') | (&('A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z') [A-Z]) | (&('a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z') [a-z]))+> */
 		func() bool {
 			position143, tokenIndex143 := position, tokenIndex
 			{
 				position144 := position
 				{
 					switch buffer[position] {
+					case '.':
+						if buffer[position] != rune('.') {
+							goto l143
+						}
+						position++
+						break
 					case '_':
 						if buffer[position] != rune('_') {
+							goto l143
+						}
+						position++
+						break
+					case '-':
+						if buffer[position] != rune('-') {
 							goto l143
 						}
 						position++
@@ -1516,8 +1528,20 @@ func (p *Peg) Init() {
 					position146, tokenIndex146 := position, tokenIndex
 					{
 						switch buffer[position] {
+						case '.':
+							if buffer[position] != rune('.') {
+								goto l146
+							}
+							position++
+							break
 						case '_':
 							if buffer[position] != rune('_') {
+								goto l146
+							}
+							position++
+							break
+						case '-':
+							if buffer[position] != rune('-') {
 								goto l146
 							}
 							position++

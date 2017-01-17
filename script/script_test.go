@@ -180,10 +180,10 @@ func TestResolveTemplate(t *testing.T) {
 		s.Statements = append(s.Statements, expr)
 
 		each := func(question string) interface{} {
-			if question == "Age_of_president" {
+			if question == "age_of_president" {
 				return 70
 			}
-			if question == "Name_of_president" {
+			if question == "name_of_president" {
 				return "trump"
 			}
 
