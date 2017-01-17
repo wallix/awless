@@ -8,9 +8,32 @@ import (
 )
 
 func main() {
+	generateDriverFuncs()
+	generateScriptTemplates()
+}
+
+func generateScriptTemplates() {
+	templ, err := template.New("script_templates").Parse(scriptTemplatesTempl)
+
+	if err != nil {
+		panic(err)
+	}
+
+	f, err := os.OpenFile("../aws/templates.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	err = templ.Execute(f, definitions)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func generateDriverFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
 		"capitalize": capitalize,
-	}).Parse(funcTempl)
+	}).Parse(funcsTempl)
 
 	if err != nil {
 		panic(err)
@@ -80,7 +103,18 @@ var definitions = []struct {
 	},
 }
 
-const funcTempl = `// DO NOT EDIT
+const scriptTemplatesTempl = `// DO NOT EDIT
+// This file was automatically generated with go generate
+package aws
+
+var AWSTemplates = map[string]string{
+{{- range $index, $def := . }}
+  "{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.ParamsMapping }} {{ $field }}={ {{ $def.Entity }}_{{ $field }} }{{ end }}",
+{{- end }}
+}
+`
+
+const funcsTempl = `// DO NOT EDIT
 // This file was automatically generated with go generate
 package aws
 
