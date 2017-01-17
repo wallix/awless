@@ -69,6 +69,7 @@ var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
 		"PublicIp":  {name: "PublicIpAddress", transform: extractValueFn},
 		"PrivateIp": {name: "PrivateIpAddress", transform: extractValueFn},
 		"ImageId":   {name: "ImageId", transform: extractValueFn},
+		"LaunchTime":   {name: "LaunchTime", transform: extractValueFn},
 		"State":     {name: "State", transform: extractFieldFn("Name")},
 		"KeyName":   {name: "KeyName", transform: extractValueFn},
 	},

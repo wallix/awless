@@ -8,6 +8,7 @@ import (
 var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 	rdf.Instance: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "SubnetId"},
 		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
@@ -16,6 +17,7 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "KeyName", Friendly: "Access Key"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime"}},
 	},
 	rdf.Vpc: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
@@ -35,6 +37,7 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
 		StringColumnDefinition{Prop: "CidrBlock"},
+		StringColumnDefinition{Prop: "VpcId"},
 	},
 	rdf.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
