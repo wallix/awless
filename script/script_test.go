@@ -16,18 +16,18 @@ func TestRunDriverOnScript(t *testing.T) {
 		s := &Script{&ast.AST{}}
 
 		s.Statements = append(s.Statements, &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "myvar"},
+			Left: &ast.IdentifierNode{Ident: "createdvpc"},
 			Right: &ast.ExpressionNode{
 				Action: "create", Entity: "vpc",
 				Params: map[string]interface{}{"count": 1},
 			}}, &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "myothervar"},
+			Left: &ast.IdentifierNode{Ident: "createdsubnet"},
 			Right: &ast.ExpressionNode{
 				Action: "create", Entity: "subnet",
-				Holes: map[string]string{"vpc": "myvar"},
+				Refs: map[string]string{"vpc": "createdvpc"},
 			}}, &ast.ExpressionNode{
 			Action: "create", Entity: "instance",
-			Holes: map[string]string{"subnet": "myothervar"},
+			Refs: map[string]string{"subnet": "createdsubnet"},
 		},
 		)
 

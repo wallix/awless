@@ -19,7 +19,7 @@ func (s *Script) Run(d driver.Driver) (*Script, error) {
 		case *ast.ExpressionNode:
 			expr := sts.(*ast.ExpressionNode)
 			fn := d.Lookup(expr.Action, expr.Entity)
-			expr.ProcessHoles(vars)
+			expr.ProcessRefs(vars)
 			if _, err := fn(expr.Params); err != nil {
 				return executedScript, err
 			}
@@ -27,7 +27,7 @@ func (s *Script) Run(d driver.Driver) (*Script, error) {
 			ident := sts.(*ast.DeclarationNode).Left
 			expr := sts.(*ast.DeclarationNode).Right
 			fn := d.Lookup(expr.Action, expr.Entity)
-			expr.ProcessHoles(vars)
+			expr.ProcessRefs(vars)
 			identVal, err := fn(expr.Params)
 			ident.Val = identVal
 			if err != nil {

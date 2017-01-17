@@ -61,6 +61,7 @@ func (n *DeclarationNode) String() string {
 
 type ExpressionNode struct {
 	Action, Entity string
+	Refs           map[string]string
 	Params         map[string]interface{}
 	Holes          map[string]string
 }
@@ -68,10 +69,14 @@ type ExpressionNode struct {
 func (n *ExpressionNode) clone() Node {
 	expr := &ExpressionNode{
 		Action: n.Action, Entity: n.Entity,
+		Refs:   make(map[string]string),
 		Params: make(map[string]interface{}),
 		Holes:  make(map[string]string),
 	}
 
+	for k, v := range n.Refs {
+		expr.Refs[k] = v
+	}
 	for k, v := range n.Params {
 		expr.Params[k] = v
 	}
@@ -84,6 +89,9 @@ func (n *ExpressionNode) clone() Node {
 
 func (n *ExpressionNode) String() string {
 	var all []string
+	for k, v := range n.Refs {
+		all = append(all, fmt.Sprintf("%s=$%v", k, v))
+	}
 	for k, v := range n.Params {
 		all = append(all, fmt.Sprintf("%s=%v", k, v))
 	}
@@ -101,6 +109,18 @@ func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) {
 			}
 			n.Params[key] = val
 			delete(n.Holes, key)
+		}
+	}
+}
+
+func (n *ExpressionNode) ProcessRefs(fills map[string]interface{}) {
+	for key, ref := range n.Refs {
+		if val, ok := fills[ref]; ok {
+			if n.Params == nil {
+				n.Params = make(map[string]interface{})
+			}
+			n.Params[key] = val
+			delete(n.Refs, key)
 		}
 	}
 }
@@ -135,6 +155,7 @@ func (s *AST) EndOfParams() {
 func (s *AST) AddParamKey(text string) {
 	expr := s.currentExpression()
 	if expr.Params == nil {
+		expr.Refs = make(map[string]string)
 		expr.Params = make(map[string]interface{})
 		expr.Holes = make(map[string]string)
 	}
@@ -171,6 +192,11 @@ func (s *AST) AddParamIpValue(text string) {
 		panic(fmt.Sprintf("cannot convert '%s' to net ip", text))
 	}
 	expr.Params[s.currentKey] = ip.String()
+}
+
+func (s *AST) AddParamRefValue(text string) {
+	expr := s.currentExpression()
+	expr.Refs[s.currentKey] = text
 }
 
 func (s *AST) AddParamHoleValue(text string) {

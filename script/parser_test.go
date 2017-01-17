@@ -15,21 +15,26 @@ func TestScriptParsing(t *testing.T) {
 		{
 			input: `
 			myvpc  =   create   vpc  cidr=10.0.0.0/24 num=3
-mysubnet = delete subnet vpc={ one } name=bill
-create instance count=1 instance.type=t2.micro image=ami-9398d3e0 ip=127.0.0.1
+mysubnet = delete subnet vpc=$myvpc name={ the_name } cidr=10.0.0.0/25
+create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3e0 ip=127.0.0.1
 		`,
 
 			verifyFn: func(s *Script) {
 				assertStatementsCount(t, s, 3)
 				assertDeclarationNode(t, 0, s.Statements, "myvpc", "create", "vpc",
-					map[string]interface{}{"cidr": "10.0.0.0/24", "num": 3}, map[string]string{},
+					nil,
+					map[string]interface{}{"cidr": "10.0.0.0/24", "num": 3},
+					map[string]string{},
 				)
 				assertDeclarationNode(t, 1, s.Statements, "mysubnet", "delete", "subnet",
-					map[string]interface{}{"name": "bill"},
-					map[string]string{"vpc": "one"},
+					map[string]interface{}{"vpc": "myvpc"},
+					map[string]interface{}{"cidr": "10.0.0.0/25"},
+					map[string]string{"name": "the_name"},
 				)
 				assertExpressionNode(t, 2, s.Statements, "create", "instance",
-					map[string]interface{}{"count": 1, "instance.type": "t2.micro", "ip": "127.0.0.1", "image": "ami-9398d3e0"}, map[string]string{},
+					map[string]interface{}{"subnet": "mysubnet"},
+					map[string]interface{}{"count": 1, "instance.type": "t2.micro", "ip": "127.0.0.1", "image": "ami-9398d3e0"},
+					map[string]string{},
 				)
 			},
 		},
@@ -38,7 +43,7 @@ create instance count=1 instance.type=t2.micro image=ami-9398d3e0 ip=127.0.0.1
 			input: `create vpc`,
 			verifyFn: func(s *Script) {
 				assertStatementsCount(t, s, 1)
-				assertExpressionNode(t, 0, s.Statements, "create", "vpc", nil, nil)
+				assertExpressionNode(t, 0, s.Statements, "create", "vpc", nil, nil, nil)
 			},
 		},
 	}
@@ -53,7 +58,7 @@ create instance count=1 instance.type=t2.micro image=ami-9398d3e0 ip=127.0.0.1
 	}
 }
 
-func assertDeclarationNode(t *testing.T, index int, sts []ast.Node, expIdent, expAction, expEntity string, params map[string]interface{}, holes map[string]string) {
+func assertDeclarationNode(t *testing.T, index int, sts []ast.Node, expIdent, expAction, expEntity string, refs, params map[string]interface{}, holes map[string]string) {
 	n := sts[index]
 
 	decl, ok := n.(*ast.DeclarationNode)
@@ -62,7 +67,7 @@ func assertDeclarationNode(t *testing.T, index int, sts []ast.Node, expIdent, ex
 	}
 
 	assertIdentifierNode(t, index, decl.Left, expIdent)
-	verifyExpressionNode(t, index, decl.Right, expAction, expEntity, params, holes)
+	verifyExpressionNode(t, index, decl.Right, expAction, expEntity, refs, params, holes)
 }
 
 func assertStatementsCount(t *testing.T, s *Script, count int) {
@@ -77,12 +82,12 @@ func assertIdentifierNode(t *testing.T, index int, n *ast.IdentifierNode, expect
 	}
 }
 
-func assertExpressionNode(t *testing.T, index int, sts []ast.Node, expAction, expEntity string, params map[string]interface{}, holes map[string]string) {
+func assertExpressionNode(t *testing.T, index int, sts []ast.Node, expAction, expEntity string, refs, params map[string]interface{}, holes map[string]string) {
 	n := sts[index]
-	verifyExpressionNode(t, index, n, expAction, expEntity, params, holes)
+	verifyExpressionNode(t, index, n, expAction, expEntity, refs, params, holes)
 }
 
-func verifyExpressionNode(t *testing.T, index int, n ast.Node, expAction, expEntity string, params map[string]interface{}, holes map[string]string) {
+func verifyExpressionNode(t *testing.T, index int, n ast.Node, expAction, expEntity string, refs, params map[string]interface{}, holes map[string]string) {
 	expr, ok := n.(*ast.ExpressionNode)
 	if !ok {
 		t.Fatalf("statement %d: unexpected type %T", index, n)

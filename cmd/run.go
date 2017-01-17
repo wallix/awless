@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	awscloud "github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/database"
@@ -51,60 +52,59 @@ var runCmd = &cobra.Command{
 			if !ok {
 				return errors.New("Expecting an script expression not a script declaration")
 			}
+
 			templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
 			templ, ok := aws.AWSTemplates[templName]
 			if !ok {
-				return errors.New("command unsupported on inline mode")
+				exitOn(errors.New("command unsupported on inline mode"))
 			}
 
 			scrpt, serr = script.Parse(templ)
 			if serr != nil {
-				return fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, serr)
+				exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, serr))
 			}
 
 			scrpt.ResolveTemplate(expr.Params)
 		}
 
 		defaults, err := database.Current.GetDefaults()
-		if err != nil {
-			return err
-		}
+		exitOn(err)
+
 		scrpt.ResolveTemplate(defaults)
 
 		prompt := func(question string) interface{} {
 			var resp string
 			fmt.Printf("%s ? ", question)
 			_, err := fmt.Scanln(&resp)
-			if err != nil {
-				return err
-			}
+			exitOn(err)
 
 			return resp
 		}
 		scrpt.InteractiveResolveTemplate(prompt)
 
 		awsDriver := aws.NewDriver(awscloud.InfraService)
-		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
-
-		if _, err := scrpt.Compile(awsDriver); err != nil {
-			return err
+		if verboseFlag {
+			awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 		}
+
+		_, err = scrpt.Compile(awsDriver)
+		exitOn(err)
 
 		fmt.Println()
 		fmt.Println(scrpt)
 		fmt.Println()
-		fmt.Print("About to run compiled script above? (y/n): ")
+		fmt.Print("Run compiled script above? (y/n): ")
 		var yesorno string
 		_, err = fmt.Scanln(&yesorno)
 
 		if strings.TrimSpace(yesorno) == "y" {
-			if executedScript, err := scrpt.Run(awsDriver); err != nil {
-				return err
-			} else {
-				fmt.Println()
-				fmt.Println(executedScript)
-				fmt.Println()
-				fmt.Println("Above script ran successfully")
+			executedScript, err := scrpt.Run(awsDriver)
+			exitOn(err)
+
+			fmt.Println()
+			green := color.New(color.FgGreen).SprintFunc()
+			for _, stat := range executedScript.Statements {
+				fmt.Printf("%s -> %s\n", stat, green("DONE"))
 			}
 		}
 
