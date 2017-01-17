@@ -33,6 +33,14 @@ create instance count=1 instance.type=t2.micro image=ami-9398d3e0 ip=127.0.0.1
 				)
 			},
 		},
+
+		{
+			input: `create vpc`,
+			verifyFn: func(s *Script) {
+				assertStatementsCount(t, s, 1)
+				assertExpressionNode(t, 0, s.Statements, "create", "vpc", nil, nil)
+			},
+		},
 	}
 
 	for _, tcase := range tcases {

@@ -15,9 +15,8 @@ Declaration <- <Identifier> { p.AddDeclarationIdentifier(text) }
                Equal
                Expr
 Expr <- <Action> { p.AddAction(text) }
-        MustWhiteSpacing
-        (<Entity> MustWhiteSpacing { p.AddEntity(text) })?
-        Params*
+        MustWhiteSpacing <Entity> { p.AddEntity(text) }
+        (MustWhiteSpacing Params)?
 
 Params <- Param+ { p.EndOfParams() }
 Param <- <Identifier> { p.AddParamKey(text) }
