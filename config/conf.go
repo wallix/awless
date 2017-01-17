@@ -48,6 +48,9 @@ func InitAwlessEnv() error {
 	AwlessFirstSync = os.IsNotExist(ierr) || os.IsNotExist(aerr)
 
 	AwlessFirstInstall = os.IsNotExist(err)
+	if AwlessFirstInstall && len(os.Args) > 1 && os.Args[1] == "completion" {
+		os.Exit(0)
+	}
 
 	os.MkdirAll(GitDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
