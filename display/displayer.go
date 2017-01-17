@@ -8,7 +8,9 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
@@ -26,9 +28,10 @@ type sorter interface {
 }
 
 type Options struct {
-	RdfType rdf.ResourceType
-	Format  string
-	SortBy  []string
+	RdfType  rdf.ResourceType
+	Format   string
+	SortBy   []string
+	MaxWidth int
 }
 
 func BuildGraphDisplayer(headers []ColumnDefinition, opts Options) GraphDisplayer {
@@ -50,12 +53,12 @@ func BuildGraphDisplayer(headers []ColumnDefinition, opts Options) GraphDisplaye
 	case "csv":
 		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
 	case "table":
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers, maxwidth: opts.MaxWidth}
 	case "porcelain":
 		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
 	default:
 		fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", opts.Format)
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers, maxwidth: opts.MaxWidth}
 	}
 }
 
@@ -113,9 +116,10 @@ func (d *csvGraphDisplayer) SetGraph(g *rdf.Graph) {
 
 type tableGraphDisplayer struct {
 	sorter
-	g       *rdf.Graph
-	rdfType rdf.ResourceType
-	headers []ColumnDefinition
+	g        *rdf.Graph
+	rdfType  rdf.ResourceType
+	headers  []ColumnDefinition
+	maxwidth int
 }
 
 func (d *tableGraphDisplayer) Print(w io.Writer) error {
@@ -136,6 +140,20 @@ func (d *tableGraphDisplayer) Print(w io.Writer) error {
 
 	d.sorter.sort(values)
 
+	columnsToDisplay := d.headers
+	if d.maxwidth != 0 {
+		columnsToDisplay = []ColumnDefinition{}
+		currentWidth := 0
+		for j, h := range d.headers {
+			colW := columnWidth(j, values, h) + 2 // +2 (tables margin)
+			if currentWidth+colW > d.maxwidth {
+				break
+			}
+			currentWidth += colW
+			columnsToDisplay = append(columnsToDisplay, h)
+		}
+	}
+
 	markColumnAsc := -1
 	if len(d.sorter.columns()) > 0 {
 		markColumnAsc = d.sorter.columns()[0]
@@ -143,20 +161,31 @@ func (d *tableGraphDisplayer) Print(w io.Writer) error {
 
 	table := tablewriter.NewWriter(w)
 	var displayHeaders []string
-	for i, h := range d.headers {
+	for i, h := range columnsToDisplay {
 		displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
 	}
 	table.SetHeader(displayHeaders)
 
 	for i := range values {
 		var props []string
-		for j, h := range d.headers {
+		for j, h := range columnsToDisplay {
 			props = append(props, h.format(values[i][j]))
 		}
 		table.Append(props)
 	}
 
 	table.Render()
+	if len(columnsToDisplay) < len(d.headers) {
+		var hiddenColumns []string
+		for i := len(columnsToDisplay); i < len(d.headers); i++ {
+			hiddenColumns = append(hiddenColumns, "'"+d.headers[i].title(false)+"'")
+		}
+		if len(hiddenColumns) == 1 {
+			fmt.Fprint(w, color.New(color.FgRed).SprintfFunc()("Column truncated to fit terminal: %s\n", hiddenColumns[0]))
+		} else {
+			fmt.Fprint(w, color.New(color.FgRed).SprintfFunc()("Columns truncated to fit terminal: %s\n", strings.Join(hiddenColumns, ", ")))
+		}
+	}
 	return nil
 }
 
@@ -284,4 +313,15 @@ func titlesToIDs(mapping map[string]int, titles []string) ([]int, error) {
 		ids = append(ids, id)
 	}
 	return ids, nil
+}
+
+func columnWidth(j int, t table, h ColumnDefinition) int {
+	w := 0
+	for i := range t {
+		c := utf8.RuneCountInString(h.format(t[i][j]))
+		if c > w {
+			w = c
+		}
+	}
+	return w
 }

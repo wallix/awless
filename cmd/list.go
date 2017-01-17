@@ -10,6 +10,7 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/shell"
 )
 
 var (
@@ -125,8 +126,14 @@ func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
 			display.Options{RdfType: nodeType, Format: "porcelain", SortBy: sortBy},
 		)
 	} else {
-		displayer = display.BuildGraphDisplayer(display.DefaultsColumnDefinitions[nodeType],
-			display.Options{RdfType: nodeType, Format: listingFormat, SortBy: sortBy})
+		maxwidth, err := shell.GetTerminalWidth()
+		if err != nil {
+			maxwidth = 0
+		}
+		displayer = display.BuildGraphDisplayer(
+			display.DefaultsColumnDefinitions[nodeType],
+			display.Options{RdfType: nodeType, Format: listingFormat, SortBy: sortBy, MaxWidth: maxwidth},
+		)
 	}
 	displayer.SetGraph(g)
 	err := displayer.Print(os.Stdout)

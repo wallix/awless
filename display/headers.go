@@ -29,6 +29,7 @@ type StringColumnDefinition struct {
 	Prop, Friendly string
 	DontTruncate   bool
 	TruncateRight  bool
+	TruncateSize   int
 }
 
 func (h StringColumnDefinition) format(i interface{}) string {
@@ -36,10 +37,14 @@ func (h StringColumnDefinition) format(i interface{}) string {
 		return ""
 	}
 	if !h.DontTruncate {
+		size := h.TruncateSize
+		if size == 0 {
+			size = truncateSize
+		}
 		if h.TruncateRight {
-			return truncateRight(fmt.Sprint(i), truncateSize)
+			return truncateRight(fmt.Sprint(i), size)
 		} else {
-			return truncateLeft(fmt.Sprint(i), truncateSize)
+			return truncateLeft(fmt.Sprint(i), size)
 		}
 	}
 	return fmt.Sprint(i)
