@@ -36,7 +36,7 @@ StringValue <- [a-zA-Z0-9-._]+
 CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
 IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
 IntValue <- [0-9]+
-HoleValue <- '{' <Identifier> '}'
+HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
 
 Spacing <- Space*
 WhiteSpacing <- Whitespace*

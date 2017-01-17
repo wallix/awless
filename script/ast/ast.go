@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 type Node interface {
 	clone() Node
+	String() string
 }
 
 type AST struct {
@@ -17,9 +19,21 @@ type AST struct {
 	currentKey       string
 }
 
+func (a *AST) String() string {
+	var all []string
+	for _, stat := range a.Statements {
+		all = append(all, stat.String())
+	}
+	return strings.Join(all, "\n")
+}
+
 type IdentifierNode struct {
 	Ident string
 	Val   interface{}
+}
+
+func (n *IdentifierNode) String() string {
+	return fmt.Sprintf("%s", n.Ident)
 }
 
 func (n *IdentifierNode) clone() Node {
@@ -39,6 +53,10 @@ func (n *DeclarationNode) clone() Node {
 		Left:  n.Left.clone().(*IdentifierNode),
 		Right: n.Right.clone().(*ExpressionNode),
 	}
+}
+
+func (n *DeclarationNode) String() string {
+	return fmt.Sprintf("%s = %s", n.Left, n.Right)
 }
 
 type ExpressionNode struct {
@@ -62,6 +80,17 @@ func (n *ExpressionNode) clone() Node {
 	}
 
 	return expr
+}
+
+func (n *ExpressionNode) String() string {
+	var all []string
+	for k, v := range n.Params {
+		all = append(all, fmt.Sprintf("%s=%v", k, v))
+	}
+	for k, v := range n.Holes {
+		all = append(all, fmt.Sprintf("%s={%s}", k, v))
+	}
+	return fmt.Sprintf("%s %s %s", n.Action, n.Entity, strings.Join(all, " "))
 }
 
 func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) {

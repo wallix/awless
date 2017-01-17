@@ -15,7 +15,7 @@ func TestScriptParsing(t *testing.T) {
 		{
 			input: `
 			myvpc  =   create   vpc  cidr=10.0.0.0/24 num=3
-mysubnet = delete subnet vpc={one} name=bill
+mysubnet = delete subnet vpc={ one } name=bill
 create instance count=1 type=t2.micro base=ami-9398d3e0 ip=127.0.0.1
 		`,
 

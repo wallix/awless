@@ -23,7 +23,7 @@ func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: create vpc done")
+			d.logger.Println("dry run: create vpc ok")
 			return fmt.Sprintf("vpc_%d", rand.Intn(1e3)), nil
 		}
 	}
@@ -58,7 +58,7 @@ func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: delete vpc done")
+			d.logger.Println("dry run: delete vpc ok")
 			return fmt.Sprintf("vpc_%d", rand.Intn(1e3)), nil
 		}
 	}
@@ -94,7 +94,7 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: create subnet done")
+			d.logger.Println("dry run: create subnet ok")
 			return fmt.Sprintf("subnet_%d", rand.Intn(1e3)), nil
 		}
 	}
@@ -130,7 +130,7 @@ func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: delete subnet done")
+			d.logger.Println("dry run: delete subnet ok")
 			return fmt.Sprintf("subnet_%d", rand.Intn(1e3)), nil
 		}
 	}
@@ -169,7 +169,7 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: create instance done")
+			d.logger.Println("dry run: create instance ok")
 			return fmt.Sprintf("instance_%d", rand.Intn(1e3)), nil
 		}
 	}
@@ -208,7 +208,7 @@ func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: delete instance done")
+			d.logger.Println("dry run: delete instance ok")
 			return fmt.Sprintf("instance_%d", rand.Intn(1e3)), nil
 		}
 	}
