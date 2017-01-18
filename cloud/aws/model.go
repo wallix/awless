@@ -61,17 +61,17 @@ var extractTagFn = func(key string) transformFn {
 
 var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
 	rdf.Instance: {
-		"Id":        {name: "InstanceId", transform: extractValueFn},
-		"Name":      {name: "Tags", transform: extractTagFn("Name")},
-		"Type":      {name: "InstanceType", transform: extractValueFn},
-		"SubnetId":  {name: "SubnetId", transform: extractValueFn},
-		"VpcId":     {name: "VpcId", transform: extractValueFn},
-		"PublicIp":  {name: "PublicIpAddress", transform: extractValueFn},
-		"PrivateIp": {name: "PrivateIpAddress", transform: extractValueFn},
-		"ImageId":   {name: "ImageId", transform: extractValueFn},
-		"LaunchTime":   {name: "LaunchTime", transform: extractValueFn},
-		"State":     {name: "State", transform: extractFieldFn("Name")},
-		"KeyName":   {name: "KeyName", transform: extractValueFn},
+		"Id":         {name: "InstanceId", transform: extractValueFn},
+		"Name":       {name: "Tags", transform: extractTagFn("Name")},
+		"Type":       {name: "InstanceType", transform: extractValueFn},
+		"SubnetId":   {name: "SubnetId", transform: extractValueFn},
+		"VpcId":      {name: "VpcId", transform: extractValueFn},
+		"PublicIp":   {name: "PublicIpAddress", transform: extractValueFn},
+		"PrivateIp":  {name: "PrivateIpAddress", transform: extractValueFn},
+		"ImageId":    {name: "ImageId", transform: extractValueFn},
+		"LaunchTime": {name: "LaunchTime", transform: extractValueFn},
+		"State":      {name: "State", transform: extractFieldFn("Name")},
+		"KeyName":    {name: "KeyName", transform: extractValueFn},
 	},
 	rdf.Vpc: {
 		"Id":        {name: "VpcId", transform: extractValueFn},
