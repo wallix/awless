@@ -71,8 +71,10 @@ func runScript(scrpt *script.Script) error {
 	_, err = scrpt.Compile(awsDriver)
 	exitOn(err)
 
+	green := color.New(color.FgGreen).SprintFunc()
+
 	fmt.Println()
-	fmt.Println(scrpt)
+	fmt.Printf("%s\n", green(scrpt))
 	fmt.Println()
 	fmt.Print("Run compiled script above? (y/n): ")
 	var yesorno string
@@ -83,7 +85,6 @@ func runScript(scrpt *script.Script) error {
 		exitOn(err)
 
 		fmt.Println()
-		green := color.New(color.FgGreen).SprintFunc()
 		for _, stat := range executedScript.Statements {
 			fmt.Printf("%s -> %s\n", stat, green("DONE"))
 		}
@@ -123,6 +124,13 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 					if scrpt, err = script.Parse(templ); err != nil {
 						exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err))
+					}
+
+					for k, v := range expr.Params {
+						if !strings.Contains(k, ".") {
+							expr.Params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
+							delete(expr.Params, k)
+						}
 					}
 
 					scrpt.ResolveTemplate(expr.Params)
