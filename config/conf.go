@@ -43,8 +43,7 @@ func InitAwlessEnv() error {
 	os.MkdirAll(GitDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
 
-	err = database.Open(DatabasePath)
-	if err != nil {
+	if err = database.Open(DatabasePath); err != nil {
 		return err
 	}
 

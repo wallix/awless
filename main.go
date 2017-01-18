@@ -13,7 +13,7 @@ import (
 func main() {
 	err := config.InitAwlessEnv()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "cannot init environment: %s\n", err)
+		fmt.Fprintf(os.Stderr, "cannot init awless environment: %s\n", err)
 		os.Exit(1)
 	}
 

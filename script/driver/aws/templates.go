@@ -2,7 +2,7 @@
 // This file was automatically generated with go generate
 package aws
 
-var AWSTemplates = map[string]string{
+var AWSDriverTemplates = map[string]string{
 	"createvpc":      "create vpc cidr={ vpc.cidr }",
 	"deletevpc":      "delete vpc id={ vpc.id }",
 	"createsubnet":   "create subnet cidr={ subnet.cidr } vpc={ subnet.vpc }",

@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"os"
 	"strings"
+
+	"github.com/wallix/awless/script/driver/aws"
 )
 
 func main() {
@@ -24,7 +26,7 @@ func generateScriptTemplates() {
 		panic(err)
 	}
 
-	err = templ.Execute(f, definitions)
+	err = templ.Execute(f, aws.DriverDefinitions)
 	if err != nil {
 		panic(err)
 	}
@@ -44,70 +46,17 @@ func generateDriverFuncs() {
 		panic(err)
 	}
 
-	err = templ.Execute(f, definitions)
+	err = templ.Execute(f, aws.DriverDefinitions)
 	if err != nil {
 		panic(err)
 	}
-}
-
-var definitions = []struct {
-	ParamsMapping                     map[string]string
-	Action, Entity                    string
-	Input, ApiMethod, OutputExtractor string
-}{
-	// VPC
-	{
-		Action: "create", Entity: "vpc", Input: "CreateVpcInput", ApiMethod: "CreateVpc", OutputExtractor: "Vpc.VpcId",
-		ParamsMapping: map[string]string{
-			"CidrBlock": "cidr",
-		},
-	},
-	{
-		Action: "delete", Entity: "vpc", Input: "DeleteVpcInput", ApiMethod: "DeleteVpc",
-		ParamsMapping: map[string]string{
-			"VpcId": "id",
-		},
-	},
-
-	// SUBNET
-	{
-		Action: "create", Entity: "subnet", Input: "CreateSubnetInput", ApiMethod: "CreateSubnet", OutputExtractor: "Subnet.SubnetId",
-		ParamsMapping: map[string]string{
-			"CidrBlock": "cidr",
-			"VpcId":     "vpc",
-		},
-	},
-	{
-		Action: "delete", Entity: "subnet", Input: "DeleteSubnetInput", ApiMethod: "DeleteSubnet",
-		ParamsMapping: map[string]string{
-			"SubnetId": "id",
-		},
-	},
-
-	// INSTANCES
-	{
-		Action: "create", Entity: "instance", Input: "RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "Instances[0].InstanceId",
-		ParamsMapping: map[string]string{
-			"ImageId":      "image",
-			"MaxCount":     "count",
-			"MinCount":     "count",
-			"InstanceType": "type",
-			"SubnetId":     "subnet",
-		},
-	},
-	{
-		Action: "delete", Entity: "instance", Input: "TerminateInstancesInput", ApiMethod: "TerminateInstances",
-		ParamsMapping: map[string]string{
-			"InstanceIds": "id",
-		},
-	},
 }
 
 const scriptTemplatesTempl = `// DO NOT EDIT
 // This file was automatically generated with go generate
 package aws
 
-var AWSTemplates = map[string]string{
+var AWSDriverTemplates = map[string]string{
 {{- range $index, $def := . }}
   "{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.ParamsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }}",
 {{- end }}

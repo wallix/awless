@@ -24,10 +24,10 @@ type DB struct {
 }
 
 // Open opens the database if it exists, else it creates a new database.
-func Open(name string) error {
-	boltdb, err := bolt.Open(name, 0600, &bolt.Options{Timeout: 1 * time.Second})
+func Open(path string) error {
+	boltdb, err := bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		return err
+		return fmt.Errorf("opening db at %s: %s (any awless existing process running?)", path, err)
 	}
 
 	Current = &DB{boltdb}
