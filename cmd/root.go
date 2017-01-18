@@ -74,6 +74,13 @@ __awless_get_all_ids()
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }
+__awless_get_conf_keys()
+{
+		local all_keys_output
+		if all_keys_output=$(awless config list --keys 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${all_keys_output[*]}" -- "$cur" ) )
+		fi
+}
 __awless_get_groups_ids()
 {
 		local ids_output
@@ -155,6 +162,18 @@ __custom_func() {
 						;;
 				awless_show_vpc )
 						__awless_get_vpcs_ids
+						return
+						;;
+				awless_config_set )
+						__awless_get_conf_keys
+						return
+						;;
+				awless_config_get )
+						__awless_get_conf_keys
+						return
+						;;
+				awless_config_unset )
+						__awless_get_conf_keys
 						return
 						;;
         *)

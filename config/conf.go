@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/database"
 )
 
@@ -58,30 +57,37 @@ func InitAwlessEnv() error {
 }
 
 func resolveRegion() (region string) {
-	os.Setenv("AWS_SDK_LOAD_CONFIG", "true")
-	if sess, err := session.NewSession(); err == nil {
-		region = aws.StringValue(sess.Config.Region)
+	if sess, err := session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}); err == nil {
+		region = awssdk.StringValue(sess.Config.Region)
 	}
 
-	if validRegion(region) {
+	if aws.IsValidRegion(region) {
 		fmt.Printf("Found existing AWS region '%s'\n", region)
 		fmt.Println("Setting it as your default region. Show config with `awless config`")
 		fmt.Println()
 		return
 	}
 
-	fmt.Println("Could not find any AWS region in your environment. Please choose one:")
+	fmt.Println("Could not find any AWS region in your environment.")
 
-	fmt.Println(strings.Join(allRegions(), ", "))
+	region = askRegion()
+
+	return
+}
+
+func askRegion() string {
+	var region string
+	fmt.Println("Please choose one region:")
+
+	fmt.Println(strings.Join(aws.AllRegions(), ", "))
 	fmt.Println()
 	fmt.Print("Copy/paste one region > ")
 	fmt.Scan(&region)
-	for !validRegion(region) {
+	for !aws.IsValidRegion(region) {
 		fmt.Print("Invalid! Copy/paste one valid region > ")
 		fmt.Scan(&region)
 	}
-
-	return
+	return region
 }
 
 func addDefaults(region string) error {
@@ -98,23 +104,4 @@ func addDefaults(region string) error {
 		}
 	}
 	return nil
-}
-
-func allRegions() []string {
-	var regions []string
-	partitions := endpoints.DefaultResolver().(endpoints.EnumPartitions).Partitions()
-	for _, p := range partitions {
-		for id := range p.Regions() {
-			regions = append(regions, id)
-		}
-	}
-	return regions
-}
-
-func validRegion(given string) bool {
-	reg, _ := regexp.Compile("^(us|eu|ap|sa|ca)\\-\\w+\\-\\d+$")
-	regChina, _ := regexp.Compile("^cn\\-\\w+\\-\\d+$")
-	regUsGov, _ := regexp.Compile("^us\\-gov\\-\\w+\\-\\d+$")
-
-	return reg.MatchString(given) || regChina.MatchString(given) || regUsGov.MatchString(given)
 }
