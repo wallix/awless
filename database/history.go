@@ -8,8 +8,8 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// EmptyHistory empties the history from database
-func (db *DB) EmptyHistory() error {
+// DeleteHistory empties the history from database
+func (db *DB) DeleteHistory() error {
 	return db.DeleteBucket(historyBucketName)
 }
 

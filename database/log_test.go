@@ -6,7 +6,7 @@ func TestAddLogToDatabase(t *testing.T) {
 	db, close := newTestDb()
 	defer close()
 
-	if err := db.FlushLogs(); err != nil {
+	if err := db.DeleteLogs(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -52,7 +52,7 @@ func TestAddLogToDatabase(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
-	if err := db.FlushLogs(); err != nil {
+	if err := db.DeleteLogs(); err != nil {
 		t.Fatal(err)
 	}
 

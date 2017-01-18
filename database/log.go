@@ -12,7 +12,7 @@ type Log struct {
 	Date time.Time
 }
 
-func (db *DB) FlushLogs() error {
+func (db *DB) DeleteLogs() error {
 	return db.SetValue(logsKey, []byte{})
 }
 

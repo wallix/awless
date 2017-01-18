@@ -63,7 +63,8 @@ func resolveRegion() (region string) {
 
 	if aws.IsValidRegion(region) {
 		fmt.Printf("Found existing AWS region '%s'\n", region)
-		fmt.Println("Setting it as your default region. Show config with `awless config`")
+		fmt.Println("Setting it as your default region.")
+		fmt.Println("Show config with `awless config list`. Change region with `awless config set region`")
 		fmt.Println()
 		return
 	}

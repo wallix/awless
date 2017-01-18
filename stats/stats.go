@@ -64,7 +64,10 @@ func SendStats(db *database.DB, url string, publicKey rsa.PublicKey, localInfra,
 	if err := db.SetTimeValue(database.SentTimeKey, time.Now()); err != nil {
 		return err
 	}
-	if err := db.FlushLogs(); err != nil {
+	if err := db.DeleteLogs(); err != nil {
+		return err
+	}
+	if err := db.DeleteHistory(); err != nil {
 		return err
 	}
 	return nil
