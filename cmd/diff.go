@@ -61,7 +61,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ var diffCmd = &cobra.Command{
 			return err
 		}
 
-		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
 		if err != nil {
 			return err
 		}

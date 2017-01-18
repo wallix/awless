@@ -60,7 +60,7 @@ var showInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 			var g *rdf.Graph
 			var err error
 			if localResources {
-				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+				g, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
 
 			} else {
 				g, err = aws.InfraService.FetchRDFResources(resourceType)
@@ -88,7 +88,7 @@ var showAccessResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 			var g *rdf.Graph
 			var err error
 			if localResources {
-				g, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+				g, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
 
 			} else {
 				g, err = aws.AccessService.FetchRDFResources(resourceType)
@@ -130,7 +130,7 @@ var showCloudRevisionsCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		r, err := revision.OpenRepository(config.GitDir)
+		r, err := revision.OpenRepository(config.RepoDir)
 		if err != nil {
 			return err
 		}

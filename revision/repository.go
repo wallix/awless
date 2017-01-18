@@ -1,11 +1,12 @@
 package revision
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/google/badwolf/triple/node"
 	"gopkg.in/src-d/go-git.v4"
@@ -27,7 +28,6 @@ const (
 	NoGroup
 )
 
-// OpenRepository opens a new or existing git repository
 func OpenRepository(path string) (*Repository, error) {
 	if _, err := os.Stat(filepath.Join(path, ".git")); os.IsNotExist(err) {
 		if _, err := executeGitCommand(path, "init"); err != nil {
@@ -37,15 +37,6 @@ func OpenRepository(path string) (*Repository, error) {
 
 	repo, err := git.NewFilesystemRepository(filepath.Join(path, ".git"))
 	return &Repository{gitRepository: repo, path: path}, err
-}
-
-// CommitIfChanges creates a new git commit if there are changes in the infra and access RDF files
-func (rr *Repository) CommitIfChanges(files ...string) error {
-	for _, file := range files {
-		rr.addFile(file)
-	}
-
-	return rr.commitIfChanges()
 }
 
 // LastDiffs list the last revisions for the files in parameters (if no file in parameter, for all repository files)
@@ -60,43 +51,6 @@ func (rr *Repository) LastDiffs(numberRevisions int, root *node.Node, param fetc
 		return diffs, err
 	}
 	return rr.generateDiffs(generateRevisionPairs(revisions, param), root, files)
-}
-
-func (rr *Repository) hasChanges() (bool, error) {
-	stdout, err := executeGitCommand(rr.path, "status", "--porcelain")
-	if err != nil {
-		return false, err
-	}
-	return !(strings.TrimSpace(stdout) == ""), nil
-}
-
-func (rr *Repository) addFile(path string) error {
-	rr.files = append(rr.files, path)
-	return nil
-}
-
-func (rr *Repository) commitIfChanges(overwriteTime ...time.Time) error {
-	for _, filePath := range rr.files {
-		if _, err := executeGitCommand(rr.path, "add", filePath); err != nil {
-			return err
-		}
-	}
-
-	if hasChanges, e := rr.hasChanges(); e != nil {
-		return e
-	} else if !hasChanges {
-		return nil
-	}
-	var env []string
-	if len(overwriteTime) != 0 {
-		env = []string{fmt.Sprintf("GIT_AUTHOR_DATE=%s", overwriteTime[0]), fmt.Sprintf("GIT_COMMITTER_DATE=%s", overwriteTime[0])}
-	}
-
-	if _, err := executeGitCommandWithEnv(rr.path, env, "-c", "user.name='awless'", "-c", "user.email='git@awless.io'", "commit", "-m", "new sync"); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (rr *Repository) lastRevisions(n int) ([]*Revision, error) {
@@ -125,4 +79,28 @@ func (rr *Repository) lastRevisions(n int) ([]*Revision, error) {
 	}
 
 	return res, err
+}
+
+var ErrGitNotFound = errors.New("git: executable has not been found")
+
+func executeGitCommand(dir string, command ...string) (string, error) {
+	return executeGitCommandWithEnv(dir, []string{}, command...)
+}
+
+func executeGitCommandWithEnv(dir string, env []string, command ...string) (string, error) {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		return "", ErrGitNotFound
+	}
+	cmd := exec.Command(git, command...)
+	cmd.Dir = dir
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	cmd.Env = env
+	err = cmd.Run()
+	if err != nil || stderr.String() != "" {
+		return "", fmt.Errorf("git error: %s: %s", err.Error(), stderr.String())
+	}
+	return stdout.String(), nil
 }

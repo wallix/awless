@@ -14,7 +14,7 @@ import (
 
 var (
 	AwlessHome                          = filepath.Join(os.Getenv("HOME"), ".awless")
-	GitDir                              = filepath.Join(AwlessHome, "aws", "rdf")
+	RepoDir                             = filepath.Join(AwlessHome, "aws", "rdf")
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
 	Version                             = "0.0.3"
@@ -26,8 +26,8 @@ var (
 func InitAwlessEnv() error {
 	os.Setenv("__AWLESS_HOME", AwlessHome)
 	_, err := os.Stat(AwlessHome)
-	_, ierr := os.Stat(filepath.Join(GitDir, InfraFilename))
-	_, aerr := os.Stat(filepath.Join(GitDir, AccessFilename))
+	_, ierr := os.Stat(filepath.Join(RepoDir, InfraFilename))
+	_, aerr := os.Stat(filepath.Join(RepoDir, AccessFilename))
 	AwlessFirstSync = os.IsNotExist(ierr) || os.IsNotExist(aerr)
 
 	AwlessFirstInstall = os.IsNotExist(err)
@@ -35,7 +35,7 @@ func InitAwlessEnv() error {
 		os.Exit(0)
 	}
 
-	os.MkdirAll(GitDir, 0700)
+	os.MkdirAll(RepoDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {

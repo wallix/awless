@@ -13,7 +13,7 @@ import (
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/rdf"
-	"github.com/wallix/awless/revision"
+	"github.com/wallix/awless/revision/repo"
 )
 
 func init() {
@@ -83,7 +83,7 @@ func performSync(region string) (*rdf.Graph, *rdf.Graph, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	if err = ioutil.WriteFile(filepath.Join(config.GitDir, config.InfraFilename), tofile, 0600); err != nil {
+	if err = ioutil.WriteFile(filepath.Join(config.RepoDir, config.InfraFilename), tofile, 0600); err != nil {
 		return nil, nil, err
 	}
 
@@ -93,15 +93,15 @@ func performSync(region string) (*rdf.Graph, *rdf.Graph, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := ioutil.WriteFile(filepath.Join(config.GitDir, config.AccessFilename), tofile, 0600); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(config.RepoDir, config.AccessFilename), tofile, 0600); err != nil {
 		return nil, nil, err
 	}
 
-	r, err := revision.OpenRepository(config.GitDir)
+	r, err := repo.NewRepo()
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := r.CommitIfChanges(config.InfraFilename, config.AccessFilename); err != nil {
+	if err := r.Commit(config.InfraFilename, config.AccessFilename); err != nil {
 		return nil, nil, err
 	}
 
