@@ -36,22 +36,22 @@ func InitCli() {
 		if err != nil {
 			database.Current.AddLog(err.Error())
 		} else {
-			if !config.AwlessFirstSync {
-				go func() {
-					localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+			go func() {
+				localInfra, localAccess := rdf.NewGraph(), rdf.NewGraph()
+				if !config.AwlessFirstSync {
+					localInfra, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 					if err != nil {
 						database.Current.AddLog(err.Error())
 					}
-					localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+					localAccess, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 					if err != nil {
 						database.Current.AddLog(err.Error())
 					}
-
-					if err := stats.SendStats(database.Current, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
-						database.Current.AddLog(err.Error())
-					}
-				}()
-			}
+				}
+				if err := stats.SendStats(database.Current, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
+					database.Current.AddLog(err.Error())
+				}
+			}()
 		}
 	}
 }

@@ -39,7 +39,8 @@ func InitDB(firstInstall bool) error {
 	if Current == nil {
 		return fmt.Errorf("database: empty current database")
 	}
-	if firstInstall {
+	id, err := Current.GetStringValue(AwlessIdKey)
+	if err != nil || id == "" {
 		userID, err := cloud.Current.GetUserId()
 		if err != nil {
 			return err
