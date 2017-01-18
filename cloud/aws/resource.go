@@ -21,6 +21,30 @@ type Property struct {
 	Value interface{}
 }
 
+func (prop *Property) tripleFromNode(subject *node.Node) (*triple.Triple, error) {
+	propL, err := prop.ToLiteralObject()
+	if err != nil {
+		return nil, err
+	}
+	if propT, err := triple.New(subject, rdf.PropertyPredicate, propL); err != nil {
+		return nil, err
+	} else {
+		return propT, nil
+	}
+}
+
+func (prop *Property) ToLiteralObject() (*triple.Object, error) {
+	json, err := json.Marshal(prop)
+	if err != nil {
+		return nil, err
+	}
+	var propL *literal.Literal
+	if propL, err = literal.DefaultBuilder().Build(literal.Text, string(json)); err != nil {
+		return nil, err
+	}
+	return triple.NewLiteralObject(propL), nil
+}
+
 type Properties map[string]interface{}
 
 type Resource struct {
@@ -152,7 +176,8 @@ func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
 	triples = append(triples, t)
 
 	for propKey, propValue := range res.properties {
-		if propT, err := NewPropertyTriple(n, propKey, propValue); err != nil {
+		prop := Property{Key: propKey, Value: propValue}
+		if propT, err := prop.tripleFromNode(n); err != nil {
 			return nil, err
 		} else {
 			triples = append(triples, propT)
@@ -177,23 +202,6 @@ func LoadResourcesFromGraph(g *rdf.Graph, t rdf.ResourceType) ([]*Resource, erro
 		res = append(res, r)
 	}
 	return res, nil
-}
-
-func NewPropertyTriple(subject *node.Node, propertyKey string, propertyValue interface{}) (*triple.Triple, error) {
-	prop := Property{Key: propertyKey, Value: propertyValue}
-	json, err := json.Marshal(prop)
-	if err != nil {
-		return nil, err
-	}
-	var propL *literal.Literal
-	if propL, err = literal.DefaultBuilder().Build(literal.Text, string(json)); err != nil {
-		return nil, err
-	}
-	if propT, err := triple.New(subject, rdf.PropertyPredicate, triple.NewLiteralObject(propL)); err != nil {
-		return nil, err
-	} else {
-		return propT, nil
-	}
 }
 
 func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {

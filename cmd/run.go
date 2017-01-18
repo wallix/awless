@@ -10,8 +10,11 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/alias"
 	awscloud "github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/script"
 	"github.com/wallix/awless/script/ast"
 	"github.com/wallix/awless/script/driver/aws"
@@ -48,10 +51,10 @@ var runCmd = &cobra.Command{
 }
 
 func runScript(scrpt *script.Script) error {
-	db, close := database.Current()
+	db, dbclose := database.Current()
 	defaults, err := db.GetDefaults()
 	exitOn(err)
-	close()
+	dbclose()
 
 	scrpt.ResolveTemplate(defaults)
 
@@ -135,6 +138,8 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 						}
 					}
 
+					addAliasesToParams(expr)
+
 					scrpt.ResolveTemplate(expr.Params)
 
 					return runScript(scrpt)
@@ -144,4 +149,38 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	return actionCmd
+}
+
+func addAliasesToParams(expr *ast.ExpressionNode) error {
+	for k, v := range expr.Aliases {
+		if !strings.Contains(k, ".") {
+			expr.Aliases[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
+			delete(expr.Aliases, k)
+		}
+	}
+
+	infra, err := config.LoadInfraGraph()
+	exitOn(err)
+	access, err := config.LoadAccessGraph()
+	exitOn(err)
+
+	for k, v := range expr.Aliases {
+		if !strings.Contains(k, ".") {
+			return fmt.Errorf("invalid alias key (no '.') %s", k)
+		}
+		var t string
+		if strings.Split(k, ".")[1] == "id" {
+			t = strings.Split(k, ".")[0]
+		} else {
+			t = strings.Split(k, ".")[1]
+		}
+		rT := rdf.ResourceType(t)
+		a := alias.Alias(v)
+		if id, ok := a.ResolveToId(infra, rT); ok {
+			expr.Params[k] = id
+		} else if id, ok := a.ResolveToId(access, rT); ok {
+			expr.Params[k] = id
+		}
+	}
+	return nil
 }

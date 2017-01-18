@@ -47,6 +47,17 @@ func (s *Script) Compile(d driver.Driver) (*Script, error) {
 	return s.Run(d)
 }
 
+func (s *Script) GetAliases() map[string]string {
+	aliases := make(map[string]string)
+	each := func(expr *ast.ExpressionNode) {
+		for k, v := range expr.Aliases {
+			aliases[k] = v
+		}
+	}
+	s.visitExpressionNodes(each)
+	return aliases
+}
+
 func (s *Script) ResolveTemplate(refs map[string]interface{}) error {
 	each := func(expr *ast.ExpressionNode) {
 		expr.ProcessHoles(refs)

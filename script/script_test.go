@@ -11,6 +11,33 @@ import (
 	"github.com/wallix/awless/script/driver"
 )
 
+func TestGetAliases(t *testing.T) {
+	tree := &ast.AST{}
+
+	tree.Statements = append(tree.Statements, &ast.DeclarationNode{
+		Left: &ast.IdentifierNode{},
+		Right: &ast.ExpressionNode{
+			Aliases: map[string]string{"1": "one"},
+		}}, &ast.DeclarationNode{
+		Left: &ast.IdentifierNode{},
+		Right: &ast.ExpressionNode{
+			Aliases: map[string]string{"2": "two", "3": "three"},
+		}}, &ast.ExpressionNode{
+		Aliases: map[string]string{"4": "four"},
+	},
+	)
+	s := &Script{tree}
+	expect := map[string]string{
+		"1": "one",
+		"2": "two",
+		"3": "three",
+		"4": "four",
+	}
+	if got, want := s.GetAliases(), expect; !reflect.DeepEqual(got, want) {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+}
+
 func TestRunDriverOnScript(t *testing.T) {
 	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
 		s := &Script{&ast.AST{}}

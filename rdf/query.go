@@ -22,6 +22,10 @@ func (g *Graph) TriplesForSubjectPredicate(subject *node.Node, predicate *predic
 	return g.returnTriples(SUBJECT_PREDICATE, predicate, subject)
 }
 
+func (g *Graph) TriplesForPredicateObject(predicate *predicate.Predicate, object *triple.Object) ([]*triple.Triple, error) {
+	return g.returnTriples(PREDICATE_OBJECT, predicate, object)
+}
+
 func (g *Graph) CountTriplesForSubjectAndPredicate(subject *node.Node, predicate *predicate.Predicate) (int, error) {
 	all, err := g.returnTriples(SUBJECT_PREDICATE, predicate, subject)
 	return len(all), err

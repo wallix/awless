@@ -26,6 +26,7 @@ Param <- <Identifier> { p.AddParamKey(text) }
 
 Identifier <- [a-zA-Z-_.]+
 Value <- HoleValue {  p.AddParamHoleValue(text) }
+        / AliasValue {  p.AddParamAliasValue(text) }
         / RefValue {  p.AddParamRefValue(text) }
         / <CidrValue> { p.AddParamCidrValue(text) }
         / <IpValue> { p.AddParamIpValue(text) }
@@ -37,6 +38,7 @@ CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
 IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
 IntValue <- [0-9]+
 RefValue <- '$'<Identifier>
+AliasValue <- '@'<Identifier>
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
 
 Spacing <- Space*

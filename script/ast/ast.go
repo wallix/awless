@@ -63,15 +63,17 @@ type ExpressionNode struct {
 	Action, Entity string
 	Refs           map[string]string
 	Params         map[string]interface{}
+	Aliases        map[string]string
 	Holes          map[string]string
 }
 
 func (n *ExpressionNode) clone() Node {
 	expr := &ExpressionNode{
 		Action: n.Action, Entity: n.Entity,
-		Refs:   make(map[string]string),
-		Params: make(map[string]interface{}),
-		Holes:  make(map[string]string),
+		Refs:    make(map[string]string),
+		Params:  make(map[string]interface{}),
+		Aliases: make(map[string]string),
+		Holes:   make(map[string]string),
 	}
 
 	for k, v := range n.Refs {
@@ -79,6 +81,9 @@ func (n *ExpressionNode) clone() Node {
 	}
 	for k, v := range n.Params {
 		expr.Params[k] = v
+	}
+	for k, v := range n.Aliases {
+		expr.Aliases[k] = v
 	}
 	for k, v := range n.Holes {
 		expr.Holes[k] = v
@@ -94,6 +99,9 @@ func (n *ExpressionNode) String() string {
 	}
 	for k, v := range n.Params {
 		all = append(all, fmt.Sprintf("%s=%v", k, v))
+	}
+	for k, v := range n.Aliases {
+		all = append(all, fmt.Sprintf("%s=@%s", k, v))
 	}
 	for k, v := range n.Holes {
 		all = append(all, fmt.Sprintf("%s={%s}", k, v))
@@ -157,6 +165,7 @@ func (s *AST) AddParamKey(text string) {
 	if expr.Params == nil {
 		expr.Refs = make(map[string]string)
 		expr.Params = make(map[string]interface{})
+		expr.Aliases = make(map[string]string)
 		expr.Holes = make(map[string]string)
 	}
 	s.currentKey = text
@@ -197,6 +206,11 @@ func (s *AST) AddParamIpValue(text string) {
 func (s *AST) AddParamRefValue(text string) {
 	expr := s.currentExpression()
 	expr.Refs[s.currentKey] = text
+}
+
+func (s *AST) AddParamAliasValue(text string) {
+	expr := s.currentExpression()
+	expr.Aliases[s.currentKey] = text
 }
 
 func (s *AST) AddParamHoleValue(text string) {
