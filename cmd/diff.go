@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 )
@@ -55,10 +54,7 @@ var diffCmd = &cobra.Command{
 
 		wg.Wait()
 
-		region, ok := database.Current.GetDefaultString("region")
-		if !ok {
-			return fmt.Errorf("invalid region '%s'", region)
-		}
+		region := config.GetDefaultRegion()
 
 		root, err := node.NewNodeFromStrings("/region", region)
 		if err != nil {

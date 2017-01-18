@@ -14,12 +14,10 @@ import (
 )
 
 var (
-	databaseFilename                    = "awless.db"
 	AwlessHome                          = filepath.Join(os.Getenv("HOME"), ".awless")
 	GitDir                              = filepath.Join(AwlessHome, "aws", "rdf")
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
-	DatabasePath                        = filepath.Join(AwlessHome, databaseFilename)
 	StatsServerUrl                      = "http://52.213.243.16:8080"
 	StatsExpirationDuration             = 24 * time.Hour
 	Version                             = "0.0.2"
@@ -29,6 +27,7 @@ var (
 )
 
 func InitAwlessEnv() error {
+	os.Setenv("__AWLESS_HOME", AwlessHome)
 	_, err := os.Stat(AwlessHome)
 	_, ierr := os.Stat(filepath.Join(GitDir, InfraFilename))
 	_, aerr := os.Stat(filepath.Join(GitDir, AccessFilename))
@@ -41,10 +40,6 @@ func InitAwlessEnv() error {
 
 	os.MkdirAll(GitDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
-
-	if err = database.Open(DatabasePath); err != nil {
-		return err
-	}
 
 	if AwlessFirstInstall {
 		fmt.Println("First install. Welcome!")
@@ -98,8 +93,10 @@ func addDefaults(region string) error {
 		InstanceImageKey: "ami-9398d3e0",
 		InstanceCountKey: 1,
 	}
+	db, close := database.Current()
+	defer close()
 	for k, v := range defaults {
-		err := database.Current.SetDefault(k, v)
+		err := db.SetDefault(k, v)
 		if err != nil {
 			return err
 		}

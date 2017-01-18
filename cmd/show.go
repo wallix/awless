@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision"
@@ -127,11 +126,7 @@ var showCloudRevisionsCmd = &cobra.Command{
 	Short: "Show cloud revision history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		region, ok := database.Current.GetDefaultString("region")
-		if !ok {
-			exitOn(fmt.Errorf("invalid region '%s'", region))
-		}
-		root, err := node.NewNodeFromStrings("/region", region)
+		root, err := node.NewNodeFromStrings("/region", config.GetDefaultRegion())
 		if err != nil {
 			return err
 		}

@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision"
 )
@@ -26,10 +25,7 @@ var syncCmd = &cobra.Command{
 	Short: "Manage your local infrastructure",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		region, ok := database.Current.GetDefaultString("region")
-		if !ok {
-			exitOn(fmt.Errorf("invalid region '%s'", region))
-		}
+		region := config.GetDefaultRegion()
 		infrag, accessg, err := performSync(region)
 		if err != nil {
 			return err

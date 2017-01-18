@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -12,11 +14,12 @@ import (
 )
 
 const (
-	salt = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
+	salt             = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
+	databaseFilename = "awless.db"
 )
 
 var (
-	Current *DB
+	current *DB
 )
 
 // A DB stores awless config, logs...
@@ -24,23 +27,39 @@ type DB struct {
 	bolt *bolt.DB
 }
 
-// Open opens the database if it exists, else it creates a new database.
-func Open(path string) error {
+func Current() (*DB, func()) {
+	awlessHome := os.Getenv("__AWLESS_HOME")
+	if awlessHome == "" {
+		fmt.Fprintf(os.Stderr, "database: awless home is not set")
+		os.Exit(-1)
+	}
+	db, err := open(filepath.Join(awlessHome, databaseFilename))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "database: %s", err)
+		os.Exit(-1)
+	}
+	todefer := func() {
+		db.Close()
+	}
+	return db, todefer
+}
+
+func open(path string) (*DB, error) {
 	boltdb, err := bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		return fmt.Errorf("opening db at %s: %s (any awless existing process running?)", path, err)
+		return nil, fmt.Errorf("opening db at %s: %s (any awless existing process running?)", path, err)
 	}
 
-	Current = &DB{bolt: boltdb}
-
-	return nil
+	return &DB{bolt: boltdb}, nil
 }
 
 func InitDB(firstInstall bool) error {
-	if Current == nil {
+	db, closing := Current()
+	defer closing()
+	if db == nil {
 		return fmt.Errorf("database: empty current database")
 	}
-	id, err := Current.GetStringValue(AwlessIdKey)
+	id, err := db.GetStringValue(AwlessIdKey)
 	if err != nil || id == "" {
 		userID, err := cloud.Current.GetUserId()
 		if err != nil {
@@ -50,7 +69,7 @@ func InitDB(firstInstall bool) error {
 		if err != nil {
 			return err
 		}
-		if err = Current.SetStringValue(AwlessIdKey, newID); err != nil {
+		if err = db.SetStringValue(AwlessIdKey, newID); err != nil {
 			return err
 		}
 		accountID, err := cloud.Current.GetAccountId()
@@ -61,7 +80,7 @@ func InitDB(firstInstall bool) error {
 		if err != nil {
 			return err
 		}
-		if err = Current.SetStringValue(AwlessAIdKey, aID); err != nil {
+		if err = db.SetStringValue(AwlessAIdKey, aID); err != nil {
 			return err
 		}
 	}

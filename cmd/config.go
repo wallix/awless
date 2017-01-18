@@ -31,7 +31,9 @@ var configListCmd = &cobra.Command{
 	Short: "List all configuration values",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		d, err := database.Current.GetDefaults()
+		db, close := database.Current()
+		defer close()
+		d, err := db.GetDefaults()
 		exitOn(err)
 		for k, v := range d {
 			if keysOnly {
@@ -51,7 +53,9 @@ var configGetCmd = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("not enough parameters")
 		}
-		d, ok := database.Current.GetDefault(args[0])
+		db, close := database.Current()
+		defer close()
+		d, ok := db.GetDefault(args[0])
 		if !ok {
 			fmt.Println("this parameter has not been set")
 		} else {
@@ -98,8 +102,9 @@ var configSetCmd = &cobra.Command{
 		if err != nil {
 			i = value
 		}
-
-		err = database.Current.SetDefault(key, i)
+		db, close := database.Current()
+		defer close()
+		err = db.SetDefault(key, i)
 		exitOn(err)
 		return nil
 	},
@@ -113,11 +118,13 @@ var configUnsetCmd = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("not enough parameters")
 		}
-		_, ok := database.Current.GetDefault(args[0])
+		db, close := database.Current()
+		defer close()
+		_, ok := db.GetDefault(args[0])
 		if !ok {
 			fmt.Println("this parameter has not been set")
 		} else {
-			database.Current.UnsetDefault(args[0])
+			db.UnsetDefault(args[0])
 		}
 		return nil
 	},

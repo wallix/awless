@@ -14,19 +14,19 @@ func init() {
 }
 
 func newTestDb() (*database.DB, func()) {
-	f, e := ioutil.TempFile(".", "test.db")
+	f, e := ioutil.TempDir(".", "test")
 	if e != nil {
 		panic(e)
 	}
 
-	err := database.Open(f.Name())
-	if err != nil {
-		panic(err)
-	}
+	os.Setenv("__AWLESS_HOME", f)
+
+	database.InitDB(true)
+	db, closing := database.Current()
 
 	todefer := func() {
-		os.Remove(f.Name())
-		database.Current.Close()
+		closing()
+		os.RemoveAll(f)
 	}
 
 	defaults := map[string]interface{}{
@@ -36,11 +36,11 @@ func newTestDb() (*database.DB, func()) {
 		config.InstanceCountKey: 1,
 	}
 	for k, v := range defaults {
-		err := database.Current.SetDefault(k, v)
+		err := db.SetDefault(k, v)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	return database.Current, todefer
+	return db, todefer
 }

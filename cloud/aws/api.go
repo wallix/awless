@@ -22,10 +22,12 @@ var (
 )
 
 func InitSession() (*session.Session, error) {
-	if database.Current == nil {
+	db, close := database.Current()
+	if db == nil {
 		return nil, fmt.Errorf("empty config database")
 	}
-	region, ok := database.Current.GetDefaultString("region")
+	defer close()
+	region, ok := db.GetDefaultString("region")
 	if !ok {
 		return nil, fmt.Errorf("invalid region '%s'", fmt.Sprint(region))
 	}

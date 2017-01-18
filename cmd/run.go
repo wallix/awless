@@ -48,15 +48,17 @@ var runCmd = &cobra.Command{
 }
 
 func runScript(scrpt *script.Script) error {
-	defaults, err := database.Current.GetDefaults()
+	db, close := database.Current()
+	defaults, err := db.GetDefaults()
 	exitOn(err)
+	close()
 
 	scrpt.ResolveTemplate(defaults)
 
 	prompt := func(question string) interface{} {
 		var resp string
 		fmt.Printf("%s ? ", question)
-		_, err := fmt.Scanln(&resp)
+		_, err = fmt.Scanln(&resp)
 		exitOn(err)
 
 		return resp

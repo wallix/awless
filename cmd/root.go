@@ -20,36 +20,36 @@ var RootCmd = &cobra.Command{
 	Short: "Manage your cloud",
 	Long:  "Awless is a powerful command line tool to inspect, sync and manage your infrastructure",
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		if database.Current != nil {
-			defer database.Current.Close()
-			database.Current.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
-		}
+		db, close := database.Current()
+		defer close()
+		db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
 	},
 	BashCompletionFunction: bash_completion_func,
 }
 
 func InitCli() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
-
-	if stats.CheckStatsToSend(database.Current, config.StatsExpirationDuration) {
+	db, close := database.Current()
+	defer close()
+	if stats.CheckStatsToSend(db, config.StatsExpirationDuration) {
 		publicKey, err := config.LoadPublicKey()
 		if err != nil {
-			database.Current.AddLog(err.Error())
+			db.AddLog(err.Error())
 		} else {
 			go func() {
 				localInfra, localAccess := rdf.NewGraph(), rdf.NewGraph()
 				if !config.AwlessFirstSync {
 					localInfra, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 					if err != nil {
-						database.Current.AddLog(err.Error())
+						db.AddLog(err.Error())
 					}
 					localAccess, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 					if err != nil {
-						database.Current.AddLog(err.Error())
+						db.AddLog(err.Error())
 					}
 				}
-				if err := stats.SendStats(database.Current, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
-					database.Current.AddLog(err.Error())
+				if err := stats.SendStats(db, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
+					db.AddLog(err.Error())
 				}
 			}()
 		}
@@ -58,8 +58,10 @@ func InitCli() {
 
 func ExecuteRoot() error {
 	err := RootCmd.Execute()
-	if err != nil && database.Current != nil {
-		database.Current.AddLog(err.Error())
+	db, close := database.Current()
+	defer close()
+	if err != nil && db != nil {
+		db.AddLog(err.Error())
 	}
 
 	return err
