@@ -2,6 +2,7 @@ package database
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -20,7 +21,7 @@ var (
 
 // A DB stores awless config, logs...
 type DB struct {
-	*bolt.DB
+	bolt *bolt.DB
 }
 
 // Open opens the database if it exists, else it creates a new database.
@@ -30,7 +31,7 @@ func Open(path string) error {
 		return fmt.Errorf("opening db at %s: %s (any awless existing process running?)", path, err)
 	}
 
-	Current = &DB{boltdb}
+	Current = &DB{bolt: boltdb}
 
 	return nil
 }
@@ -70,35 +71,17 @@ func InitDB(firstInstall bool) error {
 
 // DeleteBucket deletes a bucket if it exists
 func (db *DB) DeleteBucket(name string) error {
-	return db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(name))
-		if b == nil {
-			return nil
-		}
-		e := tx.DeleteBucket([]byte(name))
-		return e
-	})
+	return db.deleteBucket(name)
 }
 
-// GetValue gets a []byte value from database
-func (db *DB) GetValue(key string) ([]byte, error) {
-	var value []byte
-	err := db.View(func(tx *bolt.Tx) error {
-		if b := tx.Bucket([]byte(awlessBucket)); b != nil {
-			value = b.Get([]byte(key))
-		}
-		return nil
-	})
-	if err != nil {
-		return value, err
-	}
-
-	return value, nil
+// GetBytes gets a []byte value from database
+func (db *DB) GetBytes(key string) ([]byte, error) {
+	return db.getValue(key)
 }
 
 // GetStringValue gets a string value from database
 func (db *DB) GetStringValue(key string) (string, error) {
-	str, err := db.GetValue(key)
+	str, err := db.getValue(key)
 	if err != nil {
 		return "", err
 	}
@@ -108,7 +91,7 @@ func (db *DB) GetStringValue(key string) (string, error) {
 // GetTimeValue gets a time value from database
 func (db *DB) GetTimeValue(key string) (time.Time, error) {
 	var t time.Time
-	bin, err := db.GetValue(key)
+	bin, err := db.getValue(key)
 	if err != nil {
 		return t, err
 	}
@@ -131,20 +114,14 @@ func (db *DB) GetIntValue(key string) (int, error) {
 	return strconv.Atoi(str)
 }
 
-// SetValue sets a []byte value in database
-func (db *DB) SetValue(key string, value []byte) error {
-	return db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte(awlessBucket))
-		if err != nil {
-			return err
-		}
-		return b.Put([]byte(key), value)
-	})
+// SetBytes sets a []byte value in database
+func (db *DB) SetBytes(key string, value []byte) error {
+	return db.setValue(key, value)
 }
 
 // SetStringValue sets a string value in database
 func (db *DB) SetStringValue(key, value string) error {
-	return db.SetValue(key, []byte(value))
+	return db.setValue(key, []byte(value))
 }
 
 // SetTimeValue sets a time value in database
@@ -153,12 +130,96 @@ func (db *DB) SetTimeValue(key string, t time.Time) error {
 	if err != nil {
 		return err
 	}
-	return db.SetValue(key, bin)
+	return db.setValue(key, bin)
 }
 
 // SetIntValue sets a int value in database
 func (db *DB) SetIntValue(key string, value int) error {
 	return db.SetStringValue(key, strconv.Itoa(value))
+}
+
+// Close the database
+func (db *DB) Close() {
+	if db.bolt != nil {
+		db.bolt.Close()
+	}
+}
+func (db *DB) deleteBucket(name string) error {
+	return db.bolt.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(name))
+		if b == nil {
+			return nil
+		}
+		e := tx.DeleteBucket([]byte(name))
+		return e
+	})
+}
+
+func (db *DB) getValue(key string) ([]byte, error) {
+	var value []byte
+	err := db.bolt.View(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(awlessBucket)); b != nil {
+			value = b.Get([]byte(key))
+		}
+		return nil
+	})
+	if err != nil {
+		return value, err
+	}
+
+	return value, nil
+}
+
+func (db *DB) setValue(key string, value []byte) error {
+	return db.bolt.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte(awlessBucket))
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(key), value)
+	})
+}
+
+func (db *DB) addLineToBucket(bucket string, l line) error {
+	return db.bolt.Update(func(tx *bolt.Tx) error {
+		b, e := tx.CreateBucketIfNotExists([]byte(bucket))
+		if e != nil {
+			return e
+		}
+
+		id, e := b.NextSequence()
+		if e != nil {
+			return e
+		}
+		l.ID = int(id)
+
+		buf, e := json.Marshal(l)
+		if e != nil {
+			return e
+		}
+		return b.Put(itob(l.ID), buf)
+	})
+}
+
+func (db *DB) getLinesFromBucket(bucket string, fromID int) ([]*line, error) {
+	var result []*line
+	err := db.bolt.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(historyBucketName))
+		if b == nil {
+			return nil
+		}
+		c := b.Cursor()
+		for k, v := c.Seek(itob(fromID)); k != nil; k, v = c.Next() {
+			l := &line{}
+			e := json.Unmarshal(v, l)
+			if e != nil {
+				return e
+			}
+			result = append(result, l)
+		}
+		return nil
+	})
+	return result, err
 }
 
 func generateAnonymousID(seed string) (string, error) {

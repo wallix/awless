@@ -9,7 +9,7 @@ type defaults map[string]interface{}
 
 func (db *DB) GetDefaults() (defaults, error) {
 	d := make(defaults)
-	b, err := db.GetValue(defaultsKey)
+	b, err := db.GetBytes(defaultsKey)
 	if err != nil {
 		return d, err
 	}
@@ -66,5 +66,5 @@ func (db *DB) saveDefaults(d defaults) error {
 	if err := enc.Encode(d); err != nil {
 		return err
 	}
-	return db.SetValue(defaultsKey, buff.Bytes())
+	return db.SetBytes(defaultsKey, buff.Bytes())
 }

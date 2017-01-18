@@ -13,7 +13,7 @@ type Log struct {
 }
 
 func (db *DB) DeleteLogs() error {
-	return db.SetValue(logsKey, []byte{})
+	return db.SetBytes(logsKey, []byte{})
 }
 
 func (db *DB) AddLog(msg string) error {
@@ -32,11 +32,11 @@ func (db *DB) AddLog(msg string) error {
 	if err != nil {
 		return err
 	}
-	return db.SetValue(logsKey, b)
+	return db.SetBytes(logsKey, b)
 }
 
 func (db *DB) GetLogs() (logs []*Log, err error) {
-	b, err := db.GetValue(logsKey)
+	b, err := db.GetBytes(logsKey)
 	if err != nil {
 		return logs, err
 	}
