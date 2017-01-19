@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,9 +17,7 @@ var (
 	GitDir                              = filepath.Join(AwlessHome, "aws", "rdf")
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
-	StatsServerUrl                      = "http://52.213.243.16:8080"
-	StatsExpirationDuration             = 24 * time.Hour
-	Version                             = "0.0.2"
+	Version                             = "0.0.3"
 	InfraFilename                       = "infra.rdf"
 	AccessFilename                      = "access.rdf"
 	AwlessFirstInstall, AwlessFirstSync bool

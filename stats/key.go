@@ -1,4 +1,4 @@
-package config
+package stats
 
 import (
 	"crypto/rsa"
@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-var StatsServerPublicKey = `-----BEGIN PUBLIC KEY-----
+var serverPublicKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuUK69ARmXV0Xsj30+6S7
 +oqDPmfIwQ0FxhlI6fcqlZ57mmURuZIJ4nnXxZrx5LXmbKGjDRgWtFLNQ2JFUGZB
 y/vzBIxA64cEKE7Hkbh7MW6nQayoDOnb9ZPBqK5IjoGvnF0BsYoaKdP4Jy7Nbx9o
@@ -17,8 +17,8 @@ pi+Bfy5FDK42Q/uJfUOJ5f6Ae/qIxxzKH7ixeXdCFvdzPvv4M4gGkqBAhpnFwLeX
 SwIDAQAB
 -----END PUBLIC KEY-----`
 
-func LoadPublicKey() (*rsa.PublicKey, error) {
-	block, _ := pem.Decode([]byte(StatsServerPublicKey))
+func loadPublicKey() (*rsa.PublicKey, error) {
+	block, _ := pem.Decode([]byte(serverPublicKey))
 	if block == nil {
 		return nil, fmt.Errorf("failed to parse PEM block containing the public key")
 	}

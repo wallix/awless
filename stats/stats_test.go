@@ -8,7 +8,9 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -223,6 +225,16 @@ func TestStats(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		publicKey, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+		if err != nil {
+			t.Fatal(err)
+		}
+		serverPublicKey = string(pem.EncodeToMemory(
+			&pem.Block{
+				Type:  "PUBLIC KEY",
+				Bytes: publicKey,
+			},
+		))
 
 		processed := false
 
@@ -273,8 +285,9 @@ func TestStats(t *testing.T) {
 
 		}))
 		defer ts.Close()
+		serverUrl = ts.URL
 
-		if err = SendStats(db, ts.URL, privateKey.PublicKey, infra, access); err != nil {
+		if err = SendStats(db, infra, access); err != nil {
 			t.Fatal(err)
 		}
 
@@ -297,17 +310,18 @@ func TestIfDataToSend(t *testing.T) {
 	db, close := newTestDb()
 	defer close()
 
-	if got, want := CheckStatsToSend(db, 1*time.Hour), true; got != want {
+	expirationDuration = 1 * time.Hour
+	if got, want := CheckStatsToSend(db), true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
 
 	db.SetTimeValue(database.SentTimeKey, time.Now().Add(-2*time.Hour))
-	if got, want := CheckStatsToSend(db, 1*time.Hour), true; got != want {
+	if got, want := CheckStatsToSend(db), true; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
 	db.SetTimeValue(database.SentTimeKey, time.Now())
 
-	if got, want := CheckStatsToSend(db, 1*time.Hour), false; got != want {
+	if got, want := CheckStatsToSend(db), false; got != want {
 		t.Fatalf("got %t; want %t", got, want)
 	}
 }

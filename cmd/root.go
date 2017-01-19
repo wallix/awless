@@ -30,48 +30,46 @@ var RootCmd = &cobra.Command{
 func InitCli() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
 	db, dbclose := database.Current()
-	if stats.CheckStatsToSend(db, config.StatsExpirationDuration) {
-		publicKey, err := config.LoadPublicKey()
-		if err != nil {
-			db.AddLog(err.Error())
-			dbclose()
-		} else {
-			dbclose()
-			go func() {
-				localInfra, localAccess := rdf.NewGraph(), rdf.NewGraph()
-				if !config.AwlessFirstSync {
-					localInfra, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
-					if err != nil {
-						db, dbclose := database.Current()
-						db.AddLog(err.Error())
-						dbclose()
-					}
-					localAccess, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
-					if err != nil {
-						db, dbclose := database.Current()
-						db.AddLog(err.Error())
-						dbclose()
-					}
-				}
-				db, dbclose := database.Current()
-				if err := stats.SendStats(db, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
-					db.AddLog(err.Error())
-				}
-				dbclose()
-			}()
-		}
+	statsToSend := stats.CheckStatsToSend(db)
+	dbclose()
+	if statsToSend {
+		go loadRdfsAndSendStats()
 	}
 }
 
 func ExecuteRoot() error {
 	err := RootCmd.Execute()
-	db, close := database.Current()
-	defer close()
+	db, dbclose := database.Current()
+	defer dbclose()
 	if err != nil && db != nil {
 		db.AddLog(err.Error())
 	}
 
 	return err
+}
+
+func loadRdfsAndSendStats() {
+	var err error
+	localInfra, localAccess := rdf.NewGraph(), rdf.NewGraph()
+	if !config.AwlessFirstSync {
+		localInfra, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
+		if err != nil {
+			db, dbclose := database.Current()
+			db.AddLog(err.Error())
+			dbclose()
+		}
+		localAccess, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
+		if err != nil {
+			db, dbclose := database.Current()
+			db.AddLog(err.Error())
+			dbclose()
+		}
+	}
+	db, dbclose := database.Current()
+	if err := stats.SendStats(db, localInfra, localAccess); err != nil {
+		db.AddLog(err.Error())
+	}
+	dbclose()
 }
 
 const (

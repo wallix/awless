@@ -21,7 +21,16 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-func SendStats(db *database.DB, url string, publicKey rsa.PublicKey, localInfra, localAccess *rdf.Graph) error {
+var (
+	serverUrl          = "http://52.213.243.16:8080"
+	expirationDuration = 24 * time.Hour
+)
+
+func SendStats(db *database.DB, localInfra, localAccess *rdf.Graph) error {
+	publicKey, err := loadPublicKey()
+	if err != nil {
+		return err
+	}
 	lastCommandId, err := db.GetIntValue(database.SentIdKey)
 	if err != nil {
 		return err
@@ -43,7 +52,7 @@ func SendStats(db *database.DB, url string, publicKey rsa.PublicKey, localInfra,
 	if err != nil {
 		return err
 	}
-	encryptedKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, &publicKey, sessionKey, nil)
+	encryptedKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, sessionKey, nil)
 	if err != nil {
 		return err
 	}
@@ -54,7 +63,7 @@ func SendStats(db *database.DB, url string, publicKey rsa.PublicKey, localInfra,
 	}
 
 	client := &http.Client{Timeout: 2 * time.Second}
-	if _, err := client.Post(url, "application/json", bytes.NewReader(payload)); err != nil {
+	if _, err := client.Post(serverUrl, "application/json", bytes.NewReader(payload)); err != nil {
 		return err
 	}
 
@@ -133,7 +142,7 @@ func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromComman
 	return s, lastCommandId, nil
 }
 
-func CheckStatsToSend(db *database.DB, expirationDuration time.Duration) bool {
+func CheckStatsToSend(db *database.DB) bool {
 	sent, err := db.GetTimeValue(database.SentTimeKey)
 	if err != nil {
 		sent = time.Time{}
