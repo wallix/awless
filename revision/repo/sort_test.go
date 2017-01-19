@@ -16,6 +16,9 @@ func TestSortRev(t *testing.T) {
 
 	sort.Sort(revsByDate(revs))
 
+	if got, want := len(revs), 4; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
 	if got, want := revs[0].Id, "1"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}

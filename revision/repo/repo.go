@@ -26,7 +26,7 @@ type Rev struct {
 }
 
 func (r *Rev) DateString() string {
-	return r.Date.Format("Mon Jan 2 15:04")
+	return r.Date.Format("Mon Jan 2 15:04:05")
 }
 
 type Repo interface {
@@ -92,9 +92,28 @@ func (r *GitRepo) List() ([]*Rev, error) {
 		all = append(all, &Rev{Id: commit.Hash.String(), Date: commit.Committer.When})
 	}
 
-	sort.Sort(revsByDate(all))
+	reduced := reduceToLastRevOfEachDay(all)
 
-	return all, nil
+	sort.Sort(revsByDate(reduced))
+
+	return reduced, nil
+}
+
+func reduceToLastRevOfEachDay(revs []*Rev) []*Rev {
+	perDay := make(map[string][]*Rev)
+
+	for _, rev := range revs {
+		day := rev.Date.Format("2006-01-02")
+		perDay[day] = append(perDay[day], rev)
+	}
+
+	reduce := []*Rev{}
+	for _, v := range perDay {
+		sort.Sort(sort.Reverse(revsByDate(v)))
+		reduce = append(reduce, v[0])
+	}
+
+	return reduce
 }
 
 func (r *GitRepo) LoadRev(version string) (*Rev, error) {
@@ -115,6 +134,7 @@ func (r *GitRepo) LoadRev(version string) (*Rev, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	infraG := rdf.NewGraph()
 	infraG.Unmarshal([]byte(contents))
 	rev.Infra = infraG

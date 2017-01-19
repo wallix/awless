@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/google/badwolf/triple/literal"
@@ -19,6 +17,8 @@ import (
 func init() {
 	RootCmd.AddCommand(historyCmd)
 }
+
+type revPair [2]*repo.Rev
 
 var historyCmd = &cobra.Command{
 	Use:     "history",
@@ -42,7 +42,7 @@ var historyCmd = &cobra.Command{
 			return err
 		}
 
-		compare := make(chan *repo.Rev)
+		compare := make(chan revPair)
 
 		var wg sync.WaitGroup
 
@@ -52,26 +52,25 @@ var historyCmd = &cobra.Command{
 
 			for {
 				select {
-				case rev := <-compare:
-					select {
-					case otherRev, ok := <-compare:
-						if ok {
-							compareRev(root, rev, otherRev)
-						} else {
-							return
-						}
+				case revPair, ok := <-compare:
+					if ok {
+						compareRev(root, revPair)
+					} else {
+						return
 					}
-				case <-time.After(time.Second * 5):
-					fmt.Println("done")
-					return
 				}
 			}
 		}()
 
-		for _, rev := range all {
+		head, trail := all[0], all[1:]
+		head, err = rep.LoadRev(head.Id)
+		exitOn(err)
+
+		for _, rev := range trail {
 			rev, err := rep.LoadRev(rev.Id)
 			exitOn(err)
-			compare <- rev
+			compare <- revPair([2]*repo.Rev{head, rev})
+			head = rev
 		}
 
 		close(compare)
@@ -82,25 +81,27 @@ var historyCmd = &cobra.Command{
 	},
 }
 
-func compareRev(root *node.Node, rev1, rev2 *repo.Rev) {
+func compareRev(root *node.Node, revs revPair) {
+	rev1, rev2 := revs[0], revs[1]
+
 	infraDiff, err := rdf.NewHierarchicalDiffer().Run(root, rev1.Infra, rev2.Infra)
 	exitOn(err)
 
 	accessDiff, err := rdf.NewHierarchicalDiffer().Run(root, rev1.Access, rev2.Access)
 	exitOn(err)
 
-	fmt.Println(fmt.Sprintf("FROM [%s] TO [%s]", rev1.DateString(), rev2.DateString()))
-	if !infraDiff.HasDiff() && !accessDiff.HasDiff() {
-		fmt.Println("\t\tnone")
-	} else {
+	if infraDiff.HasDiff() || accessDiff.HasDiff() {
+		fmt.Println(fmt.Sprintf("FROM [%s] TO [%s]", rev1.DateString(), rev2.DateString()))
 		if infraDiff.HasDiff() {
-			fmt.Println("\t\tINFRA")
+			fmt.Println("INFRA:")
 			infraDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
 		}
 		if accessDiff.HasDiff() {
-			fmt.Println("\t\tACCESS")
+			fmt.Println()
+			fmt.Println("ACCESS:")
 			accessDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
 		}
+		fmt.Println()
 	}
 }
 
@@ -111,19 +112,14 @@ func printWithDiff(g *rdf.Graph, n *node.Node, distance int) {
 		lit, _ = diff[0].Object().Literal()
 	}
 
-	var tabs bytes.Buffer
-	for i := 0; i < distance; i++ {
-		tabs.WriteByte('\t')
-	}
-
 	switch lit {
 	case rdf.ExtraLiteral:
-		color.Set(color.FgGreen)
-		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+		color.Set(color.FgRed)
+		fmt.Fprintf(os.Stdout, "\t%s, %s\n", n.Type(), n.ID())
 		color.Unset()
 	case rdf.MissingLiteral:
-		color.Set(color.FgRed)
-		fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+		color.Set(color.FgGreen)
+		fmt.Fprintf(os.Stdout, "\t%s, %s\n", n.Type(), n.ID())
 		color.Unset()
 	}
 }
