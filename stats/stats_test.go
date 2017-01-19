@@ -122,7 +122,7 @@ func TestStats(t *testing.T) {
 	id, _ := db.GetStringValue(database.AwlessIdKey)
 	aId, _ := db.GetStringValue(database.AwlessAIdKey)
 	expected := stats{
-		ID:      id,
+		Id:      id,
 		AId:     aId,
 		Version: config.Version,
 		Commands: []*dailyCommands{

@@ -129,7 +129,7 @@ func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromComman
 	}
 
 	s := &stats{
-		ID:             id,
+		Id:             id,
 		AId:            aId,
 		Version:        config.Version,
 		Commands:       commandsStat,
@@ -151,7 +151,7 @@ func CheckStatsToSend(db *database.DB) bool {
 }
 
 type stats struct {
-	ID             string
+	Id             string
 	AId            string
 	Version        string
 	Commands       []*dailyCommands
