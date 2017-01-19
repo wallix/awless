@@ -29,28 +29,35 @@ var RootCmd = &cobra.Command{
 
 func InitCli() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
-	db, close := database.Current()
-	defer close()
+	db, dbclose := database.Current()
 	if stats.CheckStatsToSend(db, config.StatsExpirationDuration) {
 		publicKey, err := config.LoadPublicKey()
 		if err != nil {
 			db.AddLog(err.Error())
+			dbclose()
 		} else {
+			dbclose()
 			go func() {
 				localInfra, localAccess := rdf.NewGraph(), rdf.NewGraph()
 				if !config.AwlessFirstSync {
 					localInfra, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.InfraFilename))
 					if err != nil {
+						db, dbclose := database.Current()
 						db.AddLog(err.Error())
+						dbclose()
 					}
 					localAccess, err = rdf.NewGraphFromFile(filepath.Join(config.GitDir, config.AccessFilename))
 					if err != nil {
+						db, dbclose := database.Current()
 						db.AddLog(err.Error())
+						dbclose()
 					}
 				}
+				db, dbclose := database.Current()
 				if err := stats.SendStats(db, config.StatsServerUrl, *publicKey, localInfra, localAccess); err != nil {
 					db.AddLog(err.Error())
 				}
+				dbclose()
 			}()
 		}
 	}
