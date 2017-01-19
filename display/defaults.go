@@ -21,6 +21,7 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 	},
 	rdf.Vpc: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "IsDefault", Friendly: "Default"},
 			ColoredValues:          map[string]color.Attribute{"true": color.FgGreen},
@@ -30,6 +31,8 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 	},
 	rdf.Subnet: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "VpcId"},
+		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "MapPublicIpOnLaunch", Friendly: "Public VMs"},
 			ColoredValues:          map[string]color.Attribute{"true": color.FgYellow}},
@@ -37,7 +40,6 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
 		StringColumnDefinition{Prop: "CidrBlock"},
-		StringColumnDefinition{Prop: "VpcId"},
 	},
 	rdf.SecurityGroup: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},

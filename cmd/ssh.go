@@ -8,8 +8,10 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/alias"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/shell"
 )
 
@@ -18,11 +20,11 @@ func init() {
 }
 
 var sshCmd = &cobra.Command{
-	Use:   "ssh [user@]instance-id",
+	Use:   "ssh [user@]instance",
 	Short: "Launch a SSH (Secure Shell) session connecting to an instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return fmt.Errorf("instance-id required")
+			return fmt.Errorf("instance required")
 		}
 		var instanceID string
 		var user string
@@ -32,8 +34,15 @@ var sshCmd = &cobra.Command{
 		} else {
 			instanceID = args[0]
 		}
+
 		instancesGraph, err := aws.InfraService.InstancesGraph()
 		exitOn(err)
+
+		a := alias.Alias(instanceID)
+		if id, ok := a.ResolveToId(instancesGraph, rdf.Instance); ok {
+			instanceID = id
+		}
+
 		cred, err := aws.InstanceCredentialsFromGraph(instancesGraph, instanceID)
 		exitOn(err)
 		var client *ssh.Client
