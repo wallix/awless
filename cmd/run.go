@@ -105,45 +105,61 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	for _, entity := range entities {
+		run := func(act, ent string) func(cmd *cobra.Command, args []string) error {
+			return func(cmd *cobra.Command, args []string) error {
+				text := fmt.Sprintf("%s %s %s", act, ent, strings.Join(args, " "))
+
+				scrpt, err := script.Parse(text)
+				exitOn(err)
+
+				expr, ok := scrpt.Statements[0].(*ast.ExpressionNode)
+				if !ok {
+					return errors.New("Expecting an script expression not a script declaration")
+				}
+
+				templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
+				templ, ok := aws.AWSDriverTemplates[templName]
+				if !ok {
+					exitOn(errors.New("command unsupported on inline mode"))
+				}
+
+				if scrpt, err = script.Parse(templ); err != nil {
+					exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err))
+				}
+
+				for k, v := range expr.Params {
+					if !strings.Contains(k, ".") {
+						expr.Params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
+						delete(expr.Params, k)
+					}
+				}
+
+				scrpt.ResolveTemplate(expr.Params)
+
+				if scrpt, err = script.Parse(templ); err != nil {
+					exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err))
+				}
+
+				for k, v := range expr.Params {
+					if !strings.Contains(k, ".") {
+						expr.Params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
+						delete(expr.Params, k)
+					}
+				}
+
+				addAliasesToParams(expr)
+
+				scrpt.ResolveTemplate(expr.Params)
+
+				return runScript(scrpt)
+			}
+		}
+
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:   entity,
 				Short: fmt.Sprintf("Use it to %s a %s", action, entity),
-
-				RunE: func(cmd *cobra.Command, args []string) error {
-					text := fmt.Sprintf("%s %s %s", action, entity, strings.Join(args, " "))
-
-					scrpt, err := script.Parse(text)
-					exitOn(err)
-
-					expr, ok := scrpt.Statements[0].(*ast.ExpressionNode)
-					if !ok {
-						return errors.New("Expecting an script expression not a script declaration")
-					}
-
-					templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
-					templ, ok := aws.AWSDriverTemplates[templName]
-					if !ok {
-						exitOn(errors.New("command unsupported on inline mode"))
-					}
-
-					if scrpt, err = script.Parse(templ); err != nil {
-						exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err))
-					}
-
-					for k, v := range expr.Params {
-						if !strings.Contains(k, ".") {
-							expr.Params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-							delete(expr.Params, k)
-						}
-					}
-
-					addAliasesToParams(expr)
-
-					scrpt.ResolveTemplate(expr.Params)
-
-					return runScript(scrpt)
-				},
+				RunE:  run(action, entity),
 			},
 		)
 	}
