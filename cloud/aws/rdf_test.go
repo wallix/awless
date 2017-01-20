@@ -198,15 +198,20 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 	awsInfra.Instances = []*ec2.Instance{
 		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
-		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}}},
 		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
-		&ec2.Instance{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
+		&ec2.Instance{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}, {GroupId: awssdk.String("secgroup_2")}}},
 		&ec2.Instance{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
 	}
 
 	awsInfra.Vpcs = []*ec2.Vpc{
 		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
 		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
+	}
+
+	awsInfra.SecurityGroups = []*ec2.SecurityGroup{
+		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_1"), GroupName: awssdk.String("my_secgroup"), VpcId: awssdk.String("vpc_1")},
+		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_2"), VpcId: awssdk.String("vpc_1")},
 	}
 
 	awsInfra.Subnets = []*ec2.Subnet{
@@ -244,6 +249,16 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 /region<eu-west-1>	"has_type"@[]	"/region"^^type:text
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
+/securitygroup<secgroup_1>	"has_type"@[]	"/securitygroup"^^type:text
+/securitygroup<secgroup_1>	"parent_of"@[]	/instance<inst_2>
+/securitygroup<secgroup_1>	"parent_of"@[]	/instance<inst_4>
+/securitygroup<secgroup_1>	"property"@[]	"{"Key":"Id","Value":"secgroup_1"}"^^type:text
+/securitygroup<secgroup_1>	"property"@[]	"{"Key":"Name","Value":"my_secgroup"}"^^type:text
+/securitygroup<secgroup_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
+/securitygroup<secgroup_2>	"has_type"@[]	"/securitygroup"^^type:text
+/securitygroup<secgroup_2>	"parent_of"@[]	/instance<inst_4>
+/securitygroup<secgroup_2>	"property"@[]	"{"Key":"Id","Value":"secgroup_2"}"^^type:text
+/securitygroup<secgroup_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
 /subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
 /subnet<sub_1>	"property"@[]	"{"Key":"Id","Value":"sub_1"}"^^type:text
@@ -260,6 +275,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 /subnet<sub_4>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_4>	"property"@[]	"{"Key":"Id","Value":"sub_4"}"^^type:text
 /vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
+/vpc<vpc_1>	"parent_of"@[]	/securitygroup<secgroup_1>
+/vpc<vpc_1>	"parent_of"@[]	/securitygroup<secgroup_2>
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_1>
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_2>
 /vpc<vpc_1>	"property"@[]	"{"Key":"Id","Value":"vpc_1"}"^^type:text

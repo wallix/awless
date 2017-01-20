@@ -31,6 +31,10 @@ func (inf *Infra) Subnets() (interface{}, error) {
 	return inf.DescribeSubnets(&ec2.DescribeSubnetsInput{})
 }
 
+func (inf *Infra) SecurityGroups() (interface{}, error) {
+	return inf.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{})
+}
+
 func (inf *Infra) Regions() (interface{}, error) {
 	return inf.DescribeRegions(&ec2.DescribeRegionsInput{})
 }
@@ -55,13 +59,14 @@ func (inf *Infra) CreateInstance(ami string) (interface{}, error) {
 }
 
 type AwsInfra struct {
-	Vpcs      []*ec2.Vpc
-	Subnets   []*ec2.Subnet
-	Instances []*ec2.Instance
+	Vpcs           []*ec2.Vpc
+	Subnets        []*ec2.Subnet
+	SecurityGroups []*ec2.SecurityGroup
+	Instances      []*ec2.Instance
 }
 
 func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs)
+	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups)
 
 	awsInfra := &AwsInfra{}
 
@@ -71,6 +76,8 @@ func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
 			awsInfra.Vpcs = append(awsInfra.Vpcs, rr.Vpcs...)
 		case *ec2.DescribeSubnetsOutput:
 			awsInfra.Subnets = append(awsInfra.Subnets, rr.Subnets...)
+		case *ec2.DescribeSecurityGroupsOutput:
+			awsInfra.SecurityGroups = append(awsInfra.SecurityGroups, rr.SecurityGroups...)
 		case *ec2.DescribeInstancesOutput:
 			for _, reservation := range rr.Reservations {
 				awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)

@@ -9,14 +9,15 @@ import (
 type ResourceType string
 
 const (
-	Region   ResourceType = "region"
-	Vpc      ResourceType = "vpc"
-	Subnet   ResourceType = "subnet"
-	Instance ResourceType = "instance"
-	User     ResourceType = "user"
-	Role     ResourceType = "role"
-	Group    ResourceType = "group"
-	Policy   ResourceType = "policy"
+	Region        ResourceType = "region"
+	Vpc           ResourceType = "vpc"
+	Subnet        ResourceType = "subnet"
+	SecurityGroup ResourceType = "securitygroup"
+	Instance      ResourceType = "instance"
+	User          ResourceType = "user"
+	Role          ResourceType = "role"
+	Group         ResourceType = "group"
+	Policy        ResourceType = "policy"
 )
 
 func NewResourceType(t *node.Type) ResourceType {

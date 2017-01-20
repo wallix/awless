@@ -88,6 +88,12 @@ var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
 		"State":               {name: "State", transform: extractValueFn},
 		"CidrBlock":           {name: "CidrBlock", transform: extractValueFn},
 	},
+	rdf.SecurityGroup: {
+		"Id":      {name: "GroupId", transform: extractValueFn},
+		"Name":    {name: "GroupName", transform: extractValueFn},
+		"OwnerId": {name: "OwnerId", transform: extractValueFn},
+		"VpcId":   {name: "VpcId", transform: extractValueFn},
+	},
 	rdf.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
 		"Name":                 {name: "UserName", transform: extractValueFn},

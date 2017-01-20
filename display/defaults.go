@@ -39,6 +39,11 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "CidrBlock"},
 		StringColumnDefinition{Prop: "VpcId"},
 	},
+	rdf.SecurityGroup: []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "VpcId"},
+		StringColumnDefinition{Prop: "Name", DontTruncate: true},
+	},
 	rdf.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},

@@ -25,7 +25,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(listCmd)
-	for _, resource := range []rdf.ResourceType{rdf.Instance, rdf.Vpc, rdf.Subnet} {
+	for _, resource := range []rdf.ResourceType{rdf.Instance, rdf.Vpc, rdf.Subnet, rdf.SecurityGroup} {
 		listCmd.AddCommand(listInfraResourceCmd(resource))
 	}
 	for _, resource := range []rdf.ResourceType{rdf.User, rdf.Role, rdf.Policy, rdf.Group} {

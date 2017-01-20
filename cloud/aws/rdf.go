@@ -84,6 +84,20 @@ func (inf *Infra) SubnetsGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
+func (inf *Infra) SecuritygroupsGraph() (*rdf.Graph, error) {
+	g := rdf.NewGraph()
+	out, err := inf.SecurityGroups()
+	if err != nil {
+		return nil, err
+	}
+	for _, sec := range out.(*ec2.DescribeSecurityGroupsOutput).SecurityGroups {
+		if err := addCloudResourceToGraph(g, sec); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
 func (access *Access) UsersGraph() (*rdf.Graph, error) {
 	g := rdf.NewGraph()
 	out, err := access.Users()
@@ -296,7 +310,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 
 func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err error) {
 	g = rdf.NewGraph()
-	var vpcNodes, subnetNodes []*node.Node
+	var vpcNodes, subnetNodes, secGroupNodes []*node.Node
 
 	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
 	if err != nil {
@@ -358,6 +372,33 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 		}
 	}
 
+	for _, secgroup := range awsInfra.SecurityGroups {
+		res, err := NewResource(secgroup)
+		if err != nil {
+			return nil, err
+		}
+		triples, err := res.MarshalToTriples()
+		if err != nil {
+			return nil, err
+		}
+		g.Add(triples...)
+		n, err := res.buildRdfSubject()
+		if err != nil {
+			return g, err
+		}
+
+		secGroupNodes = append(secGroupNodes, n)
+
+		vpcN := findNodeById(vpcNodes, awssdk.StringValue(secgroup.VpcId))
+		if vpcN != nil {
+			t, err := triple.New(vpcN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+			if err != nil {
+				return g, fmt.Errorf("vpc %s", err)
+			}
+			g.Add(t)
+		}
+	}
+
 	for _, instance := range awsInfra.Instances {
 		res, err := NewResource(instance)
 		if err != nil {
@@ -382,6 +423,19 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			}
 			g.Add(t)
 		}
+
+		for _, refSecGroup := range instance.SecurityGroups {
+			secGroupN := findNodeById(secGroupNodes, awssdk.StringValue(refSecGroup.GroupId))
+
+			if secGroupN != nil {
+				t, err := triple.New(secGroupN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+				if err != nil {
+					return g, fmt.Errorf("instances security groups %s", err)
+				}
+				g.Add(t)
+			}
+		}
+
 	}
 
 	return g, nil

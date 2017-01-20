@@ -52,6 +52,8 @@ func NewResource(source interface{}) (*Resource, error) {
 		res = InitResource(awssdk.StringValue(ss.VpcId), rdf.Vpc)
 	case *ec2.Subnet:
 		res = InitResource(awssdk.StringValue(ss.SubnetId), rdf.Subnet)
+	case *ec2.SecurityGroup:
+		res = InitResource(awssdk.StringValue(ss.GroupId), rdf.SecurityGroup)
 	case *iam.User:
 		res = InitResource(awssdk.StringValue(ss.UserId), rdf.User)
 	case *iam.Role:
