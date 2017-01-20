@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	serverUrl          = "http://52.213.243.16:8080"
+	serverUrl          = "http://52.213.243.16"
 	expirationDuration = 24 * time.Hour
 )
 

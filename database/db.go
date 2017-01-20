@@ -45,7 +45,7 @@ func Current() (*DB, func()) {
 }
 
 func open(path string) (*DB, error) {
-	boltdb, err := bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	boltdb, err := bolt.Open(path, 0600, &bolt.Options{Timeout: 2 * time.Second})
 	if err != nil {
 		return nil, fmt.Errorf("opening db at %s: %s (any awless existing process running?)", path, err)
 	}
