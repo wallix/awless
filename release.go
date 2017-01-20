@@ -14,7 +14,7 @@ import (
 )
 
 var builds = map[string][]string{
-	"darwin": []string{"amd64"},
+	"darwin":  []string{"amd64"},
 	"linux":   []string{"386", "amd64"},
 	"windows": []string{"386", "amd64"},
 }
@@ -51,7 +51,7 @@ func buildAndZip(osname, arch string) error {
 	}
 	defer os.RemoveAll(builddir)
 
-	fmt.Printf("[+] Building artefacts in tmp dir %s\n", builddir)
+	printInfo("Building artefact for %s %s\n", osname, arch)
 
 	var binName string
 
@@ -68,7 +68,7 @@ func buildAndZip(osname, arch string) error {
 		return err
 	}
 
-	zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", binName, osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
+	zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", strings.Split(binName, ".")[0], osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func run(env environment, name string, args ...string) error {
 
 	_, err := cmd.Output()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error running [%s %s] with env %v\n", name, strings.Join(args, " "), env)
+		printKo("error running [%s %s] with env %v\n", name, strings.Join(args, " "), env)
 
 		if e, ok := err.(*exec.ExitError); ok {
 			fmt.Println()
@@ -111,6 +111,19 @@ func run(env environment, name string, args ...string) error {
 		return err
 	}
 
-	fmt.Printf("[OK] %s %s\n", name, strings.Join(args, " "))
+	printOk("%s %s\n", name, strings.Join(args, " "))
+
 	return nil
+}
+
+func printOk(s string, a ...interface{}) {
+	fmt.Printf("\033[32m[OK]\033[m %s", fmt.Sprintf(s, a...))
+}
+
+func printKo(s string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, "\033[31m[KO]\033[m %s", fmt.Sprintf(s, a...))
+}
+
+func printInfo(s string, a ...interface{}) {
+	fmt.Printf("[+] %s", fmt.Sprintf(s, a...))
 }
