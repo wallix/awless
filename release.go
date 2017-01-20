@@ -3,7 +3,7 @@
 package main
 
 import (
-	"compress/gzip"
+	"archive/zip"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,7 +14,7 @@ import (
 )
 
 var builds = map[string][]string{
-	"darwin":  []string{"amd64"},
+	"darwin": []string{"amd64"},
 	"linux":   []string{"386", "amd64"},
 	"windows": []string{"386", "amd64"},
 }
@@ -27,8 +27,7 @@ func main() {
 			wg.Add(1)
 			go func(o, a string) {
 				defer wg.Done()
-				err := buildAndZip(o, a)
-				if err != nil {
+				if err := buildAndZip(o, a); err != nil {
 					fmt.Fprintln(os.Stderr, "%s", err)
 					return
 				}
@@ -46,13 +45,13 @@ func buildAndZip(osname, arch string) error {
 		fmt.Sprintf("GOOS=%s", osname),
 	}
 
-	builddir, err := ioutil.TempDir("", fmt.Sprintf("awless-%s-%s-build-", osname, arch))
+	builddir, err := ioutil.TempDir("", "")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(builddir)
 
-	fmt.Printf("Building artefacts in %s\n", builddir)
+	fmt.Printf("[+] Building artefacts in tmp dir %s\n", builddir)
 
 	var binName string
 
@@ -65,12 +64,18 @@ func buildAndZip(osname, arch string) error {
 
 	artefactPath := filepath.Join(builddir, binName)
 
-	run(env, "go", "build", "-o", artefactPath, "-ldflags", "-s -w")
+	if err := run(env, "go", "build", "-o", artefactPath, "-ldflags", "-s -w"); err != nil {
+		return err
+	}
+
+	zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", binName, osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 
-	fi, err := os.OpenFile(filepath.Join(builddir, "awless.zip"), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
+	w := zip.NewWriter(zipFile)
+
+	f, err := w.Create(binName)
 	if err != nil {
 		return err
 	}
@@ -80,20 +85,11 @@ func buildAndZip(osname, arch string) error {
 		return err
 	}
 
-	fw := gzip.NewWriter(fi)
-	defer fw.Close()
-
-	fw.Write(content)
-	fw.Flush()
-
-	finalZipname := fmt.Sprintf("awless-%s-%s.zip", osname, arch)
-
-	err = run(nil, "mv", filepath.Join(builddir, "awless.zip"), finalZipname)
-	if err != nil {
+	if _, err = f.Write(content); err != nil {
 		return err
 	}
 
-	return nil
+	return w.Close()
 }
 
 type environment []string
