@@ -17,7 +17,6 @@ var (
 	RepoDir                             = filepath.Join(AwlessHome, "aws", "rdf")
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
-	Version                             = "0.0.3"
 	InfraFilename                       = "infra.rdf"
 	AccessFilename                      = "access.rdf"
 	AwlessFirstInstall, AwlessFirstSync bool

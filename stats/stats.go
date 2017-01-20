@@ -132,6 +132,7 @@ func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromComman
 		Id:             id,
 		AId:            aId,
 		Version:        config.Version,
+		BuildInfo:      config.CurrentBuildInfo,
 		Commands:       commandsStat,
 		InfraMetrics:   im,
 		InstancesStats: is,
@@ -154,6 +155,7 @@ type stats struct {
 	Id             string
 	AId            string
 	Version        string
+	BuildInfo      config.BuildInfo
 	Commands       []*dailyCommands
 	InfraMetrics   *infraMetrics
 	InstancesStats []*instancesStat

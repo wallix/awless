@@ -13,6 +13,7 @@ import (
 
 var (
 	verboseFlag bool
+	versionFlag bool
 )
 
 var RootCmd = &cobra.Command{
@@ -25,10 +26,18 @@ var RootCmd = &cobra.Command{
 		db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
 	},
 	BashCompletionFunction: bash_completion_func,
+	RunE: func(c *cobra.Command, args []string) error {
+		if versionFlag {
+			printVersion(c, args)
+			return nil
+		}
+		return c.Usage()
+	},
 }
 
 func InitCli() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
+	RootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print awless version")
 	db, dbclose := database.Current()
 	statsToSend := stats.CheckStatsToSend(db)
 	dbclose()
