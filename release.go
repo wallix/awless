@@ -4,13 +4,21 @@ package main
 
 import (
 	"archive/zip"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
+	"time"
+)
+
+var (
+	releaseTag = flag.String("rtag", "", "Git tag to be released")
+	release    = flag.Bool("release", false, "Build for a release")
 )
 
 var builds = map[string][]string{
@@ -20,9 +28,20 @@ var builds = map[string][]string{
 }
 
 func main() {
+	flag.Parse()
+
+	allBuild := map[string][]string{
+		runtime.GOOS: []string{runtime.GOARCH},
+	}
+
+	if *release {
+		allBuild = builds
+		printInfo("RELEASING")
+	}
+
 	var wg sync.WaitGroup
 
-	for osname, archs := range builds {
+	for osname, archs := range allBuild {
 		for _, arch := range archs {
 			wg.Add(1)
 			go func(o, a string) {
@@ -51,7 +70,7 @@ func buildAndZip(osname, arch string) error {
 	}
 	defer os.RemoveAll(builddir)
 
-	printInfo("Building artefact for %s %s\n", osname, arch)
+	printInfo("Building artefact for %s %s", osname, arch)
 
 	var binName string
 
@@ -64,7 +83,26 @@ func buildAndZip(osname, arch string) error {
 
 	artefactPath := filepath.Join(builddir, binName)
 
-	if err := run(env, "go", "build", "-o", artefactPath, "-ldflags", "-s -w"); err != nil {
+	gitRef := "refs/heads/master"
+	if *releaseTag != "" {
+		gitRef = fmt.Sprintf("refs/tags/%s", *releaseTag)
+	}
+
+	sha, err := runCmd(nil, "git", "show-ref", "-s", gitRef)
+	if err != nil {
+		return err
+	}
+
+	buildInfo := fmt.Sprintf("-X github.com/wallix/awless/config.buildDate=%s -X github.com/wallix/awless/config.buildSha=%s -X github.com/wallix/awless/config.buildOS=%s -X github.com/wallix/awless/config.buildArch=%s",
+		time.Now().Format(time.RFC3339),
+		strings.TrimSpace(sha),
+		osname,
+		arch,
+	)
+
+	ldflags := fmt.Sprintf("-ldflags=-s -w %s", buildInfo)
+
+	if _, err := runCmd(env, "go", "build", "-o", artefactPath, ldflags); err != nil {
 		return err
 	}
 
@@ -94,13 +132,13 @@ func buildAndZip(osname, arch string) error {
 
 type environment []string
 
-func run(env environment, name string, args ...string) error {
+func runCmd(env environment, name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 	cmd.Env = env
 
-	_, err := cmd.Output()
+	out, err := cmd.Output()
 	if err != nil {
-		printKo("error running [%s %s] with env %v\n", name, strings.Join(args, " "), env)
+		printKo("error running command [%s %s] with env %v", name, strings.Join(args, " "), env)
 
 		if e, ok := err.(*exec.ExitError); ok {
 			fmt.Println()
@@ -108,22 +146,22 @@ func run(env environment, name string, args ...string) error {
 			fmt.Println()
 		}
 
-		return err
+		return string(out), err
 	}
 
-	printOk("%s %s\n", name, strings.Join(args, " "))
+	printOk("%s %s", name, strings.Join(args, " "))
 
-	return nil
+	return string(out), nil
 }
 
 func printOk(s string, a ...interface{}) {
-	fmt.Printf("\033[32m[OK]\033[m %s", fmt.Sprintf(s, a...))
+	fmt.Printf("\033[32m[OK]\033[m %s\n", fmt.Sprintf(s, a...))
 }
 
 func printKo(s string, a ...interface{}) {
-	fmt.Fprintf(os.Stderr, "\033[31m[KO]\033[m %s", fmt.Sprintf(s, a...))
+	fmt.Fprintf(os.Stderr, "\033[31m[KO]\033[m %s\n", fmt.Sprintf(s, a...))
 }
 
 func printInfo(s string, a ...interface{}) {
-	fmt.Printf("[+] %s", fmt.Sprintf(s, a...))
+	fmt.Printf("[+] %s\n", fmt.Sprintf(s, a...))
 }

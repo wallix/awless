@@ -11,36 +11,32 @@ var (
 )
 
 type BuildInfo struct {
-	Version   string
-	BuildSha  string
-	BuildDate string
-	BuildArch string
-	BuildOS   string
+	Version, Sha, Date, Arch, OS string
 }
 
 func (b BuildInfo) String() string {
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("version=%s", b.Version))
 
-	if b.BuildSha != "" {
-		buff.WriteString(fmt.Sprintf(", commit=%s", b.BuildSha))
+	if b.Sha != "" {
+		buff.WriteString(fmt.Sprintf(", commit=%s", b.Sha))
 	}
-	if b.BuildDate != "" {
-		buff.WriteString(fmt.Sprintf(", build-date=%s", b.BuildDate))
+	if b.Date != "" {
+		buff.WriteString(fmt.Sprintf(", build-date=%s", b.Date))
 	}
-	if b.BuildArch != "" {
-		buff.WriteString(fmt.Sprintf(", build-arch=%s", b.BuildArch))
+	if b.Arch != "" {
+		buff.WriteString(fmt.Sprintf(", build-arch=%s", b.Arch))
 	}
-	if b.BuildOS != "" {
-		buff.WriteString(fmt.Sprintf(", build-os=%s", b.BuildOS))
+	if b.OS != "" {
+		buff.WriteString(fmt.Sprintf(", build-os=%s", b.OS))
 	}
 	return buff.String()
 }
 
 var CurrentBuildInfo = BuildInfo{
-	Version:   Version,
-	BuildSha:  buildSha,
-	BuildDate: buildDate,
-	BuildArch: buildArch,
-	BuildOS:   buildOS,
+	Version: Version,
+	Sha:     buildSha,
+	Date:    buildDate,
+	Arch:    buildArch,
+	OS:      buildOS,
 }
