@@ -14,7 +14,7 @@ import (
 )
 
 var builds = map[string][]string{
-	"darwin":  []string{"386", "amd64"},
+	"darwin":  []string{"amd64"},
 	"linux":   []string{"386", "amd64"},
 	"windows": []string{"386", "amd64"},
 }
@@ -65,7 +65,7 @@ func buildAndZip(osname, arch string) error {
 
 	artefactPath := filepath.Join(builddir, binName)
 
-	run(env, "go", "build", "-o", artefactPath) //, "-ldflags -s -w")
+	run(env, "go", "build", "-o", artefactPath, "-ldflags", "-s -w")
 	if err != nil {
 		return err
 	}
@@ -115,6 +115,6 @@ func run(env environment, name string, args ...string) error {
 		return err
 	}
 
-	fmt.Printf("-> %s %s\n", name, strings.Join(args, " "))
+	fmt.Printf("[OK] %s %s\n", name, strings.Join(args, " "))
 	return nil
 }
