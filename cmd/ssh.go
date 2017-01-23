@@ -20,8 +20,10 @@ func init() {
 }
 
 var sshCmd = &cobra.Command{
-	Use:   "ssh [user@]instance",
-	Short: "Launch a SSH (Secure Shell) session connecting to an instance",
+	Use:               "ssh [user@]instance",
+	Short:             "Launch a SSH (Secure Shell) session connecting to an instance",
+	PersistentPreRun:  initCloudServicesFn,
+	PersistentPostRun: saveHistoryFn,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return fmt.Errorf("instance required")

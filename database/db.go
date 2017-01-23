@@ -30,12 +30,12 @@ type DB struct {
 func Current() (*DB, func()) {
 	awlessHome := os.Getenv("__AWLESS_HOME")
 	if awlessHome == "" {
-		fmt.Fprintf(os.Stderr, "database: awless home is not set")
+		fmt.Fprintf(os.Stderr, "database: awless home is not set\n")
 		os.Exit(-1)
 	}
 	db, err := open(filepath.Join(awlessHome, databaseFilename))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "database: %s", err)
+		fmt.Fprintf(os.Stderr, "database: %s\n", err)
 		os.Exit(-1)
 	}
 	todefer := func() {

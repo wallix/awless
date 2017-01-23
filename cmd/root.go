@@ -1,14 +1,8 @@
 package cmd
 
 import (
-	"path/filepath"
-	"strings"
-
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/rdf"
-	"github.com/wallix/awless/stats"
 )
 
 var (
@@ -16,15 +10,15 @@ var (
 	versionFlag bool
 )
 
+func init() {
+	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
+	RootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print awless version")
+}
+
 var RootCmd = &cobra.Command{
 	Use:   "awless",
 	Short: "Manage your cloud",
 	Long:  "Awless is a powerful command line tool to inspect, sync and manage your infrastructure",
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		db, close := database.Current()
-		defer close()
-		db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
-	},
 	BashCompletionFunction: bash_completion_func,
 	RunE: func(c *cobra.Command, args []string) error {
 		if versionFlag {
@@ -35,50 +29,18 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func InitCli() {
-	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
-	RootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print awless version")
-	db, dbclose := database.Current()
-	statsToSend := stats.CheckStatsToSend(db)
-	dbclose()
-	if statsToSend {
-		go loadRdfsAndSendStats()
-	}
-}
-
 func ExecuteRoot() error {
 	err := RootCmd.Execute()
-	db, dbclose := database.Current()
-	defer dbclose()
-	if err != nil && db != nil {
-		db.AddLog(err.Error())
+
+	if err != nil {
+		db, dbclose := database.Current()
+		defer dbclose()
+		if db != nil {
+			db.AddLog(err.Error())
+		}
 	}
 
 	return err
-}
-
-func loadRdfsAndSendStats() {
-	var err error
-	localInfra, localAccess := rdf.NewGraph(), rdf.NewGraph()
-	if !config.AwlessFirstSync {
-		localInfra, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
-		if err != nil {
-			db, dbclose := database.Current()
-			db.AddLog(err.Error())
-			dbclose()
-		}
-		localAccess, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
-		if err != nil {
-			db, dbclose := database.Current()
-			db.AddLog(err.Error())
-			dbclose()
-		}
-	}
-	db, dbclose := database.Current()
-	if err := stats.SendStats(db, localInfra, localAccess); err != nil {
-		db.AddLog(err.Error())
-	}
-	dbclose()
 }
 
 const (

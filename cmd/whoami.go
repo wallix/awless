@@ -10,9 +10,11 @@ func init() {
 }
 
 var whoamiCmd = &cobra.Command{
-	Use:     "whoami",
-	Aliases: []string{"who"},
-	Short:   "Show the caller identity",
+	Use:               "whoami",
+	Aliases:           []string{"who"},
+	PersistentPreRun:  initCloudServicesFn,
+	PersistentPostRun: saveHistoryFn,
+	Short:             "Show the caller identity",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := aws.AccessService.CallerIdentity()

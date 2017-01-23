@@ -15,8 +15,10 @@ func init() {
 }
 
 var openCmd = &cobra.Command{
-	Use:   "open",
-	Short: "Open your AWS console in your default browser",
+	Use:               "open",
+	Short:             "Open your AWS console in your default browser",
+	PersistentPreRun:  initAwlessEnvFn,
+	PersistentPostRun: saveHistoryFn,
 
 	RunE: func(c *cobra.Command, args []string) error {
 		console := fmt.Sprintf("https://%s.console.aws.amazon.com/console/home", config.GetDefaultRegion())

@@ -44,8 +44,10 @@ func init() {
 }
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List various type of items: instances, vpc, subnet ...",
+	Use:               "list",
+	PersistentPreRun:  initCloudServicesFn,
+	PersistentPostRun: saveHistoryFn,
+	Short:             "List various type of items: instances, vpc, subnet ...",
 }
 
 var listInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {

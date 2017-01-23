@@ -10,7 +10,6 @@ import (
 )
 
 func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface{}, error) {
-	fmt.Println(params)
 	input := &ec2.CreateTagsInput{}
 
 	input.DryRun = aws.Bool(true)

@@ -44,8 +44,10 @@ func init() {
 }
 
 var showCmd = &cobra.Command{
-	Use:   "show",
-	Short: "Show various type of items by id: users, groups, instances, vpcs, ...",
+	Use:               "show",
+	Short:             "Show various type of items by id: users, groups, instances, vpcs, ...",
+	PersistentPreRun:  initCloudServicesFn,
+	PersistentPostRun: saveHistoryFn,
 }
 
 var showInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
