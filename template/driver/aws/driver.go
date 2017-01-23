@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/wallix/awless/script/driver"
+	"github.com/wallix/awless/template/driver"
 )
 
 type AwsDriver struct {

@@ -1,4 +1,4 @@
-# PEG for awless script syntax
+# PEG for awless template syntax
 package ast
 
 # parser declaration

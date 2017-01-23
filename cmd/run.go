@@ -15,9 +15,9 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
-	"github.com/wallix/awless/script"
-	"github.com/wallix/awless/script/ast"
-	"github.com/wallix/awless/script/driver/aws"
+	"github.com/wallix/awless/template"
+	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/driver/aws"
 )
 
 func init() {
@@ -31,11 +31,11 @@ func init() {
 
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Run an awless script file given as the only argument. Ex: awless run mycloud.awless",
+	Short: "Run an awless template file given as the only argument. Ex: awless run mycloud.awless",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("missing awless script file path")
+			return errors.New("missing awless template file path")
 		}
 
 		content, err := ioutil.ReadFile(args[0])
@@ -43,20 +43,20 @@ var runCmd = &cobra.Command{
 			return err
 		}
 
-		scrpt, err := script.Parse(string(content))
+		templ, err := template.Parse(string(content))
 		exitOn(err)
 
-		return runScript(scrpt)
+		return runTemplate(templ)
 	},
 }
 
-func runScript(scrpt *script.Script) error {
+func runTemplate(templ *template.Template) error {
 	db, dbclose := database.Current()
 	defaults, err := db.GetDefaults()
 	exitOn(err)
 	dbclose()
 
-	scrpt.ResolveTemplate(defaults)
+	templ.ResolveTemplate(defaults)
 
 	prompt := func(question string) interface{} {
 		var resp string
@@ -66,31 +66,31 @@ func runScript(scrpt *script.Script) error {
 
 		return resp
 	}
-	scrpt.InteractiveResolveTemplate(prompt)
+	templ.InteractiveResolveTemplate(prompt)
 
 	awsDriver := aws.NewDriver(awscloud.InfraService)
 	if verboseFlag {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 	}
 
-	_, err = scrpt.Compile(awsDriver)
+	_, err = templ.Compile(awsDriver)
 	exitOn(err)
 
 	green := color.New(color.FgGreen).SprintFunc()
 
 	fmt.Println()
-	fmt.Printf("%s\n", green(scrpt))
+	fmt.Printf("%s\n", green(templ))
 	fmt.Println()
-	fmt.Print("Run compiled script above? (y/n): ")
+	fmt.Print("Run compiled template above? (y/n): ")
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
 
 	if strings.TrimSpace(yesorno) == "y" {
-		executedScript, err := scrpt.Run(awsDriver)
+		executedTemplate, err := templ.Run(awsDriver)
 		exitOn(err)
 
 		fmt.Println()
-		for _, stat := range executedScript.Statements {
+		for _, stat := range executedTemplate.Statements {
 			fmt.Printf("%s -> %s\n", stat, green("DONE"))
 		}
 	}
@@ -109,22 +109,22 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			return func(cmd *cobra.Command, args []string) error {
 				text := fmt.Sprintf("%s %s %s", act, ent, strings.Join(args, " "))
 
-				scrpt, err := script.Parse(text)
+				templ, err := template.Parse(text)
 				exitOn(err)
 
-				expr, ok := scrpt.Statements[0].(*ast.ExpressionNode)
+				expr, ok := templ.Statements[0].(*ast.ExpressionNode)
 				if !ok {
-					return errors.New("Expecting an script expression not a script declaration")
+					return errors.New("Expecting an template expression not a template declaration")
 				}
 
 				templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
-				templ, ok := aws.AWSDriverTemplates[templName]
+				templDef, ok := aws.AWSDriverTemplates[templName]
 				if !ok {
 					exitOn(errors.New("command unsupported on inline mode"))
 				}
 
-				if scrpt, err = script.Parse(templ); err != nil {
-					exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err))
+				if templ, err = template.Parse(templDef); err != nil {
+					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", templDef, err))
 				}
 
 				for k, v := range expr.Params {
@@ -134,10 +134,10 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 					}
 				}
 
-				scrpt.ResolveTemplate(expr.Params)
+				templ.ResolveTemplate(expr.Params)
 
-				if scrpt, err = script.Parse(templ); err != nil {
-					exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templ, err))
+				if templ, err = template.Parse(templDef); err != nil {
+					exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templDef, err))
 				}
 
 				for k, v := range expr.Params {
@@ -149,9 +149,9 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 				addAliasesToParams(expr)
 
-				scrpt.ResolveTemplate(expr.Params)
+				templ.ResolveTemplate(expr.Params)
 
-				return runScript(scrpt)
+				return runTemplate(templ)
 			}
 		}
 

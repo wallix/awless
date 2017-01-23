@@ -6,22 +6,22 @@ import (
 	"os"
 	"strings"
 
-	"github.com/wallix/awless/script/driver/aws"
+	"github.com/wallix/awless/template/driver/aws"
 )
 
 func main() {
 	generateDriverFuncs()
-	generateScriptTemplates()
+	generateTemplateTemplates()
 }
 
-func generateScriptTemplates() {
-	templ, err := template.New("script_templates").Parse(scriptTemplatesTempl)
+func generateTemplateTemplates() {
+	templ, err := template.New("templates_definitions").Parse(templateDefinitions)
 
 	if err != nil {
 		panic(err)
 	}
 
-	f, err := os.OpenFile("../aws/templates.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	f, err := os.OpenFile("../aws/template_defs.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,7 @@ func generateDriverFuncs() {
 	}
 }
 
-const scriptTemplatesTempl = `// DO NOT EDIT
+const templateDefinitions = `// DO NOT EDIT
 // This file was automatically generated with go generate
 package aws
 

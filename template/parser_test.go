@@ -1,16 +1,16 @@
-package script
+package template
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/wallix/awless/script/ast"
+	"github.com/wallix/awless/template/ast"
 )
 
-func TestScriptParsing(t *testing.T) {
+func TestTemplateParsing(t *testing.T) {
 	tcases := []struct {
 		input    string
-		verifyFn func(s *Script)
+		verifyFn func(s *Template)
 	}{
 		{
 			input: `
@@ -19,7 +19,7 @@ mysubnet = delete subnet vpc=$myvpc name={ the_name } cidr=10.0.0.0/25
 create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3e0 ip=127.0.0.1
 		`,
 
-			verifyFn: func(s *Script) {
+			verifyFn: func(s *Template) {
 				assertStatementsCount(t, s, 3)
 				assertDeclarationNode(t, 0, s.Statements, "myvpc", "create", "vpc",
 					map[string]string{},
@@ -44,14 +44,14 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 
 		{
 			input: `create vpc`,
-			verifyFn: func(s *Script) {
+			verifyFn: func(s *Template) {
 				assertStatementsCount(t, s, 1)
 				assertExpressionNode(t, 0, s.Statements, "create", "vpc", nil, nil, nil, nil)
 			},
 		},
 		{
 			input: `create instance subnet=@my-subnet`,
-			verifyFn: func(s *Script) {
+			verifyFn: func(s *Template) {
 				assertStatementsCount(t, s, 1)
 				assertExpressionNode(t, 0, s.Statements, "create", "instance", map[string]string{}, map[string]interface{}{}, map[string]string{},
 					map[string]string{"subnet": "my-subnet"})
@@ -60,12 +60,12 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 	}
 
 	for _, tcase := range tcases {
-		scrpt, err := Parse(tcase.input)
+		templ, err := Parse(tcase.input)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		tcase.verifyFn(scrpt)
+		tcase.verifyFn(templ)
 	}
 }
 
@@ -81,7 +81,7 @@ func assertDeclarationNode(t *testing.T, index int, sts []ast.Node, expIdent, ex
 	verifyExpressionNode(t, index, decl.Right, expAction, expEntity, refs, params, holes, aliases)
 }
 
-func assertStatementsCount(t *testing.T, s *Script, count int) {
+func assertStatementsCount(t *testing.T, s *Template, count int) {
 	if got, want := len(s.Statements), count; got != want {
 		t.Fatalf("expected %d statements got %d\n%#v", want, got, s.Statements)
 	}

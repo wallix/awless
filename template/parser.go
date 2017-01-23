@@ -1,8 +1,8 @@
-package script
+package template
 
-import "github.com/wallix/awless/script/ast"
+import "github.com/wallix/awless/template/ast"
 
-func Parse(text string) (*Script, error) {
+func Parse(text string) (*Template, error) {
 	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text), Pretty: true}
 	p.Init()
 
@@ -11,5 +11,5 @@ func Parse(text string) (*Script, error) {
 	}
 	p.Execute()
 
-	return &Script{p.AST}, nil
+	return &Template{p.AST}, nil
 }

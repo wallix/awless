@@ -2,7 +2,7 @@
 
 # Why awless
 
-`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and runnable scripts for resource creations (see `awless` scripts).
+`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and runnable/scriptable templates for resource creations (see `awless` templates).
 
 There is no need to edit manually any line of JSON, deal with policies, etc.
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
@@ -14,7 +14,7 @@ There is no need to edit manually any line of JSON, deal with policies, etc.
 - Create a local snapshot of the infrastructure (ec2, iam, s3) deployed in the remote cloud: `awless sync`
 - Show what has changed on the cloud since the last local snapshot: `awless diff`
 - A local history and versioning of the snapshots: `awless show revisions`
-- Creation of cloud resources (instances, groups, users, policies) with smart and secure default through powerful awless script
+- Creation of cloud resources (instances, groups, users, policies) with smart and secure default through powerful awless templates
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 
 # Install

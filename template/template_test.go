@@ -1,4 +1,4 @@
-package script
+package template
 
 import (
 	"errors"
@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wallix/awless/script/ast"
-	"github.com/wallix/awless/script/driver"
+	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/driver"
 )
 
 func TestGetAliases(t *testing.T) {
@@ -26,7 +26,7 @@ func TestGetAliases(t *testing.T) {
 		Aliases: map[string]string{"4": "four"},
 	},
 	)
-	s := &Script{tree}
+	s := &Template{tree}
 	expect := map[string]string{
 		"1": "one",
 		"2": "two",
@@ -38,9 +38,9 @@ func TestGetAliases(t *testing.T) {
 	}
 }
 
-func TestRunDriverOnScript(t *testing.T) {
+func TestRunDriverOnTemplate(t *testing.T) {
 	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
-		s := &Script{&ast.AST{}}
+		s := &Template{&ast.AST{}}
 
 		s.Statements = append(s.Statements, &ast.DeclarationNode{
 			Left: &ast.IdentifierNode{Ident: "createdvpc"},
@@ -100,7 +100,7 @@ func TestRunDriverOnScript(t *testing.T) {
 	})
 
 	t.Run("Driver visit expression nodes", func(t *testing.T) {
-		s := &Script{&ast.AST{}}
+		s := &Template{&ast.AST{}}
 
 		n := &ast.ExpressionNode{
 			Action: "create", Entity: "vpc",
@@ -123,7 +123,7 @@ func TestRunDriverOnScript(t *testing.T) {
 	})
 
 	t.Run("Driver visit declaration nodes", func(t *testing.T) {
-		s := &Script{&ast.AST{}}
+		s := &Template{&ast.AST{}}
 
 		decl := &ast.DeclarationNode{
 			Left: &ast.IdentifierNode{Ident: "myvar"},
@@ -140,12 +140,12 @@ func TestRunDriverOnScript(t *testing.T) {
 		}},
 		}
 
-		executedScript, err := s.Run(mDriver)
+		executedTemplate, err := s.Run(mDriver)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		modifiedDecl := executedScript.Statements[0].(*ast.DeclarationNode)
+		modifiedDecl := executedTemplate.Statements[0].(*ast.DeclarationNode)
 		if got, want := modifiedDecl.Left.Val, "mynewvpc"; got != want {
 			t.Fatalf("identifier: got %#v, want %#v", got, want)
 		}
@@ -158,7 +158,7 @@ func TestRunDriverOnScript(t *testing.T) {
 func TestResolveTemplate(t *testing.T) {
 
 	t.Run("Holes Resolution", func(t *testing.T) {
-		s := &Script{&ast.AST{}}
+		s := &Template{&ast.AST{}}
 
 		expr := &ast.ExpressionNode{
 			Holes: map[string]string{"name": "presidentName", "rank": "presidentRank"},
@@ -199,7 +199,7 @@ func TestResolveTemplate(t *testing.T) {
 	})
 
 	t.Run("Interactive holes resolution", func(t *testing.T) {
-		s := &Script{&ast.AST{}}
+		s := &Template{&ast.AST{}}
 
 		expr := &ast.ExpressionNode{
 			Holes: map[string]string{"age": "age_of_president", "name": "name_of_president"},
