@@ -168,9 +168,9 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 	}
 	g.Add(t)
 
-	usersIndex := make(map[string]*node.Node)
-	for _, user := range access.Users {
-		res, err := NewResource(user)
+	policiesIndex := make(map[string]*node.Node)
+	for _, policy := range access.Policies {
+		res, err := NewResource(policy)
 		if err != nil {
 			return nil, err
 		}
@@ -189,31 +189,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		}
 		g.Add(t)
 
-		usersIndex[res.id] = n
-	}
-
-	rolesIndex := make(map[string]*node.Node)
-	for _, role := range access.Roles {
-		res, err := NewResource(role)
-		if err != nil {
-			return nil, err
-		}
-		triples, err := res.MarshalToTriples()
-		if err != nil {
-			return nil, err
-		}
-		g.Add(triples...)
-		n, err := res.buildRdfSubject()
-		if err != nil {
-			return g, err
-		}
-		t, err = triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
-		if err != nil {
-			return g, err
-		}
-		g.Add(t)
-
-		rolesIndex[res.id] = n
+		policiesIndex[awssdk.StringValue(policy.PolicyName)] = n
 	}
 
 	groupsIndex := make(map[string]*node.Node)
@@ -239,20 +215,21 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 
 		groupsIndex[res.id] = n
 
-		for _, userId := range access.UsersByGroup[res.id] {
-			if usersIndex[userId] == nil {
-				return g, fmt.Errorf("group %s has user %s, but this user does not exist", res.id, userId)
+		if policies, ok := access.GroupPolicies[res.id]; ok {
+			for _, policy := range policies {
+				if policyNode, present := policiesIndex[policy]; present {
+					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					if err != nil {
+						return g, err
+					}
+					g.Add(t)
+				}
 			}
-			t, err = triple.New(n, rdf.ParentOfPredicate, triple.NewNodeObject(usersIndex[userId]))
-			if err != nil {
-				return g, err
-			}
-			g.Add(t)
 		}
 	}
 
-	for _, policy := range access.LocalPolicies {
-		res, err := NewResource(policy)
+	for _, user := range access.Users {
+		res, err := NewResource(user)
 		if err != nil {
 			return nil, err
 		}
@@ -271,37 +248,61 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		}
 		g.Add(t)
 
-		for _, userId := range access.UsersByLocalPolicies[res.id] {
-			if usersIndex[userId] == nil {
-				return g, fmt.Errorf("policy %s has user %s, but this user does not exist", res.id, userId)
+		if groupIds, ok := access.UserGroups[res.id]; ok {
+			for _, groupId := range groupIds {
+				if groupNode, present := groupsIndex[groupId]; present {
+					t, err = triple.New(groupNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					if err != nil {
+						return g, err
+					}
+					g.Add(t)
+				}
 			}
-			t, err := triple.New(n, rdf.ParentOfPredicate, triple.NewNodeObject(usersIndex[userId]))
-			if err != nil {
-				return g, err
-			}
-			g.Add(t)
 		}
 
-		for _, groupId := range access.GroupsByLocalPolicies[res.id] {
-			if groupsIndex[groupId] == nil {
-				return g, fmt.Errorf("policy %s has user %s, but this user does not exist", res.id, groupId)
+		if policies, ok := access.UserPolicies[res.id]; ok {
+			for _, policy := range policies {
+				if policyNode, present := policiesIndex[policy]; present {
+					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					if err != nil {
+						return g, err
+					}
+					g.Add(t)
+				}
 			}
-			t, err := triple.New(n, rdf.ParentOfPredicate, triple.NewNodeObject(groupsIndex[groupId]))
-			if err != nil {
-				return g, err
-			}
-			g.Add(t)
 		}
+	}
 
-		for _, roleId := range access.RolesByLocalPolicies[res.id] {
-			if rolesIndex[roleId] == nil {
-				return g, fmt.Errorf("policy %s has user %s, but this user does not exist", res.id, roleId)
+	for _, role := range access.Roles {
+		res, err := NewResource(role)
+		if err != nil {
+			return nil, err
+		}
+		triples, err := res.MarshalToTriples()
+		if err != nil {
+			return nil, err
+		}
+		g.Add(triples...)
+		n, err := res.buildRdfSubject()
+		if err != nil {
+			return g, err
+		}
+		t, err = triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+		if err != nil {
+			return g, err
+		}
+		g.Add(t)
+
+		if policies, ok := access.RolePolicies[res.id]; ok {
+			for _, policy := range policies {
+				if policyNode, present := policiesIndex[policy]; present {
+					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					if err != nil {
+						return g, err
+					}
+					g.Add(t)
+				}
 			}
-			t, err := triple.New(n, rdf.ParentOfPredicate, triple.NewNodeObject(rolesIndex[roleId]))
-			if err != nil {
-				return g, err
-			}
-			g.Add(t)
 		}
 	}
 

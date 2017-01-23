@@ -12,63 +12,77 @@ import (
 func TestBuildAccessRdfGraph(t *testing.T) {
 	awsAccess := &AwsAccess{}
 
-	awsAccess.Groups = []*iam.Group{
-		&iam.Group{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
-		&iam.Group{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
-		&iam.Group{GroupId: awssdk.String("group_3"), GroupName: awssdk.String("ngroup_3")},
-		&iam.Group{GroupId: awssdk.String("group_4"), GroupName: awssdk.String("ngroup_4")},
+	awsAccess.Groups = []*iam.GroupDetail{
+		&iam.GroupDetail{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
+		&iam.GroupDetail{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
+		&iam.GroupDetail{GroupId: awssdk.String("group_3"), GroupName: awssdk.String("ngroup_3")},
+		&iam.GroupDetail{GroupId: awssdk.String("group_4"), GroupName: awssdk.String("ngroup_4")},
 	}
 
-	awsAccess.LocalPolicies = []*iam.Policy{
-		&iam.Policy{PolicyId: awssdk.String("policy_1"), PolicyName: awssdk.String("npolicy_1")},
-		&iam.Policy{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
-		&iam.Policy{PolicyId: awssdk.String("policy_3"), PolicyName: awssdk.String("npolicy_3")},
-		&iam.Policy{PolicyId: awssdk.String("policy_4"), PolicyName: awssdk.String("npolicy_4")},
+	awsAccess.Policies = []*iam.ManagedPolicyDetail{
+		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_1"), PolicyName: awssdk.String("npolicy_1")},
+		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
+		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_3"), PolicyName: awssdk.String("npolicy_3")},
+		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_4"), PolicyName: awssdk.String("npolicy_4")},
 	}
 
-	awsAccess.Roles = []*iam.Role{
-		&iam.Role{RoleId: awssdk.String("role_1")},
-		&iam.Role{RoleId: awssdk.String("role_2")},
-		&iam.Role{RoleId: awssdk.String("role_3")},
-		&iam.Role{RoleId: awssdk.String("role_4")},
+	awsAccess.Roles = []*iam.RoleDetail{
+		&iam.RoleDetail{RoleId: awssdk.String("role_1")},
+		&iam.RoleDetail{RoleId: awssdk.String("role_2")},
+		&iam.RoleDetail{RoleId: awssdk.String("role_3")},
+		&iam.RoleDetail{RoleId: awssdk.String("role_4")},
 	}
 
-	awsAccess.Users = []*iam.User{
-		&iam.User{UserId: awssdk.String("usr_1")},
-		&iam.User{UserId: awssdk.String("usr_2")},
-		&iam.User{UserId: awssdk.String("usr_3")},
-		&iam.User{UserId: awssdk.String("usr_4")},
-		&iam.User{UserId: awssdk.String("usr_5")},
-		&iam.User{UserId: awssdk.String("usr_6")},
-		&iam.User{UserId: awssdk.String("usr_7")},
-		&iam.User{UserId: awssdk.String("usr_8")},
-		&iam.User{UserId: awssdk.String("usr_9")},
-		&iam.User{UserId: awssdk.String("usr_10")}, //users not in any groups
-		&iam.User{UserId: awssdk.String("usr_11")},
+	awsAccess.Users = []*iam.UserDetail{
+		&iam.UserDetail{UserId: awssdk.String("usr_1")},
+		&iam.UserDetail{UserId: awssdk.String("usr_2")},
+		&iam.UserDetail{UserId: awssdk.String("usr_3")},
+		&iam.UserDetail{UserId: awssdk.String("usr_4")},
+		&iam.UserDetail{UserId: awssdk.String("usr_5")},
+		&iam.UserDetail{UserId: awssdk.String("usr_6")},
+		&iam.UserDetail{UserId: awssdk.String("usr_7")},
+		&iam.UserDetail{UserId: awssdk.String("usr_8")},
+		&iam.UserDetail{UserId: awssdk.String("usr_9")},
+		&iam.UserDetail{UserId: awssdk.String("usr_10")}, //users not in any groups
+		&iam.UserDetail{UserId: awssdk.String("usr_11")},
 	}
 
-	awsAccess.UsersByGroup = map[string][]string{
-		"group_1": []string{"usr_1", "usr_2", "usr_3"},
-		"group_2": []string{"usr_1", "usr_4", "usr_5", "usr_6", "usr_7"},
-		"group_4": []string{"usr_3", "usr_8", "usr_9", "usr_7"},
+	awsAccess.UserGroups = map[string][]string{
+		"usr_1": []string{"group_1", "group_2"},
+		"usr_2": []string{"group_1"},
+		"usr_3": []string{"group_1", "group_4"},
+		"usr_4": []string{"group_2"},
+		"usr_5": []string{"group_2"},
+		"usr_6": []string{"group_2"},
+		"usr_7": []string{"group_2", "group_4"},
+		"usr_8": []string{"group_4"},
+		"usr_9": []string{"group_4"},
 	}
 
-	awsAccess.UsersByLocalPolicies = map[string][]string{
-		"policy_1": []string{"usr_1", "usr_2", "usr_3"},
-		"policy_2": []string{"usr_1", "usr_4", "usr_5", "usr_6", "usr_7"},
-		"policy_4": []string{"usr_3", "usr_8", "usr_9", "usr_7"},
+	awsAccess.UserPolicies = map[string][]string{
+		"usr_1": []string{"npolicy_1", "npolicy_2"},
+		"usr_2": []string{"npolicy_1"},
+		"usr_3": []string{"npolicy_1", "npolicy_4"},
+		"usr_4": []string{"npolicy_2"},
+		"usr_5": []string{"npolicy_2"},
+		"usr_6": []string{"npolicy_2"},
+		"usr_7": []string{"npolicy_2", "npolicy_4"},
+		"usr_8": []string{"npolicy_4"},
+		"usr_9": []string{"npolicy_4"},
 	}
 
-	awsAccess.RolesByLocalPolicies = map[string][]string{
-		"policy_1": []string{"role_1", "role_2"},
-		"policy_2": []string{"role_3"},
-		"policy_4": []string{"role_4"},
+	awsAccess.RolePolicies = map[string][]string{
+		"role_1": []string{"npolicy_1"},
+		"role_2": []string{"npolicy_1"},
+		"role_3": []string{"npolicy_2"},
+		"role_4": []string{"npolicy_4"},
 	}
 
-	awsAccess.GroupsByLocalPolicies = map[string][]string{
-		"policy_1": []string{"group_1", "group_2"},
-		"policy_2": []string{"group_3"},
-		"policy_4": []string{"group_4"},
+	awsAccess.GroupPolicies = map[string][]string{
+		"group_1": []string{"npolicy_1"},
+		"group_2": []string{"npolicy_1"},
+		"group_3": []string{"npolicy_2"},
+		"group_4": []string{"npolicy_4"},
 	}
 
 	g, err := BuildAwsAccessGraph("eu-west-1", awsAccess)

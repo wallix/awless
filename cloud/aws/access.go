@@ -81,77 +81,84 @@ func (a *Access) AccountDetails() (interface{}, error) {
 }
 
 type AwsAccess struct {
-	Groups       []*iam.Group
-	Users        []*iam.User
-	Roles        []*iam.Role
-	UsersByGroup map[string][]string
+	Groups   []*iam.GroupDetail
+	Users    []*iam.UserDetail
+	Roles    []*iam.RoleDetail
+	Policies []*iam.ManagedPolicyDetail
 
-	LocalPolicies         []*iam.Policy
-	UsersByLocalPolicies  map[string][]string
-	GroupsByLocalPolicies map[string][]string
-	RolesByLocalPolicies  map[string][]string
+	UserGroups map[string][]string
+
+	UserPolicies  map[string][]string
+	GroupPolicies map[string][]string
+	RolePolicies  map[string][]string
 }
 
 func NewAwsAccess() *AwsAccess {
 	return &AwsAccess{
-		UsersByGroup:          make(map[string][]string),
-		UsersByLocalPolicies:  make(map[string][]string),
-		GroupsByLocalPolicies: make(map[string][]string),
-		RolesByLocalPolicies:  make(map[string][]string),
+		UserGroups:    make(map[string][]string),
+		UserPolicies:  make(map[string][]string),
+		GroupPolicies: make(map[string][]string),
+		RolePolicies:  make(map[string][]string),
 	}
 }
 
 func (access *Access) FetchAwsAccess() (*AwsAccess, error) {
-	resultc, errc := multiFetch(access.Groups, access.Users, access.Roles, access.LocalPolicies)
+	result, err := access.AccountDetails()
+	if err != nil {
+		return nil, err
+	}
+
+	account := result.(*iam.GetAccountAuthorizationDetailsOutput)
 
 	awsAccess := NewAwsAccess()
 
-	for r := range resultc {
-		switch r.(type) {
-		case *iam.ListGroupsOutput:
-			awsAccess.Groups = append(awsAccess.Groups, r.(*iam.ListGroupsOutput).Groups...)
-		case *iam.ListUsersOutput:
-			awsAccess.Users = append(awsAccess.Users, r.(*iam.ListUsersOutput).Users...)
-		case *iam.ListRolesOutput:
-			awsAccess.Roles = append(awsAccess.Roles, r.(*iam.ListRolesOutput).Roles...)
-		case *iam.ListPoliciesOutput:
-			awsAccess.LocalPolicies = append(awsAccess.LocalPolicies, r.(*iam.ListPoliciesOutput).Policies...)
+	for _, user := range account.UserDetailList {
+		awsAccess.Users = append(awsAccess.Users, user)
+
+		groups := []string{}
+		for _, groupId := range user.GroupList {
+			groups = append(groups, awssdk.StringValue(groupId))
 		}
+		awsAccess.UserGroups[awssdk.StringValue(user.UserId)] = groups
+
+		policies := []string{}
+		for _, policy := range user.UserPolicyList {
+			policies = append(policies, awssdk.StringValue(policy.PolicyName))
+		}
+		for _, policy := range user.AttachedManagedPolicies {
+			policies = append(policies, awssdk.StringValue(policy.PolicyName))
+		}
+		awsAccess.UserPolicies[awssdk.StringValue(user.UserId)] = policies
 	}
 
-	if err := <-errc; err != nil {
-		return awsAccess, err
+	for _, group := range account.GroupDetailList {
+		awsAccess.Groups = append(awsAccess.Groups, group)
+
+		policies := []string{}
+		for _, policy := range group.GroupPolicyList {
+			policies = append(policies, awssdk.StringValue(policy.PolicyName))
+		}
+		for _, policy := range group.AttachedManagedPolicies {
+			policies = append(policies, awssdk.StringValue(policy.PolicyName))
+		}
+		awsAccess.GroupPolicies[awssdk.StringValue(group.GroupId)] = policies
 	}
 
-	for _, policy := range awsAccess.LocalPolicies {
-		resp, err := access.AttachedToPolicy(policy.Arn)
-		if err != nil {
-			return awsAccess, err
-		}
+	for _, role := range account.RoleDetailList {
+		awsAccess.Roles = append(awsAccess.Roles, role)
 
-		output := resp.(*iam.ListEntitiesForPolicyOutput)
-		for _, group := range output.PolicyGroups {
-			awsAccess.GroupsByLocalPolicies[awssdk.StringValue(policy.PolicyId)] = append(awsAccess.GroupsByLocalPolicies[awssdk.StringValue(policy.PolicyId)], awssdk.StringValue(group.GroupId))
+		policies := []string{}
+		for _, policy := range role.RolePolicyList {
+			policies = append(policies, awssdk.StringValue(policy.PolicyName))
 		}
-		for _, role := range output.PolicyRoles {
-			awsAccess.RolesByLocalPolicies[awssdk.StringValue(policy.PolicyId)] = append(awsAccess.RolesByLocalPolicies[awssdk.StringValue(policy.PolicyId)], awssdk.StringValue(role.RoleId))
+		for _, policy := range role.AttachedManagedPolicies {
+			policies = append(policies, awssdk.StringValue(policy.PolicyName))
 		}
-		for _, user := range output.PolicyUsers {
-			awsAccess.UsersByLocalPolicies[awssdk.StringValue(policy.PolicyId)] = append(awsAccess.UsersByLocalPolicies[awssdk.StringValue(policy.PolicyId)], awssdk.StringValue(user.UserId))
-		}
+		awsAccess.RolePolicies[awssdk.StringValue(role.RoleId)] = policies
 	}
 
-	for _, group := range awsAccess.Groups {
-		groupName := awssdk.StringValue(group.GroupName)
-		groupId := awssdk.StringValue(group.GroupId)
-		groupUsers, err := access.UsersForGroup(groupName)
-		if err != nil {
-			return awsAccess, err
-		}
-
-		for _, groupUser := range groupUsers.([]*iam.User) {
-			awsAccess.UsersByGroup[groupId] = append(awsAccess.UsersByGroup[groupId], awssdk.StringValue(groupUser.UserId))
-		}
+	for _, policy := range account.Policies {
+		awsAccess.Policies = append(awsAccess.Policies, policy)
 	}
 
 	return awsAccess, nil

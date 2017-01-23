@@ -78,13 +78,13 @@ func NewResource(source interface{}) (*Resource, error) {
 		res = InitResource(awssdk.StringValue(ss.SubnetId), rdf.Subnet)
 	case *ec2.SecurityGroup:
 		res = InitResource(awssdk.StringValue(ss.GroupId), rdf.SecurityGroup)
-	case *iam.User:
+	case *iam.UserDetail:
 		res = InitResource(awssdk.StringValue(ss.UserId), rdf.User)
-	case *iam.Role:
+	case *iam.RoleDetail:
 		res = InitResource(awssdk.StringValue(ss.RoleId), rdf.Role)
-	case *iam.Group:
+	case *iam.GroupDetail:
 		res = InitResource(awssdk.StringValue(ss.GroupId), rdf.Group)
-	case *iam.Policy:
+	case *iam.ManagedPolicyDetail:
 		res = InitResource(awssdk.StringValue(ss.PolicyId), rdf.Policy)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
