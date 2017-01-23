@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/database"
@@ -31,7 +32,13 @@ func InitSession() (*session.Session, error) {
 	if !ok {
 		return nil, fmt.Errorf("invalid region '%s'", fmt.Sprint(region))
 	}
-	session, err := session.NewSession(&awssdk.Config{Region: awssdk.String(region)})
+	session, err := session.NewSession(
+		&awssdk.Config{
+			Region: awssdk.String(region),
+			Credentials: credentials.NewChainCredentials([]credentials.Provider{
+				&credentials.EnvProvider{},
+				&credentials.SharedCredentialsProvider{Filename: "", Profile: ""},
+			})})
 	if err != nil {
 		return nil, err
 	}
