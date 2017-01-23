@@ -1,6 +1,8 @@
 package template
 
 import (
+	"strings"
+
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver"
 )
@@ -56,6 +58,20 @@ func (s *Template) GetAliases() map[string]string {
 	}
 	s.visitExpressionNodes(each)
 	return aliases
+}
+
+func (s *Template) MergeParams(newParams map[string]interface{}) {
+	each := func(expr *ast.ExpressionNode) {
+		for k, v := range newParams {
+			if strings.SplitN(k, ".", 2)[0] == expr.Entity {
+				if expr.Params == nil {
+					expr.Params = make(map[string]interface{})
+				}
+				expr.Params[strings.SplitN(k, ".", 2)[1]] = v
+			}
+		}
+	}
+	s.visitExpressionNodes(each)
 }
 
 func (s *Template) ResolveTemplate(refs map[string]interface{}) error {

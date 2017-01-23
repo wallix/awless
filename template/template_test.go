@@ -38,6 +38,50 @@ func TestGetAliases(t *testing.T) {
 	}
 }
 
+func TestMergeParams(t *testing.T) {
+	templ := &Template{&ast.AST{}}
+
+	templ.Statements = append(templ.Statements, &ast.DeclarationNode{
+		Left: &ast.IdentifierNode{},
+		Right: &ast.ExpressionNode{
+			Action: "create", Entity: "vpc",
+			Params: map[string]interface{}{"count": 1},
+		}}, &ast.DeclarationNode{
+		Left: &ast.IdentifierNode{},
+		Right: &ast.ExpressionNode{
+			Action: "create", Entity: "subnet",
+		}}, &ast.ExpressionNode{
+		Action: "create", Entity: "instance",
+		Params: map[string]interface{}{"type": "t1", "image": "image1"},
+	})
+	templ.MergeParams(map[string]interface{}{
+		"vpc.count":       10,
+		"subnet.cidr":     "10.0.0.0/24",
+		"instance.image":  "image2",
+		"instance.subnet": "mysubnet",
+	})
+
+	var expect []ast.Node
+	expect = append(expect, &ast.DeclarationNode{
+		Left: &ast.IdentifierNode{},
+		Right: &ast.ExpressionNode{
+			Action: "create", Entity: "vpc",
+			Params: map[string]interface{}{"count": 10},
+		}}, &ast.DeclarationNode{
+		Left: &ast.IdentifierNode{},
+		Right: &ast.ExpressionNode{
+			Action: "create", Entity: "subnet",
+			Params: map[string]interface{}{"cidr": "10.0.0.0/24"},
+		}}, &ast.ExpressionNode{
+		Action: "create", Entity: "instance",
+		Params: map[string]interface{}{"type": "t1", "image": "image2", "subnet": "mysubnet"},
+	})
+
+	if got, want := templ.Statements, expect; !reflect.DeepEqual(got, want) {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+}
+
 func TestRunDriverOnTemplate(t *testing.T) {
 	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
 		s := &Template{&ast.AST{}}
@@ -243,7 +287,7 @@ type mockDriver struct {
 func (r *mockDriver) lookupsCalled() error {
 	for _, expect := range r.expects {
 		if expect.lookupDone == false {
-			fmt.Errorf("lookup for expectation %v not called", expect)
+			return fmt.Errorf("lookup for expectation %v not called", expect)
 		}
 	}
 

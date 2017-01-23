@@ -72,7 +72,8 @@ func TestDriver(t *testing.T) {
 
 	t.Run("Create instance", func(t *testing.T) {
 		countInt := 2
-		image, typ, subnet, count := "ami-12", "t2.medium", "anysubnet", strconv.Itoa(countInt)
+		image, typ, subnet, count, name := "ami-12", "t2.medium", "anysubnet", strconv.Itoa(countInt), "my_instance_name"
+		var tagNameCreated bool
 
 		awsMock.verifyInstanceInput = func(input *ec2.RunInstancesInput) error {
 			if got, want := aws.StringValue(input.SubnetId), subnet; got != want {
@@ -93,12 +94,29 @@ func TestDriver(t *testing.T) {
 			return nil
 		}
 
-		id, err := driv.Create_Instance(map[string]interface{}{"image": image, "type": typ, "subnet": subnet, "count": count})
+		awsMock.verifyTagInput = func(input *ec2.CreateTagsInput) error {
+			if got, want := len(input.Tags), 1; got != want {
+				t.Fatalf("got %d, want %d", got, want)
+			}
+			tagNameCreated = true
+			if got, want := aws.StringValue(input.Tags[0].Key), "Name"; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			if got, want := aws.StringValue(input.Tags[0].Value), name; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			return nil
+		}
+
+		id, err := driv.Create_Instance(map[string]interface{}{"image": image, "type": typ, "subnet": subnet, "count": count, "name": name})
 		if err != nil {
 			t.Fatal(err)
 		}
 		if got, want := id.(string), "mynewinstance"; got != want {
 			t.Fatalf("got %s, want %s", got, want)
+		}
+		if got, want := tagNameCreated, true; got != want {
+			t.Fatalf("got %t, want %t", got, want)
 		}
 	})
 }
@@ -108,6 +126,7 @@ type mockEc2 struct {
 	verifyVpcInput      func(*ec2.CreateVpcInput) error
 	verifySubnetInput   func(*ec2.CreateSubnetInput) error
 	verifyInstanceInput func(*ec2.RunInstancesInput) error
+	verifyTagInput      func(*ec2.CreateTagsInput) error
 }
 
 func (m *mockEc2) CreateVpc(input *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
@@ -129,4 +148,11 @@ func (m *mockEc2) RunInstances(input *ec2.RunInstancesInput) (*ec2.Reservation, 
 		return nil, err
 	}
 	return &ec2.Reservation{Instances: []*ec2.Instance{&ec2.Instance{InstanceId: aws.String("mynewinstance")}}}, nil
+}
+
+func (m *mockEc2) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
+	if err := m.verifyTagInput(input); err != nil {
+		return nil, err
+	}
+	return &ec2.CreateTagsOutput{}, nil
 }

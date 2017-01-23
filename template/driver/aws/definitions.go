@@ -10,8 +10,10 @@ func DriverSupportedActions() map[string][]string {
 
 var DriverDefinitions = []struct {
 	ParamsMapping                     map[string]string
+	TagsMapping                       map[string]string
 	Action, Entity                    string
 	Input, ApiMethod, OutputExtractor string
+	ManualFuncDefinition              bool
 }{
 	// VPC
 	{
@@ -52,11 +54,22 @@ var DriverDefinitions = []struct {
 			"InstanceType": "type",
 			"SubnetId":     "subnet",
 		},
+		TagsMapping: map[string]string{
+			"Name": "name",
+		},
 	},
 	{
 		Action: "delete", Entity: "instance", Input: "TerminateInstancesInput", ApiMethod: "TerminateInstances",
 		ParamsMapping: map[string]string{
 			"InstanceIds": "id",
+		},
+	},
+
+	// TAG
+	{
+		Action: "create", Entity: "tags", ManualFuncDefinition: true,
+		ParamsMapping: map[string]string{
+			"Resources": "resource",
 		},
 	},
 }

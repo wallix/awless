@@ -539,7 +539,7 @@ func (p *Peg) Init() {
 		nil,
 		/* 2 Action <- <(('c' 'r' 'e' 'a' 't' 'e') / ('d' 'e' 'l' 'e' 't' 'e'))> */
 		nil,
-		/* 3 Entity <- <((&('i') ('i' 'n' 's' 't' 'a' 'n' 'c' 'e')) | (&('s') ('s' 'u' 'b' 'n' 'e' 't')) | (&('v') ('v' 'p' 'c')))> */
+		/* 3 Entity <- <((&('t') ('t' 'a' 'g' 's')) | (&('i') ('i' 'n' 's' 't' 'a' 'n' 'c' 'e')) | (&('s') ('s' 'u' 'b' 'n' 'e' 't')) | (&('v') ('v' 'p' 'c')))> */
 		nil,
 		/* 4 Declaration <- <(<Identifier> Action0 Equal Expr)> */
 		nil,
@@ -623,6 +623,24 @@ func (p *Peg) Init() {
 						position34 := position
 						{
 							switch buffer[position] {
+							case 't':
+								if buffer[position] != rune('t') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('a') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('g') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('s') {
+									goto l26
+								}
+								position++
+								break
 							case 'i':
 								if buffer[position] != rune('i') {
 									goto l26

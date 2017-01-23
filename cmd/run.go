@@ -134,22 +134,11 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 					}
 				}
 
-				templ.ResolveTemplate(expr.Params)
-
-				if templ, err = template.Parse(templDef); err != nil {
-					exitOn(fmt.Errorf("internal error parsing known template\n`%s`\n%s", templDef, err))
-				}
-
-				for k, v := range expr.Params {
-					if !strings.Contains(k, ".") {
-						expr.Params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-						delete(expr.Params, k)
-					}
-				}
-
 				addAliasesToParams(expr)
 
 				templ.ResolveTemplate(expr.Params)
+
+				templ.MergeParams(expr.Params)
 
 				return runTemplate(templ)
 			}
