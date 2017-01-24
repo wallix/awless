@@ -32,7 +32,7 @@ type builder struct {
 	format   string
 	rdfType  rdf.ResourceType
 	sort     []int
-	maxWidth int
+	maxwidth int
 }
 
 type optsFn func(b *builder) *builder
@@ -51,16 +51,18 @@ func BuildDisplayer(opts ...optsFn) GraphDisplayer {
 		b.headers = DefaultsColumnDefinitions[b.rdfType]
 	}
 
+	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
+
 	switch b.format {
 	case "csv":
-		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers}
-	case "table":
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxWidth}
+		return &csvDisplayer{base}
 	case "porcelain":
-		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers}
+		return &porcelainDisplayer{base}
+	case "table":
+		return &tableDisplayer{base}
 	default:
 		fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxWidth}
+		return &tableDisplayer{base}
 	}
 }
 
@@ -107,7 +109,7 @@ func WithSortBy(sortingBy ...string) optsFn {
 
 func WithMaxWidth(maxwidth int) optsFn {
 	return func(b *builder) *builder {
-		b.maxWidth = maxwidth
+		b.maxwidth = maxwidth
 		return b
 	}
 }
@@ -121,14 +123,19 @@ func WithRdfType(rdfType rdf.ResourceType) optsFn {
 
 type table [][]interface{}
 
-type csvGraphDisplayer struct {
+type fromGraphDisplayer struct {
 	sorter
 	g       *rdf.Graph
 	rdfType rdf.ResourceType
 	headers []ColumnDefinition
+	maxwidth int
 }
 
-func (d *csvGraphDisplayer) Print(w io.Writer) error {
+type csvDisplayer struct {
+	fromGraphDisplayer
+}
+
+func (d *csvDisplayer) Print(w io.Writer) error {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		return err
@@ -167,19 +174,15 @@ func (d *csvGraphDisplayer) Print(w io.Writer) error {
 	return err
 }
 
-func (d *csvGraphDisplayer) SetGraph(g *rdf.Graph) {
+func (d *csvDisplayer) SetGraph(g *rdf.Graph) {
 	d.g = g
 }
 
-type tableGraphDisplayer struct {
-	sorter
-	g        *rdf.Graph
-	rdfType  rdf.ResourceType
-	headers  []ColumnDefinition
-	maxwidth int
+type tableDisplayer struct {
+	fromGraphDisplayer
 }
 
-func (d *tableGraphDisplayer) Print(w io.Writer) error {
+func (d *tableDisplayer) Print(w io.Writer) error {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		return err
@@ -202,7 +205,7 @@ func (d *tableGraphDisplayer) Print(w io.Writer) error {
 		columnsToDisplay = []ColumnDefinition{}
 		currentWidth := 0
 		for j, h := range d.headers {
-			colW := columnWidth(j, values, h) + 2 // +2 (tables margin)
+			colW := t (j, values, h) + 2 // +2 (tables margin)
 			if currentWidth+colW > d.maxwidth {
 				break
 			}
@@ -246,18 +249,15 @@ func (d *tableGraphDisplayer) Print(w io.Writer) error {
 	return nil
 }
 
-func (d *tableGraphDisplayer) SetGraph(g *rdf.Graph) {
+func (d *tableDisplayer) SetGraph(g *rdf.Graph) {
 	d.g = g
 }
 
-type porcelainGraphDisplayer struct {
-	sorter
-	g       *rdf.Graph
-	rdfType rdf.ResourceType
-	headers []ColumnDefinition
+type porcelainDisplayer struct {
+	fromGraphDisplayer
 }
 
-func (d *porcelainGraphDisplayer) Print(w io.Writer) error {
+func (d *porcelainDisplayer) Print(w io.Writer) error {
 	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		return err
@@ -290,7 +290,7 @@ func (d *porcelainGraphDisplayer) Print(w io.Writer) error {
 	return err
 }
 
-func (d *porcelainGraphDisplayer) SetGraph(g *rdf.Graph) {
+func (d *porcelainDisplayer) SetGraph(g *rdf.Graph) {
 	d.g = g
 }
 
@@ -383,7 +383,7 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 	return ids, nil
 }
 
-func columnWidth(j int, t table, h ColumnDefinition) int {
+func t (j int, t table, h ColumnDefinition) int {
 	w := 0
 	for i := range t {
 		c := utf8.RuneCountInString(h.format(t[i][j]))
