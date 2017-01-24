@@ -15,12 +15,12 @@ type ResourceDisplayer interface {
 	SetResource(*aws.Resource)
 }
 
-func BuildResourceDisplayer(headers []ColumnDefinition, opts Options) ResourceDisplayer {
-	switch opts.Format {
+func BuildResourceDisplayer(headers []ColumnDefinition, format string) ResourceDisplayer {
+	switch format {
 	case "table":
 		return &tableResourceDisplayer{headers: headers}
 	default:
-		fmt.Fprintf(os.Stderr, "unknown displayer for %s", opts.Format)
+		fmt.Fprintf(os.Stderr, "unknown displayer for %s", format)
 	}
 	return &tableResourceDisplayer{headers: headers}
 }

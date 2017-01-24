@@ -27,38 +27,95 @@ type sorter interface {
 	columns() []int
 }
 
-type Options struct {
-	RdfType  rdf.ResourceType
-	Format   string
-	SortBy   []string
-	MaxWidth int
+type builder struct {
+	headers  []ColumnDefinition
+	format   string
+	rdfType  rdf.ResourceType
+	sort     []int
+	maxWidth int
 }
 
-func BuildGraphDisplayer(headers []ColumnDefinition, opts Options) GraphDisplayer {
-	titlesIds := make(map[string]int)
-	for i, h := range headers {
-		titlesIds[strings.ToLower(h.title(false))] = i
-	}
-	sortBy := []string{"Id"}
-	if len(opts.SortBy) > 0 {
-		sortBy = opts.SortBy
+type optsFn func(b *builder) *builder
+
+func BuildDisplayer(opts ...optsFn) GraphDisplayer {
+	b := &builder{}
+
+	b.sort = []int{0}
+	b.format = "table"
+
+	for _, fn := range opts {
+		fn(b)
 	}
 
-	sortIds, err := titlesToIDs(titlesIds, sortBy)
-	if err != nil {
-		fmt.Fprint(os.Stderr, err, "\n")
+	if len(b.headers) == 0 {
+		b.headers = DefaultsColumnDefinitions[b.rdfType]
 	}
 
-	switch opts.Format {
+	switch b.format {
 	case "csv":
-		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
+		return &csvGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers}
 	case "table":
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers, maxwidth: opts.MaxWidth}
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxWidth}
 	case "porcelain":
-		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers}
+		return &porcelainGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers}
 	default:
-		fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", opts.Format)
-		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: sortIds}, rdfType: opts.RdfType, headers: headers, maxwidth: opts.MaxWidth}
+		fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
+		return &tableGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxWidth}
+	}
+}
+
+func WithFormat(format string) optsFn {
+	return func(b *builder) *builder {
+		b.format = format
+		return b
+	}
+}
+
+func WithHeaders(h []ColumnDefinition) optsFn {
+	return func(b *builder) *builder {
+		b.headers = h
+		return b
+	}
+}
+
+func WithIDsOnly(only bool) optsFn {
+	return func(b *builder) *builder {
+		if only {
+			b.headers = []ColumnDefinition{
+				StringColumnDefinition{Prop: "Id"},
+				StringColumnDefinition{Prop: "Name"},
+			}
+			b.format = "porcelain"
+		}
+
+		return b
+	}
+}
+
+func WithSortBy(sortingBy ...string) optsFn {
+	return func(b *builder) *builder {
+		indexes, err := resolveSortIndexes(b.headers, sortingBy...)
+		if err != nil {
+			fmt.Fprint(os.Stderr, err, "\n")
+		}
+
+		b.sort = indexes
+
+		return b
+	}
+}
+
+func WithMaxWidth(maxwidth int) optsFn {
+	return func(b *builder) *builder {
+		b.maxWidth = maxwidth
+		return b
+	}
+}
+
+func WithRdfType(rdfType rdf.ResourceType) optsFn {
+	return func(b *builder) *builder {
+		b.rdfType = rdfType
+		return b
 	}
 }
 
@@ -303,15 +360,26 @@ func valueLowerOrEqual(a, b interface{}) bool {
 	}
 }
 
-func titlesToIDs(mapping map[string]int, titles []string) ([]int, error) {
+func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int, error) {
+	sortBy := []string{"id"}
+	if len(sortingBy) > 0 {
+		sortBy = sortingBy
+	}
+
+	normalized := make(map[string]int)
+	for i, h := range headers {
+		normalized[strings.ToLower(h.title(false))] = i
+	}
+
 	var ids []int
-	for _, t := range titles {
-		id, ok := mapping[strings.ToLower(t)]
+	for _, t := range sortBy {
+		id, ok := normalized[strings.ToLower(t)]
 		if !ok {
 			return ids, fmt.Errorf("Invalid column name '%s'", t)
 		}
 		ids = append(ids, id)
 	}
+
 	return ids, nil
 }
 

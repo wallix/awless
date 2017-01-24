@@ -8,6 +8,10 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
+func init() {
+	color.NoColor = true
+}
+
 func TestTabularDisplays(t *testing.T) {
 	g := createIntancesGraph()
 	headers := []ColumnDefinition{
@@ -17,36 +21,39 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer := BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance,
-		Format:  "csv",
-	})
+	displayer := BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithFormat("csv"),
+	)
 	displayer.SetGraph(g)
 
-	expected := `Id, Name, State, Type, Public IP
-inst_1, redis, running, t2.micro, 1.2.3.4
-inst_2, django, stopped, t2.medium, 
-inst_3, apache, running, t2.xlarge, `
+	expected := "Id, Name, State, Type, Public IP\n" +
+		"inst_1, redis, running, t2.micro, 1.2.3.4\n" +
+		"inst_2, django, stopped, t2.medium, \n" +
+		"inst_3, apache, running, t2.xlarge, "
 	var w bytes.Buffer
 	err := displayer.Print(&w)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
-		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
 	}
 
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance,
-		Format:  "csv",
-		SortBy:  []string{"Name"},
-	})
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithFormat("csv"),
+		WithSortBy("Name"),
+	)
+
 	displayer.SetGraph(g)
 
-	expected = `Id, Name, State, Type, Public IP
-inst_3, apache, running, t2.xlarge, 
-inst_2, django, stopped, t2.medium, 
-inst_1, redis, running, t2.micro, 1.2.3.4`
+	expected = "Id, Name, State, Type, Public IP\n" +
+		"inst_3, apache, running, t2.xlarge, \n" +
+		"inst_2, django, stopped, t2.medium, \n" +
+		"inst_1, redis, running, t2.micro, 1.2.3.4"
 
 	w.Reset()
 	err = displayer.Print(&w)
@@ -54,7 +61,7 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
-		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+		t.Fatalf("got \n%q\n\nwant\n\n%q\n", got, want)
 	}
 
 	headers = []ColumnDefinition{
@@ -67,9 +74,12 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-	})
+
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+	)
+
 	displayer.SetGraph(g)
 	expected = `+--------+--------+---------+-----------+-----------+
 |  ID ▲  |  NAME  |  STATE  |   TYPE    | PUBLIC IP |
@@ -88,10 +98,12 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy: []string{"state", "id"},
-	})
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("state", "id"),
+	)
+
 	displayer.SetGraph(g)
 	expected = `+--------+--------+---------+-----------+-----------+
 |   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
@@ -110,10 +122,12 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy: []string{"state", "name"},
-	})
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("state", "name"),
+	)
+
 	displayer.SetGraph(g)
 	expected = `+--------+--------+---------+-----------+-----------+
 |   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
@@ -136,9 +150,13 @@ inst_1, redis, running, t2.micro, 1.2.3.4`
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 	}
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "porcelain",
-	})
+
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithFormat("porcelain"),
+	)
+
 	displayer.SetGraph(g)
 	expected = `inst_1
 redis
@@ -182,10 +200,11 @@ func TestDateLists(t *testing.T) {
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate"}, Format: Short},
 	}
 
-	displayer := BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.User, Format: "table",
-		SortBy: []string{"id"},
-	})
+	displayer := BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.User),
+	)
+
 	displayer.SetGraph(g)
 	expected := `+-------+---------------+----------------------+
 | ID ▲  |     NAME      | PASSWORDLASTUSEDDATE |
@@ -204,10 +223,12 @@ func TestDateLists(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.User, Format: "table",
-		SortBy: []string{"passwordlastuseddate"},
-	})
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.User),
+		WithSortBy("passwordlastuseddate"),
+	)
+
 	displayer.SetGraph(g)
 	expected = `+-------+---------------+------------------------+
 |  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
@@ -236,10 +257,13 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer := BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy: []string{"state", "name"},
-	})
+
+	displayer := BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("state", "name"),
+	)
+
 	displayer.SetGraph(g)
 	expected := `+--------+--------+---------+-----------+-----------+
 |   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
@@ -265,10 +289,13 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "Type", TruncateSize: 6},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP", DontTruncate: true},
 	}
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy: []string{"state", "name"},
-	})
+
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("state", "name"),
+	)
+
 	displayer.SetGraph(g)
 	expected = `+------+--------+---------+--------+-----------+
 |  ID  |  NAME  | STATE ▲ |  TYPE  | PUBLIC IP |
@@ -294,11 +321,12 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "Type", Friendly: "T", TruncateSize: 5},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "P", TruncateSize: 5},
 	}
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy:   []string{"s", "n"},
-		MaxWidth: 0,
-	})
+
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("s", "n"),
+	)
 	displayer.SetGraph(g)
 	expected = `+-------+-------+-------+-------+-------+
 |   I   |   N   |  S ▲  |   T   |   P   |
@@ -317,11 +345,13 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy:   []string{"s", "n"},
-		MaxWidth: 50,
-	})
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("s", "n"),
+		WithMaxWidth(50),
+	)
+
 	displayer.SetGraph(g)
 	w.Reset()
 	err = displayer.Print(&w)
@@ -332,11 +362,13 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildGraphDisplayer(headers, Options{
-		RdfType: rdf.Instance, Format: "table",
-		SortBy:   []string{"s", "n"},
-		MaxWidth: 21,
-	})
+	displayer = BuildDisplayer(
+		WithHeaders(headers),
+		WithRdfType(rdf.Instance),
+		WithSortBy("s", "n"),
+		WithMaxWidth(21),
+	)
+
 	displayer.SetGraph(g)
 	expected = `+-------+-------+-------+
 |   I   |   N   |  S ▲  |
@@ -395,8 +427,8 @@ func createIntancesGraph() *rdf.Graph {
   /instance<inst_2>  "property"@[] "{"Key":"Name","Value":"django"}"^^type:text
   /instance<inst_2>  "property"@[] "{"Key":"Type","Value":"t2.medium"}"^^type:text
   /instance<inst_2>  "property"@[] "{"Key":"State","Value":"stopped"}"^^type:text
-	
-	
+
+
   /instance<inst_3>  "has_type"@[] "/instance"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"apache"}"^^type:text

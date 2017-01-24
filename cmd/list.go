@@ -116,26 +116,16 @@ var listAllCmd = &cobra.Command{
 }
 
 func printResources(g *rdf.Graph, nodeType rdf.ResourceType) {
-	var displayer display.GraphDisplayer
-	if listOnlyIDs {
-		displayer = display.BuildGraphDisplayer(
-			[]display.ColumnDefinition{
-				display.StringColumnDefinition{Prop: "Id"},
-				display.StringColumnDefinition{Prop: "Name"},
-			},
-			display.Options{RdfType: nodeType, Format: "porcelain", SortBy: sortBy},
-		)
-	} else {
-		maxwidth, err := shell.GetTerminalWidth()
-		if err != nil {
-			maxwidth = 0
-		}
-		displayer = display.BuildGraphDisplayer(
-			display.DefaultsColumnDefinitions[nodeType],
-			display.Options{RdfType: nodeType, Format: listingFormat, SortBy: sortBy, MaxWidth: maxwidth},
-		)
-	}
+	displayer := display.BuildDisplayer(
+		display.WithRdfType(nodeType),
+		display.WithHeaders(display.DefaultsColumnDefinitions[nodeType]),
+		display.WithMaxWidth(shell.GetTerminalWidth()),
+		display.WithFormat(listingFormat),
+		display.WithIDsOnly(listOnlyIDs),
+		display.WithSortBy(sortBy...),
+	)
+
 	displayer.SetGraph(g)
-	err := displayer.Print(os.Stdout)
-	exitOn(err)
+
+	exitOn(displayer.Print(os.Stdout))
 }

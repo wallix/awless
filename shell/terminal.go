@@ -6,10 +6,10 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func GetTerminalWidth() (int, error) {
+func GetTerminalWidth() int {
 	w, _, err := terminal.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
-		return 0, err
+		return 0
 	}
-	return w, nil
+	return w
 }

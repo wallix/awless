@@ -101,7 +101,7 @@ func TestPropertyDisplay(t *testing.T) {
 	}
 	p.ColoredValues = map[string]string{str: "red"}
 	if got, want := p.display(str), str; got != want {
-		t.Fatalf("got '%s', want '%s'", got, want)
+		t.Fatalf("got '%q', want '%q'", got, want)
 	}
 	p.ColoredValues = map[string]string{"none": "blue"}
 	if got, want := p.display(str), str; got != want {
