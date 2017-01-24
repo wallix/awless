@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -21,8 +21,8 @@ type Rev struct {
 	Id   string
 	Date time.Time
 
-	Infra  *rdf.Graph
-	Access *rdf.Graph
+	Infra  *graph.Graph
+	Access *graph.Graph
 }
 
 func (r *Rev) DateString() string {
@@ -135,7 +135,7 @@ func (r *GitRepo) LoadRev(version string) (*Rev, error) {
 		return nil, err
 	}
 
-	infraG := rdf.NewGraph()
+	infraG := graph.NewGraph()
 	infraG.Unmarshal([]byte(contents))
 	rev.Infra = infraG
 
@@ -147,7 +147,7 @@ func (r *GitRepo) LoadRev(version string) (*Rev, error) {
 	if err != nil {
 		return nil, err
 	}
-	accessG := rdf.NewGraph()
+	accessG := graph.NewGraph()
 	accessG.Unmarshal([]byte(contents))
 	rev.Access = accessG
 

@@ -8,12 +8,11 @@ import (
 	"github.com/fatih/color"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
 // FullDiff displays a table of a diff with both resources and properties diffs (inserted and deleted triples)
-func FullDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) {
+func FullDiff(diff *graph.Diff, rootNode *node.Node, cloudService string) {
 	table, err := tableFromDiff(diff, rootNode, cloudService)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -23,10 +22,10 @@ func FullDiff(diff *rdf.Diff, rootNode *node.Node, cloudService string) {
 }
 
 // ResourceDiff displays a tree view of a diff with only the changed resources
-func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
-	diff.FullGraph().VisitDepthFirst(rootNode, func(g *rdf.Graph, n *node.Node, distance int) {
+func ResourceDiff(diff *graph.Diff, rootNode *node.Node) {
+	diff.FullGraph().Visit(rootNode, func(g *graph.Graph, n *node.Node, distance int) {
 		var lit *literal.Literal
-		diff, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
+		diff, err := g.TriplesInDiff(n)
 		if len(diff) > 0 && err == nil {
 			lit, _ = diff[0].Object().Literal()
 		}
@@ -36,22 +35,27 @@ func ResourceDiff(diff *rdf.Diff, rootNode *node.Node) {
 			tabs.WriteByte('\t')
 		}
 
-		switch lit {
-		case rdf.ExtraLiteral:
+		var litString string
+		if lit != nil {
+			litString, _ = lit.Text()
+		}
+
+		switch litString {
+		case "extra":
 			color.Set(color.FgGreen)
-			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), rdf.NewResourceType(n.Type()).String(), n.ID())
+			fmt.Fprintf(os.Stdout, "+%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
 			color.Unset()
-		case rdf.MissingLiteral:
+		case "missing":
 			color.Set(color.FgRed)
-			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), rdf.NewResourceType(n.Type()).String(), n.ID())
+			fmt.Fprintf(os.Stdout, "-%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
 			color.Unset()
 		default:
-			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), rdf.NewResourceType(n.Type()).String(), n.ID())
+			fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
 		}
 	})
 }
 
-func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table, error) {
+func tableFromDiff(diff *graph.Diff, rootNode *node.Node, service string) (*Table, error) {
 	table := NewTable([]*PropertyDisplayer{
 		{Property: "Type", DontTruncate: true},
 		{Property: "Name/Id", DontTruncate: true},
@@ -60,25 +64,25 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 	})
 	table.MergeIdenticalCells = true
 
-	err := diff.FullGraph().VisitDepthFirstUnique(rootNode, func(g *rdf.Graph, n *node.Node, distance int) error {
+	err := diff.FullGraph().VisitUnique(rootNode, func(g *graph.Graph, n *node.Node, distance int) error {
 		var lit *literal.Literal
-		diffTriples, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
+		diffTriples, err := g.TriplesInDiff(n)
 		if len(diffTriples) > 0 && err == nil {
 			lit, _ = diffTriples[0].Object().Literal()
 		}
-		nCommon, nInserted, nDeleted := cloud.InitFromRdfNode(n), cloud.InitFromRdfNode(n), cloud.InitFromRdfNode(n)
+		nCommon, nInserted, nDeleted := graph.InitFromRdfNode(n), graph.InitFromRdfNode(n), graph.InitFromRdfNode(n)
 
-		err = nCommon.UnmarshalFromGraph(diff.CommonGraph())
+		err = nCommon.UnmarshalFromGraph(&graph.Graph{diff.CommonGraph()})
 		if err != nil {
 			return err
 		}
 
-		err = nInserted.UnmarshalFromGraph(diff.InsertedGraph())
+		err = nInserted.UnmarshalFromGraph(&graph.Graph{diff.InsertedGraph()})
 		if err != nil {
 			return err
 		}
 
-		err = nDeleted.UnmarshalFromGraph(diff.DeletedGraph())
+		err = nDeleted.UnmarshalFromGraph(&graph.Graph{diff.DeletedGraph()})
 		if err != nil {
 			return err
 		}
@@ -86,15 +90,20 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 		var displayProperties, propsChanges, rNew bool
 		var rName string
 
-		switch lit {
-		case rdf.ExtraLiteral:
+		var litString string
+		if lit != nil {
+			litString, _ = lit.Text()
+		}
+
+		switch litString {
+		case "extra":
 			displayProperties = true
 			rNew = true
 			rName = nameOrID(nInserted)
-		case rdf.MissingLiteral:
+		case "missing":
 			rName = nameOrID(nDeleted)
 			table.AddRow(
-				rdf.NewResourceType(n.Type()).String(),
+				graph.NewResourceType(n.Type()).String(),
 				color.New(color.FgRed).SprintFunc()("- "+rName),
 			)
 		default:
@@ -108,7 +117,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 			}
 		}
 		if !propsChanges && rNew {
-			table.AddRow(rdf.NewResourceType(n.Type()).String(), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
+			table.AddRow(graph.NewResourceType(n.Type()).String(), color.New(color.FgGreen).SprintFunc()("+ "+n.ID().String()))
 		}
 		return nil
 	})
@@ -120,7 +129,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 	return table, nil
 }
 
-func addDiffProperties(table *Table, service string, rType rdf.ResourceType, rName string, rNew bool, insertedProps, deletedProps cloud.Properties) (bool, error) {
+func addDiffProperties(table *Table, service string, rType graph.ResourceType, rName string, rNew bool, insertedProps, deletedProps graph.Properties) (bool, error) {
 	visitedInsertedProp, visitedDeletedProp := make(map[string]bool), make(map[string]bool)
 	changes := false
 
@@ -196,7 +205,7 @@ func addDiffProperties(table *Table, service string, rType rdf.ResourceType, rNa
 	return changes, nil
 }
 
-func addDiffProperty(table *Table, name, visitedName, value, resourceID string, resourceType rdf.ResourceType, rNew bool, visited map[string]bool) {
+func addDiffProperty(table *Table, name, visitedName, value, resourceID string, resourceType graph.ResourceType, rNew bool, visited map[string]bool) {
 	visited[visitedName] = true
 	resourceDisplayF := fmt.Sprint
 	if rNew {

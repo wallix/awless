@@ -3,7 +3,8 @@ package revision
 import (
 	"time"
 
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
+
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
@@ -64,8 +65,8 @@ func generateRevisionPairs(revisions []*Revision, param fetchParameter) []*revis
 	return res
 }
 
-func (rr *Repository) revisionToRDFGraph(revision *Revision, files ...string) (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (rr *Repository) revisionToRDFGraph(revision *Revision, files ...string) (*graph.Graph, error) {
+	g := graph.NewGraph()
 	if revision == initRevision {
 		return g, nil
 	}

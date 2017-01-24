@@ -1,4 +1,4 @@
-package cloud
+package graph
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph/internal/rdf"
 )
 
 type Properties map[string]interface{}

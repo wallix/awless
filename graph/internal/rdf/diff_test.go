@@ -228,7 +228,8 @@ func TestDiffBuildFromGraph(t *testing.T) {
 	local.Add(noErrLiteralTriple(four, HasTypePredicate, literalB))
 	local.Add(noErrLiteralTriple(five, HasTypePredicate, literalB))
 
-	d := NewEmptyDiffFromGraph(local)
+	d := NewDiff(local)
+
 	if got, want := d.FullGraph().MustMarshal(), local.MustMarshal(); got != want {
 		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
 	}

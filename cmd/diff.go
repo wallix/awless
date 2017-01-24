@@ -12,7 +12,7 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
 var diffProperties bool
@@ -58,7 +58,7 @@ var diffCmd = &cobra.Command{
 
 		region := database.MustGetDefaultRegion()
 
-		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
+		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
 		exitOn(err)
 
 		localInfra, err := config.LoadInfraGraph()
@@ -67,7 +67,7 @@ var diffCmd = &cobra.Command{
 		remoteInfra, err := aws.BuildAwsInfraGraph(region, awsInfra)
 		exitOn(err)
 
-		infraDiff, err := rdf.DefaultDiffer.Run(root, localInfra, remoteInfra)
+		infraDiff, err := graph.DefaultDiffer.Run(root, localInfra.Graph, remoteInfra.Graph)
 		exitOn(err)
 
 		localAccess, err := config.LoadAccessGraph()
@@ -76,7 +76,7 @@ var diffCmd = &cobra.Command{
 		remoteAccess, err := aws.BuildAwsAccessGraph(region, awsAccess)
 		exitOn(err)
 
-		accessDiff, err := rdf.DefaultDiffer.Run(root, localAccess, remoteAccess)
+		accessDiff, err := graph.DefaultDiffer.Run(root, localAccess.Graph, remoteAccess.Graph)
 		exitOn(err)
 
 		var hasDiff bool
@@ -84,26 +84,26 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println("------ ACCESS ------")
-				display.FullDiff(accessDiff, root, aws.AccessServiceName)
+				display.FullDiff(&graph.Diff{accessDiff}, root, aws.AccessServiceName)
 			}
 			if infraDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				display.FullDiff(infraDiff, root, aws.InfraServiceName)
+				display.FullDiff(&graph.Diff{infraDiff}, root, aws.InfraServiceName)
 			}
 		} else {
 			if accessDiff.HasResourceDiff() {
 				hasDiff = true
 				fmt.Println("------ ACCESS ------")
-				display.ResourceDiff(accessDiff, root)
+				display.ResourceDiff(&graph.Diff{accessDiff}, root)
 			}
 
 			if infraDiff.HasResourceDiff() {
 				hasDiff = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				display.ResourceDiff(infraDiff, root)
+				display.ResourceDiff(&graph.Diff{infraDiff}, root)
 			}
 		}
 		if hasDiff {

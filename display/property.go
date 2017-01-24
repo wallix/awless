@@ -6,9 +6,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
 const truncateSize = 25
@@ -18,8 +17,8 @@ var (
 	PropertiesDisplayer = AwlessResourcesDisplayer{
 		Services: map[string]*ServiceDisplayer{
 			aws.InfraServiceName: &ServiceDisplayer{
-				Resources: map[rdf.ResourceType]*RDisplayer{
-					rdf.Instance: &RDisplayer{
+				Resources: map[graph.ResourceType]*RDisplayer{
+					graph.Instance: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Tags[].Name", Label: "Name"},
@@ -29,7 +28,7 @@ var (
 							{Property: "PublicIp", Label: "Public Ip"},
 						},
 					},
-					rdf.Vpc: &RDisplayer{
+					graph.Vpc: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "IsDefault", Label: "Default", ColoredValues: map[string]string{"true": "green"}},
@@ -37,7 +36,7 @@ var (
 							{Property: "CidrBlock"},
 						},
 					},
-					rdf.Subnet: &RDisplayer{
+					graph.Subnet: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "MapPublicIpOnLaunch", Label: "Public VMs", ColoredValues: map[string]string{"true": "yellow"}},
@@ -48,8 +47,8 @@ var (
 				},
 			},
 			aws.AccessServiceName: &ServiceDisplayer{
-				Resources: map[rdf.ResourceType]*RDisplayer{
-					rdf.User: &RDisplayer{
+				Resources: map[graph.ResourceType]*RDisplayer{
+					graph.User: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -58,7 +57,7 @@ var (
 							{Property: "PasswordLastUsed"},
 						},
 					},
-					rdf.Role: &RDisplayer{
+					graph.Role: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -67,7 +66,7 @@ var (
 							{Property: "Path"},
 						},
 					},
-					rdf.Policy: &RDisplayer{
+					graph.Policy: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -79,7 +78,7 @@ var (
 							{Property: "Path"},
 						},
 					},
-					rdf.Group: &RDisplayer{
+					graph.Group: &RDisplayer{
 						Properties: []*PropertyDisplayer{
 							{Property: "Id"},
 							{Property: "Name"},
@@ -101,7 +100,7 @@ type AwlessResourcesDisplayer struct {
 
 // ServiceDisplayer contains how to display the resources of a cloud service
 type ServiceDisplayer struct {
-	Resources map[rdf.ResourceType]*RDisplayer
+	Resources map[graph.ResourceType]*RDisplayer
 }
 
 // RDisplayer contains how to display the properties of a cloud resource
@@ -150,7 +149,7 @@ func (p *PropertyDisplayer) displayForceColor(value string, c color.Attribute) s
 	return color.New(c).SprintFunc()(value)
 }
 
-func (p *PropertyDisplayer) propertyValue(properties cloud.Properties) string {
+func (p *PropertyDisplayer) propertyValue(properties graph.Properties) string {
 	var res string
 	if s := strings.SplitN(p.Property, "[].", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
@@ -215,7 +214,7 @@ func (p *PropertyDisplayer) firstLevelProperty() string {
 	return p.Property
 }
 
-func nameOrID(res *cloud.Resource) string {
+func nameOrID(res *graph.Resource) string {
 	if name, ok := res.Properties()["Name"]; ok && name != "" {
 		return fmt.Sprint(name)
 	}

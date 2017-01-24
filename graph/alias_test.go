@@ -1,13 +1,11 @@
-package alias
+package graph
 
 import (
 	"testing"
-
-	"github.com/wallix/awless/rdf"
 )
 
 func TestResourceNameToId(t *testing.T) {
-	g := rdf.NewGraph()
+	g := NewGraph()
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
@@ -24,14 +22,14 @@ func TestResourceNameToId(t *testing.T) {
 
 	tcases := []struct {
 		name         string
-		resourceType rdf.ResourceType
+		resourceType ResourceType
 		expectID     string
 		ok           bool
 	}{
-		{name: "redis", resourceType: rdf.Instance, expectID: "inst_1", ok: true},
-		{name: "redis2", resourceType: rdf.Instance, expectID: "inst_2", ok: true},
-		{name: "mongo", resourceType: rdf.Instance, expectID: "inst_3", ok: true},
-		{name: "mongo", resourceType: rdf.Subnet, expectID: "subnet_1", ok: true},
+		{name: "redis", resourceType: Instance, expectID: "inst_1", ok: true},
+		{name: "redis2", resourceType: Instance, expectID: "inst_2", ok: true},
+		{name: "mongo", resourceType: Instance, expectID: "inst_3", ok: true},
+		{name: "mongo", resourceType: Subnet, expectID: "subnet_1", ok: true},
 		{name: "nothere", expectID: "", ok: false},
 	}
 	for _, tcase := range tcases {

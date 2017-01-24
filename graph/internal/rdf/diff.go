@@ -47,7 +47,7 @@ func (d *Diff) HasDiff(forceUpdate ...bool) bool {
 	return d.HasResourceDiff(forceUpdate...) || len(d.Inserted()) != 0 || len(d.Deleted()) != 0
 }
 
-func NewEmptyDiffFromGraph(g *Graph) *Diff {
+func NewDiff(g *Graph) *Diff {
 	d := Diff{
 		graph:           g,
 		deletedTriples:  make(map[string]*triple.Triple),

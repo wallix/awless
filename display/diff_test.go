@@ -7,11 +7,24 @@ import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
+	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
+var parentOfPredicate *predicate.Predicate
+
+func init() {
+	var err error
+
+	parentOfPredicate, err = predicate.NewImmutable("parent_of")
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestDisplayCommit(t *testing.T) {
+	g := graph.NewGraph()
 	t0 := parseTriple(`/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`)
 	t1 := parseTriple(`/instance<inst_1>	"has_type"@[]	"/instance"^^type:text`)
 	t2 := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"inst_1"}"^^type:text`)
@@ -21,12 +34,15 @@ func TestDisplayCommit(t *testing.T) {
 	t6 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /vpc<vpc_1>`)
 	t7 := parseTriple(`/vpc<vpc_1>  "parent_of"@[] /instance<inst_1>`)
 	t7bis := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Deleted","Value":"del_1"}"^^type:text`)
-	graph := rdf.NewGraphFromTriples([]*triple.Triple{t0, t1, t2, t3, t4, t5, t6, t7, t7bis})
-	diff := rdf.NewEmptyDiffFromGraph(graph)
-	diff.AddDeleted(t2, rdf.ParentOfPredicate)
-	diff.AddDeleted(t3, rdf.ParentOfPredicate)
-	diff.AddDeleted(t5, rdf.ParentOfPredicate)
-	diff.AddDeleted(t7bis, rdf.ParentOfPredicate)
+
+	g.Add(t0, t1, t2, t3, t4, t5, t6, t7, t7bis)
+
+	diff := graph.NewDiff(g)
+
+	diff.AddDeleted(t2, parentOfPredicate)
+	diff.AddDeleted(t3, parentOfPredicate)
+	diff.AddDeleted(t5, parentOfPredicate)
+	diff.AddDeleted(t7bis, parentOfPredicate)
 	t8 := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"new_id"}"^^type:text`)
 	t9 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_3>`)
 	t10 := parseTriple(`/instance<inst_3>	"has_type"@[]	"/instance"^^type:text`)
@@ -38,19 +54,19 @@ func TestDisplayCommit(t *testing.T) {
 	t16 := parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`)
 	t17 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /subnet<test_1>`)
 	t18 := parseTriple(`/subnet<test_1>	"property"@[]	"{"Key":"prop","Value":"val"}"^^type:text`)
-	diff.AddInserted(t8, rdf.ParentOfPredicate)
-	diff.AddInserted(t9, rdf.ParentOfPredicate)
-	diff.AddInserted(t10, rdf.ParentOfPredicate)
-	diff.AddInserted(t11, rdf.ParentOfPredicate)
-	diff.AddInserted(t12, rdf.ParentOfPredicate)
-	diff.AddInserted(t13, rdf.ParentOfPredicate)
-	diff.AddInserted(t14, rdf.ParentOfPredicate)
-	diff.AddInserted(t15, rdf.ParentOfPredicate)
-	diff.AddInserted(t16, rdf.ParentOfPredicate)
-	diff.AddInserted(t17, rdf.ParentOfPredicate)
-	diff.AddInserted(t18, rdf.ParentOfPredicate)
+	diff.AddInserted(t8, parentOfPredicate)
+	diff.AddInserted(t9, parentOfPredicate)
+	diff.AddInserted(t10, parentOfPredicate)
+	diff.AddInserted(t11, parentOfPredicate)
+	diff.AddInserted(t12, parentOfPredicate)
+	diff.AddInserted(t13, parentOfPredicate)
+	diff.AddInserted(t14, parentOfPredicate)
+	diff.AddInserted(t15, parentOfPredicate)
+	diff.AddInserted(t16, parentOfPredicate)
+	diff.AddInserted(t17, parentOfPredicate)
+	diff.AddInserted(t18, parentOfPredicate)
 
-	rootNode, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), "eu-west-1")
+	rootNode, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), "eu-west-1")
 	if err != nil {
 		t.Fatal(err)
 	}

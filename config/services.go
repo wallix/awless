@@ -3,14 +3,14 @@ package config
 import (
 	"path/filepath"
 
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
-func LoadInfraGraph() (*rdf.Graph, error) {
+func LoadInfraGraph() (*graph.Graph, error) {
 	var err error
-	infra := rdf.NewGraph()
+	infra := graph.NewGraph()
 	if !AwlessFirstSync {
-		infra, err = rdf.NewGraphFromFile(filepath.Join(RepoDir, InfraFilename))
+		infra, err = graph.NewGraphFromFile(filepath.Join(RepoDir, InfraFilename))
 		if err != nil {
 			return infra, err
 		}
@@ -18,11 +18,11 @@ func LoadInfraGraph() (*rdf.Graph, error) {
 	return infra, nil
 }
 
-func LoadAccessGraph() (*rdf.Graph, error) {
+func LoadAccessGraph() (*graph.Graph, error) {
 	var err error
-	access := rdf.NewGraph()
+	access := graph.NewGraph()
 	if !AwlessFirstSync {
-		access, err = rdf.NewGraphFromFile(filepath.Join(RepoDir, AccessFilename))
+		access, err = graph.NewGraphFromFile(filepath.Join(RepoDir, AccessFilename))
 		if err != nil {
 			return access, err
 		}

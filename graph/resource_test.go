@@ -1,4 +1,4 @@
-package cloud
+package graph
 
 import (
 	"reflect"
@@ -6,13 +6,12 @@ import (
 	"time"
 
 	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/rdf"
 )
 
 func TestUnmarshalResource(t *testing.T) {
-	res := InitResource("inst_1", rdf.Instance)
+	res := InitResource("inst_1", Instance)
 
-	g := rdf.NewGraph()
+	g := NewGraph()
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Tags","Value":[{"Key":"Name","Value":"redis"}]}"^^type:text
@@ -33,7 +32,7 @@ func TestUnmarshalResource(t *testing.T) {
 		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
 	}
 
-	node, err := node.NewNodeFromStrings(rdf.Instance.ToRDFString(), "inst_1")
+	node, err := node.NewNodeFromStrings(Instance.ToRDFString(), "inst_1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +44,7 @@ func TestUnmarshalResource(t *testing.T) {
 }
 
 func TestLoadResources(t *testing.T) {
-	g := rdf.NewGraph()
+	g := NewGraph()
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
@@ -62,11 +61,11 @@ func TestLoadResources(t *testing.T) {
 	time, _ := time.Parse(time.RFC3339, "2017-01-10T16:47:18Z")
 
 	expected := []*Resource{
-		{kind: rdf.Instance, id: "inst_1", properties: Properties{"Id": "inst_1", "Name": "redis"}},
-		{kind: rdf.Instance, id: "inst_2", properties: Properties{"Id": "inst_2", "Name": "redis2"}},
-		{kind: rdf.Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
+		{kind: Instance, id: "inst_1", properties: Properties{"Id": "inst_1", "Name": "redis"}},
+		{kind: Instance, id: "inst_2", properties: Properties{"Id": "inst_2", "Name": "redis2"}},
+		{kind: Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
 	}
-	res, err := LoadResourcesFromGraph(g, rdf.Instance)
+	res, err := LoadResourcesFromGraph(g, Instance)
 	if err != nil {
 		t.Fatal(err)
 	}

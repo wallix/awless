@@ -2,11 +2,11 @@ package display
 
 import (
 	"github.com/fatih/color"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
-var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
-	rdf.Instance: []ColumnDefinition{
+var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
+	graph.Instance: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "SubnetId"},
 		StringColumnDefinition{Prop: "Name"},
@@ -19,7 +19,7 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime"}},
 	},
-	rdf.Vpc: []ColumnDefinition{
+	graph.Vpc: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
@@ -29,7 +29,7 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "CidrBlock"},
 	},
-	rdf.Subnet: []ColumnDefinition{
+	graph.Subnet: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Name"},
@@ -41,26 +41,26 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
 		StringColumnDefinition{Prop: "CidrBlock"},
 	},
-	rdf.SecurityGroup: []ColumnDefinition{
+	graph.SecurityGroup: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Name", DontTruncate: true},
 	},
-	rdf.User: []ColumnDefinition{
+	graph.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "Arn"},
 		StringColumnDefinition{Prop: "Path"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate", Friendly: "PasswordLastUsed"}},
 	},
-	rdf.Role: []ColumnDefinition{
+	graph.Role: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "Arn"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 		StringColumnDefinition{Prop: "Path"},
 	},
-	rdf.Policy: []ColumnDefinition{
+	graph.Policy: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "Arn"},
@@ -68,7 +68,7 @@ var DefaultsColumnDefinitions = map[rdf.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "UpdateDate"}},
 		StringColumnDefinition{Prop: "Path"},
 	},
-	rdf.Group: []ColumnDefinition{
+	graph.Group: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "Arn"},

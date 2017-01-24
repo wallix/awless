@@ -12,7 +12,7 @@ var (
 func init() {
 	var err error
 
-	if RegionLiteral, err = literal.DefaultBuilder().Build(literal.Text, Region.ToRDFString()); err != nil {
+	if RegionLiteral, err = literal.DefaultBuilder().Build(literal.Text, "/region"); err != nil {
 		panic(err)
 	}
 	if ExtraLiteral, err = literal.DefaultBuilder().Build(literal.Text, "extra"); err != nil {
@@ -21,7 +21,7 @@ func init() {
 	if MissingLiteral, err = literal.DefaultBuilder().Build(literal.Text, "missing"); err != nil {
 		panic(err)
 	}
-	if InstanceLiteral, err = literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFString()); err != nil {
+	if InstanceLiteral, err = literal.DefaultBuilder().Build(literal.Text, "/instance"); err != nil {
 		panic(err)
 	}
 }

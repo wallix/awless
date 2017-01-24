@@ -10,7 +10,7 @@ import (
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/revision/repo"
 )
 
@@ -38,7 +38,7 @@ var historyCmd = &cobra.Command{
 		all, err := rep.List()
 		exitOn(err)
 
-		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), database.MustGetDefaultRegion())
+		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), database.MustGetDefaultRegion())
 		if err != nil {
 			return err
 		}
@@ -85,40 +85,47 @@ var historyCmd = &cobra.Command{
 func compareRev(root *node.Node, revs revPair) {
 	rev1, rev2 := revs[0], revs[1]
 
-	infraDiff, err := rdf.NewHierarchicalDiffer().Run(root, rev1.Infra, rev2.Infra)
+	infraDiff, err := graph.HierarchicalDiffer.Run(root, rev1.Infra.Graph, rev2.Infra.Graph)
 	exitOn(err)
 
-	accessDiff, err := rdf.NewHierarchicalDiffer().Run(root, rev1.Access, rev2.Access)
+	accessDiff, err := graph.HierarchicalDiffer.Run(root, rev1.Access.Graph, rev2.Access.Graph)
 	exitOn(err)
 
 	if infraDiff.HasDiff() || accessDiff.HasDiff() {
 		fmt.Println(fmt.Sprintf("FROM [%s] TO [%s]", rev1.DateString(), rev2.DateString()))
 		if infraDiff.HasDiff() {
 			fmt.Println("INFRA:")
-			infraDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
+			g := &graph.Graph{infraDiff.FullGraph()}
+			g.Visit(root, printWithDiff)
 		}
 		if accessDiff.HasDiff() {
 			fmt.Println()
 			fmt.Println("ACCESS:")
-			accessDiff.FullGraph().VisitDepthFirst(root, printWithDiff)
+			g := &graph.Graph{accessDiff.FullGraph()}
+			g.Visit(root, printWithDiff)
 		}
 		fmt.Println()
 	}
 }
 
-func printWithDiff(g *rdf.Graph, n *node.Node, distance int) {
+func printWithDiff(g *graph.Graph, n *node.Node, distance int) {
 	var lit *literal.Literal
-	diff, err := g.TriplesForSubjectPredicate(n, rdf.DiffPredicate)
+	diff, err := g.TriplesInDiff(n)
 	if len(diff) > 0 && err == nil {
 		lit, _ = diff[0].Object().Literal()
 	}
 
-	switch lit {
-	case rdf.ExtraLiteral:
+	var litString string
+	if lit != nil {
+		litString, _ = lit.Text()
+	}
+
+	switch litString {
+	case "extra":
 		color.Set(color.FgRed)
 		fmt.Fprintf(os.Stdout, "\t%s, %s\n", n.Type(), n.ID())
 		color.Unset()
-	case rdf.MissingLiteral:
+	case "missing":
 		color.Set(color.FgGreen)
 		fmt.Fprintf(os.Stdout, "\t%s, %s\n", n.Type(), n.ID())
 		color.Unset()

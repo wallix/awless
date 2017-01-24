@@ -13,7 +13,7 @@ import (
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/revision/repo"
 )
 
@@ -35,7 +35,7 @@ var syncCmd = &cobra.Command{
 		}
 
 		if verboseFlag {
-			printWithTabs := func(g *rdf.Graph, n *node.Node, distance int) {
+			printWithTabs := func(g *graph.Graph, n *node.Node, distance int) {
 				var tabs bytes.Buffer
 				for i := 0; i < distance; i++ {
 					tabs.WriteByte('\t')
@@ -48,15 +48,15 @@ var syncCmd = &cobra.Command{
 				return err
 			}
 
-			infrag.VisitDepthFirst(root, printWithTabs)
-			accessg.VisitDepthFirst(root, printWithTabs)
+			infrag.Visit(root, printWithTabs)
+			accessg.Visit(root, printWithTabs)
 		}
 
 		return nil
 	},
 }
 
-func performSync(region string) (*rdf.Graph, *rdf.Graph, error) {
+func performSync(region string) (*graph.Graph, *graph.Graph, error) {
 	var awsInfra *aws.AwsInfra
 	var awsAccess *aws.AwsAccess
 

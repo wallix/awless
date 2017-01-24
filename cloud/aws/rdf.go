@@ -7,10 +7,9 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/shell"
 )
 
@@ -18,16 +17,16 @@ var ErrInstanceNotFound = errors.New("Unknown instance")
 var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
 
-func (inf *Infra) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
+func (inf *Infra) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
 	return cloud.FetchRDFResources(inf, resourceType)
 }
 
-func (access *Access) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
+func (access *Access) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
 	return cloud.FetchRDFResources(access, resourceType)
 }
 
-func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (inf *Infra) InstancesGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	instances, err := inf.Instances()
 	if err != nil {
 		return nil, err
@@ -42,8 +41,8 @@ func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (inf *Infra) VpcsGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (inf *Infra) VpcsGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := inf.Vpcs()
 	if err != nil {
 		return nil, err
@@ -56,8 +55,8 @@ func (inf *Infra) VpcsGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (inf *Infra) SubnetsGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (inf *Infra) SubnetsGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := inf.Subnets()
 	if err != nil {
 		return nil, err
@@ -70,8 +69,8 @@ func (inf *Infra) SubnetsGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (inf *Infra) SecuritygroupsGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (inf *Infra) SecuritygroupsGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := inf.SecurityGroups()
 	if err != nil {
 		return nil, err
@@ -84,8 +83,8 @@ func (inf *Infra) SecuritygroupsGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (access *Access) UsersGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (access *Access) UsersGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := access.Users()
 	if err != nil {
 		return nil, err
@@ -98,8 +97,8 @@ func (access *Access) UsersGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (access *Access) RolesGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (access *Access) RolesGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := access.Roles()
 	if err != nil {
 		return nil, err
@@ -112,8 +111,8 @@ func (access *Access) RolesGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (access *Access) GroupsGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (access *Access) GroupsGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := access.Groups()
 	if err != nil {
 		return nil, err
@@ -126,8 +125,8 @@ func (access *Access) GroupsGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func (access *Access) PoliciesGraph() (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func (access *Access) PoliciesGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
 	out, err := access.LocalPolicies()
 	if err != nil {
 		return nil, err
@@ -140,15 +139,15 @@ func (access *Access) PoliciesGraph() (*rdf.Graph, error) {
 	return g, nil
 }
 
-func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
-	g := rdf.NewGraph()
+func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error) {
+	g := graph.NewGraph()
 
-	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
+	regionN, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
 	if err != nil {
 		return g, err
 	}
 
-	t, err := triple.New(regionN, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.RegionLiteral))
+	t, err := graph.NewRegionTypeTriple(regionN)
 	if err != nil {
 		return g, err
 	}
@@ -169,7 +168,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if err != nil {
 			return g, err
 		}
-		t, err = triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+		t, err = graph.NewParentOfTriple(regionN, n)
 		if err != nil {
 			return g, err
 		}
@@ -193,7 +192,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if err != nil {
 			return g, err
 		}
-		t, err = triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+		t, err = graph.NewParentOfTriple(regionN, n)
 		if err != nil {
 			return g, err
 		}
@@ -204,7 +203,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if policies, ok := access.GroupPolicies[res.Id()]; ok {
 			for _, policy := range policies {
 				if policyNode, present := policiesIndex[policy]; present {
-					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					t, err = graph.NewParentOfTriple(policyNode, n)
 					if err != nil {
 						return g, err
 					}
@@ -228,7 +227,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if err != nil {
 			return g, err
 		}
-		t, err = triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+		t, err = graph.NewParentOfTriple(regionN, n)
 		if err != nil {
 			return g, err
 		}
@@ -237,7 +236,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if groupIds, ok := access.UserGroups[res.Id()]; ok {
 			for _, groupId := range groupIds {
 				if groupNode, present := groupsIndex[groupId]; present {
-					t, err = triple.New(groupNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					t, err = graph.NewParentOfTriple(groupNode, n)
 					if err != nil {
 						return g, err
 					}
@@ -249,7 +248,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if policies, ok := access.UserPolicies[res.Id()]; ok {
 			for _, policy := range policies {
 				if policyNode, present := policiesIndex[policy]; present {
-					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					t, err = graph.NewParentOfTriple(policyNode, n)
 					if err != nil {
 						return g, err
 					}
@@ -273,7 +272,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if err != nil {
 			return g, err
 		}
-		t, err = triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+		t, err = graph.NewParentOfTriple(regionN, n)
 		if err != nil {
 			return g, err
 		}
@@ -282,7 +281,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		if policies, ok := access.RolePolicies[res.Id()]; ok {
 			for _, policy := range policies {
 				if policyNode, present := policiesIndex[policy]; present {
-					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+					t, err = graph.NewParentOfTriple(policyNode, n)
 					if err != nil {
 						return g, err
 					}
@@ -295,16 +294,16 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 	return g, nil
 }
 
-func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err error) {
-	g = rdf.NewGraph()
+func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err error) {
+	g = graph.NewGraph()
 	var vpcNodes, subnetNodes, secGroupNodes []*node.Node
 
-	regionN, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
+	regionN, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
 	if err != nil {
 		return g, err
 	}
 
-	t, err := triple.New(regionN, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.RegionLiteral))
+	t, err := graph.NewRegionTypeTriple(regionN)
 	if err != nil {
 		return g, err
 	}
@@ -325,7 +324,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			return g, err
 		}
 		vpcNodes = append(vpcNodes, n)
-		t, err := triple.New(regionN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+		t, err := graph.NewParentOfTriple(regionN, n)
 		if err != nil {
 			return g, fmt.Errorf("region %s", err)
 		}
@@ -351,7 +350,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 
 		vpcN := findNodeById(vpcNodes, awssdk.StringValue(subnet.VpcId))
 		if vpcN != nil {
-			t, err := triple.New(vpcN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+			t, err := graph.NewParentOfTriple(vpcN, n)
 			if err != nil {
 				return g, fmt.Errorf("vpc %s", err)
 			}
@@ -378,7 +377,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 
 		vpcN := findNodeById(vpcNodes, awssdk.StringValue(secgroup.VpcId))
 		if vpcN != nil {
-			t, err := triple.New(vpcN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+			t, err := graph.NewParentOfTriple(vpcN, n)
 			if err != nil {
 				return g, fmt.Errorf("vpc %s", err)
 			}
@@ -404,7 +403,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 		subnetN := findNodeById(subnetNodes, awssdk.StringValue(instance.SubnetId))
 
 		if subnetN != nil {
-			t, err := triple.New(subnetN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+			t, err := graph.NewParentOfTriple(subnetN, n)
 			if err != nil {
 				return g, fmt.Errorf("instances subnet %s", err)
 			}
@@ -415,7 +414,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			secGroupN := findNodeById(secGroupNodes, awssdk.StringValue(refSecGroup.GroupId))
 
 			if secGroupN != nil {
-				t, err := triple.New(secGroupN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+				t, err := graph.NewParentOfTriple(secGroupN, n)
 				if err != nil {
 					return g, fmt.Errorf("instances security groups %s", err)
 				}
@@ -428,14 +427,14 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 	return g, nil
 }
 
-func InstanceCredentialsFromGraph(graph *rdf.Graph, instanceID string) (*shell.Credentials, error) {
-	inst := cloud.InitResource(instanceID, rdf.Instance)
-	err := inst.UnmarshalFromGraph(graph)
+func InstanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Credentials, error) {
+	inst := graph.InitResource(instanceID, graph.Instance)
+	err := inst.UnmarshalFromGraph(g)
 	if err != nil {
 		return nil, err
 	}
 
-	if !inst.ExistsInGraph(graph) {
+	if !inst.ExistsInGraph(g) {
 		return nil, ErrInstanceNotFound
 	}
 

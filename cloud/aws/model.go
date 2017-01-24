@@ -7,7 +7,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
 type propertyTransform struct {
@@ -59,8 +59,8 @@ var extractTagFn = func(key string) transformFn {
 	}
 }
 
-var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
-	rdf.Instance: {
+var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
+	graph.Instance: {
 		"Id":         {name: "InstanceId", transform: extractValueFn},
 		"Name":       {name: "Tags", transform: extractTagFn("Name")},
 		"Type":       {name: "InstanceType", transform: extractValueFn},
@@ -73,14 +73,14 @@ var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
 		"State":      {name: "State", transform: extractFieldFn("Name")},
 		"KeyName":    {name: "KeyName", transform: extractValueFn},
 	},
-	rdf.Vpc: {
+	graph.Vpc: {
 		"Id":        {name: "VpcId", transform: extractValueFn},
 		"Name":      {name: "Tags", transform: extractTagFn("Name")},
 		"IsDefault": {name: "IsDefault", transform: extractValueFn},
 		"State":     {name: "State", transform: extractValueFn},
 		"CidrBlock": {name: "CidrBlock", transform: extractValueFn},
 	},
-	rdf.Subnet: {
+	graph.Subnet: {
 		"Id":                  {name: "SubnetId", transform: extractValueFn},
 		"Name":                {name: "Tags", transform: extractTagFn("Name")},
 		"VpcId":               {name: "VpcId", transform: extractValueFn},
@@ -88,34 +88,34 @@ var awsResourcesDef = map[rdf.ResourceType]map[string]*propertyTransform{
 		"State":               {name: "State", transform: extractValueFn},
 		"CidrBlock":           {name: "CidrBlock", transform: extractValueFn},
 	},
-	rdf.SecurityGroup: {
+	graph.SecurityGroup: {
 		"Id":      {name: "GroupId", transform: extractValueFn},
 		"Name":    {name: "GroupName", transform: extractValueFn},
 		"OwnerId": {name: "OwnerId", transform: extractValueFn},
 		"VpcId":   {name: "VpcId", transform: extractValueFn},
 	},
-	rdf.User: {
+	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
 		"Name":                 {name: "UserName", transform: extractValueFn},
 		"Arn":                  {name: "Arn", transform: extractValueFn},
 		"Path":                 {name: "Path", transform: extractValueFn},
 		"PasswordLastUsedDate": {name: "PasswordLastUsed", transform: extractValueFn},
 	},
-	rdf.Role: {
+	graph.Role: {
 		"Id":         {name: "RoleId", transform: extractValueFn},
 		"Name":       {name: "RoleName", transform: extractValueFn},
 		"Arn":        {name: "Arn", transform: extractValueFn},
 		"CreateDate": {name: "CreateDate", transform: extractValueFn},
 		"Path":       {name: "Path", transform: extractValueFn},
 	},
-	rdf.Group: {
+	graph.Group: {
 		"Id":         {name: "GroupId", transform: extractValueFn},
 		"Name":       {name: "GroupName", transform: extractValueFn},
 		"Arn":        {name: "Arn", transform: extractValueFn},
 		"CreateDate": {name: "CreateDate", transform: extractValueFn},
 		"Path":       {name: "Path", transform: extractValueFn},
 	},
-	rdf.Policy: {
+	graph.Policy: {
 		"Id":           {name: "PolicyId", transform: extractValueFn},
 		"Name":         {name: "PolicyName", transform: extractValueFn},
 		"Arn":          {name: "Arn", transform: extractValueFn},

@@ -10,11 +10,10 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/alias"
 	awscloud "github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver/aws"
@@ -183,8 +182,8 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 		} else {
 			t = strings.Split(k, ".")[1]
 		}
-		rT := rdf.ResourceType(t)
-		a := alias.Alias(v)
+		rT := graph.ResourceType(t)
+		a := graph.Alias(v)
 		if id, ok := a.ResolveToId(infra, rT); ok {
 			expr.Params[k] = id
 		} else if id, ok := a.ResolveToId(access, rT); ok {

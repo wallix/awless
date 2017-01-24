@@ -8,10 +8,9 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/alias"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/shell"
 )
 
@@ -40,8 +39,8 @@ var sshCmd = &cobra.Command{
 		instancesGraph, err := aws.InfraService.InstancesGraph()
 		exitOn(err)
 
-		a := alias.Alias(instanceID)
-		if id, ok := a.ResolveToId(instancesGraph, rdf.Instance); ok {
+		a := graph.Alias(instanceID)
+		if id, ok := a.ResolveToId(instancesGraph, graph.Instance); ok {
 			instanceID = id
 		}
 

@@ -1,7 +1,7 @@
 package cloud
 
-import "github.com/wallix/awless/rdf"
+import "github.com/wallix/awless/graph"
 
 type Service interface {
-	FetchRDFResources(rdf.ResourceType) (*rdf.Graph, error)
+	FetchRDFResources(graph.ResourceType) (*graph.Graph, error)
 }

@@ -2,14 +2,14 @@ package revision
 
 import (
 	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
 // Diff represents the deleted/inserted RDF triples of a revision
 type Diff struct {
 	From      *Revision
 	To        *Revision
-	GraphDiff *rdf.Diff
+	GraphDiff *graph.Diff
 }
 
 func (rr *Repository) newDiff(from, to *Revision, root *node.Node, forFiles []string) (*Diff, error) {
@@ -21,7 +21,7 @@ func (rr *Repository) newDiff(from, to *Revision, root *node.Node, forFiles []st
 	if err != nil {
 		return nil, err
 	}
-	diff, err := rdf.DefaultDiffer.Run(root, toG, fromG)
+	diff, err := graph.DefaultDiffer.Run(root, toG.Graph, fromG.Graph)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (rr *Repository) newDiff(from, to *Revision, root *node.Node, forFiles []st
 	res := &Diff{
 		From:      from,
 		To:        to,
-		GraphDiff: diff,
+		GraphDiff: &graph.Diff{diff},
 	}
 
 	return res, nil

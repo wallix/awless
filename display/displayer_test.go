@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/fatih/color"
-	"github.com/wallix/awless/rdf"
+	"github.com/wallix/awless/graph"
 )
 
 func init() {
@@ -24,7 +24,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -43,7 +43,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithFormat("csv"),
 		WithSortBy("Name"),
 	).SetSource(g).Build()
@@ -75,7 +75,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 	).SetSource(g).Build()
 
 	expected = `+--------+--------+---------+-----------+-----------+
@@ -97,7 +97,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("state", "id"),
 	).SetSource(g).Build()
 
@@ -120,7 +120,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -148,7 +148,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithFormat("porcelain"),
 	).SetSource(g).Build()
 
@@ -185,7 +185,7 @@ func TestDateLists(t *testing.T) {
 /user<user2>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2016-12-22T11:13:23Z"}"^^type:text
 /user<user3>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2016-12-10T08:35:37Z"}"^^type:text`)
 
-	g := rdf.NewGraph()
+	g := graph.NewGraph()
 	g.Unmarshal(users)
 
 	headers := []ColumnDefinition{
@@ -196,7 +196,7 @@ func TestDateLists(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.User),
+		WithRdfType(graph.User),
 	).SetSource(g).Build()
 
 	expected := `+-------+---------------+----------------------+
@@ -218,7 +218,7 @@ func TestDateLists(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.User),
+		WithRdfType(graph.User),
 		WithSortBy("passwordlastuseddate"),
 	).SetSource(g).Build()
 
@@ -252,7 +252,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -283,7 +283,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -314,7 +314,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("s", "n"),
 	).SetSource(g).Build()
 
@@ -337,7 +337,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("s", "n"),
 		WithMaxWidth(50),
 	).SetSource(g).Build()
@@ -353,7 +353,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(rdf.Instance),
+		WithRdfType(graph.Instance),
 		WithSortBy("s", "n"),
 		WithMaxWidth(21),
 	).SetSource(g).Build()
@@ -401,7 +401,7 @@ func TestCompareInterface(t *testing.T) {
 	}
 }
 
-func createIntancesGraph() *rdf.Graph {
+func createIntancesGraph() *graph.Graph {
 	instances := []byte(`/region<eu-west-1> "has_type"@[] "/region"^^type:text
   /instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
@@ -426,7 +426,7 @@ func createIntancesGraph() *rdf.Graph {
   /region<eu-west-1>  "parent_of"@[] /instance<inst_1>
   /region<eu-west-1>  "parent_of"@[] /instance<inst_2>`)
 
-	g := rdf.NewGraph()
+	g := graph.NewGraph()
 	g.Unmarshal(instances)
 	return g
 }

@@ -9,29 +9,29 @@ import (
 
 func TestGetTriplesAndNodesForType(t *testing.T) {
 	graph := NewGraph()
-	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFString())
+	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/instance")
 	if err != nil {
 		t.Fatal(err)
 	}
-	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFString())
+	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/subnet")
 	if err != nil {
 		t.Fatal(err)
 	}
-	azero, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "0")
+	azero, _ := node.NewNodeFromStrings("/instance", "0")
 	graph.Add(noErrLiteralTriple(azero, HasTypePredicate, iLiteral))
-	aone, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "1")
+	aone, _ := node.NewNodeFromStrings("/instance", "1")
 	graph.Add(noErrLiteralTriple(aone, HasTypePredicate, iLiteral))
 
-	bzero, _ := node.NewNodeFromStrings(Subnet.ToRDFString(), "0")
+	bzero, _ := node.NewNodeFromStrings("/subnet", "0")
 	graph.Add(noErrLiteralTriple(bzero, HasTypePredicate, sLiteral))
-	bone, _ := node.NewNodeFromStrings(Subnet.ToRDFString(), "1")
+	bone, _ := node.NewNodeFromStrings("/subnet", "1")
 	graph.Add(noErrLiteralTriple(bone, HasTypePredicate, sLiteral))
-	btwo, _ := node.NewNodeFromStrings(Subnet.ToRDFString(), "2")
+	btwo, _ := node.NewNodeFromStrings("/subnet", "2")
 	graph.Add(noErrLiteralTriple(btwo, HasTypePredicate, sLiteral))
 
-	atwo, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "2")
+	atwo, _ := node.NewNodeFromStrings("/instance", "2")
 	graph.Add(noErrLiteralTriple(atwo, HasTypePredicate, iLiteral))
-	athree, _ := node.NewNodeFromStrings(Instance.ToRDFString(), "3")
+	athree, _ := node.NewNodeFromStrings("/instance", "3")
 	graph.Add(noErrLiteralTriple(athree, HasTypePredicate, iLiteral))
 
 	graph.Add(noErrTriple(azero, ParentOfPredicate, aone))
@@ -41,7 +41,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	graph.Add(noErrTriple(azero, ParentOfPredicate, bzero))
 	graph.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
-	aTriples, err := graph.TriplesForType(Instance.ToRDFString())
+	aTriples, err := graph.TriplesForType("/instance")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	bTriples, err := graph.TriplesForType(Subnet.ToRDFString())
+	bTriples, err := graph.TriplesForType("/subnet")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	}
 
 	aNodesExpect := []*node.Node{azero, aone, atwo, athree}
-	aNodes, err := graph.NodesForType(Instance)
+	aNodes, err := graph.NodesForType("/instance")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 		t.Fatalf("got %#v\nwant%#v\n", got, want)
 	}
 	bNodesExpect := []*node.Node{bzero, bone, btwo}
-	bNodes, err := graph.NodesForType(Subnet)
+	bNodes, err := graph.NodesForType("/subnet")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,11 +159,11 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 func TestCountTriples(t *testing.T) {
 	g := NewGraph()
 
-	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, Instance.ToRDFString())
+	iLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/instance")
 	if err != nil {
 		t.Fatal(err)
 	}
-	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, Subnet.ToRDFString())
+	sLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/subnet")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -229,7 +229,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, Instance)
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, "/instance")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,14 +237,14 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, Subnet)
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(four, ParentOfPredicate, "/subnet")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := count, 1; got != want {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, Instance)
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, "/instance")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -252,7 +252,7 @@ func TestCountTriples(t *testing.T) {
 		t.Fatalf("got %d; want%d\n", got, want)
 	}
 
-	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, Subnet)
+	count, err = g.CountTriplesForSubjectAndPredicateObjectOfType(two, ParentOfPredicate, "/subnet")
 	if err != nil {
 		t.Fatal(err)
 	}
