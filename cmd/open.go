@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 )
 
 func init() {
@@ -21,7 +21,7 @@ var openCmd = &cobra.Command{
 	PersistentPostRun: saveHistoryFn,
 
 	RunE: func(c *cobra.Command, args []string) error {
-		console := fmt.Sprintf("https://%s.console.aws.amazon.com/console/home", config.GetDefaultRegion())
+		console := fmt.Sprintf("https://%s.console.aws.amazon.com/console/home", database.MustGetDefaultRegion())
 
 		var verb string
 		switch runtime.GOOS {

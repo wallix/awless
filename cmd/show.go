@@ -9,6 +9,7 @@ import (
 	"github.com/wallix/awless/alias"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision"
@@ -133,7 +134,7 @@ var showCloudRevisionsCmd = &cobra.Command{
 	Short: "Show cloud revision history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), config.GetDefaultRegion())
+		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), database.MustGetDefaultRegion())
 		if err != nil {
 			return err
 		}

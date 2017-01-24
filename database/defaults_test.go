@@ -1,6 +1,8 @@
 package database
 
 import (
+	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -80,4 +82,25 @@ func TestLoadDefaults(t *testing.T) {
 	if got, want := ok, false; got != want {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
+}
+
+func TestLoadRegion(t *testing.T) {
+	f, e := ioutil.TempDir(".", "test")
+	if e != nil {
+		panic(e)
+	}
+
+	os.Setenv("__AWLESS_HOME", f)
+
+	InitDB(true)
+	db, closing := Current()
+
+	db.SetDefault(RegionKey, "my-region")
+	closing()
+
+	if got, want := MustGetDefaultRegion(), "my-region"; got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+
+	os.RemoveAll(f)
 }

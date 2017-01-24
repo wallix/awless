@@ -2,7 +2,6 @@ package aws
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -23,12 +22,7 @@ var (
 )
 
 func InitSession() (*session.Session, error) {
-	db, close := database.Current()
-	if db == nil {
-		return nil, fmt.Errorf("empty config database")
-	}
-	defer close()
-	region := db.MustGetRegion()
+	region := database.MustGetDefaultRegion()
 	session, err := session.NewSession(
 		&awssdk.Config{
 			Region: awssdk.String(region),

@@ -9,7 +9,7 @@ import (
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision/repo"
 )
@@ -38,7 +38,7 @@ var historyCmd = &cobra.Command{
 		all, err := rep.List()
 		exitOn(err)
 
-		root, err := node.NewNodeFromStrings("/region", config.GetDefaultRegion())
+		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), database.MustGetDefaultRegion())
 		if err != nil {
 			return err
 		}

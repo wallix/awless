@@ -84,10 +84,10 @@ func askRegion() string {
 
 func addDefaults(region string) error {
 	defaults := map[string]interface{}{
-		RegionKey:        region,
-		InstanceTypeKey:  "t2.micro",
-		InstanceImageKey: "ami-9398d3e0",
-		InstanceCountKey: 1,
+		database.RegionKey:        region,
+		database.InstanceTypeKey:  "t2.micro",
+		database.InstanceImageKey: "ami-9398d3e0",
+		database.InstanceCountKey: 1,
 	}
 	db, close := database.Current()
 	defer close()

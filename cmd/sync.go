@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
 	"github.com/wallix/awless/revision/repo"
 )
@@ -27,7 +28,7 @@ var syncCmd = &cobra.Command{
 	PersistentPostRun: saveHistoryFn,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		region := config.GetDefaultRegion()
+		region := database.MustGetDefaultRegion()
 		infrag, accessg, err := performSync(region)
 		if err != nil {
 			return err

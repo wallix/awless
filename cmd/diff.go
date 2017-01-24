@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/rdf"
 )
@@ -55,7 +56,7 @@ var diffCmd = &cobra.Command{
 
 		wg.Wait()
 
-		region := config.GetDefaultRegion()
+		region := database.MustGetDefaultRegion()
 
 		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
 		exitOn(err)

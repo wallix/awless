@@ -7,13 +7,26 @@ import (
 	"os"
 )
 
+const (
+	RegionKey        = "region"
+	InstanceTypeKey  = "instance.type"
+	InstanceImageKey = "instance.image"
+	InstanceCountKey = "instance.count"
+)
+
 type defaults map[string]interface{}
 
-func (db *DB) MustGetRegion() string {
-	region, ok := db.GetDefaultString("region")
+func MustGetDefaultRegion() string {
+	db, close := Current()
+	defer close()
+	return db.MustGetDefaultRegion()
+}
+
+func (db *DB) MustGetDefaultRegion() string {
+	region, ok := db.GetDefaultString(RegionKey)
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Invalid empty region. Update it with `awless config set region`\n")
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "config: missing region. Set it with `awless config set region`\n")
+		os.Exit(-1)
 	}
 	return region
 }

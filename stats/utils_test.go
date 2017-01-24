@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/wallix/awless/cloud/mocks"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 )
 
@@ -30,10 +29,10 @@ func newTestDb() (*database.DB, func()) {
 	}
 
 	defaults := map[string]interface{}{
-		config.RegionKey:        "eu-west-1",
-		config.InstanceTypeKey:  "t2.micro",
-		config.InstanceImageKey: "ami-9398d3e0",
-		config.InstanceCountKey: 1,
+		database.RegionKey:        "eu-west-1",
+		database.InstanceTypeKey:  "t2.micro",
+		database.InstanceImageKey: "ami-9398d3e0",
+		database.InstanceCountKey: 1,
 	}
 	for k, v := range defaults {
 		err := db.SetDefault(k, v)
