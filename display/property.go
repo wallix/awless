@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/rdf"
 )
@@ -149,7 +150,7 @@ func (p *PropertyDisplayer) displayForceColor(value string, c color.Attribute) s
 	return color.New(c).SprintFunc()(value)
 }
 
-func (p *PropertyDisplayer) propertyValue(properties aws.Properties) string {
+func (p *PropertyDisplayer) propertyValue(properties cloud.Properties) string {
 	var res string
 	if s := strings.SplitN(p.Property, "[].", 2); len(s) >= 2 {
 		if i, ok := properties[s[0]].([]interface{}); ok {
@@ -214,7 +215,7 @@ func (p *PropertyDisplayer) firstLevelProperty() string {
 	return p.Property
 }
 
-func nameOrID(res *aws.Resource) string {
+func nameOrID(res *cloud.Resource) string {
 	if name, ok := res.Properties()["Name"]; ok && name != "" {
 		return fmt.Sprint(name)
 	}

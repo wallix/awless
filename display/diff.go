@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -66,7 +66,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 		if len(diffTriples) > 0 && err == nil {
 			lit, _ = diffTriples[0].Object().Literal()
 		}
-		nCommon, nInserted, nDeleted := aws.InitFromRdfNode(n), aws.InitFromRdfNode(n), aws.InitFromRdfNode(n)
+		nCommon, nInserted, nDeleted := cloud.InitFromRdfNode(n), cloud.InitFromRdfNode(n), cloud.InitFromRdfNode(n)
 
 		err = nCommon.UnmarshalFromGraph(diff.CommonGraph())
 		if err != nil {
@@ -120,7 +120,7 @@ func tableFromDiff(diff *rdf.Diff, rootNode *node.Node, service string) (*Table,
 	return table, nil
 }
 
-func addDiffProperties(table *Table, service string, rType rdf.ResourceType, rName string, rNew bool, insertedProps, deletedProps aws.Properties) (bool, error) {
+func addDiffProperties(table *Table, service string, rType rdf.ResourceType, rName string, rNew bool, insertedProps, deletedProps cloud.Properties) (bool, error) {
 	visitedInsertedProp, visitedDeletedProp := make(map[string]bool), make(map[string]bool)
 	changes := false
 

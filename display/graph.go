@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -19,7 +19,7 @@ func SeveralResourcesOfGraph(graph *rdf.Graph, displayer *ServiceDisplayer, only
 			return
 		}
 		for _, node := range nodes {
-			res := aws.InitFromRdfNode(node)
+			res := cloud.InitFromRdfNode(node)
 			err := res.UnmarshalFromGraph(graph)
 			if err != nil {
 				fmt.Println(err.Error())

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/badwolf/triple"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -21,7 +21,7 @@ func TestResourceDisplay(t *testing.T) {
 	t8 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_2>`)
 	g := rdf.NewGraphFromTriples([]*triple.Triple{t0, t1, t2, t3, t4, t5, t6, t7, t8})
 
-	r := aws.InitResource("inst_1", rdf.Instance)
+	r := cloud.InitResource("inst_1", rdf.Instance)
 	r.UnmarshalFromGraph(g)
 
 	headers := []ColumnDefinition{

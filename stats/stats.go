@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/rdf"
@@ -239,7 +239,7 @@ func addStatsForInstanceStringProperty(infra *rdf.Graph, propertyName string, in
 	}
 	propertyValuesCountMap := make(map[string]int)
 	for _, i := range nodes {
-		inst := aws.InitFromRdfNode(i)
+		inst := cloud.InitFromRdfNode(i)
 		e := inst.UnmarshalFromGraph(infra)
 		if e != nil {
 			return nil, e

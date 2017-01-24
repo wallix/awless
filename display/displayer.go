@@ -12,7 +12,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 )
 
@@ -69,9 +69,9 @@ func (b *Builder) Build() Displayer {
 			dis.SetGraph(b.source.(*rdf.Graph))
 			return dis
 		}
-	case *aws.Resource:
+	case *cloud.Resource:
 		dis := &tableResourceDisplayer{headers: b.headers}
-		dis.SetResource(b.source.(*aws.Resource))
+		dis.SetResource(b.source.(*cloud.Resource))
 		return dis
 	}
 
@@ -167,7 +167,7 @@ type csvDisplayer struct {
 }
 
 func (d *csvDisplayer) Print(w io.Writer) error {
-	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
+	resources, err := cloud.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		return err
 	}
@@ -214,7 +214,7 @@ type tableDisplayer struct {
 }
 
 func (d *tableDisplayer) Print(w io.Writer) error {
-	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
+	resources, err := cloud.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ type porcelainDisplayer struct {
 }
 
 func (d *porcelainDisplayer) Print(w io.Writer) error {
-	resources, err := aws.LoadResourcesFromGraph(d.g, d.rdfType)
+	resources, err := cloud.LoadResourcesFromGraph(d.g, d.rdfType)
 	if err != nil {
 		return err
 	}

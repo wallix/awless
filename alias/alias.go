@@ -1,14 +1,14 @@
 package alias
 
 import (
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/rdf"
 )
 
 type Alias string
 
 func (a Alias) ResolveToId(g *rdf.Graph, resT rdf.ResourceType) (string, bool) {
-	prop := aws.Property{Key: "Name", Value: a}
+	prop := cloud.Property{Key: "Name", Value: a}
 	propL, err := prop.ToLiteralObject()
 	if err != nil {
 		return "", false

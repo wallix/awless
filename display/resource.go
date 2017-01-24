@@ -6,11 +6,11 @@ import (
 	"sort"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 )
 
 type tableResourceDisplayer struct {
-	r       *aws.Resource
+	r       *cloud.Resource
 	headers []ColumnDefinition
 }
 
@@ -51,7 +51,7 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	return nil
 }
 
-func (d *tableResourceDisplayer) SetResource(r *aws.Resource) {
+func (d *tableResourceDisplayer) SetResource(r *cloud.Resource) {
 	d.r = r
 }
 

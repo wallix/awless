@@ -3,7 +3,7 @@ package display
 import (
 	"testing"
 
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 )
 
 func TestPropertyDisplayName(t *testing.T) {
@@ -18,7 +18,7 @@ func TestPropertyDisplayName(t *testing.T) {
 }
 
 func TestGetPropertyValue(t *testing.T) {
-	properties := aws.Properties{
+	properties := cloud.Properties{
 		"Id":          "propId",
 		"Name":        "propName",
 		"StringSlice": []interface{}{"str1", "str2", "str3"},

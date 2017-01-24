@@ -7,6 +7,7 @@ import (
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/alias"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -111,7 +112,7 @@ func printResource(g *rdf.Graph, resourceType rdf.ResourceType, id string) {
 	if aID, ok := a.ResolveToId(g, resourceType); ok {
 		id = aID
 	}
-	resource := aws.InitResource(id, resourceType)
+	resource := cloud.InitResource(id, resourceType)
 
 	if !resource.ExistsInGraph(g) {
 		exitOn(fmt.Errorf("the %s '%s' has not been found", resourceType.String(), id))

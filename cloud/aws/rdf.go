@@ -3,8 +3,6 @@ package aws
 import (
 	"errors"
 	"fmt"
-	"reflect"
-	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -21,23 +19,11 @@ var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
 
 func (inf *Infra) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
-	return fetchRDFResources(inf, resourceType)
+	return cloud.FetchRDFResources(inf, resourceType)
 }
 
 func (access *Access) FetchRDFResources(resourceType rdf.ResourceType) (*rdf.Graph, error) {
-	return fetchRDFResources(access, resourceType)
-}
-
-func fetchRDFResources(service cloud.Service, resourceType rdf.ResourceType) (*rdf.Graph, error) {
-	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
-	method := reflect.ValueOf(service).MethodByName(fnName)
-	if method.IsValid() && !method.IsNil() {
-		methodI := method.Interface()
-		if graphFn, ok := methodI.(func() (*rdf.Graph, error)); ok {
-			return graphFn()
-		}
-	}
-	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
+	return cloud.FetchRDFResources(access, resourceType)
 }
 
 func (inf *Infra) InstancesGraph() (*rdf.Graph, error) {
@@ -179,7 +165,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -203,7 +189,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -213,9 +199,9 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		}
 		g.Add(t)
 
-		groupsIndex[res.id] = n
+		groupsIndex[res.Id()] = n
 
-		if policies, ok := access.GroupPolicies[res.id]; ok {
+		if policies, ok := access.GroupPolicies[res.Id()]; ok {
 			for _, policy := range policies {
 				if policyNode, present := policiesIndex[policy]; present {
 					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
@@ -238,7 +224,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -248,7 +234,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		}
 		g.Add(t)
 
-		if groupIds, ok := access.UserGroups[res.id]; ok {
+		if groupIds, ok := access.UserGroups[res.Id()]; ok {
 			for _, groupId := range groupIds {
 				if groupNode, present := groupsIndex[groupId]; present {
 					t, err = triple.New(groupNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
@@ -260,7 +246,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 			}
 		}
 
-		if policies, ok := access.UserPolicies[res.id]; ok {
+		if policies, ok := access.UserPolicies[res.Id()]; ok {
 			for _, policy := range policies {
 				if policyNode, present := policiesIndex[policy]; present {
 					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
@@ -283,7 +269,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -293,7 +279,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*rdf.Graph, error) {
 		}
 		g.Add(t)
 
-		if policies, ok := access.RolePolicies[res.id]; ok {
+		if policies, ok := access.RolePolicies[res.Id()]; ok {
 			for _, policy := range policies {
 				if policyNode, present := policiesIndex[policy]; present {
 					t, err = triple.New(policyNode, rdf.ParentOfPredicate, triple.NewNodeObject(n))
@@ -334,7 +320,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -356,7 +342,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -383,7 +369,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -410,7 +396,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 			return nil, err
 		}
 		g.Add(triples...)
-		n, err := res.buildRdfSubject()
+		n, err := res.BuildRdfSubject()
 		if err != nil {
 			return g, err
 		}
@@ -443,7 +429,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *rdf.Graph, err er
 }
 
 func InstanceCredentialsFromGraph(graph *rdf.Graph, instanceID string) (*shell.Credentials, error) {
-	inst := InitResource(instanceID, rdf.Instance)
+	inst := cloud.InitResource(instanceID, rdf.Instance)
 	err := inst.UnmarshalFromGraph(graph)
 	if err != nil {
 		return nil, err
