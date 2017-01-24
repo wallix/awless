@@ -3,27 +3,11 @@ package display
 import (
 	"fmt"
 	"io"
-	"os"
 	"sort"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/wallix/awless/cloud/aws"
 )
-
-type ResourceDisplayer interface {
-	Print(io.Writer) error
-	SetResource(*aws.Resource)
-}
-
-func BuildResourceDisplayer(headers []ColumnDefinition, format string) ResourceDisplayer {
-	switch format {
-	case "table":
-		return &tableResourceDisplayer{headers: headers}
-	default:
-		fmt.Fprintf(os.Stderr, "unknown displayer for %s", format)
-	}
-	return &tableResourceDisplayer{headers: headers}
-}
 
 type tableResourceDisplayer struct {
 	r       *aws.Resource
@@ -70,3 +54,6 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 func (d *tableResourceDisplayer) SetResource(r *aws.Resource) {
 	d.r = r
 }
+
+func (d *tableResourceDisplayer) sort(table)     {}
+func (d *tableResourceDisplayer) columns() []int { return []int{} }

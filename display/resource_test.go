@@ -31,8 +31,11 @@ func TestResourceDisplay(t *testing.T) {
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer := BuildResourceDisplayer(headers, "table")
-	displayer.SetResource(r)
+
+	displayer := BuildOptions(
+		WithHeaders(headers),
+		WithFormat("table"),
+	).SetSource(r).Build()
 
 	expected := `+------------+------------+
 | PROPERTY ▲ |   VALUE    |

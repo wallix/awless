@@ -121,13 +121,11 @@ func printResource(g *rdf.Graph, resourceType rdf.ResourceType, id string) {
 		exitOn(err)
 	}
 
-	var displayer display.ResourceDisplayer
-	displayer = display.BuildResourceDisplayer(
-		display.DefaultsColumnDefinitions[resourceType],
-		listingFormat,
-	)
+	displayer := display.BuildOptions(
+		display.WithHeaders(display.DefaultsColumnDefinitions[resourceType]),
+		display.WithFormat(listingFormat),
+	).SetSource(resource).Build()
 
-	displayer.SetResource(resource)
 	err = displayer.Print(os.Stderr)
 	exitOn(err)
 }

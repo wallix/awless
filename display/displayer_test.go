@@ -21,12 +21,12 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
-	displayer := BuildDisplayer(
+
+	displayer := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithFormat("csv"),
-	)
-	displayer.SetGraph(g)
+	).SetSource(g).Build()
 
 	expected := "Id, Name, State, Type, Public IP\n" +
 		"inst_1, redis, running, t2.micro, 1.2.3.4\n" +
@@ -41,14 +41,12 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithFormat("csv"),
 		WithSortBy("Name"),
-	)
-
-	displayer.SetGraph(g)
+	).SetSource(g).Build()
 
 	expected = "Id, Name, State, Type, Public IP\n" +
 		"inst_3, apache, running, t2.xlarge, \n" +
@@ -75,12 +73,11 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `+--------+--------+---------+-----------+-----------+
 |  ID ▲  |  NAME  |  STATE  |   TYPE    | PUBLIC IP |
 +--------+--------+---------+-----------+-----------+
@@ -98,13 +95,12 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("state", "id"),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `+--------+--------+---------+-----------+-----------+
 |   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
 +--------+--------+---------+-----------+-----------+
@@ -122,13 +118,12 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("state", "name"),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `+--------+--------+---------+-----------+-----------+
 |   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
 +--------+--------+---------+-----------+-----------+
@@ -151,13 +146,12 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "Name"},
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithFormat("porcelain"),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `inst_1
 redis
 inst_2
@@ -200,12 +194,11 @@ func TestDateLists(t *testing.T) {
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate"}, Format: Short},
 	}
 
-	displayer := BuildDisplayer(
+	displayer := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.User),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected := `+-------+---------------+----------------------+
 | ID ▲  |     NAME      | PASSWORDLASTUSEDDATE |
 +-------+---------------+----------------------+
@@ -223,13 +216,12 @@ func TestDateLists(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.User),
 		WithSortBy("passwordlastuseddate"),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `+-------+---------------+------------------------+
 |  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
 +-------+---------------+------------------------+
@@ -258,13 +250,12 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
 
-	displayer := BuildDisplayer(
+	displayer := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("state", "name"),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected := `+--------+--------+---------+-----------+-----------+
 |   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
 +--------+--------+---------+-----------+-----------+
@@ -290,13 +281,12 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP", DontTruncate: true},
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("state", "name"),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `+------+--------+---------+--------+-----------+
 |  ID  |  NAME  | STATE ▲ |  TYPE  | PUBLIC IP |
 +------+--------+---------+--------+-----------+
@@ -322,12 +312,12 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "P", TruncateSize: 5},
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("s", "n"),
-	)
-	displayer.SetGraph(g)
+	).SetSource(g).Build()
+
 	expected = `+-------+-------+-------+-------+-------+
 |   I   |   N   |  S ▲  |   T   |   P   |
 +-------+-------+-------+-------+-------+
@@ -345,14 +335,13 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("s", "n"),
 		WithMaxWidth(50),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	w.Reset()
 	err = displayer.Print(&w)
 	if err != nil {
@@ -362,14 +351,13 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildDisplayer(
+	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType(rdf.Instance),
 		WithSortBy("s", "n"),
 		WithMaxWidth(21),
-	)
+	).SetSource(g).Build()
 
-	displayer.SetGraph(g)
 	expected = `+-------+-------+-------+
 |   I   |   N   |  S ▲  |
 +-------+-------+-------+

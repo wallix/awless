@@ -16,9 +16,13 @@ import (
 	"github.com/wallix/awless/rdf"
 )
 
-type GraphDisplayer interface {
+type Displayer interface {
 	sorter
 	Print(io.Writer) error
+}
+
+type GraphDisplayer interface {
+	Displayer
 	SetGraph(*rdf.Graph)
 }
 
@@ -27,18 +31,57 @@ type sorter interface {
 	columns() []int
 }
 
-type builder struct {
+type Builder struct {
 	headers  []ColumnDefinition
 	format   string
 	rdfType  rdf.ResourceType
 	sort     []int
 	maxwidth int
+	source   interface{}
 }
 
-type optsFn func(b *builder) *builder
+func (b *Builder) SetSource(i interface{}) *Builder {
+	b.source = i
+	return b
+}
 
-func BuildDisplayer(opts ...optsFn) GraphDisplayer {
-	b := &builder{}
+func (b *Builder) Build() Displayer {
+	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
+
+	switch b.source.(type) {
+	case *rdf.Graph:
+		switch b.format {
+		case "csv":
+			dis := &csvDisplayer{base}
+			dis.SetGraph(b.source.(*rdf.Graph))
+			return dis
+		case "porcelain":
+			dis := &porcelainDisplayer{base}
+			dis.SetGraph(b.source.(*rdf.Graph))
+			return dis
+		case "table":
+			dis := &tableDisplayer{base}
+			dis.SetGraph(b.source.(*rdf.Graph))
+			return dis
+		default:
+			fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
+			dis := &tableDisplayer{base}
+			dis.SetGraph(b.source.(*rdf.Graph))
+			return dis
+		}
+	case *aws.Resource:
+		dis := &tableResourceDisplayer{headers: b.headers}
+		dis.SetResource(b.source.(*aws.Resource))
+		return dis
+	}
+
+	return nil
+}
+
+type optsFn func(b *Builder) *Builder
+
+func BuildOptions(opts ...optsFn) *Builder {
+	b := &Builder{}
 
 	b.sort = []int{0}
 	b.format = "table"
@@ -51,37 +94,25 @@ func BuildDisplayer(opts ...optsFn) GraphDisplayer {
 		b.headers = DefaultsColumnDefinitions[b.rdfType]
 	}
 
-	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
-
-	switch b.format {
-	case "csv":
-		return &csvDisplayer{base}
-	case "porcelain":
-		return &porcelainDisplayer{base}
-	case "table":
-		return &tableDisplayer{base}
-	default:
-		fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
-		return &tableDisplayer{base}
-	}
+	return b
 }
 
 func WithFormat(format string) optsFn {
-	return func(b *builder) *builder {
+	return func(b *Builder) *Builder {
 		b.format = format
 		return b
 	}
 }
 
 func WithHeaders(h []ColumnDefinition) optsFn {
-	return func(b *builder) *builder {
+	return func(b *Builder) *Builder {
 		b.headers = h
 		return b
 	}
 }
 
 func WithIDsOnly(only bool) optsFn {
-	return func(b *builder) *builder {
+	return func(b *Builder) *Builder {
 		if only {
 			b.headers = []ColumnDefinition{
 				StringColumnDefinition{Prop: "Id"},
@@ -95,7 +126,7 @@ func WithIDsOnly(only bool) optsFn {
 }
 
 func WithSortBy(sortingBy ...string) optsFn {
-	return func(b *builder) *builder {
+	return func(b *Builder) *Builder {
 		indexes, err := resolveSortIndexes(b.headers, sortingBy...)
 		if err != nil {
 			fmt.Fprint(os.Stderr, err, "\n")
@@ -108,14 +139,14 @@ func WithSortBy(sortingBy ...string) optsFn {
 }
 
 func WithMaxWidth(maxwidth int) optsFn {
-	return func(b *builder) *builder {
+	return func(b *Builder) *Builder {
 		b.maxwidth = maxwidth
 		return b
 	}
 }
 
 func WithRdfType(rdfType rdf.ResourceType) optsFn {
-	return func(b *builder) *builder {
+	return func(b *Builder) *Builder {
 		b.rdfType = rdfType
 		return b
 	}
@@ -125,9 +156,9 @@ type table [][]interface{}
 
 type fromGraphDisplayer struct {
 	sorter
-	g       *rdf.Graph
-	rdfType rdf.ResourceType
-	headers []ColumnDefinition
+	g        *rdf.Graph
+	rdfType  rdf.ResourceType
+	headers  []ColumnDefinition
 	maxwidth int
 }
 
@@ -205,7 +236,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 		columnsToDisplay = []ColumnDefinition{}
 		currentWidth := 0
 		for j, h := range d.headers {
-			colW := t (j, values, h) + 2 // +2 (tables margin)
+			colW := t(j, values, h) + 2 // +2 (tables margin)
 			if currentWidth+colW > d.maxwidth {
 				break
 			}
@@ -383,7 +414,7 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 	return ids, nil
 }
 
-func t (j int, t table, h ColumnDefinition) int {
+func t(j int, t table, h ColumnDefinition) int {
 	w := 0
 	for i := range t {
 		c := utf8.RuneCountInString(h.format(t[i][j]))
