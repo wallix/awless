@@ -87,10 +87,7 @@ func BuildStats(db *database.DB, infra *rdf.Graph, access *rdf.Graph, fromComman
 	if err != nil {
 		return nil, 0, err
 	}
-	region, ok := db.GetDefaultString("region")
-	if !ok {
-		return nil, 0, fmt.Errorf("invalid region '%s'", region)
-	}
+	region := db.MustGetRegion()
 
 	im := &infraMetrics{}
 	if infra != nil {

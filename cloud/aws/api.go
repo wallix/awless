@@ -28,10 +28,7 @@ func InitSession() (*session.Session, error) {
 		return nil, fmt.Errorf("empty config database")
 	}
 	defer close()
-	region, ok := db.GetDefaultString("region")
-	if !ok {
-		return nil, fmt.Errorf("invalid region '%s'", fmt.Sprint(region))
-	}
+	region := db.MustGetRegion()
 	session, err := session.NewSession(
 		&awssdk.Config{
 			Region: awssdk.String(region),

@@ -3,9 +3,20 @@ package database
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
+	"os"
 )
 
 type defaults map[string]interface{}
+
+func (db *DB) MustGetRegion() string {
+	region, ok := db.GetDefaultString("region")
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Invalid empty region. Update it with `awless config set region`\n")
+		os.Exit(1)
+	}
+	return region
+}
 
 func (db *DB) GetDefaults() (defaults, error) {
 	d := make(defaults)
