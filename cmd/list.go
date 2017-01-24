@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
@@ -59,8 +58,7 @@ var listInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 			var g *rdf.Graph
 			var err error
 			if localResources {
-				g, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
-
+				g, err = config.LoadInfraGraph()
 			} else {
 				g, err = aws.InfraService.FetchRDFResources(resourceType)
 			}
@@ -80,7 +78,7 @@ var listAccessResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 			var g *rdf.Graph
 			var err error
 			if localResources {
-				g, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
+				g, err = config.LoadAccessGraph()
 			} else {
 				g, err = aws.AccessService.FetchRDFResources(resourceType)
 			}
@@ -102,7 +100,7 @@ var listAllCmd = &cobra.Command{
 			if !listOnlyIDs {
 				fmt.Println("Infrastructure")
 			}
-			localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
+			localInfra, err := config.LoadInfraGraph()
 			exitOn(err)
 			display.SeveralResourcesOfGraph(localInfra, display.PropertiesDisplayer.Services[aws.InfraServiceName], listOnlyIDs)
 		}
@@ -110,7 +108,7 @@ var listAllCmd = &cobra.Command{
 			if !listOnlyIDs {
 				fmt.Println("Access")
 			}
-			localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
+			localAccess, err := config.LoadAccessGraph()
 			exitOn(err)
 			display.SeveralResourcesOfGraph(localAccess, display.PropertiesDisplayer.Services[aws.AccessServiceName], listOnlyIDs)
 		}

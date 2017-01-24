@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
@@ -63,7 +62,7 @@ var showInfraResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 			var g *rdf.Graph
 			var err error
 			if localResources {
-				g, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
+				g, err = config.LoadInfraGraph()
 
 			} else {
 				g, err = aws.InfraService.FetchRDFResources(resourceType)
@@ -91,7 +90,7 @@ var showAccessResourceCmd = func(resourceType rdf.ResourceType) *cobra.Command {
 			var g *rdf.Graph
 			var err error
 			if localResources {
-				g, err = rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
+				g, err = config.LoadAccessGraph()
 
 			} else {
 				g, err = aws.AccessService.FetchRDFResources(resourceType)
@@ -134,7 +133,7 @@ var showCloudRevisionsCmd = &cobra.Command{
 	Short: "Show cloud revision history",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		root, err := node.NewNodeFromStrings("/region", config.GetDefaultRegion())
+		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), config.GetDefaultRegion())
 		if err != nil {
 			return err
 		}

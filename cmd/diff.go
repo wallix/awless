@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -58,40 +57,27 @@ var diffCmd = &cobra.Command{
 
 		region := config.GetDefaultRegion()
 
-		root, err := node.NewNodeFromStrings("/region", region)
-		if err != nil {
-			return err
-		}
+		root, err := node.NewNodeFromStrings(rdf.Region.ToRDFString(), region)
+		exitOn(err)
 
-		localInfra, err := rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.InfraFilename))
-		if err != nil {
-			return err
-		}
+		localInfra, err := config.LoadInfraGraph()
+		exitOn(err)
 
 		remoteInfra, err := aws.BuildAwsInfraGraph(region, awsInfra)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 
 		infraDiff, err := rdf.DefaultDiffer.Run(root, localInfra, remoteInfra)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 
-		localAccess, err := rdf.NewGraphFromFile(filepath.Join(config.RepoDir, config.AccessFilename))
-		if err != nil {
-			return err
-		}
+		localAccess, err := config.LoadAccessGraph()
+		exitOn(err)
 
 		remoteAccess, err := aws.BuildAwsAccessGraph(region, awsAccess)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 
 		accessDiff, err := rdf.DefaultDiffer.Run(root, localAccess, remoteAccess)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
+
 		var hasDiff bool
 		if diffProperties {
 			if accessDiff.HasDiff() {
