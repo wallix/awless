@@ -97,14 +97,22 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasResourceDiff() {
 				hasDiff = true
 				fmt.Println("------ ACCESS ------")
-				display.ResourceDiff(&graph.Diff{accessDiff}, root)
+				displayer := display.BuildOptions(
+					display.WithFormat("tree"),
+					display.WithRootNode(root),
+				).SetSource(accessDiff).Build()
+				exitOn(displayer.Print(os.Stdout))
 			}
 
 			if infraDiff.HasResourceDiff() {
 				hasDiff = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				display.ResourceDiff(&graph.Diff{infraDiff}, root)
+				displayer := display.BuildOptions(
+					display.WithFormat("tree"),
+					display.WithRootNode(root),
+				).SetSource(infraDiff).Build()
+				exitOn(displayer.Print(os.Stdout))
 			}
 		}
 		if hasDiff {

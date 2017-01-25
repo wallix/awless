@@ -1,6 +1,7 @@
 package display
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -27,13 +28,13 @@ type sorter interface {
 }
 
 type Builder struct {
-	headers  []ColumnDefinition
-	format   string
-	rdfType  graph.ResourceType
-	sort     []int
-	maxwidth int
-	dataSource   interface{}
-	root     *node.Node
+	headers    []ColumnDefinition
+	format     string
+	rdfType    graph.ResourceType
+	sort       []int
+	maxwidth   int
+	dataSource interface{}
+	root       *node.Node
 }
 
 func (b *Builder) SetSource(i interface{}) *Builder {
@@ -87,9 +88,22 @@ func (b *Builder) Build() Displayer {
 		dis.SetResource(b.dataSource.(*graph.Resource))
 		return dis
 	case *graph.Diff:
-		dis := &diffTableDisplayer{root: b.root}
-		dis.SetDiff(b.dataSource.(*graph.Diff))
-		return dis
+		base := fromDiffDisplayer{root: b.root}
+		switch b.format {
+		case "tree":
+			dis := &diffTreeDisplayer{&base}
+			dis.SetDiff(b.dataSource.(*graph.Diff))
+			return dis
+		case "table":
+			dis := &diffTableDisplayer{&base}
+			dis.SetDiff(b.dataSource.(*graph.Diff))
+			return dis
+		default:
+			fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'tree'\n", b.format)
+			dis := &diffTreeDisplayer{&base}
+			dis.SetDiff(b.dataSource.(*graph.Diff))
+			return dis
+		}
 	}
 
 	return nil
@@ -407,9 +421,17 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 	return nil
 }
 
-type diffTableDisplayer struct {
+type fromDiffDisplayer struct {
 	root *node.Node
 	diff *graph.Diff
+}
+
+func (d *fromDiffDisplayer) SetDiff(diff *graph.Diff) {
+	d.diff = diff
+}
+
+type diffTableDisplayer struct {
+	*fromDiffDisplayer
 }
 
 func (d *diffTableDisplayer) Print(w io.Writer) error {
@@ -549,8 +571,42 @@ func addProperties(values *table, rType graph.ResourceType, rName string, rNew b
 	return changes, nil
 }
 
-func (d *diffTableDisplayer) SetDiff(diff *graph.Diff) {
-	d.diff = diff
+type diffTreeDisplayer struct {
+	*fromDiffDisplayer
+}
+
+func (d *diffTreeDisplayer) Print(w io.Writer) error {
+	d.diff.FullGraph().Visit(d.root, func(g *graph.Graph, n *node.Node, distance int) {
+		var lit *literal.Literal
+		diff, err := g.TriplesInDiff(n)
+		if len(diff) > 0 && err == nil {
+			lit, _ = diff[0].Object().Literal()
+		}
+
+		var tabs bytes.Buffer
+		for i := 0; i < distance; i++ {
+			tabs.WriteByte('\t')
+		}
+
+		var litString string
+		if lit != nil {
+			litString, _ = lit.Text()
+		}
+
+		switch litString {
+		case "extra":
+			color.Set(color.FgGreen)
+			fmt.Fprintf(w, "+%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
+			color.Unset()
+		case "missing":
+			color.Set(color.FgRed)
+			fmt.Fprintf(w, "-%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
+			color.Unset()
+		default:
+			fmt.Fprintf(w, "%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
+		}
+	})
+	return nil
 }
 
 type defaultSorter struct {

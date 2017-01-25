@@ -267,20 +267,47 @@ func TestDiffDisplay(t *testing.T) {
 		WithRootNode(rootNode),
 	).SetSource(diff).Build()
 
-	expected := `+----------+----------+----------+----------+
-|  TYPE ▲  | NAME/ID  | PROPERTY |  VALUE   |
-+----------+----------+----------+----------+
-| instance | + inst_3 |          |          |
-|          | + inst_4 |          |          |
-|          | + inst_5 |          |          |
-|          | - inst_2 |          |          |
-|          | inst_1   | Deleted  | - del_1  |
-|          |          | Id       | + new_id |
-|          |          |          | - inst_1 |
-| subnet   | + test_1 |          |          |
-+----------+----------+----------+----------+
+	expected := `+----------+--------------+----------+------------+
+|  TYPE ▲  |   NAME/ID    | PROPERTY |   VALUE    |
++----------+--------------+----------+------------+
+| instance | + inst_4     |          |            |
+|          | + inst_5     |          |            |
+|          | + inst_6     |          |            |
+|          | - inst_2     |          |            |
+|          | inst_1       | Id       | + new_id   |
+|          |              |          | - inst_1   |
+| subnet   | + new_subnet |          |            |
+| vpc      | vpc_1        | NewProp  | - my_value |
++----------+--------------+----------+------------+
 `
 	var w bytes.Buffer
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Errorf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+
+	displayer = BuildOptions(
+		WithFormat("tree"),
+		WithRootNode(rootNode),
+	).SetSource(diff).Build()
+
+	expected = `region, eu-west-1
+	vpc, vpc_1
+		subnet, sub_1
+			instance, inst_1
+	vpc, vpc_2
++		subnet, new_subnet
++			instance, inst_6
+		subnet, sub_2
+-			instance, inst_2
+			instance, inst_3
++			instance, inst_4
++			instance, inst_5
+`
+	w.Reset()
 	err = displayer.Print(&w)
 	if err != nil {
 		t.Fatal(err)
@@ -544,8 +571,8 @@ func createInfraGraph() *graph.Graph {
   /instance<inst_3>  "property"@[] "{"Key":"Type","Value":"t2.xlarge"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"State","Value":"running"}"^^type:text
 
-  /region<eu-west-1>  "parent_of"@[] /instance<vpc_1>
-  /region<eu-west-1>  "parent_of"@[] /instance<vpc_2>
+  /region<eu-west-1>  "parent_of"@[] /vpc<vpc_1>
+  /region<eu-west-1>  "parent_of"@[] /vpc<vpc_2>
 	
 	/subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text
 	/subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
@@ -555,6 +582,7 @@ func createInfraGraph() *graph.Graph {
 	
 	/subnet<sub_2>	"has_type"@[]	"/subnet"^^type:text
 	/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>
+	/subnet<sub_2>	"parent_of"@[]	/instance<inst_3>
 	/subnet<sub_2>	"property"@[]	"{"Key":"Id","Value":"sub_2"}"^^type:text
 	/subnet<sub_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
 	
@@ -574,47 +602,25 @@ func createInfraGraph() *graph.Graph {
 }
 
 func createDiff() *graph.Diff {
-	g := graph.NewGraph()
-	t0 := parseTriple(`/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`)
-	t1 := parseTriple(`/instance<inst_1>	"has_type"@[]	"/instance"^^type:text`)
-	t2 := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"inst_1"}"^^type:text`)
-	t3 := parseTriple(`/instance<inst_2>	"has_type"@[]	"/instance"^^type:text`)
-	t4 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_1>`)
-	t5 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_2>`)
-	t6 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /vpc<vpc_1>`)
-	t7 := parseTriple(`/vpc<vpc_1>  "parent_of"@[] /instance<inst_1>`)
-	t7bis := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Deleted","Value":"del_1"}"^^type:text`)
+	diff := graph.NewDiff(createInfraGraph())
 
-	g.Add(t0, t1, t2, t3, t4, t5, t6, t7, t7bis)
+	diff.AddDeleted(parseTriple(`/instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text`), parentOfPredicate)
+	diff.AddDeleted(parseTriple(`/instance<inst_2>  "has_type"@[] "/instance"^^type:text`), parentOfPredicate)
+	diff.AddDeleted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>`), parentOfPredicate)
+	diff.AddDeleted(parseTriple(`/vpc<vpc_1>	"property"@[]	"{"Key":"NewProp","Value":"my_value"}"^^type:text`), parentOfPredicate)
 
-	diff := graph.NewDiff(g)
-
-	diff.AddDeleted(t2, parentOfPredicate)
-	diff.AddDeleted(t3, parentOfPredicate)
-	diff.AddDeleted(t5, parentOfPredicate)
-	diff.AddDeleted(t7bis, parentOfPredicate)
-	t8 := parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"new_id"}"^^type:text`)
-	t9 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_3>`)
-	t10 := parseTriple(`/instance<inst_3>	"has_type"@[]	"/instance"^^type:text`)
-	t11 := parseTriple(`/instance<inst_3>	"property"@[]	"{"Key":"Id","Value":"inst_3"}"^^type:text`)
-	t12 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_4>`)
-	t13 := parseTriple(`/instance<inst_4>	"has_type"@[]	"/instance"^^type:text`)
-	t14 := parseTriple(`/instance<inst_4>	"property"@[]	"{"Key":"Test","Value":"test_1"}"^^type:text`)
-	t15 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /instance<inst_5>`)
-	t16 := parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`)
-	t17 := parseTriple(`/region<eu-west-1>  "parent_of"@[] /subnet<test_1>`)
-	t18 := parseTriple(`/subnet<test_1>	"property"@[]	"{"Key":"prop","Value":"val"}"^^type:text`)
-	diff.AddInserted(t8, parentOfPredicate)
-	diff.AddInserted(t9, parentOfPredicate)
-	diff.AddInserted(t10, parentOfPredicate)
-	diff.AddInserted(t11, parentOfPredicate)
-	diff.AddInserted(t12, parentOfPredicate)
-	diff.AddInserted(t13, parentOfPredicate)
-	diff.AddInserted(t14, parentOfPredicate)
-	diff.AddInserted(t15, parentOfPredicate)
-	diff.AddInserted(t16, parentOfPredicate)
-	diff.AddInserted(t17, parentOfPredicate)
-	diff.AddInserted(t18, parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"new_id"}"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_4>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_4>`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_5>`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Id","Value":"inst_5"}"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Test","Value":"test_1"}"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/subnet<new_subnet>	"has_type"@[]	"/subnet"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/vpc<vpc_2>	"parent_of"@[]	/subnet<new_subnet>`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/instance<inst_6>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
+	diff.AddInserted(parseTriple(`/subnet<new_subnet>	"parent_of"@[]	/instance<inst_6>`), parentOfPredicate)
 
 	return diff
 }

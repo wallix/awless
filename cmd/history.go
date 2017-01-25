@@ -98,7 +98,11 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *node.Node, 
 		if graphdiff.HasResourceDiff() {
 			fmt.Println("▶", cloudService, "resources, from", fromRevision,
 				"to", diff.To.Id[:7], "on", diff.To.Date.Format("Monday January 2, 15:04"))
-			display.ResourceDiff(graphdiff, root)
+			displayer := display.BuildOptions(
+				display.WithFormat("tree"),
+				display.WithRootNode(root),
+			).SetSource(graphdiff).Build()
+			exitOn(displayer.Print(os.Stdout))
 			fmt.Println()
 		} else if verbose {
 			fmt.Println("▶", cloudService, "resources, from", fromRevision,
