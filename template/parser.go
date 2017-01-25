@@ -13,3 +13,12 @@ func Parse(text string) (*Template, error) {
 
 	return &Template{p.AST}, nil
 }
+
+func ParseStatement(text string) (ast.Node, error) {
+	templ, err := Parse(text)
+	if err != nil {
+		return nil, err
+	}
+
+	return templ.Statements[0], nil
+}
