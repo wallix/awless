@@ -178,7 +178,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 	}
 
 	groupsIndex := make(map[string]*node.Node)
-	for _, group := range access.Groups {
+	for _, group := range access.GroupsDetail {
 		res, err := NewResource(group)
 		if err != nil {
 			return nil, err
@@ -258,7 +258,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 		}
 	}
 
-	for _, role := range access.Roles {
+	for _, role := range access.RolesDetail {
 		res, err := NewResource(role)
 		if err != nil {
 			return nil, err

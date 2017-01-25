@@ -68,7 +68,7 @@ func TestStats(t *testing.T) {
 
 	awsAccess := &aws.AwsAccess{}
 
-	awsAccess.Groups = []*iam.GroupDetail{
+	awsAccess.GroupsDetail = []*iam.GroupDetail{
 		&iam.GroupDetail{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
 		&iam.GroupDetail{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
 	}
@@ -78,14 +78,20 @@ func TestStats(t *testing.T) {
 		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
 	}
 
-	awsAccess.Roles = []*iam.RoleDetail{
+	awsAccess.RolesDetail = []*iam.RoleDetail{
 		&iam.RoleDetail{RoleId: awssdk.String("role_1")},
 	}
 
-	awsAccess.Users = []*iam.UserDetail{
+	awsAccess.UsersDetail = []*iam.UserDetail{
 		&iam.UserDetail{UserId: awssdk.String("usr_1")},
 		&iam.UserDetail{UserId: awssdk.String("usr_2")},
 		&iam.UserDetail{UserId: awssdk.String("usr_3")},
+	}
+
+	awsAccess.Users = []*iam.User{
+		&iam.User{UserId: awssdk.String("usr_1")},
+		&iam.User{UserId: awssdk.String("usr_2")},
+		&iam.User{UserId: awssdk.String("usr_3")},
 	}
 
 	awsAccess.UserGroups = map[string][]string{

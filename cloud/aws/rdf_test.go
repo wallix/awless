@@ -12,7 +12,7 @@ import (
 func TestBuildAccessRdfGraph(t *testing.T) {
 	awsAccess := &AwsAccess{}
 
-	awsAccess.Groups = []*iam.GroupDetail{
+	awsAccess.GroupsDetail = []*iam.GroupDetail{
 		&iam.GroupDetail{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
 		&iam.GroupDetail{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
 		&iam.GroupDetail{GroupId: awssdk.String("group_3"), GroupName: awssdk.String("ngroup_3")},
@@ -26,14 +26,14 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_4"), PolicyName: awssdk.String("npolicy_4")},
 	}
 
-	awsAccess.Roles = []*iam.RoleDetail{
+	awsAccess.RolesDetail = []*iam.RoleDetail{
 		&iam.RoleDetail{RoleId: awssdk.String("role_1")},
 		&iam.RoleDetail{RoleId: awssdk.String("role_2")},
 		&iam.RoleDetail{RoleId: awssdk.String("role_3")},
 		&iam.RoleDetail{RoleId: awssdk.String("role_4")},
 	}
 
-	awsAccess.Users = []*iam.UserDetail{
+	awsAccess.UsersDetail = []*iam.UserDetail{
 		&iam.UserDetail{UserId: awssdk.String("usr_1")},
 		&iam.UserDetail{UserId: awssdk.String("usr_2")},
 		&iam.UserDetail{UserId: awssdk.String("usr_3")},
@@ -45,6 +45,20 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		&iam.UserDetail{UserId: awssdk.String("usr_9")},
 		&iam.UserDetail{UserId: awssdk.String("usr_10")}, //users not in any groups
 		&iam.UserDetail{UserId: awssdk.String("usr_11")},
+	}
+
+	awsAccess.Users = []*iam.User{
+		&iam.User{UserId: awssdk.String("usr_1")},
+		&iam.User{UserId: awssdk.String("usr_2")},
+		&iam.User{UserId: awssdk.String("usr_3")},
+		&iam.User{UserId: awssdk.String("usr_4")},
+		&iam.User{UserId: awssdk.String("usr_5")},
+		&iam.User{UserId: awssdk.String("usr_6")},
+		&iam.User{UserId: awssdk.String("usr_7")},
+		&iam.User{UserId: awssdk.String("usr_8")},
+		&iam.User{UserId: awssdk.String("usr_9")},
+		&iam.User{UserId: awssdk.String("usr_10")}, //users not in any groups
+		&iam.User{UserId: awssdk.String("usr_11")},
 	}
 
 	awsAccess.UserGroups = map[string][]string{

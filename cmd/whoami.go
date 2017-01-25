@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 )
@@ -16,9 +18,9 @@ var whoamiCmd = &cobra.Command{
 	PersistentPostRun: saveHistoryFn,
 	Short:             "Show the caller identity",
 
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.AccessService.CallerIdentity()
-		displayItem(resp, err)
-		return nil
+		exitOn(err)
+		fmt.Println(resp)
 	},
 }
