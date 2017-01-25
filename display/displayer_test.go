@@ -13,7 +13,7 @@ func init() {
 }
 
 func TestTabularDisplays(t *testing.T) {
-	g := createIntancesGraph()
+	g := createInfraGraph()
 	headers := []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
@@ -168,6 +168,81 @@ apache`
 	}
 }
 
+func TestMultiResourcesDisplays(t *testing.T) {
+	g := createInfraGraph()
+
+	displayer := BuildOptions(
+		WithFormat("table"),
+	).SetSource(g).Build()
+
+	expected := `+----------+-----------+-----------+-----------+
+|  TYPE ▲  |  NAME/ID  | PROPERTY  |   VALUE   |
++----------+-----------+-----------+-----------+
+| instance | apache    | Id        | inst_3    |
+|          |           | Name      | apache    |
+|          |           | State     | running   |
+|          |           | Type      | t2.xlarge |
+|          | django    | Id        | inst_2    |
+|          |           | Name      | django    |
+|          |           | State     | stopped   |
+|          |           | Type      | t2.medium |
+|          | redis     | Id        | inst_1    |
+|          |           | Name      | redis     |
+|          |           | Public IP | 1.2.3.4   |
+|          |           | State     | running   |
+|          |           | Type      | t2.micro  |
+| subnet   | my_subnet | Id        | sub_1     |
+|          |           | Name      | my_subnet |
+|          |           | VpcId     | vpc_1     |
+|          | sub_2     | Id        | sub_2     |
+|          |           | VpcId     | vpc_2     |
+| vpc      | my_vpc_2  | Id        |           |
+|          |           | Name      | my_vpc_2  |
+|          | vpc_1     | Id        | vpc_1     |
+|          |           | NewProp   | my_value  |
++----------+-----------+-----------+-----------+
+`
+	var w bytes.Buffer
+	err := displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+
+	headers := []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Name"},
+	}
+
+	displayer = BuildOptions(
+		WithHeaders(headers),
+		WithFormat("porcelain"),
+	).SetSource(g).Build()
+
+	expected = `inst_1
+redis
+inst_2
+django
+inst_3
+apache
+sub_1
+my_subnet
+sub_2
+vpc_1
+vpc_2
+my_vpc_2`
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+}
+
 func TestDateLists(t *testing.T) {
 	users := []byte(`/region<eu-west-1>	"has_type"@[]	"/region"^^type:text
 /region<eu-west-1>	"parent_of"@[]	/user<user1>
@@ -241,7 +316,7 @@ func TestDateLists(t *testing.T) {
 }
 
 func TestMaxWidth(t *testing.T) {
-	g := createIntancesGraph()
+	g := createInfraGraph()
 	headers := []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
@@ -275,10 +350,10 @@ func TestMaxWidth(t *testing.T) {
 
 	headers = []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id", TruncateSize: 4, TruncateRight: true},
-		StringColumnDefinition{Prop: "Name", DontTruncate: true},
-		StringColumnDefinition{Prop: "State", DontTruncate: true},
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "State", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Type", TruncateSize: 6},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP", DontTruncate: true},
+		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP", DisableTruncate: true},
 	}
 
 	displayer = BuildOptions(
@@ -401,7 +476,7 @@ func TestCompareInterface(t *testing.T) {
 	}
 }
 
-func createIntancesGraph() *graph.Graph {
+func createInfraGraph() *graph.Graph {
 	instances := []byte(`/region<eu-west-1> "has_type"@[] "/region"^^type:text
   /instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
@@ -416,15 +491,35 @@ func createIntancesGraph() *graph.Graph {
   /instance<inst_2>  "property"@[] "{"Key":"Type","Value":"t2.medium"}"^^type:text
   /instance<inst_2>  "property"@[] "{"Key":"State","Value":"stopped"}"^^type:text
 
-
-  /instance<inst_3>  "has_type"@[] "/instance"^^type:text
+	/instance<inst_3>  "has_type"@[] "/instance"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"apache"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Type","Value":"t2.xlarge"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"State","Value":"running"}"^^type:text
 
-  /region<eu-west-1>  "parent_of"@[] /instance<inst_1>
-  /region<eu-west-1>  "parent_of"@[] /instance<inst_2>`)
+  /region<eu-west-1>  "parent_of"@[] /instance<vpc_1>
+  /region<eu-west-1>  "parent_of"@[] /instance<vpc_2>
+	
+	/subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text
+	/subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
+	/subnet<sub_1>	"property"@[]	"{"Key":"Id","Value":"sub_1"}"^^type:text
+  /subnet<sub_1>  "property"@[] "{"Key":"Name","Value":"my_subnet"}"^^type:text
+	/subnet<sub_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
+	
+	/subnet<sub_2>	"has_type"@[]	"/subnet"^^type:text
+	/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>
+	/subnet<sub_2>	"property"@[]	"{"Key":"Id","Value":"sub_2"}"^^type:text
+	/subnet<sub_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
+	
+	/vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
+	/vpc<vpc_1>	"parent_of"@[]	/subnet<sub_1>
+	/vpc<vpc_1>	"property"@[]	"{"Key":"Id","Value":"vpc_1"}"^^type:text
+	/vpc<vpc_1>	"property"@[]	"{"Key":"NewProp","Value":"my_value"}"^^type:text
+	
+	/vpc<vpc_2>	"has_type"@[]	"/vpc"^^type:text
+	/vpc<vpc_2>	"parent_of"@[]	/subnet<sub_2>
+	/vpc<vpc_2>	"property"@[]	"{"Key":"Id","Value":"vpc_2"}"^^type:text
+	/vpc<vpc_2>	"property"@[]	"{"Key":"Name","Value":"my_vpc_2"}"^^type:text`)
 
 	g := graph.NewGraph()
 	g.Unmarshal(instances)

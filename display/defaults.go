@@ -44,7 +44,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	graph.SecurityGroup: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "VpcId"},
-		StringColumnDefinition{Prop: "Name", DontTruncate: true},
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 	},
 	graph.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},

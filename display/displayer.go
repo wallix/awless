@@ -49,6 +49,23 @@ func (b *Builder) Build() Displayer {
 
 	switch b.source.(type) {
 	case *graph.Graph:
+		if b.rdfType == "" {
+			switch b.format {
+			case "table":
+				dis := &multiResourcesTableDisplayer{base}
+				dis.SetGraph(b.source.(*graph.Graph))
+				return dis
+			case "porcelain":
+				dis := &porcelainDisplayer{base}
+				dis.SetGraph(b.source.(*graph.Graph))
+				return dis
+			default:
+				fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
+				dis := &multiResourcesTableDisplayer{base}
+				dis.SetGraph(b.source.(*graph.Graph))
+				return dis
+			}
+		}
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}
@@ -114,8 +131,8 @@ func WithIDsOnly(only bool) optsFn {
 	return func(b *Builder) *Builder {
 		if only {
 			b.headers = []ColumnDefinition{
-				StringColumnDefinition{Prop: "Id"},
-				StringColumnDefinition{Prop: "Name"},
+				&StringColumnDefinition{Prop: "Id"},
+				&StringColumnDefinition{Prop: "Name"},
 			}
 			b.format = "porcelain"
 		}
@@ -161,6 +178,10 @@ type fromGraphDisplayer struct {
 	maxwidth int
 }
 
+func (d *fromGraphDisplayer) SetGraph(g *graph.Graph) {
+	d.g = g
+}
+
 type csvDisplayer struct {
 	fromGraphDisplayer
 }
@@ -202,10 +223,6 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 
 	_, err = w.Write([]byte(strings.Join(lines, "\n")))
 	return err
-}
-
-func (d *csvDisplayer) SetGraph(g *graph.Graph) {
-	d.g = g
 }
 
 type tableDisplayer struct {
@@ -279,27 +296,33 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	return nil
 }
 
-func (d *tableDisplayer) SetGraph(g *graph.Graph) {
-	d.g = g
-}
-
 type porcelainDisplayer struct {
 	fromGraphDisplayer
 }
 
 func (d *porcelainDisplayer) Print(w io.Writer) error {
-	resources, err := graph.LoadResourcesFromGraph(d.g, d.rdfType)
-	if err != nil {
-		return err
+	var types []graph.ResourceType
+	if d.rdfType == "" {
+		for t := range DefaultsColumnDefinitions {
+			types = append(types, t)
+		}
+	} else {
+		types = append(types, d.rdfType)
 	}
 
-	values := make(table, len(resources))
-	for i, res := range resources {
-		if v := values[i]; v == nil {
-			values[i] = make([]interface{}, len(d.headers))
+	var values table
+	for _, t := range types {
+		resources, err := graph.LoadResourcesFromGraph(d.g, t)
+		if err != nil {
+			return err
 		}
-		for j, h := range d.headers {
-			values[i][j] = res.Properties()[h.propKey()]
+
+		for _, res := range resources {
+			var row = make([]interface{}, len(d.headers))
+			for j, h := range d.headers {
+				row[j] = res.Properties()[h.propKey()]
+			}
+			values = append(values, row)
 		}
 	}
 
@@ -308,20 +331,72 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 	var lines []string
 
 	for i := range values {
-		for j, h := range d.headers {
-			val := h.format(values[i][j])
-			if val != "" {
-				lines = append(lines, val)
+		for j, _ := range d.headers {
+			v := values[i][j]
+			if v != nil {
+				val := fmt.Sprint(v)
+				if val != "" {
+					lines = append(lines, val)
+				}
 			}
+
 		}
 	}
 
-	_, err = w.Write([]byte(strings.Join(lines, "\n")))
+	_, err := w.Write([]byte(strings.Join(lines, "\n")))
 	return err
 }
 
-func (d *porcelainDisplayer) SetGraph(g *graph.Graph) {
-	d.g = g
+type multiResourcesTableDisplayer struct {
+	fromGraphDisplayer
+}
+
+func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
+	var values table
+
+	for t, propDefs := range DefaultsColumnDefinitions {
+		resources, err := graph.LoadResourcesFromGraph(d.g, t)
+		if err != nil {
+			return err
+		}
+		for _, res := range resources {
+			for prop, val := range res.Properties() {
+				var header ColumnDefinition
+				for _, h := range propDefs {
+					if h.propKey() == prop {
+						header = h
+					}
+				}
+				if header == nil {
+					header = &StringColumnDefinition{Prop: prop}
+				}
+				var row [4]interface{}
+				row[0] = t.String()
+				row[1] = nameOrID(res)
+				row[2] = header.title(false)
+				row[3] = header.format(val)
+				values = append(values, row[:])
+			}
+		}
+	}
+	sort.Sort(byCols{table: values, sortBy: []int{0, 1, 2, 3}})
+
+	table := tablewriter.NewWriter(w)
+	table.SetAutoMergeCells(true)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeader([]string{"Type" + ascSymbol, "Name/Id", "Property", "Value"})
+
+	for i := range values {
+		row := make([]string, len(values[i]))
+		for j := range values[i] {
+			row[j] = fmt.Sprint(values[i][j])
+		}
+		table.Append(row)
+	}
+
+	table.Render()
+
+	return nil
 }
 
 type defaultSorter struct {

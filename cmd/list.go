@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -30,6 +29,8 @@ func init() {
 	for _, resource := range []graph.ResourceType{graph.User, graph.Role, graph.Policy, graph.Group} {
 		listCmd.AddCommand(listAccessResourceCmd(resource))
 	}
+	listCmd.AddCommand(listInfraCmd)
+	listCmd.AddCommand(listAccessCmd)
 	listCmd.AddCommand(listAllCmd)
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Format for the display of resources: table or csv")
@@ -88,30 +89,26 @@ var listAccessResourceCmd = func(resourceType graph.ResourceType) *cobra.Command
 	}
 }
 
+var listInfraCmd = &cobra.Command{
+	Use:   "infra",
+	Short: "List ec2 resources",
+
+	Run: listAllInfraResources,
+}
+
+var listAccessCmd = &cobra.Command{
+	Use:   "access",
+	Short: "List iam resources",
+	Run:   listAllAccessResources,
+}
+
 var listAllCmd = &cobra.Command{
 	Use:   "all",
 	Short: "List all local resources",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if !listAllInfra && !listAllAccess {
-			listAllInfra = true //By default, print only infra
-		}
-		if listAllInfra {
-			if !listOnlyIDs {
-				fmt.Println("Infrastructure")
-			}
-			localInfra, err := config.LoadInfraGraph()
-			exitOn(err)
-			display.SeveralResourcesOfGraph(localInfra, display.PropertiesDisplayer.Services[aws.InfraServiceName], listOnlyIDs)
-		}
-		if listAllAccess {
-			if !listOnlyIDs {
-				fmt.Println("Access")
-			}
-			localAccess, err := config.LoadAccessGraph()
-			exitOn(err)
-			display.SeveralResourcesOfGraph(localAccess, display.PropertiesDisplayer.Services[aws.AccessServiceName], listOnlyIDs)
-		}
+		listAllInfraResources(cmd, args)
+		listAllAccessResources(cmd, args)
 	},
 }
 
@@ -125,5 +122,26 @@ func printResources(g *graph.Graph, nodeType graph.ResourceType) {
 		display.WithSortBy(sortBy...),
 	).SetSource(g).Build()
 
+	exitOn(displayer.Print(os.Stdout))
+}
+
+func listAllAccessResources(cmd *cobra.Command, args []string) {
+	g, err := config.LoadAccessGraph()
+	exitOn(err)
+	exitOn(err)
+	displayer := display.BuildOptions(
+		display.WithFormat(listingFormat),
+		display.WithIDsOnly(listOnlyIDs),
+	).SetSource(g).Build()
+	exitOn(displayer.Print(os.Stdout))
+}
+
+func listAllInfraResources(cmd *cobra.Command, args []string) {
+	g, err := config.LoadInfraGraph()
+	exitOn(err)
+	displayer := display.BuildOptions(
+		display.WithFormat(listingFormat),
+		display.WithIDsOnly(listOnlyIDs),
+	).SetSource(g).Build()
 	exitOn(displayer.Print(os.Stdout))
 }

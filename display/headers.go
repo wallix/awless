@@ -26,17 +26,17 @@ type ColumnDefinition interface {
 }
 
 type StringColumnDefinition struct {
-	Prop, Friendly string
-	DontTruncate   bool
-	TruncateRight  bool
-	TruncateSize   int
+	Prop, Friendly  string
+	DisableTruncate bool
+	TruncateRight   bool
+	TruncateSize    int
 }
 
 func (h StringColumnDefinition) format(i interface{}) string {
 	if i == nil {
 		return ""
 	}
-	if !h.DontTruncate {
+	if !h.DisableTruncate {
 		size := h.TruncateSize
 		if size == 0 {
 			size = truncateSize

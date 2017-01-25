@@ -26,7 +26,7 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 			}
 		}
 		if header == nil {
-			header = StringColumnDefinition{Prop: prop}
+			header = &StringColumnDefinition{Prop: prop}
 		}
 
 		if v := values[i]; v == nil {
