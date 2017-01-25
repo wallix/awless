@@ -69,7 +69,7 @@ func runTemplate(templ *template.Template) error {
 	}
 	templ.InteractiveResolveTemplate(prompt)
 
-	awsDriver := aws.NewDriver(awscloud.InfraService)
+	awsDriver := aws.NewDriver(awscloud.InfraService, awscloud.AccessService)
 	if verboseFlag {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 	}
@@ -119,7 +119,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				}
 
 				templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
-				templDef, ok := aws.AWSDriverTemplates[templName]
+				templDef, ok := aws.AWSTemplatesDefinitions[templName]
 				if !ok {
 					exitOn(errors.New("command unsupported on inline mode"))
 				}

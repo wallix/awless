@@ -21,7 +21,7 @@ func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface
 		}
 		input.Tags = append(input.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(fmt.Sprint(v))})
 	}
-	_, err := d.api.CreateTags(input)
+	_, err := d.ec2.CreateTags(input)
 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
@@ -46,7 +46,7 @@ func (d *AwsDriver) Create_Tags(params map[string]interface{}) (interface{}, err
 		}
 		input.Tags = append(input.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(fmt.Sprint(v))})
 	}
-	_, err := d.api.CreateTags(input)
+	_, err := d.ec2.CreateTags(input)
 
 	if err != nil {
 		d.logger.Printf("create tags error: %s", err)

@@ -27,7 +27,7 @@ func TestHumanizeString(t *testing.T) {
 
 func TestDriver(t *testing.T) {
 	awsMock := &mockEc2{}
-	driv := NewDriver(awsMock)
+	driv := NewDriver(awsMock, nil)
 
 	t.Run("Create vpc", func(t *testing.T) {
 		cidr := "10.0.0.0/16"

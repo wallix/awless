@@ -56,7 +56,7 @@ const templateDefinitions = `// DO NOT EDIT
 // This file was automatically generated with go generate
 package aws
 
-var AWSDriverTemplates = map[string]string{
+var AWSTemplatesDefinitions = map[string]string{
 {{- range $index, $def := . }}
 	"{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.RequiredParams }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }} {{ range $awsField, $field := $def.TagsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }}",
 {{- end }}
@@ -75,18 +75,26 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 )
 {{ range $index, $def := . }}
 {{- if not $def.ManualFuncDefinition }}
+
+{{- if $def.DryRunUnsupported }}
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
-	input := &ec2.{{ $def.Input }}{}
+	d.logger.Println("!! {{ $def.Action }} {{ $def.Entity }}: dry run not supported")
+	return nil, nil
+}
+{{ else }}
+func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &{{ $def.Api }}.{{ $def.Input }}{}
 
 	input.DryRun = aws.Bool(true)
 	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
 	{{- end }}
 
-	_, err := d.api.{{ $def.ApiMethod }}(input)
+	_, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -106,14 +114,14 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 	d.logger.Printf("dry run: {{ $def.Action }} {{ $def.Entity }} error: %s", err)
 	return nil, err
 }
-
+{{ end }}
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
-	input := &ec2.{{ $def.Input }}{}
+	input := &{{ $def.Api }}.{{ $def.Input }}{}
 	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
 	{{- end }}
 
-	output, err := d.api.{{ $def.ApiMethod }}(input)
+	output, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
 	if err != nil {
 		d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err

@@ -8,18 +8,22 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/wallix/awless/template/driver"
 )
 
 type AwsDriver struct {
-	api    ec2iface.EC2API
+	iam iamiface.IAMAPI
+	ec2 ec2iface.EC2API
+
 	dryRun bool
 	logger *log.Logger
 }
 
-func NewDriver(api ec2iface.EC2API) *AwsDriver {
+func NewDriver(ec2 ec2iface.EC2API, iam iamiface.IAMAPI) *AwsDriver {
 	return &AwsDriver{
-		api:    api,
+		ec2:    ec2,
+		iam:    iam,
 		logger: log.New(ioutil.Discard, "", 0),
 	}
 }

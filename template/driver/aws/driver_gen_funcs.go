@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 )
 
 func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -18,7 +19,7 @@ func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 	input.DryRun = aws.Bool(true)
 	setField(params["cidr"], input, "CidrBlock")
 
-	_, err := d.api.CreateVpc(input)
+	_, err := d.ec2.CreateVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -36,7 +37,7 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 	input := &ec2.CreateVpcInput{}
 	setField(params["cidr"], input, "CidrBlock")
 
-	output, err := d.api.CreateVpc(input)
+	output, err := d.ec2.CreateVpc(input)
 	if err != nil {
 		d.logger.Printf("create vpc error: %s", err)
 		return nil, err
@@ -52,7 +53,7 @@ func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 	input.DryRun = aws.Bool(true)
 	setField(params["id"], input, "VpcId")
 
-	_, err := d.api.DeleteVpc(input)
+	_, err := d.ec2.DeleteVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -70,7 +71,7 @@ func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 	input := &ec2.DeleteVpcInput{}
 	setField(params["id"], input, "VpcId")
 
-	output, err := d.api.DeleteVpc(input)
+	output, err := d.ec2.DeleteVpc(input)
 	if err != nil {
 		d.logger.Printf("delete vpc error: %s", err)
 		return nil, err
@@ -86,7 +87,7 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 	setField(params["cidr"], input, "CidrBlock")
 	setField(params["vpc"], input, "VpcId")
 
-	_, err := d.api.CreateSubnet(input)
+	_, err := d.ec2.CreateSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -105,7 +106,7 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	setField(params["cidr"], input, "CidrBlock")
 	setField(params["vpc"], input, "VpcId")
 
-	output, err := d.api.CreateSubnet(input)
+	output, err := d.ec2.CreateSubnet(input)
 	if err != nil {
 		d.logger.Printf("create subnet error: %s", err)
 		return nil, err
@@ -121,7 +122,7 @@ func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 	input.DryRun = aws.Bool(true)
 	setField(params["id"], input, "SubnetId")
 
-	_, err := d.api.DeleteSubnet(input)
+	_, err := d.ec2.DeleteSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -139,7 +140,7 @@ func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 	input := &ec2.DeleteSubnetInput{}
 	setField(params["id"], input, "SubnetId")
 
-	output, err := d.api.DeleteSubnet(input)
+	output, err := d.ec2.DeleteSubnet(input)
 	if err != nil {
 		d.logger.Printf("delete subnet error: %s", err)
 		return nil, err
@@ -158,7 +159,7 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	setField(params["count"], input, "MinCount")
 	setField(params["subnet"], input, "SubnetId")
 
-	_, err := d.api.RunInstances(input)
+	_, err := d.ec2.RunInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -183,7 +184,7 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	setField(params["count"], input, "MinCount")
 	setField(params["subnet"], input, "SubnetId")
 
-	output, err := d.api.RunInstances(input)
+	output, err := d.ec2.RunInstances(input)
 	if err != nil {
 		d.logger.Printf("create instance error: %s", err)
 		return nil, err
@@ -202,7 +203,7 @@ func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 	input.DryRun = aws.Bool(true)
 	setField(params["id"], input, "InstanceIds")
 
-	_, err := d.api.TerminateInstances(input)
+	_, err := d.ec2.TerminateInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -220,7 +221,7 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 	input := &ec2.TerminateInstancesInput{}
 	setField(params["id"], input, "InstanceIds")
 
-	output, err := d.api.TerminateInstances(input)
+	output, err := d.ec2.TerminateInstances(input)
 	if err != nil {
 		d.logger.Printf("delete instance error: %s", err)
 		return nil, err
@@ -235,7 +236,7 @@ func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interf
 	input.DryRun = aws.Bool(true)
 	setField(params["id"], input, "InstanceIds")
 
-	_, err := d.api.StartInstances(input)
+	_, err := d.ec2.StartInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -253,7 +254,7 @@ func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, 
 	input := &ec2.StartInstancesInput{}
 	setField(params["id"], input, "InstanceIds")
 
-	output, err := d.api.StartInstances(input)
+	output, err := d.ec2.StartInstances(input)
 	if err != nil {
 		d.logger.Printf("start instance error: %s", err)
 		return nil, err
@@ -269,7 +270,7 @@ func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 	input.DryRun = aws.Bool(true)
 	setField(params["id"], input, "InstanceIds")
 
-	_, err := d.api.StopInstances(input)
+	_, err := d.ec2.StopInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
@@ -287,7 +288,7 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	input := &ec2.StopInstancesInput{}
 	setField(params["id"], input, "InstanceIds")
 
-	output, err := d.api.StopInstances(input)
+	output, err := d.ec2.StopInstances(input)
 	if err != nil {
 		d.logger.Printf("stop instance error: %s", err)
 		return nil, err
@@ -295,4 +296,78 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
 	d.logger.Printf("stop instance '%s' done", id)
 	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
+}
+
+func (d *AwsDriver) Create_User_DryRun(params map[string]interface{}) (interface{}, error) {
+	d.logger.Println("!! create user: dry run not supported")
+	return nil, nil
+}
+
+func (d *AwsDriver) Create_User(params map[string]interface{}) (interface{}, error) {
+	input := &iam.CreateUserInput{}
+	setField(params["name"], input, "UserName")
+
+	output, err := d.iam.CreateUser(input)
+	if err != nil {
+		d.logger.Printf("create user error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.User.UserId)
+	d.logger.Printf("create user '%s' done", id)
+	return aws.StringValue(output.User.UserId), nil
+}
+
+func (d *AwsDriver) Delete_User_DryRun(params map[string]interface{}) (interface{}, error) {
+	d.logger.Println("!! delete user: dry run not supported")
+	return nil, nil
+}
+
+func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteUserInput{}
+	setField(params["name"], input, "UserName")
+
+	output, err := d.iam.DeleteUser(input)
+	if err != nil {
+		d.logger.Printf("delete user error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete user done")
+	return output, nil
+}
+
+func (d *AwsDriver) Create_Group_DryRun(params map[string]interface{}) (interface{}, error) {
+	d.logger.Println("!! create group: dry run not supported")
+	return nil, nil
+}
+
+func (d *AwsDriver) Create_Group(params map[string]interface{}) (interface{}, error) {
+	input := &iam.CreateGroupInput{}
+	setField(params["name"], input, "GroupName")
+
+	output, err := d.iam.CreateGroup(input)
+	if err != nil {
+		d.logger.Printf("create group error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.Group.GroupId)
+	d.logger.Printf("create group '%s' done", id)
+	return aws.StringValue(output.Group.GroupId), nil
+}
+
+func (d *AwsDriver) Delete_Group_DryRun(params map[string]interface{}) (interface{}, error) {
+	d.logger.Println("!! delete group: dry run not supported")
+	return nil, nil
+}
+
+func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteGroupInput{}
+	setField(params["name"], input, "GroupName")
+
+	output, err := d.iam.DeleteGroup(input)
+	if err != nil {
+		d.logger.Printf("delete group error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete group done")
+	return output, nil
 }
