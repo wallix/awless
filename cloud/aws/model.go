@@ -99,6 +99,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Name":                 {name: "UserName", transform: extractValueFn},
 		"Arn":                  {name: "Arn", transform: extractValueFn},
 		"Path":                 {name: "Path", transform: extractValueFn},
+		"CreateDate":           {name: "CreateDate", transform: extractValueFn},
 		"PasswordLastUsedDate": {name: "PasswordLastUsed", transform: extractValueFn},
 	},
 	graph.Role: {
