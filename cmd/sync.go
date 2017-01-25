@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sync"
+	gosync "sync"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
@@ -14,7 +14,7 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/revision/repo"
+	"github.com/wallix/awless/sync"
 )
 
 func init() {
@@ -60,7 +60,7 @@ func performSync(region string) (*graph.Graph, *graph.Graph, error) {
 	var awsInfra *aws.AwsInfra
 	var awsAccess *aws.AwsAccess
 
-	var wg sync.WaitGroup
+	var wg gosync.WaitGroup
 
 	wg.Add(1)
 	go func() {
@@ -100,7 +100,7 @@ func performSync(region string) (*graph.Graph, *graph.Graph, error) {
 		return nil, nil, err
 	}
 
-	r, err := repo.NewRepo()
+	r, err := sync.NewRepo()
 	if err != nil {
 		return nil, nil, err
 	}

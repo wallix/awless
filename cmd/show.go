@@ -4,22 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/revision"
-)
-
-var (
-	numberRevisionsToShow    int
-	showRevisionsProperties  bool
-	showRevisionsGroupAll    bool
-	showRevisionsGroupByDay  bool
-	showRevisionsGroupByWeek bool
 )
 
 func init() {
@@ -30,14 +19,6 @@ func init() {
 	for _, resource := range []graph.ResourceType{graph.User, graph.Role, graph.Policy, graph.Group} {
 		showCmd.AddCommand(showAccessResourceCmd(resource))
 	}
-
-	//Revisions
-	showCmd.AddCommand(showCloudRevisionsCmd)
-	showCloudRevisionsCmd.PersistentFlags().IntVarP(&numberRevisionsToShow, "number", "n", 10, "Number of revision to show")
-	showCloudRevisionsCmd.PersistentFlags().BoolVarP(&showRevisionsProperties, "properties", "p", false, "Full diff with resources properties")
-	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupAll, "group-all", false, "Group all revisions")
-	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByWeek, "group-by-week", false, "Group revisions by week")
-	showCloudRevisionsCmd.PersistentFlags().BoolVar(&showRevisionsGroupByDay, "group-by-day", false, "Group revisions by day")
 
 	RootCmd.AddCommand(showCmd)
 }
@@ -127,74 +108,4 @@ func printResource(g *graph.Graph, resourceType graph.ResourceType, id string) {
 
 	err = displayer.Print(os.Stderr)
 	exitOn(err)
-}
-
-var showCloudRevisionsCmd = &cobra.Command{
-	Use:   "revisions",
-	Short: "Show cloud revision history",
-
-	RunE: func(cmd *cobra.Command, args []string) error {
-		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), database.MustGetDefaultRegion())
-		if err != nil {
-			return err
-		}
-		r, err := revision.OpenRepository(config.RepoDir)
-		if err != nil {
-			return err
-		}
-		param := revision.NoGroup
-		if showRevisionsGroupAll {
-			param = revision.GroupAll
-		}
-		if showRevisionsGroupByDay {
-			param = revision.GroupByDay
-		}
-		if showRevisionsGroupByWeek {
-			param = revision.GroupByWeek
-		}
-		accessDiffs, err := r.LastDiffs(numberRevisionsToShow, root, param, config.AccessFilename)
-		if err != nil {
-			return err
-		}
-		infraDiffs, err := r.LastDiffs(numberRevisionsToShow, root, param, config.InfraFilename)
-		if err != nil {
-			return err
-		}
-		for i := range accessDiffs {
-			displayRevisionDiff(accessDiffs[i], aws.AccessServiceName, root, verboseFlag, showRevisionsProperties)
-			displayRevisionDiff(infraDiffs[i], aws.InfraServiceName, root, verboseFlag, showRevisionsProperties)
-		}
-		return nil
-	},
-}
-
-func displayRevisionDiff(diff *revision.Diff, cloudService string, root *node.Node, verbose bool, showProperties bool) {
-	fromRevision := "repository creation"
-	if diff.From.ID != "" {
-		fromRevision = diff.From.ID[:7] + " on " + diff.From.Time.Format("Monday January 2, 15:04")
-	}
-
-	if showProperties {
-		if diff.GraphDiff.HasDiff() {
-			fmt.Println("▶", cloudService, "properties, from", fromRevision,
-				"to", diff.To.ID[:7], "on", diff.To.Time.Format("Monday January 2, 15:04"))
-			displayFullDiff(diff.GraphDiff, root)
-			fmt.Println()
-		} else if verbose {
-			fmt.Println("▶", cloudService, "properties, from", fromRevision,
-				"to", diff.To.ID[:7], "on", diff.To.Time.Format("Monday January 2, 15:04"))
-			fmt.Println("No changes.")
-		}
-	} else {
-		if diff.GraphDiff.HasResourceDiff() {
-			fmt.Println("▶", cloudService, "resources, from", fromRevision,
-				"to", diff.To.ID[:7], "on", diff.To.Time.Format("Monday January 2, 15:04"))
-			display.ResourceDiff(diff.GraphDiff, root)
-			fmt.Println()
-		} else if verbose {
-			fmt.Println("▶", cloudService, "resources, from", fromRevision,
-				"to", diff.To.ID[:7], "on", diff.To.Time.Format("Monday January 2, 15:04"))
-			fmt.Println("No resource changes.")
-		}
-	}
 }

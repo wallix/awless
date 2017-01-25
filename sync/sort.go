@@ -1,4 +1,4 @@
-package repo
+package sync
 
 type revsByDate []*Rev
 
