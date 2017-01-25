@@ -21,12 +21,6 @@ type Displayer interface {
 	Print(io.Writer) error
 }
 
-type GraphDisplayer interface {
-	sorter
-	Displayer
-	SetGraph(*graph.Graph)
-}
-
 type sorter interface {
 	sort(table)
 	columns() []int
@@ -38,63 +32,63 @@ type Builder struct {
 	rdfType  graph.ResourceType
 	sort     []int
 	maxwidth int
-	source   interface{}
+	dataSource   interface{}
 	root     *node.Node
 }
 
 func (b *Builder) SetSource(i interface{}) *Builder {
-	b.source = i
+	b.dataSource = i
 	return b
 }
 
 func (b *Builder) Build() Displayer {
 	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
 
-	switch b.source.(type) {
+	switch b.dataSource.(type) {
 	case *graph.Graph:
 		if b.rdfType == "" {
 			switch b.format {
 			case "table":
 				dis := &multiResourcesTableDisplayer{base}
-				dis.SetGraph(b.source.(*graph.Graph))
+				dis.setGraph(b.dataSource.(*graph.Graph))
 				return dis
 			case "porcelain":
 				dis := &porcelainDisplayer{base}
-				dis.SetGraph(b.source.(*graph.Graph))
+				dis.setGraph(b.dataSource.(*graph.Graph))
 				return dis
 			default:
 				fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
 				dis := &multiResourcesTableDisplayer{base}
-				dis.SetGraph(b.source.(*graph.Graph))
+				dis.setGraph(b.dataSource.(*graph.Graph))
 				return dis
 			}
 		}
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}
-			dis.SetGraph(b.source.(*graph.Graph))
+			dis.setGraph(b.dataSource.(*graph.Graph))
 			return dis
 		case "porcelain":
 			dis := &porcelainDisplayer{base}
-			dis.SetGraph(b.source.(*graph.Graph))
+			dis.setGraph(b.dataSource.(*graph.Graph))
 			return dis
 		case "table":
 			dis := &tableDisplayer{base}
-			dis.SetGraph(b.source.(*graph.Graph))
+			dis.setGraph(b.dataSource.(*graph.Graph))
 			return dis
 		default:
 			fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
 			dis := &tableDisplayer{base}
-			dis.SetGraph(b.source.(*graph.Graph))
+			dis.setGraph(b.dataSource.(*graph.Graph))
 			return dis
 		}
 	case *graph.Resource:
 		dis := &tableResourceDisplayer{headers: b.headers}
-		dis.SetResource(b.source.(*graph.Resource))
+		dis.SetResource(b.dataSource.(*graph.Resource))
 		return dis
 	case *graph.Diff:
 		dis := &diffTableDisplayer{root: b.root}
-		dis.SetDiff(b.source.(*graph.Diff))
+		dis.SetDiff(b.dataSource.(*graph.Diff))
 		return dis
 	}
 
@@ -192,7 +186,7 @@ type fromGraphDisplayer struct {
 	maxwidth int
 }
 
-func (d *fromGraphDisplayer) SetGraph(g *graph.Graph) {
+func (d *fromGraphDisplayer) setGraph(g *graph.Graph) {
 	d.g = g
 }
 
