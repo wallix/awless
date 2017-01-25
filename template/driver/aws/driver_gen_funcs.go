@@ -228,3 +228,71 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 	d.logger.Println("delete instance done")
 	return output, nil
 }
+
+func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.StartInstancesInput{}
+
+	input.DryRun = aws.Bool(true)
+	setField(params["id"], input, "InstanceIds")
+
+	_, err := d.api.StartInstances(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("instance_%d", rand.Intn(1e3))
+			d.logger.Println("dry run: start instance ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: start instance error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.StartInstancesInput{}
+	setField(params["id"], input, "InstanceIds")
+
+	output, err := d.api.StartInstances(input)
+	if err != nil {
+		d.logger.Printf("start instance error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.StartingInstances[0].InstanceId)
+	d.logger.Printf("start instance '%s' done", id)
+	return aws.StringValue(output.StartingInstances[0].InstanceId), nil
+}
+
+func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.StopInstancesInput{}
+
+	input.DryRun = aws.Bool(true)
+	setField(params["id"], input, "InstanceIds")
+
+	_, err := d.api.StopInstances(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("instance_%d", rand.Intn(1e3))
+			d.logger.Println("dry run: stop instance ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: stop instance error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.StopInstancesInput{}
+	setField(params["id"], input, "InstanceIds")
+
+	output, err := d.api.StopInstances(input)
+	if err != nil {
+		d.logger.Printf("stop instance error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
+	d.logger.Printf("stop instance '%s' done", id)
+	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
+}

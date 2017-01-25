@@ -58,7 +58,7 @@ package aws
 
 var AWSDriverTemplates = map[string]string{
 {{- range $index, $def := . }}
-	"{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.ParamsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }} {{ range $awsField, $field := $def.TagsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }}",
+	"{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.RequiredParams }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }} {{ range $awsField, $field := $def.TagsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }}",
 {{- end }}
 }
 `
@@ -82,7 +82,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 	input := &ec2.{{ $def.Input }}{}
 
 	input.DryRun = aws.Bool(true)
-	{{- range $awsField, $field := $def.ParamsMapping }}
+	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
 	{{- end }}
 
@@ -109,7 +109,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.{{ $def.Input }}{}
-	{{- range $awsField, $field := $def.ParamsMapping }}
+	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
 	{{- end }}
 
@@ -118,12 +118,12 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 		d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err
 	}
-	
+
 	{{- if ne $def.OutputExtractor "" }}
 	id := aws.StringValue(output.{{ $def.OutputExtractor }})
 	{{- if gt (len $def.TagsMapping) 0 }}
 	tagsParams := map[string]interface{}{"resource": id}
-	
+
 	{{- range $tagName, $field := $def.TagsMapping }}
 	tagsParams["{{ $tagName }}"] = params["{{ $field }}"]
 	{{- end }}

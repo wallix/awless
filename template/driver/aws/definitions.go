@@ -9,7 +9,7 @@ func DriverSupportedActions() map[string][]string {
 }
 
 var DriverDefinitions = []struct {
-	ParamsMapping                     map[string]string
+	RequiredParams                    map[string]string
 	TagsMapping                       map[string]string
 	Action, Entity                    string
 	Input, ApiMethod, OutputExtractor string
@@ -18,13 +18,13 @@ var DriverDefinitions = []struct {
 	// VPC
 	{
 		Action: "create", Entity: "vpc", Input: "CreateVpcInput", ApiMethod: "CreateVpc", OutputExtractor: "Vpc.VpcId",
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
 			"CidrBlock": "cidr",
 		},
 	},
 	{
 		Action: "delete", Entity: "vpc", Input: "DeleteVpcInput", ApiMethod: "DeleteVpc",
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
 			"VpcId": "id",
 		},
 	},
@@ -32,14 +32,14 @@ var DriverDefinitions = []struct {
 	// SUBNET
 	{
 		Action: "create", Entity: "subnet", Input: "CreateSubnetInput", ApiMethod: "CreateSubnet", OutputExtractor: "Subnet.SubnetId",
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
 			"CidrBlock": "cidr",
 			"VpcId":     "vpc",
 		},
 	},
 	{
 		Action: "delete", Entity: "subnet", Input: "DeleteSubnetInput", ApiMethod: "DeleteSubnet",
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
 			"SubnetId": "id",
 		},
 	},
@@ -47,7 +47,7 @@ var DriverDefinitions = []struct {
 	// INSTANCES
 	{
 		Action: "create", Entity: "instance", Input: "RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "Instances[0].InstanceId",
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
 			"ImageId":      "image",
 			"MaxCount":     "count",
 			"MinCount":     "count",
@@ -60,7 +60,19 @@ var DriverDefinitions = []struct {
 	},
 	{
 		Action: "delete", Entity: "instance", Input: "TerminateInstancesInput", ApiMethod: "TerminateInstances",
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
+			"InstanceIds": "id",
+		},
+	},
+	{
+		Action: "start", Entity: "instance", Input: "StartInstancesInput", ApiMethod: "StartInstances", OutputExtractor: "StartingInstances[0].InstanceId",
+		RequiredParams: map[string]string{
+			"InstanceIds": "id",
+		},
+	},
+	{
+		Action: "stop", Entity: "instance", Input: "StopInstancesInput", ApiMethod: "StopInstances", OutputExtractor: "StoppingInstances[0].InstanceId",
+		RequiredParams: map[string]string{
 			"InstanceIds": "id",
 		},
 	},
@@ -68,7 +80,7 @@ var DriverDefinitions = []struct {
 	// TAG
 	{
 		Action: "create", Entity: "tags", ManualFuncDefinition: true,
-		ParamsMapping: map[string]string{
+		RequiredParams: map[string]string{
 			"Resources": "resource",
 		},
 	},
