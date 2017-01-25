@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -84,13 +85,13 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println("------ ACCESS ------")
-				display.FullDiff(&graph.Diff{accessDiff}, root, aws.AccessServiceName)
+				displayFullDiff(&graph.Diff{accessDiff}, root)
 			}
 			if infraDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				display.FullDiff(&graph.Diff{infraDiff}, root, aws.InfraServiceName)
+				displayFullDiff(&graph.Diff{infraDiff}, root)
 			}
 		} else {
 			if accessDiff.HasResourceDiff() {
@@ -117,4 +118,12 @@ var diffCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func displayFullDiff(diff *graph.Diff, rootNode *node.Node) {
+	displayer := display.BuildOptions(
+		display.WithFormat("table"),
+		display.WithRootNode(rootNode),
+	).SetSource(diff).Build()
+	exitOn(displayer.Print(os.Stdout))
 }

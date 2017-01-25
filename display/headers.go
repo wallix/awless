@@ -9,7 +9,7 @@ import (
 
 const ascSymbol = " ▲"
 
-//const truncateSize = 25
+const truncateSize = 25
 
 type TimeFormat int
 

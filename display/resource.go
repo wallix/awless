@@ -54,6 +54,3 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 func (d *tableResourceDisplayer) SetResource(r *graph.Resource) {
 	d.r = r
 }
-
-func (d *tableResourceDisplayer) sort(table)     {}
-func (d *tableResourceDisplayer) columns() []int { return []int{} }
