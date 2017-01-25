@@ -18,7 +18,6 @@ import (
 
 var (
 	releaseTag = flag.String("rtag", "", "Git tag to be released")
-	release    = flag.Bool("release", false, "Build for a release")
 )
 
 var builds = map[string][]string{
@@ -34,7 +33,7 @@ func main() {
 		runtime.GOOS: []string{runtime.GOARCH},
 	}
 
-	if *release {
+	if *releaseTag != "" {
 		allBuild = builds
 		printInfo("RELEASING")
 	}
@@ -47,7 +46,7 @@ func main() {
 			go func(o, a string) {
 				defer wg.Done()
 				if err := buildAndZip(o, a); err != nil {
-					fmt.Fprintln(os.Stderr, "%s", err)
+					fmt.Fprintf(os.Stderr, "%s\n", err)
 					return
 				}
 			}(osname, arch)
@@ -85,6 +84,9 @@ func buildAndZip(osname, arch string) error {
 
 	gitRef := "refs/heads/master"
 	if *releaseTag != "" {
+		if tag, _ := runCmd(nil, "git", "describe", "--exact-match", "--tags"); strings.TrimSpace(tag) != *releaseTag {
+			return fmt.Errorf("The git repository is not at tag '%s'", *releaseTag)
+		}
 		gitRef = fmt.Sprintf("refs/tags/%s", *releaseTag)
 	}
 
