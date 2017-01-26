@@ -445,17 +445,17 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 
 		var nCommon, nInserted, nDeleted *graph.Resource
 
-		commonGraph := &graph.Graph{d.diff.CommonGraph()}
+		commonGraph := graph.NewGraphFromRdfGraph(d.diff.CommonGraph())
 		if nCommon, err = commonGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
 			return err
 		}
 
-		insertedGraph := &graph.Graph{d.diff.InsertedGraph()}
+		insertedGraph := graph.NewGraphFromRdfGraph(d.diff.InsertedGraph())
 		if nInserted, err = insertedGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
 			return err
 		}
 
-		deletedGraph := &graph.Graph{d.diff.DeletedGraph()}
+		deletedGraph := graph.NewGraphFromRdfGraph(d.diff.DeletedGraph())
 		if nDeleted, err = deletedGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
 			return err
 		}

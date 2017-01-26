@@ -14,12 +14,12 @@ type Diff struct {
 }
 
 func BuildDiff(from, to *Rev, root *node.Node) (*Diff, error) {
-	infraDiff, err := graph.DefaultDiffer.Run(root, to.Infra.Graph, from.Infra.Graph)
+	infraDiff, err := graph.Differ.Run(root, to.Infra, from.Infra)
 	if err != nil {
 		return nil, err
 	}
 
-	accessDiff, err := graph.DefaultDiffer.Run(root, to.Access.Graph, from.Access.Graph)
+	accessDiff, err := graph.Differ.Run(root, to.Access, from.Access)
 	if err != nil {
 		return nil, err
 	}
@@ -27,8 +27,8 @@ func BuildDiff(from, to *Rev, root *node.Node) (*Diff, error) {
 	res := &Diff{
 		From:       from,
 		To:         to,
-		InfraDiff:  &graph.Diff{infraDiff},
-		AccessDiff: &graph.Diff{accessDiff},
+		InfraDiff:  infraDiff,
+		AccessDiff: accessDiff,
 	}
 
 	return res, nil

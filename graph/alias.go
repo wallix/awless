@@ -12,7 +12,7 @@ func (a Alias) ResolveToId(g *Graph, resT ResourceType) (string, bool) {
 	if err != nil {
 		return "", false
 	}
-	triples, err := g.TriplesForPredicateObject(rdf.PropertyPredicate, propL)
+	triples, err := g.rdfG.TriplesForPredicateObject(rdf.PropertyPredicate, propL)
 	if err != nil {
 		return "", false
 	}

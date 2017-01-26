@@ -12,11 +12,15 @@ type CloudGraph interface {
 }
 
 type Graph struct {
-	*rdf.Graph
+	rdfG *rdf.Graph
 }
 
 func NewGraph() *Graph {
 	return &Graph{rdf.NewGraph()}
+}
+
+func NewGraphFromRdfGraph(g *rdf.Graph) *Graph {
+	return &Graph{g}
 }
 
 func NewGraphFromFile(filepath string) (*Graph, error) {
@@ -32,6 +36,22 @@ func NewRegionTypeTriple(subject *node.Node) (*triple.Triple, error) {
 	return triple.New(subject, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.RegionLiteral))
 }
 
+func (g *Graph) Add(triples ...*triple.Triple) {
+	g.rdfG.Add(triples...)
+}
+
+func (g *Graph) Unmarshal(data []byte) error {
+	return g.rdfG.Unmarshal(data)
+}
+
+func (g *Graph) MustMarshal() string {
+	return g.rdfG.MustMarshal()
+}
+
+func (g *Graph) Marshal() ([]byte, error) {
+	return g.rdfG.Marshal()
+}
+
 func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 	resource := InitResource(id, t)
 
@@ -40,7 +60,7 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 		return resource, err
 	}
 
-	propsTriples, err := g.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
+	propsTriples, err := g.rdfG.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
 	if err != nil {
 		return resource, err
 	}
@@ -58,7 +78,7 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 
 func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 	var res []*Resource
-	nodes, err := g.NodesForType(t.ToRDFString())
+	nodes, err := g.rdfG.NodesForType(t.ToRDFString())
 	if err != nil {
 		return res, err
 	}
@@ -78,7 +98,7 @@ func (g *Graph) Visit(root *node.Node, each func(*Graph, *node.Node, int), dista
 		each(&Graph{g}, n, i)
 	}
 
-	return g.VisitDepthFirst(root, foreach, distances...)
+	return g.rdfG.VisitDepthFirst(root, foreach, distances...)
 }
 
 func (g *Graph) VisitUnique(root *node.Node, each func(*Graph, *node.Node, int) error) error {
@@ -86,17 +106,25 @@ func (g *Graph) VisitUnique(root *node.Node, each func(*Graph, *node.Node, int) 
 		return each(&Graph{g}, n, i)
 	}
 
-	return g.VisitDepthFirstUnique(root, foreach)
+	return g.rdfG.VisitDepthFirstUnique(root, foreach)
 }
 
-func (g *Graph) CountChildrenOfTypeForNode(node *node.Node, childType ResourceType) (int, error) {
-	return g.CountTriplesForSubjectAndPredicateObjectOfType(node, rdf.ParentOfPredicate, childType.ToRDFString())
+func (g *Graph) CountChildrenOfTypeForNode(res *Resource, childType ResourceType) (int, error) {
+	n, err := node.NewNodeFromStrings(res.Type().ToRDFString(), res.Id())
+	if err != nil {
+		return 0, err
+	}
+	return g.rdfG.CountTriplesForSubjectAndPredicateObjectOfType(n, rdf.ParentOfPredicate, childType.ToRDFString())
 }
 
-func (g *Graph) CountChildrenForNode(node *node.Node) (int, error) {
-	return g.CountTriplesForSubjectAndPredicate(node, rdf.ParentOfPredicate)
+func (g *Graph) CountChildrenForNode(res *Resource) (int, error) {
+	n, err := node.NewNodeFromStrings(res.Type().ToRDFString(), res.Id())
+	if err != nil {
+		return 0, err
+	}
+	return g.rdfG.CountTriplesForSubjectAndPredicate(n, rdf.ParentOfPredicate)
 }
 
 func (g *Graph) TriplesInDiff(node *node.Node) ([]*triple.Triple, error) {
-	return g.TriplesForSubjectPredicate(node, rdf.DiffPredicate)
+	return g.rdfG.TriplesForSubjectPredicate(node, rdf.DiffPredicate)
 }

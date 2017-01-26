@@ -232,16 +232,13 @@ func buildInstancesStats(infra *graph.Graph) (instancesStats []*instancesStat, e
 }
 
 func addStatsForInstanceStringProperty(infra *graph.Graph, propertyName string, instanceStatType string, instancesStats []*instancesStat) ([]*instancesStat, error) {
-	nodes, err := infra.NodesForType(graph.Instance.ToRDFString())
+	instances, err := infra.GetAllResources(graph.Instance)
 	if err != nil {
 		return nil, err
 	}
+
 	propertyValuesCountMap := make(map[string]int)
-	for _, i := range nodes {
-		inst, e := infra.GetResource(graph.Instance, i.ID().String())
-		if e != nil {
-			return nil, e
-		}
+	for _, inst := range instances {
 		if inst.Properties()[propertyName] != nil {
 			propertyValue, ok := inst.Properties()[propertyName].(string)
 			if !ok {
@@ -350,22 +347,22 @@ func buildAccessMetrics(region string, access *graph.Graph, time time.Time) (*ac
 }
 
 func computeCountMinMaxChildForType(graph *graph.Graph, t graph.ResourceType) (int, int, int, error) {
-	nodes, err := graph.NodesForType(t.ToRDFString())
+	resources, err := graph.GetAllResources(t)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	if len(nodes) == 0 {
+	if len(resources) == 0 {
 		return 0, 0, 0, nil
 	}
-	firstNode := nodes[0]
-	count, err := graph.CountChildrenForNode(firstNode)
+	firstRes := resources[0]
+	count, err := graph.CountChildrenForNode(firstRes)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 
 	min, max := count, count
-	for _, node := range nodes[1:] {
-		count, err = graph.CountChildrenForNode(node)
+	for _, res := range resources[1:] {
+		count, err = graph.CountChildrenForNode(res)
 		if err != nil {
 			return 0, 0, 0, err
 		}
@@ -376,26 +373,26 @@ func computeCountMinMaxChildForType(graph *graph.Graph, t graph.ResourceType) (i
 			max = count
 		}
 	}
-	return len(nodes), min, max, nil
+	return len(resources), min, max, nil
 }
 
 func computeCountMinMaxForTypeWithChildType(graph *graph.Graph, parentType, childType graph.ResourceType) (int, int, int, error) {
-	nodes, err := graph.NodesForType(parentType.ToRDFString())
+	resources, err := graph.GetAllResources(parentType)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	if len(nodes) == 0 {
+	if len(resources) == 0 {
 		return 0, 0, 0, nil
 	}
-	firstNode := nodes[0]
-	count, err := graph.CountChildrenOfTypeForNode(firstNode, childType)
+	firstRes := resources[0]
+	count, err := graph.CountChildrenOfTypeForNode(firstRes, childType)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 
 	min, max := count, count
-	for _, node := range nodes[1:] {
-		count, err = graph.CountChildrenOfTypeForNode(node, childType)
+	for _, res := range resources[1:] {
+		count, err = graph.CountChildrenOfTypeForNode(res, childType)
 		if err != nil {
 			return 0, 0, 0, err
 		}
@@ -406,7 +403,7 @@ func computeCountMinMaxForTypeWithChildType(graph *graph.Graph, parentType, chil
 			max = count
 		}
 	}
-	return len(nodes), min, max, nil
+	return len(resources), min, max, nil
 }
 
 func sameDay(date1, date2 *time.Time) bool {

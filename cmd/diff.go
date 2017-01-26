@@ -68,7 +68,7 @@ var diffCmd = &cobra.Command{
 		remoteInfra, err := aws.BuildAwsInfraGraph(region, awsInfra)
 		exitOn(err)
 
-		infraDiff, err := graph.DefaultDiffer.Run(root, localInfra.Graph, remoteInfra.Graph)
+		infraDiff, err := graph.Differ.Run(root, localInfra, remoteInfra)
 		exitOn(err)
 
 		localAccess, err := config.LoadAccessGraph()
@@ -77,7 +77,7 @@ var diffCmd = &cobra.Command{
 		remoteAccess, err := aws.BuildAwsAccessGraph(region, awsAccess)
 		exitOn(err)
 
-		accessDiff, err := graph.DefaultDiffer.Run(root, localAccess.Graph, remoteAccess.Graph)
+		accessDiff, err := graph.Differ.Run(root, localAccess, remoteAccess)
 		exitOn(err)
 
 		var hasDiff bool
@@ -85,13 +85,13 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println("------ ACCESS ------")
-				displayFullDiff(&graph.Diff{accessDiff}, root)
+				displayFullDiff(accessDiff, root)
 			}
 			if infraDiff.HasDiff() {
 				hasDiff = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				displayFullDiff(&graph.Diff{infraDiff}, root)
+				displayFullDiff(infraDiff, root)
 			}
 		} else {
 			if accessDiff.HasResourceDiff() {
