@@ -373,6 +373,79 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
 }
 
+func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateVolumeInput{}
+
+	input.DryRun = aws.Bool(true)
+	// Required params
+	setField(params["zone"], input, "AvailabilityZone")
+	setField(params["size"], input, "Size")
+
+	_, err := d.ec2.CreateVolume(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("volume_%d", rand.Intn(1e3))
+			d.logger.Println("dry run: create volume ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: create volume error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateVolumeInput{}
+	// Required params
+	setField(params["zone"], input, "AvailabilityZone")
+	setField(params["size"], input, "Size")
+
+	output, err := d.ec2.CreateVolume(input)
+	if err != nil {
+		d.logger.Printf("create volume error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.VolumeId)
+	d.logger.Printf("create volume '%s' done", id)
+	return aws.StringValue(output.VolumeId), nil
+}
+
+func (d *AwsDriver) Delete_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteVolumeInput{}
+
+	input.DryRun = aws.Bool(true)
+	// Required params
+	setField(params["id"], input, "VolumeId")
+
+	_, err := d.ec2.DeleteVolume(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("volume_%d", rand.Intn(1e3))
+			d.logger.Println("dry run: delete volume ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: delete volume error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteVolumeInput{}
+	// Required params
+	setField(params["id"], input, "VolumeId")
+
+	output, err := d.ec2.DeleteVolume(input)
+	if err != nil {
+		d.logger.Printf("delete volume error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete volume done")
+	return output, nil
+}
+
 func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 

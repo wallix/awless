@@ -99,6 +99,20 @@ var DriverDefinitions = []struct {
 			"InstanceIds": "id",
 		},
 	},
+	// VOLUME
+	{
+		Action: "create", Entity: "volume", Api: "ec2", Input: "CreateVolumeInput", ApiMethod: "CreateVolume", OutputExtractor: "VolumeId",
+		RequiredParams: map[string]string{
+			"AvailabilityZone": "zone",
+			"Size": "size",
+		},
+	},
+	{
+		Action: "delete", Entity: "volume", Api: "ec2", Input: "DeleteVolumeInput", ApiMethod: "DeleteVolume",
+		RequiredParams: map[string]string{
+			"VolumeId": "id",
+		},
+	},
 	// TAG
 	{
 		Action: "create", Entity: "tags", Api: "ec2", ManualFuncDefinition: true,
