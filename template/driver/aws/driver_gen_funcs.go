@@ -178,8 +178,12 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fmt.Sprintf("instance_%d", rand.Intn(1e3))
 			tagsParams := map[string]interface{}{"resource": id}
-			tagsParams["Name"] = params["name"]
-			d.Create_Tags_DryRun(tagsParams)
+			if v, ok := params["name"]; ok {
+				tagsParams["Name"] = v
+			}
+			if len(tagsParams) > 1 {
+				d.Create_Tags_DryRun(tagsParams)
+			}
 			d.logger.Println("dry run: create instance ok")
 			return id, nil
 		}
@@ -209,8 +213,12 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	}
 	id := aws.StringValue(output.Instances[0].InstanceId)
 	tagsParams := map[string]interface{}{"resource": id}
-	tagsParams["Name"] = params["name"]
-	d.Create_Tags(tagsParams)
+	if v, ok := params["name"]; ok {
+		tagsParams["Name"] = v
+	}
+	if len(tagsParams) > 1 {
+		d.Create_Tags(tagsParams)
+	}
 	d.logger.Printf("create instance '%s' done", id)
 	return aws.StringValue(output.Instances[0].InstanceId), nil
 }

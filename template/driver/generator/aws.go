@@ -113,9 +113,13 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 			{{- if gt (len $def.TagsMapping) 0 }}
 			tagsParams := map[string]interface{}{"resource": id}
 			{{- range $tagName, $field := $def.TagsMapping }}
-			tagsParams["{{ $tagName }}"] = params["{{ $field }}"]
+			if v, ok := params["{{ $field }}"]; ok {
+				tagsParams["{{ $tagName }}"] = v
+			}
 			{{- end }}
-			d.Create_Tags_DryRun(tagsParams)
+			if len(tagsParams) > 1 {
+				d.Create_Tags_DryRun(tagsParams)
+			}
 			{{- end }}
 			d.logger.Println("dry run: {{ $def.Action }} {{ $def.Entity }} ok")
 			return id, nil
@@ -153,11 +157,14 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	id := aws.StringValue(output.{{ $def.OutputExtractor }})
 	{{- if gt (len $def.TagsMapping) 0 }}
 	tagsParams := map[string]interface{}{"resource": id}
-
 	{{- range $tagName, $field := $def.TagsMapping }}
-	tagsParams["{{ $tagName }}"] = params["{{ $field }}"]
+	if v, ok := params["{{ $field }}"]; ok {
+		tagsParams["{{ $tagName }}"] = v
+	}
 	{{- end }}
-	d.Create_Tags(tagsParams)
+	if len(tagsParams) > 1 {
+		d.Create_Tags(tagsParams)
+	}
 	{{- end }}
 	d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)
 	return aws.StringValue(output.{{ $def.OutputExtractor }}), nil
