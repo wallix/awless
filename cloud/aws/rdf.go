@@ -96,6 +96,20 @@ func (inf *Infra) KeypairsGraph() (*graph.Graph, error) {
 	return g, nil
 }
 
+func (inf *Infra) VolumesGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := inf.Volumes()
+	if err != nil {
+		return nil, err
+	}
+	for _, vol := range out.(*ec2.DescribeVolumesOutput).Volumes {
+		if err := addCloudResourceToGraph(g, vol); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
 func (access *Access) UsersGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
 	out, err := access.Users()

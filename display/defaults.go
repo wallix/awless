@@ -55,6 +55,16 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "KeyFingerprint", DisableTruncate: true},
 	},
+	graph.Volume: []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "VolumeType"},
+		StringColumnDefinition{Prop: "State"},
+		StringColumnDefinition{Prop: "Size", Friendly: "Size (Gb)"},
+		StringColumnDefinition{Prop: "Encrypted"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
+		StringColumnDefinition{Prop: "AvailabilityZone"},
+	},
 	graph.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},

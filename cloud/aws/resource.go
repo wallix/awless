@@ -29,6 +29,8 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.GroupId), graph.SecurityGroup)
 	case *ec2.KeyPairInfo:
 		res = graph.InitResource(awssdk.StringValue(ss.KeyName), graph.Keypair)
+	case *ec2.Volume:
+		res = graph.InitResource(awssdk.StringValue(ss.VolumeId), graph.Volume)
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
 	case *iam.UserDetail:

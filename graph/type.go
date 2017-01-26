@@ -14,6 +14,7 @@ const (
 	Subnet        ResourceType = "subnet"
 	SecurityGroup ResourceType = "securitygroup"
 	Keypair       ResourceType = "keypair"
+	Volume        ResourceType = "volume"
 	Instance      ResourceType = "instance"
 	User          ResourceType = "user"
 	Role          ResourceType = "role"

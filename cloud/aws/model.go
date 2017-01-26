@@ -101,6 +101,16 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Name":           {name: "KeyName", transform: extractValueFn},
 		"KeyFingerprint": {name: "KeyFingerprint", transform: extractValueFn},
 	},
+	graph.Volume: {
+		"Id":               {name: "VolumeId", transform: extractValueFn},
+		"Name":             {name: "Tags", transform: extractTagFn("Name")},
+		"VolumeType":       {name: "VolumeType", transform: extractValueFn},
+		"State":            {name: "State", transform: extractValueFn},
+		"Size":             {name: "Size", transform: extractValueFn},
+		"Encrypted":        {name: "Encrypted", transform: extractValueFn},
+		"CreateTime":       {name: "CreateTime", transform: extractValueFn},
+		"AvailabilityZone": {name: "AvailabilityZone", transform: extractValueFn},
+	},
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
 		"Name":                 {name: "UserName", transform: extractValueFn},
