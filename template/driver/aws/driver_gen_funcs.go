@@ -266,6 +266,49 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	return aws.StringValue(output.Instances[0].InstanceId), nil
 }
 
+func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ModifyInstanceAttributeInput{}
+
+	input.DryRun = aws.Bool(true)
+	// Required params
+	setField(params["id"], input, "InstanceId")
+	// Extra params
+	if _, ok := params["type"]; ok {
+		setField(params["type"], input, "InstanceType")
+	}
+
+	_, err := d.ec2.ModifyInstanceAttribute(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("instance_%d", rand.Intn(1e3))
+			d.logger.Println("dry run: update instance ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: update instance error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ModifyInstanceAttributeInput{}
+	// Required params
+	setField(params["id"], input, "InstanceId")
+	// Extra params
+	if _, ok := params["type"]; ok {
+		setField(params["type"], input, "InstanceType")
+	}
+
+	output, err := d.ec2.ModifyInstanceAttribute(input)
+	if err != nil {
+		d.logger.Printf("update instance error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("update instance done")
+	return output, nil
+}
+
 func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
 

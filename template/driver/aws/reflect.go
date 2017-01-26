@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 
@@ -32,6 +33,7 @@ func setField(s, i interface{}, fieldName string) {
 	var stringptr *string
 	var int64ptr *int64
 	var boolval *ec2.AttributeBooleanValue
+	var stringval *ec2.AttributeValue
 
 	if fieldVal.Kind() == reflect.Ptr {
 		switch fieldVal.Type() {
@@ -51,6 +53,9 @@ func setField(s, i interface{}, fieldName string) {
 			}
 			boolval = &ec2.AttributeBooleanValue{Value: aws.Bool(b)}
 			fieldVal.Set(reflect.ValueOf(boolval))
+		case reflect.TypeOf(stringval):
+			stringval = &ec2.AttributeValue{Value: aws.String(fmt.Sprint(s))}
+			fieldVal.Set(reflect.ValueOf(stringval))
 		case reflect.TypeOf(int64ptr):
 			var r int64
 			var err error

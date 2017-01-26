@@ -82,6 +82,15 @@ var DriverDefinitions = []struct {
 		},
 	},
 	{
+		Action: "update", Entity: "instance", Api: "ec2", Input: "ModifyInstanceAttributeInput", ApiMethod: "ModifyInstanceAttribute",
+		RequiredParams: map[string]string{
+			"InstanceId": "id",
+		},
+		ExtraParams: map[string]string{
+			"InstanceType": "type",
+		},
+	},
+	{
 		Action: "delete", Entity: "instance", Api: "ec2", Input: "TerminateInstancesInput", ApiMethod: "TerminateInstances",
 		RequiredParams: map[string]string{
 			"InstanceIds": "id",

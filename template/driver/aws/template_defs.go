@@ -9,6 +9,7 @@ var AWSTemplatesDefinitions = map[string]string{
 	"updatesubnet": "update subnet id={ subnet.id } ",
 	"deletesubnet": "delete subnet id={ subnet.id } ",
 	"createinstance": "create instance image={ instance.image } type={ instance.type } count={ instance.count } count={ instance.count } subnet={ instance.subnet }  name={ instance.name }",
+	"updateinstance": "update instance id={ instance.id } ",
 	"deleteinstance": "delete instance id={ instance.id } ",
 	"startinstance": "start instance id={ instance.id } ",
 	"stopinstance": "stop instance id={ instance.id } ",

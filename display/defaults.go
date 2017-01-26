@@ -31,15 +31,20 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	},
 	graph.Subnet: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
-		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "CidrBlock"},
+		StringColumnDefinition{Prop: "AvailabilityZone", Friendly: "Zone"},
+		StringColumnDefinition{Prop: "VpcId"},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "MapPublicIpOnLaunch", Friendly: "Public VMs"},
 			ColoredValues:          map[string]color.Attribute{"true": color.FgYellow}},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
-		StringColumnDefinition{Prop: "CidrBlock"},
+		ColoredValueColumnDefinition{
+			StringColumnDefinition: StringColumnDefinition{Prop: "DefaultForAz", Friendly: "ZoneDefault"},
+			ColoredValues:          map[string]color.Attribute{"true": color.FgGreen},
+		},
 	},
 	graph.SecurityGroup: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},

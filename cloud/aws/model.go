@@ -87,6 +87,8 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"MapPublicIpOnLaunch": {name: "MapPublicIpOnLaunch", transform: extractValueFn},
 		"State":               {name: "State", transform: extractValueFn},
 		"CidrBlock":           {name: "CidrBlock", transform: extractValueFn},
+		"AvailabilityZone":    {name: "AvailabilityZone", transform: extractValueFn},
+		"DefaultForAz":        {name: "DefaultForAz", transform: extractValueFn},
 	},
 	graph.SecurityGroup: {
 		"Id":      {name: "GroupId", transform: extractValueFn},

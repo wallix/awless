@@ -36,6 +36,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		StringArrayField  []*string
 		Int64ArrayField   []*int64
 		BooleanValueField *ec2.AttributeBooleanValue
+		StringValueField  *ec2.AttributeValue
 	}{Field: "initial"}
 
 	setField("expected", &any, "Field")
@@ -95,6 +96,15 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	setField(false, &any, "BooleanValueField")
 	if got, want := aws.BoolValue(any.BooleanValueField.Value), false; got != want {
 		t.Fatalf("len: got %t, want %t", got, want)
+	}
+
+	setField("abcd", &any, "StringValueField")
+	if got, want := aws.StringValue(any.StringValueField.Value), "abcd"; got != want {
+		t.Fatalf("len: got %s, want %s", got, want)
+	}
+	setField(nil, &any, "StringValueField")
+	if got, want := aws.StringValue(any.StringValueField.Value), "abcd"; got != want {
+		t.Fatalf("len: got %s, want %s", got, want)
 	}
 }
 
