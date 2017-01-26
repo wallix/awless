@@ -90,8 +90,19 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 	input := &{{ $def.Api }}.{{ $def.Input }}{}
 
 	input.DryRun = aws.Bool(true)
+	{{- if gt (len $def.RequiredParams) 0 }}
+	// Required params
 	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	{{- end }}
+	{{- end }}
+	{{- if gt (len $def.ExtraParams) 0 }}
+	// Extra params
+	{{- range $awsField, $field := $def.ExtraParams }}
+	if _, ok := params["{{ $field }}"]; ok {
+		setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	}
+	{{- end }}
 	{{- end }}
 
 	_, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
@@ -117,8 +128,19 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 {{ end }}
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
 	input := &{{ $def.Api }}.{{ $def.Input }}{}
+	{{- if gt (len $def.RequiredParams) 0 }}
+	// Required params
 	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	{{- end }}
+	{{- end }}
+	{{- if gt (len $def.ExtraParams) 0 }}
+	// Extra params
+	{{- range $awsField, $field := $def.ExtraParams }}
+	if _, ok := params["{{ $field }}"]; ok {
+		setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	}
+	{{- end }}
 	{{- end }}
 
 	output, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)

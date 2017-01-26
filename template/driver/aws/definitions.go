@@ -10,6 +10,7 @@ func DriverSupportedActions() map[string][]string {
 
 var DriverDefinitions = []struct {
 	RequiredParams                    map[string]string
+	ExtraParams                       map[string]string
 	TagsMapping                       map[string]string
 	Api                               string
 	Action, Entity                    string
@@ -58,6 +59,9 @@ var DriverDefinitions = []struct {
 			"MinCount":     "count",
 			"InstanceType": "type",
 			"SubnetId":     "subnet",
+		},
+		ExtraParams: map[string]string{
+			"KeyName": "key",
 		},
 		TagsMapping: map[string]string{
 			"Name": "name",
