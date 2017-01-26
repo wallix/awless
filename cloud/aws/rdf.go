@@ -82,6 +82,20 @@ func (inf *Infra) SecuritygroupsGraph() (*graph.Graph, error) {
 	return g, nil
 }
 
+func (inf *Infra) KeypairsGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := inf.Keypairs()
+	if err != nil {
+		return nil, err
+	}
+	for _, keypair := range out.(*ec2.DescribeKeyPairsOutput).KeyPairs {
+		if err := addCloudResourceToGraph(g, keypair); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
 func (access *Access) UsersGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
 	out, err := access.Users()
@@ -382,6 +396,28 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 			}
 			g.Add(t)
 		}
+	}
+
+	for _, keypair := range awsInfra.Keypairs {
+		res, err := NewResource(keypair)
+		if err != nil {
+			return nil, err
+		}
+		triples, err := res.MarshalToTriples()
+		if err != nil {
+			return nil, err
+		}
+		g.Add(triples...)
+		n, err := res.BuildRdfSubject()
+		if err != nil {
+			return g, err
+		}
+
+		t, err := graph.NewParentOfTriple(regionN, n)
+		if err != nil {
+			return g, fmt.Errorf("region %s", err)
+		}
+		g.Add(t)
 	}
 
 	for _, instance := range awsInfra.Instances {

@@ -23,7 +23,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(listCmd)
-	for _, resource := range []graph.ResourceType{graph.Instance, graph.Vpc, graph.Subnet, graph.SecurityGroup} {
+	for _, resource := range []graph.ResourceType{graph.Instance, graph.Vpc, graph.Subnet, graph.SecurityGroup, graph.Keypair} {
 		listCmd.AddCommand(listInfraResourceCmd(resource))
 	}
 	for _, resource := range []graph.ResourceType{graph.User, graph.Role, graph.Policy, graph.Group} {

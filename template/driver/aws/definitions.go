@@ -89,6 +89,20 @@ var DriverDefinitions = []struct {
 		},
 	},
 
+	// Keypair
+	{
+		Action: "create", Entity: "keypair", Api: "ec2", ManualFuncDefinition: true,
+		RequiredParams: map[string]string{
+			"KeyName": "name",
+		},
+	},
+	{
+		Action: "delete", Entity: "keypair", Api: "ec2", Input: "DeleteKeyPairInput", ApiMethod: "DeleteKeyPair",
+		RequiredParams: map[string]string{
+			"KeyName": "name",
+		},
+	},
+
 	//// IAM
 
 	// USER

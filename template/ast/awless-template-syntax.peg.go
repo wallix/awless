@@ -539,7 +539,7 @@ func (p *Peg) Init() {
 		nil,
 		/* 2 Action <- <(('s' 't' 'a' 'r' 't') / ((&('s') ('s' 't' 'o' 'p')) | (&('d') ('d' 'e' 'l' 'e' 't' 'e')) | (&('c') ('c' 'r' 'e' 'a' 't' 'e'))))> */
 		nil,
-		/* 3 Entity <- <((&('p') ('p' 'o' 'l' 'i' 'c' 'y')) | (&('r') ('r' 'o' 'l' 'e')) | (&('g') ('g' 'r' 'o' 'u' 'p')) | (&('u') ('u' 's' 'e' 'r')) | (&('t') ('t' 'a' 'g' 's')) | (&('i') ('i' 'n' 's' 't' 'a' 'n' 'c' 'e')) | (&('s') ('s' 'u' 'b' 'n' 'e' 't')) | (&('v') ('v' 'p' 'c')))> */
+		/* 3 Entity <- <((&('k') ('k' 'e' 'y' 'p' 'a' 'i' 'r')) | (&('p') ('p' 'o' 'l' 'i' 'c' 'y')) | (&('r') ('r' 'o' 'l' 'e')) | (&('g') ('g' 'r' 'o' 'u' 'p')) | (&('u') ('u' 's' 'e' 'r')) | (&('t') ('t' 'a' 'g' 's')) | (&('i') ('i' 'n' 's' 't' 'a' 'n' 'c' 'e')) | (&('s') ('s' 'u' 'b' 'n' 'e' 't')) | (&('v') ('v' 'p' 'c')))> */
 		nil,
 		/* 4 Declaration <- <(<Identifier> Action0 Equal Expr)> */
 		nil,
@@ -670,6 +670,36 @@ func (p *Peg) Init() {
 						position35 := position
 						{
 							switch buffer[position] {
+							case 'k':
+								if buffer[position] != rune('k') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('e') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('y') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('p') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('a') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('i') {
+									goto l26
+								}
+								position++
+								if buffer[position] != rune('r') {
+									goto l26
+								}
+								position++
+								break
 							case 'p':
 								if buffer[position] != rune('p') {
 									goto l26

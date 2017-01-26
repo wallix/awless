@@ -188,6 +188,8 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 			expr.Params[k] = id
 		} else if id, ok := a.ResolveToId(access, rT); ok {
 			expr.Params[k] = id
+		} else {
+			fmt.Printf("Alias '%s' not found in local snapshot. You might want to perform an `awless sync`\n", a)
 		}
 	}
 	return nil

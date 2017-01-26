@@ -100,7 +100,7 @@ var diffCmd = &cobra.Command{
 				displayer := display.BuildOptions(
 					display.WithFormat("tree"),
 					display.WithRootNode(root),
-				).SetSource(accessDiff).Build()
+				).SetSource(&graph.Diff{accessDiff}).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
 
@@ -111,7 +111,7 @@ var diffCmd = &cobra.Command{
 				displayer := display.BuildOptions(
 					display.WithFormat("tree"),
 					display.WithRootNode(root),
-				).SetSource(infraDiff).Build()
+				).SetSource(&graph.Diff{infraDiff}).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
 		}

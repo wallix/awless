@@ -94,6 +94,11 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"OwnerId": {name: "OwnerId", transform: extractValueFn},
 		"VpcId":   {name: "VpcId", transform: extractValueFn},
 	},
+	graph.Keypair: {
+		"Id":             {name: "KeyName", transform: extractValueFn},
+		"Name":           {name: "KeyName", transform: extractValueFn},
+		"KeyFingerprint": {name: "KeyFingerprint", transform: extractValueFn},
+	},
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
 		"Name":                 {name: "UserName", transform: extractValueFn},

@@ -298,6 +298,39 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
 }
 
+func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteKeyPairInput{}
+
+	input.DryRun = aws.Bool(true)
+	setField(params["name"], input, "KeyName")
+
+	_, err := d.ec2.DeleteKeyPair(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("keypair_%d", rand.Intn(1e3))
+			d.logger.Println("dry run: delete keypair ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: delete keypair error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Delete_Keypair(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteKeyPairInput{}
+	setField(params["name"], input, "KeyName")
+
+	output, err := d.ec2.DeleteKeyPair(input)
+	if err != nil {
+		d.logger.Printf("delete keypair error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete keypair done")
+	return output, nil
+}
+
 func (d *AwsDriver) Create_User_DryRun(params map[string]interface{}) (interface{}, error) {
 	d.logger.Println("!! create user: dry run not supported")
 	return nil, nil

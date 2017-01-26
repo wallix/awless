@@ -13,6 +13,7 @@ const (
 	Vpc           ResourceType = "vpc"
 	Subnet        ResourceType = "subnet"
 	SecurityGroup ResourceType = "securitygroup"
+	Keypair       ResourceType = "keypair"
 	Instance      ResourceType = "instance"
 	User          ResourceType = "user"
 	Role          ResourceType = "role"

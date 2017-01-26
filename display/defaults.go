@@ -46,6 +46,10 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 	},
+	graph.Keypair: []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "KeyFingerprint", DisableTruncate: true},
+	},
 	graph.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},

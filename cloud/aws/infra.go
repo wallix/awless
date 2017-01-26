@@ -31,6 +31,10 @@ func (inf *Infra) Subnets() (interface{}, error) {
 	return inf.DescribeSubnets(&ec2.DescribeSubnetsInput{})
 }
 
+func (inf *Infra) Keypairs() (interface{}, error) {
+	return inf.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
+}
+
 func (inf *Infra) SecurityGroups() (interface{}, error) {
 	return inf.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{})
 }
@@ -63,10 +67,11 @@ type AwsInfra struct {
 	Subnets        []*ec2.Subnet
 	SecurityGroups []*ec2.SecurityGroup
 	Instances      []*ec2.Instance
+	Keypairs       []*ec2.KeyPairInfo
 }
 
 func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups)
+	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups, inf.Keypairs)
 
 	awsInfra := &AwsInfra{}
 
@@ -78,6 +83,8 @@ func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
 			awsInfra.Subnets = append(awsInfra.Subnets, rr.Subnets...)
 		case *ec2.DescribeSecurityGroupsOutput:
 			awsInfra.SecurityGroups = append(awsInfra.SecurityGroups, rr.SecurityGroups...)
+		case *ec2.DescribeKeyPairsOutput:
+			awsInfra.Keypairs = append(awsInfra.Keypairs, rr.KeyPairs...)
 		case *ec2.DescribeInstancesOutput:
 			for _, reservation := range rr.Reservations {
 				awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)
