@@ -8,7 +8,22 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+var InspectorsRegister map[string]Inspector
+
+func init() {
+	all := []Inspector{
+		&Pricer{},
+	}
+
+	InspectorsRegister = make(map[string]Inspector)
+
+	for _, i := range all {
+		InspectorsRegister[i.Name()] = i
+	}
+}
+
 type Inspector interface {
+	Name() string
 	Inspect(*graph.Graph) error
 	Print(io.Writer)
 }
@@ -16,6 +31,10 @@ type Inspector interface {
 type Pricer struct {
 	total float64
 	count map[string]int
+}
+
+func (p *Pricer) Name() string {
+	return "pricer"
 }
 
 func (p *Pricer) Inspect(g *graph.Graph) error {

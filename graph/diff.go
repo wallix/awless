@@ -25,6 +25,6 @@ type differ struct {
 }
 
 func (d *differ) Run(root *node.Node, local *Graph, remote *Graph) (*Diff, error) {
-	diff, err :=  d.Differ.Run(root, local.rdfG, remote.rdfG)
-  return &Diff{diff}, err
+	diff, err := d.Differ.Run(root, local.rdfG, remote.rdfG)
+	return &Diff{diff}, err
 }
