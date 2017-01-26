@@ -238,8 +238,7 @@ func addStatsForInstanceStringProperty(infra *graph.Graph, propertyName string, 
 	}
 	propertyValuesCountMap := make(map[string]int)
 	for _, i := range nodes {
-		inst := graph.InitFromRdfNode(i)
-		e := inst.UnmarshalFromGraph(infra)
+		inst, e := infra.GetResource(graph.Instance, i.ID().String())
 		if e != nil {
 			return nil, e
 		}

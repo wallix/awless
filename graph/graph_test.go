@@ -4,14 +4,11 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/google/badwolf/triple/node"
 )
 
-func TestUnmarshalResource(t *testing.T) {
-	res := InitResource("inst_1", Instance)
-
+func TestGetResource(t *testing.T) {
 	g := NewGraph()
+
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Tags","Value":[{"Key":"Name","Value":"redis"}]}"^^type:text
@@ -19,7 +16,10 @@ func TestUnmarshalResource(t *testing.T) {
   /instance<inst_1>  "property"@[] "{"Key":"PublicIp","Value":"1.2.3.4"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"State","Value":{"Code": 16,"Name":"running"}}"^^type:text`))
 
-	res.UnmarshalFromGraph(g)
+	res, err := g.GetResource(Instance, "inst_1")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expected := Properties{"Id": "inst_1", "Type": "t2.micro", "PublicIp": "1.2.3.4",
 		"State": map[string]interface{}{"Code": float64(16), "Name": "running"},
@@ -31,31 +31,22 @@ func TestUnmarshalResource(t *testing.T) {
 	if got, want := res.properties, expected; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
 	}
-
-	node, err := node.NewNodeFromStrings(Instance.ToRDFString(), "inst_1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	res = InitFromRdfNode(node)
-	res.UnmarshalFromGraph(g)
-	if got, want := res.properties, expected; !reflect.DeepEqual(got, want) {
-		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
-	}
 }
 
-func TestLoadResources(t *testing.T) {
+func TestGetAllResources(t *testing.T) {
 	g := NewGraph()
+
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
-	/instance<inst_2>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_2>  "has_type"@[] "/instance"^^type:text
   /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
   /instance<inst_2>  "property"@[] "{"Key":"Name","Value":"redis2"}"^^type:text
-	/instance<inst_3>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_3>  "has_type"@[] "/instance"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"redis3"}"^^type:text
   /instance<inst_3>  "property"@[] "{"Key":"CreationDate","Value":"2017-01-10T16:47:18Z"}"^^type:text
-	/instance<subnet>  "has_type"@[] "/subnet"^^type:text
+  /instance<subnet>  "has_type"@[] "/subnet"^^type:text
   /instance<subnet>  "property"@[] "{"Key":"Id","Value":"my subnet"}"^^type:text`))
 
 	time, _ := time.Parse(time.RFC3339, "2017-01-10T16:47:18Z")
@@ -65,7 +56,7 @@ func TestLoadResources(t *testing.T) {
 		{kind: Instance, id: "inst_2", properties: Properties{"Id": "inst_2", "Name": "redis2"}},
 		{kind: Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
 	}
-	res, err := LoadResourcesFromGraph(g, Instance)
+	res, err := g.GetAllResources(Instance)
 	if err != nil {
 		t.Fatal(err)
 	}

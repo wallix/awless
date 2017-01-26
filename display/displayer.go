@@ -209,7 +209,7 @@ type csvDisplayer struct {
 }
 
 func (d *csvDisplayer) Print(w io.Writer) error {
-	resources, err := graph.LoadResourcesFromGraph(d.g, d.rdfType)
+	resources, err := d.g.GetAllResources(d.rdfType)
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ type tableDisplayer struct {
 }
 
 func (d *tableDisplayer) Print(w io.Writer) error {
-	resources, err := graph.LoadResourcesFromGraph(d.g, d.rdfType)
+	resources, err := d.g.GetAllResources(d.rdfType)
 	if err != nil {
 		return err
 	}
@@ -334,7 +334,7 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 
 	var values table
 	for _, t := range types {
-		resources, err := graph.LoadResourcesFromGraph(d.g, t)
+		resources, err := d.g.GetAllResources(t)
 		if err != nil {
 			return err
 		}
@@ -377,7 +377,7 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 	var values table
 
 	for t, propDefs := range DefaultsColumnDefinitions {
-		resources, err := graph.LoadResourcesFromGraph(d.g, t)
+		resources, err := d.g.GetAllResources(t)
 		if err != nil {
 			return err
 		}
@@ -442,20 +442,21 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		if len(diffTriples) > 0 && err == nil {
 			lit, _ = diffTriples[0].Object().Literal()
 		}
-		nCommon, nInserted, nDeleted := graph.InitFromRdfNode(n), graph.InitFromRdfNode(n), graph.InitFromRdfNode(n)
 
-		err = nCommon.UnmarshalFromGraph(&graph.Graph{d.diff.CommonGraph()})
-		if err != nil {
+		var nCommon, nInserted, nDeleted *graph.Resource
+
+		commonGraph := &graph.Graph{d.diff.CommonGraph()}
+		if nCommon, err = commonGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
 			return err
 		}
 
-		err = nInserted.UnmarshalFromGraph(&graph.Graph{d.diff.InsertedGraph()})
-		if err != nil {
+		insertedGraph := &graph.Graph{d.diff.InsertedGraph()}
+		if nInserted, err = insertedGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
 			return err
 		}
 
-		err = nDeleted.UnmarshalFromGraph(&graph.Graph{d.diff.DeletedGraph()})
-		if err != nil {
+		deletedGraph := &graph.Graph{d.diff.DeletedGraph()}
+		if nDeleted, err = deletedGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
 			return err
 		}
 

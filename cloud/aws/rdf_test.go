@@ -413,8 +413,8 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	_, err = InstanceCredentialsFromGraph(g, "inst_12")
-	if got, want := err, ErrInstanceNotFound; got != want {
-		t.Fatalf("got %s, want %s", got, want)
+	if err == nil {
+		t.Fatal("expected error got none")
 	}
 	_, err = InstanceCredentialsFromGraph(g, "inst_3")
 	if got, want := err, ErrNoPublicIP; got != want {

@@ -91,12 +91,8 @@ func printResource(g *graph.Graph, resourceType graph.ResourceType, id string) {
 	if aID, ok := a.ResolveToId(g, resourceType); ok {
 		id = aID
 	}
-	resource := graph.InitResource(id, resourceType)
 
-	if !resource.ExistsInGraph(g) {
-		exitOn(fmt.Errorf("the %s '%s' has not been found", resourceType.String(), id))
-	}
-	err := resource.UnmarshalFromGraph(g)
+	resource, err := g.GetResource(resourceType, id)
 	if err != nil {
 		exitOn(err)
 	}

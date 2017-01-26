@@ -6,6 +6,11 @@ import (
 	"github.com/wallix/awless/graph/internal/rdf"
 )
 
+type CloudGraph interface {
+	GetResource(t ResourceType, id string) (*Resource, error)
+	GetAllResources(t ResourceType) ([]*Resource, error)
+}
+
 type Graph struct {
 	*rdf.Graph
 }
@@ -25,6 +30,47 @@ func NewParentOfTriple(subject, obj *node.Node) (*triple.Triple, error) {
 
 func NewRegionTypeTriple(subject *node.Node) (*triple.Triple, error) {
 	return triple.New(subject, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.RegionLiteral))
+}
+
+func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
+	resource := InitResource(id, t)
+
+	node, err := resource.BuildRdfSubject()
+	if err != nil {
+		return resource, err
+	}
+
+	propsTriples, err := g.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
+	if err != nil {
+		return resource, err
+	}
+
+	for _, t := range propsTriples {
+		prop, err := NewPropertyFromTriple(t)
+		if err != nil {
+			return resource, err
+		}
+		resource.properties[prop.Key] = prop.Value
+	}
+
+	return resource, nil
+}
+
+func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
+	var res []*Resource
+	nodes, err := g.NodesForType(t.ToRDFString())
+	if err != nil {
+		return res, err
+	}
+
+	for _, node := range nodes {
+		r, err := g.GetResource(t, node.ID().String())
+		if err != nil {
+			return res, err
+		}
+		res = append(res, r)
+	}
+	return res, nil
 }
 
 func (g *Graph) Visit(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {

@@ -13,7 +13,6 @@ import (
 	"github.com/wallix/awless/shell"
 )
 
-var ErrInstanceNotFound = errors.New("Unknown instance")
 var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
 
@@ -428,14 +427,9 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 }
 
 func InstanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Credentials, error) {
-	inst := graph.InitResource(instanceID, graph.Instance)
-	err := inst.UnmarshalFromGraph(g)
+	inst, err := g.GetResource(graph.Instance, instanceID)
 	if err != nil {
 		return nil, err
-	}
-
-	if !inst.ExistsInGraph(g) {
-		return nil, ErrInstanceNotFound
 	}
 
 	ip, ok := inst.Properties()["PublicIp"]

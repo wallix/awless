@@ -21,7 +21,7 @@ type Pricer struct {
 func (p *Pricer) Inspect(g *graph.Graph) error {
 	p.count = make(map[string]int)
 
-	instances, err := graph.LoadResourcesFromGraph(g, graph.Instance)
+	instances, err := g.GetAllResources(graph.Instance)
 	if err != nil {
 		return err
 	}
@@ -42,14 +42,14 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 func (p *Pricer) Print(w io.Writer) {
 	tabw := tabwriter.NewWriter(w, 0, 8, 0, '\t', 0)
 
-  fmt.Fprintln(tabw, "Instance\tCount\tEstimated total per day\t")
+	fmt.Fprintln(tabw, "Instance\tCount\tEstimated total per day\t")
 	fmt.Fprintln(tabw, "--------\t-----\t-----------------------\t")
 
 	for instType, count := range p.count {
 		fmt.Fprintf(tabw, "%s\t%d\t%s\t\n", instType, count, "")
 	}
 
-	fmt.Fprintf(tabw, "%s\t%s\t$%.2f\t\n", "", "", p.total * 24)
+	fmt.Fprintf(tabw, "%s\t%s\t$%.2f\t\n", "", "", p.total*24)
 
 	tabw.Flush()
 }

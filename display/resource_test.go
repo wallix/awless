@@ -20,8 +20,10 @@ func TestResourceDisplay(t *testing.T) {
 	g := graph.NewGraph()
 	g.Add(t0, t1, t2, t3, t4, t5, t6, t7, t8)
 
-	r := graph.InitResource("inst_1", graph.Instance)
-	r.UnmarshalFromGraph(g)
+	r, err := g.GetResource(graph.Instance, "inst_1")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	headers := []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
@@ -46,8 +48,7 @@ func TestResourceDisplay(t *testing.T) {
 +------------+------------+
 `
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
