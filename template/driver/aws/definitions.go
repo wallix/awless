@@ -122,6 +122,14 @@ var DriverDefinitions = []struct {
 			"VolumeId": "id",
 		},
 	},
+	{
+		Action: "attach", Entity: "volume", Api: "ec2", Input: "AttachVolumeInput", ApiMethod: "AttachVolume", OutputExtractor: "VolumeId",
+		RequiredParams: map[string]string{
+			"Device": "device",
+			"VolumeId": "id",
+			"InstanceId": "instance",
+		},
+	},
 	// TAG
 	{
 		Action: "create", Entity: "tags", Api: "ec2", ManualFuncDefinition: true,

@@ -213,7 +213,7 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			id := fmt.Sprintf("instance_%d", rand.Intn(1e3))
+			id := fmt.Sprintf("i-%d", rand.Intn(1e3))
 			tagsParams := map[string]interface{}{"resource": id}
 			if v, ok := params["name"]; ok {
 				tagsParams["Name"] = v
@@ -428,7 +428,7 @@ func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			id := fmt.Sprintf("volume_%d", rand.Intn(1e3))
+			id := fmt.Sprintf("vol-%d", rand.Intn(1e3))
 			d.logger.Println("dry run: create volume ok")
 			return id, nil
 		}
@@ -487,6 +487,46 @@ func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, e
 	}
 	d.logger.Println("delete volume done")
 	return output, nil
+}
+
+func (d *AwsDriver) Attach_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AttachVolumeInput{}
+
+	input.DryRun = aws.Bool(true)
+	// Required params
+	setField(params["device"], input, "Device")
+	setField(params["instance"], input, "InstanceId")
+	setField(params["id"], input, "VolumeId")
+
+	_, err := d.ec2.AttachVolume(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fmt.Sprintf("vol-%d", rand.Intn(1e3))
+			d.logger.Println("dry run: attach volume ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: attach volume error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AttachVolumeInput{}
+	// Required params
+	setField(params["device"], input, "Device")
+	setField(params["instance"], input, "InstanceId")
+	setField(params["id"], input, "VolumeId")
+
+	output, err := d.ec2.AttachVolume(input)
+	if err != nil {
+		d.logger.Printf("attach volume error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.VolumeId)
+	d.logger.Printf("attach volume '%s' done", id)
+	return aws.StringValue(output.VolumeId), nil
 }
 
 func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {

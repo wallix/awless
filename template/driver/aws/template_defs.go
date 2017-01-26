@@ -15,6 +15,7 @@ var AWSTemplatesDefinitions = map[string]string{
 	"stopinstance": "stop instance id={ instance.id } ",
 	"createvolume": "create volume zone={ volume.zone } size={ volume.size } ",
 	"deletevolume": "delete volume id={ volume.id } ",
+	"attachvolume": "attach volume device={ volume.device } instance={ volume.instance } id={ volume.id } ",
 	"createtags": "create tags resource={ tags.resource } ",
 	"createkeypair": "create keypair name={ keypair.name } ",
 	"deletekeypair": "delete keypair name={ keypair.name } ",
