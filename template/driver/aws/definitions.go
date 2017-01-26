@@ -42,6 +42,18 @@ var DriverDefinitions = []struct {
 			"CidrBlock": "cidr",
 			"VpcId":     "vpc",
 		},
+		ExtraParams: map[string]string{
+			"AvailabilityZone": "zone",
+		},
+	},
+	{
+		Action: "update", Entity: "subnet", Api: "ec2", Input: "ModifySubnetAttributeInput", ApiMethod: "ModifySubnetAttribute", DryRunUnsupported: true,
+		RequiredParams: map[string]string{
+			"SubnetId": "id",
+		},
+		ExtraParams: map[string]string{
+			"MapPublicIpOnLaunch": "public-vms",
+		},
 	},
 	{
 		Action: "delete", Entity: "subnet", Api: "ec2", Input: "DeleteSubnetInput", ApiMethod: "DeleteSubnet",
@@ -61,7 +73,9 @@ var DriverDefinitions = []struct {
 			"SubnetId":     "subnet",
 		},
 		ExtraParams: map[string]string{
-			"KeyName": "key",
+			"KeyName":          "key",
+			"PrivateIpAddress": "ip",
+			"UserData":         "userdata",
 		},
 		TagsMapping: map[string]string{
 			"Name": "name",

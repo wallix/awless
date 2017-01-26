@@ -31,10 +31,11 @@ func TestSetFieldsOnAwsStruct(t *testing.T) {
 
 func TestSetFieldWithMultiType(t *testing.T) {
 	any := struct {
-		Field            string
-		IntField         int
-		StringArrayField []*string
-		Int64ArrayField  []*int64
+		Field             string
+		IntField          int
+		StringArrayField  []*string
+		Int64ArrayField   []*int64
+		BooleanValueField *ec2.AttributeBooleanValue
 	}{Field: "initial"}
 
 	setField("expected", &any, "Field")
@@ -82,6 +83,19 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	}
 
 	setField("any", nil, "IntField")
+
+	setField("true", &any, "BooleanValueField")
+	if got, want := aws.BoolValue(any.BooleanValueField.Value), true; got != want {
+		t.Fatalf("len: got %t, want %t", got, want)
+	}
+	setField(nil, &any, "BooleanValueField")
+	if got, want := aws.BoolValue(any.BooleanValueField.Value), true; got != want {
+		t.Fatalf("len: got %t, want %t", got, want)
+	}
+	setField(false, &any, "BooleanValueField")
+	if got, want := aws.BoolValue(any.BooleanValueField.Value), false; got != want {
+		t.Fatalf("len: got %t, want %t", got, want)
+	}
 }
 
 func TestCanOnlySetFieldOnStructPtr(t *testing.T) {

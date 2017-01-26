@@ -91,6 +91,10 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
 	setField(params["vpc"], input, "VpcId")
+	// Extra params
+	if _, ok := params["zone"]; ok {
+		setField(params["zone"], input, "AvailabilityZone")
+	}
 
 	_, err := d.ec2.CreateSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -111,6 +115,10 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
 	setField(params["vpc"], input, "VpcId")
+	// Extra params
+	if _, ok := params["zone"]; ok {
+		setField(params["zone"], input, "AvailabilityZone")
+	}
 
 	output, err := d.ec2.CreateSubnet(input)
 	if err != nil {
@@ -120,6 +128,29 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	id := aws.StringValue(output.Subnet.SubnetId)
 	d.logger.Printf("create subnet '%s' done", id)
 	return aws.StringValue(output.Subnet.SubnetId), nil
+}
+
+func (d *AwsDriver) Update_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
+	d.logger.Println("!! update subnet: dry run not supported")
+	return nil, nil
+}
+
+func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ModifySubnetAttributeInput{}
+	// Required params
+	setField(params["id"], input, "SubnetId")
+	// Extra params
+	if _, ok := params["public-vms"]; ok {
+		setField(params["public-vms"], input, "MapPublicIpOnLaunch")
+	}
+
+	output, err := d.ec2.ModifySubnetAttribute(input)
+	if err != nil {
+		d.logger.Printf("update subnet error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("update subnet done")
+	return output, nil
 }
 
 func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -171,6 +202,12 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	if _, ok := params["key"]; ok {
 		setField(params["key"], input, "KeyName")
 	}
+	if _, ok := params["ip"]; ok {
+		setField(params["ip"], input, "PrivateIpAddress")
+	}
+	if _, ok := params["userdata"]; ok {
+		setField(params["userdata"], input, "UserData")
+	}
 
 	_, err := d.ec2.RunInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -204,6 +241,12 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	// Extra params
 	if _, ok := params["key"]; ok {
 		setField(params["key"], input, "KeyName")
+	}
+	if _, ok := params["ip"]; ok {
+		setField(params["ip"], input, "PrivateIpAddress")
+	}
+	if _, ok := params["userdata"]; ok {
+		setField(params["userdata"], input, "UserData")
 	}
 
 	output, err := d.ec2.RunInstances(input)

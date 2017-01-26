@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 type convertFn func(s interface{}) reflect.Value
@@ -30,11 +31,26 @@ func setField(s, i interface{}, fieldName string) {
 
 	var stringptr *string
 	var int64ptr *int64
+	var boolval *ec2.AttributeBooleanValue
 
 	if fieldVal.Kind() == reflect.Ptr {
 		switch fieldVal.Type() {
 		case reflect.TypeOf(stringptr):
 			fieldVal.Set(reflect.ValueOf(aws.String(s.(string))))
+		case reflect.TypeOf(boolval):
+			var b bool
+			var err error
+			switch ss := s.(type) {
+			case string:
+				b, err = strconv.ParseBool(ss)
+				if err != nil {
+					panic(err)
+				}
+			case bool:
+				b = ss
+			}
+			boolval = &ec2.AttributeBooleanValue{Value: aws.Bool(b)}
+			fieldVal.Set(reflect.ValueOf(boolval))
 		case reflect.TypeOf(int64ptr):
 			var r int64
 			var err error
