@@ -71,6 +71,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -81,22 +82,28 @@ import (
 {{- if not $def.ManualFuncDefinition }}
 
 {{- if $def.DryRunUnsupported }}
+// This function was auto generated
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
-	d.logger.Println("!! {{ $def.Action }} {{ $def.Entity }}: dry run not supported")
+	{{- range $awsField, $field := $def.RequiredParams }}
+	if _, ok := params["{{ $field }}"]; !ok {
+		return nil, errors.New("{{ $def.Action }} {{ $def.Entity }}: missing required params '{{ $field }}'")
+	}
+	{{ end }}
+	d.logger.Println("params dry run: {{ $def.Action }} {{ $def.Entity }} ok")
 	return nil, nil
 }
 {{ else }}
+// This function was auto generated
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &{{ $def.Api }}.{{ $def.Input }}{}
-
 	input.DryRun = aws.Bool(true)
-	{{- if gt (len $def.RequiredParams) 0 }}
+	{{if gt (len $def.RequiredParams) 0 }}
 	// Required params
 	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
 	{{- end }}
 	{{- end }}
-	{{- if gt (len $def.ExtraParams) 0 }}
+	{{if gt (len $def.ExtraParams) 0 }}
 	// Extra params
 	{{- range $awsField, $field := $def.ExtraParams }}
 	if _, ok := params["{{ $field }}"]; ok {
@@ -109,7 +116,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			id := fmt.Sprintf("{{ $def.Entity }}_%d", rand.Intn(1e3))
+			id := fakeDryRunId("{{ $def.Entity }}")
 			{{- if gt (len $def.TagsMapping) 0 }}
 			tagsParams := map[string]interface{}{"resource": id}
 			{{- range $tagName, $field := $def.TagsMapping }}
@@ -121,7 +128,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 				d.Create_Tags_DryRun(tagsParams)
 			}
 			{{- end }}
-			d.logger.Println("dry run: {{ $def.Action }} {{ $def.Entity }} ok")
+			d.logger.Println("full dry run: {{ $def.Action }} {{ $def.Entity }} ok")
 			return id, nil
 		}
 	}
@@ -130,15 +137,16 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 	return nil, err
 }
 {{ end }}
+// This function was auto generated
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
 	input := &{{ $def.Api }}.{{ $def.Input }}{}
-	{{- if gt (len $def.RequiredParams) 0 }}
+	{{if gt (len $def.RequiredParams) 0 }}
 	// Required params
 	{{- range $awsField, $field := $def.RequiredParams }}
 	setField(params["{{ $field }}"], input, "{{ $awsField }}")
 	{{- end }}
 	{{- end }}
-	{{- if gt (len $def.ExtraParams) 0 }}
+	{{if gt (len $def.ExtraParams) 0 }}
 	// Extra params
 	{{- range $awsField, $field := $def.ExtraParams }}
 	if _, ok := params["{{ $field }}"]; ok {
@@ -174,7 +182,20 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	{{- end }}
 }
 {{ end }}
-{{- end }}`
+{{- end }}
+
+// This function was auto generated
+func fakeDryRunId(entity string) string {
+	suffix := rand.Intn(1e6)
+	switch entity {
+	case "instance":
+		return fmt.Sprintf("i-%d", suffix)
+	case "volume":
+		return fmt.Sprintf("vol-%d", suffix)
+	default:
+		return fmt.Sprintf("dryrunid-%d", suffix)
+	}
+}`
 
 func capitalize(s string) string {
 	if len(s) > 1 {

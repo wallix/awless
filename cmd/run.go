@@ -82,7 +82,7 @@ func runTemplate(templ *template.Template) error {
 	fmt.Println()
 	fmt.Printf("%s\n", green(templ))
 	fmt.Println()
-	fmt.Print("Run compiled template above? (y/n): ")
+	fmt.Print("Run verified operations above? (y/n): ")
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
 

@@ -31,7 +31,7 @@ func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("dry run: create tags ok")
+			d.logger.Println("full dry run: create tags ok")
 			return nil, nil
 		}
 	}

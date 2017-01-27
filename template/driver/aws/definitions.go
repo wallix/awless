@@ -113,7 +113,7 @@ var DriverDefinitions = []struct {
 		Action: "create", Entity: "volume", Api: "ec2", Input: "CreateVolumeInput", ApiMethod: "CreateVolume", OutputExtractor: "VolumeId",
 		RequiredParams: map[string]string{
 			"AvailabilityZone": "zone",
-			"Size": "size",
+			"Size":             "size",
 		},
 	},
 	{
@@ -125,8 +125,8 @@ var DriverDefinitions = []struct {
 	{
 		Action: "attach", Entity: "volume", Api: "ec2", Input: "AttachVolumeInput", ApiMethod: "AttachVolume", OutputExtractor: "VolumeId",
 		RequiredParams: map[string]string{
-			"Device": "device",
-			"VolumeId": "id",
+			"Device":     "device",
+			"VolumeId":   "id",
 			"InstanceId": "instance",
 		},
 	},
