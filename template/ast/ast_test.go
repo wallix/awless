@@ -8,7 +8,7 @@ import (
 func TestCloneAST(t *testing.T) {
 	tree := &AST{}
 
-	tree.Statements = append(tree.Statements, &DeclarationNode{
+	tree.Statements = append(tree.Statements, &Statement{Node: &DeclarationNode{
 		Left: &IdentifierNode{Ident: "myvar"},
 		Right: &ExpressionNode{
 			Action: "create", Entity: "vpc",
@@ -16,7 +16,7 @@ func TestCloneAST(t *testing.T) {
 			Params:  map[string]interface{}{"count": 1},
 			Aliases: map[string]string{"subnet": "my-subnet"},
 			Holes:   make(map[string]string),
-		}}, &DeclarationNode{
+		}}}, &Statement{Node: &DeclarationNode{
 		Left: &IdentifierNode{Ident: "myothervar"},
 		Right: &ExpressionNode{
 			Action: "create", Entity: "subnet",
@@ -24,13 +24,13 @@ func TestCloneAST(t *testing.T) {
 			Params:  make(map[string]interface{}),
 			Aliases: make(map[string]string),
 			Holes:   map[string]string{"vpc": "myvar"},
-		}}, &ExpressionNode{
+		}}}, &Statement{Node: &ExpressionNode{
 		Action: "create", Entity: "instance",
 		Refs:    make(map[string]string),
 		Params:  make(map[string]interface{}),
 		Aliases: make(map[string]string),
 		Holes:   map[string]string{"subnet": "myothervar"},
-	},
+	}},
 	)
 
 	clone := tree.Clone()
@@ -39,7 +39,7 @@ func TestCloneAST(t *testing.T) {
 		t.Fatalf("\ngot %#v\n\nwant %#v", got, want)
 	}
 
-	clone.Statements[0].(*DeclarationNode).Right.Params["new"] = "trump"
+	clone.Statements[0].Node.(*DeclarationNode).Right.Params["new"] = "trump"
 
 	if got, want := clone.Statements, tree.Statements; reflect.DeepEqual(got, want) {
 		t.Fatalf("\ngot %s\n\nwant %s", got, want)

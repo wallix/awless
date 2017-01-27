@@ -98,7 +98,7 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 		`,
 
 				verifyFn: func(s *Template) error {
-					err := assertDeclarationNode(s.Statements[0], "myvpc", "create", "vpc",
+					err := assertDeclarationNode(s.Statements[0].Node, "myvpc", "create", "vpc",
 						map[string]string{},
 						map[string]interface{}{"cidr": "10.0.0.0/24", "num": 3},
 						map[string]string{},
@@ -108,7 +108,7 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 						return err
 					}
 
-					err = assertDeclarationNode(s.Statements[1], "mysubnet", "delete", "subnet",
+					err = assertDeclarationNode(s.Statements[1].Node, "mysubnet", "delete", "subnet",
 						map[string]string{"vpc": "myvpc"},
 						map[string]interface{}{"cidr": "10.0.0.0/25"},
 						map[string]string{"name": "the_name"},
@@ -118,7 +118,7 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 						return err
 					}
 
-					err = assertExpressionNode(s.Statements[2], "create", "instance",
+					err = assertExpressionNode(s.Statements[2].Node, "create", "instance",
 						map[string]string{"subnet": "mysubnet"},
 						map[string]interface{}{"count": 1, "instance.type": "t2.micro", "ip": "127.0.0.1", "image": "ami-9398d3e0"},
 						map[string]string{},

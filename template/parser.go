@@ -20,5 +20,5 @@ func ParseStatement(text string) (ast.Node, error) {
 		return nil, err
 	}
 
-	return templ.Statements[0], nil
+	return templ.Statements[0].Node, nil
 }

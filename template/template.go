@@ -1,9 +1,7 @@
 package template
 
 import (
-	"bytes"
 	"crypto/rand"
-	"fmt"
 	"strings"
 	"time"
 
@@ -16,71 +14,43 @@ type Template struct {
 	*ast.AST
 }
 
-type Operation struct {
-	ID     string
-	Line   string
-	Output interface{}
-	Err    error
-}
-
-func (op *Operation) String() string {
-	var out bytes.Buffer
-
-	out.WriteString(fmt.Sprintf("operation[uid: %s, executed: ", op.ID))
-	if op.Output != nil {
-		out.WriteString(fmt.Sprintf("%v <- ", op.Output))
-	}
-	out.WriteString(fmt.Sprintf("%s", op.Line))
-	if op.Err != nil {
-		out.WriteString(fmt.Sprintf(": error: %s", op.Err))
-	}
-	out.WriteByte(']')
-
-	return out.String()
-}
-
-func (s *Template) Run(d driver.Driver) (*Template, []*Operation, error) {
+func (s *Template) Run(d driver.Driver) (*Template, error) {
 	vars := map[string]interface{}{}
-	var operations []*Operation
 
-	executedTemplate := &Template{s.Clone()}
+	current := &Template{s.Clone()}
+	current.ID = ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String()
 
-	for _, sts := range executedTemplate.Statements {
-		uid := ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader)
-		op := &Operation{ID: uid.String()}
-
-		operations = append(operations, op)
-
-		switch sts.(type) {
+	for _, sts := range current.Statements {
+		switch sts.Node.(type) {
 		case *ast.ExpressionNode:
-			expr := sts.(*ast.ExpressionNode)
+			expr := sts.Node.(*ast.ExpressionNode)
 			fn := d.Lookup(expr.Action, expr.Entity)
 			expr.ProcessRefs(vars)
 
-			op.Line = expr.String()
-			if op.Output, op.Err = fn(expr.Params); op.Err != nil {
-				return executedTemplate, operations, op.Err
+			sts.Line = expr.String()
+			if sts.Result, sts.Err = fn(expr.Params); sts.Err != nil {
+				return current, sts.Err
 			}
 		case *ast.DeclarationNode:
-			ident := sts.(*ast.DeclarationNode).Left
-			expr := sts.(*ast.DeclarationNode).Right
+			ident := sts.Node.(*ast.DeclarationNode).Left
+			expr := sts.Node.(*ast.DeclarationNode).Right
 			fn := d.Lookup(expr.Action, expr.Entity)
 			expr.ProcessRefs(vars)
 
-			op.Output, op.Err = fn(expr.Params)
-			ident.Val = op.Output
-			op.Line = expr.String()
-			if op.Err != nil {
-				return executedTemplate, operations, op.Err
+			sts.Result, sts.Err = fn(expr.Params)
+			ident.Val = sts.Result
+			sts.Line = expr.String()
+			if sts.Err != nil {
+				return current, sts.Err
 			}
 			vars[ident.Ident] = ident.Val
 		}
 	}
 
-	return executedTemplate, operations, nil
+	return current, nil
 }
 
-func (s *Template) Compile(d driver.Driver) (*Template, []*Operation, error) {
+func (s *Template) Compile(d driver.Driver) (*Template, error) {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
 
@@ -143,11 +113,11 @@ func (s *Template) visitExpressionNodes(fn func(n *ast.ExpressionNode)) {
 	for _, sts := range s.Statements {
 		var expr *ast.ExpressionNode
 
-		switch sts.(type) {
+		switch sts.Node.(type) {
 		case *ast.ExpressionNode:
-			expr = sts.(*ast.ExpressionNode)
+			expr = sts.Node.(*ast.ExpressionNode)
 		case *ast.DeclarationNode:
-			expr = sts.(*ast.DeclarationNode).Right
+			expr = sts.Node.(*ast.DeclarationNode).Right
 		}
 
 		if expr != nil {

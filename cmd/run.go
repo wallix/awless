@@ -78,7 +78,7 @@ func runTemplate(templ *template.Template) error {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 	}
 
-	_, _, err = templ.Compile(awsDriver)
+	_, err = templ.Compile(awsDriver)
 	exitOn(err)
 
 	fmt.Println()
@@ -89,10 +89,10 @@ func runTemplate(templ *template.Template) error {
 	_, err = fmt.Scanln(&yesorno)
 
 	if strings.TrimSpace(yesorno) == "y" {
-		_, operations, err := templ.Run(awsDriver)
+		executed, err := templ.Run(awsDriver)
 		exitOn(err)
 
-		printOperationReport(operations)
+		printReport(executed)
 	}
 
 	return nil
@@ -109,10 +109,10 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			return func(cmd *cobra.Command, args []string) error {
 				text := fmt.Sprintf("%s %s %s", act, ent, strings.Join(args, " "))
 
-				templ, err := template.Parse(text)
+				node, err := template.ParseStatement(text)
 				exitOn(err)
 
-				expr, ok := templ.Statements[0].(*ast.ExpressionNode)
+				expr, ok := node.(*ast.ExpressionNode)
 				if !ok {
 					return errors.New("Expecting an template expression not a template declaration")
 				}
@@ -123,7 +123,8 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 					exitOn(errors.New("command unsupported on inline mode"))
 				}
 
-				if templ, err = template.Parse(templDef); err != nil {
+				templ, err := template.Parse(templDef);
+				if err != nil {
 					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", templDef, err))
 				}
 
@@ -158,28 +159,30 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func printOperationReport(ops []*template.Operation) {
-	for _, op := range ops {
+func printReport(t *template.Template) {
+	for _, sts := range t.Statements {
 		var line bytes.Buffer
-		if op.Err == nil {
+		if sts.Err == nil {
 			line.WriteString(renderGreenFn("[DONE] "))
 		} else {
 			line.WriteString(renderRedFn("[ERROR] "))
 		}
 
-		if op.Output != nil {
-			line.WriteString(fmt.Sprintf("%v <- ", op.Output))
+		if sts.Result != nil {
+			line.WriteString(fmt.Sprintf("%v %s ", sts.Result, renderGreenFn("<-")))
 		}
-		line.WriteString(fmt.Sprintf("%s", op.Line))
+		line.WriteString(fmt.Sprintf("%s", sts.Line))
 
-		if op.Err != nil {
-			line.WriteString(fmt.Sprintf("\n\terror: %s", op.Err))
+		if sts.Err != nil {
+			line.WriteString(fmt.Sprintf("\n\terror: %s", sts.Err))
 		}
 
-		line.WriteString(fmt.Sprintf("\n\t(revert with opid=%s)", op.ID))
 
 		fmt.Println(line.String())
 	}
+
+	fmt.Println()
+	fmt.Printf("(revert operations using `awless revert` with template id %s)\n", t.ID)
 }
 
 func addAliasesToParams(expr *ast.ExpressionNode) error {

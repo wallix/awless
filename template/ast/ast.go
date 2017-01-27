@@ -12,10 +12,27 @@ type Node interface {
 	String() string
 }
 
-type AST struct {
-	Statements []Node
+type Statement struct {
+	Node
+	Line   string
+	Result interface{}
+	Err    error
+}
 
-	currentStatement Node
+func (s *Statement) clone() *Statement {
+	newStat := &Statement{}
+	newStat.Node = s.Node.clone()
+	newStat.Result = s.Result
+	newStat.Err = s.Err
+
+	return newStat
+}
+
+type AST struct {
+	ID         string
+	Statements []*Statement
+
+	currentStatement *Statement
 	currentKey       string
 }
 
@@ -224,11 +241,11 @@ func (s *AST) currentExpression() *ExpressionNode {
 		return nil
 	}
 
-	switch st.(type) {
+	switch st.Node.(type) {
 	case *ExpressionNode:
-		return st.(*ExpressionNode)
+		return st.Node.(*ExpressionNode)
 	case *DeclarationNode:
-		return st.(*DeclarationNode).Right
+		return st.Node.(*DeclarationNode).Right
 	default:
 		panic("last expression: unexpected node type")
 	}
@@ -236,13 +253,14 @@ func (s *AST) currentExpression() *ExpressionNode {
 
 func (a *AST) Clone() *AST {
 	clone := &AST{}
-	for _, node := range a.Statements {
-		clone.Statements = append(clone.Statements, node.clone())
+	for _, stat := range a.Statements {
+		clone.Statements = append(clone.Statements, stat.clone())
 	}
 	return clone
 }
 
 func (s *AST) addStatement(n Node) {
-	s.currentStatement = n
-	s.Statements = append(s.Statements, n)
+	stat := &Statement{Node: n}
+	s.currentStatement = stat
+	s.Statements = append(s.Statements, stat)
 }
