@@ -3,10 +3,13 @@ package aws
 import (
 	"fmt"
 	"io/ioutil"
+	"errors"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -14,6 +17,83 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/shell"
 )
+
+func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DescribeInstancesInput{}
+	input.DryRun = aws.Bool(true)
+
+	for _, val := range[]string{"state", "id", "timeout"} {
+		if _, ok := params[val]; !ok {
+			err := fmt.Errorf("check instance error: missing required param '%s'", val)
+			d.logger.Printf("%s", err)
+			return nil, err
+		}
+	}
+
+	if _, ok := params["timeout"].(int); !ok {
+		err := errors.New("check instance error: timeout param is not int")
+		d.logger.Printf("%s", err)
+		return nil, err
+	}
+
+	// Required params
+	setField(params["id"], input, "InstanceIds")
+
+	_, err := d.ec2.DescribeInstances(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fakeDryRunId("instance")
+			d.logger.Println("full dry run: check instance ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: check instance error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DescribeInstancesInput{}
+
+	// Required params
+	setField(params["id"], input, "InstanceIds")
+
+	timeout := time.Duration(params["timeout"].(int)) * time.Second
+	timer := time.NewTimer(timeout)
+
+	for {
+		select {
+		case <-time.After(1 * time.Second):
+			output, err := d.ec2.DescribeInstances(input)
+			if err != nil {
+				d.logger.Printf("check instance error: %s", err)
+				return nil, err
+			}
+
+			if res := output.Reservations; len(res) > 0 {
+				if instances := output.Reservations[0].Instances; len(instances) > 0 {
+					for _, inst := range instances {
+						if aws.StringValue(inst.InstanceId) == params["id"] {
+							if aws.StringValue(inst.State.Name) == params["state"] {
+								d.logger.Printf("check instance status '%s' done", params["state"])
+								return nil, nil
+							}
+						}
+					}
+				}
+			}
+
+		case <-timer.C:
+			err := fmt.Errorf("timeout of %s expired", timeout)
+			d.logger.Printf("%s", err)
+			return nil, err
+		}
+	}
+
+	d.logger.Println("check instance done")
+	return nil, nil
+}
 
 func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
@@ -281,4 +361,16 @@ func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermi
 	}
 
 	return []*ec2.IpPermission{ipPerm}, nil
+}
+
+func fakeDryRunId(entity string) string {
+	suffix := rand.Intn(1e6)
+	switch entity {
+	case "instance":
+		return fmt.Sprintf("i-%d", suffix)
+	case "volume":
+		return fmt.Sprintf("vol-%d", suffix)
+	default:
+		return fmt.Sprintf("dryrunid-%d", suffix)
+	}
 }

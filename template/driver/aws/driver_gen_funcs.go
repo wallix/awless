@@ -3,8 +3,6 @@
 package aws
 
 import (
-	"fmt"
-	"math/rand"
 	"strings"
 	"errors"
 
@@ -843,18 +841,4 @@ func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.Println("delete group done")
 	return output, nil
-}
-
-
-// This function was auto generated
-func fakeDryRunId(entity string) string {
-	suffix := rand.Intn(1e6)
-	switch entity {
-	case "instance":
-		return fmt.Sprintf("i-%d", suffix)
-	case "volume":
-		return fmt.Sprintf("vol-%d", suffix)
-	default:
-		return fmt.Sprintf("dryrunid-%d", suffix)
-	}
 }

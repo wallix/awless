@@ -68,8 +68,6 @@ const funcsTempl = `// DO NOT EDIT
 package aws
 
 import (
-	"fmt"
-	"math/rand"
 	"strings"
 	"errors"
 
@@ -182,20 +180,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	{{- end }}
 }
 {{ end }}
-{{- end }}
-
-// This function was auto generated
-func fakeDryRunId(entity string) string {
-	suffix := rand.Intn(1e6)
-	switch entity {
-	case "instance":
-		return fmt.Sprintf("i-%d", suffix)
-	case "volume":
-		return fmt.Sprintf("vol-%d", suffix)
-	default:
-		return fmt.Sprintf("dryrunid-%d", suffix)
-	}
-}`
+{{- end }}`
 
 func capitalize(s string) string {
 	if len(s) > 1 {

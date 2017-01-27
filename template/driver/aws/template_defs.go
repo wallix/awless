@@ -13,6 +13,7 @@ var AWSTemplatesDefinitions = map[string]string{
 	"deleteinstance": "delete instance id={ instance.id } ",
 	"startinstance": "start instance id={ instance.id } ",
 	"stopinstance": "stop instance id={ instance.id } ",
+	"checkinstance": "check instance id={ instance.id } state={ instance.state } timeout={ instance.timeout } ",
 	"createsecuritygroup": "create securitygroup description={ securitygroup.description } name={ securitygroup.name } vpc={ securitygroup.vpc } ",
 	"updatesecuritygroup": "update securitygroup cidr={ securitygroup.cidr } id={ securitygroup.id } protocol={ securitygroup.protocol } ",
 	"deletesecuritygroup": "delete securitygroup id={ securitygroup.id } ",

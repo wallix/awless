@@ -110,6 +110,14 @@ var DriverDefinitions = []struct {
 			"InstanceIds": "id",
 		},
 	},
+	{
+		Action: "check", Entity: "instance", Api: "ec2", ManualFuncDefinition: true,
+		RequiredParams: map[string]string{
+			"Id":      "id",
+			"State":   "state",
+			"Timeout": "timeout",
+		},
+	},
 
 	// Security Group
 	{

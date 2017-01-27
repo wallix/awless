@@ -85,14 +85,13 @@ func runTemplate(templ *template.Template) error {
 	fmt.Printf("%s\n", renderGreenFn(templ))
 	fmt.Println()
 	fmt.Print("Run verified operations above? (y/n): ")
-	fmt.Println()
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
 
 	if strings.TrimSpace(yesorno) == "y" {
-		executed, err := templ.Run(awsDriver)
-		exitOn(err)
+		executed, _ := templ.Run(awsDriver)
 
+		fmt.Println()
 		printReport(executed)
 
 		db, close := database.Current()
