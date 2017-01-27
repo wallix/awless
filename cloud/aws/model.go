@@ -1,63 +1,6 @@
 package aws
 
-import (
-	"errors"
-	"fmt"
-	"reflect"
-
-	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/wallix/awless/graph"
-)
-
-type propertyTransform struct {
-	name      string
-	transform transformFn
-}
-
-type transformFn func(i interface{}) (interface{}, error)
-
-var ErrTagNotFound = errors.New("aws tag key not found")
-var ErrFieldNotFound = errors.New("aws struct field not found")
-
-var extractValueFn = func(i interface{}) (interface{}, error) {
-	iv := reflect.ValueOf(i)
-	if iv.Kind() == reflect.Ptr {
-		return iv.Elem().Interface(), nil
-	}
-	return nil, fmt.Errorf("aws type unknown: %T", i)
-}
-
-var extractFieldFn = func(field string) transformFn {
-	return func(i interface{}) (interface{}, error) {
-		value := reflect.ValueOf(i)
-		struc := value.Elem()
-
-		structField := struc.FieldByName(field)
-
-		if !structField.IsValid() {
-			return nil, ErrFieldNotFound
-		}
-
-		return extractValueFn(structField.Interface())
-	}
-}
-
-var extractTagFn = func(key string) transformFn {
-	return func(i interface{}) (interface{}, error) {
-		tags, ok := i.([]*ec2.Tag)
-		if !ok {
-			return nil, fmt.Errorf("aws model: unexpected type %T", i)
-		}
-		for _, t := range tags {
-			if key == awssdk.StringValue(t.Key) {
-				return awssdk.StringValue(t.Value), nil
-			}
-		}
-
-		return nil, ErrTagNotFound
-	}
-}
+import "github.com/wallix/awless/graph"
 
 var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 	graph.Instance: {
@@ -91,10 +34,13 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"DefaultForAz":        {name: "DefaultForAz", transform: extractValueFn},
 	},
 	graph.SecurityGroup: {
-		"Id":      {name: "GroupId", transform: extractValueFn},
-		"Name":    {name: "GroupName", transform: extractValueFn},
-		"OwnerId": {name: "OwnerId", transform: extractValueFn},
-		"VpcId":   {name: "VpcId", transform: extractValueFn},
+		"Id":            {name: "GroupId", transform: extractValueFn},
+		"Name":          {name: "GroupName", transform: extractValueFn},
+		"Description":   {name: "Description", transform: extractValueFn},
+		"InboundRules":  {name: "IpPermissions", transform: extractIpPermissionSliceFn},
+		"OutboundRules": {name: "IpPermissionsEgress", transform: extractIpPermissionSliceFn},
+		"OwnerId":       {name: "OwnerId", transform: extractValueFn},
+		"VpcId":         {name: "VpcId", transform: extractValueFn},
 	},
 	graph.Keypair: {
 		"Id":             {name: "KeyName", transform: extractValueFn},

@@ -1,10 +1,13 @@
 package display
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/wallix/awless/graph"
 )
 
 const ascSymbol = " ▲"
@@ -96,4 +99,48 @@ func (h TimeColumnDefinition) format(i interface{}) string {
 	default:
 		return ii.Format("Mon, Jan 2, 2006 15:04")
 	}
+}
+
+type FirewallRulesColumnDefinition struct {
+	StringColumnDefinition
+}
+
+func (h FirewallRulesColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	ii, ok := i.([]*graph.FirewallRule)
+	if !ok {
+		return "invalid rules"
+	}
+	var w bytes.Buffer
+
+	for _, r := range ii {
+		var netStrings []string
+		for _, net := range r.IPRanges {
+			ones, _ := net.Mask.Size()
+			if ones == 0 {
+				netStrings = append(netStrings, "any")
+			} else {
+				netStrings = append(netStrings, net.String())
+			}
+		}
+		w.WriteString(strings.Join(netStrings, ","))
+
+		w.WriteString("(")
+
+		switch {
+		case r.Protocol == "any":
+			w.WriteString(r.Protocol)
+		case r.PortRange.Any:
+			w.WriteString(fmt.Sprintf("%s:any", r.Protocol))
+		case r.PortRange.FromPort == r.PortRange.ToPort:
+			w.WriteString(fmt.Sprintf("%s:%d", r.Protocol, r.PortRange.FromPort))
+		default:
+			w.WriteString(fmt.Sprintf("%s:%d-%d", r.Protocol, r.PortRange.FromPort, r.PortRange.ToPort))
+		}
+
+		w.WriteString(") ")
+	}
+	return w.String()
 }

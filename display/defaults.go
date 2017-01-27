@@ -49,7 +49,10 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	graph.SecurityGroup: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "VpcId"},
+		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "InboundRules", Friendly: "Inbound"}},
+		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "OutboundRules", Friendly: "Outbound"}},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Description", DisableTruncate: true},
 	},
 	graph.Keypair: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},

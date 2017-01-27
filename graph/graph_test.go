@@ -1,6 +1,8 @@
 package graph
 
 import (
+	"fmt"
+	"net"
 	"reflect"
 	"testing"
 	"time"
@@ -72,6 +74,60 @@ func TestGetAllResources(t *testing.T) {
 		}
 		if !found {
 			t.Fatalf("%+v not found", r)
+		}
+	}
+}
+
+func TestLoadIpPermissions(t *testing.T) {
+	g := NewGraph()
+	g.Unmarshal([]byte(`/securitygroup<sg-1234>	"has_type"@[]	"/securitygroup"^^type:text
+/securitygroup<sg-1234>	"property"@[]	"{"Key":"Id","Value":"sg-1234"}"^^type:text
+/securitygroup<sg-1234>	"property"@[]	"{"Key":"InboundRules","Value":[{"PortRange":{"FromPort":22,"ToPort":22,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"10.10.0.0","Mask":"//8AAA=="}]},{"PortRange":{"FromPort":443,"ToPort":443,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text
+/securitygroup<sg-1234>	"property"@[]	"{"Key":"OutboundRules","Value":[{"PortRange":{"FromPort":0,"ToPort":0,"Any":true},"Protocol":"any","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text`))
+	expected := []*Resource{
+		{kind: SecurityGroup, id: "sg-1234", properties: Properties{
+			"Id": "sg-1234",
+			"InboundRules": []*FirewallRule{
+				{
+					PortRange: PortRange{FromPort: int64(22), ToPort: int64(22), Any: false},
+					Protocol:  "tcp",
+					IPRanges:  []*net.IPNet{{IP: net.IPv4(10, 10, 0, 0), Mask: net.CIDRMask(16, 32)}},
+				},
+				{
+					PortRange: PortRange{FromPort: int64(443), ToPort: int64(443), Any: false},
+					Protocol:  "tcp",
+					IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
+				},
+			},
+			"OutboundRules": []*FirewallRule{
+				{
+					PortRange: PortRange{Any: true},
+					Protocol:  "any",
+					IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
+				},
+			},
+		},
+		},
+	}
+	res, err := g.GetAllResources(SecurityGroup)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(res), len(expected); got != want {
+		t.Fatalf("got %d want %d", got, want)
+	}
+	if got, want := res[0].id, expected[0].id; got != want {
+		t.Fatalf("got %s want %s", got, want)
+	}
+	if got, want := res[0].kind, expected[0].kind; got != want {
+		t.Fatalf("got %s want %s", got, want)
+	}
+	if got, want := len(res[0].properties), len(expected[0].properties); got != want {
+		t.Fatalf("got %d want %d", got, want)
+	}
+	for k := range expected[0].properties {
+		if got, want := fmt.Sprintf("%T", res[0].properties[k]), fmt.Sprintf("%T", expected[0].properties[k]); got != want {
+			t.Fatalf("got %s want %s", got, want)
 		}
 	}
 }

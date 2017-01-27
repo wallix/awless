@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -268,13 +269,12 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	}
 
 	d.sorter.sort(values)
-
 	columnsToDisplay := d.headers
 	if d.maxwidth != 0 {
 		columnsToDisplay = []ColumnDefinition{}
 		currentWidth := 0
 		for j, h := range d.headers {
-			colW := t(j, values, h) + 2 // +2 (tables margin)
+			colW := t(j, values, h) + 3 // +3 (tables margin)
 			if currentWidth+colW > d.maxwidth {
 				break
 			}
@@ -702,12 +702,19 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 func t(j int, t table, h ColumnDefinition) int {
 	w := 0
 	for i := range t {
-		c := utf8.RuneCountInString(h.format(t[i][j]))
-		if c > w {
-			w = c
+		words := get_words_from(h.format(t[i][j]))
+		for _, word := range words {
+			c := utf8.RuneCountInString(word)
+			if c > w {
+				w = c
+			}
 		}
 	}
 	return w
+}
+
+func get_words_from(text string) []string {
+	return regexp.MustCompile("(\\b[^\\s]+\\b)").FindAllString(text, -1)
 }
 
 func nameOrID(res *graph.Resource) string {

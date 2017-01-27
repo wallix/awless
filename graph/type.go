@@ -1,12 +1,12 @@
 package graph
 
 import (
+	"fmt"
+	"net"
 	"strings"
 
 	"github.com/google/badwolf/triple/node"
 )
-
-type ResourceType string
 
 const (
 	Region        ResourceType = "region"
@@ -21,6 +21,23 @@ const (
 	Group         ResourceType = "group"
 	Policy        ResourceType = "policy"
 )
+
+type FirewallRule struct {
+	PortRange PortRange
+	Protocol  string
+	IPRanges  []*net.IPNet // IPv4 or IPv6 range
+}
+
+func (r *FirewallRule) String() string {
+	return fmt.Sprintf("PortRange:%+v; Protocol:%s; IPRanges:%+v", r.PortRange, r.Protocol, r.IPRanges)
+}
+
+type PortRange struct {
+	FromPort, ToPort int64
+	Any              bool
+}
+
+type ResourceType string
 
 func NewResourceType(t *node.Type) ResourceType {
 	if !strings.HasPrefix(t.String(), "/") {
