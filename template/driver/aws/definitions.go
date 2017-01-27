@@ -119,6 +119,16 @@ var DriverDefinitions = []struct {
 		},
 	},
 	{
+		Action: "update", Entity: "securitygroup", Api: "ec2", ManualFuncDefinition: true,
+		RequiredParams: map[string]string{
+			"GroupId":    "id",
+			"CidrIp":     "cidr",
+			"IpProtocol": "protocol",
+			// + either inbound or outbound = either authorize or revoke
+		},
+		//ExtraParams : portrange
+	},
+	{
 		Action: "delete", Entity: "securitygroup", Api: "ec2", Input: "DeleteSecurityGroupInput", ApiMethod: "DeleteSecurityGroup",
 		RequiredParams: map[string]string{
 			"GroupId": "id",

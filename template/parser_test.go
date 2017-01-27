@@ -53,6 +53,15 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
+				input: `create securitygroup port=20-80`,
+				verifyFn: func(n ast.Node) error {
+					if err := assertParams(n, map[string]interface{}{"port": "20-80"}); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
 				input: `myinstance = create instance type={instance.type} cidr=10.0.0.0/25 subnet=@default-subnet vpc=$myvpc`,
 				verifyFn: func(n ast.Node) error {
 					if err := assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/25"}); err != nil {

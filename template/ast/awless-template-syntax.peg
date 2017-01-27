@@ -30,6 +30,7 @@ Value <- HoleValue {  p.AddParamHoleValue(text) }
         / RefValue {  p.AddParamRefValue(text) }
         / <CidrValue> { p.AddParamCidrValue(text) }
         / <IpValue> { p.AddParamIpValue(text) }
+        / <IntRangeValue> { p.AddParamValue(text) }
         / <IntValue> { p.AddParamIntValue(text) }
         / <StringValue> { p.AddParamValue(text) }
 
@@ -37,6 +38,7 @@ StringValue <- [a-zA-Z0-9-._]+
 CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
 IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
 IntValue <- [0-9]+
+IntRangeValue <- [0-9]+'-'[0-9]+
 RefValue <- '$'<Identifier>
 AliasValue <- '@'<Identifier>
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
