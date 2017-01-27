@@ -108,6 +108,23 @@ var DriverDefinitions = []struct {
 			"InstanceIds": "id",
 		},
 	},
+
+	// Security Group
+	{
+		Action: "create", Entity: "securitygroup", Api: "ec2", Input: "CreateSecurityGroupInput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "GroupId",
+		RequiredParams: map[string]string{
+			"GroupName":   "name",
+			"VpcId":       "vpc",
+			"Description": "description",
+		},
+	},
+	{
+		Action: "delete", Entity: "securitygroup", Api: "ec2", Input: "DeleteSecurityGroupInput", ApiMethod: "DeleteSecurityGroup",
+		RequiredParams: map[string]string{
+			"GroupId": "id",
+		},
+	},
+
 	// VOLUME
 	{
 		Action: "create", Entity: "volume", Api: "ec2", Input: "CreateVolumeInput", ApiMethod: "CreateVolume", OutputExtractor: "VolumeId",
