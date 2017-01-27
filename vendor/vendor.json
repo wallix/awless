@@ -347,6 +347,12 @@
 			"revisionTime": "2016-02-12T03:18:39Z"
 		},
 		{
+			"checksumSHA1": "B1iGaUz7NrjEmCjVdIgH5pvkTe8=",
+			"path": "github.com/oklog/ulid",
+			"revision": "66bb6560562feca7045b23db1ae85b01260f87c5",
+			"revisionTime": "2017-01-17T20:06:51Z"
+		},
+		{
 			"checksumSHA1": "4+01HaD0/pVQLzk7nWmoJwolfrY=",
 			"path": "github.com/olekukonko/tablewriter",
 			"revision": "44e365d423f4f06769182abfeeae2b91be9d529b",

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,9 @@ import (
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver/aws"
 )
+
+var renderGreenFn = color.New(color.FgGreen).SprintFunc()
+var renderRedFn = color.New(color.FgRed).SprintFunc()
 
 func init() {
 	RootCmd.AddCommand(runCmd)
@@ -74,26 +78,21 @@ func runTemplate(templ *template.Template) error {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 	}
 
-	_, err = templ.Compile(awsDriver)
+	_, _, err = templ.Compile(awsDriver)
 	exitOn(err)
 
-	green := color.New(color.FgGreen).SprintFunc()
-
 	fmt.Println()
-	fmt.Printf("%s\n", green(templ))
+	fmt.Printf("%s\n", renderGreenFn(templ))
 	fmt.Println()
 	fmt.Print("Run verified operations above? (y/n): ")
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
 
 	if strings.TrimSpace(yesorno) == "y" {
-		executedTemplate, err := templ.Run(awsDriver)
+		_, operations, err := templ.Run(awsDriver)
 		exitOn(err)
 
-		fmt.Println()
-		for _, stat := range executedTemplate.Statements {
-			fmt.Printf("%s -> %s\n", stat, green("DONE"))
-		}
+		printOperationReport(operations)
 	}
 
 	return nil
@@ -157,6 +156,30 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	return actionCmd
+}
+
+func printOperationReport(ops []*template.Operation) {
+	for _, op := range ops {
+		var line bytes.Buffer
+		if op.Err == nil {
+			line.WriteString(renderGreenFn("[DONE] "))
+		} else {
+			line.WriteString(renderRedFn("[ERROR] "))
+		}
+
+		if op.Output != nil {
+			line.WriteString(fmt.Sprintf("%v <- ", op.Output))
+		}
+		line.WriteString(fmt.Sprintf("%s", op.Line))
+
+		if op.Err != nil {
+			line.WriteString(fmt.Sprintf("\n\terror: %s", op.Err))
+		}
+
+		line.WriteString(fmt.Sprintf("\n\t(revert with opid=%s)", op.ID))
+
+		fmt.Println(line.String())
+	}
 }
 
 func addAliasesToParams(expr *ast.ExpressionNode) error {

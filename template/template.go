@@ -1,8 +1,13 @@
 package template
 
 import (
+	"bytes"
+	"crypto/rand"
+	"fmt"
 	"strings"
+	"time"
 
+	"github.com/oklog/ulid"
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver"
 )
@@ -11,38 +16,71 @@ type Template struct {
 	*ast.AST
 }
 
-func (s *Template) Run(d driver.Driver) (*Template, error) {
+type Operation struct {
+	ID     string
+	Line   string
+	Output interface{}
+	Err    error
+}
+
+func (op *Operation) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(fmt.Sprintf("operation[uid: %s, executed: ", op.ID))
+	if op.Output != nil {
+		out.WriteString(fmt.Sprintf("%v <- ", op.Output))
+	}
+	out.WriteString(fmt.Sprintf("%s", op.Line))
+	if op.Err != nil {
+		out.WriteString(fmt.Sprintf(": error: %s", op.Err))
+	}
+	out.WriteByte(']')
+
+	return out.String()
+}
+
+func (s *Template) Run(d driver.Driver) (*Template, []*Operation, error) {
 	vars := map[string]interface{}{}
+	var operations []*Operation
 
 	executedTemplate := &Template{s.Clone()}
 
 	for _, sts := range executedTemplate.Statements {
+		uid := ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader)
+		op := &Operation{ID: uid.String()}
+
+		operations = append(operations, op)
+
 		switch sts.(type) {
 		case *ast.ExpressionNode:
 			expr := sts.(*ast.ExpressionNode)
 			fn := d.Lookup(expr.Action, expr.Entity)
 			expr.ProcessRefs(vars)
-			if _, err := fn(expr.Params); err != nil {
-				return executedTemplate, err
+
+			op.Line = expr.String()
+			if op.Output, op.Err = fn(expr.Params); op.Err != nil {
+				return executedTemplate, operations, op.Err
 			}
 		case *ast.DeclarationNode:
 			ident := sts.(*ast.DeclarationNode).Left
 			expr := sts.(*ast.DeclarationNode).Right
 			fn := d.Lookup(expr.Action, expr.Entity)
 			expr.ProcessRefs(vars)
-			identVal, err := fn(expr.Params)
-			ident.Val = identVal
-			if err != nil {
-				return executedTemplate, err
+
+			op.Output, op.Err = fn(expr.Params)
+			ident.Val = op.Output
+			op.Line = expr.String()
+			if op.Err != nil {
+				return executedTemplate, operations, op.Err
 			}
 			vars[ident.Ident] = ident.Val
 		}
 	}
 
-	return executedTemplate, nil
+	return executedTemplate, operations, nil
 }
 
-func (s *Template) Compile(d driver.Driver) (*Template, error) {
+func (s *Template) Compile(d driver.Driver) (*Template, []*Operation, error) {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
 

@@ -7,9 +7,195 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/oklog/ulid"
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver"
 )
+
+type stubDriver struct{}
+
+func (d *stubDriver) Lookup(lookups ...string) driver.DriverFn {
+	return func(map[string]interface{}) (interface{}, error) { return nil, nil }
+}
+func (d *stubDriver) SetLogger(*log.Logger) {}
+func (d *stubDriver) SetDryRun(bool)        {}
+
+type errorDriver struct {
+	err error
+}
+
+func (d *errorDriver) Lookup(lookups ...string) driver.DriverFn {
+	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }
+}
+func (d *errorDriver) SetLogger(*log.Logger) {}
+func (d *errorDriver) SetDryRun(bool)        {}
+
+func TestRunDriverOutputOperations(t *testing.T) {
+	anErr := errors.New("my error message")
+
+	tcases := []struct {
+		input  string
+		driver driver.Driver
+		expect []*Operation
+	}{
+		{
+			input:  "create vpc cidr=10.0.0.0/25\ndelete subnet id=sub-5f4g3hj",
+			driver: &stubDriver{},
+			expect: []*Operation{
+				&Operation{Line: "create vpc cidr=10.0.0.0/25"},
+				&Operation{Line: "delete subnet id=sub-5f4g3hj"},
+			},
+		},
+		{
+			input:  "create vpc cidr=10.0.0.0/25",
+			driver: &errorDriver{anErr},
+			expect: []*Operation{
+				&Operation{Line: "create vpc cidr=10.0.0.0/25", Err: anErr},
+			},
+		},
+	}
+
+	for _, tcase := range tcases {
+		templ, err := Parse(tcase.input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, ops, _ := templ.Run(tcase.driver)
+
+		for i, op := range ops {
+			if got, want := op.Line, tcase.expect[i].Line; got != want {
+				t.Fatalf("\ninput: '%s'\n\tgot '%q'\n\twant '%q'", tcase.input, got, want)
+			}
+			if got, want := op.Output, tcase.expect[i].Output; got != want {
+				t.Fatalf("\ninput: '%s'\n\tgot %s\n\twant %s", tcase.input, got, want)
+			}
+			if got, want := op.Err, tcase.expect[i].Err; got != want {
+				t.Fatalf("\ninput: '%s'\n\tgot %v\n\twant %v", tcase.input, got, want)
+			}
+
+			if _, err := ulid.Parse(op.ID); err != nil {
+				t.Fatalf("\ninput: '%s'\n cannot parse ulid %s", tcase.input, op.ID)
+			}
+		}
+	}
+}
+
+func TestRunDriverOnTemplate(t *testing.T) {
+	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
+		s := &Template{&ast.AST{}}
+
+		s.Statements = append(s.Statements, &ast.DeclarationNode{
+			Left: &ast.IdentifierNode{Ident: "createdvpc"},
+			Right: &ast.ExpressionNode{
+				Action: "create", Entity: "vpc",
+				Params: map[string]interface{}{"count": 1},
+			}}, &ast.DeclarationNode{
+			Left: &ast.IdentifierNode{Ident: "createdsubnet"},
+			Right: &ast.ExpressionNode{
+				Action: "create", Entity: "subnet",
+				Refs: map[string]string{"vpc": "createdvpc"},
+			}}, &ast.ExpressionNode{
+			Action: "create", Entity: "instance",
+			Refs: map[string]string{"subnet": "createdsubnet"},
+		},
+		)
+
+		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
+			action: "create", entity: "vpc",
+			expectedParams: map[string]interface{}{"count": 1},
+		}, {
+			action: "create", entity: "subnet",
+			expectedParams: map[string]interface{}{"vpc": "mynewvpc"},
+		}, {
+			action: "create", entity: "instance",
+			expectedParams: map[string]interface{}{"subnet": "mynewsubnet"},
+		},
+		},
+		}
+
+		if _, _, err := s.Run(mDriver); err != nil {
+			t.Fatal(err)
+		}
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
+		}
+
+		mDriver = &mockDriver{prefix: "myother", expects: []*expectation{{
+			action: "create", entity: "vpc",
+			expectedParams: map[string]interface{}{"count": 1},
+		}, {
+			action: "create", entity: "subnet",
+			expectedParams: map[string]interface{}{"vpc": "myothervpc"},
+		}, {
+			action: "create", entity: "instance",
+			expectedParams: map[string]interface{}{"subnet": "myothersubnet"},
+		},
+		},
+		}
+
+		if _, _, err := s.Run(mDriver); err != nil {
+			t.Fatal(err)
+		}
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Driver visit expression nodes", func(t *testing.T) {
+		s := &Template{&ast.AST{}}
+
+		n := &ast.ExpressionNode{
+			Action: "create", Entity: "vpc",
+			Params: map[string]interface{}{"count": 1},
+		}
+		s.Statements = append(s.Statements, n)
+
+		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
+			action: "create", entity: "vpc",
+			expectedParams: map[string]interface{}{"count": 1},
+		}},
+		}
+
+		if _, _, err := s.Run(mDriver); err != nil {
+			t.Fatal(err)
+		}
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Driver visit declaration nodes", func(t *testing.T) {
+		s := &Template{&ast.AST{}}
+
+		decl := &ast.DeclarationNode{
+			Left: &ast.IdentifierNode{Ident: "myvar"},
+			Right: &ast.ExpressionNode{
+				Action: "create", Entity: "vpc",
+				Params: map[string]interface{}{"count": 1},
+			},
+		}
+		s.Statements = append(s.Statements, decl)
+
+		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
+			action: "create", entity: "vpc",
+			expectedParams: map[string]interface{}{"count": 1},
+		}},
+		}
+
+		executedTemplate, _, err := s.Run(mDriver)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		modifiedDecl := executedTemplate.Statements[0].(*ast.DeclarationNode)
+		if got, want := modifiedDecl.Left.Val, "mynewvpc"; got != want {
+			t.Fatalf("identifier: got %#v, want %#v", got, want)
+		}
+		if err := mDriver.lookupsCalled(); err != nil {
+			t.Fatal(err)
+		}
+	})
+}
 
 func TestGetAliases(t *testing.T) {
 	tree := &ast.AST{}
@@ -82,125 +268,7 @@ func TestMergeParams(t *testing.T) {
 	}
 }
 
-func TestRunDriverOnTemplate(t *testing.T) {
-	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
-
-		s.Statements = append(s.Statements, &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "createdvpc"},
-			Right: &ast.ExpressionNode{
-				Action: "create", Entity: "vpc",
-				Params: map[string]interface{}{"count": 1},
-			}}, &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "createdsubnet"},
-			Right: &ast.ExpressionNode{
-				Action: "create", Entity: "subnet",
-				Refs: map[string]string{"vpc": "createdvpc"},
-			}}, &ast.ExpressionNode{
-			Action: "create", Entity: "instance",
-			Refs: map[string]string{"subnet": "createdsubnet"},
-		},
-		)
-
-		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
-			action: "create", entity: "vpc",
-			expectedParams: map[string]interface{}{"count": 1},
-		}, {
-			action: "create", entity: "subnet",
-			expectedParams: map[string]interface{}{"vpc": "mynewvpc"},
-		}, {
-			action: "create", entity: "instance",
-			expectedParams: map[string]interface{}{"subnet": "mynewsubnet"},
-		},
-		},
-		}
-
-		if _, err := s.Run(mDriver); err != nil {
-			t.Fatal(err)
-		}
-		if err := mDriver.lookupsCalled(); err != nil {
-			t.Fatal(err)
-		}
-
-		mDriver = &mockDriver{prefix: "myother", expects: []*expectation{{
-			action: "create", entity: "vpc",
-			expectedParams: map[string]interface{}{"count": 1},
-		}, {
-			action: "create", entity: "subnet",
-			expectedParams: map[string]interface{}{"vpc": "myothervpc"},
-		}, {
-			action: "create", entity: "instance",
-			expectedParams: map[string]interface{}{"subnet": "myothersubnet"},
-		},
-		},
-		}
-
-		if _, err := s.Run(mDriver); err != nil {
-			t.Fatal(err)
-		}
-		if err := mDriver.lookupsCalled(); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("Driver visit expression nodes", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
-
-		n := &ast.ExpressionNode{
-			Action: "create", Entity: "vpc",
-			Params: map[string]interface{}{"count": 1},
-		}
-		s.Statements = append(s.Statements, n)
-
-		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
-			action: "create", entity: "vpc",
-			expectedParams: map[string]interface{}{"count": 1},
-		}},
-		}
-
-		if _, err := s.Run(mDriver); err != nil {
-			t.Fatal(err)
-		}
-		if err := mDriver.lookupsCalled(); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("Driver visit declaration nodes", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
-
-		decl := &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "myvar"},
-			Right: &ast.ExpressionNode{
-				Action: "create", Entity: "vpc",
-				Params: map[string]interface{}{"count": 1},
-			},
-		}
-		s.Statements = append(s.Statements, decl)
-
-		mDriver := &mockDriver{prefix: "mynew", expects: []*expectation{{
-			action: "create", entity: "vpc",
-			expectedParams: map[string]interface{}{"count": 1},
-		}},
-		}
-
-		executedTemplate, err := s.Run(mDriver)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		modifiedDecl := executedTemplate.Statements[0].(*ast.DeclarationNode)
-		if got, want := modifiedDecl.Left.Val, "mynewvpc"; got != want {
-			t.Fatalf("identifier: got %#v, want %#v", got, want)
-		}
-		if err := mDriver.lookupsCalled(); err != nil {
-			t.Fatal(err)
-		}
-	})
-}
-
 func TestResolveTemplate(t *testing.T) {
-
 	t.Run("Holes Resolution", func(t *testing.T) {
 		s := &Template{&ast.AST{}}
 
