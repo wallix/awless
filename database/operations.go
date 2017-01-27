@@ -31,7 +31,7 @@ func (db *DB) GetTemplateOperations() ([]string, error) {
 	err := db.bolt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(operationsBucket))
 		if b == nil {
-			return fmt.Errorf("%s bucket is not created yet", operationsBucket)
+			return nil
 		}
 
     c := b.Cursor()
