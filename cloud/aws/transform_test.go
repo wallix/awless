@@ -3,6 +3,7 @@ package aws
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"testing"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -131,5 +132,27 @@ func TestTransformFunctions(t *testing.T) {
 		if got, want := res[i].String(), expected[i].String(); got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
+	}
+
+	slice := []*ec2.GroupIdentifier{
+		{GroupId: awssdk.String("MyGroup1"), GroupName: awssdk.String("MyGroupName1")},
+		{GroupId: awssdk.String("MyGroup2"), GroupName: awssdk.String("MyGroupName2")},
+	}
+
+	val, err = extractSliceValues("GroupId")(slice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedI := []interface{}{"MyGroup1", "MyGroup2"}
+	if got, want := val, expectedI; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	val, err = extractSliceValues("GroupName")(slice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedI = []interface{}{"MyGroupName1", "MyGroupName2"}
+	if got, want := val, expectedI; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }

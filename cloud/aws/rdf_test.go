@@ -262,6 +262,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 /instance<inst_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
 /instance<inst_2>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_2>	"property"@[]	"{"Key":"Id","Value":"inst_2"}"^^type:text
+/instance<inst_2>	"property"@[]	"{"Key":"SecurityGroups","Value":["secgroup_1"]}"^^type:text
 /instance<inst_2>	"property"@[]	"{"Key":"SubnetId","Value":"sub_2"}"^^type:text
 /instance<inst_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
 /instance<inst_3>	"has_type"@[]	"/instance"^^type:text
@@ -270,6 +271,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 /instance<inst_3>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
 /instance<inst_4>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text
+/instance<inst_4>	"property"@[]	"{"Key":"SecurityGroups","Value":["secgroup_1","secgroup_2"]}"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"SubnetId","Value":"sub_3"}"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
 /instance<inst_5>	"has_type"@[]	"/instance"^^type:text

@@ -80,7 +80,13 @@ var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {
 var extractFieldFn = func(field string) transformFn {
 	return func(i interface{}) (interface{}, error) {
 		value := reflect.ValueOf(i)
+		if value.Kind() != reflect.Ptr {
+			return nil, fmt.Errorf("aws type unknown: %T", i)
+		}
 		struc := value.Elem()
+		if struc.Kind() != reflect.Struct {
+			return nil, fmt.Errorf("aws type unknown: %T", i)
+		}
 
 		structField := struc.FieldByName(field)
 
@@ -105,5 +111,24 @@ var extractTagFn = func(key string) transformFn {
 		}
 
 		return nil, ErrTagNotFound
+	}
+}
+
+var extractSliceValues = func(key string) transformFn {
+	return func(i interface{}) (interface{}, error) {
+		var res []interface{}
+		value := reflect.ValueOf(i)
+		if value.Kind() != reflect.Slice {
+			return nil, fmt.Errorf("aws type invalid: %T", i)
+		}
+		for i := 0; i < value.Len(); i++ {
+			e, err := extractFieldFn(key)(value.Index(i).Interface())
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, e)
+		}
+
+		return res, nil
 	}
 }
