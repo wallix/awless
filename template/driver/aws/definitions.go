@@ -76,6 +76,7 @@ var DriverDefinitions = []struct {
 			"KeyName":          "key",
 			"PrivateIpAddress": "ip",
 			"UserData":         "userdata",
+			"SecurityGroupIds": "group",
 		},
 		TagsMapping: map[string]string{
 			"Name": "name",
@@ -88,6 +89,7 @@ var DriverDefinitions = []struct {
 		},
 		ExtraParams: map[string]string{
 			"InstanceType": "type",
+			"Groups":       "group",
 		},
 	},
 	{

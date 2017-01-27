@@ -236,6 +236,9 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	if _, ok := params["ip"]; ok {
 		setField(params["ip"], input, "PrivateIpAddress")
 	}
+	if _, ok := params["group"]; ok {
+		setField(params["group"], input, "SecurityGroupIds")
+	}
 	if _, ok := params["userdata"]; ok {
 		setField(params["userdata"], input, "UserData")
 	}
@@ -279,6 +282,9 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	if _, ok := params["ip"]; ok {
 		setField(params["ip"], input, "PrivateIpAddress")
 	}
+	if _, ok := params["group"]; ok {
+		setField(params["group"], input, "SecurityGroupIds")
+	}
 	if _, ok := params["userdata"]; ok {
 		setField(params["userdata"], input, "UserData")
 	}
@@ -309,6 +315,9 @@ func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (inter
 	setField(params["id"], input, "InstanceId")
 	
 	// Extra params
+	if _, ok := params["group"]; ok {
+		setField(params["group"], input, "Groups")
+	}
 	if _, ok := params["type"]; ok {
 		setField(params["type"], input, "InstanceType")
 	}
@@ -335,6 +344,9 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 	setField(params["id"], input, "InstanceId")
 	
 	// Extra params
+	if _, ok := params["group"]; ok {
+		setField(params["group"], input, "Groups")
+	}
 	if _, ok := params["type"]; ok {
 		setField(params["type"], input, "InstanceType")
 	}
