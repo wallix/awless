@@ -85,6 +85,7 @@ func runTemplate(templ *template.Template) error {
 	fmt.Printf("%s\n", renderGreenFn(templ))
 	fmt.Println()
 	fmt.Print("Run verified operations above? (y/n): ")
+	fmt.Println()
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
 
@@ -93,6 +94,11 @@ func runTemplate(templ *template.Template) error {
 		exitOn(err)
 
 		printReport(executed)
+
+		db, close := database.Current()
+		defer close()
+
+		db.AddTemplateOperation(executed)
 	}
 
 	return nil
@@ -123,7 +129,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 					exitOn(errors.New("command unsupported on inline mode"))
 				}
 
-				templ, err := template.Parse(templDef);
+				templ, err := template.Parse(templDef)
 				if err != nil {
 					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", templDef, err))
 				}
@@ -176,7 +182,6 @@ func printReport(t *template.Template) {
 		if sts.Err != nil {
 			line.WriteString(fmt.Sprintf("\n\terror: %s", sts.Err))
 		}
-
 
 		fmt.Println(line.String())
 	}

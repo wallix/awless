@@ -13,7 +13,7 @@ type Node interface {
 }
 
 type Statement struct {
-	Node
+	Node   `json:"-"`
 	Line   string
 	Result interface{}
 	Err    error
