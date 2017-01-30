@@ -1,9 +1,9 @@
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"errors"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -22,7 +22,7 @@ func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interf
 	input := &ec2.DescribeInstancesInput{}
 	input.DryRun = aws.Bool(true)
 
-	for _, val := range[]string{"state", "id", "timeout"} {
+	for _, val := range []string{"state", "id", "timeout"} {
 		if _, ok := params[val]; !ok {
 			err := fmt.Errorf("check instance error: missing required param '%s'", val)
 			d.logger.Printf("%s", err)
@@ -370,6 +370,8 @@ func fakeDryRunId(entity string) string {
 		return fmt.Sprintf("i-%d", suffix)
 	case "volume":
 		return fmt.Sprintf("vol-%d", suffix)
+	case "securitygroup":
+		return fmt.Sprintf("sg-%d", suffix)
 	default:
 		return fmt.Sprintf("dryrunid-%d", suffix)
 	}
