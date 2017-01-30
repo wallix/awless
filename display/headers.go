@@ -144,3 +144,43 @@ func (h FirewallRulesColumnDefinition) format(i interface{}) string {
 	}
 	return w.String()
 }
+
+type RoutesColumnDefinition struct {
+	StringColumnDefinition
+}
+
+func (h RoutesColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	ii, ok := i.([]*graph.Route)
+	if !ok {
+		return "invalid routes"
+	}
+	var w bytes.Buffer
+
+	for _, r := range ii {
+		w.WriteString(r.Destination.String())
+		w.WriteString("->")
+		switch r.TargetType {
+		case graph.EgressOnlyInternetGatewayTarget:
+			w.WriteString("inbound-internget-gw")
+		case graph.GatewayTarget:
+			w.WriteString("gw")
+		case graph.InstanceTarget:
+			w.WriteString("inst")
+		case graph.NatTarget:
+			w.WriteString("nat")
+		case graph.NetworkInterfaceTarget:
+			w.WriteString("ni")
+		case graph.VpcPeeringConnectionTarget:
+			w.WriteString("vpc")
+		default:
+			w.WriteString("unkown")
+		}
+		w.WriteString(":")
+		w.WriteString(r.Target)
+		w.WriteString(" ")
+	}
+	return w.String()
+}

@@ -58,6 +58,12 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 	},
+	graph.RouteTable: []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "VpcId"},
+		RoutesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Routes"}},
+	},
 	graph.Keypair: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "KeyFingerprint", DisableTruncate: true},

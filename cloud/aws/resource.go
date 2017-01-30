@@ -33,6 +33,8 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.VolumeId), graph.Volume)
 	case *ec2.InternetGateway:
 		res = graph.InitResource(awssdk.StringValue(ss.InternetGatewayId), graph.InternetGateway)
+	case *ec2.RouteTable:
+		res = graph.InitResource(awssdk.StringValue(ss.RouteTableId), graph.RouteTable)
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
 	case *iam.UserDetail:

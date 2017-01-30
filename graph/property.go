@@ -77,6 +77,15 @@ func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 		if err == nil {
 			prop.Value = propRules.Value
 		}
+	case strings.HasSuffix(strings.ToLower(prop.Key), "routes"):
+		var propRoutes struct {
+			Key   string
+			Value []*Route
+		}
+		err = json.Unmarshal([]byte(propStr), &propRoutes)
+		if err == nil {
+			prop.Value = propRoutes.Value
+		}
 	}
 
 	return &prop, nil

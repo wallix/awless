@@ -132,3 +132,78 @@ var extractSliceValues = func(key string) transformFn {
 		return res, nil
 	}
 }
+
+var extractRoutesSliceFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*ec2.Route); !ok {
+		return nil, fmt.Errorf("aws type unknown: %T", i)
+	}
+	var routes []*graph.Route
+	for _, r := range i.([]*ec2.Route) {
+		route := &graph.Route{}
+		var err error
+		switch {
+		case awssdk.StringValue(r.DestinationCidrBlock) != "" && awssdk.StringValue(r.DestinationIpv6CidrBlock) != "":
+			return nil, fmt.Errorf("extract values: both IPv4 and IPv6 destination in route %v", r)
+		case awssdk.StringValue(r.DestinationCidrBlock) != "":
+			_, route.Destination, err = net.ParseCIDR(awssdk.StringValue(r.DestinationCidrBlock))
+			if err != nil {
+				return nil, err
+			}
+		case awssdk.StringValue(r.DestinationIpv6CidrBlock) != "":
+			_, route.Destination, err = net.ParseCIDR(awssdk.StringValue(r.DestinationIpv6CidrBlock))
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, fmt.Errorf("extract values: no IPv4 nor IPv6 destination in route %v", r)
+		}
+		switch {
+		case notEmpty(r.EgressOnlyInternetGatewayId):
+			if notEmpty(r.GatewayId) || notEmpty(r.InstanceId) || notEmpty(r.NatGatewayId) || notEmpty(r.NetworkInterfaceId) || notEmpty(r.VpcPeeringConnectionId) {
+				return nil, fmt.Errorf("extract values: multiple non-empty target type in route %v", r)
+			}
+			route.TargetType = graph.EgressOnlyInternetGatewayTarget
+			route.Target = awssdk.StringValue(r.EgressOnlyInternetGatewayId)
+		case notEmpty(r.GatewayId):
+			if notEmpty(r.EgressOnlyInternetGatewayId) || notEmpty(r.InstanceId) || notEmpty(r.NatGatewayId) || notEmpty(r.NetworkInterfaceId) || notEmpty(r.VpcPeeringConnectionId) {
+				return nil, fmt.Errorf("extract values: multiple non-empty target type in route %v", r)
+			}
+			route.TargetType = graph.GatewayTarget
+			route.Target = awssdk.StringValue(r.GatewayId)
+		case notEmpty(r.InstanceId):
+			if notEmpty(r.EgressOnlyInternetGatewayId) || notEmpty(r.GatewayId) || notEmpty(r.NatGatewayId) || notEmpty(r.NetworkInterfaceId) || notEmpty(r.VpcPeeringConnectionId) {
+				return nil, fmt.Errorf("extract values: multiple non-empty target type in route %v", r)
+			}
+			route.TargetType = graph.InstanceTarget
+			route.Target = awssdk.StringValue(r.InstanceId)
+		case notEmpty(r.NatGatewayId):
+			if notEmpty(r.EgressOnlyInternetGatewayId) || notEmpty(r.GatewayId) || notEmpty(r.InstanceId) || notEmpty(r.NetworkInterfaceId) || notEmpty(r.VpcPeeringConnectionId) {
+				return nil, fmt.Errorf("extract values: multiple non-empty target type in route %v", r)
+			}
+			route.TargetType = graph.NatTarget
+			route.Target = awssdk.StringValue(r.NatGatewayId)
+		case notEmpty(r.NetworkInterfaceId):
+			if notEmpty(r.EgressOnlyInternetGatewayId) || notEmpty(r.GatewayId) || notEmpty(r.InstanceId) || notEmpty(r.NatGatewayId) || notEmpty(r.VpcPeeringConnectionId) {
+				return nil, fmt.Errorf("extract values: multiple non-empty target type in route %v", r)
+			}
+			route.TargetType = graph.NetworkInterfaceTarget
+			route.Target = awssdk.StringValue(r.NetworkInterfaceId)
+		case notEmpty(r.VpcPeeringConnectionId):
+			if notEmpty(r.EgressOnlyInternetGatewayId) || notEmpty(r.GatewayId) || notEmpty(r.InstanceId) || notEmpty(r.NatGatewayId) || notEmpty(r.NetworkInterfaceId) {
+				return nil, fmt.Errorf("extract values: multiple non-empty target type in route %v", r)
+			}
+			route.TargetType = graph.VpcPeeringConnectionTarget
+			route.Target = awssdk.StringValue(r.VpcPeeringConnectionId)
+
+		default:
+			return nil, fmt.Errorf("extract values: no non-empty target type in route %v", r)
+		}
+
+		routes = append(routes, route)
+	}
+	return routes, nil
+}
+
+func notEmpty(str *string) bool {
+	return awssdk.StringValue(str) != ""
+}

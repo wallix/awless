@@ -17,6 +17,7 @@ const (
 	Volume          ResourceType = "volume"
 	Instance        ResourceType = "instance"
 	InternetGateway ResourceType = "internetgateway"
+	RouteTable      ResourceType = "routetable"
 	User            ResourceType = "user"
 	Role            ResourceType = "role"
 	Group           ResourceType = "group"
@@ -36,6 +37,27 @@ func (r *FirewallRule) String() string {
 type PortRange struct {
 	FromPort, ToPort int64
 	Any              bool
+}
+
+type routeTargetType int
+
+const (
+	EgressOnlyInternetGatewayTarget routeTargetType = iota
+	GatewayTarget
+	InstanceTarget
+	NatTarget
+	NetworkInterfaceTarget
+	VpcPeeringConnectionTarget
+)
+
+type Route struct {
+	Destination *net.IPNet
+	TargetType  routeTargetType
+	Target      string
+}
+
+func (r *Route) String() string {
+	return fmt.Sprintf("Destination:%+v; TargetType:%v; Target:%s", r.Destination, r.TargetType, r.Target)
 }
 
 type ResourceType string

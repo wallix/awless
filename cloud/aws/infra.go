@@ -51,6 +51,10 @@ func (inf *Infra) InternetGateways() (interface{}, error) {
 	return inf.DescribeInternetGateways(&ec2.DescribeInternetGatewaysInput{})
 }
 
+func (inf *Infra) RouteTables() (interface{}, error) {
+	return inf.DescribeRouteTables(&ec2.DescribeRouteTablesInput{})
+}
+
 func (inf *Infra) Vpc(id string) (interface{}, error) {
 	input := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{awssdk.String(id)},
@@ -78,10 +82,11 @@ type AwsInfra struct {
 	Keypairs         []*ec2.KeyPairInfo
 	Volumes          []*ec2.Volume
 	InternetGateways []*ec2.InternetGateway
+	RouteTables      []*ec2.RouteTable
 }
 
 func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups, inf.Keypairs, inf.Volumes, inf.InternetGateways)
+	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups, inf.Keypairs, inf.Volumes, inf.InternetGateways, inf.RouteTables)
 
 	awsInfra := &AwsInfra{}
 
@@ -99,6 +104,8 @@ func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
 			awsInfra.Volumes = append(awsInfra.Volumes, rr.Volumes...)
 		case *ec2.DescribeInternetGatewaysOutput:
 			awsInfra.InternetGateways = append(awsInfra.InternetGateways, rr.InternetGateways...)
+		case *ec2.DescribeRouteTablesOutput:
+			awsInfra.RouteTables = append(awsInfra.RouteTables, rr.RouteTables...)
 		case *ec2.DescribeInstancesOutput:
 			for _, reservation := range rr.Reservations {
 				awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)

@@ -62,6 +62,12 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Id":   {name: "InternetGatewayId", transform: extractValueFn},
 		"Name": {name: "Tags", transform: extractTagFn("Name")},
 	},
+	graph.RouteTable: {
+		"Id":     {name: "RouteTableId", transform: extractValueFn},
+		"Name":   {name: "Tags", transform: extractTagFn("Name")},
+		"VpcId":  {name: "VpcId", transform: extractValueFn},
+		"Routes": {name: "Routes", transform: extractRoutesSliceFn},
+	},
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
 		"Name":                 {name: "UserName", transform: extractValueFn},

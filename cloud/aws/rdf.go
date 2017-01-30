@@ -124,6 +124,20 @@ func (inf *Infra) VolumesGraph() (*graph.Graph, error) {
 	return g, nil
 }
 
+func (inf *Infra) RoutetablesGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := inf.RouteTables()
+	if err != nil {
+		return nil, err
+	}
+	for _, rt := range out.(*ec2.DescribeRouteTablesOutput).RouteTables {
+		if err := addCloudResourceToGraph(g, rt); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
 func (access *Access) UsersGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
 	out, err := access.Users()
@@ -477,6 +491,30 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 				}
 				g.Add(t)
 			}
+		}
+	}
+
+	for _, rt := range awsInfra.RouteTables {
+		res, err := NewResource(rt)
+		if err != nil {
+			return nil, err
+		}
+		triples, err := res.MarshalToTriples()
+		if err != nil {
+			return nil, err
+		}
+		g.Add(triples...)
+		n, err := res.BuildRdfSubject()
+		if err != nil {
+			return g, err
+		}
+		vpcN := findNodeById(vpcNodes, awssdk.StringValue(rt.VpcId))
+		if vpcN != nil {
+			t, err := graph.NewParentOfTriple(vpcN, n)
+			if err != nil {
+				return g, fmt.Errorf("vpc %s", err)
+			}
+			g.Add(t)
 		}
 	}
 
