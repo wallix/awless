@@ -68,6 +68,20 @@ func (inf *Infra) SubnetsGraph() (*graph.Graph, error) {
 	return g, nil
 }
 
+func (inf *Infra) InternetgatewaysGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := inf.InternetGateways()
+	if err != nil {
+		return nil, err
+	}
+	for _, gw := range out.(*ec2.DescribeInternetGatewaysOutput).InternetGateways {
+		if err := addCloudResourceToGraph(g, gw); err != nil {
+			return g, err
+		}
+	}
+	return g, nil
+}
+
 func (inf *Infra) SecuritygroupsGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
 	out, err := inf.SecurityGroups()
@@ -432,6 +446,38 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 			return g, fmt.Errorf("region %s", err)
 		}
 		g.Add(t)
+	}
+
+	for _, gw := range awsInfra.InternetGateways {
+		res, err := NewResource(gw)
+		if err != nil {
+			return nil, err
+		}
+		triples, err := res.MarshalToTriples()
+		if err != nil {
+			return nil, err
+		}
+		g.Add(triples...)
+		n, err := res.BuildRdfSubject()
+		if err != nil {
+			return g, err
+		}
+
+		t, err := graph.NewParentOfTriple(regionN, n)
+		if err != nil {
+			return g, fmt.Errorf("region %s", err)
+		}
+		g.Add(t)
+		for _, att := range gw.Attachments {
+			vpcN := findNodeById(vpcNodes, awssdk.StringValue(att.VpcId))
+			if vpcN != nil {
+				t, err := graph.NewParentOfTriple(vpcN, n)
+				if err != nil {
+					return g, fmt.Errorf("vpc %s", err)
+				}
+				g.Add(t)
+			}
+		}
 	}
 
 	for _, instance := range awsInfra.Instances {

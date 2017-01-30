@@ -9,17 +9,18 @@ import (
 )
 
 const (
-	Region        ResourceType = "region"
-	Vpc           ResourceType = "vpc"
-	Subnet        ResourceType = "subnet"
-	SecurityGroup ResourceType = "securitygroup"
-	Keypair       ResourceType = "keypair"
-	Volume        ResourceType = "volume"
-	Instance      ResourceType = "instance"
-	User          ResourceType = "user"
-	Role          ResourceType = "role"
-	Group         ResourceType = "group"
-	Policy        ResourceType = "policy"
+	Region          ResourceType = "region"
+	Vpc             ResourceType = "vpc"
+	Subnet          ResourceType = "subnet"
+	SecurityGroup   ResourceType = "securitygroup"
+	Keypair         ResourceType = "keypair"
+	Volume          ResourceType = "volume"
+	Instance        ResourceType = "instance"
+	InternetGateway ResourceType = "internetgateway"
+	User            ResourceType = "user"
+	Role            ResourceType = "role"
+	Group           ResourceType = "group"
+	Policy          ResourceType = "policy"
 )
 
 type FirewallRule struct {
@@ -59,7 +60,7 @@ func (r ResourceType) PluralString() string {
 }
 
 func pluralize(singular string) string {
-	if strings.HasSuffix(singular, "y") {
+	if strings.HasSuffix(singular, "cy") {
 		return strings.TrimSuffix(singular, "y") + "ies"
 	}
 	return singular + "s"

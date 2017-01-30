@@ -100,6 +100,22 @@ func TestTemplateParsing(t *testing.T) {
 			verifyFn func(s *Template) error
 		}{
 			{
+				input: `create vpc
+create subnet`,
+				verifyFn: func(s *Template) error {
+					err := assertExpressionNode(s.Statements[0].Node, "create", "vpc",
+						nil,
+						nil,
+						nil,
+						nil,
+					)
+					if err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
 				input: `
 			myvpc  =   create   vpc  cidr=10.0.0.0/24 num=3
 mysubnet = delete subnet vpc=$myvpc name={ the_name } cidr=10.0.0.0/25

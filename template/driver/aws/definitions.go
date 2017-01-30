@@ -167,6 +167,24 @@ var DriverDefinitions = []struct {
 			"InstanceId": "instance",
 		},
 	},
+	// INTERNET GATEWAYS
+	{
+		Action: "create", Entity: "internetgateway", Api: "ec2", Input: "CreateInternetGatewayInput", ApiMethod: "CreateInternetGateway", OutputExtractor: "InternetGateway.InternetGatewayId",
+		RequiredParams: map[string]string{},
+	},
+	{
+		Action: "delete", Entity: "internetgateway", Api: "ec2", Input: "DeleteInternetGatewayInput", ApiMethod: "DeleteInternetGateway",
+		RequiredParams: map[string]string{
+			"InternetGatewayId": "id",
+		},
+	},
+	{
+		Action: "attach", Entity: "internetgateway", Api: "ec2", Input: "AttachInternetGatewayInput", ApiMethod: "AttachInternetGateway",
+		RequiredParams: map[string]string{
+			"InternetGatewayId": "id",
+			"VpcId":             "vpc",
+		},
+	},
 	// TAG
 	{
 		Action: "create", Entity: "tags", Api: "ec2", ManualFuncDefinition: true,

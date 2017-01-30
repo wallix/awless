@@ -47,6 +47,10 @@ func (inf *Infra) Regions() (interface{}, error) {
 	return inf.DescribeRegions(&ec2.DescribeRegionsInput{})
 }
 
+func (inf *Infra) InternetGateways() (interface{}, error) {
+	return inf.DescribeInternetGateways(&ec2.DescribeInternetGatewaysInput{})
+}
+
 func (inf *Infra) Vpc(id string) (interface{}, error) {
 	input := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{awssdk.String(id)},
@@ -67,16 +71,17 @@ func (inf *Infra) CreateInstance(ami string) (interface{}, error) {
 }
 
 type AwsInfra struct {
-	Vpcs           []*ec2.Vpc
-	Subnets        []*ec2.Subnet
-	SecurityGroups []*ec2.SecurityGroup
-	Instances      []*ec2.Instance
-	Keypairs       []*ec2.KeyPairInfo
-	Volumes        []*ec2.Volume
+	Vpcs             []*ec2.Vpc
+	Subnets          []*ec2.Subnet
+	SecurityGroups   []*ec2.SecurityGroup
+	Instances        []*ec2.Instance
+	Keypairs         []*ec2.KeyPairInfo
+	Volumes          []*ec2.Volume
+	InternetGateways []*ec2.InternetGateway
 }
 
 func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups, inf.Keypairs, inf.Volumes)
+	resultc, errc := multiFetch(inf.Instances, inf.Subnets, inf.Vpcs, inf.SecurityGroups, inf.Keypairs, inf.Volumes, inf.InternetGateways)
 
 	awsInfra := &AwsInfra{}
 
@@ -92,6 +97,8 @@ func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
 			awsInfra.Keypairs = append(awsInfra.Keypairs, rr.KeyPairs...)
 		case *ec2.DescribeVolumesOutput:
 			awsInfra.Volumes = append(awsInfra.Volumes, rr.Volumes...)
+		case *ec2.DescribeInternetGatewaysOutput:
+			awsInfra.InternetGateways = append(awsInfra.InternetGateways, rr.InternetGateways...)
 		case *ec2.DescribeInstancesOutput:
 			for _, reservation := range rr.Reservations {
 				awsInfra.Instances = append(awsInfra.Instances, reservation.Instances...)

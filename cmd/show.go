@@ -13,7 +13,7 @@ import (
 
 func init() {
 	//Resources
-	for _, resource := range []graph.ResourceType{graph.Instance, graph.Vpc, graph.Subnet, graph.SecurityGroup, graph.Keypair} {
+	for _, resource := range []graph.ResourceType{graph.Instance, graph.Vpc, graph.Subnet, graph.SecurityGroup, graph.Keypair, graph.InternetGateway} {
 		showCmd.AddCommand(showInfraResourceCmd(resource))
 	}
 	for _, resource := range []graph.ResourceType{graph.User, graph.Role, graph.Policy, graph.Group} {

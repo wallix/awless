@@ -39,4 +39,7 @@ func TestResourceTypePluralizeName(t *testing.T) {
 	if got, want := Policy.PluralString(), "policies"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
+	if got, want := InternetGateway.PluralString(), "internetgateways"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
 }

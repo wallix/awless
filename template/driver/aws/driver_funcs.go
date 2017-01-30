@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/shell"
 )
 
@@ -372,6 +373,8 @@ func fakeDryRunId(entity string) string {
 		return fmt.Sprintf("vol-%d", suffix)
 	case "securitygroup":
 		return fmt.Sprintf("sg-%d", suffix)
+	case graph.InternetGateway.String():
+		return fmt.Sprintf("igw-%d", suffix)
 	default:
 		return fmt.Sprintf("dryrunid-%d", suffix)
 	}

@@ -694,6 +694,125 @@ func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
+func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateInternetGatewayInput{}
+	input.DryRun = aws.Bool(true)
+	
+	
+
+	_, err := d.ec2.CreateInternetGateway(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fakeDryRunId("internetgateway")
+			d.logger.Println("full dry run: create internetgateway ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: create internetgateway error: %s", err)
+	return nil, err
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateInternetGatewayInput{}
+	
+	
+
+	output, err := d.ec2.CreateInternetGateway(input)
+	if err != nil {
+		d.logger.Printf("create internetgateway error: %s", err)
+		return nil, err
+	}
+	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
+	d.logger.Printf("create internetgateway '%s' done", id)
+	return aws.StringValue(output.InternetGateway.InternetGatewayId), nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteInternetGatewayInput{}
+	input.DryRun = aws.Bool(true)
+	
+	// Required params
+	setField(params["id"], input, "InternetGatewayId")
+	
+
+	_, err := d.ec2.DeleteInternetGateway(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fakeDryRunId("internetgateway")
+			d.logger.Println("full dry run: delete internetgateway ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: delete internetgateway error: %s", err)
+	return nil, err
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteInternetGatewayInput{}
+	
+	// Required params
+	setField(params["id"], input, "InternetGatewayId")
+	
+
+	output, err := d.ec2.DeleteInternetGateway(input)
+	if err != nil {
+		d.logger.Printf("delete internetgateway error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("delete internetgateway done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Attach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AttachInternetGatewayInput{}
+	input.DryRun = aws.Bool(true)
+	
+	// Required params
+	setField(params["id"], input, "InternetGatewayId")
+	setField(params["vpc"], input, "VpcId")
+	
+
+	_, err := d.ec2.AttachInternetGateway(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fakeDryRunId("internetgateway")
+			d.logger.Println("full dry run: attach internetgateway ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: attach internetgateway error: %s", err)
+	return nil, err
+}
+
+// This function was auto generated
+func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AttachInternetGatewayInput{}
+	
+	// Required params
+	setField(params["id"], input, "InternetGatewayId")
+	setField(params["vpc"], input, "VpcId")
+	
+
+	output, err := d.ec2.AttachInternetGateway(input)
+	if err != nil {
+		d.logger.Printf("attach internetgateway error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("attach internetgateway done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	input.DryRun = aws.Bool(true)
