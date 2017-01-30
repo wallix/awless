@@ -57,6 +57,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	graph.InternetGateway: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Vpcs", DisableTruncate: true},
 	},
 	graph.RouteTable: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
