@@ -23,6 +23,7 @@ var AWSTemplatesDefinitions = map[string]string{
 	"createinternetgateway": "create internetgateway ",
 	"deleteinternetgateway": "delete internetgateway id={ internetgateway.id } ",
 	"attachinternetgateway": "attach internetgateway id={ internetgateway.id } vpc={ internetgateway.vpc } ",
+	"detachinternetgateway": "detach internetgateway id={ internetgateway.id } vpc={ internetgateway.vpc } ",
 	"createroutetable": "create routetable vpc={ routetable.vpc } ",
 	"deleteroutetable": "delete routetable id={ routetable.id } ",
 	"attachroutetable": "attach routetable id={ routetable.id } subnet={ routetable.subnet } ",

@@ -813,6 +813,48 @@ func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
+func (d *AwsDriver) Detach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DetachInternetGatewayInput{}
+	input.DryRun = aws.Bool(true)
+	
+	// Required params
+	setField(params["id"], input, "InternetGatewayId")
+	setField(params["vpc"], input, "VpcId")
+	
+
+	_, err := d.ec2.DetachInternetGateway(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fakeDryRunId("internetgateway")
+			d.logger.Println("full dry run: detach internetgateway ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: detach internetgateway error: %s", err)
+	return nil, err
+}
+
+// This function was auto generated
+func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DetachInternetGatewayInput{}
+	
+	// Required params
+	setField(params["id"], input, "InternetGatewayId")
+	setField(params["vpc"], input, "VpcId")
+	
+
+	output, err := d.ec2.DetachInternetGateway(input)
+	if err != nil {
+		d.logger.Printf("detach internetgateway error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("detach internetgateway done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *AwsDriver) Create_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
 	input.DryRun = aws.Bool(true)

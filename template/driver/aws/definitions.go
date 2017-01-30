@@ -185,6 +185,13 @@ var DriverDefinitions = []struct {
 			"VpcId":             "vpc",
 		},
 	},
+	{
+		Action: "detach", Entity: "internetgateway", Api: "ec2", Input: "DetachInternetGatewayInput", ApiMethod: "DetachInternetGateway",
+		RequiredParams: map[string]string{
+			"InternetGatewayId": "id",
+			"VpcId":             "vpc",
+		},
+	},
 	// ROUTE TABLES
 	{
 		Action: "create", Entity: "routetable", Api: "ec2", Input: "CreateRouteTableInput", ApiMethod: "CreateRouteTable", OutputExtractor: "RouteTable.RouteTableId",
