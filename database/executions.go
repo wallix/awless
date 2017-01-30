@@ -32,7 +32,18 @@ func (db *DB) DeleteTemplateExecutions() error {
 	})
 }
 
-func (db *DB) GetTemplateExecutions() ([]*template.TemplateExecution, error) {
+func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, error) {
+  tpl := &template.TemplateExecution{}
+
+  err := db.bolt.View(func(tx *bolt.Tx) error {
+      b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
+      return json.Unmarshal(b.Get([]byte(id)), tpl)
+  })
+
+  return tpl, err
+}
+
+func (db *DB) ListTemplateExecutions() ([]*template.TemplateExecution, error) {
 	var result []*template.TemplateExecution
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {

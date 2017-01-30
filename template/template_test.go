@@ -128,11 +128,61 @@ func TestNewTemplateExecutionFromTemplate(t *testing.T) {
 	}
 }
 
-func TestRevertTemplate(t *testing.T) {
-	//orig := &Template{AST: &ast.AST{}}
-	//temp := &Template{}
+func TestRevertTemplateExecution(t *testing.T) {
+	exec := &TemplateExecution{
+		ID: "",
+		Executed: []*ExecutedStatement{
+			{Line: "create vpc", Result: "vpc-56g4h", Err: ""},
+			{Line: "create subnet", Result: "sub-65bh4nj", Err: ""},
+			{Line: "start instance", Result: "i-54g3hj", Err: ""},
+			{Line: "create instance", Result: "", Err: "cannot create instance"},
+		},
+	}
 
-	//temp.Revert(orig)
+	tpl, err := exec.Revert()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := len(tpl.Statements), 3; got != want {
+		t.Fatal("got %d, want %d")
+	}
+	expr := tpl.Statements[0].Node.(*ast.ExpressionNode)
+	if got, want := "stop", expr.Action; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := "instance", expr.Entity; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	expected := map[string]interface{}{"id": "i-54g3hj"}
+	if got, want := expected, expr.Params; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	expr = tpl.Statements[1].Node.(*ast.ExpressionNode)
+	if got, want := "delete", expr.Action; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := "subnet", expr.Entity; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	expected = map[string]interface{}{"id": "sub-65bh4nj"}
+	if got, want := expected, expr.Params; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	expr = tpl.Statements[2].Node.(*ast.ExpressionNode)
+	if got, want := "delete", expr.Action; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := "vpc", expr.Entity; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	expected = map[string]interface{}{"id": "vpc-56g4h"}
+	if got, want := expected, expr.Params; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
 }
 
 func TestRunDriverOnTemplate(t *testing.T) {

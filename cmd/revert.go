@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/oklog/ulid"
 	"github.com/spf13/cobra"
@@ -33,16 +33,38 @@ var revertCmd = &cobra.Command{
 	PersistentPostRun: saveHistoryFn,
 
 	RunE: func(c *cobra.Command, args []string) error {
-		if flushHistoryFlag {
-			db, dbclose := database.Current()
-			err := db.DeleteTemplateExecutions()
-			dbclose()
-			exitOn(err)
+		if listHistoryFlag {
+			listHistory()
 			return nil
 		}
 
-		if listHistoryFlag {
-			listHistory()
+		if flushHistoryFlag {
+			fmt.Print("Are you sure you want to delete all your template executions history? (y/n): ")
+			var yesorno string
+			_, err := fmt.Scanln(&yesorno)
+			exitOn(err)
+
+			if strings.TrimSpace(yesorno) == "y" {
+				db, dbclose := database.Current()
+				err := db.DeleteTemplateExecutions()
+				dbclose()
+				exitOn(err)
+			}
+
+			return nil
+		}
+
+		if revertFromIdFlag != "" {
+			db, dbclose := database.Current()
+			tplExec, err := db.GetTemplateExecution(revertFromIdFlag)
+			dbclose()
+			exitOn(err)
+
+			reverted, err := tplExec.Revert()
+			exitOn(err)
+
+			exitOn(runTemplate(reverted))
+
 			return nil
 		}
 
@@ -52,7 +74,7 @@ var revertCmd = &cobra.Command{
 
 func listHistory() {
 	db, dbclose := database.Current()
-	all, err := db.GetTemplateExecutions()
+	all, err := db.ListTemplateExecutions()
 	dbclose()
 	exitOn(err)
 

@@ -51,7 +51,9 @@ var runCmd = &cobra.Command{
 		templ, err := template.Parse(string(content))
 		exitOn(err)
 
-		return runTemplate(templ)
+		exitOn(runTemplate(templ))
+
+		return nil
 	},
 }
 
@@ -188,7 +190,9 @@ func printReport(t *template.TemplateExecution) {
 	}
 
 	fmt.Println()
-	fmt.Println("(List executed template operations using `awless revert -l`. Revert them using their id.)")
+	fmt.Printf("Revert this template with `awless revert -i %s`\n", t.ID)
+	fmt.Println()
+	fmt.Println("(List executed template executions using `awless revert -l`)")
 }
 
 func addAliasesToParams(expr *ast.ExpressionNode) error {

@@ -2,6 +2,7 @@ package template
 
 import (
 	"crypto/rand"
+	"fmt"
 	"strings"
 	"time"
 
@@ -157,4 +158,56 @@ func NewTemplateExecution(tpl *Template) *TemplateExecution {
 	}
 
 	return out
+}
+
+func (te *TemplateExecution) lines() (lines []string) {
+	for _, ex := range te.Executed {
+		lines = append(lines, ex.Line)
+	}
+
+	return
+}
+
+func (te *TemplateExecution) Revert() (*Template, error) {
+	var lines []string
+
+	for i := len(te.Executed) - 1; i >= 0; i-- {
+		if exec := te.Executed[i]; exec.Err == "" {
+			n, err := ParseStatement(exec.Line)
+			if err != nil {
+				return nil, err
+			}
+
+			switch n.(type) {
+			case *ast.ExpressionNode:
+				node := n.(*ast.ExpressionNode)
+				var revertAction string
+				switch node.Action {
+				case "create":
+					revertAction = "delete"
+				case "start":
+					revertAction = "stop"
+				case "stop":
+					revertAction = "start"
+				default:
+					continue
+				}
+
+				lines = append(lines, fmt.Sprintf("%s %s id=%s\n", revertAction, node.Entity, exec.Result))
+			default:
+				return nil, fmt.Errorf("cannot parse [%s] as expression node", exec.Line)
+			}
+		}
+	}
+
+	if len(lines) == 0 {
+		return nil, fmt.Errorf("revert: found nothing to revert from:\n%s\n(note: no revert provided for statement in error)", strings.Join(te.lines(), "\n"))
+	}
+
+	tpl, err := Parse(strings.Join(lines, "\n"))
+	if err != nil {
+		return nil, fmt.Errorf("revert: \n%s\n%s", strings.Join(lines, "\n"), err)
+	}
+
+	return tpl, nil
 }
