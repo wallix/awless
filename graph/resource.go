@@ -21,6 +21,10 @@ func (res *Resource) Properties() Properties {
 	return res.properties
 }
 
+func (res *Resource) SetProperties(props Properties) {
+	res.properties = props
+}
+
 func (res *Resource) Type() ResourceType {
 	return res.kind
 }
@@ -33,7 +37,7 @@ func (res *Resource) BuildRdfSubject() (*node.Node, error) {
 	return node.NewNodeFromStrings(res.kind.ToRDFString(), res.id)
 }
 
-func (res *Resource) MarshalToTriples() ([]*triple.Triple, error) {
+func (res *Resource) marshalToTriples() ([]*triple.Triple, error) {
 	var triples []*triple.Triple
 	n, err := res.BuildRdfSubject()
 	if err != nil {

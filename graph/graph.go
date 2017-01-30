@@ -28,16 +28,37 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 	return &Graph{g}, err
 }
 
-func NewParentOfTriple(subject, obj *node.Node) (*triple.Triple, error) {
-	return triple.New(subject, rdf.ParentOfPredicate, triple.NewNodeObject(obj))
+func (g *Graph) AddResource(resources ...*Resource) error {
+	for _, res := range resources {
+		triples, err := res.marshalToTriples()
+		if err != nil {
+			return err
+		}
+
+		g.rdfG.Add(triples...)
+	}
+	return nil
 }
 
-func NewRegionTypeTriple(subject *node.Node) (*triple.Triple, error) {
-	return triple.New(subject, rdf.HasTypePredicate, triple.NewLiteralObject(rdf.RegionLiteral))
-}
+func (g *Graph) AddParent(parent, child *Resource) error {
+	n, err := child.BuildRdfSubject()
+	if err != nil {
+		return err
+	}
 
-func (g *Graph) Add(triples ...*triple.Triple) {
-	g.rdfG.Add(triples...)
+	parentN, err := node.NewNodeFromStrings(parent.Type().ToRDFString(), parent.Id())
+	if err != nil {
+		return err
+	}
+
+	t, err := triple.New(parentN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
+	if err != nil {
+		return err
+	}
+
+	g.rdfG.Add(t)
+
+	return nil
 }
 
 func (g *Graph) Unmarshal(data []byte) error {

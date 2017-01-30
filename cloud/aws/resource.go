@@ -71,16 +71,3 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 
 	return res, nil
 }
-
-func addCloudResourceToGraph(g *graph.Graph, cloudResource interface{}) error {
-	res, err := NewResource(cloudResource)
-	if err != nil {
-		return err
-	}
-	triples, err := res.MarshalToTriples()
-	if err != nil {
-		return err
-	}
-	g.Add(triples...)
-	return nil
-}

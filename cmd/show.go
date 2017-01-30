@@ -25,7 +25,7 @@ func init() {
 
 var showCmd = &cobra.Command{
 	Use:               "show",
-	Short:             "Show various type of items by id: users, groups, instances, vpcs, ...",
+	Short:             "Show resource and their relations via a given id: users, groups, instances, vpcs, ...",
 	PersistentPreRun:  initCloudServicesFn,
 	PersistentPostRun: saveHistoryFn,
 }
