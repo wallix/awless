@@ -11,7 +11,7 @@ func Parse(text string) (*Template, error) {
 	}
 	p.Execute()
 
-	return &Template{p.AST}, nil
+	return &Template{AST: p.AST}, nil
 }
 
 func ParseStatement(text string) (ast.Node, error) {

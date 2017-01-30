@@ -11,16 +11,19 @@ import (
 )
 
 type Template struct {
+	ID string
 	*ast.AST
 }
 
 func (s *Template) Run(d driver.Driver) (*Template, error) {
 	vars := map[string]interface{}{}
 
-	current := &Template{s.Clone()}
+	current := &Template{AST: s.Clone()}
 	current.ID = ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String()
 
 	for _, sts := range current.Statements {
+		var err error
+
 		switch sts.Node.(type) {
 		case *ast.ExpressionNode:
 			expr := sts.Node.(*ast.ExpressionNode)
@@ -28,8 +31,9 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			expr.ProcessRefs(vars)
 
 			sts.Line = expr.String()
-			if sts.Result, sts.Err = fn(expr.Params); sts.Err != nil {
-				return current, sts.Err
+			if sts.Result, err = fn(expr.Params); err != nil {
+				sts.Err = err.Error()
+				return current, err
 			}
 		case *ast.DeclarationNode:
 			ident := sts.Node.(*ast.DeclarationNode).Left
@@ -37,11 +41,12 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			fn := d.Lookup(expr.Action, expr.Entity)
 			expr.ProcessRefs(vars)
 
-			sts.Result, sts.Err = fn(expr.Params)
+			sts.Result, err = fn(expr.Params)
 			ident.Val = sts.Result
 			sts.Line = expr.String()
-			if sts.Err != nil {
-				return current, sts.Err
+			if err != nil {
+				sts.Err = err.Error()
+				return current, err
 			}
 			vars[ident.Ident] = ident.Val
 		}
@@ -55,6 +60,15 @@ func (s *Template) Compile(d driver.Driver) (*Template, error) {
 	d.SetDryRun(true)
 
 	return s.Run(d)
+}
+
+func (s *Template) HasErrors() bool {
+	for _, sts := range s.Statements {
+		if sts.Err != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Template) GetAliases() map[string]string {

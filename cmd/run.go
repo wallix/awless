@@ -167,7 +167,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 func printReport(t *template.Template) {
 	for _, sts := range t.Statements {
 		var line bytes.Buffer
-		if sts.Err == nil {
+		if sts.Err == "" {
 			line.WriteString(renderGreenFn("[DONE] "))
 		} else {
 			line.WriteString(renderRedFn("[ERROR] "))
@@ -178,7 +178,7 @@ func printReport(t *template.Template) {
 		}
 		line.WriteString(fmt.Sprintf("%s", sts.Line))
 
-		if sts.Err != nil {
+		if sts.Err != "" {
 			line.WriteString(fmt.Sprintf("\n\terror: %s", sts.Err))
 		}
 
@@ -186,7 +186,7 @@ func printReport(t *template.Template) {
 	}
 
 	fmt.Println()
-	fmt.Printf("(revert operations using `awless revert` with template id %s)\n", t.ID)
+	fmt.Println("(List executed template operations using `awless revert -l`. Revert them using their id.)")
 }
 
 func addAliasesToParams(expr *ast.ExpressionNode) error {

@@ -13,10 +13,9 @@ type Node interface {
 }
 
 type Statement struct {
-	Node   `json:"-"`
-	Line   string
-	Result interface{}
-	Err    error
+	Node      `json:"-"`
+	Result    interface{}
+	Line, Err string
 }
 
 func (s *Statement) clone() *Statement {
@@ -29,7 +28,6 @@ func (s *Statement) clone() *Statement {
 }
 
 type AST struct {
-	ID         string
 	Statements []*Statement
 
 	currentStatement *Statement

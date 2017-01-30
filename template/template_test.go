@@ -21,18 +21,16 @@ func (d *stubDriver) SetLogger(*log.Logger) {}
 func (d *stubDriver) SetDryRun(bool)        {}
 
 type errorDriver struct {
-	err error
+	err string
 }
 
 func (d *errorDriver) Lookup(lookups ...string) driver.DriverFn {
-	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }
+	return func(map[string]interface{}) (interface{}, error) { return nil, errors.New(d.err) }
 }
 func (d *errorDriver) SetLogger(*log.Logger) {}
 func (d *errorDriver) SetDryRun(bool)        {}
 
 func TestRunDriverReportsInStatement(t *testing.T) {
-	anErr := errors.New("my error message")
-
 	tcases := []struct {
 		input  string
 		driver driver.Driver
@@ -48,9 +46,9 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 		},
 		{
 			input:  "create vpc cidr=10.0.0.0/25",
-			driver: &errorDriver{anErr},
+			driver: &errorDriver{"my error message"},
 			expect: []*ast.Statement{
-				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25", Err: anErr},
+				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25", Err: "my error message"},
 			},
 		},
 	}
@@ -80,9 +78,27 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 	}
 }
 
+func TestTemplateHasErrors(t *testing.T) {
+	temp := &Template{AST: &ast.AST{
+		Statements: []*ast.Statement{{Err: ""}, {Err: ""}},
+	}}
+
+	if temp.HasErrors() == true {
+		t.Fatal("expected template with no errors")
+	}
+
+	temp = &Template{AST: &ast.AST{
+		Statements: []*ast.Statement{{Err: ""}, {Err: "an error"}},
+	}}
+
+	if temp.HasErrors() == false {
+		t.Fatal("expected template with errors")
+	}
+}
+
 func TestRunDriverOnTemplate(t *testing.T) {
 	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
+		s := &Template{AST: &ast.AST{}}
 
 		s.Statements = append(s.Statements, &ast.Statement{Node: &ast.DeclarationNode{
 			Left: &ast.IdentifierNode{Ident: "createdvpc"},
@@ -142,7 +158,7 @@ func TestRunDriverOnTemplate(t *testing.T) {
 	})
 
 	t.Run("Driver visit expression nodes", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
+		s := &Template{AST: &ast.AST{}}
 
 		n := &ast.Statement{Node: &ast.ExpressionNode{
 			Action: "create", Entity: "vpc",
@@ -165,7 +181,7 @@ func TestRunDriverOnTemplate(t *testing.T) {
 	})
 
 	t.Run("Driver visit declaration nodes", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
+		s := &Template{AST: &ast.AST{}}
 
 		decl := &ast.Statement{Node: &ast.DeclarationNode{
 			Left: &ast.IdentifierNode{Ident: "myvar"},
@@ -212,7 +228,7 @@ func TestGetAliases(t *testing.T) {
 		Aliases: map[string]string{"4": "four"},
 	}},
 	)
-	s := &Template{tree}
+	s := &Template{AST: tree}
 	expect := map[string]string{
 		"1": "one",
 		"2": "two",
@@ -225,7 +241,7 @@ func TestGetAliases(t *testing.T) {
 }
 
 func TestMergeParams(t *testing.T) {
-	templ := &Template{&ast.AST{}}
+	templ := &Template{AST: &ast.AST{}}
 
 	templ.Statements = append(templ.Statements, &ast.Statement{Node: &ast.DeclarationNode{
 		Left: &ast.IdentifierNode{},
@@ -275,7 +291,7 @@ func TestMergeParams(t *testing.T) {
 
 func TestResolveTemplate(t *testing.T) {
 	t.Run("Holes Resolution", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
+		s := &Template{AST: &ast.AST{}}
 
 		expr := &ast.ExpressionNode{
 			Holes: map[string]string{"name": "presidentName", "rank": "presidentRank"},
@@ -316,7 +332,7 @@ func TestResolveTemplate(t *testing.T) {
 	})
 
 	t.Run("Interactive holes resolution", func(t *testing.T) {
-		s := &Template{&ast.AST{}}
+		s := &Template{AST: &ast.AST{}}
 
 		expr := &ast.ExpressionNode{
 			Holes: map[string]string{"age": "age_of_president", "name": "name_of_president"},
