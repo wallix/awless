@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"strings"
 
 	"github.com/oklog/ulid"
 	"github.com/spf13/cobra"
@@ -34,13 +35,15 @@ var revertCmd = &cobra.Command{
 	RunE: func(c *cobra.Command, args []string) error {
 		if flushHistoryFlag {
 			db, dbclose := database.Current()
-			err := db.DeleteTemplateOperations()
+			err := db.DeleteTemplateExecutions()
 			dbclose()
 			exitOn(err)
+			return nil
 		}
 
 		if listHistoryFlag {
 			listHistory()
+			return nil
 		}
 
 		return errors.New("no flags given")
@@ -49,7 +52,7 @@ var revertCmd = &cobra.Command{
 
 func listHistory() {
 	db, dbclose := database.Current()
-	all, err := db.GetTemplateOperations()
+	all, err := db.GetTemplateExecutions()
 	dbclose()
 	exitOn(err)
 
@@ -57,10 +60,13 @@ func listHistory() {
 		var buff bytes.Buffer
 
 		buff.WriteByte('\n')
-		for _, sts := range templ.Statements {
-			line := fmt.Sprintf("\t%s", sts.Line)
-			if sts.Err != "" {
+		for _, done := range templ.Executed {
+			line := fmt.Sprintf("\t%s", done.Line)
+			if done.Err != "" {
 				buff.WriteString(renderRedFn(line))
+				buff.WriteByte('\n')
+				errMsg := strings.Replace(done.Err, "\n", "\t", -1)
+				buff.WriteString(fmt.Sprintf("\t\t%s", errMsg))
 			} else {
 				buff.WriteString(renderGreenFn(line))
 			}

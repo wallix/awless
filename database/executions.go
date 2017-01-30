@@ -8,13 +8,13 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-const OPERATIONS_BUCKET = "operations"
+const EXECUTIONS_BUCKET = "executions"
 
-func (db *DB) AddTemplateOperation(templ *template.Template) error {
+func (db *DB) AddTemplateExecution(templ *template.TemplateExecution) error {
 	return db.bolt.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(OPERATIONS_BUCKET))
+		bucket, err := tx.CreateBucketIfNotExists([]byte(EXECUTIONS_BUCKET))
 		if err != nil {
-			return fmt.Errorf("create bucket %s: %s", OPERATIONS_BUCKET, err)
+			return fmt.Errorf("create bucket %s: %s", EXECUTIONS_BUCKET, err)
 		}
 
 		b, err := json.Marshal(templ)
@@ -26,17 +26,17 @@ func (db *DB) AddTemplateOperation(templ *template.Template) error {
 	})
 }
 
-func (db *DB) DeleteTemplateOperations() error {
+func (db *DB) DeleteTemplateExecutions() error {
 	return db.bolt.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket([]byte(OPERATIONS_BUCKET))
+		return tx.DeleteBucket([]byte(EXECUTIONS_BUCKET))
 	})
 }
 
-func (db *DB) GetTemplateOperations() ([]*template.Template, error) {
-	var result []*template.Template
+func (db *DB) GetTemplateExecutions() ([]*template.TemplateExecution, error) {
+	var result []*template.TemplateExecution
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(OPERATIONS_BUCKET))
+		b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
 		if b == nil {
 			return nil
 		}
@@ -44,7 +44,7 @@ func (db *DB) GetTemplateOperations() ([]*template.Template, error) {
     c := b.Cursor()
 
     for k, v := c.First(); k != nil; k, v = c.Next() {
-    		t := &template.Template{}
+    		t := &template.TemplateExecution{}
     		if err := json.Unmarshal(v, t); err != nil {
     			return err
     		}

@@ -12,25 +12,27 @@ import (
 	"github.com/wallix/awless/template/driver"
 )
 
-type stubDriver struct{}
+type noopDriver struct{}
 
-func (d *stubDriver) Lookup(lookups ...string) driver.DriverFn {
+func (d *noopDriver) Lookup(lookups ...string) driver.DriverFn {
 	return func(map[string]interface{}) (interface{}, error) { return nil, nil }
 }
-func (d *stubDriver) SetLogger(*log.Logger) {}
-func (d *stubDriver) SetDryRun(bool)        {}
+func (d *noopDriver) SetLogger(*log.Logger) {}
+func (d *noopDriver) SetDryRun(bool)        {}
 
 type errorDriver struct {
-	err string
+	err error
 }
 
 func (d *errorDriver) Lookup(lookups ...string) driver.DriverFn {
-	return func(map[string]interface{}) (interface{}, error) { return nil, errors.New(d.err) }
+	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }
 }
 func (d *errorDriver) SetLogger(*log.Logger) {}
 func (d *errorDriver) SetDryRun(bool)        {}
 
 func TestRunDriverReportsInStatement(t *testing.T) {
+	anErr := errors.New("my error message")
+
 	tcases := []struct {
 		input  string
 		driver driver.Driver
@@ -38,7 +40,7 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 	}{
 		{
 			input:  "create vpc cidr=10.0.0.0/25\ndelete subnet id=sub-5f4g3hj",
-			driver: &stubDriver{},
+			driver: &noopDriver{},
 			expect: []*ast.Statement{
 				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25"},
 				&ast.Statement{Line: "delete subnet id=sub-5f4g3hj"},
@@ -46,9 +48,9 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 		},
 		{
 			input:  "create vpc cidr=10.0.0.0/25",
-			driver: &errorDriver{"my error message"},
+			driver: &errorDriver{anErr},
 			expect: []*ast.Statement{
-				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25", Err: "my error message"},
+				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25", Err: anErr},
 			},
 		},
 	}
@@ -70,30 +72,67 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 			if got, want := stat.Err, tcase.expect[i].Err; got != want {
 				t.Fatalf("\ninput: '%s'\n\tgot %v\n\twant %v", tcase.input, got, want)
 			}
-
-			if _, err := ulid.Parse(ran.ID); err != nil {
-				t.Fatalf("\ninput: '%s'\n cannot parse template ulid %s", tcase.input, ran.ID)
-			}
 		}
 	}
 }
 
-func TestTemplateHasErrors(t *testing.T) {
-	temp := &Template{AST: &ast.AST{
-		Statements: []*ast.Statement{{Err: ""}, {Err: ""}},
-	}}
-
-	if temp.HasErrors() == true {
-		t.Fatal("expected template with no errors")
+func TestNewTemplateExecutionFromTemplate(t *testing.T) {
+	temp, err := Parse("create vpc name=any\ncreate subnet ip=10.0.0.0\ndelete instance id=i-5d678")
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	temp = &Template{AST: &ast.AST{
-		Statements: []*ast.Statement{{Err: ""}, {Err: "an error"}},
-	}}
-
-	if temp.HasErrors() == false {
-		t.Fatal("expected template with errors")
+	if temp, err = temp.Run(&noopDriver{}); err != nil {
+		t.Fatal(err)
 	}
+
+	temp.Statements[0].Result = "vpc-123"
+	temp.Statements[1].Result = "sub-123"
+	temp.Statements[2].Result = struct{}{}
+	temp.Statements[2].Err = errors.New("cannot delete instance")
+
+	executed := NewTemplateExecution(temp)
+
+	if _, err := ulid.Parse(executed.ID); err != nil {
+		t.Fatalf("parsing '%s': %s", executed.ID, err)
+	}
+	if got, want := len(executed.Executed), 3; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := executed.Executed[0].Err, ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[0].Line, "create vpc name=any"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[0].Result, "vpc-123"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[1].Err, ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[1].Line, "create subnet ip=10.0.0.0"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[1].Result, "sub-123"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[2].Err, "cannot delete instance"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[2].Line, "delete instance id=i-5d678"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := executed.Executed[2].Result, ""; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
+func TestRevertTemplate(t *testing.T) {
+	//orig := &Template{AST: &ast.AST{}}
+	//temp := &Template{}
+
+	//temp.Revert(orig)
 }
 
 func TestRunDriverOnTemplate(t *testing.T) {

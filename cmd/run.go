@@ -89,7 +89,9 @@ func runTemplate(templ *template.Template) error {
 	_, err = fmt.Scanln(&yesorno)
 
 	if strings.TrimSpace(yesorno) == "y" {
-		executed, _ := templ.Run(awsDriver)
+		newTempl, _ := templ.Run(awsDriver)
+
+		executed := template.NewTemplateExecution(newTempl)
 
 		fmt.Println()
 		printReport(executed)
@@ -97,7 +99,7 @@ func runTemplate(templ *template.Template) error {
 		db, close := database.Current()
 		defer close()
 
-		db.AddTemplateOperation(executed)
+		db.AddTemplateExecution(executed)
 	}
 
 	return nil
@@ -164,22 +166,22 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func printReport(t *template.Template) {
-	for _, sts := range t.Statements {
+func printReport(t *template.TemplateExecution) {
+	for _, done := range t.Executed {
 		var line bytes.Buffer
-		if sts.Err == "" {
+		if done.Err == "" {
 			line.WriteString(renderGreenFn("[DONE] "))
 		} else {
 			line.WriteString(renderRedFn("[ERROR] "))
 		}
 
-		if sts.Result != nil {
-			line.WriteString(fmt.Sprintf("%v %s ", sts.Result, renderGreenFn("<-")))
+		if done.Result != "" {
+			line.WriteString(fmt.Sprintf("%s %s ", done.Result, renderGreenFn("<-")))
 		}
-		line.WriteString(fmt.Sprintf("%s", sts.Line))
+		line.WriteString(fmt.Sprintf("%s", done.Line))
 
-		if sts.Err != "" {
-			line.WriteString(fmt.Sprintf("\n\terror: %s", sts.Err))
+		if done.Err != "" {
+			line.WriteString(fmt.Sprintf("\n\terror: %s", done.Err))
 		}
 
 		fmt.Println(line.String())

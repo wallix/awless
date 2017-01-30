@@ -13,9 +13,10 @@ type Node interface {
 }
 
 type Statement struct {
-	Node      `json:"-"`
-	Result    interface{}
-	Line, Err string
+	Node
+	Result interface{}
+	Line   string
+	Err    error
 }
 
 func (s *Statement) clone() *Statement {
