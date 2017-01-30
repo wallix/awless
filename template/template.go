@@ -21,8 +21,6 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	current := &Template{AST: s.Clone()}
 
 	for _, sts := range current.Statements {
-		var err error
-
 		switch sts.Node.(type) {
 		case *ast.ExpressionNode:
 			expr := sts.Node.(*ast.ExpressionNode)
@@ -30,8 +28,8 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			expr.ProcessRefs(vars)
 
 			sts.Line = expr.String()
-			if sts.Result, sts.Err = fn(expr.Params); err != nil {
-				return current, err
+			if sts.Result, sts.Err = fn(expr.Params); sts.Err != nil {
+				return current, sts.Err
 			}
 		case *ast.DeclarationNode:
 			ident := sts.Node.(*ast.DeclarationNode).Left
@@ -42,8 +40,8 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			sts.Result, sts.Err = fn(expr.Params)
 			ident.Val = sts.Result
 			sts.Line = expr.String()
-			if err != nil {
-				return current, err
+			if sts.Err != nil {
+				return current, sts.Err
 			}
 			vars[ident.Ident] = ident.Val
 		}
@@ -172,7 +170,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 	var lines []string
 
 	for i := len(te.Executed) - 1; i >= 0; i-- {
-		if exec := te.Executed[i]; exec.Err == "" {
+		if exec := te.Executed[i]; exec.Err == "" && exec.Result != "" {
 			n, err := ParseStatement(exec.Line)
 			if err != nil {
 				return nil, err

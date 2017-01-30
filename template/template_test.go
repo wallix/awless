@@ -135,6 +135,7 @@ func TestRevertTemplateExecution(t *testing.T) {
 			{Line: "create vpc", Result: "vpc-56g4h", Err: ""},
 			{Line: "create subnet", Result: "sub-65bh4nj", Err: ""},
 			{Line: "start instance", Result: "i-54g3hj", Err: ""},
+			{Line: "create tags", Result: "", Err: ""},
 			{Line: "create instance", Result: "", Err: "cannot create instance"},
 		},
 	}
