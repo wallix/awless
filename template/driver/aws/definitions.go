@@ -185,6 +185,41 @@ var DriverDefinitions = []struct {
 			"VpcId":             "vpc",
 		},
 	},
+	// ROUTE TABLES
+	{
+		Action: "create", Entity: "routetable", Api: "ec2", Input: "CreateRouteTableInput", ApiMethod: "CreateRouteTable", OutputExtractor: "RouteTable.RouteTableId",
+		RequiredParams: map[string]string{
+			"VpcId": "vpc"},
+	},
+	{
+		Action: "delete", Entity: "routetable", Api: "ec2", Input: "DeleteRouteTableInput", ApiMethod: "DeleteRouteTable",
+		RequiredParams: map[string]string{
+			"RouteTableId": "id",
+		},
+	},
+	{
+		Action: "attach", Entity: "routetable", Api: "ec2", Input: "AssociateRouteTableInput", ApiMethod: "AssociateRouteTable", OutputExtractor: "AssociationId",
+		RequiredParams: map[string]string{
+			"RouteTableId": "id",
+			"SubnetId":     "subnet",
+		},
+	},
+	// ROUTES
+	{
+		Action: "create", Entity: "route", Api: "ec2", Input: "CreateRouteInput", ApiMethod: "CreateRoute",
+		RequiredParams: map[string]string{
+			"RouteTableId":         "table",
+			"DestinationCidrBlock": "cidr",
+			"GatewayId":            "gateway",
+		},
+	},
+	{
+		Action: "delete", Entity: "route", Api: "ec2", Input: "DeleteRouteInput", ApiMethod: "DeleteRoute",
+		RequiredParams: map[string]string{
+			"RouteTableId":         "table",
+			"DestinationCidrBlock": "cidr",
+		},
+	},
 	// TAG
 	{
 		Action: "create", Entity: "tags", Api: "ec2", ManualFuncDefinition: true,
@@ -203,7 +238,7 @@ var DriverDefinitions = []struct {
 	{
 		Action: "delete", Entity: "keypair", Api: "ec2", Input: "DeleteKeyPairInput", ApiMethod: "DeleteKeyPair",
 		RequiredParams: map[string]string{
-			"KeyName": "name",
+			"KeyName": "id",
 		},
 	},
 

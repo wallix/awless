@@ -67,6 +67,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Name":   {name: "Tags", transform: extractTagFn("Name")},
 		"VpcId":  {name: "VpcId", transform: extractValueFn},
 		"Routes": {name: "Routes", transform: extractRoutesSliceFn},
+		"Main":   {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
 	},
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},

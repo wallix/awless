@@ -248,4 +248,33 @@ func TestTransformFunctions(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("extractHasATrueBoolInStructSlice", func(t *testing.T) {
+		t.Parallel()
+		slice := []*ec2.RouteTableAssociation{
+			{Main: awssdk.Bool(false), RouteTableAssociationId: awssdk.String("test")},
+			{RouteTableId: awssdk.String("test2"), Main: awssdk.Bool(true)},
+		}
+
+		val, err := extractHasATrueBoolInStructSliceFn("Main")(slice)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := val.(bool), true; got != want {
+			t.Fatalf("got %t, want %t", got, want)
+		}
+
+		slice = []*ec2.RouteTableAssociation{
+			{Main: awssdk.Bool(false), RouteTableAssociationId: awssdk.String("test")},
+			{RouteTableId: awssdk.String("test2"), Main: awssdk.Bool(false)},
+		}
+
+		val, err = extractHasATrueBoolInStructSliceFn("Main")(slice)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := val.(bool), false; got != want {
+			t.Fatalf("got %t, want %t", got, want)
+		}
+	})
 }

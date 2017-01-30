@@ -204,6 +204,31 @@ var extractRoutesSliceFn = func(i interface{}) (interface{}, error) {
 	return routes, nil
 }
 
+var extractHasATrueBoolInStructSliceFn = func(key string) transformFn {
+	return func(i interface{}) (interface{}, error) {
+		var res bool
+		value := reflect.ValueOf(i)
+		if value.Kind() != reflect.Slice {
+			return nil, fmt.Errorf("aws type invalid: %T", i)
+		}
+		for i := 0; i < value.Len(); i++ {
+			e, err := extractFieldFn(key)(value.Index(i).Interface())
+			if err != nil {
+				return nil, err
+			}
+			b, ok := e.(bool)
+			if !ok {
+				return nil, fmt.Errorf("this field is not a boolean, but has type: %T", e)
+			}
+			if b {
+				res = true
+			}
+		}
+
+		return res, nil
+	}
+}
+
 func notEmpty(str *string) bool {
 	return awssdk.StringValue(str) != ""
 }

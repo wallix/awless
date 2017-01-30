@@ -516,6 +516,18 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 			}
 			g.Add(t)
 		}
+		for _, assos := range rt.Associations {
+			if awssdk.StringValue(assos.RouteTableId) == awssdk.StringValue(rt.RouteTableId) {
+				subN := findNodeById(subnetNodes, awssdk.StringValue(assos.SubnetId))
+				if subN != nil {
+					t, err := graph.NewParentOfTriple(subN, n)
+					if err != nil {
+						return g, fmt.Errorf("subnet %s", err)
+					}
+					g.Add(t)
+				}
+			}
+		}
 	}
 
 	for _, instance := range awsInfra.Instances {
