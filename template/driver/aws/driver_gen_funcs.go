@@ -937,6 +937,46 @@ func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
+func (d *AwsDriver) Detach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DisassociateRouteTableInput{}
+	input.DryRun = aws.Bool(true)
+	
+	// Required params
+	setField(params["association"], input, "AssociationId")
+	
+
+	_, err := d.ec2.DisassociateRouteTable(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+			id := fakeDryRunId("routetable")
+			d.logger.Println("full dry run: detach routetable ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Printf("dry run: detach routetable error: %s", err)
+	return nil, err
+}
+
+// This function was auto generated
+func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DisassociateRouteTableInput{}
+	
+	// Required params
+	setField(params["association"], input, "AssociationId")
+	
+
+	output, err := d.ec2.DisassociateRouteTable(input)
+	if err != nil {
+		d.logger.Printf("detach routetable error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("detach routetable done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *AwsDriver) Create_Route_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
 	input.DryRun = aws.Bool(true)

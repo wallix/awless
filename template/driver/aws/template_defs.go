@@ -26,6 +26,7 @@ var AWSTemplatesDefinitions = map[string]string{
 	"createroutetable": "create routetable vpc={ routetable.vpc } ",
 	"deleteroutetable": "delete routetable id={ routetable.id } ",
 	"attachroutetable": "attach routetable id={ routetable.id } subnet={ routetable.subnet } ",
+	"detachroutetable": "detach routetable association={ routetable.association } ",
 	"createroute": "create route cidr={ route.cidr } gateway={ route.gateway } table={ route.table } ",
 	"deleteroute": "delete route cidr={ route.cidr } table={ route.table } ",
 	"createtags": "create tags resource={ tags.resource } ",

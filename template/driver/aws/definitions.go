@@ -204,6 +204,12 @@ var DriverDefinitions = []struct {
 			"SubnetId":     "subnet",
 		},
 	},
+	{
+		Action: "detach", Entity: "routetable", Api: "ec2", Input: "DisassociateRouteTableInput", ApiMethod: "DisassociateRouteTable",
+		RequiredParams: map[string]string{
+			"AssociationId": "association",
+		},
+	},
 	// ROUTES
 	{
 		Action: "create", Entity: "route", Api: "ec2", Input: "CreateRouteInput", ApiMethod: "CreateRoute",
