@@ -144,9 +144,11 @@ func (inf *Infra) RoutetablesGraph() (*graph.Graph, error) {
 		return nil, err
 	}
 	for _, rt := range out.(*ec2.DescribeRouteTablesOutput).RouteTables {
-		if err := addCloudResourceToGraph(g, rt); err != nil {
+		res, err := NewResource(rt)
+		if err != nil {
 			return g, err
 		}
+		g.AddResource(res)
 	}
 	return g, nil
 }
@@ -376,32 +378,17 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		if err != nil {
 			return nil, err
 		}
-		triples, err := res.MarshalToTriples()
-		if err != nil {
-			return nil, err
-		}
-		g.Add(triples...)
-		n, err := res.BuildRdfSubject()
-		if err != nil {
-			return g, err
-		}
+		g.AddResource(res)
+
 		vpcN := findNodeById(vpcNodes, awssdk.StringValue(rt.VpcId))
 		if vpcN != nil {
-			t, err := graph.NewParentOfTriple(vpcN, n)
-			if err != nil {
-				return g, fmt.Errorf("vpc %s", err)
-			}
-			g.Add(t)
+			g.AddParent(vpcN, res)
 		}
 		for _, assos := range rt.Associations {
 			if awssdk.StringValue(assos.RouteTableId) == awssdk.StringValue(rt.RouteTableId) {
 				subN := findNodeById(subnetNodes, awssdk.StringValue(assos.SubnetId))
 				if subN != nil {
-					t, err := graph.NewParentOfTriple(subN, n)
-					if err != nil {
-						return g, fmt.Errorf("subnet %s", err)
-					}
-					g.Add(t)
+					g.AddParent(subN, res)
 				}
 			}
 		}
