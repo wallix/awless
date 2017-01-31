@@ -30,7 +30,7 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 
 func (g *Graph) AddResource(resources ...*Resource) error {
 	for _, res := range resources {
-		triples, err := res.marshalToTriples()
+		triples, err := res.marshalRDF()
 		if err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 		return resource, err
 	}
 
-	if err := resource.Properties.unmarshalRDF(propsTriples); err!= nil {
+	if err := resource.Properties.unmarshalRDF(propsTriples); err != nil {
 		return resource, err
 	}
 
