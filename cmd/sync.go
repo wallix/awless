@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	gosync "sync"
 
-	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
@@ -35,21 +34,18 @@ var syncCmd = &cobra.Command{
 		}
 
 		if verboseFlag {
-			printWithTabs := func(g *graph.Graph, n *node.Node, distance int) {
+			printWithTabs := func(res *graph.Resource, distance int) {
 				var tabs bytes.Buffer
 				for i := 0; i < distance; i++ {
 					tabs.WriteByte('\t')
 				}
-				fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), n.Type(), n.ID())
+				fmt.Fprintf(os.Stdout, "%s%s, %s\n", tabs.String(), res.Type(), res.Id())
 			}
 
-			root, err := node.NewNodeFromStrings("/region", region)
-			if err != nil {
-				return err
-			}
+			root := graph.InitResource(region, graph.Region)
 
-			infrag.Visit(root, printWithTabs)
-			accessg.Visit(root, printWithTabs)
+			infrag.VisitChildren(root, printWithTabs)
+			accessg.VisitChildren(root, printWithTabs)
 		}
 
 		return nil

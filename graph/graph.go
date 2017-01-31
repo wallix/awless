@@ -114,6 +114,23 @@ func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 	return res, nil
 }
 
+func (g *Graph) VisitChildren(root *Resource, each func(*Resource, int)) error {
+	rootNode, err := root.BuildRdfSubject()
+	if err != nil {
+		return err
+	}
+
+	foreach := func(rdfG *rdf.Graph, n *node.Node, i int) {
+		res, err := g.GetResource(ResourceType(n.Type().String()), n.ID().String())
+		if err != nil {
+			panic(err)
+		}
+		each(res, i)
+	}
+
+	return g.rdfG.VisitDepthFirst(rootNode, foreach)
+}
+
 func (g *Graph) Visit(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
 	foreach := func(g *rdf.Graph, n *node.Node, i int) {
 		each(&Graph{g}, n, i)
