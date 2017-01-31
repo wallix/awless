@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-
-	"github.com/google/badwolf/triple/node"
 )
 
 const (
@@ -62,13 +60,6 @@ func (r *Route) String() string {
 }
 
 type ResourceType string
-
-func NewResourceType(t *node.Type) ResourceType {
-	if !strings.HasPrefix(t.String(), "/") {
-		panic("invalid resource type:" + t.String())
-	}
-	return ResourceType(strings.Split(t.String(), "/")[1])
-}
 
 func (r ResourceType) String() string {
 	return string(r)

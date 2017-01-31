@@ -13,8 +13,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/fatih/color"
-	"github.com/google/badwolf/triple/literal"
-	"github.com/google/badwolf/triple/node"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wallix/awless/graph"
 )
@@ -35,7 +33,7 @@ type Builder struct {
 	sort       []int
 	maxwidth   int
 	dataSource interface{}
-	root       *node.Node
+	root       *graph.Resource
 }
 
 func (b *Builder) SetSource(i interface{}) *Builder {
@@ -184,7 +182,7 @@ func WithRdfType(rdfType graph.ResourceType) optsFn {
 	}
 }
 
-func WithRootNode(root *node.Node) optsFn {
+func WithRootNode(root *graph.Resource) optsFn {
 	return func(b *Builder) *Builder {
 		b.root = root
 		return b
@@ -422,7 +420,7 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 }
 
 type fromDiffDisplayer struct {
-	root *node.Node
+	root *graph.Resource
 	diff *graph.Diff
 }
 
@@ -436,72 +434,51 @@ type diffTableDisplayer struct {
 
 func (d *diffTableDisplayer) Print(w io.Writer) error {
 	var values table
-	err := d.diff.FullGraph().VisitUnique(d.root, func(g *graph.Graph, n *node.Node, distance int) error {
-		var lit *literal.Literal
-		diffTriples, err := g.TriplesInDiff(n)
-		if len(diffTriples) > 0 && err == nil {
-			lit, _ = diffTriples[0].Object().Literal()
-		}
 
-		var nCommon, nInserted, nDeleted *graph.Resource
+	localCommons := make(map[string]*graph.Resource)
+	remoteCommons := make(map[string]*graph.Resource)
 
-		commonGraph := graph.NewGraphFromRdfGraph(d.diff.CommonGraph())
-		if nCommon, err = commonGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
-			return err
-		}
-
-		insertedGraph := graph.NewGraphFromRdfGraph(d.diff.InsertedGraph())
-		if nInserted, err = insertedGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
-			return err
-		}
-
-		deletedGraph := graph.NewGraphFromRdfGraph(d.diff.DeletedGraph())
-		if nDeleted, err = deletedGraph.GetResource(graph.NewResourceType(n.Type()), n.ID().String()); err != nil {
-			return err
-		}
-
-		var displayProperties, propsChanges, rNew bool
-		var rName string
-
-		var litString string
-		if lit != nil {
-			litString, _ = lit.Text()
-		}
-
-		switch litString {
+	d.diff.LocalGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+		switch res.Meta["diff"] {
 		case "extra":
-			rNew = true
-			rName = nameOrID(nInserted)
-		case "missing":
-			rName = nameOrID(nDeleted)
 			values = append(values, []interface{}{
-				graph.NewResourceType(n.Type()).String(),
-				color.New(color.FgRed).SprintFunc()("- " + rName),
-				"",
-				"",
+				res.Type().String(), color.New(color.FgGreen).SprintFunc()("+ " + nameOrID(res)), "", "",
 			})
 		default:
-			rName = nameOrID(nCommon)
-			displayProperties = true
+			localCommons[res.Id()] = res
 		}
-		if displayProperties {
-			propsChanges, err = addProperties(&values, nCommon.Type(), rName, rNew, nInserted.Properties, nDeleted.Properties)
-			if err != nil {
-				return err
+	})
+
+	d.diff.RemoteGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+		switch res.Meta["diff"] {
+		case "extra":
+			values = append(values, []interface{}{
+				res.Type().String(), color.New(color.FgRed).SprintFunc()("- " + nameOrID(res)), "", "",
+			})
+		default:
+			remoteCommons[res.Id()] = res
+		}
+	})
+
+	for _, common := range localCommons {
+		resType := common.Type().String()
+		naming := nameOrID(common)
+
+		if rem, ok := remoteCommons[common.Id()]; ok {
+			added := rem.Properties.Substract(common.Properties)
+			for k, v := range added {
+				values = append(values, []interface{}{
+					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
+				})
+			}
+
+			deleted := common.Properties.Substract(rem.Properties)
+			for k, v := range deleted {
+				values = append(values, []interface{}{
+					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
+				})
 			}
 		}
-		if !propsChanges && rNew {
-			values = append(values, []interface{}{
-				graph.NewResourceType(n.Type()).String(),
-				color.New(color.FgGreen).SprintFunc()("+ " + n.ID().String()),
-				"",
-				"",
-			})
-		}
-		return nil
-	})
-	if err != nil {
-		return err
 	}
 
 	sort.Sort(byCols{table: values, sortBy: []int{0, 1, 2, 3}})
@@ -522,91 +499,31 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 	return nil
 }
 
-func addProperties(values *table, rType graph.ResourceType, rName string, rNew bool, insertedProps, deletedProps graph.Properties) (bool, error) {
-	changes := false
-
-	for prop, val := range insertedProps {
-		var header ColumnDefinition
-		for _, h := range DefaultsColumnDefinitions[rType] {
-			if h.propKey() == prop {
-				header = h
-			}
-		}
-		if header == nil {
-			header = &StringColumnDefinition{Prop: prop}
-		}
-		resourceDisplayF := fmt.Sprint
-		if rNew {
-			resourceDisplayF = func(i ...interface{}) string { return color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(i...)) }
-		}
-		(*values) = append((*values), []interface{}{rType.String(),
-			resourceDisplayF(rName),
-			prop,
-			color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(val)),
-		})
-		changes = true
-	}
-
-	for prop, val := range deletedProps {
-		var header ColumnDefinition
-		for _, h := range DefaultsColumnDefinitions[rType] {
-			if h.propKey() == prop {
-				header = h
-			}
-		}
-		if header == nil {
-			header = &StringColumnDefinition{Prop: prop}
-		}
-		resourceDisplayF := fmt.Sprint
-		if rNew {
-			resourceDisplayF = func(i ...interface{}) string { return color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(i...)) }
-		}
-		(*values) = append((*values), []interface{}{rType.String(),
-			resourceDisplayF(rName),
-			prop,
-			color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(val)),
-		})
-		changes = true
-	}
-
-	return changes, nil
-}
-
 type diffTreeDisplayer struct {
 	*fromDiffDisplayer
 }
 
 func (d *diffTreeDisplayer) Print(w io.Writer) error {
-	d.diff.FullGraph().Visit(d.root, func(g *graph.Graph, n *node.Node, distance int) {
-		var lit *literal.Literal
-		diff, err := g.TriplesInDiff(n)
-		if len(diff) > 0 && err == nil {
-			lit, _ = diff[0].Object().Literal()
-		}
-
+	d.diff.MergedGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
 		var tabs bytes.Buffer
 		for i := 0; i < distance; i++ {
 			tabs.WriteByte('\t')
 		}
 
-		var litString string
-		if lit != nil {
-			litString, _ = lit.Text()
-		}
-
-		switch litString {
+		switch res.Meta["diff"] {
 		case "extra":
 			color.Set(color.FgGreen)
-			fmt.Fprintf(w, "+%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
+			fmt.Fprintf(w, "+%s%s, %s\n", tabs.String(), res.Type(), res.Id())
 			color.Unset()
 		case "missing":
 			color.Set(color.FgRed)
-			fmt.Fprintf(w, "-%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
+			fmt.Fprintf(w, "-%s%s, %s\n", tabs.String(), res.Type(), res.Id())
 			color.Unset()
 		default:
-			fmt.Fprintf(w, "%s%s, %s\n", tabs.String(), graph.NewResourceType(n.Type()).String(), n.ID())
+			fmt.Fprintf(w, "%s%s, %s\n", tabs.String(), res.Type(), res.Id())
 		}
 	})
+
 	return nil
 }
 

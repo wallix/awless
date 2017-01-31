@@ -3,6 +3,7 @@ package graph
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -16,10 +17,16 @@ type Resource struct {
 	kind       ResourceType
 	id         string
 	Properties Properties
+	Meta       Properties
 }
 
 func InitResource(id string, kind ResourceType) *Resource {
-	return &Resource{id: id, kind: kind, Properties: make(Properties)}
+	return &Resource{id: id, kind: kind, Properties: make(Properties), Meta: make(Properties)}
+}
+
+func newResourceType(n *node.Node) ResourceType {
+	typ := strings.TrimPrefix(n.Type().String(), "/")
+	return ResourceType(typ)
 }
 
 func (res *Resource) Type() ResourceType {
@@ -63,10 +70,41 @@ func (res *Resource) marshalRDF() ([]*triple.Triple, error) {
 		}
 	}
 
+	for metaKey, metaValue := range res.Meta {
+		prop := Property{Key: metaKey, Value: metaValue}
+		propL, err := prop.marshalRDF()
+		if err != nil {
+			return nil, err
+		}
+		if propT, err := triple.New(n, rdf.MetaPredicate, propL); err != nil {
+			return nil, err
+		} else {
+			triples = append(triples, propT)
+		}
+	}
+
 	return triples, nil
 }
 
 type Properties map[string]interface{}
+
+func (props Properties) Substract(other Properties) Properties {
+	sub := make(Properties)
+
+	for propK, propV := range props {
+		var found bool
+		if otherV, ok := other[propK]; ok {
+			if reflect.DeepEqual(propV, otherV) {
+				found = true
+			}
+		}
+		if !found {
+			sub[propK] = propV
+		}
+	}
+
+	return sub
+}
 
 func (props Properties) unmarshalRDF(triples []*triple.Triple) error {
 	for _, tr := range triples {
@@ -98,10 +136,6 @@ func (prop *Property) marshalRDF() (*triple.Object, error) {
 }
 
 func (prop *Property) unmarshalRDF(t *triple.Triple) error {
-	if t.Predicate().String() != rdf.PropertyPredicate.String() {
-		return fmt.Errorf("unmarshaling property: triple expected property predicate got '%s'", t.Predicate().String())
-	}
-
 	oL, err := t.Object().Literal()
 	if err != nil {
 		return err
@@ -112,7 +146,7 @@ func (prop *Property) unmarshalRDF(t *triple.Triple) error {
 	}
 
 	if err = json.Unmarshal([]byte(propStr), prop); err != nil {
-		return err
+		fmt.Println("cannot unmarshal %s: %s\n", propStr, err)
 	}
 
 	switch {

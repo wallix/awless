@@ -70,7 +70,7 @@ func TestAttachTriple(t *testing.T) {
 	g := NewGraphFromTriples([]*triple.Triple{tri})
 
 	l, _ := literal.DefaultBuilder().Build(literal.Text, "trumped")
-	attachLiteralToTriple(g, tri, DiffPredicate, l)
+	attachLiteralToNode(g, objNode, DiffPredicate, l)
 
 	triples, _ := g.TriplesForSubjectPredicate(objNode, DiffPredicate)
 

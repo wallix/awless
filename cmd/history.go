@@ -38,8 +38,12 @@ var historyCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), database.MustGetDefaultRegion())
+		region := database.MustGetDefaultRegion()
+
+		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
 		exitOn(err)
+
+		rootResource := graph.InitResource(region, graph.Region)
 
 		var diffs []*sync.Diff
 
@@ -59,15 +63,15 @@ var historyCmd = &cobra.Command{
 		}
 
 		for _, diff := range diffs {
-			displayRevisionDiff(diff, aws.AccessServiceName, root, verboseFlag)
-			displayRevisionDiff(diff, aws.InfraServiceName, root, verboseFlag)
+			displayRevisionDiff(diff, aws.AccessServiceName, rootResource, verboseFlag)
+			displayRevisionDiff(diff, aws.InfraServiceName, rootResource, verboseFlag)
 		}
 
 		return nil
 	},
 }
 
-func displayRevisionDiff(diff *sync.Diff, cloudService string, root *node.Node, verbose bool) {
+func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resource, verbose bool) {
 	fromRevision := "repository creation"
 	if diff.From.Id != "" {
 		fromRevision = diff.From.Id[:7] + " on " + diff.From.Date.Format("Monday January 2, 15:04")
@@ -93,7 +97,7 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *node.Node, 
 			fmt.Println("No changes.")
 		}
 	} else {
-		if graphdiff.HasResourceDiff() {
+		if graphdiff.HasDiff() {
 			fmt.Println("▶", cloudService, "resources, from", fromRevision,
 				"to", diff.To.Id[:7], "on", diff.To.Date.Format("Monday January 2, 15:04"))
 			displayer := display.BuildOptions(

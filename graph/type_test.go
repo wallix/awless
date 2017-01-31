@@ -16,12 +16,9 @@ func TestResourceTypeToRdfType(t *testing.T) {
 
 	resourceTypes := []ResourceType{Region, Vpc, Subnet, Instance, User, Role, Group, Policy}
 	for _, r := range resourceTypes {
-		ty, err := node.NewType(r.ToRDFString())
+		_, err := node.NewType(r.ToRDFString())
 		if err != nil {
 			t.Fatal(err)
-		}
-		if got, want := NewResourceType(ty), r; got != want {
-			t.Fatalf("got %s, want %s", got, want)
 		}
 		if got, want := "/"+r.String(), r.ToRDFString(); got != want {
 			t.Fatalf("got %s, want %s", got, want)

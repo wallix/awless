@@ -7,11 +7,15 @@ var (
 	HasTypePredicate  *predicate.Predicate
 	DiffPredicate     *predicate.Predicate
 	PropertyPredicate *predicate.Predicate
+	MetaPredicate     *predicate.Predicate
 )
 
 func init() {
 	var err error
 	if ParentOfPredicate, err = predicate.NewImmutable("parent_of"); err != nil {
+		panic(err)
+	}
+	if MetaPredicate, err = predicate.NewImmutable("meta"); err != nil {
 		panic(err)
 	}
 	if HasTypePredicate, err = predicate.NewImmutable("has_type"); err != nil {
@@ -23,5 +27,5 @@ func init() {
 	if PropertyPredicate, err = predicate.NewImmutable("property"); err != nil {
 		panic(err)
 	}
-	DefaultDiffer = &defaultDiffer{ParentOfPredicate}
+	DefaultDiffer = &hierarchicDiffer{ParentOfPredicate}
 }

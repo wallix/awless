@@ -2,24 +2,15 @@ package display
 
 import (
 	"bytes"
+	"path/filepath"
 	"testing"
 
 	"github.com/fatih/color"
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
-	"github.com/google/badwolf/triple/node"
-	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/graph"
 )
 
-var parentOfPredicate *predicate.Predicate
-
 func init() {
 	color.NoColor = true
-	var err error
-	if parentOfPredicate, err = predicate.NewImmutable("parent_of"); err != nil {
-		panic(err)
-	}
 }
 
 func TestTabularDisplays(t *testing.T) {
@@ -257,10 +248,7 @@ my_vpc_2`
 func TestDiffDisplay(t *testing.T) {
 	diff := createDiff()
 
-	rootNode, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), "eu-west-1")
-	if err != nil {
-		t.Fatal(err)
-	}
+	rootNode := graph.InitResource("eu-west-1", graph.Region)
 
 	displayer := BuildOptions(
 		WithFormat("table"),
@@ -270,23 +258,23 @@ func TestDiffDisplay(t *testing.T) {
 	expected := `+----------+--------------+----------+------------+
 |  TYPE ▲  |   NAME/ID    | PROPERTY |   VALUE    |
 +----------+--------------+----------+------------+
-| instance | + inst_4     |          |            |
-|          | + inst_5     |          |            |
-|          | + inst_6     |          |            |
-|          | - inst_2     |          |            |
-|          | inst_1       | Id       | + new_id   |
-|          |              |          | - inst_1   |
-| subnet   | + new_subnet |          |            |
-| vpc      | vpc_1        | NewProp  | - my_value |
+| instance | + inst_4     |          |            |
+|          | + inst_5     |          |            |
+|          | + inst_6     |          |            |
+|          | - inst_2     |          |            |
+|          | redis        | Id       | + new_id   |
+|          |              |          | - inst_1   |
+| subnet   | + new_subnet |          |            |
+| vpc      | vpc_1        | NewProp  | - my_value |
 +----------+--------------+----------+------------+
 `
 	var w bytes.Buffer
-	err = displayer.Print(&w)
+	err := displayer.Print(&w)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
-		t.Errorf("got \n%s\n\nwant\n\n%s\n", got, want)
+		t.Errorf("got \n%q\n\nwant\n\n%q\n", got, want)
 	}
 
 	displayer = BuildOptions(
@@ -551,85 +539,44 @@ func TestCompareInterface(t *testing.T) {
 }
 
 func createInfraGraph() *graph.Graph {
-	instances := []byte(`/region<eu-west-1> "has_type"@[] "/region"^^type:text
-  /instance<inst_1>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Type","Value":"t2.micro"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"PublicIp","Value":"1.2.3.4"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"State","Value":"running"}"^^type:text
-
-  /instance<inst_2>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Name","Value":"django"}"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Type","Value":"t2.medium"}"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"State","Value":"stopped"}"^^type:text
-
-	/instance<inst_3>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"apache"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Type","Value":"t2.xlarge"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"State","Value":"running"}"^^type:text
-
-  /region<eu-west-1>  "parent_of"@[] /vpc<vpc_1>
-  /region<eu-west-1>  "parent_of"@[] /vpc<vpc_2>
-	
-	/subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text
-	/subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
-	/subnet<sub_1>	"property"@[]	"{"Key":"Id","Value":"sub_1"}"^^type:text
-  /subnet<sub_1>  "property"@[] "{"Key":"Name","Value":"my_subnet"}"^^type:text
-	/subnet<sub_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-	
-	/subnet<sub_2>	"has_type"@[]	"/subnet"^^type:text
-	/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>
-	/subnet<sub_2>	"parent_of"@[]	/instance<inst_3>
-	/subnet<sub_2>	"property"@[]	"{"Key":"Id","Value":"sub_2"}"^^type:text
-	/subnet<sub_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
-	
-	/vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
-	/vpc<vpc_1>	"parent_of"@[]	/subnet<sub_1>
-	/vpc<vpc_1>	"property"@[]	"{"Key":"Id","Value":"vpc_1"}"^^type:text
-	/vpc<vpc_1>	"property"@[]	"{"Key":"NewProp","Value":"my_value"}"^^type:text
-	
-	/vpc<vpc_2>	"has_type"@[]	"/vpc"^^type:text
-	/vpc<vpc_2>	"parent_of"@[]	/subnet<sub_2>
-	/vpc<vpc_2>	"property"@[]	"{"Key":"Id","Value":"vpc_2"}"^^type:text
-	/vpc<vpc_2>	"property"@[]	"{"Key":"Name","Value":"my_vpc_2"}"^^type:text`)
-
-	g := graph.NewGraph()
-	g.Unmarshal(instances)
-	return g
-}
-
-func createDiff() *graph.Diff {
-	diff := graph.NewDiff(createInfraGraph())
-
-	diff.AddDeleted(parseTriple(`/instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text`), parentOfPredicate)
-	diff.AddDeleted(parseTriple(`/instance<inst_2>  "has_type"@[] "/instance"^^type:text`), parentOfPredicate)
-	diff.AddDeleted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>`), parentOfPredicate)
-	diff.AddDeleted(parseTriple(`/vpc<vpc_1>	"property"@[]	"{"Key":"NewProp","Value":"my_value"}"^^type:text`), parentOfPredicate)
-
-	diff.AddInserted(parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"new_id"}"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/instance<inst_4>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_4>`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_5>`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Id","Value":"inst_5"}"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Test","Value":"test_1"}"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/subnet<new_subnet>	"has_type"@[]	"/subnet"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/vpc<vpc_2>	"parent_of"@[]	/subnet<new_subnet>`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/instance<inst_6>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
-	diff.AddInserted(parseTriple(`/subnet<new_subnet>	"parent_of"@[]	/instance<inst_6>`), parentOfPredicate)
-
-	return diff
-}
-
-func parseTriple(s string) *triple.Triple {
-	t, err := triple.Parse(s, literal.DefaultBuilder())
+	g, err := graph.NewGraphFromFile(filepath.Join("testdata", "infra.rdf"))
 	if err != nil {
 		panic(err)
 	}
 
-	return t
+	return g
+}
+
+func createDiff() *graph.Diff {
+	localDiffG, err := graph.NewGraphFromFile(filepath.Join("testdata", "local_infra_diff.rdf"))
+	if err != nil {
+		panic(err)
+	}
+
+	remoteDiffG, err := graph.NewGraphFromFile(filepath.Join("testdata", "remote_infra_diff.rdf"))
+	if err != nil {
+		panic(err)
+	}
+
+	diff := graph.NewDiff(localDiffG, remoteDiffG)
+
+	// diff.AddDeleted(parseTriple(`/instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text`), parentOfPredicate)
+	// diff.AddDeleted(parseTriple(`/instance<inst_2>  "has_type"@[] "/instance"^^type:text`), parentOfPredicate)
+	// diff.AddDeleted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>`), parentOfPredicate)
+	// diff.AddDeleted(parseTriple(`/vpc<vpc_1>	"property"@[]	"{"Key":"NewProp","Value":"my_value"}"^^type:text`), parentOfPredicate)
+
+	// diff.AddInserted(parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"new_id"}"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/instance<inst_4>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_4>`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_5>`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Id","Value":"inst_5"}"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Test","Value":"test_1"}"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/subnet<new_subnet>	"has_type"@[]	"/subnet"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/vpc<vpc_2>	"parent_of"@[]	/subnet<new_subnet>`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/instance<inst_6>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
+	// diff.AddInserted(parseTriple(`/subnet<new_subnet>	"parent_of"@[]	/instance<inst_6>`), parentOfPredicate)
+
+	return diff
 }

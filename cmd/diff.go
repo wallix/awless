@@ -60,6 +60,8 @@ var diffCmd = &cobra.Command{
 
 		region := database.MustGetDefaultRegion()
 
+		rootResource := graph.InitResource(region, graph.Region)
+
 		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
 		exitOn(err)
 
@@ -81,42 +83,43 @@ var diffCmd = &cobra.Command{
 		accessDiff, err := graph.Differ.Run(root, localAccess, remoteAccess)
 		exitOn(err)
 
-		var hasDiff bool
+		var anyDiffs bool
+
 		if diffProperties {
 			if accessDiff.HasDiff() {
-				hasDiff = true
+				anyDiffs = true
 				fmt.Println("------ ACCESS ------")
-				displayFullDiff(accessDiff, root)
+				displayFullDiff(accessDiff, rootResource)
 			}
 			if infraDiff.HasDiff() {
-				hasDiff = true
+				anyDiffs = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				displayFullDiff(infraDiff, root)
+				displayFullDiff(infraDiff, rootResource)
 			}
 		} else {
-			if accessDiff.HasResourceDiff() {
-				hasDiff = true
+			if accessDiff.HasDiff() {
+				anyDiffs = true
 				fmt.Println("------ ACCESS ------")
 				displayer := display.BuildOptions(
 					display.WithFormat("tree"),
-					display.WithRootNode(root),
+					display.WithRootNode(rootResource),
 				).SetSource(accessDiff).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
 
-			if infraDiff.HasResourceDiff() {
-				hasDiff = true
+			if infraDiff.HasDiff() {
+				anyDiffs = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
 				displayer := display.BuildOptions(
 					display.WithFormat("tree"),
-					display.WithRootNode(root),
+					display.WithRootNode(rootResource),
 				).SetSource(infraDiff).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
 		}
-		if hasDiff {
+		if anyDiffs {
 			var yesorno string
 			fmt.Print("\nDo you want to perform a sync? (y/n): ")
 			fmt.Scanln(&yesorno)
@@ -130,7 +133,7 @@ var diffCmd = &cobra.Command{
 	},
 }
 
-func displayFullDiff(diff *graph.Diff, rootNode *node.Node) {
+func displayFullDiff(diff *graph.Diff, rootNode *graph.Resource) {
 	displayer := display.BuildOptions(
 		display.WithFormat("table"),
 		display.WithRootNode(rootNode),

@@ -9,15 +9,22 @@ type Diff struct {
 	*rdf.Diff
 }
 
-func NewDiff(g *Graph) *Diff {
-	return &Diff{rdf.NewDiff(g.rdfG)}
+func NewDiff(localG, remoteG *Graph) *Diff {
+	return &Diff{rdf.NewDiff(localG.rdfG, remoteG.rdfG)}
 }
 
-func (d *Diff) FullGraph() *Graph {
-	return &Graph{d.Diff.FullGraph()}
+func (d *Diff) LocalGraph() *Graph {
+	return &Graph{d.Diff.LocalGraph()}
 }
 
-var HierarchicalDiffer = rdf.NewHierarchicalDiffer()
+func (d *Diff) RemoteGraph() *Graph {
+	return &Graph{d.Diff.RemoteGraph()}
+}
+
+func (d *Diff) MergedGraph() *Graph {
+	return &Graph{d.Diff.MergedGraph()}
+}
+
 var Differ = &differ{rdf.DefaultDiffer}
 
 type differ struct {

@@ -19,12 +19,8 @@ func NewTripleFromStrings(sub *node.Node, pred string, obj string) (*triple.Trip
 	return triple.New(sub, p, triple.NewLiteralObject(objL))
 }
 
-func attachLiteralToTriple(g *Graph, t *triple.Triple, p *predicate.Predicate, lit *literal.Literal) error {
-	node, err := t.Object().Node()
-	if err != nil {
-		return err
-	}
-	tri, err := triple.New(node, p, triple.NewLiteralObject(lit))
+func attachLiteralToNode(g *Graph, n *node.Node, p *predicate.Predicate, lit *literal.Literal) error {
+	tri, err := triple.New(n, p, triple.NewLiteralObject(lit))
 	if err != nil {
 		return err
 	}

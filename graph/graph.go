@@ -6,21 +6,12 @@ import (
 	"github.com/wallix/awless/graph/internal/rdf"
 )
 
-type CloudGraph interface {
-	GetResource(t ResourceType, id string) (*Resource, error)
-	GetAllResources(t ResourceType) ([]*Resource, error)
-}
-
 type Graph struct {
 	rdfG *rdf.Graph
 }
 
 func NewGraph() *Graph {
 	return &Graph{rdf.NewGraph()}
-}
-
-func NewGraphFromRdfGraph(g *rdf.Graph) *Graph {
-	return &Graph{g}
 }
 
 func NewGraphFromFile(filepath string) (*Graph, error) {
@@ -85,8 +76,15 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 	if err != nil {
 		return resource, err
 	}
-
 	if err := resource.Properties.unmarshalRDF(propsTriples); err != nil {
+		return resource, err
+	}
+
+	metaTriples, err := g.rdfG.TriplesForSubjectPredicate(node, rdf.MetaPredicate)
+	if err != nil {
+		return resource, err
+	}
+	if err := resource.Meta.unmarshalRDF(metaTriples); err != nil {
 		return resource, err
 	}
 
@@ -117,7 +115,7 @@ func (g *Graph) VisitChildren(root *Resource, each func(*Resource, int)) error {
 	}
 
 	foreach := func(rdfG *rdf.Graph, n *node.Node, i int) {
-		res, err := g.GetResource(ResourceType(n.Type().String()), n.ID().String())
+		res, err := g.GetResource(newResourceType(n), n.ID().String())
 		if err != nil {
 			panic(err)
 		}
@@ -125,22 +123,6 @@ func (g *Graph) VisitChildren(root *Resource, each func(*Resource, int)) error {
 	}
 
 	return g.rdfG.VisitDepthFirst(rootNode, foreach)
-}
-
-func (g *Graph) Visit(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
-	foreach := func(g *rdf.Graph, n *node.Node, i int) {
-		each(&Graph{g}, n, i)
-	}
-
-	return g.rdfG.VisitDepthFirst(root, foreach, distances...)
-}
-
-func (g *Graph) VisitUnique(root *node.Node, each func(*Graph, *node.Node, int) error) error {
-	foreach := func(g *rdf.Graph, n *node.Node, i int) error {
-		return each(&Graph{g}, n, i)
-	}
-
-	return g.rdfG.VisitDepthFirstUnique(root, foreach)
 }
 
 func (g *Graph) CountChildrenOfTypeForNode(res *Resource, childType ResourceType) (int, error) {
@@ -157,8 +139,4 @@ func (g *Graph) CountChildrenForNode(res *Resource) (int, error) {
 		return 0, err
 	}
 	return g.rdfG.CountTriplesForSubjectAndPredicate(n, rdf.ParentOfPredicate)
-}
-
-func (g *Graph) TriplesInDiff(node *node.Node) ([]*triple.Triple, error) {
-	return g.rdfG.TriplesForSubjectPredicate(node, rdf.DiffPredicate)
 }
