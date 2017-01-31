@@ -86,12 +86,8 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 		return resource, err
 	}
 
-	for _, t := range propsTriples {
-		prop, err := NewPropertyFromTriple(t)
-		if err != nil {
-			return resource, err
-		}
-		resource.Properties[prop.Key] = prop.Value
+	if err := resource.Properties.unmarshalRDF(propsTriples); err!= nil {
+		return resource, err
 	}
 
 	return resource, nil

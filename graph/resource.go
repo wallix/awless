@@ -7,8 +7,6 @@ import (
 	"github.com/wallix/awless/graph/internal/rdf"
 )
 
-type Properties map[string]interface{}
-
 type Resource struct {
 	kind       ResourceType
 	id         string
@@ -57,4 +55,18 @@ func (res *Resource) marshalToTriples() ([]*triple.Triple, error) {
 	}
 
 	return triples, nil
+}
+
+type Properties map[string]interface{}
+
+func (props Properties) unmarshalRDF(triples []*triple.Triple) error {
+	for _, tr := range triples {
+		prop := &Property{}
+		if err := prop.unmarshalRDF(tr); err != nil {
+			return err
+		}
+		props[prop.Key] = prop.Value
+	}
+
+	return nil
 }

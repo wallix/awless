@@ -18,7 +18,7 @@ type Property struct {
 }
 
 func (prop *Property) tripleFromNode(subject *node.Node) (*triple.Triple, error) {
-	propL, err := prop.ToLiteralObject()
+	propL, err := prop.marshalRDF()
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (prop *Property) tripleFromNode(subject *node.Node) (*triple.Triple, error)
 	}
 }
 
-func (prop *Property) ToLiteralObject() (*triple.Object, error) {
+func (prop *Property) marshalRDF() (*triple.Object, error) {
 	json, err := json.Marshal(prop)
 	if err != nil {
 		return nil, err
@@ -41,23 +41,22 @@ func (prop *Property) ToLiteralObject() (*triple.Object, error) {
 	return triple.NewLiteralObject(propL), nil
 }
 
-func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
+func (prop *Property) unmarshalRDF(t *triple.Triple) error {
 	if t.Predicate().String() != rdf.PropertyPredicate.String() {
-		return nil, fmt.Errorf("This triple has not a property prediate: %s", t.Predicate().String())
+		return fmt.Errorf("unmarshaling property: triple expected property predicate got '%s'", t.Predicate().String())
 	}
+
 	oL, err := t.Object().Literal()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	propStr, err := oL.Text()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var prop Property
-	err = json.Unmarshal([]byte(propStr), &prop)
-	if err != nil {
-		return nil, err
+	if err = json.Unmarshal([]byte(propStr), prop); err != nil {
+		return err
 	}
 
 	switch {
@@ -86,5 +85,5 @@ func NewPropertyFromTriple(t *triple.Triple) (*Property, error) {
 		}
 	}
 
-	return &prop, nil
+	return nil
 }

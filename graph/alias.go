@@ -8,7 +8,7 @@ type Alias string
 
 func (a Alias) ResolveToId(g *Graph, resT ResourceType) (string, bool) {
 	prop := Property{Key: "Name", Value: a}
-	propL, err := prop.ToLiteralObject()
+	propL, err := prop.marshalRDF()
 	if err != nil {
 		return "", false
 	}
