@@ -41,7 +41,7 @@ func (g *Graph) AddResource(resources ...*Resource) error {
 }
 
 func (g *Graph) AddParent(parent, child *Resource) error {
-	n, err := child.BuildRdfSubject()
+	n, err := child.toRDFNode()
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (g *Graph) Marshal() ([]byte, error) {
 func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 	resource := InitResource(id, t)
 
-	node, err := resource.BuildRdfSubject()
+	node, err := resource.toRDFNode()
 	if err != nil {
 		return resource, err
 	}
@@ -91,7 +91,7 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 		if err != nil {
 			return resource, err
 		}
-		resource.properties[prop.Key] = prop.Value
+		resource.Properties[prop.Key] = prop.Value
 	}
 
 	return resource, nil
@@ -115,7 +115,7 @@ func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 }
 
 func (g *Graph) VisitChildren(root *Resource, each func(*Resource, int)) error {
-	rootNode, err := root.BuildRdfSubject()
+	rootNode, err := root.toRDFNode()
 	if err != nil {
 		return err
 	}

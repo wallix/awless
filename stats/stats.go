@@ -239,10 +239,10 @@ func addStatsForInstanceStringProperty(infra *graph.Graph, propertyName string, 
 
 	propertyValuesCountMap := make(map[string]int)
 	for _, inst := range instances {
-		if inst.Properties()[propertyName] != nil {
-			propertyValue, ok := inst.Properties()[propertyName].(string)
+		if inst.Properties[propertyName] != nil {
+			propertyValue, ok := inst.Properties[propertyName].(string)
 			if !ok {
-				return nil, fmt.Errorf("Property value of '%s' is not a string: %T", inst.Properties()[propertyName], inst.Properties()[propertyName])
+				return nil, fmt.Errorf("Property value of '%s' is not a string: %T", inst.Properties[propertyName], inst.Properties[propertyName])
 			}
 			propertyValuesCountMap[propertyValue]++
 		}

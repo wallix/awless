@@ -7,22 +7,16 @@ import (
 	"github.com/wallix/awless/graph/internal/rdf"
 )
 
+type Properties map[string]interface{}
+
 type Resource struct {
 	kind       ResourceType
 	id         string
-	properties Properties
+	Properties Properties
 }
 
 func InitResource(id string, kind ResourceType) *Resource {
-	return &Resource{id: id, kind: kind, properties: make(Properties)}
-}
-
-func (res *Resource) Properties() Properties {
-	return res.properties
-}
-
-func (res *Resource) SetProperties(props Properties) {
-	res.properties = props
+	return &Resource{id: id, kind: kind, Properties: make(Properties)}
 }
 
 func (res *Resource) Type() ResourceType {
@@ -33,13 +27,13 @@ func (res *Resource) Id() string {
 	return res.id
 }
 
-func (res *Resource) BuildRdfSubject() (*node.Node, error) {
+func (res *Resource) toRDFNode() (*node.Node, error) {
 	return node.NewNodeFromStrings(res.kind.ToRDFString(), res.id)
 }
 
 func (res *Resource) marshalToTriples() ([]*triple.Triple, error) {
 	var triples []*triple.Triple
-	n, err := res.BuildRdfSubject()
+	n, err := res.toRDFNode()
 	if err != nil {
 		return triples, err
 	}
@@ -53,7 +47,7 @@ func (res *Resource) marshalToTriples() ([]*triple.Triple, error) {
 	}
 	triples = append(triples, t)
 
-	for propKey, propValue := range res.properties {
+	for propKey, propValue := range res.Properties {
 		prop := Property{Key: propKey, Value: propValue}
 		if propT, err := prop.tripleFromNode(n); err != nil {
 			return nil, err

@@ -11,12 +11,12 @@ func TestResourceDisplay(t *testing.T) {
 	g := graph.NewGraph()
 
 	res1 := graph.InitResource("inst_1", graph.Instance)
-	res1.SetProperties(map[string]interface{}{
+	res1.Properties = map[string]interface{}{
 		"Id":     "inst_1",
 		"Name":   "instance 1",
 		"Prop 1": "prop 1",
 		"Prop 2": "prop 2",
-	})
+	}
 	res2 := graph.InitResource("inst_2", graph.Instance)
 
 	g.AddResource(res1, res2)

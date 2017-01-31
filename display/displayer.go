@@ -221,7 +221,7 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 			values[i] = make([]interface{}, len(d.headers))
 		}
 		for j, h := range d.headers {
-			values[i][j] = res.Properties()[h.propKey()]
+			values[i][j] = res.Properties[h.propKey()]
 		}
 	}
 
@@ -264,7 +264,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 			values[i] = make([]interface{}, len(d.headers))
 		}
 		for j, h := range d.headers {
-			values[i][j] = res.Properties()[h.propKey()]
+			values[i][j] = res.Properties[h.propKey()]
 		}
 	}
 
@@ -342,7 +342,7 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 		for _, res := range resources {
 			var row = make([]interface{}, len(d.headers))
 			for j, h := range d.headers {
-				row[j] = res.Properties()[h.propKey()]
+				row[j] = res.Properties[h.propKey()]
 			}
 			values = append(values, row)
 		}
@@ -382,7 +382,7 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 			return err
 		}
 		for _, res := range resources {
-			for prop, val := range res.Properties() {
+			for prop, val := range res.Properties {
 				var header ColumnDefinition
 				for _, h := range propDefs {
 					if h.propKey() == prop {
@@ -485,7 +485,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 			displayProperties = true
 		}
 		if displayProperties {
-			propsChanges, err = addProperties(&values, nCommon.Type(), rName, rNew, nInserted.Properties(), nDeleted.Properties())
+			propsChanges, err = addProperties(&values, nCommon.Type(), rName, rNew, nInserted.Properties, nDeleted.Properties)
 			if err != nil {
 				return err
 			}
@@ -718,10 +718,10 @@ func get_words_from(text string) []string {
 }
 
 func nameOrID(res *graph.Resource) string {
-	if name, ok := res.Properties()["Name"]; ok && name != "" {
+	if name, ok := res.Properties["Name"]; ok && name != "" {
 		return fmt.Sprint(name)
 	}
-	if id, ok := res.Properties()["Id"]; ok && id != "" {
+	if id, ok := res.Properties["Id"]; ok && id != "" {
 		return fmt.Sprint(id)
 	}
 	return res.Id()

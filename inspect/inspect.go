@@ -46,7 +46,7 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 	}
 
 	for _, inst := range instances {
-		typ := inst.Properties()["Type"].(string)
+		typ := inst.Properties["Type"].(string)
 		if price, ok := prices[typ]; ok {
 			p.total = p.total + price
 			p.count[typ] = p.count[typ] + 1

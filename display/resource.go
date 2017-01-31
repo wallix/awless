@@ -15,10 +15,10 @@ type tableResourceDisplayer struct {
 }
 
 func (d *tableResourceDisplayer) Print(w io.Writer) error {
-	values := make(table, len(d.r.Properties()))
+	values := make(table, len(d.r.Properties))
 
 	i := 0
-	for prop, val := range d.r.Properties() {
+	for prop, val := range d.r.Properties {
 		var header ColumnDefinition
 		for _, h := range d.headers {
 			if h.propKey() == prop {

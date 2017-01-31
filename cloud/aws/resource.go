@@ -65,7 +65,7 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 			if err != nil {
 				return res, err
 			}
-			res.Properties()[prop] = val
+			res.Properties[prop] = val
 		}
 	}
 

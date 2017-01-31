@@ -12,8 +12,6 @@ import (
 	"github.com/wallix/awless/graph/internal/rdf"
 )
 
-type Properties map[string]interface{}
-
 type Property struct {
 	Key   string
 	Value interface{}

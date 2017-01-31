@@ -424,12 +424,12 @@ func InstanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Cre
 		return nil, err
 	}
 
-	ip, ok := inst.Properties()["PublicIp"]
+	ip, ok := inst.Properties["PublicIp"]
 	if !ok {
 		return nil, ErrNoPublicIP
 	}
 
-	key, ok := inst.Properties()["KeyName"]
+	key, ok := inst.Properties["KeyName"]
 	if !ok {
 		return nil, ErrNoAccessKey
 	}

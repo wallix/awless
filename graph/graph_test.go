@@ -30,7 +30,7 @@ func TestGetResource(t *testing.T) {
 		},
 	}
 
-	if got, want := res.properties, expected; !reflect.DeepEqual(got, want) {
+	if got, want := res.Properties, expected; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
 	}
 }
@@ -54,9 +54,9 @@ func TestGetAllResources(t *testing.T) {
 	time, _ := time.Parse(time.RFC3339, "2017-01-10T16:47:18Z")
 
 	expected := []*Resource{
-		{kind: Instance, id: "inst_1", properties: Properties{"Id": "inst_1", "Name": "redis"}},
-		{kind: Instance, id: "inst_2", properties: Properties{"Id": "inst_2", "Name": "redis2"}},
-		{kind: Instance, id: "inst_3", properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
+		{kind: Instance, id: "inst_1", Properties: Properties{"Id": "inst_1", "Name": "redis"}},
+		{kind: Instance, id: "inst_2", Properties: Properties{"Id": "inst_2", "Name": "redis2"}},
+		{kind: Instance, id: "inst_3", Properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
 	}
 	res, err := g.GetAllResources(Instance)
 	if err != nil {
@@ -68,7 +68,7 @@ func TestGetAllResources(t *testing.T) {
 	for _, r := range expected {
 		found := false
 		for _, r2 := range res {
-			if r2.kind == r.kind && r2.id == r.id && reflect.DeepEqual(r2.properties, r.properties) {
+			if r2.kind == r.kind && r2.id == r.id && reflect.DeepEqual(r2.Properties, r.Properties) {
 				found = true
 			}
 		}
@@ -85,7 +85,7 @@ func TestLoadIpPermissions(t *testing.T) {
 /securitygroup<sg-1234>	"property"@[]	"{"Key":"InboundRules","Value":[{"PortRange":{"FromPort":22,"ToPort":22,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"10.10.0.0","Mask":"//8AAA=="}]},{"PortRange":{"FromPort":443,"ToPort":443,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text
 /securitygroup<sg-1234>	"property"@[]	"{"Key":"OutboundRules","Value":[{"PortRange":{"FromPort":0,"ToPort":0,"Any":true},"Protocol":"any","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text`))
 	expected := []*Resource{
-		{kind: SecurityGroup, id: "sg-1234", properties: Properties{
+		{kind: SecurityGroup, id: "sg-1234", Properties: Properties{
 			"Id": "sg-1234",
 			"InboundRules": []*FirewallRule{
 				{
@@ -122,11 +122,11 @@ func TestLoadIpPermissions(t *testing.T) {
 	if got, want := res[0].kind, expected[0].kind; got != want {
 		t.Fatalf("got %s want %s", got, want)
 	}
-	if got, want := len(res[0].properties), len(expected[0].properties); got != want {
+	if got, want := len(res[0].Properties), len(expected[0].Properties); got != want {
 		t.Fatalf("got %d want %d", got, want)
 	}
-	for k := range expected[0].properties {
-		if got, want := fmt.Sprintf("%T", res[0].properties[k]), fmt.Sprintf("%T", expected[0].properties[k]); got != want {
+	for k := range expected[0].Properties {
+		if got, want := fmt.Sprintf("%T", res[0].Properties[k]), fmt.Sprintf("%T", expected[0].Properties[k]); got != want {
 			t.Fatalf("got %s want %s", got, want)
 		}
 	}
