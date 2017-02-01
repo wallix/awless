@@ -1,4 +1,4 @@
-package sync
+package repo
 
 import (
 	"fmt"
@@ -35,23 +35,23 @@ type Repo interface {
 	LoadRev(version string) (*Rev, error)
 }
 
-type NoRevisionRepo struct{}
+type noRevisionRepo struct{}
 
-func (*NoRevisionRepo) Commit(files ...string) error         { return nil }
-func (*NoRevisionRepo) LoadRev(version string) (*Rev, error) { return &Rev{}, nil }
-func (*NoRevisionRepo) List() ([]*Rev, error)                { return nil, nil }
+func (*noRevisionRepo) Commit(files ...string) error         { return nil }
+func (*noRevisionRepo) LoadRev(version string) (*Rev, error) { return &Rev{}, nil }
+func (*noRevisionRepo) List() ([]*Rev, error)                { return nil, nil }
 
-type GitRepo struct {
+type gitRepo struct {
 	repo  *git.Repository
 	files []string
 	path  string
 }
 
-func NewRepo() (Repo, error) {
+func New() (Repo, error) {
 	if IsGitInstalled() {
 		return newGitRepo(config.RepoDir)
 	} else {
-		return &NoRevisionRepo{}, nil
+		return &noRevisionRepo{}, nil
 	}
 }
 
@@ -68,10 +68,10 @@ func newGitRepo(path string) (Repo, error) {
 	}
 
 	repo, err := git.NewFilesystemRepository(filepath.Join(path, ".git"))
-	return &GitRepo{repo: repo, path: path}, err
+	return &gitRepo{repo: repo, path: path}, err
 }
 
-func (r *GitRepo) List() ([]*Rev, error) {
+func (r *gitRepo) List() ([]*Rev, error) {
 	var all []*Rev
 
 	iter, err := r.repo.Commits()
@@ -116,7 +116,7 @@ func reduceToLastRevOfEachDay(revs []*Rev) []*Rev {
 	return reduce
 }
 
-func (r *GitRepo) LoadRev(version string) (*Rev, error) {
+func (r *gitRepo) LoadRev(version string) (*Rev, error) {
 	rev := &Rev{Id: version}
 
 	commit, err := r.repo.Commit(plumbing.NewHash(version))
@@ -154,7 +154,7 @@ func (r *GitRepo) LoadRev(version string) (*Rev, error) {
 	return rev, nil
 }
 
-func (r *GitRepo) Commit(files ...string) error {
+func (r *gitRepo) Commit(files ...string) error {
 	for _, path := range files {
 		r.files = append(r.files, path)
 	}
@@ -178,7 +178,7 @@ func (r *GitRepo) Commit(files ...string) error {
 	return nil
 }
 
-func (r *GitRepo) hasChanges() (bool, error) {
+func (r *gitRepo) hasChanges() (bool, error) {
 	stdout, err := newGit(r.path).run("status", "--porcelain")
 	if err != nil {
 		return false, err

@@ -43,15 +43,15 @@ Installation documentation is at https://github.com/wallix/awless/wiki/Installat
 	return session, nil
 }
 
-func InitServices() error {
+func InitServices() (*session.Session, error) {
 	sess, err := InitSession()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	AccessService = NewAccess(sess)
 	InfraService = NewInfra(sess)
 	cloud.Current = AccessService
-	return nil
+	return sess, nil
 }
 
 func multiFetch(fns ...func() (interface{}, error)) (<-chan interface{}, <-chan error) {

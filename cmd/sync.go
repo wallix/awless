@@ -3,14 +3,9 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
-	gosync "sync"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
@@ -28,7 +23,8 @@ var syncCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		region := database.MustGetDefaultRegion()
-		infrag, accessg, err := performSync(region)
+
+		infrag, accessg, err := sync.DefaultSyncer.Sync()
 		if err != nil {
 			return err
 		}
@@ -50,59 +46,4 @@ var syncCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func performSync(region string) (*graph.Graph, *graph.Graph, error) {
-	var awsInfra *aws.AwsInfra
-	var awsAccess *aws.AwsAccess
-
-	var wg gosync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		infra, err := aws.InfraService.FetchAwsInfra()
-		exitOn(err)
-		awsInfra = infra
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		access, err := aws.AccessService.FetchAwsAccess()
-		exitOn(err)
-		awsAccess = access
-	}()
-
-	wg.Wait()
-
-	infrag, err := aws.BuildAwsInfraGraph(region, awsInfra)
-
-	tofile, err := infrag.Marshal()
-	if err != nil {
-		return nil, nil, err
-	}
-	if err = ioutil.WriteFile(filepath.Join(config.RepoDir, config.InfraFilename), tofile, 0600); err != nil {
-		return nil, nil, err
-	}
-
-	accessg, err := aws.BuildAwsAccessGraph(region, awsAccess)
-
-	tofile, err = accessg.Marshal()
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := ioutil.WriteFile(filepath.Join(config.RepoDir, config.AccessFilename), tofile, 0600); err != nil {
-		return nil, nil, err
-	}
-
-	r, err := sync.NewRepo()
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := r.Commit(config.InfraFilename, config.AccessFilename); err != nil {
-		return nil, nil, err
-	}
-
-	return infrag, accessg, nil
 }

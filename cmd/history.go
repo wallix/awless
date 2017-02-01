@@ -11,6 +11,7 @@ import (
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
+	"github.com/wallix/awless/sync/repo"
 )
 
 var (
@@ -23,16 +24,16 @@ func init() {
 	historyCmd.Flags().BoolVarP(&showProperties, "properties", "p", false, "Full diff with resources properties")
 }
 
-type revPair [2]*sync.Rev
+type revPair [2]*repo.Rev
 
 var historyCmd = &cobra.Command{
 	Use:               "history",
 	Short:             "Show your infrastucture history",
-	PersistentPreRun:  initAwlessEnvFn,
+	PersistentPreRun:  initCloudServicesFn,
 	PersistentPostRun: saveHistoryFn,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if !sync.IsGitInstalled() {
+		if !repo.IsGitInstalled() {
 			fmt.Printf("No history available. You need to install git")
 			os.Exit(0)
 		}
@@ -42,16 +43,13 @@ var historyCmd = &cobra.Command{
 
 		var diffs []*sync.Diff
 
-		rep, err := sync.NewRepo()
-		exitOn(err)
-
-		all, err := rep.List()
+		all, err := sync.DefaultSyncer.List()
 
 		for i := 1; i < len(all); i++ {
-			from, err := rep.LoadRev(all[i-1].Id)
+			from, err := sync.DefaultSyncer.LoadRev(all[i-1].Id)
 			exitOn(err)
 
-			to, err := rep.LoadRev(all[i].Id)
+			to, err := sync.DefaultSyncer.LoadRev(all[i].Id)
 			exitOn(err)
 
 			d, err := sync.BuildDiff(from, to, root)

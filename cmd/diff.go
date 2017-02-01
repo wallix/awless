@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
+	gosync "sync"
 
 	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
@@ -14,6 +14,7 @@ import (
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/sync"
 )
 
 var diffProperties bool
@@ -37,7 +38,7 @@ var diffCmd = &cobra.Command{
 		var awsInfra *aws.AwsInfra
 		var awsAccess *aws.AwsAccess
 
-		var wg sync.WaitGroup
+		var wg gosync.WaitGroup
 
 		wg.Add(1)
 		go func() {
@@ -120,7 +121,8 @@ var diffCmd = &cobra.Command{
 			fmt.Print("\nDo you want to perform a sync? (y/n): ")
 			fmt.Scanln(&yesorno)
 			if strings.TrimSpace(yesorno) == "y" {
-				performSync(region)
+				_, _, err := sync.DefaultSyncer.Sync()
+				exitOn(err)
 			}
 		}
 
