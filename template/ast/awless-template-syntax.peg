@@ -8,7 +8,7 @@ type Peg Peg {
 }
 
 Script   <- Spacing Statement+ EndOfFile
-Statement <- Spacing (Expr / Declaration) Spacing EndOfLine*
+Statement <- Spacing (Expr / Declaration / Comment) Spacing EndOfLine*
 Action <- 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' / 'check' / 'detach'
 Entity <- 'vpc' / 'subnet' / 'instance' / 'volume' / 'tags' / 'user' / 'group' / 'role' / 'policy' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route'
 Declaration <- <Identifier> { p.AddDeclarationIdentifier(text) }
@@ -16,7 +16,7 @@ Declaration <- <Identifier> { p.AddDeclarationIdentifier(text) }
                Expr
 Expr <- <Action> { p.AddAction(text) }
         MustWhiteSpacing <Entity> { p.AddEntity(text) }
-        (MustWhiteSpacing Params)? { p.EndOfParams() }
+        (MustWhiteSpacing Params)? { p.LineDone() }
 
 Params <- Param+
 Param <- <Identifier> { p.AddParamKey(text) }
@@ -34,6 +34,7 @@ Value <- HoleValue {  p.AddParamHoleValue(text) }
         / <IntValue> { p.AddParamIntValue(text) }
         / <StringValue> { p.AddParamValue(text) }
 
+
 StringValue <- [a-zA-Z0-9-._]+
 CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
 IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
@@ -42,6 +43,8 @@ IntRangeValue <- [0-9]+'-'[0-9]+
 RefValue <- '$'<Identifier>
 AliasValue <- '@'<Identifier>
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
+
+Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)* { p.LineDone() }
 
 Spacing <- Space*
 WhiteSpacing <- Whitespace*

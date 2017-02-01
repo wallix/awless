@@ -171,7 +171,7 @@ func (s *AST) AddDeclarationIdentifier(text string) {
 	s.addStatement(decl)
 }
 
-func (s *AST) EndOfParams() {
+func (s *AST) LineDone() {
 	s.currentStatement = nil
 	s.currentKey = ""
 }
