@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/database"
@@ -40,14 +39,12 @@ var historyCmd = &cobra.Command{
 
 		region := database.MustGetDefaultRegion()
 
-		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
-		exitOn(err)
-
-		rootResource := graph.InitResource(region, graph.Region)
+		root := graph.InitResource(region, graph.Region)
 
 		var diffs []*sync.Diff
 
 		all, err := sync.DefaultSyncer.List()
+		exitOn(err)
 
 		for i := 1; i < len(all); i++ {
 			from, err := sync.DefaultSyncer.LoadRev(all[i-1].Id)
@@ -63,8 +60,8 @@ var historyCmd = &cobra.Command{
 		}
 
 		for _, diff := range diffs {
-			displayRevisionDiff(diff, aws.AccessServiceName, rootResource, verboseFlag)
-			displayRevisionDiff(diff, aws.InfraServiceName, rootResource, verboseFlag)
+			displayRevisionDiff(diff, aws.AccessServiceName, root, verboseFlag)
+			displayRevisionDiff(diff, aws.InfraServiceName, root, verboseFlag)
 		}
 
 		return nil

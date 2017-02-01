@@ -7,7 +7,6 @@ import (
 	"strings"
 	gosync "sync"
 
-	"github.com/google/badwolf/triple/node"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
@@ -60,10 +59,7 @@ var diffCmd = &cobra.Command{
 
 		region := database.MustGetDefaultRegion()
 
-		rootResource := graph.InitResource(region, graph.Region)
-
-		root, err := node.NewNodeFromStrings(graph.Region.ToRDFString(), region)
-		exitOn(err)
+		root := graph.InitResource(region, graph.Region)
 
 		localInfra, err := config.LoadInfraGraph()
 		exitOn(err)
@@ -89,13 +85,13 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasDiff() {
 				anyDiffs = true
 				fmt.Println("------ ACCESS ------")
-				displayFullDiff(accessDiff, rootResource)
+				displayFullDiff(accessDiff, root)
 			}
 			if infraDiff.HasDiff() {
 				anyDiffs = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				displayFullDiff(infraDiff, rootResource)
+				displayFullDiff(infraDiff, root)
 			}
 		} else {
 			if accessDiff.HasDiff() {
@@ -103,7 +99,7 @@ var diffCmd = &cobra.Command{
 				fmt.Println("------ ACCESS ------")
 				displayer := display.BuildOptions(
 					display.WithFormat("tree"),
-					display.WithRootNode(rootResource),
+					display.WithRootNode(root),
 				).SetSource(accessDiff).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
@@ -114,7 +110,7 @@ var diffCmd = &cobra.Command{
 				fmt.Println("------ INFRA ------")
 				displayer := display.BuildOptions(
 					display.WithFormat("tree"),
-					display.WithRootNode(rootResource),
+					display.WithRootNode(root),
 				).SetSource(infraDiff).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}

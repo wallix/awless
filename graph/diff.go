@@ -1,9 +1,6 @@
 package graph
 
-import (
-	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/graph/internal/rdf"
-)
+import "github.com/wallix/awless/graph/internal/rdf"
 
 type Diff struct {
 	*rdf.Diff
@@ -31,7 +28,11 @@ type differ struct {
 	rdf.Differ
 }
 
-func (d *differ) Run(root *node.Node, local *Graph, remote *Graph) (*Diff, error) {
-	diff, err := d.Differ.Run(root, local.rdfG, remote.rdfG)
+func (d *differ) Run(root *Resource, local *Graph, remote *Graph) (*Diff, error) {
+	rootNode, err := root.toRDFNode()
+	if err != nil {
+		return nil, err
+	}
+	diff, err := d.Differ.Run(rootNode, local.rdfG, remote.rdfG)
 	return &Diff{diff}, err
 }

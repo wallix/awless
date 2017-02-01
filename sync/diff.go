@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"github.com/google/badwolf/triple/node"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync/repo"
 )
@@ -14,7 +13,7 @@ type Diff struct {
 	AccessDiff *graph.Diff
 }
 
-func BuildDiff(from, to *repo.Rev, root *node.Node) (*Diff, error) {
+func BuildDiff(from, to *repo.Rev, root *graph.Resource) (*Diff, error) {
 	infraDiff, err := graph.Differ.Run(root, to.Infra, from.Infra)
 	if err != nil {
 		return nil, err
