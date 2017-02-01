@@ -2,8 +2,10 @@
 package main
 
 import (
+	"bytes"
+	"go/format"
 	"html/template"
-	"os"
+	"io/ioutil"
 	"strings"
 
 	"github.com/wallix/awless/template/driver/aws"
@@ -16,18 +18,22 @@ func main() {
 
 func generateTemplateTemplates() {
 	templ, err := template.New("templates_definitions").Parse(templateDefinitions)
-
 	if err != nil {
 		panic(err)
 	}
 
-	f, err := os.OpenFile("../aws/template_defs.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	var buff bytes.Buffer
+	err = templ.Execute(&buff, aws.DriverDefinitions)
 	if err != nil {
 		panic(err)
 	}
 
-	err = templ.Execute(f, aws.DriverDefinitions)
+	formatted, err := format.Source(buff.Bytes())
 	if err != nil {
+		panic(err)
+	}
+
+	if err := ioutil.WriteFile("../aws/template_defs.go", formatted, 0666); err != nil {
 		panic(err)
 	}
 }
@@ -36,18 +42,22 @@ func generateDriverFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
 		"capitalize": capitalize,
 	}).Parse(funcsTempl)
-
 	if err != nil {
 		panic(err)
 	}
 
-	f, err := os.OpenFile("../aws/driver_gen_funcs.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	var buff bytes.Buffer
+	err = templ.Execute(&buff, aws.DriverDefinitions)
 	if err != nil {
 		panic(err)
 	}
 
-	err = templ.Execute(f, aws.DriverDefinitions)
+	formatted, err := format.Source(buff.Bytes())
 	if err != nil {
+		panic(err)
+	}
+
+	if err := ioutil.WriteFile("../aws/driver_gen_funcs.go", formatted, 0666); err != nil {
 		panic(err)
 	}
 }
@@ -68,8 +78,8 @@ const funcsTempl = `// DO NOT EDIT
 package aws
 
 import (
-	"strings"
 	"errors"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"

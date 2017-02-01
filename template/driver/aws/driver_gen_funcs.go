@@ -3,8 +3,8 @@
 package aws
 
 import (
-	"strings"
 	"errors"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -16,10 +16,9 @@ import (
 func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
-	
 
 	_, err := d.ec2.CreateVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -38,10 +37,9 @@ func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 // This function was auto generated
 func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
-	
+
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
-	
 
 	output, err := d.ec2.CreateVpc(input)
 	if err != nil {
@@ -57,10 +55,9 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVpcInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "VpcId")
-	
 
 	_, err := d.ec2.DeleteVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -79,10 +76,9 @@ func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 // This function was auto generated
 func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVpcInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "VpcId")
-	
 
 	output, err := d.ec2.DeleteVpc(input)
 	if err != nil {
@@ -97,11 +93,11 @@ func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
 	setField(params["vpc"], input, "VpcId")
-	
+
 	// Extra params
 	if _, ok := params["zone"]; ok {
 		setField(params["zone"], input, "AvailabilityZone")
@@ -124,11 +120,11 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
-	
+
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
 	setField(params["vpc"], input, "VpcId")
-	
+
 	// Extra params
 	if _, ok := params["zone"]; ok {
 		setField(params["zone"], input, "AvailabilityZone")
@@ -149,7 +145,7 @@ func (d *AwsDriver) Update_Subnet_DryRun(params map[string]interface{}) (interfa
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("update subnet: missing required params 'id'")
 	}
-	
+
 	d.logger.Println("params dry run: update subnet ok")
 	return nil, nil
 }
@@ -157,10 +153,10 @@ func (d *AwsDriver) Update_Subnet_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifySubnetAttributeInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "SubnetId")
-	
+
 	// Extra params
 	if _, ok := params["public-vms"]; ok {
 		setField(params["public-vms"], input, "MapPublicIpOnLaunch")
@@ -179,10 +175,9 @@ func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSubnetInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "SubnetId")
-	
 
 	_, err := d.ec2.DeleteSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -201,10 +196,9 @@ func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSubnetInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "SubnetId")
-	
 
 	output, err := d.ec2.DeleteSubnet(input)
 	if err != nil {
@@ -219,14 +213,14 @@ func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["image"], input, "ImageId")
 	setField(params["type"], input, "InstanceType")
 	setField(params["count"], input, "MaxCount")
 	setField(params["count"], input, "MinCount")
 	setField(params["subnet"], input, "SubnetId")
-	
+
 	// Extra params
 	if _, ok := params["lock"]; ok {
 		setField(params["lock"], input, "DisableApiTermination")
@@ -268,14 +262,14 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 // This function was auto generated
 func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{}
-	
+
 	// Required params
 	setField(params["image"], input, "ImageId")
 	setField(params["type"], input, "InstanceType")
 	setField(params["count"], input, "MaxCount")
 	setField(params["count"], input, "MinCount")
 	setField(params["subnet"], input, "SubnetId")
-	
+
 	// Extra params
 	if _, ok := params["lock"]; ok {
 		setField(params["lock"], input, "DisableApiTermination")
@@ -314,10 +308,10 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifyInstanceAttributeInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceId")
-	
+
 	// Extra params
 	if _, ok := params["lock"]; ok {
 		setField(params["lock"], input, "DisableApiTermination")
@@ -346,10 +340,10 @@ func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (inter
 // This function was auto generated
 func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifyInstanceAttributeInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceId")
-	
+
 	// Extra params
 	if _, ok := params["lock"]; ok {
 		setField(params["lock"], input, "DisableApiTermination")
@@ -374,10 +368,9 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceIds")
-	
 
 	_, err := d.ec2.TerminateInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -396,10 +389,9 @@ func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 // This function was auto generated
 func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceIds")
-	
 
 	output, err := d.ec2.TerminateInstances(input)
 	if err != nil {
@@ -414,10 +406,9 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StartInstancesInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceIds")
-	
 
 	_, err := d.ec2.StartInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -436,10 +427,9 @@ func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interf
 // This function was auto generated
 func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StartInstancesInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceIds")
-	
 
 	output, err := d.ec2.StartInstances(input)
 	if err != nil {
@@ -455,10 +445,9 @@ func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, 
 func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StopInstancesInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceIds")
-	
 
 	_, err := d.ec2.StopInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -477,10 +466,9 @@ func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StopInstancesInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InstanceIds")
-	
 
 	output, err := d.ec2.StopInstances(input)
 	if err != nil {
@@ -496,12 +484,11 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Create_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["description"], input, "Description")
 	setField(params["name"], input, "GroupName")
 	setField(params["vpc"], input, "VpcId")
-	
 
 	_, err := d.ec2.CreateSecurityGroup(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -520,12 +507,11 @@ func (d *AwsDriver) Create_Securitygroup_DryRun(params map[string]interface{}) (
 // This function was auto generated
 func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
-	
+
 	// Required params
 	setField(params["description"], input, "Description")
 	setField(params["name"], input, "GroupName")
 	setField(params["vpc"], input, "VpcId")
-	
 
 	output, err := d.ec2.CreateSecurityGroup(input)
 	if err != nil {
@@ -541,10 +527,9 @@ func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interfa
 func (d *AwsDriver) Delete_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "GroupId")
-	
 
 	_, err := d.ec2.DeleteSecurityGroup(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -563,10 +548,9 @@ func (d *AwsDriver) Delete_Securitygroup_DryRun(params map[string]interface{}) (
 // This function was auto generated
 func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "GroupId")
-	
 
 	output, err := d.ec2.DeleteSecurityGroup(input)
 	if err != nil {
@@ -581,11 +565,10 @@ func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interfa
 func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["zone"], input, "AvailabilityZone")
 	setField(params["size"], input, "Size")
-	
 
 	_, err := d.ec2.CreateVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -604,11 +587,10 @@ func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
-	
+
 	// Required params
 	setField(params["zone"], input, "AvailabilityZone")
 	setField(params["size"], input, "Size")
-	
 
 	output, err := d.ec2.CreateVolume(input)
 	if err != nil {
@@ -624,10 +606,9 @@ func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Delete_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVolumeInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "VolumeId")
-	
 
 	_, err := d.ec2.DeleteVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -646,10 +627,9 @@ func (d *AwsDriver) Delete_Volume_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVolumeInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "VolumeId")
-	
 
 	output, err := d.ec2.DeleteVolume(input)
 	if err != nil {
@@ -664,12 +644,11 @@ func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Attach_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachVolumeInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["device"], input, "Device")
 	setField(params["instance"], input, "InstanceId")
 	setField(params["id"], input, "VolumeId")
-	
 
 	_, err := d.ec2.AttachVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -688,12 +667,11 @@ func (d *AwsDriver) Attach_Volume_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachVolumeInput{}
-	
+
 	// Required params
 	setField(params["device"], input, "Device")
 	setField(params["instance"], input, "InstanceId")
 	setField(params["id"], input, "VolumeId")
-	
 
 	output, err := d.ec2.AttachVolume(input)
 	if err != nil {
@@ -709,8 +687,6 @@ func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
-	
-	
 
 	_, err := d.ec2.CreateInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -729,8 +705,6 @@ func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
-	
-	
 
 	output, err := d.ec2.CreateInternetGateway(input)
 	if err != nil {
@@ -746,10 +720,9 @@ func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Delete_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
-	
 
 	_, err := d.ec2.DeleteInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -768,10 +741,9 @@ func (d *AwsDriver) Delete_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteInternetGatewayInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
-	
 
 	output, err := d.ec2.DeleteInternetGateway(input)
 	if err != nil {
@@ -786,11 +758,10 @@ func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Attach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
 	setField(params["vpc"], input, "VpcId")
-	
 
 	_, err := d.ec2.AttachInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -809,11 +780,10 @@ func (d *AwsDriver) Attach_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachInternetGatewayInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
 	setField(params["vpc"], input, "VpcId")
-	
 
 	output, err := d.ec2.AttachInternetGateway(input)
 	if err != nil {
@@ -828,11 +798,10 @@ func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Detach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
 	setField(params["vpc"], input, "VpcId")
-	
 
 	_, err := d.ec2.DetachInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -851,11 +820,10 @@ func (d *AwsDriver) Detach_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachInternetGatewayInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
 	setField(params["vpc"], input, "VpcId")
-	
 
 	output, err := d.ec2.DetachInternetGateway(input)
 	if err != nil {
@@ -870,10 +838,9 @@ func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Create_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["vpc"], input, "VpcId")
-	
 
 	_, err := d.ec2.CreateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -892,10 +859,9 @@ func (d *AwsDriver) Create_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
-	
+
 	// Required params
 	setField(params["vpc"], input, "VpcId")
-	
 
 	output, err := d.ec2.CreateRouteTable(input)
 	if err != nil {
@@ -911,10 +877,9 @@ func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Delete_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteTableInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "RouteTableId")
-	
 
 	_, err := d.ec2.DeleteRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -933,10 +898,9 @@ func (d *AwsDriver) Delete_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteTableInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "RouteTableId")
-	
 
 	output, err := d.ec2.DeleteRouteTable(input)
 	if err != nil {
@@ -951,11 +915,10 @@ func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Attach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "RouteTableId")
 	setField(params["subnet"], input, "SubnetId")
-	
 
 	_, err := d.ec2.AssociateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -974,11 +937,10 @@ func (d *AwsDriver) Attach_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateRouteTableInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "RouteTableId")
 	setField(params["subnet"], input, "SubnetId")
-	
 
 	output, err := d.ec2.AssociateRouteTable(input)
 	if err != nil {
@@ -994,10 +956,9 @@ func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Detach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["association"], input, "AssociationId")
-	
 
 	_, err := d.ec2.DisassociateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -1016,10 +977,9 @@ func (d *AwsDriver) Detach_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateRouteTableInput{}
-	
+
 	// Required params
 	setField(params["association"], input, "AssociationId")
-	
 
 	output, err := d.ec2.DisassociateRouteTable(input)
 	if err != nil {
@@ -1034,12 +994,11 @@ func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Create_Route_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["cidr"], input, "DestinationCidrBlock")
 	setField(params["gateway"], input, "GatewayId")
 	setField(params["table"], input, "RouteTableId")
-	
 
 	_, err := d.ec2.CreateRoute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -1058,12 +1017,11 @@ func (d *AwsDriver) Create_Route_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
-	
+
 	// Required params
 	setField(params["cidr"], input, "DestinationCidrBlock")
 	setField(params["gateway"], input, "GatewayId")
 	setField(params["table"], input, "RouteTableId")
-	
 
 	output, err := d.ec2.CreateRoute(input)
 	if err != nil {
@@ -1078,11 +1036,10 @@ func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, er
 func (d *AwsDriver) Delete_Route_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["cidr"], input, "DestinationCidrBlock")
 	setField(params["table"], input, "RouteTableId")
-	
 
 	_, err := d.ec2.DeleteRoute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -1101,11 +1058,10 @@ func (d *AwsDriver) Delete_Route_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteInput{}
-	
+
 	// Required params
 	setField(params["cidr"], input, "DestinationCidrBlock")
 	setField(params["table"], input, "RouteTableId")
-	
 
 	output, err := d.ec2.DeleteRoute(input)
 	if err != nil {
@@ -1120,10 +1076,9 @@ func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, er
 func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	input.DryRun = aws.Bool(true)
-	
+
 	// Required params
 	setField(params["id"], input, "KeyName")
-	
 
 	_, err := d.ec2.DeleteKeyPair(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -1142,10 +1097,9 @@ func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 // This function was auto generated
 func (d *AwsDriver) Delete_Keypair(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
-	
+
 	// Required params
 	setField(params["id"], input, "KeyName")
-	
 
 	output, err := d.ec2.DeleteKeyPair(input)
 	if err != nil {
@@ -1161,7 +1115,7 @@ func (d *AwsDriver) Create_User_DryRun(params map[string]interface{}) (interface
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create user: missing required params 'name'")
 	}
-	
+
 	d.logger.Println("params dry run: create user ok")
 	return nil, nil
 }
@@ -1169,10 +1123,9 @@ func (d *AwsDriver) Create_User_DryRun(params map[string]interface{}) (interface
 // This function was auto generated
 func (d *AwsDriver) Create_User(params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateUserInput{}
-	
+
 	// Required params
 	setField(params["name"], input, "UserName")
-	
 
 	output, err := d.iam.CreateUser(input)
 	if err != nil {
@@ -1189,7 +1142,7 @@ func (d *AwsDriver) Delete_User_DryRun(params map[string]interface{}) (interface
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete user: missing required params 'name'")
 	}
-	
+
 	d.logger.Println("params dry run: delete user ok")
 	return nil, nil
 }
@@ -1197,10 +1150,9 @@ func (d *AwsDriver) Delete_User_DryRun(params map[string]interface{}) (interface
 // This function was auto generated
 func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteUserInput{}
-	
+
 	// Required params
 	setField(params["name"], input, "UserName")
-	
 
 	output, err := d.iam.DeleteUser(input)
 	if err != nil {
@@ -1216,7 +1168,7 @@ func (d *AwsDriver) Create_Group_DryRun(params map[string]interface{}) (interfac
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create group: missing required params 'name'")
 	}
-	
+
 	d.logger.Println("params dry run: create group ok")
 	return nil, nil
 }
@@ -1224,10 +1176,9 @@ func (d *AwsDriver) Create_Group_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Create_Group(params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateGroupInput{}
-	
+
 	// Required params
 	setField(params["name"], input, "GroupName")
-	
 
 	output, err := d.iam.CreateGroup(input)
 	if err != nil {
@@ -1244,7 +1195,7 @@ func (d *AwsDriver) Delete_Group_DryRun(params map[string]interface{}) (interfac
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete group: missing required params 'name'")
 	}
-	
+
 	d.logger.Println("params dry run: delete group ok")
 	return nil, nil
 }
@@ -1252,10 +1203,9 @@ func (d *AwsDriver) Delete_Group_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteGroupInput{}
-	
+
 	// Required params
 	setField(params["name"], input, "GroupName")
-	
 
 	output, err := d.iam.DeleteGroup(input)
 	if err != nil {

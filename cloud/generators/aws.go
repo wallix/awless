@@ -2,7 +2,9 @@
 package main
 
 import (
-	"os"
+	"bytes"
+	"go/format"
+	"io/ioutil"
 	"strings"
 	"text/template"
 
@@ -23,13 +25,18 @@ func generateFetcherFuncs() {
 		panic(err)
 	}
 
-	f, err := os.OpenFile("../aws/fetcher_gen_funcs.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	var buff bytes.Buffer
+	err = templ.Execute(&buff, aws.ServicesDefinitions)
 	if err != nil {
 		panic(err)
 	}
 
-	err = templ.Execute(f, aws.ServicesDefinitions)
+	formatted, err := format.Source(buff.Bytes())
 	if err != nil {
+		panic(err)
+	}
+
+	if err := ioutil.WriteFile("../aws/fetcher_gen_funcs.go", formatted, 0666); err != nil {
 		panic(err)
 	}
 }
