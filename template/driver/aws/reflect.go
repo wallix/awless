@@ -32,6 +32,7 @@ func setField(s, i interface{}, fieldName string) {
 
 	var stringptr *string
 	var int64ptr *int64
+	var boolptr *bool
 	var boolval *ec2.AttributeBooleanValue
 	var stringval *ec2.AttributeValue
 
@@ -39,7 +40,7 @@ func setField(s, i interface{}, fieldName string) {
 		switch fieldVal.Type() {
 		case reflect.TypeOf(stringptr):
 			fieldVal.Set(reflect.ValueOf(aws.String(s.(string))))
-		case reflect.TypeOf(boolval):
+		case reflect.TypeOf(boolval), reflect.TypeOf(boolptr):
 			var b bool
 			var err error
 			switch ss := s.(type) {
@@ -51,8 +52,13 @@ func setField(s, i interface{}, fieldName string) {
 			case bool:
 				b = ss
 			}
-			boolval = &ec2.AttributeBooleanValue{Value: aws.Bool(b)}
-			fieldVal.Set(reflect.ValueOf(boolval))
+			if fieldVal.Type() == reflect.TypeOf(boolval) {
+				boolval = &ec2.AttributeBooleanValue{Value: aws.Bool(b)}
+				fieldVal.Set(reflect.ValueOf(boolval))
+			}
+			if fieldVal.Type() == reflect.TypeOf(boolptr) {
+				fieldVal.Set(reflect.ValueOf(aws.Bool(b)))
+			}
 		case reflect.TypeOf(stringval):
 			stringval = &ec2.AttributeValue{Value: aws.String(fmt.Sprint(s))}
 			fieldVal.Set(reflect.ValueOf(stringval))

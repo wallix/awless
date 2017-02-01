@@ -73,10 +73,11 @@ var DriverDefinitions = []struct {
 			"SubnetId":     "subnet",
 		},
 		ExtraParams: map[string]string{
-			"KeyName":          "key",
-			"PrivateIpAddress": "ip",
-			"UserData":         "userdata",
-			"SecurityGroupIds": "group",
+			"KeyName":               "key",
+			"PrivateIpAddress":      "ip",
+			"UserData":              "userdata",
+			"SecurityGroupIds":      "group",
+			"DisableApiTermination": "lock",
 		},
 		TagsMapping: map[string]string{
 			"Name": "name",
@@ -88,8 +89,9 @@ var DriverDefinitions = []struct {
 			"InstanceId": "id",
 		},
 		ExtraParams: map[string]string{
-			"InstanceType": "type",
-			"Groups":       "group",
+			"InstanceType":          "type",
+			"Groups":                "group",
+			"DisableApiTermination": "lock",
 		},
 	},
 	{

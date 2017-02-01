@@ -228,6 +228,9 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	setField(params["subnet"], input, "SubnetId")
 	
 	// Extra params
+	if _, ok := params["lock"]; ok {
+		setField(params["lock"], input, "DisableApiTermination")
+	}
 	if _, ok := params["key"]; ok {
 		setField(params["key"], input, "KeyName")
 	}
@@ -274,6 +277,9 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	setField(params["subnet"], input, "SubnetId")
 	
 	// Extra params
+	if _, ok := params["lock"]; ok {
+		setField(params["lock"], input, "DisableApiTermination")
+	}
 	if _, ok := params["key"]; ok {
 		setField(params["key"], input, "KeyName")
 	}
@@ -313,6 +319,9 @@ func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (inter
 	setField(params["id"], input, "InstanceId")
 	
 	// Extra params
+	if _, ok := params["lock"]; ok {
+		setField(params["lock"], input, "DisableApiTermination")
+	}
 	if _, ok := params["group"]; ok {
 		setField(params["group"], input, "Groups")
 	}
@@ -342,6 +351,9 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 	setField(params["id"], input, "InstanceId")
 	
 	// Extra params
+	if _, ok := params["lock"]; ok {
+		setField(params["lock"], input, "DisableApiTermination")
+	}
 	if _, ok := params["group"]; ok {
 		setField(params["group"], input, "Groups")
 	}

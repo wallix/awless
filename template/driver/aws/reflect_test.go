@@ -33,6 +33,8 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	any := struct {
 		Field             string
 		IntField          int
+		BoolPointerField  *bool
+		BoolField         bool
 		StringArrayField  []*string
 		Int64ArrayField   []*int64
 		BooleanValueField *ec2.AttributeBooleanValue
@@ -105,6 +107,24 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	setField(nil, &any, "StringValueField")
 	if got, want := aws.StringValue(any.StringValueField.Value), "abcd"; got != want {
 		t.Fatalf("len: got %s, want %s", got, want)
+	}
+
+	setField(true, &any, "BoolField")
+	if got, want := any.BoolField, true; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	setField(false, &any, "BoolField")
+	if got, want := any.BoolField, false; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	setField("true", &any, "BoolPointerField")
+	if got, want := *any.BoolPointerField, true; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	setField(false, &any, "BoolPointerField")
+	if got, want := *any.BoolPointerField, false; got != want {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }
 
