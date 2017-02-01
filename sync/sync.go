@@ -75,7 +75,6 @@ func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
 	var awsAccess *aws.AwsAccess
 
 	for res := range resultc {
-		fmt.Println("result", res)
 		if res.err != nil {
 			return nil, nil, res.err
 		}
