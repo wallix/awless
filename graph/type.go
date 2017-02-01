@@ -12,6 +12,7 @@ const (
 	Region          ResourceType = "region"
 	Vpc             ResourceType = "vpc"
 	Subnet          ResourceType = "subnet"
+	Image           ResourceType = "image"
 	SecurityGroup   ResourceType = "securitygroup"
 	Keypair         ResourceType = "keypair"
 	Volume          ResourceType = "volume"

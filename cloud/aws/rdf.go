@@ -75,7 +75,7 @@ func (inf *Infra) SubnetsGraph() (*graph.Graph, error) {
 
 func (inf *Infra) InternetgatewaysGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
-	out, err := inf.InternetGateways()
+	out, err := inf.Internetgateways()
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (inf *Infra) InternetgatewaysGraph() (*graph.Graph, error) {
 
 func (inf *Infra) SecuritygroupsGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
-	out, err := inf.SecurityGroups()
+	out, err := inf.Securitygroups()
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (inf *Infra) VolumesGraph() (*graph.Graph, error) {
 
 func (inf *Infra) RoutetablesGraph() (*graph.Graph, error) {
 	g := graph.NewGraph()
-	out, err := inf.RouteTables()
+	out, err := inf.Routetables()
 	if err != nil {
 		return nil, err
 	}
@@ -333,7 +333,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		}
 	}
 
-	for _, secgroup := range awsInfra.SecurityGroups {
+	for _, secgroup := range awsInfra.Securitygroups {
 		res, err := NewResource(secgroup)
 		if err != nil {
 			return nil, err
@@ -357,7 +357,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		g.AddParent(regionN, res)
 	}
 
-	for _, gw := range awsInfra.InternetGateways {
+	for _, gw := range awsInfra.Internetgateways {
 		res, err := NewResource(gw)
 		if err != nil {
 			return nil, err
@@ -373,7 +373,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		}
 	}
 
-	for _, rt := range awsInfra.RouteTables {
+	for _, rt := range awsInfra.Routetables {
 		res, err := NewResource(rt)
 		if err != nil {
 			return nil, err

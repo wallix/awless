@@ -237,7 +237,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
 	}
 
-	awsInfra.SecurityGroups = []*ec2.SecurityGroup{
+	awsInfra.Securitygroups = []*ec2.SecurityGroup{
 		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_1"), GroupName: awssdk.String("my_secgroup"), VpcId: awssdk.String("vpc_1")},
 		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_2"), VpcId: awssdk.String("vpc_1")},
 	}
