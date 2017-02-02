@@ -47,7 +47,6 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "region")
 	all = append(all, "internetgateway")
 	all = append(all, "routetable")
-	all = append(all, "image")
 	return
 }
 
@@ -71,8 +70,6 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return s.fetch_all_internetgateway_graph()
 	case "routetable":
 		return s.fetch_all_routetable_graph()
-	case "image":
-		return s.fetch_all_image_graph()
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
 	}
@@ -104,9 +101,6 @@ func (s *Infra) fetch_all_internetgateway() (interface{}, error) {
 }
 func (s *Infra) fetch_all_routetable() (interface{}, error) {
 	return s.DescribeRouteTables(&ec2.DescribeRouteTablesInput{})
-}
-func (s *Infra) fetch_all_image() (interface{}, error) {
-	return s.DescribeImages(&ec2.DescribeImagesInput{})
 }
 
 func (s *Infra) fetch_all_instance_graph() (*graph.Graph, error) {
@@ -273,24 +267,6 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, error) {
 	return g, nil
 }
 
-func (s *Infra) fetch_all_image_graph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := s.fetch_all_image()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, output := range out.(*ec2.DescribeImagesOutput).Images {
-		res, err := newResource(output)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, nil
-}
-
 type AwsInfra struct {
 	instanceList        []*ec2.Instance
 	subnetList          []*ec2.Subnet
@@ -301,7 +277,6 @@ type AwsInfra struct {
 	regionList          []*ec2.Region
 	internetgatewayList []*ec2.InternetGateway
 	routetableList      []*ec2.RouteTable
-	imageList           []*ec2.Image
 }
 
 func (s *Infra) global_fetch() (*AwsInfra, error) {
@@ -315,7 +290,6 @@ func (s *Infra) global_fetch() (*AwsInfra, error) {
 		s.fetch_all_region,
 		s.fetch_all_internetgateway,
 		s.fetch_all_routetable,
-		s.fetch_all_image,
 	)
 
 	awsService := &AwsInfra{}
@@ -342,8 +316,6 @@ func (s *Infra) global_fetch() (*AwsInfra, error) {
 			awsService.internetgatewayList = append(awsService.internetgatewayList, rr.InternetGateways...)
 		case *ec2.DescribeRouteTablesOutput:
 			awsService.routetableList = append(awsService.routetableList, rr.RouteTables...)
-		case *ec2.DescribeImagesOutput:
-			awsService.imageList = append(awsService.imageList, rr.Images...)
 		}
 	}
 

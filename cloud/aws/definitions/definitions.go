@@ -28,7 +28,6 @@ var Services = []service{
 			{ResourceType: "region", AWSType: "Region", ApiMethod: "DescribeRegions", Input: "DescribeRegionsInput{}", Output: "DescribeRegionsOutput", OutputsExtractor: "Regions"},
 			{ResourceType: "internetgateway", AWSType: "InternetGateway", ApiMethod: "DescribeInternetGateways", Input: "DescribeInternetGatewaysInput{}", Output: "DescribeInternetGatewaysOutput", OutputsExtractor: "InternetGateways"},
 			{ResourceType: "routetable", AWSType: "RouteTable", ApiMethod: "DescribeRouteTables", Input: "DescribeRouteTablesInput{}", Output: "DescribeRouteTablesOutput", OutputsExtractor: "RouteTables"},
-			{ResourceType: "image", AWSType: "Image", ApiMethod: "DescribeImages", Input: "DescribeImagesInput{}", Output: "DescribeImagesOutput", OutputsExtractor: "Images"},
 		},
 	},
 	{
