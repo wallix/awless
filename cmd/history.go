@@ -60,8 +60,8 @@ var historyCmd = &cobra.Command{
 		}
 
 		for _, diff := range diffs {
-			displayRevisionDiff(diff, aws.AccessServiceName, root, verboseFlag)
-			displayRevisionDiff(diff, aws.InfraServiceName, root, verboseFlag)
+			displayRevisionDiff(diff, aws.AccessService.Name(), root, verboseFlag)
+			displayRevisionDiff(diff, aws.InfraService.Name(), root, verboseFlag)
 		}
 
 		return nil
@@ -75,10 +75,10 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resou
 	}
 
 	var graphdiff *graph.Diff
-	if cloudService == aws.InfraServiceName {
+	if cloudService == aws.InfraService.Name() {
 		graphdiff = diff.InfraDiff
 	}
-	if cloudService == aws.AccessServiceName {
+	if cloudService == aws.AccessService.Name() {
 		graphdiff = diff.AccessDiff
 	}
 
