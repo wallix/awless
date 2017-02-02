@@ -1,2 +1,5 @@
+*.test
+*.out
+*.svg
 awless
 *.zip
