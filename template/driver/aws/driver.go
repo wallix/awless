@@ -20,10 +20,10 @@ type AwsDriver struct {
 	logger *log.Logger
 }
 
-func NewDriver(ec2 interface{}, iam iamiface.IAMAPI) *AwsDriver {
+func NewDriver(ec2 interface{}, iam interface{}) *AwsDriver {
 	return &AwsDriver{
 		ec2:    ec2.(ec2iface.EC2API),
-		iam:    iam,
+		iam:    iam.(iamiface.IAMAPI),
 		logger: log.New(ioutil.Discard, "", 0),
 	}
 }

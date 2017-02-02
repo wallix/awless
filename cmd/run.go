@@ -75,7 +75,11 @@ func runTemplate(templ *template.Template) error {
 	}
 	templ.InteractiveResolveTemplate(prompt)
 
-	awsDriver := aws.NewDriver(awscloud.InfraService.ProviderRunnableAPI(), awscloud.AccessService)
+	awsDriver := aws.NewDriver(
+		awscloud.InfraService.ProviderRunnableAPI(),
+		awscloud.AccessService.ProviderRunnableAPI(),
+	)
+
 	if verboseFlag {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 	}

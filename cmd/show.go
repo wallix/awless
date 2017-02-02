@@ -74,7 +74,7 @@ var showAccessResourceCmd = func(resourceType graph.ResourceType) *cobra.Command
 				g, err = config.LoadAccessGraph()
 
 			} else {
-				g, err = aws.AccessService.FetchRDFResources(resourceType)
+				g, err = aws.AccessService.FetchByType(resourceType.String())
 			}
 			exitOn(err)
 			printResource(g, resourceType, id)

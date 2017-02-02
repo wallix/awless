@@ -1,6 +1,7 @@
-// DO NOT EDIT
-// This file was automatically generated with go generate
+// Auto generated implementation for the AWS cloud service
 package aws
+
+// DO NOT EDIT - This file was automatically generated with go generate
 
 import (
 	"fmt"
@@ -9,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/wallix/awless/graph"
 )
 
@@ -35,7 +38,6 @@ func (s *Infra) ProviderRunnableAPI() interface{} {
 }
 
 func (s *Infra) ResourceTypes() (all []string) {
-
 	all = append(all, "instance")
 	all = append(all, "subnet")
 	all = append(all, "vpc")
@@ -302,7 +304,7 @@ type AwsInfra struct {
 	imageList           []*ec2.Image
 }
 
-func (s *Infra) fetch_ec2() (*AwsInfra, error) {
+func (s *Infra) global_fetch() (*AwsInfra, error) {
 	resultc, errc := multiFetch(
 		s.fetch_all_instance,
 		s.fetch_all_subnet,
@@ -346,4 +348,134 @@ func (s *Infra) fetch_ec2() (*AwsInfra, error) {
 	}
 
 	return awsService, <-errc
+}
+
+type Access struct {
+	region string
+	iamiface.IAMAPI
+}
+
+func NewAccess(sess *session.Session) *Access {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Access{IAMAPI: iam.New(sess), region: region}
+}
+
+func (s *Access) Name() string {
+	return "access"
+}
+
+func (s *Access) Provider() string {
+	return "aws"
+}
+
+func (s *Access) ProviderRunnableAPI() interface{} {
+	return s.IAMAPI
+}
+
+func (s *Access) ResourceTypes() (all []string) {
+	all = append(all, "user")
+	all = append(all, "group")
+	all = append(all, "role")
+	all = append(all, "policy")
+	return
+}
+
+func (s *Access) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "user":
+		return s.fetch_all_user_graph()
+	case "group":
+		return s.fetch_all_group_graph()
+	case "role":
+		return s.fetch_all_role_graph()
+	case "policy":
+		return s.fetch_all_policy_graph()
+	default:
+		return nil, fmt.Errorf("aws access: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Access) fetch_all_user() (interface{}, error) {
+	return s.ListUsers(&iam.ListUsersInput{})
+}
+func (s *Access) fetch_all_group() (interface{}, error) {
+	return s.ListGroups(&iam.ListGroupsInput{})
+}
+func (s *Access) fetch_all_role() (interface{}, error) {
+	return s.ListRoles(&iam.ListRolesInput{})
+}
+func (s *Access) fetch_all_policy() (interface{}, error) {
+	return s.ListPolicies(&iam.ListPoliciesInput{Scope: awssdk.String(iam.PolicyScopeTypeLocal)})
+}
+
+func (s *Access) fetch_all_user_graph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := s.fetch_all_user()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, output := range out.(*iam.ListUsersOutput).Users {
+		res, err := NewResource(output)
+		if err != nil {
+			return g, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, nil
+}
+
+func (s *Access) fetch_all_group_graph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := s.fetch_all_group()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, output := range out.(*iam.ListGroupsOutput).Groups {
+		res, err := NewResource(output)
+		if err != nil {
+			return g, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, nil
+}
+
+func (s *Access) fetch_all_role_graph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := s.fetch_all_role()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, output := range out.(*iam.ListRolesOutput).Roles {
+		res, err := NewResource(output)
+		if err != nil {
+			return g, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, nil
+}
+
+func (s *Access) fetch_all_policy_graph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	out, err := s.fetch_all_policy()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, output := range out.(*iam.ListPoliciesOutput).Policies {
+		res, err := NewResource(output)
+		if err != nil {
+			return g, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, nil
 }

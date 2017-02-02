@@ -36,14 +36,15 @@ func generateFetcherFuncs() {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/fetcher_gen_funcs.go", formatted, 0666); err != nil {
+	if err := ioutil.WriteFile("../aws/generated_api.go", formatted, 0666); err != nil {
 		panic(err)
 	}
 }
 
-const funcsTempl = `// DO NOT EDIT
-// This file was automatically generated with go generate
+const funcsTempl = `// Auto generated implementation for the AWS cloud service
 package aws
+
+// DO NOT EDIT - This file was automatically generated with go generate
 
 import (
   "fmt"
@@ -80,7 +81,7 @@ func (s *{{ Title $service.Name }}) ProviderRunnableAPI() interface{} {
 }
 
 func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {
-  {{ range $index, $fetcher := $service.Fetchers }}
+  {{- range $index, $fetcher := $service.Fetchers }}
   all = append(all, "{{ $fetcher.ResourceType }}")
   {{- end }}
   return
@@ -99,7 +100,7 @@ func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) 
 
 {{ range $index, $fetcher := $service.Fetchers }}
 func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}() (interface{}, error) {
-  return s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }}{})
+  return s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }})
 }
 {{- end }}
 
@@ -133,13 +134,14 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 }
 {{ end }}
 
+{{- if not $service.ManualGlobalFetch }}
 type Aws{{ Title $service.Name }} struct {
-{{ range $index, $fetcher := $service.Fetchers }}
+{{- range $index, $fetcher := $service.Fetchers }}
   {{ $fetcher.ResourceType }}List   []*{{ $service.Api }}.{{ $fetcher.AWSType }}
 {{- end }}
 }
 
-func (s *{{ Title $service.Name }}) fetch_{{ $service.Api }}() (*Aws{{ Title $service.Name }}, error) {
+func (s *{{ Title $service.Name }}) global_fetch() (*Aws{{ Title $service.Name }}, error) {
 	resultc, errc := multiFetch(
     {{- range $index, $fetcher := $service.Fetchers }}
       s.fetch_all_{{ $fetcher.ResourceType }},
@@ -165,4 +167,5 @@ func (s *{{ Title $service.Name }}) fetch_{{ $service.Api }}() (*Aws{{ Title $se
 
 	return awsService, <-errc
 }
-{{- end }}`
+{{- end }}
+{{ end }}`

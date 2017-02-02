@@ -7,7 +7,6 @@ import (
 	gosync "sync"
 
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync/repo"
@@ -22,71 +21,65 @@ type Syncer interface {
 
 type syncer struct {
 	repo.Repo
-	region        string
-	infraService  cloud.Service
-	accessService *aws.Access
+	region                      string
+	infraService, accessService cloud.Service
 }
 
-func NewSyncer(region string, inf cloud.Service, access *aws.Access) Syncer {
+func NewSyncer(region string, services ...cloud.Service) Syncer {
 	repo, err := repo.New()
 	if err != nil {
 		panic(err)
 	}
 
-	return &syncer{
-		Repo:          repo,
-		region:        region,
-		infraService:  inf,
-		accessService: access,
+	syncer := &syncer{
+		Repo:   repo,
+		region: region,
 	}
+
+	for _, service := range services {
+		switch service.Name() {
+		case "infra":
+			syncer.infraService = service
+		case "access":
+			syncer.accessService = service
+		default:
+			panic(fmt.Sprintf("syncer: cannot init: unexpected service name %s", service.Name()))
+		}
+	}
+
+	return syncer
 }
 
 func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
 	var wg gosync.WaitGroup
+	var infrag, accessg *graph.Graph
 
-	type results struct {
-		awsData interface{}
-		err     error
-	}
-
-	resultc := make(chan results)
+	errorc := make(chan error, 2)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		res := results{}
-		res.awsData, res.err = s.infraService.FetchResources()
-		resultc <- res
+		var err error
+		infrag, err = s.infraService.FetchResources()
+		errorc <- err
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		res := results{}
-		res.awsData, res.err = s.accessService.FetchAwsAccess()
-		resultc <- res
+		var err error
+		accessg, err = s.accessService.FetchResources()
+		errorc <- err
 	}()
 
 	go func() {
 		wg.Wait()
-		close(resultc)
+		close(errorc)
 	}()
 
-	var infrag *graph.Graph
-	var awsAccess *aws.AwsAccess
-
-	for res := range resultc {
-		if res.err != nil {
-			return nil, nil, res.err
-		}
-
-		switch res.awsData.(type) {
-		case *graph.Graph:
-			infrag = res.awsData.(*graph.Graph)
-		case *aws.AwsAccess:
-			awsAccess = res.awsData.(*aws.AwsAccess)
-		default:
-			return nil, nil, fmt.Errorf("unexpected returned type %T", res.awsData)
+	for err := range errorc {
+		if err != nil {
+			return nil, nil, err
 		}
 	}
 
@@ -97,8 +90,6 @@ func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
 	if err = ioutil.WriteFile(filepath.Join(config.RepoDir, config.InfraFilename), tofile, 0600); err != nil {
 		return nil, nil, err
 	}
-
-	accessg, err := aws.BuildAwsAccessGraph(s.region, awsAccess)
 
 	tofile, err = accessg.Marshal()
 	if err != nil {

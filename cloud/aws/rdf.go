@@ -3,11 +3,8 @@ package aws
 import (
 	"errors"
 	"fmt"
-	"reflect"
-	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/shell"
 )
@@ -15,80 +12,17 @@ import (
 var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
 
-func (access *Access) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
-	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
-	method := reflect.ValueOf(access).MethodByName(fnName)
-	if method.IsValid() && !method.IsNil() {
-		methodI := method.Interface()
-		if graphFn, ok := methodI.(func() (*graph.Graph, error)); ok {
-			return graphFn()
-		}
-	}
-	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
-}
-
-func (access *Access) UsersGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := access.Users()
+func (acc *Access) FetchResources() (*graph.Graph, error) {
+	access, err := acc.global_fetch()
 	if err != nil {
 		return nil, err
 	}
-	for _, user := range out.(*iam.ListUsersOutput).Users {
-		res, err := NewResource(user)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
+
+	return BuildAwsAccessGraph(acc.region, access)
 }
 
-func (access *Access) RolesGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := access.Roles()
-	if err != nil {
-		return nil, err
-	}
-	for _, role := range out.(*iam.ListRolesOutput).Roles {
-		res, err := NewResource(role)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (access *Access) GroupsGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := access.Groups()
-	if err != nil {
-		return nil, err
-	}
-	for _, group := range out.(*iam.ListGroupsOutput).Groups {
-		res, err := NewResource(group)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (access *Access) PoliciesGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := access.LocalPolicies()
-	if err != nil {
-		return nil, err
-	}
-	for _, pol := range out.(*iam.ListPoliciesOutput).Policies {
-		res, err := NewResource(pol)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
+func (acc *Access) FetchAwsAccess() (*AwsAccess, error) {
+	return acc.global_fetch()
 }
 
 func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error) {
@@ -175,7 +109,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 }
 
 func (inf *Infra) FetchResources() (*graph.Graph, error) {
-	infra, err := inf.fetch_ec2()
+	infra, err := inf.global_fetch()
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +118,7 @@ func (inf *Infra) FetchResources() (*graph.Graph, error) {
 }
 
 func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	return inf.fetch_ec2()
+	return inf.global_fetch()
 }
 
 func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err error) {
