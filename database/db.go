@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/aws"
 )
 
 const (
@@ -61,7 +61,7 @@ func InitDB(firstInstall bool) error {
 	}
 	id, err := db.GetStringValue(AwlessIdKey)
 	if err != nil || id == "" {
-		userID, err := cloud.Current.GetUserId()
+		userID, err := aws.SecuAPI.GetUserId()
 		if err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func InitDB(firstInstall bool) error {
 		if err = db.SetStringValue(AwlessIdKey, newID); err != nil {
 			return err
 		}
-		accountID, err := cloud.Current.GetAccountId()
+		accountID, err := aws.SecuAPI.GetAccountId()
 		if err != nil {
 			return err
 		}

@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	Version                                 = "0.0.5"
+	Version                                 = "???"
 	buildSha, buildDate, buildArch, buildOS string
 )
 

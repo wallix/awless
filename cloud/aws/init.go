@@ -8,17 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/database"
 )
 
 var (
-	AccessService cloud.Service
-	InfraService  cloud.Service
-	SecuService   *Secu
+	AccessService, InfraService cloud.Service
+
+	SecuAPI Security
 )
 
-func InitSession() (*session.Session, error) {
-	region := database.MustGetDefaultRegion()
+func InitSession(region string) (*session.Session, error) {
 	session, err := session.NewSession(
 		&awssdk.Config{
 			Region: awssdk.String(region),
@@ -39,16 +37,16 @@ Installation documentation is at https://github.com/wallix/awless/wiki/Installat
 	return session, nil
 }
 
-func InitServices() (*session.Session, error) {
-	sess, err := InitSession()
+func InitServices(region string) error {
+	sess, err := InitSession(region)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	AccessService = NewAccess(sess)
 	InfraService = NewInfra(sess)
-	SecuService = NewSecu(sess)
-	cloud.Current = SecuService
-	return sess, nil
+	SecuAPI = NewSecu(sess)
+
+	return nil
 }
 
 func multiFetch(fns ...func() (interface{}, error)) (<-chan interface{}, <-chan error) {

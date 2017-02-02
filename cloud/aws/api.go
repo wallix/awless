@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 )
 
 var DefaultAMIUsers = []string{"ec2-user", "ubuntu", "centos", "bitnami", "admin", "root"}
@@ -33,19 +34,21 @@ func IsValidRegion(given string) bool {
 	return reg.MatchString(given) || regChina.MatchString(given) || regUsGov.MatchString(given)
 }
 
-type Secu struct {
-	*sts.STS
+type Security interface {
+	stsiface.STSAPI
+	GetUserId() (string, error)
+	GetAccountId() (string, error)
 }
 
-func NewSecu(sess *session.Session) *Secu {
-	return &Secu{sts.New(sess)}
+type security struct {
+	stsiface.STSAPI
 }
 
-func (s *Secu) CallerIdentity() (interface{}, error) {
-	return s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+func NewSecu(sess *session.Session) Security {
+	return &security{sts.New(sess)}
 }
 
-func (s *Secu) GetUserId() (string, error) {
+func (s *security) GetUserId() (string, error) {
 	output, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", err
@@ -53,7 +56,7 @@ func (s *Secu) GetUserId() (string, error) {
 	return awssdk.StringValue(output.Arn), nil
 }
 
-func (s *Secu) GetAccountId() (string, error) {
+func (s *security) GetAccountId() (string, error) {
 	output, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", err

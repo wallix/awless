@@ -5,8 +5,6 @@ import (
 	"os"
 	"strings"
 
-	awssdk "github.com/aws/aws-sdk-go/aws"
-
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
@@ -24,12 +22,19 @@ func initAwlessEnvFn(cmd *cobra.Command, args []string) {
 
 func initCloudServicesFn(cmd *cobra.Command, args []string) {
 	initAwlessEnvFn(cmd, args)
-	if awsSess, err := aws.InitServices(); err != nil {
+
+	region := os.Getenv("__AWLESS_REGION")
+	if region == "" {
+		fmt.Fprintln(os.Stderr, "region should be in env")
+		os.Exit(1)
+	}
+
+	if err := aws.InitServices(region); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	} else {
 		sync.DefaultSyncer = sync.NewSyncer(
-			awssdk.StringValue(awsSess.Config.Region),
+			region,
 			aws.InfraService,
 			aws.AccessService,
 		)

@@ -37,12 +37,19 @@ func InitAwlessEnv() error {
 	os.MkdirAll(RepoDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
 
+	var region string
 	if AwlessFirstInstall {
 		fmt.Println("First install. Welcome!")
 		fmt.Println()
-		region := resolveRegion()
+		region = resolveRegion()
 		addDefaults(region)
+	} else {
+		db, close := database.Current()
+		defer close()
+		region = db.MustGetDefaultRegion()
 	}
+
+	os.Setenv("__AWLESS_REGION", region)
 
 	return nil
 }
