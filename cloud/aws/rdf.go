@@ -3,11 +3,12 @@ package aws
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/shell"
 )
@@ -16,11 +17,27 @@ var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
 
 func (inf *Infra) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
-	return cloud.FetchRDFResources(inf, resourceType)
+	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
+	method := reflect.ValueOf(inf).MethodByName(fnName)
+	if method.IsValid() && !method.IsNil() {
+		methodI := method.Interface()
+		if graphFn, ok := methodI.(func() (*graph.Graph, error)); ok {
+			return graphFn()
+		}
+	}
+	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
 }
 
 func (access *Access) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
-	return cloud.FetchRDFResources(access, resourceType)
+	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
+	method := reflect.ValueOf(access).MethodByName(fnName)
+	if method.IsValid() && !method.IsNil() {
+		methodI := method.Interface()
+		if graphFn, ok := methodI.(func() (*graph.Graph, error)); ok {
+			return graphFn()
+		}
+	}
+	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
 }
 
 func (inf *Infra) InstancesGraph() (*graph.Graph, error) {

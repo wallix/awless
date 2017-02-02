@@ -19,7 +19,7 @@ var whoamiCmd = &cobra.Command{
 	Short:             "Show the caller identity",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		resp, err := aws.AccessService.CallerIdentity()
+		resp, err := aws.SecuService.CallerIdentity()
 		exitOn(err)
 		fmt.Println(resp)
 	},

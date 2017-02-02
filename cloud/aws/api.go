@@ -19,6 +19,7 @@ const (
 var (
 	AccessService *Access
 	InfraService  *Infra
+	SecuService   *Secu
 )
 
 func InitSession() (*session.Session, error) {
@@ -50,7 +51,8 @@ func InitServices() (*session.Session, error) {
 	}
 	AccessService = NewAccess(sess)
 	InfraService = NewInfra(sess)
-	cloud.Current = AccessService
+	SecuService = NewSecu(sess)
+	cloud.Current = SecuService
 	return sess, nil
 }
 

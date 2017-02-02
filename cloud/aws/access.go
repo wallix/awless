@@ -7,13 +7,40 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 )
 
+type Secu struct {
+	*sts.STS
+}
+
+func NewSecu(sess *session.Session) *Secu {
+	return &Secu{sts.New(sess)}
+}
+
+func (s *Secu) CallerIdentity() (interface{}, error) {
+	return s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+}
+
+func (s *Secu) GetUserId() (string, error) {
+	output, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", err
+	}
+	return awssdk.StringValue(output.Arn), nil
+}
+
+func (s *Secu) GetAccountId() (string, error) {
+	output, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", err
+	}
+	return awssdk.StringValue(output.Account), nil
+}
+
 type Access struct {
 	*iam.IAM
-	secu *sts.STS
 }
 
 func NewAccess(sess *session.Session) *Access {
-	return &Access{IAM: iam.New(sess), secu: sts.New(sess)}
+	return &Access{IAM: iam.New(sess)}
 }
 
 func (a *Access) Users() (interface{}, error) {
@@ -26,26 +53,6 @@ func (a *Access) Groups() (interface{}, error) {
 
 func (a *Access) Roles() (interface{}, error) {
 	return a.ListRoles(&iam.ListRolesInput{})
-}
-
-func (a *Access) CallerIdentity() (interface{}, error) {
-	return a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-}
-
-func (a *Access) GetUserId() (string, error) {
-	output, err := a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return "", err
-	}
-	return awssdk.StringValue(output.Arn), nil
-}
-
-func (a *Access) GetAccountId() (string, error) {
-	output, err := a.secu.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return "", err
-	}
-	return awssdk.StringValue(output.Account), nil
 }
 
 func (a *Access) LocalPolicies() (interface{}, error) {
