@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/shell"
@@ -15,18 +14,6 @@ import (
 
 var ErrNoPublicIP = errors.New("This instance has no public IP address")
 var ErrNoAccessKey = errors.New("This instance has no access key set")
-
-func (inf *Infra) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
-	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
-	method := reflect.ValueOf(inf).MethodByName(fnName)
-	if method.IsValid() && !method.IsNil() {
-		methodI := method.Interface()
-		if graphFn, ok := methodI.(func() (*graph.Graph, error)); ok {
-			return graphFn()
-		}
-	}
-	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
-}
 
 func (access *Access) FetchRDFResources(resourceType graph.ResourceType) (*graph.Graph, error) {
 	fnName := fmt.Sprintf("%sGraph", strings.Title(resourceType.PluralString()))
@@ -38,136 +25,6 @@ func (access *Access) FetchRDFResources(resourceType graph.ResourceType) (*graph
 		}
 	}
 	return nil, (fmt.Errorf("Unknown type of resource: %s", resourceType.String()))
-}
-
-func (inf *Infra) InstancesGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	instances, err := inf.Instances()
-	if err != nil {
-		return nil, err
-	}
-	for _, res := range instances.(*ec2.DescribeInstancesOutput).Reservations {
-		for _, inst := range res.Instances {
-			res, err := NewResource(inst)
-			if err != nil {
-				return g, err
-			}
-			g.AddResource(res)
-		}
-	}
-	return g, nil
-}
-
-func (inf *Infra) VpcsGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Vpcs()
-	if err != nil {
-		return nil, err
-	}
-	for _, vpc := range out.(*ec2.DescribeVpcsOutput).Vpcs {
-		res, err := NewResource(vpc)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (inf *Infra) SubnetsGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Subnets()
-	if err != nil {
-		return nil, err
-	}
-	for _, subnet := range out.(*ec2.DescribeSubnetsOutput).Subnets {
-		res, err := NewResource(subnet)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (inf *Infra) InternetgatewaysGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Internetgateways()
-	if err != nil {
-		return nil, err
-	}
-	for _, gw := range out.(*ec2.DescribeInternetGatewaysOutput).InternetGateways {
-		res, err := NewResource(gw)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (inf *Infra) SecuritygroupsGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Securitygroups()
-	if err != nil {
-		return nil, err
-	}
-	for _, sec := range out.(*ec2.DescribeSecurityGroupsOutput).SecurityGroups {
-		res, err := NewResource(sec)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (inf *Infra) KeypairsGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Keypairs()
-	if err != nil {
-		return nil, err
-	}
-	for _, keypair := range out.(*ec2.DescribeKeyPairsOutput).KeyPairs {
-		res, err := NewResource(keypair)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (inf *Infra) VolumesGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Volumes()
-	if err != nil {
-		return nil, err
-	}
-	for _, vol := range out.(*ec2.DescribeVolumesOutput).Volumes {
-		res, err := NewResource(vol)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
-}
-
-func (inf *Infra) RoutetablesGraph() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	out, err := inf.Routetables()
-	if err != nil {
-		return nil, err
-	}
-	for _, rt := range out.(*ec2.DescribeRouteTablesOutput).RouteTables {
-		res, err := NewResource(rt)
-		if err != nil {
-			return g, err
-		}
-		g.AddResource(res)
-	}
-	return g, nil
 }
 
 func (access *Access) UsersGraph() (*graph.Graph, error) {
@@ -317,6 +174,19 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 	return g, nil
 }
 
+func (inf *Infra) FetchResources() (*graph.Graph, error) {
+	infra, err := inf.fetch_ec2()
+	if err != nil {
+		return nil, err
+	}
+
+	return BuildAwsInfraGraph(inf.region, infra)
+}
+
+func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
+	return inf.fetch_ec2()
+}
+
 func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err error) {
 	g = graph.NewGraph()
 	var vpcNodes, subnetNodes, secGroupNodes []*graph.Resource
@@ -324,7 +194,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	regionN := graph.InitResource(region, graph.Region)
 	g.AddResource(regionN)
 
-	for _, vpc := range awsInfra.Vpcs {
+	for _, vpc := range awsInfra.vpcList {
 		res, err := NewResource(vpc)
 		if err != nil {
 			return nil, err
@@ -335,7 +205,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		vpcNodes = append(vpcNodes, res)
 	}
 
-	for _, subnet := range awsInfra.Subnets {
+	for _, subnet := range awsInfra.subnetList {
 		res, err := NewResource(subnet)
 		if err != nil {
 			return nil, err
@@ -350,7 +220,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		}
 	}
 
-	for _, secgroup := range awsInfra.Securitygroups {
+	for _, secgroup := range awsInfra.securitygroupList {
 		res, err := NewResource(secgroup)
 		if err != nil {
 			return nil, err
@@ -365,7 +235,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		}
 	}
 
-	for _, keypair := range awsInfra.Keypairs {
+	for _, keypair := range awsInfra.keypairList {
 		res, err := NewResource(keypair)
 		if err != nil {
 			return nil, err
@@ -374,7 +244,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		g.AddParent(regionN, res)
 	}
 
-	for _, gw := range awsInfra.Internetgateways {
+	for _, gw := range awsInfra.internetgatewayList {
 		res, err := NewResource(gw)
 		if err != nil {
 			return nil, err
@@ -390,7 +260,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		}
 	}
 
-	for _, rt := range awsInfra.Routetables {
+	for _, rt := range awsInfra.routetableList {
 		res, err := NewResource(rt)
 		if err != nil {
 			return nil, err
@@ -411,7 +281,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 		}
 	}
 
-	for _, instance := range awsInfra.Instances {
+	for _, instance := range awsInfra.instanceList {
 		res, err := NewResource(instance)
 		if err != nil {
 			return nil, err

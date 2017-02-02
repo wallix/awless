@@ -34,7 +34,7 @@ var diffCmd = &cobra.Command{
 			exitOn(errors.New("No local data for a diff. You might want to perfom a sync first with `awless sync`"))
 		}
 
-		var awsInfra *aws.AwsInfra
+		var remoteInfra *graph.Graph
 		var awsAccess *aws.AwsAccess
 
 		var wg gosync.WaitGroup
@@ -42,9 +42,9 @@ var diffCmd = &cobra.Command{
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			infra, err := aws.InfraService.FetchAwsInfra()
+			var err error
+			remoteInfra, err = aws.InfraService.FetchResources()
 			exitOn(err)
-			awsInfra = infra
 		}()
 
 		wg.Add(1)
@@ -62,9 +62,6 @@ var diffCmd = &cobra.Command{
 		root := graph.InitResource(region, graph.Region)
 
 		localInfra, err := config.LoadInfraGraph()
-		exitOn(err)
-
-		remoteInfra, err := aws.BuildAwsInfraGraph(region, awsInfra)
 		exitOn(err)
 
 		infraDiff, err := graph.Differ.Run(root, localInfra, remoteInfra)

@@ -36,7 +36,7 @@ var sshCmd = &cobra.Command{
 			instanceID = args[0]
 		}
 
-		instancesGraph, err := aws.InfraService.InstancesGraph()
+		instancesGraph, err := aws.InfraService.FetchByType(graph.Instance.String())
 		exitOn(err)
 
 		a := graph.Alias(instanceID)

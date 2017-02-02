@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/inspect"
 )
 
@@ -35,12 +34,7 @@ var inspectCmd = &cobra.Command{
 			return fmt.Errorf("command needs a valid inspector: %s", allInspectors())
 		}
 
-		region := database.MustGetDefaultRegion()
-
-		infra, err := aws.InfraService.FetchAwsInfra()
-		exitOn(err)
-
-		infrag, err := aws.BuildAwsInfraGraph(region, infra)
+		infrag, err := aws.InfraService.FetchResources()
 		exitOn(err)
 
 		err = inspector.Inspect(infrag)

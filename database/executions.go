@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/wallix/awless/template"
 
 	"github.com/boltdb/bolt"
@@ -33,14 +34,14 @@ func (db *DB) DeleteTemplateExecutions() error {
 }
 
 func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, error) {
-  tpl := &template.TemplateExecution{}
+	tpl := &template.TemplateExecution{}
 
-  err := db.bolt.View(func(tx *bolt.Tx) error {
-      b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
-      return json.Unmarshal(b.Get([]byte(id)), tpl)
-  })
+	err := db.bolt.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
+		return json.Unmarshal(b.Get([]byte(id)), tpl)
+	})
 
-  return tpl, err
+	return tpl, err
 }
 
 func (db *DB) ListTemplateExecutions() ([]*template.TemplateExecution, error) {
@@ -52,19 +53,18 @@ func (db *DB) ListTemplateExecutions() ([]*template.TemplateExecution, error) {
 			return nil
 		}
 
-    c := b.Cursor()
+		c := b.Cursor()
 
-    for k, v := c.First(); k != nil; k, v = c.Next() {
-    		t := &template.TemplateExecution{}
-    		if err := json.Unmarshal(v, t); err != nil {
-    			return err
-    		}
-        result = append(result, t)
-    }
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			t := &template.TemplateExecution{}
+			if err := json.Unmarshal(v, t); err != nil {
+				return err
+			}
+			result = append(result, t)
+		}
 
 		return nil
 	})
 
 	return result, err
 }
-

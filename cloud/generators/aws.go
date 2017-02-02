@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud/aws/definitions"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func generateFetcherFuncs() {
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, aws.ServicesDefinitions)
+	err = templ.Execute(&buff, definitions.Services)
 	if err != nil {
 		panic(err)
 	}
@@ -46,34 +46,103 @@ const funcsTempl = `// DO NOT EDIT
 package aws
 
 import (
+  "fmt"
+
+  awssdk "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+  {{- range $index, $service := . }}
+  "github.com/aws/aws-sdk-go/service/{{ $service.Api }}"
+  "github.com/aws/aws-sdk-go/service/{{ $service.Api }}/{{ $service.Api }}iface"
+  {{- end }}
+  "github.com/wallix/awless/graph"
 )
 {{ range $index, $service := . }}
 type {{ Title $service.Name }} struct {
+  region string
   {{ $service.Api }}iface.{{ ToUpper $service.Api }}API
 }
 
 func New{{ Title $service.Name }}(sess *session.Session) *{{ Title $service.Name }} {
-	return &{{ Title $service.Name }}{ {{ $service.Api }}.New(sess) }
+  region := awssdk.StringValue(sess.Config.Region)
+	return &{{ Title $service.Name }}{ {{ ToUpper $service.Api }}API: {{ $service.Api }}.New(sess), region: region }
 }
+
+func (s *{{ Title $service.Name }}) Name() string {
+  return "{{ $service.Name }}"
+}
+
+func (s *{{ Title $service.Name }}) Provider() string {
+  return "aws"
+}
+
+func (s *{{ Title $service.Name }}) ProviderRunnableAPI() interface{} {
+  return s.{{ ToUpper $service.Api }}API
+}
+
+func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {
+  {{ range $index, $fetcher := $service.Fetchers }}
+  all = append(all, "{{ $fetcher.ResourceType }}")
+  {{- end }}
+  return
+}
+
+func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) {
+  switch t {
+  {{- range $index, $fetcher := $service.Fetchers }}
+  case "{{ $fetcher.ResourceType }}":
+    return s.fetch_all_{{ $fetcher.ResourceType }}_graph()
+  {{- end }}
+  default:
+    return nil, fmt.Errorf("aws {{ $service.Name }}: unsupported fetch for type %s", t)
+  }
+}
+
 {{ range $index, $fetcher := $service.Fetchers }}
-func (s *{{ Title $service.Name }}) {{ Title $fetcher.ResourceType.PluralString }}() (interface{}, error) {
-	return s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }}{})
+func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}() (interface{}, error) {
+  return s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }}{})
 }
 {{- end }}
+
+{{ range $index, $fetcher := $service.Fetchers }}
+func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, error) {
+  g := graph.NewGraph()
+  out, err := s.fetch_all_{{ $fetcher.ResourceType }}()
+  if err != nil {
+    return nil, err
+  }
+  {{ if ne $fetcher.OutputsContainers "" }}
+    for _, all := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsContainers }} {
+      for _, output := range all.{{ $fetcher.OutputsExtractor }} {
+        res, err := NewResource(output)
+        if err != nil {
+          return g, err
+        }
+        g.AddResource(res)
+      }
+    }
+  {{ else }}
+    for _, output := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsExtractor }} {
+      res, err := NewResource(output)
+      if err != nil {
+        return g, err
+      }
+      g.AddResource(res)
+    }
+  {{ end }}
+  return g, nil
+}
+{{ end }}
 
 type Aws{{ Title $service.Name }} struct {
 {{ range $index, $fetcher := $service.Fetchers }}
-  {{ Title $fetcher.ResourceType.PluralString }}   []*{{ $service.Api }}.{{ $fetcher.AWSType }}
+  {{ $fetcher.ResourceType }}List   []*{{ $service.Api }}.{{ $fetcher.AWSType }}
 {{- end }}
 }
 
-func (s *{{ Title $service.Name }}) FetchAws{{ Title $service.Name }}() (*Aws{{ Title $service.Name }}, error) {
+func (s *{{ Title $service.Name }}) fetch_{{ $service.Api }}() (*Aws{{ Title $service.Name }}, error) {
 	resultc, errc := multiFetch(
     {{- range $index, $fetcher := $service.Fetchers }}
-      s.{{ Title $fetcher.ResourceType.PluralString }},
+      s.fetch_all_{{ $fetcher.ResourceType }},
     {{- end }}
   )
 
@@ -84,10 +153,10 @@ func (s *{{ Title $service.Name }}) FetchAws{{ Title $service.Name }}() (*Aws{{ 
     {{- range $index, $fetcher := $service.Fetchers }}
   case *{{ $service.Api }}.{{ $fetcher.Output }}:
       {{- if eq $fetcher.OutputsContainers "" }}
-        awsService.{{ Title $fetcher.ResourceType.PluralString }} = append(awsService.{{ Title $fetcher.ResourceType.PluralString }}, rr.{{ $fetcher.OutputsExtractor }}...)
+        awsService.{{ $fetcher.ResourceType }}List = append(awsService.{{ $fetcher.ResourceType }}List, rr.{{ $fetcher.OutputsExtractor }}...)
       {{- else }}
       for _, c := range rr.{{ $fetcher.OutputsContainers }} {
-        awsService.{{ Title $fetcher.ResourceType.PluralString }} = append(awsService.{{ Title $fetcher.ResourceType.PluralString }}, c.{{ $fetcher.OutputsExtractor }}...)
+        awsService.{{ $fetcher.ResourceType }}List = append(awsService.{{ $fetcher.ResourceType }}List, c.{{ $fetcher.OutputsExtractor }}...)
       }
       {{- end }}
       {{- end }}

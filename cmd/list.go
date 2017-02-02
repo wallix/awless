@@ -61,7 +61,7 @@ var listInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command 
 			if localResources {
 				g, err = config.LoadInfraGraph()
 			} else {
-				g, err = aws.InfraService.FetchRDFResources(resourceType)
+				g, err = aws.InfraService.FetchByType(resourceType.String())
 			}
 			exitOn(err)
 

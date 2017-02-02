@@ -18,7 +18,7 @@ const (
 
 var (
 	AccessService *Access
-	InfraService  *Infra
+	InfraService  cloud.Service
 	SecuService   *Secu
 )
 

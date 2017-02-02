@@ -46,7 +46,7 @@ var showInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command 
 				g, err = config.LoadInfraGraph()
 
 			} else {
-				g, err = aws.InfraService.FetchRDFResources(resourceType)
+				g, err = aws.InfraService.FetchByType(resourceType.String())
 			}
 			exitOn(err)
 			printResource(g, resourceType, id)

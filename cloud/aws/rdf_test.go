@@ -224,7 +224,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 func TestBuildInfraRdfGraph(t *testing.T) {
 	awsInfra := &AwsInfra{}
 
-	awsInfra.Instances = []*ec2.Instance{
+	awsInfra.instanceList = []*ec2.Instance{
 		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
 		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}}},
 		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
@@ -232,17 +232,17 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		&ec2.Instance{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
 	}
 
-	awsInfra.Vpcs = []*ec2.Vpc{
+	awsInfra.vpcList = []*ec2.Vpc{
 		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
 		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
 	}
 
-	awsInfra.Securitygroups = []*ec2.SecurityGroup{
+	awsInfra.securitygroupList = []*ec2.SecurityGroup{
 		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_1"), GroupName: awssdk.String("my_secgroup"), VpcId: awssdk.String("vpc_1")},
 		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_2"), VpcId: awssdk.String("vpc_1")},
 	}
 
-	awsInfra.Subnets = []*ec2.Subnet{
+	awsInfra.subnetList = []*ec2.Subnet{
 		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
 		&ec2.Subnet{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
 		&ec2.Subnet{SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
@@ -347,14 +347,14 @@ func BenchmarkBuildInfraRdfGraph(b *testing.B) {
 	for i := 0; i < 10; i++ {
 		vpcId := fmt.Sprintf("vpc_%d", i+1)
 		vpc := &ec2.Vpc{VpcId: awssdk.String(vpcId)}
-		awsInfra.Vpcs = append(awsInfra.Vpcs, vpc)
+		awsInfra.vpcList = append(awsInfra.vpcList, vpc)
 		for j := 0; j < 10; j++ {
 			subnetId := fmt.Sprintf("%s_sub_%d", vpcId, j+1)
 			subnet := &ec2.Subnet{SubnetId: awssdk.String(subnetId), VpcId: awssdk.String(vpcId)}
-			awsInfra.Subnets = append(awsInfra.Subnets, subnet)
+			awsInfra.subnetList = append(awsInfra.subnetList, subnet)
 			for k := 0; k < 1000; k++ {
 				inst := &ec2.Instance{InstanceId: awssdk.String(fmt.Sprintf("%s_inst_%d", subnetId, k)), SubnetId: awssdk.String(subnetId), VpcId: awssdk.String(vpcId), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String(fmt.Sprintf("instance_%d_name", k))}}}
-				awsInfra.Instances = append(awsInfra.Instances, inst)
+				awsInfra.instanceList = append(awsInfra.instanceList, inst)
 			}
 		}
 	}
@@ -372,7 +372,7 @@ func BenchmarkBuildInfraRdfGraph(b *testing.B) {
 func TestInstanceCredentialsFromName(t *testing.T) {
 	awsInfra := &AwsInfra{}
 
-	awsInfra.Instances = []*ec2.Instance{
+	awsInfra.instanceList = []*ec2.Instance{
 		&ec2.Instance{InstanceId: awssdk.String("inst_1"),
 			SubnetId:        awssdk.String("sub_1"),
 			VpcId:           awssdk.String("vpc_1"),
@@ -389,11 +389,11 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
 	}
 
-	awsInfra.Vpcs = []*ec2.Vpc{
+	awsInfra.vpcList = []*ec2.Vpc{
 		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
 	}
 
-	awsInfra.Subnets = []*ec2.Subnet{
+	awsInfra.subnetList = []*ec2.Subnet{
 		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
 	}
 

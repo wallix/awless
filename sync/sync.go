@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	gosync "sync"
 
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
@@ -22,11 +23,11 @@ type Syncer interface {
 type syncer struct {
 	repo.Repo
 	region        string
-	infraService  *aws.Infra
+	infraService  cloud.Service
 	accessService *aws.Access
 }
 
-func NewSyncer(region string, inf *aws.Infra, access *aws.Access) Syncer {
+func NewSyncer(region string, inf cloud.Service, access *aws.Access) Syncer {
 	repo, err := repo.New()
 	if err != nil {
 		panic(err)
@@ -54,7 +55,7 @@ func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
 	go func() {
 		defer wg.Done()
 		res := results{}
-		res.awsData, res.err = s.infraService.FetchAwsInfra()
+		res.awsData, res.err = s.infraService.FetchResources()
 		resultc <- res
 	}()
 
@@ -71,7 +72,7 @@ func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
 		close(resultc)
 	}()
 
-	var awsInfra *aws.AwsInfra
+	var infrag *graph.Graph
 	var awsAccess *aws.AwsAccess
 
 	for res := range resultc {
@@ -80,16 +81,14 @@ func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
 		}
 
 		switch res.awsData.(type) {
-		case *aws.AwsInfra:
-			awsInfra = res.awsData.(*aws.AwsInfra)
+		case *graph.Graph:
+			infrag = res.awsData.(*graph.Graph)
 		case *aws.AwsAccess:
 			awsAccess = res.awsData.(*aws.AwsAccess)
 		default:
 			return nil, nil, fmt.Errorf("unexpected returned type %T", res.awsData)
 		}
 	}
-
-	infrag, err := aws.BuildAwsInfraGraph(s.region, awsInfra)
 
 	tofile, err := infrag.Marshal()
 	if err != nil {

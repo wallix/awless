@@ -14,17 +14,15 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"testing"
 	"time"
 
-	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/graph"
 )
 
 func TestStats(t *testing.T) {
@@ -42,80 +40,12 @@ func TestStats(t *testing.T) {
 	db.AddHistoryCommandWithTime([]string{"awless list vpcs"}, now)
 	db.AddHistoryCommandWithTime([]string{"awless list instances"}, now)
 
-	awsInfra := &aws.AwsInfra{}
-
-	awsInfra.Instances = []*ec2.Instance{
-		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), InstanceType: awssdk.String("t2.micro"), ImageId: awssdk.String("ami-e98bd29a")},
-		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), InstanceType: awssdk.String("t2.micro"), ImageId: awssdk.String("ami-9398d3e0")},
-		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), InstanceType: awssdk.String("t2.small"), ImageId: awssdk.String("ami-e98bd29a")},
-	}
-
-	awsInfra.Vpcs = []*ec2.Vpc{
-		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
-		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
-	}
-
-	awsInfra.Subnets = []*ec2.Subnet{
-		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
-		&ec2.Subnet{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
-		&ec2.Subnet{SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
-	}
-
-	infra, err := aws.BuildAwsInfraGraph("eu-west-1", awsInfra)
+	infra, err := graph.NewGraphFromFile(filepath.Join("testdata", "infra.rdf"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	awsAccess := &aws.AwsAccess{}
-
-	awsAccess.GroupsDetail = []*iam.GroupDetail{
-		&iam.GroupDetail{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
-		&iam.GroupDetail{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
-	}
-
-	awsAccess.Policies = []*iam.ManagedPolicyDetail{
-		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_1"), PolicyName: awssdk.String("npolicy_1")},
-		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
-	}
-
-	awsAccess.RolesDetail = []*iam.RoleDetail{
-		&iam.RoleDetail{RoleId: awssdk.String("role_1")},
-	}
-
-	awsAccess.UsersDetail = []*iam.UserDetail{
-		&iam.UserDetail{UserId: awssdk.String("usr_1")},
-		&iam.UserDetail{UserId: awssdk.String("usr_2")},
-		&iam.UserDetail{UserId: awssdk.String("usr_3")},
-	}
-
-	awsAccess.Users = []*iam.User{
-		&iam.User{UserId: awssdk.String("usr_1")},
-		&iam.User{UserId: awssdk.String("usr_2")},
-		&iam.User{UserId: awssdk.String("usr_3")},
-	}
-
-	awsAccess.UserGroups = map[string][]string{
-		"usr_1": []string{"group_1", "group_2"},
-		"usr_2": []string{"group_1", "group_2"},
-		"usr_3": []string{"group_2"},
-	}
-
-	awsAccess.UserPolicies = map[string][]string{
-		"usr_1": []string{"npolicy_1", "npolicy_2"},
-		"usr_2": []string{"npolicy_1"},
-		"usr_3": []string{"npolicy_1"},
-	}
-
-	awsAccess.RolePolicies = map[string][]string{
-		"role_1": []string{"npolicy_1"},
-	}
-
-	awsAccess.GroupPolicies = map[string][]string{
-		"group_1": []string{"npolicy_1", "npolicy_2"},
-		"group_2": []string{"npolicy_2"},
-	}
-
-	access, err := aws.BuildAwsAccessGraph("eu-west-1", awsAccess)
+	access, err := graph.NewGraphFromFile(filepath.Join("testdata", "access.rdf"))
 	if err != nil {
 		t.Fatal(err)
 	}
