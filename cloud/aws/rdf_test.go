@@ -99,7 +99,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		"group_4": []string{"npolicy_4"},
 	}
 
-	g, err := BuildAwsAccessGraph("eu-west-1", awsAccess)
+	g, err := buildAccessGraph("eu-west-1", awsAccess)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,7 +249,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		&ec2.Subnet{SubnetId: awssdk.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	g, err := BuildAwsInfraGraph("eu-west-1", awsInfra)
+	g, err := buildInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -320,7 +320,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	expect := `/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`
-	g, err := BuildAwsAccessGraph("eu-west-1", NewAwsAccess())
+	g, err := buildAccessGraph("eu-west-1", NewAwsAccess())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -330,7 +330,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	g, err = BuildAwsInfraGraph("eu-west-1", &AwsInfra{})
+	g, err = buildInfraGraph("eu-west-1", &AwsInfra{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +362,7 @@ func BenchmarkBuildInfraRdfGraph(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := BuildAwsInfraGraph("eu-west-1", awsInfra)
+		_, err := buildInfraGraph("eu-west-1", awsInfra)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -397,7 +397,7 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
 	}
 
-	g, err := BuildAwsInfraGraph("eu-west-1", awsInfra)
+	g, err := buildInfraGraph("eu-west-1", awsInfra)
 	if err != nil {
 		t.Fatal(err)
 	}

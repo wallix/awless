@@ -118,7 +118,7 @@ func (s *Infra) fetch_all_instance_graph() (*graph.Graph, error) {
 
 	for _, all := range out.(*ec2.DescribeInstancesOutput).Reservations {
 		for _, output := range all.Instances {
-			res, err := NewResource(output)
+			res, err := newResource(output)
 			if err != nil {
 				return g, err
 			}
@@ -137,7 +137,7 @@ func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeSubnetsOutput).Subnets {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -155,7 +155,7 @@ func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeVpcsOutput).Vpcs {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -173,7 +173,7 @@ func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeKeyPairsOutput).KeyPairs {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -191,7 +191,7 @@ func (s *Infra) fetch_all_securitygroup_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeSecurityGroupsOutput).SecurityGroups {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -209,7 +209,7 @@ func (s *Infra) fetch_all_volume_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeVolumesOutput).Volumes {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -227,7 +227,7 @@ func (s *Infra) fetch_all_region_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeRegionsOutput).Regions {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -245,7 +245,7 @@ func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeInternetGatewaysOutput).InternetGateways {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -263,7 +263,7 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeRouteTablesOutput).RouteTables {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -281,7 +281,7 @@ func (s *Infra) fetch_all_image_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*ec2.DescribeImagesOutput).Images {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -416,7 +416,7 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*iam.ListUsersOutput).Users {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -434,7 +434,7 @@ func (s *Access) fetch_all_group_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*iam.ListGroupsOutput).Groups {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -452,7 +452,7 @@ func (s *Access) fetch_all_role_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*iam.ListRolesOutput).Roles {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}
@@ -470,7 +470,7 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, error) {
 	}
 
 	for _, output := range out.(*iam.ListPoliciesOutput).Policies {
-		res, err := NewResource(output)
+		res, err := newResource(output)
 		if err != nil {
 			return g, err
 		}

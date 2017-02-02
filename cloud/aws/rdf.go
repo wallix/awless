@@ -18,14 +18,10 @@ func (acc *Access) FetchResources() (*graph.Graph, error) {
 		return nil, err
 	}
 
-	return BuildAwsAccessGraph(acc.region, access)
+	return buildAccessGraph(acc.region, access)
 }
 
-func (acc *Access) FetchAwsAccess() (*AwsAccess, error) {
-	return acc.global_fetch()
-}
-
-func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error) {
+func buildAccessGraph(region string, access *AwsAccess) (*graph.Graph, error) {
 	g := graph.NewGraph()
 
 	regionN := graph.InitResource(region, graph.Region)
@@ -33,7 +29,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 
 	policiesIndex := make(map[string]*graph.Resource)
 	for _, policy := range access.Policies {
-		res, err := NewResource(policy)
+		res, err := newResource(policy)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +41,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 
 	groupsIndex := make(map[string]*graph.Resource)
 	for _, group := range access.GroupsDetail {
-		res, err := NewResource(group)
+		res, err := newResource(group)
 		if err != nil {
 			return nil, err
 		}
@@ -64,7 +60,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 	}
 
 	for _, user := range access.Users {
-		res, err := NewResource(user)
+		res, err := newResource(user)
 		if err != nil {
 			return nil, err
 		}
@@ -89,7 +85,7 @@ func BuildAwsAccessGraph(region string, access *AwsAccess) (*graph.Graph, error)
 	}
 
 	for _, role := range access.RolesDetail {
-		res, err := NewResource(role)
+		res, err := newResource(role)
 		if err != nil {
 			return nil, err
 		}
@@ -114,14 +110,10 @@ func (inf *Infra) FetchResources() (*graph.Graph, error) {
 		return nil, err
 	}
 
-	return BuildAwsInfraGraph(inf.region, infra)
+	return buildInfraGraph(inf.region, infra)
 }
 
-func (inf *Infra) FetchAwsInfra() (*AwsInfra, error) {
-	return inf.global_fetch()
-}
-
-func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err error) {
+func buildInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err error) {
 	g = graph.NewGraph()
 	var vpcNodes, subnetNodes, secGroupNodes []*graph.Resource
 
@@ -129,7 +121,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	g.AddResource(regionN)
 
 	for _, vpc := range awsInfra.vpcList {
-		res, err := NewResource(vpc)
+		res, err := newResource(vpc)
 		if err != nil {
 			return nil, err
 		}
@@ -140,7 +132,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	}
 
 	for _, subnet := range awsInfra.subnetList {
-		res, err := NewResource(subnet)
+		res, err := newResource(subnet)
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +147,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	}
 
 	for _, secgroup := range awsInfra.securitygroupList {
-		res, err := NewResource(secgroup)
+		res, err := newResource(secgroup)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +162,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	}
 
 	for _, keypair := range awsInfra.keypairList {
-		res, err := NewResource(keypair)
+		res, err := newResource(keypair)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +171,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	}
 
 	for _, gw := range awsInfra.internetgatewayList {
-		res, err := NewResource(gw)
+		res, err := newResource(gw)
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +187,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	}
 
 	for _, rt := range awsInfra.routetableList {
-		res, err := NewResource(rt)
+		res, err := newResource(rt)
 		if err != nil {
 			return nil, err
 		}
@@ -216,7 +208,7 @@ func BuildAwsInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err 
 	}
 
 	for _, instance := range awsInfra.instanceList {
-		res, err := NewResource(instance)
+		res, err := newResource(instance)
 		if err != nil {
 			return nil, err
 		}

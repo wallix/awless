@@ -114,7 +114,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
   {{ if ne $fetcher.OutputsContainers "" }}
     for _, all := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsContainers }} {
       for _, output := range all.{{ $fetcher.OutputsExtractor }} {
-        res, err := NewResource(output)
+        res, err := newResource(output)
         if err != nil {
           return g, err
         }
@@ -123,7 +123,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
     }
   {{ else }}
     for _, output := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsExtractor }} {
-      res, err := NewResource(output)
+      res, err := newResource(output)
       if err != nil {
         return g, err
       }
