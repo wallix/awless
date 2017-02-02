@@ -213,6 +213,10 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 		return err
 	}
 
+	if len(d.headers) == 0 {
+		return nil
+	}
+
 	values := make(table, len(resources))
 	for i, res := range resources {
 		if v := values[i]; v == nil {
@@ -254,6 +258,14 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	resources, err := d.g.GetAllResources(d.rdfType)
 	if err != nil {
 		return err
+	}
+	if len(resources) == 0 {
+		w.Write([]byte("No results found.\n"))
+		return nil
+	}
+	if len(d.headers) == 0 {
+		w.Write([]byte("No columns to display.\n"))
+		return nil
 	}
 
 	values := make(table, len(resources))
@@ -607,7 +619,7 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 	var ids []int
 	for _, t := range sortBy {
 		id, ok := normalized[strings.ToLower(t)]
-		if !ok {
+		if !ok && strings.ToLower(t) != "id" {
 			return ids, fmt.Errorf("Invalid column name '%s'", t)
 		}
 		ids = append(ids, id)

@@ -580,3 +580,80 @@ func createDiff() *graph.Diff {
 
 	return diff
 }
+
+func TestEmotyDisplays(t *testing.T) {
+	g := graph.NewGraph()
+	headers := []ColumnDefinition{
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+	}
+
+	displayer := BuildOptions(
+		WithHeaders(headers),
+		WithRdfType(graph.Instance),
+		WithFormat("csv"),
+	).SetSource(g).Build()
+
+	expected := "Id, Name, Public IP"
+	var w bytes.Buffer
+	err := displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+
+	displayer = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType(graph.Instance),
+		WithFormat("table"),
+	).SetSource(g).Build()
+
+	expected = "No results found.\n"
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+
+	g = createInfraGraph()
+	headers = []ColumnDefinition{}
+	DefaultsColumnDefinitions = make(map[graph.ResourceType][]ColumnDefinition)
+
+	displayer = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType(graph.Instance),
+		WithFormat("csv"),
+	).SetSource(g).Build()
+
+	expected = ""
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+
+	displayer = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType(graph.Instance),
+		WithFormat("table"),
+	).SetSource(g).Build()
+
+	expected = "No columns to display.\n"
+	w.Reset()
+	err = displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+}
