@@ -44,7 +44,7 @@ var sshCmd = &cobra.Command{
 			instanceID = id
 		}
 
-		cred, err := aws.InstanceCredentialsFromGraph(instancesGraph, instanceID)
+		cred, err := instanceCredentialsFromGraph(instancesGraph, instanceID)
 		exitOn(err)
 		var client *ssh.Client
 		if user != "" {
@@ -74,4 +74,22 @@ var sshCmd = &cobra.Command{
 		}
 		return err
 	},
+}
+
+func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Credentials, error) {
+	inst, err := g.GetResource(graph.Instance, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	ip, ok := inst.Properties["PublicIp"]
+	if !ok {
+		return nil, fmt.Errorf("no public IP address for instance %s", instanceID)
+	}
+
+	key, ok := inst.Properties["KeyName"]
+	if !ok {
+		return nil, fmt.Errorf("no access key set for instance %s", instanceID)
+	}
+	return &shell.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
 }

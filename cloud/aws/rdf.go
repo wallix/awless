@@ -1,16 +1,9 @@
 package aws
 
 import (
-	"errors"
-	"fmt"
-
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/shell"
 )
-
-var ErrNoPublicIP = errors.New("This instance has no public IP address")
-var ErrNoAccessKey = errors.New("This instance has no access key set")
 
 func (acc *Access) FetchResources() (*graph.Graph, error) {
 	access, err := acc.global_fetch()
@@ -229,24 +222,6 @@ func buildInfraGraph(region string, awsInfra *AwsInfra) (g *graph.Graph, err err
 	}
 
 	return g, nil
-}
-
-func InstanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Credentials, error) {
-	inst, err := g.GetResource(graph.Instance, instanceID)
-	if err != nil {
-		return nil, err
-	}
-
-	ip, ok := inst.Properties["PublicIp"]
-	if !ok {
-		return nil, ErrNoPublicIP
-	}
-
-	key, ok := inst.Properties["KeyName"]
-	if !ok {
-		return nil, ErrNoAccessKey
-	}
-	return &shell.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
 }
 
 func findNodeById(resources []*graph.Resource, id string) *graph.Resource {
