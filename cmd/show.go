@@ -24,10 +24,10 @@ func init() {
 }
 
 var showCmd = &cobra.Command{
-	Use:               "show",
-	Short:             "Show resource and their relations via a given id: users, groups, instances, vpcs, ...",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
+	Use:                "show",
+	Short:              "Show resource and their relations via a given id: users, groups, instances, vpcs, ...",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 }
 
 var showInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command {

@@ -25,8 +25,8 @@ var inspectCmd = &cobra.Command{
 	Short: fmt.Sprintf(
 		"Inspecting your infrastructure using available inspectors below: %s", allInspectors(),
 	),
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(c *cobra.Command, args []string) error {
 		inspector, ok := inspect.InspectorsRegister[inspectorFlag]

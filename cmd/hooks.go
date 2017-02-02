@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -13,25 +14,32 @@ import (
 	"github.com/wallix/awless/sync"
 )
 
-func initAwlessEnvFn(cmd *cobra.Command, args []string) {
-	if err := config.InitAwlessEnv(); err != nil {
-		fmt.Fprintf(os.Stderr, "cannot init awless environment: %s\n", err)
-		os.Exit(1)
+func applyHooks(funcs ...func(*cobra.Command, []string) error) func(*cobra.Command, []string) {
+	return func(cmd *cobra.Command, args []string) {
+		for _, fn := range funcs {
+			if err := fn(cmd, args); err != nil {
+				fmt.Fprintf(os.Stderr, "command hook failed: %s\n", err)
+				os.Exit(1)
+			}
+		}
 	}
 }
 
-func initCloudServicesFn(cmd *cobra.Command, args []string) {
-	initAwlessEnvFn(cmd, args)
+func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
+	if err := config.InitAwlessEnv(); err != nil {
+		return fmt.Errorf("cannot init awless environment: %s", err)
+	}
+	return nil
+}
 
+func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	region := os.Getenv("__AWLESS_REGION")
 	if region == "" {
-		fmt.Fprintln(os.Stderr, "region should be in env")
-		os.Exit(1)
+		return errors.New("region should be in env")
 	}
 
 	if err := aws.InitServices(region); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return err
 	} else {
 		sync.DefaultSyncer = sync.NewSyncer(
 			region,
@@ -41,41 +49,36 @@ func initCloudServicesFn(cmd *cobra.Command, args []string) {
 	}
 
 	if err := database.InitDB(config.AwlessFirstInstall); err != nil {
-		fmt.Fprintf(os.Stderr, "cannot init database: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot init database: %s", err)
 	}
-	checkStatsFn()
+
+	return nil
 }
 
-func saveHistoryFn(cmd *cobra.Command, args []string) {
+func saveHistoryHook(cmd *cobra.Command, args []string) error {
 	db, close := database.Current()
 	defer close()
 	db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+	return nil
 }
 
-func checkStatsFn() {
+func checkStatsHook(cmd *cobra.Command, args []string) error {
 	db, dbclose := database.Current()
 	statsToSend := stats.CheckStatsToSend(db)
 	dbclose()
+
 	if statsToSend {
-		go sendStats()
-	}
-}
+		go func() {
+			localInfra, _ := config.LoadInfraGraph()
+			localAccess, _ := config.LoadAccessGraph()
 
-func sendStats() {
-	var err error
-	localInfra, err := config.LoadInfraGraph()
-	if err != nil {
-		return
-	}
-	localAccess, err := config.LoadAccessGraph()
-	if err != nil {
-		return
+			db, dbclose := database.Current()
+			if err := stats.SendStats(db, localInfra, localAccess); err != nil {
+				db.AddLog(err.Error())
+			}
+			dbclose()
+		}()
 	}
 
-	db, dbclose := database.Current()
-	if err := stats.SendStats(db, localInfra, localAccess); err != nil {
-		db.AddLog(err.Error())
-	}
-	dbclose()
+	return nil
 }

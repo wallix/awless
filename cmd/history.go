@@ -26,10 +26,10 @@ func init() {
 type revPair [2]*repo.Rev
 
 var historyCmd = &cobra.Command{
-	Use:               "history",
-	Short:             "Show your infrastucture history",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
+	Use:                "history",
+	Short:              "Show your infrastucture history",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !repo.IsGitInstalled() {

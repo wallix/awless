@@ -16,10 +16,10 @@ func init() {
 }
 
 var syncCmd = &cobra.Command{
-	Use:               "sync",
-	Short:             "Manage your local infrastructure",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
+	Use:                "sync",
+	Short:              "Manage your local infrastructure",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		region := database.MustGetDefaultRegion()

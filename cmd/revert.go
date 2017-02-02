@@ -27,10 +27,10 @@ func init() {
 }
 
 var revertCmd = &cobra.Command{
-	Use:               "revert",
-	Short:             "List the history of your template action and revert them from an ID",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
+	Use:                "revert",
+	Short:              "List the history of your template action and revert them from an ID",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(c *cobra.Command, args []string) error {
 		if listHistoryFlag {

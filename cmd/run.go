@@ -33,10 +33,10 @@ func init() {
 }
 
 var runCmd = &cobra.Command{
-	Use:               "run",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
-	Short:             "Run an awless template file given as the only argument. Ex: awless run mycloud.awless",
+	Use:                "run",
+	Short:              "Run an awless template file given as the only argument. Ex: awless run mycloud.awless",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -160,11 +160,11 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 		actionCmd.AddCommand(
 			&cobra.Command{
-				Use:               entity,
-				PersistentPreRun:  initCloudServicesFn,
-				PersistentPostRun: saveHistoryFn,
-				Short:             fmt.Sprintf("Use it to %s a %s", action, entity),
-				RunE:              run(action, entity),
+				Use:                entity,
+				PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+				PersistentPostRunE: saveHistoryHook,
+				Short:              fmt.Sprintf("Use it to %s a %s", action, entity),
+				RunE:               run(action, entity),
 			},
 		)
 	}

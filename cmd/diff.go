@@ -24,10 +24,10 @@ func init() {
 }
 
 var diffCmd = &cobra.Command{
-	Use:               "diff",
-	Short:             "Show diff between your local and remote infra",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
+	Use:                "diff",
+	Short:              "Show diff between your local and remote infra",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if config.AwlessFirstSync {

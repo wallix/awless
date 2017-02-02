@@ -22,10 +22,10 @@ func init() {
 }
 
 var configCmd = &cobra.Command{
-	Use:               "config",
-	Short:             "get, set, unset or list configuration values",
-	PersistentPreRun:  initAwlessEnvFn,
-	PersistentPostRun: saveHistoryFn,
+	Use:                "config",
+	Short:              "get, set, unset or list configuration values",
+	PersistentPreRunE:  initAwlessEnvHook,
+	PersistentPostRunE: saveHistoryHook,
 }
 
 var configListCmd = &cobra.Command{

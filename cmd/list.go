@@ -44,10 +44,10 @@ func init() {
 }
 
 var listCmd = &cobra.Command{
-	Use:               "list",
-	PersistentPreRun:  initCloudServicesFn,
-	PersistentPostRun: saveHistoryFn,
-	Short:             "List various type of items: instances, vpc, subnet ...",
+	Use:                "list",
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPostRunE: saveHistoryHook,
+	Short:              "List various type of items: instances, vpc, subnet ...",
 }
 
 var listInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command {
