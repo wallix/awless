@@ -38,7 +38,11 @@ func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, erro
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
-		return json.Unmarshal(b.Get([]byte(id)), tpl)
+		if content := b.Get([]byte(id)); content != nil {
+			return json.Unmarshal(b.Get([]byte(id)), tpl)
+		} else {
+			return fmt.Errorf("no content for id '%s'", id)
+		}
 	})
 
 	return tpl, err
