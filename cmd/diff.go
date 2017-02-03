@@ -26,7 +26,7 @@ func init() {
 var diffCmd = &cobra.Command{
 	Use:                "diff",
 	Short:              "Show diff between your local and remote infra",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {

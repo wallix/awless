@@ -40,14 +40,17 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 
 	if err := aws.InitServices(region); err != nil {
 		return err
-	} else {
-		sync.DefaultSyncer = sync.NewSyncer()
 	}
 
 	if err := database.InitDB(config.AwlessFirstInstall); err != nil {
 		return fmt.Errorf("cannot init database: %s", err)
 	}
 
+	return nil
+}
+
+func initSyncerHook(cmd *cobra.Command, args []string) error {
+	sync.DefaultSyncer = sync.NewSyncer()
 	return nil
 }
 

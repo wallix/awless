@@ -28,7 +28,7 @@ type revPair [2]*repo.Rev
 var historyCmd = &cobra.Command{
 	Use:                "history",
 	Short:              "Show your infrastucture history",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
