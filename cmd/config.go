@@ -100,14 +100,19 @@ var configSetCmd = &cobra.Command{
 		}
 
 		var i interface{}
-		i, err := strconv.Atoi(value)
-		if err != nil {
+
+		if num, nerr := strconv.Atoi(value); nerr == nil {
+			i = num
+		} else if b, berr := strconv.ParseBool(value); berr == nil {
+			i = b
+		} else {
 			i = value
 		}
+
 		db, close := database.Current()
 		defer close()
-		err = db.SetDefault(key, i)
-		exitOn(err)
+		exitOn(db.SetDefault(key, i))
+
 		return nil
 	},
 }

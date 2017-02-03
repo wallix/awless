@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	SyncAuto         = "sync.auto"
 	RegionKey        = "region"
 	InstanceTypeKey  = "instance.type"
 	InstanceImageKey = "instance.image"

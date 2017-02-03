@@ -29,7 +29,7 @@ func init() {
 var revertCmd = &cobra.Command{
 	Use:                "revert",
 	Short:              "List the history of your template action and revert them from an ID",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(c *cobra.Command, args []string) error {
@@ -63,7 +63,7 @@ var revertCmd = &cobra.Command{
 			reverted, err := tplExec.Revert()
 			exitOn(err)
 
-			exitOn(runTemplate(reverted))
+			exitOn(runTemplate(reverted, getCurrentDefaults()))
 
 			return nil
 		}

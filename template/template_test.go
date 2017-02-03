@@ -183,7 +183,6 @@ func TestRevertTemplateExecution(t *testing.T) {
 	if got, want := expected, expr.Params; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
-
 }
 
 func TestRunDriverOnTemplate(t *testing.T) {
@@ -327,6 +326,22 @@ func TestGetAliases(t *testing.T) {
 	}
 	if got, want := s.GetAliases(), expect; !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)
+	}
+}
+
+func TestGetEntitiesFromTemplate(t *testing.T) {
+	temp, err := Parse("create vpc\ncreate subnet\ndelete instance\ncreate vpc")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := make(map[string]bool)
+	for _, ent := range temp.GetEntitiesSet() {
+		actual[ent] = true
+	}
+
+	if got, want := actual, map[string]bool{"vpc": true, "subnet": true, "instance": true}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }
 

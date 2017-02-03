@@ -11,6 +11,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/cloud"
 	awscloud "github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
@@ -35,7 +36,7 @@ func init() {
 var runCmd = &cobra.Command{
 	Use:                "run",
 	Short:              "Run an awless template file given as the only argument. Ex: awless run mycloud.awless",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -51,24 +52,23 @@ var runCmd = &cobra.Command{
 		templ, err := template.Parse(string(content))
 		exitOn(err)
 
-		exitOn(runTemplate(templ))
+		exitOn(runTemplate(templ, getCurrentDefaults()))
 
 		return nil
 	},
 }
 
-func runTemplate(templ *template.Template) error {
-	db, dbclose := database.Current()
-	defaults, err := db.GetDefaults()
-	exitOn(err)
-	dbclose()
+func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
+	if autoSync, ok := defaults[database.SyncAuto]; ok && autoSync.(bool) {
+		runSync(templ.GetEntitiesSet())
+	}
 
 	templ.ResolveTemplate(defaults)
 
 	prompt := func(question string) interface{} {
 		var resp string
 		fmt.Printf("%s ? ", question)
-		_, err = fmt.Scanln(&resp)
+		_, err := fmt.Scanln(&resp)
 		exitOn(err)
 
 		return resp
@@ -84,7 +84,7 @@ func runTemplate(templ *template.Template) error {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
 	}
 
-	_, err = templ.Compile(awsDriver)
+	_, err := templ.Compile(awsDriver)
 	exitOn(err)
 
 	fmt.Println()
@@ -154,14 +154,14 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 				templ.MergeParams(expr.Params)
 
-				return runTemplate(templ)
+				return runTemplate(templ, getCurrentDefaults())
 			}
 		}
 
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:                entity,
-				PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+				PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 				PersistentPostRunE: saveHistoryHook,
 				Short:              fmt.Sprintf("Use it to %s a %s", action, entity),
 				RunE:               run(action, entity),
@@ -170,6 +170,31 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	return actionCmd
+}
+
+func runSync(entities []string) {
+	var services []cloud.Service
+
+	for _, entity := range entities {
+		srv, err := cloud.GetServiceForType(entity)
+		exitOn(err)
+		services = append(services, srv)
+	}
+
+	_, err := sync.DefaultSyncer.Sync(services...)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error while synching for %s\n", strings.Join(entities, ", "))
+	} else if verboseFlag {
+		fmt.Printf("(performed sync for %s)\n", strings.Join(entities, ", "))
+	}
+}
+
+func getCurrentDefaults() map[string]interface{} {
+	db, dbclose := database.Current()
+	defaults, err := db.GetDefaults()
+	exitOn(err)
+	dbclose()
+	return defaults
 }
 
 func printReport(t *template.TemplateExecution) {

@@ -91,6 +91,7 @@ func askRegion() string {
 
 func addDefaults(region string) error {
 	defaults := map[string]interface{}{
+		database.SyncAuto:         true,
 		database.RegionKey:        region,
 		database.InstanceTypeKey:  "t2.micro",
 		database.InstanceImageKey: "ami-9398d3e0",

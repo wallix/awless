@@ -57,6 +57,18 @@ func (s *Template) Compile(d driver.Driver) (*Template, error) {
 	return s.Run(d)
 }
 
+func (s *Template) GetEntitiesSet() (entities []string) {
+	unique := make(map[string]bool)
+	s.visitExpressionNodes(func(n *ast.ExpressionNode) {
+		unique[n.Entity] = true
+	})
+
+	for entity, _ := range unique {
+		entities = append(entities, entity)
+	}
+	return
+}
+
 func (s *Template) GetAliases() map[string]string {
 	aliases := make(map[string]string)
 	each := func(expr *ast.ExpressionNode) {
