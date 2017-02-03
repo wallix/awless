@@ -25,6 +25,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(listCmd)
+
 	for apiName, types := range aws.ResourceTypesPerAPI {
 		for _, resType := range types {
 			listCmd.AddCommand(listServiceResourceCmd(apiName, resType))

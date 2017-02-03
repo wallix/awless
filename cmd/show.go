@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/display"
@@ -12,12 +13,10 @@ import (
 )
 
 func init() {
-	//Resources
-	for _, resource := range []graph.ResourceType{graph.Instance, graph.Vpc, graph.Subnet, graph.SecurityGroup, graph.Keypair, graph.InternetGateway, graph.RouteTable} {
-		showCmd.AddCommand(showInfraResourceCmd(resource))
-	}
-	for _, resource := range []graph.ResourceType{graph.User, graph.Role, graph.Policy, graph.Group} {
-		showCmd.AddCommand(showAccessResourceCmd(resource))
+	for apiName, types := range aws.ResourceTypesPerAPI {
+		for _, resType := range types {
+			showCmd.AddCommand(showServiceResourceCmd(apiName, resType))
+		}
 	}
 
 	RootCmd.AddCommand(showCmd)
@@ -30,10 +29,10 @@ var showCmd = &cobra.Command{
 	PersistentPostRunE: saveHistoryHook,
 }
 
-var showInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command {
+var showServiceResourceCmd = func(apiName, resType string) *cobra.Command {
 	command := &cobra.Command{
-		Use:   resourceType.String() + " id",
-		Short: "Show the properties of a AWS EC2 " + resourceType.String(),
+		Use:   resType + " id",
+		Short: fmt.Sprintf("Show properties and relations of an AWS %s %s", apiName, resType),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -44,40 +43,13 @@ var showInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command 
 			var err error
 			if localResources {
 				g, err = config.LoadInfraGraph()
-
 			} else {
-				g, err = aws.InfraService.FetchByType(resourceType.String())
+				srv, err := cloud.GetServiceForType(resType)
+				exitOn(err)
+				g, err = srv.FetchByType(resType)
 			}
 			exitOn(err)
-			printResource(g, resourceType, id)
-			return nil
-		},
-	}
-
-	command.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
-	return command
-}
-
-var showAccessResourceCmd = func(resourceType graph.ResourceType) *cobra.Command {
-	command := &cobra.Command{
-		Use:   resourceType.String() + " id",
-		Short: "Show the properties of a AWS IAM " + resourceType.String(),
-
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("id required")
-			}
-			id := args[0]
-			var g *graph.Graph
-			var err error
-			if localResources {
-				g, err = config.LoadAccessGraph()
-
-			} else {
-				g, err = aws.AccessService.FetchByType(resourceType.String())
-			}
-			exitOn(err)
-			printResource(g, resourceType, id)
+			printResource(g, graph.ResourceType(resType), id)
 			return nil
 		},
 	}
