@@ -15,6 +15,13 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+func init() {
+	ServiceNames = append(ServiceNames, "infra")
+	ServiceNames = append(ServiceNames, "access")
+}
+
+var ServiceNames = []string{}
+
 var ResourceTypesPerAPI = map[string][]string{
 	"ec2": []string{
 		"instance",
@@ -33,6 +40,22 @@ var ResourceTypesPerAPI = map[string][]string{
 		"role",
 		"policy",
 	},
+}
+
+var ServicePerResourceType = map[string]string{
+	"instance":        "infra",
+	"subnet":          "infra",
+	"vpc":             "infra",
+	"keypair":         "infra",
+	"securitygroup":   "infra",
+	"volume":          "infra",
+	"region":          "infra",
+	"internetgateway": "infra",
+	"routetable":      "infra",
+	"user":            "access",
+	"group":           "access",
+	"role":            "access",
+	"policy":          "access",
 }
 
 type Infra struct {

@@ -68,8 +68,8 @@ func checkStatsHook(cmd *cobra.Command, args []string) error {
 
 	if statsToSend {
 		go func() {
-			localInfra, _ := config.LoadInfraGraph()
-			localAccess, _ := config.LoadAccessGraph()
+			localInfra := sync.LoadCurrentLocalGraph(aws.InfraService.Name())
+			localAccess := sync.LoadCurrentLocalGraph(aws.AccessService.Name())
 
 			db, dbclose := database.Current()
 			if err := stats.SendStats(db, localInfra, localAccess); err != nil {

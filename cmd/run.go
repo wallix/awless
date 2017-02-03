@@ -12,9 +12,9 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	awscloud "github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver/aws"
@@ -207,10 +207,7 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 		}
 	}
 
-	infra, err := config.LoadInfraGraph()
-	exitOn(err)
-	access, err := config.LoadAccessGraph()
-	exitOn(err)
+	graphForResource := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[expr.Entity])
 
 	for k, v := range expr.Aliases {
 		if !strings.Contains(k, ".") {
@@ -224,9 +221,7 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 		}
 		rT := graph.ResourceType(t)
 		a := graph.Alias(v)
-		if id, ok := a.ResolveToId(infra, rT); ok {
-			expr.Params[k] = id
-		} else if id, ok := a.ResolveToId(access, rT); ok {
+		if id, ok := a.ResolveToId(graphForResource, rT); ok {
 			expr.Params[k] = id
 		} else {
 			fmt.Printf("Alias '%s' not found in local snapshot. You might want to perform an `awless sync`\n", a)

@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/sync"
 )
 
 func init() {
@@ -40,16 +40,19 @@ var showServiceResourceCmd = func(apiName, resType string) *cobra.Command {
 			}
 			id := args[0]
 			var g *graph.Graph
-			var err error
+
+			srv, err := cloud.GetServiceForType(resType)
+			exitOn(err)
+
 			if localResources {
-				g, err = config.LoadInfraGraph()
+				g = sync.LoadCurrentLocalGraph(srv.Name())
 			} else {
-				srv, err := cloud.GetServiceForType(resType)
-				exitOn(err)
 				g, err = srv.FetchByType(resType)
 			}
 			exitOn(err)
+
 			printResource(g, graph.ResourceType(resType), id)
+
 			return nil
 		},
 	}

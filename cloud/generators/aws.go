@@ -19,6 +19,7 @@ func generateFetcherFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
 		"Title":   strings.Title,
 		"ToUpper": strings.ToUpper,
+		"Join":    strings.Join,
 	}).Parse(funcsTempl)
 
 	if err != nil {
@@ -58,6 +59,14 @@ import (
   "github.com/wallix/awless/graph"
 )
 
+func init() {
+  {{- range $index, $service := . }}
+  ServiceNames = append(ServiceNames, "{{ $service.Name }}")
+  {{- end }}
+}
+
+var ServiceNames = []string{}
+
 var ResourceTypesPerAPI = map[string][]string {
 {{- range $index, $service := . }}
   "{{ $service.Api }}": []string{
@@ -65,6 +74,14 @@ var ResourceTypesPerAPI = map[string][]string {
       "{{ $fetcher.ResourceType }}",
     {{- end }}
   },
+{{- end }}
+}
+
+var ServicePerResourceType = map[string]string {
+{{- range $index, $service := . }}
+  {{- range $idx, $fetcher := $service.Fetchers }}
+  "{{ $fetcher.ResourceType }}": "{{ $service.Name }}",
+  {{- end }}
 {{- end }}
 }
 

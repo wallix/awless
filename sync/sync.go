@@ -3,6 +3,7 @@ package sync
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	gosync "sync"
 
@@ -95,4 +96,14 @@ Loop:
 	}
 
 	return graphs, nil
+}
+
+func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
+	path := filepath.Join(config.RepoDir, fmt.Sprintf("%s.rdf", serviceName))
+	g, err := graph.NewGraphFromFile(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "return empty graph: cannot find/unmarshal graph at %s\n", path)
+		return graph.NewGraph()
+	}
+	return g
 }

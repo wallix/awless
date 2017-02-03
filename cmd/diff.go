@@ -60,14 +60,12 @@ var diffCmd = &cobra.Command{
 
 		root := graph.InitResource(region, graph.Region)
 
-		localInfra, err := config.LoadInfraGraph()
-		exitOn(err)
+		localInfra := sync.LoadCurrentLocalGraph(aws.InfraService.Name())
 
 		infraDiff, err := graph.Differ.Run(root, localInfra, remoteInfra)
 		exitOn(err)
 
-		localAccess, err := config.LoadAccessGraph()
-		exitOn(err)
+		localAccess := sync.LoadCurrentLocalGraph(aws.AccessService.Name())
 
 		accessDiff, err := graph.Differ.Run(root, localAccess, remoteAccess)
 		exitOn(err)
