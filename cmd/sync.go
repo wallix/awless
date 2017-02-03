@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
@@ -24,7 +25,7 @@ var syncCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		region := database.MustGetDefaultRegion()
 
-		infrag, accessg, err := sync.DefaultSyncer.Sync()
+		graphs, err := sync.DefaultSyncer.Sync(aws.InfraService, aws.AccessService)
 		if err != nil {
 			return err
 		}
@@ -40,8 +41,8 @@ var syncCmd = &cobra.Command{
 
 			root := graph.InitResource(region, graph.Region)
 
-			infrag.VisitChildren(root, printWithTabs)
-			accessg.VisitChildren(root, printWithTabs)
+			graphs[aws.InfraService.Name()].VisitChildren(root, printWithTabs)
+			graphs[aws.AccessService.Name()].VisitChildren(root, printWithTabs)
 		}
 
 		return nil

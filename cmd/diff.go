@@ -113,7 +113,7 @@ var diffCmd = &cobra.Command{
 			fmt.Print("\nDo you want to perform a sync? (y/n): ")
 			fmt.Scanln(&yesorno)
 			if strings.TrimSpace(yesorno) == "y" {
-				_, _, err := sync.DefaultSyncer.Sync()
+				_, err := sync.DefaultSyncer.Sync(aws.InfraService, aws.AccessService)
 				exitOn(err)
 			}
 		}

@@ -16,92 +16,83 @@ var DefaultSyncer Syncer
 
 type Syncer interface {
 	repo.Repo
-	Sync() (*graph.Graph, *graph.Graph, error)
+	Sync(...cloud.Service) (map[string]*graph.Graph, error)
 }
 
 type syncer struct {
 	repo.Repo
-	region                      string
 	infraService, accessService cloud.Service
 }
 
-func NewSyncer(region string, services ...cloud.Service) Syncer {
+func NewSyncer() Syncer {
 	repo, err := repo.New()
 	if err != nil {
 		panic(err)
 	}
 
-	syncer := &syncer{
-		Repo:   repo,
-		region: region,
-	}
-
-	for _, service := range services {
-		switch service.Name() {
-		case "infra":
-			syncer.infraService = service
-		case "access":
-			syncer.accessService = service
-		default:
-			panic(fmt.Sprintf("syncer: cannot init: unexpected service name %s", service.Name()))
-		}
-	}
-
-	return syncer
+	return &syncer{Repo: repo}
 }
 
-func (s *syncer) Sync() (*graph.Graph, *graph.Graph, error) {
-	var wg gosync.WaitGroup
-	var infrag, accessg *graph.Graph
+func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
+	graphs := make(map[string]*graph.Graph)
+	var workers gosync.WaitGroup
 
-	errorc := make(chan error, 2)
+	type result struct {
+		name string
+		gph  *graph.Graph
+	}
 
-	wg.Add(1)
+	resultc := make(chan *result, len(services))
+	errorc := make(chan error, len(services))
+
+	for _, service := range services {
+		workers.Add(1)
+		go func(srv cloud.Service) {
+			defer workers.Done()
+			g, err := srv.FetchResources()
+			errorc <- err
+			resultc <- &result{name: srv.Name(), gph: g}
+		}(service)
+	}
+
 	go func() {
-		defer wg.Done()
-		var err error
-		infrag, err = s.infraService.FetchResources()
-		errorc <- err
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var err error
-		accessg, err = s.accessService.FetchResources()
-		errorc <- err
-	}()
-
-	go func() {
-		wg.Wait()
+		workers.Wait()
 		close(errorc)
+		close(resultc)
 	}()
 
-	for err := range errorc {
-		if err != nil {
-			return nil, nil, err
+Loop:
+	for {
+		select {
+		case err := <-errorc:
+			if err != nil {
+				return graphs, err
+			}
+		case res, ok := <-resultc:
+			if !ok {
+				break Loop
+			}
+			graphs[res.name] = res.gph
 		}
 	}
 
-	tofile, err := infrag.Marshal()
-	if err != nil {
-		return nil, nil, err
-	}
-	if err = ioutil.WriteFile(filepath.Join(config.RepoDir, config.InfraFilename), tofile, 0600); err != nil {
-		return nil, nil, err
+	var filenames []string
+
+	for name, g := range graphs {
+		filename := fmt.Sprintf("%s.rdf", name)
+		tofile, err := g.Marshal()
+		if err != nil {
+			return graphs, err
+		}
+		if err = ioutil.WriteFile(filepath.Join(config.RepoDir, filename), tofile, 0600); err != nil {
+			return graphs, err
+		}
+		filenames = append(filenames, filename)
 	}
 
-	tofile, err = accessg.Marshal()
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := ioutil.WriteFile(filepath.Join(config.RepoDir, config.AccessFilename), tofile, 0600); err != nil {
-		return nil, nil, err
+	if err := s.Commit(filenames...); err != nil {
+		return graphs, err
 	}
 
-	if err := s.Commit(config.InfraFilename, config.AccessFilename); err != nil {
-		return nil, nil, err
-	}
-
-	return infrag, accessg, nil
+	return graphs, nil
 }
