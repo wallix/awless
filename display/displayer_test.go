@@ -258,14 +258,14 @@ func TestDiffDisplay(t *testing.T) {
 	expected := `+----------+--------------+----------+------------+
 |  TYPE ▲  |   NAME/ID    | PROPERTY |   VALUE    |
 +----------+--------------+----------+------------+
-| instance | + inst_4     |          |            |
-|          | + inst_5     |          |            |
-|          | + inst_6     |          |            |
-|          | - inst_2     |          |            |
-|          | redis        | Id       | + new_id   |
-|          |              |          | - inst_1   |
-| subnet   | + new_subnet |          |            |
-| vpc      | vpc_1        | NewProp  | - my_value |
+| instance | + inst_4     |          |            |
+|          | + inst_5     |          |            |
+|          | + inst_6     |          |            |
+|          | - inst_2     |          |            |
+|          | redis        | Id       | + new_id   |
+|          |              |          | - inst_1   |
+| subnet   | + new_subnet |          |            |
+| vpc      | vpc_1        | NewProp  | - my_value |
 +----------+--------------+----------+------------+
 `
 	var w bytes.Buffer
@@ -558,27 +558,7 @@ func createDiff() *graph.Diff {
 		panic(err)
 	}
 
-	diff := graph.NewDiff(localDiffG, remoteDiffG)
-
-	// diff.AddDeleted(parseTriple(`/instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text`), parentOfPredicate)
-	// diff.AddDeleted(parseTriple(`/instance<inst_2>  "has_type"@[] "/instance"^^type:text`), parentOfPredicate)
-	// diff.AddDeleted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>`), parentOfPredicate)
-	// diff.AddDeleted(parseTriple(`/vpc<vpc_1>	"property"@[]	"{"Key":"NewProp","Value":"my_value"}"^^type:text`), parentOfPredicate)
-
-	// diff.AddInserted(parseTriple(`/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"new_id"}"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/instance<inst_4>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_4>`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/instance<inst_5>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/subnet<sub_2>	"parent_of"@[]	/instance<inst_5>`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Id","Value":"inst_5"}"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/instance<inst_5>	"property"@[]	"{"Key":"Test","Value":"test_1"}"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/subnet<new_subnet>	"has_type"@[]	"/subnet"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/vpc<vpc_2>	"parent_of"@[]	/subnet<new_subnet>`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/instance<inst_6>	"has_type"@[]	"/instance"^^type:text`), parentOfPredicate)
-	// diff.AddInserted(parseTriple(`/subnet<new_subnet>	"parent_of"@[]	/instance<inst_6>`), parentOfPredicate)
-
-	return diff
+	return graph.NewDiff(localDiffG, remoteDiffG)
 }
 
 func TestEmotyDisplays(t *testing.T) {

@@ -454,7 +454,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
-				res.Type().String(), color.New(color.FgGreen).SprintFunc()("+ " + nameOrID(res)), "", "",
+				res.Type().String(), color.New(color.FgGreen).SprintFunc()("+ " + nameOrID(res)), "", "",
 			})
 		default:
 			localCommons[res.Id()] = res
@@ -465,7 +465,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
-				res.Type().String(), color.New(color.FgRed).SprintFunc()("- " + nameOrID(res)), "", "",
+				res.Type().String(), color.New(color.FgRed).SprintFunc()("- " + nameOrID(res)), "", "",
 			})
 		default:
 			remoteCommons[res.Id()] = res
@@ -480,14 +480,14 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 			added := rem.Properties.Substract(common.Properties)
 			for k, v := range added {
 				values = append(values, []interface{}{
-					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
+					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
 				})
 			}
 
 			deleted := common.Properties.Substract(rem.Properties)
 			for k, v := range deleted {
 				values = append(values, []interface{}{
-					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
+					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
 				})
 			}
 		}
