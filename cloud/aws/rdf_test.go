@@ -2,6 +2,8 @@ package aws
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -105,120 +107,14 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 	}
 
 	result := g.MustMarshal()
-	expect := `/group<group_1>	"has_type"@[]	"/group"^^type:text
-/group<group_1>	"parent_of"@[]	/user<usr_1>
-/group<group_1>	"parent_of"@[]	/user<usr_2>
-/group<group_1>	"parent_of"@[]	/user<usr_3>
-/group<group_1>	"property"@[]	"{"Key":"Id","Value":"group_1"}"^^type:text
-/group<group_1>	"property"@[]	"{"Key":"Name","Value":"ngroup_1"}"^^type:text
-/group<group_2>	"has_type"@[]	"/group"^^type:text
-/group<group_2>	"parent_of"@[]	/user<usr_1>
-/group<group_2>	"parent_of"@[]	/user<usr_4>
-/group<group_2>	"parent_of"@[]	/user<usr_5>
-/group<group_2>	"parent_of"@[]	/user<usr_6>
-/group<group_2>	"parent_of"@[]	/user<usr_7>
-/group<group_2>	"property"@[]	"{"Key":"Id","Value":"group_2"}"^^type:text
-/group<group_2>	"property"@[]	"{"Key":"Name","Value":"ngroup_2"}"^^type:text
-/group<group_3>	"has_type"@[]	"/group"^^type:text
-/group<group_3>	"property"@[]	"{"Key":"Id","Value":"group_3"}"^^type:text
-/group<group_3>	"property"@[]	"{"Key":"Name","Value":"ngroup_3"}"^^type:text
-/group<group_4>	"has_type"@[]	"/group"^^type:text
-/group<group_4>	"parent_of"@[]	/user<usr_3>
-/group<group_4>	"parent_of"@[]	/user<usr_7>
-/group<group_4>	"parent_of"@[]	/user<usr_8>
-/group<group_4>	"parent_of"@[]	/user<usr_9>
-/group<group_4>	"property"@[]	"{"Key":"Id","Value":"group_4"}"^^type:text
-/group<group_4>	"property"@[]	"{"Key":"Name","Value":"ngroup_4"}"^^type:text
-/policy<policy_1>	"has_type"@[]	"/policy"^^type:text
-/policy<policy_1>	"parent_of"@[]	/group<group_1>
-/policy<policy_1>	"parent_of"@[]	/group<group_2>
-/policy<policy_1>	"parent_of"@[]	/role<role_1>
-/policy<policy_1>	"parent_of"@[]	/role<role_2>
-/policy<policy_1>	"parent_of"@[]	/user<usr_1>
-/policy<policy_1>	"parent_of"@[]	/user<usr_2>
-/policy<policy_1>	"parent_of"@[]	/user<usr_3>
-/policy<policy_1>	"property"@[]	"{"Key":"Id","Value":"policy_1"}"^^type:text
-/policy<policy_1>	"property"@[]	"{"Key":"Name","Value":"npolicy_1"}"^^type:text
-/policy<policy_2>	"has_type"@[]	"/policy"^^type:text
-/policy<policy_2>	"parent_of"@[]	/group<group_3>
-/policy<policy_2>	"parent_of"@[]	/role<role_3>
-/policy<policy_2>	"parent_of"@[]	/user<usr_1>
-/policy<policy_2>	"parent_of"@[]	/user<usr_4>
-/policy<policy_2>	"parent_of"@[]	/user<usr_5>
-/policy<policy_2>	"parent_of"@[]	/user<usr_6>
-/policy<policy_2>	"parent_of"@[]	/user<usr_7>
-/policy<policy_2>	"property"@[]	"{"Key":"Id","Value":"policy_2"}"^^type:text
-/policy<policy_2>	"property"@[]	"{"Key":"Name","Value":"npolicy_2"}"^^type:text
-/policy<policy_3>	"has_type"@[]	"/policy"^^type:text
-/policy<policy_3>	"property"@[]	"{"Key":"Id","Value":"policy_3"}"^^type:text
-/policy<policy_3>	"property"@[]	"{"Key":"Name","Value":"npolicy_3"}"^^type:text
-/policy<policy_4>	"has_type"@[]	"/policy"^^type:text
-/policy<policy_4>	"parent_of"@[]	/group<group_4>
-/policy<policy_4>	"parent_of"@[]	/role<role_4>
-/policy<policy_4>	"parent_of"@[]	/user<usr_3>
-/policy<policy_4>	"parent_of"@[]	/user<usr_7>
-/policy<policy_4>	"parent_of"@[]	/user<usr_8>
-/policy<policy_4>	"parent_of"@[]	/user<usr_9>
-/policy<policy_4>	"property"@[]	"{"Key":"Id","Value":"policy_4"}"^^type:text
-/policy<policy_4>	"property"@[]	"{"Key":"Name","Value":"npolicy_4"}"^^type:text
-/region<eu-west-1>	"has_type"@[]	"/region"^^type:text
-/region<eu-west-1>	"parent_of"@[]	/group<group_1>
-/region<eu-west-1>	"parent_of"@[]	/group<group_2>
-/region<eu-west-1>	"parent_of"@[]	/group<group_3>
-/region<eu-west-1>	"parent_of"@[]	/group<group_4>
-/region<eu-west-1>	"parent_of"@[]	/policy<policy_1>
-/region<eu-west-1>	"parent_of"@[]	/policy<policy_2>
-/region<eu-west-1>	"parent_of"@[]	/policy<policy_3>
-/region<eu-west-1>	"parent_of"@[]	/policy<policy_4>
-/region<eu-west-1>	"parent_of"@[]	/role<role_1>
-/region<eu-west-1>	"parent_of"@[]	/role<role_2>
-/region<eu-west-1>	"parent_of"@[]	/role<role_3>
-/region<eu-west-1>	"parent_of"@[]	/role<role_4>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_10>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_11>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_1>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_2>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_3>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_4>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_5>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_6>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_7>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_8>
-/region<eu-west-1>	"parent_of"@[]	/user<usr_9>
-/role<role_1>	"has_type"@[]	"/role"^^type:text
-/role<role_1>	"property"@[]	"{"Key":"Id","Value":"role_1"}"^^type:text
-/role<role_2>	"has_type"@[]	"/role"^^type:text
-/role<role_2>	"property"@[]	"{"Key":"Id","Value":"role_2"}"^^type:text
-/role<role_3>	"has_type"@[]	"/role"^^type:text
-/role<role_3>	"property"@[]	"{"Key":"Id","Value":"role_3"}"^^type:text
-/role<role_4>	"has_type"@[]	"/role"^^type:text
-/role<role_4>	"property"@[]	"{"Key":"Id","Value":"role_4"}"^^type:text
-/user<usr_10>	"has_type"@[]	"/user"^^type:text
-/user<usr_10>	"property"@[]	"{"Key":"Id","Value":"usr_10"}"^^type:text
-/user<usr_11>	"has_type"@[]	"/user"^^type:text
-/user<usr_11>	"property"@[]	"{"Key":"Id","Value":"usr_11"}"^^type:text
-/user<usr_1>	"has_type"@[]	"/user"^^type:text
-/user<usr_1>	"property"@[]	"{"Key":"Id","Value":"usr_1"}"^^type:text
-/user<usr_2>	"has_type"@[]	"/user"^^type:text
-/user<usr_2>	"property"@[]	"{"Key":"Id","Value":"usr_2"}"^^type:text
-/user<usr_3>	"has_type"@[]	"/user"^^type:text
-/user<usr_3>	"property"@[]	"{"Key":"Id","Value":"usr_3"}"^^type:text
-/user<usr_4>	"has_type"@[]	"/user"^^type:text
-/user<usr_4>	"property"@[]	"{"Key":"Id","Value":"usr_4"}"^^type:text
-/user<usr_5>	"has_type"@[]	"/user"^^type:text
-/user<usr_5>	"property"@[]	"{"Key":"Id","Value":"usr_5"}"^^type:text
-/user<usr_6>	"has_type"@[]	"/user"^^type:text
-/user<usr_6>	"property"@[]	"{"Key":"Id","Value":"usr_6"}"^^type:text
-/user<usr_7>	"has_type"@[]	"/user"^^type:text
-/user<usr_7>	"property"@[]	"{"Key":"Id","Value":"usr_7"}"^^type:text
-/user<usr_8>	"has_type"@[]	"/user"^^type:text
-/user<usr_8>	"property"@[]	"{"Key":"Id","Value":"usr_8"}"^^type:text
-/user<usr_9>	"has_type"@[]	"/user"^^type:text
-/user<usr_9>	"property"@[]	"{"Key":"Id","Value":"usr_9"}"^^type:text`
-	if result != expect {
-		t.Fatalf("got\n[%s]\n\nwant\n[%s]", result, expect)
+	expectContent, err := ioutil.ReadFile(filepath.Join("testdata", "access.rdf"))
+	if err != nil {
+		t.Fatal(err)
 	}
 
+	if got, want := result, string(expectContent); got != want {
+		t.Fatalf("got\n[%s]\n\nwant\n[%s]", got, want)
+	}
 }
 
 func TestBuildInfraRdfGraph(t *testing.T) {
@@ -255,66 +151,13 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	result := g.MustMarshal()
-	expect := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
-/instance<inst_1>	"property"@[]	"{"Key":"Id","Value":"inst_1"}"^^type:text
-/instance<inst_1>	"property"@[]	"{"Key":"Name","Value":"instance1-name"}"^^type:text
-/instance<inst_1>	"property"@[]	"{"Key":"SubnetId","Value":"sub_1"}"^^type:text
-/instance<inst_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-/instance<inst_2>	"has_type"@[]	"/instance"^^type:text
-/instance<inst_2>	"property"@[]	"{"Key":"Id","Value":"inst_2"}"^^type:text
-/instance<inst_2>	"property"@[]	"{"Key":"SecurityGroups","Value":["secgroup_1"]}"^^type:text
-/instance<inst_2>	"property"@[]	"{"Key":"SubnetId","Value":"sub_2"}"^^type:text
-/instance<inst_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-/instance<inst_3>	"has_type"@[]	"/instance"^^type:text
-/instance<inst_3>	"property"@[]	"{"Key":"Id","Value":"inst_3"}"^^type:text
-/instance<inst_3>	"property"@[]	"{"Key":"SubnetId","Value":"sub_3"}"^^type:text
-/instance<inst_3>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
-/instance<inst_4>	"has_type"@[]	"/instance"^^type:text
-/instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text
-/instance<inst_4>	"property"@[]	"{"Key":"SecurityGroups","Value":["secgroup_1","secgroup_2"]}"^^type:text
-/instance<inst_4>	"property"@[]	"{"Key":"SubnetId","Value":"sub_3"}"^^type:text
-/instance<inst_4>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
-/instance<inst_5>	"has_type"@[]	"/instance"^^type:text
-/instance<inst_5>	"property"@[]	"{"Key":"Id","Value":"inst_5"}"^^type:text
-/region<eu-west-1>	"has_type"@[]	"/region"^^type:text
-/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
-/region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
-/securitygroup<secgroup_1>	"has_type"@[]	"/securitygroup"^^type:text
-/securitygroup<secgroup_1>	"parent_of"@[]	/instance<inst_2>
-/securitygroup<secgroup_1>	"parent_of"@[]	/instance<inst_4>
-/securitygroup<secgroup_1>	"property"@[]	"{"Key":"Id","Value":"secgroup_1"}"^^type:text
-/securitygroup<secgroup_1>	"property"@[]	"{"Key":"Name","Value":"my_secgroup"}"^^type:text
-/securitygroup<secgroup_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-/securitygroup<secgroup_2>	"has_type"@[]	"/securitygroup"^^type:text
-/securitygroup<secgroup_2>	"parent_of"@[]	/instance<inst_4>
-/securitygroup<secgroup_2>	"property"@[]	"{"Key":"Id","Value":"secgroup_2"}"^^type:text
-/securitygroup<secgroup_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-/subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text
-/subnet<sub_1>	"parent_of"@[]	/instance<inst_1>
-/subnet<sub_1>	"property"@[]	"{"Key":"Id","Value":"sub_1"}"^^type:text
-/subnet<sub_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-/subnet<sub_2>	"has_type"@[]	"/subnet"^^type:text
-/subnet<sub_2>	"parent_of"@[]	/instance<inst_2>
-/subnet<sub_2>	"property"@[]	"{"Key":"Id","Value":"sub_2"}"^^type:text
-/subnet<sub_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
-/subnet<sub_3>	"has_type"@[]	"/subnet"^^type:text
-/subnet<sub_3>	"parent_of"@[]	/instance<inst_3>
-/subnet<sub_3>	"parent_of"@[]	/instance<inst_4>
-/subnet<sub_3>	"property"@[]	"{"Key":"Id","Value":"sub_3"}"^^type:text
-/subnet<sub_3>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
-/subnet<sub_4>	"has_type"@[]	"/subnet"^^type:text
-/subnet<sub_4>	"property"@[]	"{"Key":"Id","Value":"sub_4"}"^^type:text
-/vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
-/vpc<vpc_1>	"parent_of"@[]	/securitygroup<secgroup_1>
-/vpc<vpc_1>	"parent_of"@[]	/securitygroup<secgroup_2>
-/vpc<vpc_1>	"parent_of"@[]	/subnet<sub_1>
-/vpc<vpc_1>	"parent_of"@[]	/subnet<sub_2>
-/vpc<vpc_1>	"property"@[]	"{"Key":"Id","Value":"vpc_1"}"^^type:text
-/vpc<vpc_2>	"has_type"@[]	"/vpc"^^type:text
-/vpc<vpc_2>	"parent_of"@[]	/subnet<sub_3>
-/vpc<vpc_2>	"property"@[]	"{"Key":"Id","Value":"vpc_2"}"^^type:text`
-	if result != expect {
-		t.Fatalf("got [%s]\nwant [%s]", result, expect)
+	expectContent, err := ioutil.ReadFile(filepath.Join("testdata", "infra.rdf"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := result, string(expectContent); got != want {
+		t.Fatalf("got\n[%s]\n\nwant\n[%s]", got, want)
 	}
 }
 
