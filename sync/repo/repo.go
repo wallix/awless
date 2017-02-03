@@ -92,11 +92,9 @@ func (r *gitRepo) List() ([]*Rev, error) {
 		all = append(all, &Rev{Id: commit.Hash.String(), Date: commit.Committer.When})
 	}
 
-	reduced := reduceToLastRevOfEachDay(all)
+	sort.Sort(revsByDate(all))
 
-	sort.Sort(revsByDate(reduced))
-
-	return reduced, nil
+	return all, nil
 }
 
 func reduceToLastRevOfEachDay(revs []*Rev) []*Rev {
