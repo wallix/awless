@@ -46,6 +46,9 @@ func InitServices(region string) error {
 	InfraService = NewInfra(sess)
 	SecuAPI = NewSecu(sess)
 
+	cloud.ServiceRegistry[InfraService.Name()] = InfraService
+	cloud.ServiceRegistry[AccessService.Name()] = AccessService
+
 	return nil
 }
 

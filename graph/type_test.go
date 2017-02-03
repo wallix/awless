@@ -25,18 +25,3 @@ func TestResourceTypeToRdfType(t *testing.T) {
 		}
 	}
 }
-
-func TestResourceTypePluralizeName(t *testing.T) {
-	resourceTypes := []ResourceType{Region, Vpc, Subnet, Instance, User, Role, Group}
-	for _, r := range resourceTypes {
-		if got, want := r.PluralString(), r.String()+"s"; got != want {
-			t.Fatalf("got %s, want %s", got, want)
-		}
-	}
-	if got, want := Policy.PluralString(), "policies"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := InternetGateway.PluralString(), "internetgateways"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-}

@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/display"
@@ -23,14 +25,12 @@ var (
 
 func init() {
 	RootCmd.AddCommand(listCmd)
-	for _, resource := range []graph.ResourceType{graph.Instance, graph.Vpc, graph.Subnet, graph.SecurityGroup, graph.Keypair, graph.Volume, graph.InternetGateway, graph.RouteTable} {
-		listCmd.AddCommand(listInfraResourceCmd(resource))
+	for apiName, types := range aws.ResourceTypesPerAPI {
+		for _, resType := range types {
+			listCmd.AddCommand(listServiceResourceCmd(apiName, resType))
+		}
 	}
-	for _, resource := range []graph.ResourceType{graph.User, graph.Role, graph.Policy, graph.Group} {
-		listCmd.AddCommand(listAccessResourceCmd(resource))
-	}
-	listCmd.AddCommand(listInfraCmd)
-	listCmd.AddCommand(listAccessCmd)
+
 	listCmd.AddCommand(listAllCmd)
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Format for the display of resources: table or csv")
@@ -50,10 +50,10 @@ var listCmd = &cobra.Command{
 	Short:              "List various type of items: instances, vpc, subnet ...",
 }
 
-var listInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command {
+var listServiceResourceCmd = func(apiName string, resType string) *cobra.Command {
 	return &cobra.Command{
-		Use:   resourceType.PluralString(),
-		Short: "List AWS EC2 " + resourceType.PluralString(),
+		Use:   cloud.PluralizeResource(resType),
+		Short: fmt.Sprintf("List AWS %s %s", apiName, cloud.PluralizeResource(resType)),
 
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *graph.Graph
@@ -61,30 +61,13 @@ var listInfraResourceCmd = func(resourceType graph.ResourceType) *cobra.Command 
 			if localResources {
 				g, err = config.LoadInfraGraph()
 			} else {
-				g, err = aws.InfraService.FetchByType(resourceType.String())
+				srv, err := cloud.GetServiceForType(resType)
+				exitOn(err)
+				g, err = srv.FetchByType(resType)
 			}
 			exitOn(err)
 
-			printResources(g, resourceType)
-		},
-	}
-}
-
-var listAccessResourceCmd = func(resourceType graph.ResourceType) *cobra.Command {
-	return &cobra.Command{
-		Use:   resourceType.PluralString(),
-		Short: "List AWS IAM " + resourceType.PluralString(),
-
-		Run: func(cmd *cobra.Command, args []string) {
-			var g *graph.Graph
-			var err error
-			if localResources {
-				g, err = config.LoadAccessGraph()
-			} else {
-				g, err = aws.AccessService.FetchByType(resourceType.String())
-			}
-			exitOn(err)
-			printResources(g, resourceType)
+			printResources(g, graph.ResourceType(resType))
 		},
 	}
 }
@@ -112,10 +95,10 @@ var listAllCmd = &cobra.Command{
 	},
 }
 
-func printResources(g *graph.Graph, nodeType graph.ResourceType) {
+func printResources(g *graph.Graph, resType graph.ResourceType) {
 	displayer := display.BuildOptions(
-		display.WithRdfType(nodeType),
-		display.WithHeaders(display.DefaultsColumnDefinitions[nodeType]),
+		display.WithRdfType(resType),
+		display.WithHeaders(display.DefaultsColumnDefinitions[resType]),
 		display.WithMaxWidth(shell.GetTerminalWidth()),
 		display.WithFormat(listingFormat),
 		display.WithIDsOnly(listOnlyIDs),
@@ -127,7 +110,6 @@ func printResources(g *graph.Graph, nodeType graph.ResourceType) {
 
 func listAllAccessResources(cmd *cobra.Command, args []string) {
 	g, err := config.LoadAccessGraph()
-	exitOn(err)
 	exitOn(err)
 	displayer := display.BuildOptions(
 		display.WithFormat(listingFormat),

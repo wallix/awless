@@ -3,7 +3,6 @@ package graph
 import (
 	"fmt"
 	"net"
-	"strings"
 )
 
 const (
@@ -67,15 +66,4 @@ func (r ResourceType) String() string {
 
 func (r ResourceType) ToRDFString() string {
 	return "/" + r.String()
-}
-
-func (r ResourceType) PluralString() string {
-	return pluralize(r.String())
-}
-
-func pluralize(singular string) string {
-	if strings.HasSuffix(singular, "cy") {
-		return strings.TrimSuffix(singular, "y") + "ies"
-	}
-	return singular + "s"
 }

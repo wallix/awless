@@ -57,6 +57,17 @@ import (
   {{- end }}
   "github.com/wallix/awless/graph"
 )
+
+var ResourceTypesPerAPI = map[string][]string {
+{{- range $index, $service := . }}
+  "{{ $service.Api }}": []string{
+    {{- range $idx, $fetcher := $service.Fetchers }}
+      "{{ $fetcher.ResourceType }}",
+    {{- end }}
+  },
+{{- end }}
+}
+
 {{ range $index, $service := . }}
 type {{ Title $service.Name }} struct {
   region string
@@ -74,6 +85,10 @@ func (s *{{ Title $service.Name }}) Name() string {
 
 func (s *{{ Title $service.Name }}) Provider() string {
   return "aws"
+}
+
+func (s *{{ Title $service.Name }}) ProviderAPI() string {
+  return "{{ $service.Api }}"
 }
 
 func (s *{{ Title $service.Name }}) ProviderRunnableAPI() interface{} {

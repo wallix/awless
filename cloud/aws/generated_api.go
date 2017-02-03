@@ -15,6 +15,26 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+var ResourceTypesPerAPI = map[string][]string{
+	"ec2": []string{
+		"instance",
+		"subnet",
+		"vpc",
+		"keypair",
+		"securitygroup",
+		"volume",
+		"region",
+		"internetgateway",
+		"routetable",
+	},
+	"iam": []string{
+		"user",
+		"group",
+		"role",
+		"policy",
+	},
+}
+
 type Infra struct {
 	region string
 	ec2iface.EC2API
@@ -31,6 +51,10 @@ func (s *Infra) Name() string {
 
 func (s *Infra) Provider() string {
 	return "aws"
+}
+
+func (s *Infra) ProviderAPI() string {
+	return "ec2"
 }
 
 func (s *Infra) ProviderRunnableAPI() interface{} {
@@ -338,6 +362,10 @@ func (s *Access) Name() string {
 
 func (s *Access) Provider() string {
 	return "aws"
+}
+
+func (s *Access) ProviderAPI() string {
+	return "iam"
 }
 
 func (s *Access) ProviderRunnableAPI() interface{} {
