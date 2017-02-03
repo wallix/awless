@@ -30,7 +30,7 @@ type Graph struct {
 func NewGraph() *Graph {
 	g, err := memory.DefaultStore.NewGraph(context.Background(), randString())
 	if err != nil {
-		panic(err) // badwolf implementation: only happens on duplicates names of graph
+		panic(err) // badwoclf implementation: only happens on duplicates names of graph
 	}
 	return &Graph{Graph: g}
 }
@@ -60,6 +60,11 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 func (g *Graph) Add(triples ...*triple.Triple) {
 	g.triplesCount += len(triples)
 	_ = g.AddTriples(context.Background(), triples) // badwolf mem store implementation always returns nil error
+}
+
+func (g *Graph) AddGraph(graph *Graph) {
+	all, _ := graph.allTriples()
+	g.Add(all...)
 }
 
 func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {

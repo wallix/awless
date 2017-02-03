@@ -100,23 +100,32 @@ func (s *Infra) ResourceTypes() (all []string) {
 func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	switch t {
 	case "instance":
-		return s.fetch_all_instance_graph()
+		graph, _, err := s.fetch_all_instance_graph()
+		return graph, err
 	case "subnet":
-		return s.fetch_all_subnet_graph()
+		graph, _, err := s.fetch_all_subnet_graph()
+		return graph, err
 	case "vpc":
-		return s.fetch_all_vpc_graph()
+		graph, _, err := s.fetch_all_vpc_graph()
+		return graph, err
 	case "keypair":
-		return s.fetch_all_keypair_graph()
+		graph, _, err := s.fetch_all_keypair_graph()
+		return graph, err
 	case "securitygroup":
-		return s.fetch_all_securitygroup_graph()
+		graph, _, err := s.fetch_all_securitygroup_graph()
+		return graph, err
 	case "volume":
-		return s.fetch_all_volume_graph()
+		graph, _, err := s.fetch_all_volume_graph()
+		return graph, err
 	case "region":
-		return s.fetch_all_region_graph()
+		graph, _, err := s.fetch_all_region_graph()
+		return graph, err
 	case "internetgateway":
-		return s.fetch_all_internetgateway_graph()
+		graph, _, err := s.fetch_all_internetgateway_graph()
+		return graph, err
 	case "routetable":
-		return s.fetch_all_routetable_graph()
+		graph, _, err := s.fetch_all_routetable_graph()
+		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
 	}
@@ -150,168 +159,186 @@ func (s *Infra) fetch_all_routetable() (interface{}, error) {
 	return s.DescribeRouteTables(&ec2.DescribeRouteTablesInput{})
 }
 
-func (s *Infra) fetch_all_instance_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_instance_graph() (*graph.Graph, []*ec2.Instance, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.Instance
 	out, err := s.fetch_all_instance()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, all := range out.(*ec2.DescribeInstancesOutput).Reservations {
 		for _, output := range all.Instances {
+			cloudResources = append(cloudResources, output)
 			res, err := newResource(output)
 			if err != nil {
-				return g, err
+				return g, cloudResources, err
 			}
 			g.AddResource(res)
 		}
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, []*ec2.Subnet, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.Subnet
 	out, err := s.fetch_all_subnet()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeSubnetsOutput).Subnets {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, []*ec2.Vpc, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.Vpc
 	out, err := s.fetch_all_vpc()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeVpcsOutput).Vpcs {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, []*ec2.KeyPairInfo, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.KeyPairInfo
 	out, err := s.fetch_all_keypair()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeKeyPairsOutput).KeyPairs {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_securitygroup_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_securitygroup_graph() (*graph.Graph, []*ec2.SecurityGroup, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.SecurityGroup
 	out, err := s.fetch_all_securitygroup()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeSecurityGroupsOutput).SecurityGroups {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_volume_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_volume_graph() (*graph.Graph, []*ec2.Volume, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.Volume
 	out, err := s.fetch_all_volume()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeVolumesOutput).Volumes {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_region_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_region_graph() (*graph.Graph, []*ec2.Region, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.Region
 	out, err := s.fetch_all_region()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeRegionsOutput).Regions {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.InternetGateway, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.InternetGateway
 	out, err := s.fetch_all_internetgateway()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeInternetGatewaysOutput).InternetGateways {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, error) {
+func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, error) {
 	g := graph.NewGraph()
+	var cloudResources []*ec2.RouteTable
 	out, err := s.fetch_all_routetable()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*ec2.DescribeRouteTablesOutput).RouteTables {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
 type AwsInfra struct {
@@ -406,13 +433,17 @@ func (s *Access) ResourceTypes() (all []string) {
 func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 	switch t {
 	case "user":
-		return s.fetch_all_user_graph()
+		graph, _, err := s.fetch_all_user_graph()
+		return graph, err
 	case "group":
-		return s.fetch_all_group_graph()
+		graph, _, err := s.fetch_all_group_graph()
+		return graph, err
 	case "role":
-		return s.fetch_all_role_graph()
+		graph, _, err := s.fetch_all_role_graph()
+		return graph, err
 	case "policy":
-		return s.fetch_all_policy_graph()
+		graph, _, err := s.fetch_all_policy_graph()
+		return graph, err
 	default:
 		return nil, fmt.Errorf("aws access: unsupported fetch for type %s", t)
 	}
@@ -431,74 +462,82 @@ func (s *Access) fetch_all_policy() (interface{}, error) {
 	return s.ListPolicies(&iam.ListPoliciesInput{Scope: awssdk.String(iam.PolicyScopeTypeLocal)})
 }
 
-func (s *Access) fetch_all_user_graph() (*graph.Graph, error) {
+func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.User, error) {
 	g := graph.NewGraph()
+	var cloudResources []*iam.User
 	out, err := s.fetch_all_user()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*iam.ListUsersOutput).Users {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Access) fetch_all_group_graph() (*graph.Graph, error) {
+func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.Group, error) {
 	g := graph.NewGraph()
+	var cloudResources []*iam.Group
 	out, err := s.fetch_all_group()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*iam.ListGroupsOutput).Groups {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Access) fetch_all_role_graph() (*graph.Graph, error) {
+func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.Role, error) {
 	g := graph.NewGraph()
+	var cloudResources []*iam.Role
 	out, err := s.fetch_all_role()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*iam.ListRolesOutput).Roles {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }
 
-func (s *Access) fetch_all_policy_graph() (*graph.Graph, error) {
+func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 	g := graph.NewGraph()
+	var cloudResources []*iam.Policy
 	out, err := s.fetch_all_policy()
 	if err != nil {
-		return nil, err
+		return nil, cloudResources, err
 	}
 
 	for _, output := range out.(*iam.ListPoliciesOutput).Policies {
+		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
-			return g, err
+			return g, cloudResources, err
 		}
 		g.AddResource(res)
 	}
 
-	return g, nil
+	return g, cloudResources, nil
 }

@@ -86,7 +86,7 @@ type transformFn func(i interface{}) (interface{}, error)
 
 var extractValueFn = func(i interface{}) (interface{}, error) {
 	iv := reflect.ValueOf(i)
-	if iv.Kind() == reflect.Ptr {
+	if iv.Kind() == reflect.Ptr && !iv.IsNil() {
 		return iv.Elem().Interface(), nil
 	}
 	return nil, fmt.Errorf("aws type unknown: %T", i)
@@ -277,7 +277,7 @@ var extractHasATrueBoolInStructSliceFn = func(key string) transformFn {
 		for i := 0; i < value.Len(); i++ {
 			e, err := extractFieldFn(key)(value.Index(i).Interface())
 			if err != nil {
-				return nil, err
+				continue //Empty field, we do not need to throw the error
 			}
 			b, ok := e.(bool)
 			if !ok {

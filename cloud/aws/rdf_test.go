@@ -1,13 +1,13 @@
 package aws
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
@@ -118,34 +118,47 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 }
 
 func TestBuildInfraRdfGraph(t *testing.T) {
-	awsInfra := &AwsInfra{}
-
-	awsInfra.instanceList = []*ec2.Instance{
-		&ec2.Instance{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
-		&ec2.Instance{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}}},
-		&ec2.Instance{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
-		&ec2.Instance{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}, {GroupId: awssdk.String("secgroup_2")}}},
-		&ec2.Instance{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
+	instances := []*ec2.Instance{
+		{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
+		{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}}},
+		{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
+		{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}, {GroupId: awssdk.String("secgroup_2")}}},
+		{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil}, // terminated instance (no vpc, subnet ids)
 	}
 
-	awsInfra.vpcList = []*ec2.Vpc{
-		&ec2.Vpc{VpcId: awssdk.String("vpc_1")},
-		&ec2.Vpc{VpcId: awssdk.String("vpc_2")},
+	vpcs := []*ec2.Vpc{
+		{VpcId: awssdk.String("vpc_1")},
+		{VpcId: awssdk.String("vpc_2")},
 	}
 
-	awsInfra.securitygroupList = []*ec2.SecurityGroup{
-		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_1"), GroupName: awssdk.String("my_secgroup"), VpcId: awssdk.String("vpc_1")},
-		&ec2.SecurityGroup{GroupId: awssdk.String("secgroup_2"), VpcId: awssdk.String("vpc_1")},
+	securityGroups := []*ec2.SecurityGroup{
+		{GroupId: awssdk.String("secgroup_1"), GroupName: awssdk.String("my_secgroup"), VpcId: awssdk.String("vpc_1")},
+		{GroupId: awssdk.String("secgroup_2"), VpcId: awssdk.String("vpc_1")},
 	}
 
-	awsInfra.subnetList = []*ec2.Subnet{
-		&ec2.Subnet{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
-		&ec2.Subnet{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
-		&ec2.Subnet{SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
-		&ec2.Subnet{SubnetId: awssdk.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
+	subnets := []*ec2.Subnet{
+		{SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1")},
+		{SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1")},
+		{SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
+		{SubnetId: awssdk.String("sub_4"), VpcId: nil}, // edge case subnet with no vpc id
 	}
 
-	g, err := buildInfraGraph("eu-west-1", awsInfra)
+	keypairs := []*ec2.KeyPairInfo{
+		{KeyName: awssdk.String("my_key_pair")},
+	}
+
+	igws := []*ec2.InternetGateway{
+		{InternetGatewayId: awssdk.String("igw_1"), Attachments: []*ec2.InternetGatewayAttachment{{VpcId: awssdk.String("vpc_2")}}},
+	}
+
+	routeTables := []*ec2.RouteTable{
+		{RouteTableId: awssdk.String("rt_1"), VpcId: awssdk.String("vpc_1"), Associations: []*ec2.RouteTableAssociation{{RouteTableId: awssdk.String("rt_1"), SubnetId: awssdk.String("subnet_1")}}},
+	}
+
+	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
+	infra := Infra{EC2API: mock, region: "eu-west-1"}
+
+	g, err := infra.fetchAndBuildGraph()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +186,9 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	g, err = buildInfraGraph("eu-west-1", &AwsInfra{})
+	infra := Infra{EC2API: &mockEc2{}, region: "eu-west-1"}
+
+	g, err = infra.fetchAndBuildGraph()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,30 +199,41 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	}
 }
 
-func BenchmarkBuildInfraRdfGraph(b *testing.B) {
-	awsInfra := &AwsInfra{}
+type mockEc2 struct {
+	ec2iface.EC2API
+	vpcs             []*ec2.Vpc
+	subnets          []*ec2.Subnet
+	instances        []*ec2.Instance
+	securityGroups   []*ec2.SecurityGroup
+	keyPairs         []*ec2.KeyPairInfo
+	internetGateways []*ec2.InternetGateway
+	routeTables      []*ec2.RouteTable
+}
 
-	for i := 0; i < 10; i++ {
-		vpcId := fmt.Sprintf("vpc_%d", i+1)
-		vpc := &ec2.Vpc{VpcId: awssdk.String(vpcId)}
-		awsInfra.vpcList = append(awsInfra.vpcList, vpc)
-		for j := 0; j < 10; j++ {
-			subnetId := fmt.Sprintf("%s_sub_%d", vpcId, j+1)
-			subnet := &ec2.Subnet{SubnetId: awssdk.String(subnetId), VpcId: awssdk.String(vpcId)}
-			awsInfra.subnetList = append(awsInfra.subnetList, subnet)
-			for k := 0; k < 1000; k++ {
-				inst := &ec2.Instance{InstanceId: awssdk.String(fmt.Sprintf("%s_inst_%d", subnetId, k)), SubnetId: awssdk.String(subnetId), VpcId: awssdk.String(vpcId), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String(fmt.Sprintf("instance_%d_name", k))}}}
-				awsInfra.instanceList = append(awsInfra.instanceList, inst)
-			}
-		}
-	}
+func (m *mockEc2) DescribeVpcs(input *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
+	return &ec2.DescribeVpcsOutput{Vpcs: m.vpcs}, nil
+}
 
-	b.ResetTimer()
+func (m *mockEc2) DescribeSubnets(input *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
+	return &ec2.DescribeSubnetsOutput{Subnets: m.subnets}, nil
+}
 
-	for i := 0; i < b.N; i++ {
-		_, err := buildInfraGraph("eu-west-1", awsInfra)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
+func (m *mockEc2) DescribeInstances(input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
+	return &ec2.DescribeInstancesOutput{Reservations: []*ec2.Reservation{{Instances: m.instances}}}, nil
+}
+
+func (m *mockEc2) DescribeSecurityGroups(input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return &ec2.DescribeSecurityGroupsOutput{SecurityGroups: m.securityGroups}, nil
+}
+
+func (m *mockEc2) DescribeKeyPairs(input *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
+	return &ec2.DescribeKeyPairsOutput{KeyPairs: m.keyPairs}, nil
+}
+
+func (m *mockEc2) DescribeInternetGateways(input *ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
+	return &ec2.DescribeInternetGatewaysOutput{InternetGateways: m.internetGateways}, nil
+}
+
+func (m *mockEc2) DescribeRouteTables(input *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {
+	return &ec2.DescribeRouteTablesOutput{RouteTables: m.routeTables}, nil
 }

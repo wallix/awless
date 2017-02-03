@@ -31,6 +31,10 @@ func (g *Graph) AddResource(resources ...*Resource) error {
 	return nil
 }
 
+func (g *Graph) AddGraph(graph *Graph) {
+	g.rdfG.AddGraph(graph.rdfG)
+}
+
 func (g *Graph) AddParent(parent, child *Resource) error {
 	n, err := child.toRDFNode()
 	if err != nil {

@@ -123,7 +123,8 @@ func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) 
   switch t {
   {{- range $index, $fetcher := $service.Fetchers }}
   case "{{ $fetcher.ResourceType }}":
-    return s.fetch_all_{{ $fetcher.ResourceType }}_graph()
+		graph, _, err := s.fetch_all_{{ $fetcher.ResourceType }}_graph()
+    return graph, err
   {{- end }}
   default:
     return nil, fmt.Errorf("aws {{ $service.Name }}: unsupported fetch for type %s", t)
@@ -137,32 +138,35 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}() (int
 {{- end }}
 
 {{ range $index, $fetcher := $service.Fetchers }}
-func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, error) {
+func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, []*{{ $service.Api }}.{{ $fetcher.AWSType }}, error) {
   g := graph.NewGraph()
+	var cloudResources []*{{ $service.Api }}.{{ $fetcher.AWSType }}
   out, err := s.fetch_all_{{ $fetcher.ResourceType }}()
   if err != nil {
-    return nil, err
+    return nil, cloudResources, err
   }
   {{ if ne $fetcher.OutputsContainers "" }}
     for _, all := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsContainers }} {
       for _, output := range all.{{ $fetcher.OutputsExtractor }} {
+				cloudResources = append(cloudResources, output)
         res, err := newResource(output)
         if err != nil {
-          return g, err
+          return g, cloudResources, err
         }
         g.AddResource(res)
       }
     }
   {{ else }}
     for _, output := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsExtractor }} {
+			cloudResources = append(cloudResources, output)
       res, err := newResource(output)
       if err != nil {
-        return g, err
+        return g, cloudResources, err
       }
       g.AddResource(res)
     }
   {{ end }}
-  return g, nil
+  return g, cloudResources, nil
 }
 {{ end }}
 
