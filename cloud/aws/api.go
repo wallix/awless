@@ -3,6 +3,7 @@ package aws
 import (
 	"regexp"
 	"sort"
+	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -10,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
+	"github.com/wallix/awless/graph"
 )
 
 var DefaultAMIUsers = []string{"ec2-user", "ubuntu", "centos", "bitnami", "admin", "root"}
@@ -64,104 +66,72 @@ func (s *security) GetAccountId() (string, error) {
 	return awssdk.StringValue(output.Account), nil
 }
 
-func (a *Access) AccountDetails() (interface{}, error) {
-	params := &iam.GetAccountAuthorizationDetailsInput{
-		Filter: []*string{
-			awssdk.String(iam.EntityTypeUser),
-			awssdk.String(iam.EntityTypeRole),
-			awssdk.String(iam.EntityTypeGroup),
-			awssdk.String(iam.EntityTypeLocalManagedPolicy),
-			awssdk.String(iam.EntityTypeAwsmanagedPolicy),
-		},
-	}
-	return a.GetAccountAuthorizationDetails(params)
-}
+func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error) {
+	g := graph.NewGraph()
+	var userDetails []*iam.UserDetail
 
-type AwsAccess struct {
-	Users []*iam.User
+	var wg sync.WaitGroup
+	errc := make(chan error)
 
-	GroupsDetail []*iam.GroupDetail
-	UsersDetail  []*iam.UserDetail
-	RolesDetail  []*iam.RoleDetail
-	Policies     []*iam.ManagedPolicyDetail
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	UserGroups map[string][]string
+		out, err := s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{
+			Filter: []*string{
+				awssdk.String(iam.EntityTypeUser),
+				awssdk.String(iam.EntityTypeRole),
+				awssdk.String(iam.EntityTypeGroup),
+				awssdk.String(iam.EntityTypeLocalManagedPolicy),
+				awssdk.String(iam.EntityTypeAwsmanagedPolicy),
+			},
+		})
+		if err != nil {
+			errc <- err
+			return
+		}
 
-	UserPolicies  map[string][]string
-	GroupPolicies map[string][]string
-	RolePolicies  map[string][]string
-}
-
-func NewAwsAccess() *AwsAccess {
-	return &AwsAccess{
-		UserGroups:    make(map[string][]string),
-		UserPolicies:  make(map[string][]string),
-		GroupPolicies: make(map[string][]string),
-		RolePolicies:  make(map[string][]string),
-	}
-}
-
-func (access *Access) global_fetch() (*AwsAccess, error) {
-	resultc, errc := multiFetch(access.AccountDetails, access.fetch_all_user)
-
-	awsAccess := NewAwsAccess()
-
-	for r := range resultc {
-		switch rr := r.(type) {
-		case *iam.ListUsersOutput:
-			awsAccess.Users = append(awsAccess.Users, rr.Users...)
-
-		case *iam.GetAccountAuthorizationDetailsOutput:
-			for _, user := range rr.UserDetailList {
-				awsAccess.UsersDetail = append(awsAccess.UsersDetail, user)
-
-				groups := []string{}
-				for _, groupId := range user.GroupList {
-					groups = append(groups, awssdk.StringValue(groupId))
-				}
-				awsAccess.UserGroups[awssdk.StringValue(user.UserId)] = groups
-
-				policies := []string{}
-				for _, policy := range user.UserPolicyList {
-					policies = append(policies, awssdk.StringValue(policy.PolicyName))
-				}
-				for _, policy := range user.AttachedManagedPolicies {
-					policies = append(policies, awssdk.StringValue(policy.PolicyName))
-				}
-				awsAccess.UserPolicies[awssdk.StringValue(user.UserId)] = policies
+		for _, output := range out.UserDetailList {
+			userDetails = append(userDetails, output)
+			res, err := newResource(output)
+			if err != nil {
+				errc <- err
+				return
 			}
+			g.AddResource(res)
+		}
+	}()
 
-			for _, group := range rr.GroupDetailList {
-				awsAccess.GroupsDetail = append(awsAccess.GroupsDetail, group)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-				policies := []string{}
-				for _, policy := range group.GroupPolicyList {
-					policies = append(policies, awssdk.StringValue(policy.PolicyName))
-				}
-				for _, policy := range group.AttachedManagedPolicies {
-					policies = append(policies, awssdk.StringValue(policy.PolicyName))
-				}
-				awsAccess.GroupPolicies[awssdk.StringValue(group.GroupId)] = policies
+		out, err := s.ListUsers(&iam.ListUsersInput{})
+		if err != nil {
+			errc <- err
+			return
+		}
+
+		for _, output := range out.Users {
+			res, err := newResource(output)
+			if err != nil {
+				errc <- err
+				return
 			}
+			g.AddResource(res)
+		}
+	}()
 
-			for _, role := range rr.RoleDetailList {
-				awsAccess.RolesDetail = append(awsAccess.RolesDetail, role)
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
 
-				policies := []string{}
-				for _, policy := range role.RolePolicyList {
-					policies = append(policies, awssdk.StringValue(policy.PolicyName))
-				}
-				for _, policy := range role.AttachedManagedPolicies {
-					policies = append(policies, awssdk.StringValue(policy.PolicyName))
-				}
-				awsAccess.RolePolicies[awssdk.StringValue(role.RoleId)] = policies
-			}
-
-			for _, policy := range rr.Policies {
-				awsAccess.Policies = append(awsAccess.Policies, policy)
-			}
+	for err := range errc {
+		if err != nil {
+			return g, userDetails, err
 		}
 	}
 
-	return awsAccess, <-errc
+	return g, userDetails, nil
 }

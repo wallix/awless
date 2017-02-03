@@ -2,107 +2,17 @@ package aws
 
 import (
 	"fmt"
+	"os"
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/graph"
 )
 
 func (acc *Access) FetchResources() (*graph.Graph, error) {
-	access, err := acc.global_fetch()
-	if err != nil {
-		return nil, err
-	}
-
-	return buildAccessGraph(acc.region, access)
-}
-
-func buildAccessGraph(region string, access *AwsAccess) (*graph.Graph, error) {
-	g := graph.NewGraph()
-
-	regionN := graph.InitResource(region, graph.Region)
-	g.AddResource(regionN)
-
-	policiesIndex := make(map[string]*graph.Resource)
-	for _, policy := range access.Policies {
-		res, err := newResource(policy)
-		if err != nil {
-			return nil, err
-		}
-		g.AddResource(res)
-		g.AddParent(regionN, res)
-
-		policiesIndex[awssdk.StringValue(policy.PolicyName)] = res
-	}
-
-	groupsIndex := make(map[string]*graph.Resource)
-	for _, group := range access.GroupsDetail {
-		res, err := newResource(group)
-		if err != nil {
-			return nil, err
-		}
-		g.AddResource(res)
-		g.AddParent(regionN, res)
-
-		groupsIndex[res.Id()] = res
-
-		if policies, ok := access.GroupPolicies[res.Id()]; ok {
-			for _, policy := range policies {
-				if policyNode, present := policiesIndex[policy]; present {
-					g.AddParent(policyNode, res)
-				}
-			}
-		}
-	}
-
-	for _, user := range access.Users {
-		res, err := newResource(user)
-		if err != nil {
-			return nil, err
-		}
-		g.AddResource(res)
-		g.AddParent(regionN, res)
-
-		if groupIds, ok := access.UserGroups[res.Id()]; ok {
-			for _, groupId := range groupIds {
-				if groupNode, present := groupsIndex[groupId]; present {
-					g.AddParent(groupNode, res)
-				}
-			}
-		}
-
-		if policies, ok := access.UserPolicies[res.Id()]; ok {
-			for _, policy := range policies {
-				if policyNode, present := policiesIndex[policy]; present {
-					g.AddParent(policyNode, res)
-				}
-			}
-		}
-	}
-
-	for _, role := range access.RolesDetail {
-		res, err := newResource(role)
-		if err != nil {
-			return nil, err
-		}
-		g.AddResource(res)
-		g.AddParent(regionN, res)
-
-		if policies, ok := access.RolePolicies[res.Id()]; ok {
-			for _, policy := range policies {
-				if policyNode, present := policiesIndex[policy]; present {
-					g.AddParent(policyNode, res)
-				}
-			}
-		}
-	}
-
-	return g, nil
-}
-
-func (inf *Infra) FetchResources() (*graph.Graph, error) {
-	return inf.fetchAndBuildGraph()
+	return acc.fetchAndBuildGraph()
 }
 
 type addParentFn func(*graph.Graph, interface{}) error
@@ -115,6 +25,255 @@ var addParentsFns = map[string][]addParentFn{
 	graph.Keypair.String():         {addRegionParent},
 	graph.InternetGateway.String(): {addRegionParent, gatewayAddVpcParents},
 	graph.RouteTable.String():      {routeTableAddSubnetParents, routeTableAddVpcParent},
+	graph.User.String():            {addRegionParent, userAddGroupsParents, userAddManagedPoliciesParents},
+	graph.Role.String():            {addRegionParent, roleAddManagedPoliciesParents},
+	graph.Group.String():           {addRegionParent, groupAddManagedPoliciesParents},
+	graph.Policy.String():          {addRegionParent},
+}
+
+func (s *Access) fetchAndBuildGraph() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+
+	var policies []*iam.Policy
+	var groups []*iam.GroupDetail
+	var roles []*iam.RoleDetail
+	var users []*iam.UserDetail
+
+	errc := make(chan error)
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var policyGraph *graph.Graph
+		var err error
+		policyGraph, policies, err = s.fetch_all_policy_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(policyGraph)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var groupGraph *graph.Graph
+		var err error
+		groupGraph, groups, err = s.fetch_all_group_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(groupGraph)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var userGraph *graph.Graph
+		var err error
+		userGraph, users, err = s.fetch_all_user_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(userGraph)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var roleGraph *graph.Graph
+		var err error
+		roleGraph, roles, err = s.fetch_all_role_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(roleGraph)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	errc = make(chan error)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range policies {
+			for _, fn := range addParentsFns[graph.Policy.String()] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range groups {
+			for _, fn := range addParentsFns[graph.Group.String()] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range roles {
+			for _, fn := range addParentsFns[graph.Role.String()] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range users {
+			for _, fn := range addParentsFns[graph.User.String()] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func addResourcePolicyParent(g *graph.Graph, res *graph.Resource, policyName string) error {
+	a := graph.Alias(policyName)
+	pid, ok := a.ResolveToId(g, graph.Policy)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "add parent to '%s/%s': unknown policy named '%s'. Ignoring it.\n", res.Type(), res.Id(), policyName)
+		return nil
+	}
+	parent, err := g.GetResource(graph.Policy, pid)
+	if err != nil {
+		return err
+	}
+	g.AddParent(parent, res)
+	return nil
+}
+
+func groupAddManagedPoliciesParents(g *graph.Graph, i interface{}) error {
+	group, ok := i.(*iam.GroupDetail)
+	if !ok {
+		return fmt.Errorf("aws fetch: not a group, but a %T", i)
+	}
+	n, err := g.GetResource(graph.Group, awssdk.StringValue(group.GroupId))
+	if err != nil {
+		return err
+	}
+
+	for _, policy := range group.AttachedManagedPolicies {
+		err := addResourcePolicyParent(g, n, awssdk.StringValue(policy.PolicyName))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func userAddManagedPoliciesParents(g *graph.Graph, i interface{}) error {
+	user, ok := i.(*iam.UserDetail)
+	if !ok {
+		return fmt.Errorf("aws fetch: not a user, but a %T", i)
+	}
+	n, err := g.GetResource(graph.User, awssdk.StringValue(user.UserId))
+	if err != nil {
+		return err
+	}
+
+	for _, policy := range user.AttachedManagedPolicies {
+		err := addResourcePolicyParent(g, n, awssdk.StringValue(policy.PolicyName))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func userAddGroupsParents(g *graph.Graph, i interface{}) error {
+	user, ok := i.(*iam.UserDetail)
+	if !ok {
+		return fmt.Errorf("aws fetch: not a user, but a %T", i)
+	}
+	n, err := g.GetResource(graph.User, awssdk.StringValue(user.UserId))
+	if err != nil {
+		return err
+	}
+
+	for _, group := range user.GroupList {
+		parent, err := g.GetResource(graph.Group, awssdk.StringValue(group))
+		if err != nil {
+			return err
+		}
+		g.AddParent(parent, n)
+	}
+	return nil
+}
+
+func roleAddManagedPoliciesParents(g *graph.Graph, i interface{}) error {
+	role, ok := i.(*iam.RoleDetail)
+	if !ok {
+		return fmt.Errorf("aws fetch: not a role, but a %T", i)
+	}
+	n, err := g.GetResource(graph.Role, awssdk.StringValue(role.RoleId))
+	if err != nil {
+		return err
+	}
+
+	for _, policy := range role.AttachedManagedPolicies {
+		err := addResourcePolicyParent(g, n, awssdk.StringValue(policy.PolicyName))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (inf *Infra) FetchResources() (*graph.Graph, error) {
+	return inf.fetchAndBuildGraph()
 }
 
 func (s *Infra) fetchAndBuildGraph() (*graph.Graph, error) {
@@ -374,6 +533,30 @@ func addRegionParent(g *graph.Graph, i interface{}) error {
 		g.AddParent(regionN, n)
 	case *ec2.InternetGateway:
 		n, err := g.GetResource(graph.InternetGateway, awssdk.StringValue(ii.InternetGatewayId))
+		if err != nil {
+			return err
+		}
+		g.AddParent(regionN, n)
+	case *iam.GroupDetail:
+		n, err := g.GetResource(graph.Group, awssdk.StringValue(ii.GroupId))
+		if err != nil {
+			return err
+		}
+		g.AddParent(regionN, n)
+	case *iam.UserDetail:
+		n, err := g.GetResource(graph.User, awssdk.StringValue(ii.UserId))
+		if err != nil {
+			return err
+		}
+		g.AddParent(regionN, n)
+	case *iam.RoleDetail:
+		n, err := g.GetResource(graph.Role, awssdk.StringValue(ii.RoleId))
+		if err != nil {
+			return err
+		}
+		g.AddParent(regionN, n)
+	case *iam.Policy:
+		n, err := g.GetResource(graph.Policy, awssdk.StringValue(ii.PolicyId))
 		if err != nil {
 			return err
 		}

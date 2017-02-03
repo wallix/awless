@@ -41,12 +41,8 @@ func newResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
 	case *iam.UserDetail:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
-	case *iam.Role:
-		res = graph.InitResource(awssdk.StringValue(ss.RoleId), graph.Role)
 	case *iam.RoleDetail:
 		res = graph.InitResource(awssdk.StringValue(ss.RoleId), graph.Role)
-	case *iam.Group:
-		res = graph.InitResource(awssdk.StringValue(ss.GroupId), graph.Group)
 	case *iam.GroupDetail:
 		res = graph.InitResource(awssdk.StringValue(ss.GroupId), graph.Group)
 	case *iam.Policy:

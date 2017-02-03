@@ -12,6 +12,7 @@ type fetcher struct {
 	AWSType                                     string
 	ApiMethod, Input                            string
 	Output, OutputsContainers, OutputsExtractor string
+	ManualFetcher                               bool
 }
 
 var Services = []service{
@@ -35,10 +36,10 @@ var Services = []service{
 		Api:               "iam",
 		ManualGlobalFetch: true,
 		Fetchers: []fetcher{
-			{ResourceType: "user", AWSType: "User", ApiMethod: "ListUsers", Input: "ListUsersInput{}", Output: "ListUsersOutput", OutputsExtractor: "Users"},
-			{ResourceType: "group", AWSType: "Group", ApiMethod: "ListGroups", Input: "ListGroupsInput{}", Output: "ListGroupsOutput", OutputsExtractor: "Groups"},
-			{ResourceType: "role", AWSType: "Role", ApiMethod: "ListRoles", Input: "ListRolesInput{}", Output: "ListRolesOutput", OutputsExtractor: "Roles"},
-			{ResourceType: "policy", AWSType: "Policy", ApiMethod: "ListPolicies", Input: "ListPoliciesInput{Scope: awssdk.String(iam.PolicyScopeTypeLocal)}", Output: "ListPoliciesOutput", OutputsExtractor: "Policies"},
+			{ResourceType: "user", AWSType: "User", ManualFetcher: true},
+			{ResourceType: "group", AWSType: "GroupDetail", ApiMethod: "GetAccountAuthorizationDetails", Input: "GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeUser),awssdk.String(iam.EntityTypeRole),awssdk.String(iam.EntityTypeGroup),awssdk.String(iam.EntityTypeLocalManagedPolicy),awssdk.String(iam.EntityTypeAwsmanagedPolicy)}}", Output: "GetAccountAuthorizationDetailsOutput", OutputsExtractor: "GroupDetailList"},
+			{ResourceType: "role", AWSType: "RoleDetail", ApiMethod: "GetAccountAuthorizationDetails", Input: "GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeUser),awssdk.String(iam.EntityTypeRole),awssdk.String(iam.EntityTypeGroup),awssdk.String(iam.EntityTypeLocalManagedPolicy),awssdk.String(iam.EntityTypeAwsmanagedPolicy)}}", Output: "GetAccountAuthorizationDetailsOutput", OutputsExtractor: "RoleDetailList"},
+			{ResourceType: "policy", AWSType: "Policy", ApiMethod: "ListPolicies", Input: "ListPoliciesInput{OnlyAttached: awssdk.Bool(true)}", Output: "ListPoliciesOutput", OutputsExtractor: "Policies"},
 		},
 	},
 }

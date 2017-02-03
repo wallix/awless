@@ -4,104 +4,134 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
 func TestBuildAccessRdfGraph(t *testing.T) {
-	awsAccess := &AwsAccess{}
-
-	awsAccess.GroupsDetail = []*iam.GroupDetail{
-		&iam.GroupDetail{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1")},
-		&iam.GroupDetail{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2")},
-		&iam.GroupDetail{GroupId: awssdk.String("group_3"), GroupName: awssdk.String("ngroup_3")},
-		&iam.GroupDetail{GroupId: awssdk.String("group_4"), GroupName: awssdk.String("ngroup_4")},
+	managedPolicies := []*iam.ManagedPolicyDetail{
+		{PolicyId: awssdk.String("managed_policy_1"), PolicyName: awssdk.String("nmanaged_policy_1")},
+		{PolicyId: awssdk.String("managed_policy_2"), PolicyName: awssdk.String("nmanaged_policy_2")},
+		{PolicyId: awssdk.String("managed_policy_3"), PolicyName: awssdk.String("nmanaged_policy_3")},
 	}
 
-	awsAccess.Policies = []*iam.ManagedPolicyDetail{
-		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_1"), PolicyName: awssdk.String("npolicy_1")},
-		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_2"), PolicyName: awssdk.String("npolicy_2")},
-		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_3"), PolicyName: awssdk.String("npolicy_3")},
-		&iam.ManagedPolicyDetail{PolicyId: awssdk.String("policy_4"), PolicyName: awssdk.String("npolicy_4")},
+	groups := []*iam.GroupDetail{
+		{GroupId: awssdk.String("group_1"), GroupName: awssdk.String("ngroup_1"), GroupPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}}, AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_1")}}},
+		{GroupId: awssdk.String("group_2"), GroupName: awssdk.String("ngroup_2"), GroupPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}}, AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_2")}}},
+		{GroupId: awssdk.String("group_3"), GroupName: awssdk.String("ngroup_3"), GroupPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}}, AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_3")}}},
+		{GroupId: awssdk.String("group_4"), GroupName: awssdk.String("ngroup_4"), GroupPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_4")}}},
 	}
 
-	awsAccess.RolesDetail = []*iam.RoleDetail{
-		&iam.RoleDetail{RoleId: awssdk.String("role_1")},
-		&iam.RoleDetail{RoleId: awssdk.String("role_2")},
-		&iam.RoleDetail{RoleId: awssdk.String("role_3")},
-		&iam.RoleDetail{RoleId: awssdk.String("role_4")},
+	roles := []*iam.RoleDetail{
+		{RoleId: awssdk.String("role_1"), RolePolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}}, AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_1")}}},
+		{RoleId: awssdk.String("role_2"), RolePolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}}},
+		{RoleId: awssdk.String("role_3"), RolePolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}}, AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_2")}}},
+		{RoleId: awssdk.String("role_4"), RolePolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_4")}}},
 	}
 
-	awsAccess.UsersDetail = []*iam.UserDetail{
-		&iam.UserDetail{UserId: awssdk.String("usr_1")},
-		&iam.UserDetail{UserId: awssdk.String("usr_2")},
-		&iam.UserDetail{UserId: awssdk.String("usr_3")},
-		&iam.UserDetail{UserId: awssdk.String("usr_4")},
-		&iam.UserDetail{UserId: awssdk.String("usr_5")},
-		&iam.UserDetail{UserId: awssdk.String("usr_6")},
-		&iam.UserDetail{UserId: awssdk.String("usr_7")},
-		&iam.UserDetail{UserId: awssdk.String("usr_8")},
-		&iam.UserDetail{UserId: awssdk.String("usr_9")},
-		&iam.UserDetail{UserId: awssdk.String("usr_10")}, //users not in any groups
-		&iam.UserDetail{UserId: awssdk.String("usr_11")},
+	usersDetails := []*iam.UserDetail{
+		{
+			UserId:                  awssdk.String("usr_1"),
+			GroupList:               []*string{awssdk.String("group_1"), awssdk.String("group_2")},
+			AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_1")}},
+			UserPolicyList:          []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}, {PolicyName: awssdk.String("npolicy_2")}},
+		},
+		{
+			UserId:         awssdk.String("usr_2"),
+			GroupList:      []*string{awssdk.String("group_1")},
+			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}},
+		},
+		{
+			UserId:                  awssdk.String("usr_3"),
+			GroupList:               []*string{awssdk.String("group_1"), awssdk.String("group_4")},
+			AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_1")}, {PolicyName: awssdk.String("nmanaged_policy_2")}},
+			UserPolicyList:          []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}, {PolicyName: awssdk.String("npolicy_4")}},
+		},
+		{
+			UserId:         awssdk.String("usr_4"),
+			GroupList:      []*string{awssdk.String("group_2")},
+			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}},
+		},
+		{
+			UserId:         awssdk.String("usr_5"),
+			GroupList:      []*string{awssdk.String("group_2")},
+			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}},
+		},
+		{
+			UserId:                  awssdk.String("usr_6"),
+			GroupList:               []*string{awssdk.String("group_2")},
+			AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_3")}},
+			UserPolicyList:          []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}},
+		},
+		{
+			UserId:         awssdk.String("usr_7"),
+			GroupList:      []*string{awssdk.String("group_2"), awssdk.String("group_4")},
+			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}, {PolicyName: awssdk.String("npolicy_4")}},
+		},
+		{
+			UserId:         awssdk.String("usr_8"),
+			GroupList:      []*string{awssdk.String("group_4")},
+			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_4")}},
+		},
+		{
+			UserId:         awssdk.String("usr_9"),
+			GroupList:      []*string{awssdk.String("group_4")},
+			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_4")}},
+		},
+		{
+			UserId: awssdk.String("usr_10"), //users not in any groups
+		},
+		{
+			UserId: awssdk.String("usr_11"),
+		},
 	}
 
-	awsAccess.Users = []*iam.User{
-		&iam.User{UserId: awssdk.String("usr_1")},
-		&iam.User{UserId: awssdk.String("usr_2")},
-		&iam.User{UserId: awssdk.String("usr_3")},
-		&iam.User{UserId: awssdk.String("usr_4")},
-		&iam.User{UserId: awssdk.String("usr_5")},
-		&iam.User{UserId: awssdk.String("usr_6")},
-		&iam.User{UserId: awssdk.String("usr_7")},
-		&iam.User{UserId: awssdk.String("usr_8")},
-		&iam.User{UserId: awssdk.String("usr_9")},
-		&iam.User{UserId: awssdk.String("usr_10")}, //users not in any groups
-		&iam.User{UserId: awssdk.String("usr_11")},
+	users := []*iam.User{
+		{
+			UserId:           awssdk.String("usr_1"),
+			PasswordLastUsed: awssdk.Time(time.Unix(1486139077, 0)),
+		},
+		{
+			UserId: awssdk.String("usr_2"),
+		},
+		{
+			UserId: awssdk.String("usr_3"),
+		},
+		{
+			UserId: awssdk.String("usr_4"),
+		},
+		{
+			UserId: awssdk.String("usr_5"),
+		},
+		{
+			UserId: awssdk.String("usr_6"),
+		},
+		{
+			UserId: awssdk.String("usr_7"),
+		},
+		{
+			UserId: awssdk.String("usr_8"),
+		},
+		{
+			UserId: awssdk.String("usr_9"),
+		},
+		{
+			UserId: awssdk.String("usr_10"), //users not in any groups
+		},
+		{
+			UserId: awssdk.String("usr_11"),
+		},
 	}
 
-	awsAccess.UserGroups = map[string][]string{
-		"usr_1": []string{"group_1", "group_2"},
-		"usr_2": []string{"group_1"},
-		"usr_3": []string{"group_1", "group_4"},
-		"usr_4": []string{"group_2"},
-		"usr_5": []string{"group_2"},
-		"usr_6": []string{"group_2"},
-		"usr_7": []string{"group_2", "group_4"},
-		"usr_8": []string{"group_4"},
-		"usr_9": []string{"group_4"},
-	}
+	mock := &mockIam{groups: groups, usersDetails: usersDetails, roles: roles, managedPolicies: managedPolicies, users: users}
+	access := Access{IAMAPI: mock, region: "eu-west-1"}
 
-	awsAccess.UserPolicies = map[string][]string{
-		"usr_1": []string{"npolicy_1", "npolicy_2"},
-		"usr_2": []string{"npolicy_1"},
-		"usr_3": []string{"npolicy_1", "npolicy_4"},
-		"usr_4": []string{"npolicy_2"},
-		"usr_5": []string{"npolicy_2"},
-		"usr_6": []string{"npolicy_2"},
-		"usr_7": []string{"npolicy_2", "npolicy_4"},
-		"usr_8": []string{"npolicy_4"},
-		"usr_9": []string{"npolicy_4"},
-	}
-
-	awsAccess.RolePolicies = map[string][]string{
-		"role_1": []string{"npolicy_1"},
-		"role_2": []string{"npolicy_1"},
-		"role_3": []string{"npolicy_2"},
-		"role_4": []string{"npolicy_4"},
-	}
-
-	awsAccess.GroupPolicies = map[string][]string{
-		"group_1": []string{"npolicy_1"},
-		"group_2": []string{"npolicy_1"},
-		"group_3": []string{"npolicy_2"},
-		"group_4": []string{"npolicy_4"},
-	}
-
-	g, err := buildAccessGraph("eu-west-1", awsAccess)
+	g, err := access.fetchAndBuildGraph()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +206,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	expect := `/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`
-	g, err := buildAccessGraph("eu-west-1", NewAwsAccess())
+	access := Access{IAMAPI: &mockIam{}, region: "eu-west-1"}
+
+	g, err := access.fetchAndBuildGraph()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,4 +268,31 @@ func (m *mockEc2) DescribeInternetGateways(input *ec2.DescribeInternetGatewaysIn
 
 func (m *mockEc2) DescribeRouteTables(input *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {
 	return &ec2.DescribeRouteTablesOutput{RouteTables: m.routeTables}, nil
+}
+
+type mockIam struct {
+	iamiface.IAMAPI
+	groups          []*iam.GroupDetail
+	managedPolicies []*iam.ManagedPolicyDetail
+	policies        []*iam.Policy
+	roles           []*iam.RoleDetail
+	users           []*iam.User
+	usersDetails    []*iam.UserDetail
+}
+
+func (m *mockIam) ListUsers(input *iam.ListUsersInput) (*iam.ListUsersOutput, error) {
+	return &iam.ListUsersOutput{Users: m.users}, nil
+}
+
+func (m *mockIam) ListPolicies(input *iam.ListPoliciesInput) (*iam.ListPoliciesOutput, error) {
+	var policies []*iam.Policy
+	for _, p := range m.managedPolicies {
+		policy := &iam.Policy{PolicyId: p.PolicyId, PolicyName: p.PolicyName}
+		policies = append(policies, policy)
+	}
+	return &iam.ListPoliciesOutput{Policies: policies}, nil
+}
+
+func (m *mockIam) GetAccountAuthorizationDetails(input *iam.GetAccountAuthorizationDetailsInput) (*iam.GetAccountAuthorizationDetailsOutput, error) {
+	return &iam.GetAccountAuthorizationDetailsOutput{GroupDetailList: m.groups, Policies: m.managedPolicies, RoleDetailList: m.roles, UserDetailList: m.usersDetails}, nil
 }

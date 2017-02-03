@@ -341,61 +341,6 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, e
 	return g, cloudResources, nil
 }
 
-type AwsInfra struct {
-	instanceList        []*ec2.Instance
-	subnetList          []*ec2.Subnet
-	vpcList             []*ec2.Vpc
-	keypairList         []*ec2.KeyPairInfo
-	securitygroupList   []*ec2.SecurityGroup
-	volumeList          []*ec2.Volume
-	regionList          []*ec2.Region
-	internetgatewayList []*ec2.InternetGateway
-	routetableList      []*ec2.RouteTable
-}
-
-func (s *Infra) global_fetch() (*AwsInfra, error) {
-	resultc, errc := multiFetch(
-		s.fetch_all_instance,
-		s.fetch_all_subnet,
-		s.fetch_all_vpc,
-		s.fetch_all_keypair,
-		s.fetch_all_securitygroup,
-		s.fetch_all_volume,
-		s.fetch_all_region,
-		s.fetch_all_internetgateway,
-		s.fetch_all_routetable,
-	)
-
-	awsService := &AwsInfra{}
-
-	for r := range resultc {
-		switch rr := r.(type) {
-		case *ec2.DescribeInstancesOutput:
-			for _, c := range rr.Reservations {
-				awsService.instanceList = append(awsService.instanceList, c.Instances...)
-			}
-		case *ec2.DescribeSubnetsOutput:
-			awsService.subnetList = append(awsService.subnetList, rr.Subnets...)
-		case *ec2.DescribeVpcsOutput:
-			awsService.vpcList = append(awsService.vpcList, rr.Vpcs...)
-		case *ec2.DescribeKeyPairsOutput:
-			awsService.keypairList = append(awsService.keypairList, rr.KeyPairs...)
-		case *ec2.DescribeSecurityGroupsOutput:
-			awsService.securitygroupList = append(awsService.securitygroupList, rr.SecurityGroups...)
-		case *ec2.DescribeVolumesOutput:
-			awsService.volumeList = append(awsService.volumeList, rr.Volumes...)
-		case *ec2.DescribeRegionsOutput:
-			awsService.regionList = append(awsService.regionList, rr.Regions...)
-		case *ec2.DescribeInternetGatewaysOutput:
-			awsService.internetgatewayList = append(awsService.internetgatewayList, rr.InternetGateways...)
-		case *ec2.DescribeRouteTablesOutput:
-			awsService.routetableList = append(awsService.routetableList, rr.RouteTables...)
-		}
-	}
-
-	return awsService, <-errc
-}
-
 type Access struct {
 	region string
 	iamiface.IAMAPI
@@ -449,48 +394,25 @@ func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 	}
 }
 
-func (s *Access) fetch_all_user() (interface{}, error) {
-	return s.ListUsers(&iam.ListUsersInput{})
-}
 func (s *Access) fetch_all_group() (interface{}, error) {
-	return s.ListGroups(&iam.ListGroupsInput{})
+	return s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeUser), awssdk.String(iam.EntityTypeRole), awssdk.String(iam.EntityTypeGroup), awssdk.String(iam.EntityTypeLocalManagedPolicy), awssdk.String(iam.EntityTypeAwsmanagedPolicy)}})
 }
 func (s *Access) fetch_all_role() (interface{}, error) {
-	return s.ListRoles(&iam.ListRolesInput{})
+	return s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeUser), awssdk.String(iam.EntityTypeRole), awssdk.String(iam.EntityTypeGroup), awssdk.String(iam.EntityTypeLocalManagedPolicy), awssdk.String(iam.EntityTypeAwsmanagedPolicy)}})
 }
 func (s *Access) fetch_all_policy() (interface{}, error) {
-	return s.ListPolicies(&iam.ListPoliciesInput{Scope: awssdk.String(iam.PolicyScopeTypeLocal)})
+	return s.ListPolicies(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)})
 }
 
-func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.User, error) {
+func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.GroupDetail, error) {
 	g := graph.NewGraph()
-	var cloudResources []*iam.User
-	out, err := s.fetch_all_user()
-	if err != nil {
-		return nil, cloudResources, err
-	}
-
-	for _, output := range out.(*iam.ListUsersOutput).Users {
-		cloudResources = append(cloudResources, output)
-		res, err := newResource(output)
-		if err != nil {
-			return g, cloudResources, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, cloudResources, nil
-}
-
-func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.Group, error) {
-	g := graph.NewGraph()
-	var cloudResources []*iam.Group
+	var cloudResources []*iam.GroupDetail
 	out, err := s.fetch_all_group()
 	if err != nil {
 		return nil, cloudResources, err
 	}
 
-	for _, output := range out.(*iam.ListGroupsOutput).Groups {
+	for _, output := range out.(*iam.GetAccountAuthorizationDetailsOutput).GroupDetailList {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {
@@ -502,15 +424,15 @@ func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.Group, error) {
 	return g, cloudResources, nil
 }
 
-func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.Role, error) {
+func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error) {
 	g := graph.NewGraph()
-	var cloudResources []*iam.Role
+	var cloudResources []*iam.RoleDetail
 	out, err := s.fetch_all_role()
 	if err != nil {
 		return nil, cloudResources, err
 	}
 
-	for _, output := range out.(*iam.ListRolesOutput).Roles {
+	for _, output := range out.(*iam.GetAccountAuthorizationDetailsOutput).RoleDetailList {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

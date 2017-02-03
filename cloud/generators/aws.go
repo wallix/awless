@@ -132,12 +132,15 @@ func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) 
 }
 
 {{ range $index, $fetcher := $service.Fetchers }}
+{{- if not $fetcher.ManualFetcher }}
 func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}() (interface{}, error) {
   return s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }})
 }
 {{- end }}
+{{- end }}
 
 {{ range $index, $fetcher := $service.Fetchers }}
+{{- if not $fetcher.ManualFetcher }}
 func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, []*{{ $service.Api }}.{{ $fetcher.AWSType }}, error) {
   g := graph.NewGraph()
 	var cloudResources []*{{ $service.Api }}.{{ $fetcher.AWSType }}
@@ -168,40 +171,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
   {{ end }}
   return g, cloudResources, nil
 }
+{{- end }}
 {{ end }}
 
-{{- if not $service.ManualGlobalFetch }}
-type Aws{{ Title $service.Name }} struct {
-{{- range $index, $fetcher := $service.Fetchers }}
-  {{ $fetcher.ResourceType }}List   []*{{ $service.Api }}.{{ $fetcher.AWSType }}
-{{- end }}
-}
-
-func (s *{{ Title $service.Name }}) global_fetch() (*Aws{{ Title $service.Name }}, error) {
-	resultc, errc := multiFetch(
-    {{- range $index, $fetcher := $service.Fetchers }}
-      s.fetch_all_{{ $fetcher.ResourceType }},
-    {{- end }}
-  )
-
-	awsService := &Aws{{ Title $service.Name }}{}
-
-	for r := range resultc {
-		switch rr := r.(type) {
-    {{- range $index, $fetcher := $service.Fetchers }}
-  case *{{ $service.Api }}.{{ $fetcher.Output }}:
-      {{- if eq $fetcher.OutputsContainers "" }}
-        awsService.{{ $fetcher.ResourceType }}List = append(awsService.{{ $fetcher.ResourceType }}List, rr.{{ $fetcher.OutputsExtractor }}...)
-      {{- else }}
-      for _, c := range rr.{{ $fetcher.OutputsContainers }} {
-        awsService.{{ $fetcher.ResourceType }}List = append(awsService.{{ $fetcher.ResourceType }}List, c.{{ $fetcher.OutputsExtractor }}...)
-      }
-      {{- end }}
-      {{- end }}
-  	}
-  }
-
-	return awsService, <-errc
-}
-{{- end }}
 {{ end }}`
