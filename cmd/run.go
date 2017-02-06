@@ -59,10 +59,6 @@ var runCmd = &cobra.Command{
 }
 
 func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
-	if autoSync, ok := defaults[database.SyncAuto]; ok && autoSync.(bool) {
-		runSync(templ.GetEntitiesSet())
-	}
-
 	templ.ResolveTemplate(defaults)
 
 	prompt := func(question string) interface{} {
@@ -95,7 +91,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	_, err = fmt.Scanln(&yesorno)
 
 	if strings.TrimSpace(yesorno) == "y" {
-		newTempl, _ := templ.Run(awsDriver)
+		newTempl, err := templ.Run(awsDriver)
 
 		executed := template.NewTemplateExecution(newTempl)
 
@@ -106,6 +102,12 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		defer close()
 
 		db.AddTemplateExecution(executed)
+
+		if err == nil && !executed.HasErrors() {
+			if autoSync, ok := defaults[database.SyncAuto]; ok && autoSync.(bool) {
+				runSync(newTempl.GetEntitiesSet())
+			}
+		}
 	}
 
 	return nil
@@ -181,8 +183,7 @@ func runSync(entities []string) {
 		services = append(services, srv)
 	}
 
-	_, err := sync.DefaultSyncer.Sync(services...)
-	if err != nil {
+	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
 		fmt.Fprintf(os.Stderr, "error while synching for %s\n", strings.Join(entities, ", "))
 	} else if verboseFlag {
 		fmt.Printf("(performed sync for %s)\n", strings.Join(entities, ", "))

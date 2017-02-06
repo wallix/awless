@@ -170,6 +170,15 @@ func NewTemplateExecution(tpl *Template) *TemplateExecution {
 	return out
 }
 
+func (te *TemplateExecution) HasErrors() (inError bool) {
+	for _, ex := range te.Executed {
+		if ex.Err != "" {
+			inError = true
+		}
+	}
+	return
+}
+
 func (te *TemplateExecution) lines() (lines []string) {
 	for _, ex := range te.Executed {
 		lines = append(lines, ex.Line)

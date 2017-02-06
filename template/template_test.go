@@ -128,6 +128,30 @@ func TestNewTemplateExecutionFromTemplate(t *testing.T) {
 	}
 }
 
+func TestTemplateExecutionHasErrors(t *testing.T) {
+	exec := &TemplateExecution{
+		Executed: []*ExecutedStatement{
+			{Line: "create vpc", Result: "vpc-56g4h", Err: ""},
+			{Line: "create instance", Result: "", Err: "cannot create instance"},
+		},
+	}
+
+	if got, want := exec.HasErrors(), true; got != want {
+		t.Fatal("got %t, want %t")
+	}
+
+	exec = &TemplateExecution{
+		Executed: []*ExecutedStatement{
+			{Line: "create vpc", Result: "vpc-56g4h", Err: ""},
+			{Line: "create instance", Result: ""},
+		},
+	}
+
+	if got, want := exec.HasErrors(), false; got != want {
+		t.Fatal("got %t, want %t")
+	}
+}
+
 func TestRevertTemplateExecution(t *testing.T) {
 	exec := &TemplateExecution{
 		ID: "",
