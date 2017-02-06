@@ -169,12 +169,14 @@ func (r *gitRepo) Commit(files ...string) error {
 		return nil
 	}
 
-	if _, err := newGit(r.path).run("-c", "user.name='awless'", "-c", "user.email='git@awless.io'", "commit", "-m", "new sync"); err != nil {
-		return err
-	}
+	_, err := newGit(r.path).run(
+		append(awlessCommitter, "commit", "-m", fmt.Sprintf("syncing %s", strings.Join(files, ", ")))...,
+	)
 
-	return nil
+	return err
 }
+
+var awlessCommitter = []string{"-c", "user.name='awless'", "-c", "user.email='git@awless.io'"}
 
 func (r *gitRepo) hasChanges() (bool, error) {
 	stdout, err := newGit(r.path).run("status", "--porcelain")
