@@ -5,6 +5,7 @@ package aws
 
 import (
 	"fmt"
+	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -30,7 +31,6 @@ var ResourceTypesPerAPI = map[string][]string{
 		"keypair",
 		"securitygroup",
 		"volume",
-		"region",
 		"internetgateway",
 		"routetable",
 	},
@@ -49,7 +49,6 @@ var ServicePerResourceType = map[string]string{
 	"keypair":         "infra",
 	"securitygroup":   "infra",
 	"volume":          "infra",
-	"region":          "infra",
 	"internetgateway": "infra",
 	"routetable":      "infra",
 	"user":            "access",
@@ -91,10 +90,252 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "keypair")
 	all = append(all, "securitygroup")
 	all = append(all, "volume")
-	all = append(all, "region")
 	all = append(all, "internetgateway")
 	all = append(all, "routetable")
 	return
+}
+
+func (s *Infra) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	var instanceList []*ec2.Instance
+	var subnetList []*ec2.Subnet
+	var vpcList []*ec2.Vpc
+	var keypairList []*ec2.KeyPairInfo
+	var securitygroupList []*ec2.SecurityGroup
+	var volumeList []*ec2.Volume
+	var internetgatewayList []*ec2.InternetGateway
+	var routetableList []*ec2.RouteTable
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, instanceList, err = s.fetch_all_instance_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, subnetList, err = s.fetch_all_subnet_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, vpcList, err = s.fetch_all_vpc_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, keypairList, err = s.fetch_all_keypair_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, securitygroupList, err = s.fetch_all_securitygroup_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, volumeList, err = s.fetch_all_volume_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, internetgatewayList, err = s.fetch_all_internetgateway_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, routetableList, err = s.fetch_all_routetable_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	errc = make(chan error)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range instanceList {
+			for _, fn := range addParentsFns["instance"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range subnetList {
+			for _, fn := range addParentsFns["subnet"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range vpcList {
+			for _, fn := range addParentsFns["vpc"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range keypairList {
+			for _, fn := range addParentsFns["keypair"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range securitygroupList {
+			for _, fn := range addParentsFns["securitygroup"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range volumeList {
+			for _, fn := range addParentsFns["volume"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range internetgatewayList {
+			for _, fn := range addParentsFns["internetgateway"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range routetableList {
+			for _, fn := range addParentsFns["routetable"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
 }
 
 func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
@@ -116,9 +357,6 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "volume":
 		graph, _, err := s.fetch_all_volume_graph()
-		return graph, err
-	case "region":
-		graph, _, err := s.fetch_all_region_graph()
 		return graph, err
 	case "internetgateway":
 		graph, _, err := s.fetch_all_internetgateway_graph()
@@ -148,9 +386,6 @@ func (s *Infra) fetch_all_securitygroup() (interface{}, error) {
 }
 func (s *Infra) fetch_all_volume() (interface{}, error) {
 	return s.DescribeVolumes(&ec2.DescribeVolumesInput{})
-}
-func (s *Infra) fetch_all_region() (interface{}, error) {
-	return s.DescribeRegions(&ec2.DescribeRegionsInput{})
 }
 func (s *Infra) fetch_all_internetgateway() (interface{}, error) {
 	return s.DescribeInternetGateways(&ec2.DescribeInternetGatewaysInput{})
@@ -281,26 +516,6 @@ func (s *Infra) fetch_all_volume_graph() (*graph.Graph, []*ec2.Volume, error) {
 	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_region_graph() (*graph.Graph, []*ec2.Region, error) {
-	g := graph.NewGraph()
-	var cloudResources []*ec2.Region
-	out, err := s.fetch_all_region()
-	if err != nil {
-		return nil, cloudResources, err
-	}
-
-	for _, output := range out.(*ec2.DescribeRegionsOutput).Regions {
-		cloudResources = append(cloudResources, output)
-		res, err := newResource(output)
-		if err != nil {
-			return g, cloudResources, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, cloudResources, nil
-}
-
 func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.InternetGateway, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.InternetGateway
@@ -375,6 +590,145 @@ func (s *Access) ResourceTypes() (all []string) {
 	return
 }
 
+func (s *Access) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	var userList []*iam.UserDetail
+	var groupList []*iam.GroupDetail
+	var roleList []*iam.RoleDetail
+	var policyList []*iam.Policy
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, userList, err = s.fetch_all_user_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, groupList, err = s.fetch_all_group_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, roleList, err = s.fetch_all_role_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, policyList, err = s.fetch_all_policy_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	errc = make(chan error)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range userList {
+			for _, fn := range addParentsFns["user"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range groupList {
+			for _, fn := range addParentsFns["group"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range roleList {
+			for _, fn := range addParentsFns["role"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range policyList {
+			for _, fn := range addParentsFns["policy"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
 func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 	switch t {
 	case "user":
@@ -395,10 +749,10 @@ func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 }
 
 func (s *Access) fetch_all_group() (interface{}, error) {
-	return s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeUser), awssdk.String(iam.EntityTypeRole), awssdk.String(iam.EntityTypeGroup), awssdk.String(iam.EntityTypeLocalManagedPolicy), awssdk.String(iam.EntityTypeAwsmanagedPolicy)}})
+	return s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}})
 }
 func (s *Access) fetch_all_role() (interface{}, error) {
-	return s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeUser), awssdk.String(iam.EntityTypeRole), awssdk.String(iam.EntityTypeGroup), awssdk.String(iam.EntityTypeLocalManagedPolicy), awssdk.String(iam.EntityTypeAwsmanagedPolicy)}})
+	return s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}})
 }
 func (s *Access) fetch_all_policy() (interface{}, error) {
 	return s.ListPolicies(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)})

@@ -80,10 +80,6 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 		out, err := s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{
 			Filter: []*string{
 				awssdk.String(iam.EntityTypeUser),
-				awssdk.String(iam.EntityTypeRole),
-				awssdk.String(iam.EntityTypeGroup),
-				awssdk.String(iam.EntityTypeLocalManagedPolicy),
-				awssdk.String(iam.EntityTypeAwsmanagedPolicy),
 			},
 		})
 		if err != nil {

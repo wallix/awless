@@ -49,6 +49,7 @@ package aws
 
 import (
   "fmt"
+	"sync"
 
   awssdk "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/aws/session"
@@ -117,6 +118,75 @@ func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {
   all = append(all, "{{ $fetcher.ResourceType }}")
   {{- end }}
   return
+}
+
+func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	
+	{{- range $index, $fetcher := $service.Fetchers }}
+  var {{ $fetcher.ResourceType }}List []*{{ $service.Api }}.{{ $fetcher.AWSType }}
+  {{- end }}
+	
+	errc := make(chan error)
+	var wg sync.WaitGroup
+	
+	{{- range $index, $fetcher := $service.Fetchers }}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, {{ $fetcher.ResourceType }}List, err = s.fetch_all_{{ $fetcher.ResourceType }}_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+  {{- end }}
+	
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	errc = make(chan error)
+	{{- range $index, $fetcher := $service.Fetchers }}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range {{ $fetcher.ResourceType }}List {
+			for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+  {{- end }}
+	
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
 }
 
 func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) {
