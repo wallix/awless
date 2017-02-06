@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/display"
+	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 )
@@ -61,9 +61,9 @@ var showCmd = &cobra.Command{
 		exitOn(err)
 
 		if res != nil {
-			displayer := display.BuildOptions(
-				display.WithHeaders(display.DefaultsColumnDefinitions[res.Type()]),
-				display.WithFormat(listingFormat),
+			displayer := console.BuildOptions(
+				console.WithHeaders(console.DefaultsColumnDefinitions[res.Type()]),
+				console.WithFormat(listingFormat),
 			).SetSource(res).Build()
 
 			exitOn(displayer.Print(os.Stderr))

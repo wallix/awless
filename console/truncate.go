@@ -1,4 +1,4 @@
-package display
+package console
 
 const truncateChars = "..."
 

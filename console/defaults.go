@@ -1,4 +1,4 @@
-package display
+package console
 
 import (
 	"github.com/fatih/color"

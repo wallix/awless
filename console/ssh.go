@@ -1,4 +1,4 @@
-package shell
+package console
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ type Credentials struct {
 	KeyName string
 }
 
-func NewClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
+func NewSSHClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
 	keyPath := filepath.Join(keyDirectory, cred.KeyName)
 	privateKey, err := ioutil.ReadFile(keyPath)
 	if os.IsNotExist(err) {

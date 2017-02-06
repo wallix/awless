@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/shell"
 )
 
 func init() {
@@ -50,25 +50,25 @@ var sshCmd = &cobra.Command{
 		var client *ssh.Client
 		if user != "" {
 			cred.User = user
-			client, err = shell.NewClient(config.KeysDir, cred)
+			client, err = console.NewSSHClient(config.KeysDir, cred)
 			exitOn(err)
 			if verboseFlag {
 				log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
 			}
-			if err = shell.InteractiveTerminal(client); err != nil {
+			if err = console.InteractiveTerminal(client); err != nil {
 				exitOn(err)
 			}
 			return nil
 		}
 		for _, user := range aws.DefaultAMIUsers {
 			cred.User = user
-			client, err = shell.NewClient(config.KeysDir, cred)
+			client, err = console.NewSSHClient(config.KeysDir, cred)
 			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
 				continue
 			}
 			exitOn(err)
 			log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
-			if err = shell.InteractiveTerminal(client); err != nil {
+			if err = console.InteractiveTerminal(client); err != nil {
 				exitOn(err)
 			}
 			return nil
@@ -77,7 +77,7 @@ var sshCmd = &cobra.Command{
 	},
 }
 
-func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Credentials, error) {
+func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*console.Credentials, error) {
 	inst, err := g.GetResource(graph.Instance, instanceID)
 	if err != nil {
 		return nil, err
@@ -92,5 +92,5 @@ func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*shell.Cre
 	if !ok {
 		return nil, fmt.Errorf("no access key set for instance %s", instanceID)
 	}
-	return &shell.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
+	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
 }

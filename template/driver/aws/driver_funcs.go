@@ -15,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/shell"
 )
 
 func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -172,7 +172,7 @@ func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	setField(params["name"], input, "KeyName")
 
 	d.logger.Printf("Generating locally a RSA 4096 bits keypair...")
-	pub, priv, err := shell.GenerateSSHKeyPair(4096)
+	pub, priv, err := console.GenerateSSHKeyPair(4096)
 	if err != nil {
 		d.logger.Printf("generating keypair error: %s", err)
 		return nil, err

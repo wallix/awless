@@ -1,4 +1,4 @@
-package shell
+package console
 
 import (
 	"crypto/rand"

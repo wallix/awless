@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/sync/repo"
@@ -97,9 +97,9 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resou
 		if graphdiff.HasDiff() {
 			fmt.Println("▶", cloudService, "resources, from", fromRevision,
 				"to", diff.To.Id[:7], "on", diff.To.Date.Format("Monday January 2, 15:04"))
-			displayer := display.BuildOptions(
-				display.WithFormat("tree"),
-				display.WithRootNode(root),
+			displayer := console.BuildOptions(
+				console.WithFormat("tree"),
+				console.WithRootNode(root),
 			).SetSource(graphdiff).Build()
 			exitOn(displayer.Print(os.Stdout))
 			fmt.Println()

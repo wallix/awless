@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/display"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 )
@@ -88,9 +88,9 @@ var diffCmd = &cobra.Command{
 			if accessDiff.HasDiff() {
 				anyDiffs = true
 				fmt.Println("------ ACCESS ------")
-				displayer := display.BuildOptions(
-					display.WithFormat("tree"),
-					display.WithRootNode(root),
+				displayer := console.BuildOptions(
+					console.WithFormat("tree"),
+					console.WithRootNode(root),
 				).SetSource(accessDiff).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
@@ -99,9 +99,9 @@ var diffCmd = &cobra.Command{
 				anyDiffs = true
 				fmt.Println()
 				fmt.Println("------ INFRA ------")
-				displayer := display.BuildOptions(
-					display.WithFormat("tree"),
-					display.WithRootNode(root),
+				displayer := console.BuildOptions(
+					console.WithFormat("tree"),
+					console.WithRootNode(root),
 				).SetSource(infraDiff).Build()
 				exitOn(displayer.Print(os.Stdout))
 			}
@@ -121,9 +121,9 @@ var diffCmd = &cobra.Command{
 }
 
 func displayFullDiff(diff *graph.Diff, rootNode *graph.Resource) {
-	displayer := display.BuildOptions(
-		display.WithFormat("table"),
-		display.WithRootNode(rootNode),
+	displayer := console.BuildOptions(
+		console.WithFormat("table"),
+		console.WithRootNode(rootNode),
 	).SetSource(diff).Build()
 	exitOn(displayer.Print(os.Stdout))
 }

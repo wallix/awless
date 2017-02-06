@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/display"
+	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/shell"
 	"github.com/wallix/awless/sync"
 )
 
@@ -77,9 +76,9 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			g := sync.LoadCurrentLocalGraph(srvName)
-			displayer := display.BuildOptions(
-				display.WithFormat(listingFormat),
-				display.WithIDsOnly(listOnlyIDs),
+			displayer := console.BuildOptions(
+				console.WithFormat(listingFormat),
+				console.WithIDsOnly(listOnlyIDs),
 			).SetSource(g).Build()
 			exitOn(displayer.Print(os.Stdout))
 		},
@@ -87,13 +86,13 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 }
 
 func printResources(g *graph.Graph, resType graph.ResourceType) {
-	displayer := display.BuildOptions(
-		display.WithRdfType(resType),
-		display.WithHeaders(display.DefaultsColumnDefinitions[resType]),
-		display.WithMaxWidth(shell.GetTerminalWidth()),
-		display.WithFormat(listingFormat),
-		display.WithIDsOnly(listOnlyIDs),
-		display.WithSortBy(sortBy...),
+	displayer := console.BuildOptions(
+		console.WithRdfType(resType),
+		console.WithHeaders(console.DefaultsColumnDefinitions[resType]),
+		console.WithMaxWidth(console.GetTerminalWidth()),
+		console.WithFormat(listingFormat),
+		console.WithIDsOnly(listOnlyIDs),
+		console.WithSortBy(sortBy...),
 	).SetSource(g).Build()
 
 	exitOn(displayer.Print(os.Stdout))
