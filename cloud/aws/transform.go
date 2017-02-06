@@ -12,13 +12,7 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
-func newResource(source interface{}) (*graph.Resource, error) {
-	value := reflect.ValueOf(source)
-	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
-		return nil, fmt.Errorf("can not fetch cloud resource. %v is not a valid pointer.", value)
-	}
-	nodeV := value.Elem()
-
+func initResource(source interface{}) (*graph.Resource, error) {
 	var res *graph.Resource
 	switch ss := source.(type) {
 	case *ec2.Instance:
@@ -52,6 +46,20 @@ func newResource(source interface{}) (*graph.Resource, error) {
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
+	return res, nil
+}
+
+func newResource(source interface{}) (*graph.Resource, error) {
+	res, err := initResource(source)
+	if err != nil {
+		return res, err
+	}
+
+	value := reflect.ValueOf(source)
+	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
+		return nil, fmt.Errorf("can not fetch cloud resource. %v is not a valid pointer.", value)
+	}
+	nodeV := value.Elem()
 
 	for prop, trans := range awsResourcesDef[res.Type()] {
 		sourceField := nodeV.FieldByName(trans.name)

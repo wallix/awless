@@ -1,11 +1,12 @@
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"reflect"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/graph"
 )
@@ -14,16 +15,119 @@ type addParentFn func(*graph.Graph, interface{}) error
 
 var addParentsFns = map[string][]addParentFn{
 	graph.Vpc.String():             {addRegionParent},
-	graph.Subnet.String():          {subnetAddVpcParent},
-	graph.Instance.String():        {instanceAddSubnetParent, instanceAddSecurityGroupsParents},
-	graph.SecurityGroup.String():   {secgroupAddVpcParent},
+	graph.Subnet.String():          {addParentWithFieldIfExists(graph.Vpc, "VpcId")},
+	graph.Instance.String():        {addParentWithFieldIfExists(graph.Subnet, "SubnetId"), addParentListWithField(graph.SecurityGroup, "SecurityGroups", "GroupId")},
+	graph.SecurityGroup.String():   {addParentWithFieldMustExist(graph.Vpc, "VpcId")},
 	graph.Keypair.String():         {addRegionParent},
-	graph.InternetGateway.String(): {addRegionParent, gatewayAddVpcParents},
-	graph.RouteTable.String():      {routeTableAddSubnetParents, routeTableAddVpcParent},
-	graph.User.String():            {addRegionParent, userAddGroupsParents, userAddManagedPoliciesParents},
-	graph.Role.String():            {addRegionParent, roleAddManagedPoliciesParents},
-	graph.Group.String():           {addRegionParent, groupAddManagedPoliciesParents},
+	graph.InternetGateway.String(): {addRegionParent, addParentListWithField(graph.Vpc, "Attachments", "VpcId")},
+	graph.RouteTable.String():      {addParentListWithField(graph.Subnet, "Associations", "SubnetId"), addParentWithFieldMustExist(graph.Vpc, "VpcId")},
+	graph.User.String():            {addRegionParent, userAddGroupsParents, addManagedPoliciesParents},
+	graph.Role.String():            {addRegionParent, addManagedPoliciesParents},
+	graph.Group.String():           {addRegionParent, addManagedPoliciesParents},
 	graph.Policy.String():          {addRegionParent},
+}
+
+var ParentNotFound = errors.New("empty field to add parent")
+
+func addParentWithFieldIfExists(parentT graph.ResourceType, field string) addParentFn {
+	return func(g *graph.Graph, i interface{}) error {
+		err := addParentWithFieldMustExist(parentT, field)(g, i)
+		if err != ParentNotFound {
+			return err
+		}
+		return nil
+	}
+}
+
+func addParentWithFieldMustExist(parentT graph.ResourceType, field string) addParentFn {
+	return func(g *graph.Graph, i interface{}) error {
+		res, err := initResource(i)
+		if err != nil {
+			return err
+		}
+		value := reflect.ValueOf(i)
+		if value.Kind() != reflect.Ptr {
+			return fmt.Errorf("add parent to %s: %T not a pointer", res.Id(), i)
+		}
+		struc := value.Elem()
+		if struc.Kind() != reflect.Struct {
+			return fmt.Errorf("add parent to %s: %T not a stuct pointer", res.Id(), i)
+		}
+
+		structField := struc.FieldByName(field)
+		if !structField.IsValid() {
+			return fmt.Errorf("add parent to %s: ", field, i)
+		}
+		str, ok := structField.Interface().(*string)
+		if !ok {
+			return fmt.Errorf("add parent to %s: %T not a string pointer", field, structField.Interface())
+		}
+
+		if awssdk.StringValue(str) == "" {
+			return ParentNotFound
+		}
+		parent, err := g.GetResource(parentT, awssdk.StringValue(str))
+		if err != nil {
+			return err
+		}
+		g.AddParent(parent, res)
+		return nil
+	}
+}
+
+func addParentListWithField(parentT graph.ResourceType, listField, parentField string) addParentFn {
+	return func(g *graph.Graph, i interface{}) error {
+		res, err := initResource(i)
+		if err != nil {
+			return err
+		}
+		value := reflect.ValueOf(i)
+		if value.Kind() != reflect.Ptr {
+			return fmt.Errorf("add parent to %s: %T not a pointer", res.Id(), i)
+		}
+		struc := value.Elem()
+		if struc.Kind() != reflect.Struct {
+			return fmt.Errorf("add parent to %s: %T not a struct pointer", res.Id(), i)
+		}
+
+		structField := struc.FieldByName(listField)
+		if !structField.IsValid() {
+			return fmt.Errorf("add parent to %s: %T not a struct field", structField, i)
+		}
+
+		if !structField.IsValid() || structField.Kind() != reflect.Slice {
+			return fmt.Errorf("add parent to %s: field not a slice: %T", res.Id(), structField.Kind())
+		}
+
+		for i := 0; i < structField.Len(); i++ {
+			listValue := structField.Index(i)
+			if listValue.Kind() != reflect.Ptr {
+				return fmt.Errorf("add parent to %s: not a pointer: %s", res.Id(), listValue.Kind())
+			}
+			listStruc := listValue.Elem()
+			if listStruc.Kind() != reflect.Struct {
+				return fmt.Errorf("add parent to %s: not a struct: %s", res.Id(), listStruc.Kind())
+			}
+			listStructField := listStruc.FieldByName(parentField)
+			if !listStructField.IsValid() {
+				return fmt.Errorf("add parent to %s: unknown field %s in %T", listStructField, i)
+			}
+			str, ok := listStructField.Interface().(*string)
+			if !ok {
+				return fmt.Errorf("add parent to %s: %T is not a string pointer", listStructField, listStructField.Interface())
+			}
+
+			if awssdk.StringValue(str) == "" {
+				continue
+			}
+			parent, err := g.GetResource(parentT, awssdk.StringValue(str))
+			if err != nil {
+				return err
+			}
+			g.AddParent(parent, res)
+		}
+		return nil
+	}
 }
 
 func addRegionParent(g *graph.Graph, i interface{}) error {
@@ -35,105 +139,49 @@ func addRegionParent(g *graph.Graph, i interface{}) error {
 		return fmt.Errorf("aws fetch: expect exactly one region in graph, but got %d", len(resources))
 	}
 	regionN := resources[0]
-	switch ii := i.(type) {
-	case *ec2.Vpc:
-		n, err := g.GetResource(graph.Vpc, awssdk.StringValue(ii.VpcId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	case *ec2.KeyPairInfo:
-		n, err := g.GetResource(graph.Keypair, awssdk.StringValue(ii.KeyName))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	case *ec2.InternetGateway:
-		n, err := g.GetResource(graph.InternetGateway, awssdk.StringValue(ii.InternetGatewayId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	case *iam.GroupDetail:
-		n, err := g.GetResource(graph.Group, awssdk.StringValue(ii.GroupId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	case *iam.UserDetail:
-		n, err := g.GetResource(graph.User, awssdk.StringValue(ii.UserId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	case *iam.RoleDetail:
-		n, err := g.GetResource(graph.Role, awssdk.StringValue(ii.RoleId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	case *iam.Policy:
-		n, err := g.GetResource(graph.Policy, awssdk.StringValue(ii.PolicyId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(regionN, n)
-	default:
-		return fmt.Errorf("aws fetch: unkown type of resource to add region: %T", i)
-	}
-
-	return nil
-}
-
-func addResourcePolicyParent(g *graph.Graph, res *graph.Resource, policyName string) error {
-	a := graph.Alias(policyName)
-	pid, ok := a.ResolveToId(g, graph.Policy)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "add parent to '%s/%s': unknown policy named '%s'. Ignoring it.\n", res.Type(), res.Id(), policyName)
-		return nil
-	}
-	parent, err := g.GetResource(graph.Policy, pid)
+	res, err := initResource(i)
 	if err != nil {
 		return err
 	}
-	g.AddParent(parent, res)
+	g.AddParent(regionN, res)
 	return nil
 }
 
-func groupAddManagedPoliciesParents(g *graph.Graph, i interface{}) error {
-	group, ok := i.(*iam.GroupDetail)
-	if !ok {
-		return fmt.Errorf("aws fetch: not a group, but a %T", i)
-	}
-	n, err := g.GetResource(graph.Group, awssdk.StringValue(group.GroupId))
+func addManagedPoliciesParents(g *graph.Graph, i interface{}) error {
+	res, err := initResource(i)
 	if err != nil {
 		return err
 	}
-
-	for _, policy := range group.AttachedManagedPolicies {
-		err := addResourcePolicyParent(g, n, awssdk.StringValue(policy.PolicyName))
-		if err != nil {
-			return err
-		}
+	value := reflect.ValueOf(i)
+	if value.Kind() != reflect.Ptr {
+		return fmt.Errorf("add parent to %s: unknown type %T", res.Id(), i)
 	}
-	return nil
-}
+	struc := value.Elem()
+	if struc.Kind() != reflect.Struct {
+		return fmt.Errorf("add parent to %s: unknown type %T", res.Id(), i)
+	}
 
-func userAddManagedPoliciesParents(g *graph.Graph, i interface{}) error {
-	user, ok := i.(*iam.UserDetail)
+	structField := struc.FieldByName("AttachedManagedPolicies")
+	if !structField.IsValid() {
+		return fmt.Errorf("add parent to %s: unknown field %s in %T", structField, i)
+	}
+	policies, ok := structField.Interface().([]*iam.AttachedPolicy)
 	if !ok {
-		return fmt.Errorf("aws fetch: not a user, but a %T", i)
-	}
-	n, err := g.GetResource(graph.User, awssdk.StringValue(user.UserId))
-	if err != nil {
-		return err
+		return fmt.Errorf("add parent to %s: not a valid attached policy list: %T", res.Id(), structField.Interface())
 	}
 
-	for _, policy := range user.AttachedManagedPolicies {
-		err := addResourcePolicyParent(g, n, awssdk.StringValue(policy.PolicyName))
+	for _, policy := range policies {
+		a := graph.Alias(awssdk.StringValue(policy.PolicyName))
+		pid, ok := a.ResolveToId(g, graph.Policy)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "add parent to '%s/%s': unknown policy named '%s'. Ignoring it.\n", res.Type(), res.Id(), awssdk.StringValue(policy.PolicyName))
+			return nil
+		}
+		parent, err := g.GetResource(graph.Policy, pid)
 		if err != nil {
 			return err
 		}
+		g.AddParent(parent, res)
 	}
 	return nil
 }
@@ -154,177 +202,6 @@ func userAddGroupsParents(g *graph.Graph, i interface{}) error {
 			return err
 		}
 		g.AddParent(parent, n)
-	}
-	return nil
-}
-
-func roleAddManagedPoliciesParents(g *graph.Graph, i interface{}) error {
-	role, ok := i.(*iam.RoleDetail)
-	if !ok {
-		return fmt.Errorf("aws fetch: not a role, but a %T", i)
-	}
-	n, err := g.GetResource(graph.Role, awssdk.StringValue(role.RoleId))
-	if err != nil {
-		return err
-	}
-
-	for _, policy := range role.AttachedManagedPolicies {
-		err := addResourcePolicyParent(g, n, awssdk.StringValue(policy.PolicyName))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func instanceAddSubnetParent(g *graph.Graph, i interface{}) error {
-	instance, ok := i.(*ec2.Instance)
-	if !ok {
-		return fmt.Errorf("aws fetch: not an instance, but a %T", i)
-	}
-	instanceN, err := g.GetResource(graph.Instance, awssdk.StringValue(instance.InstanceId))
-	if err != nil {
-		return err
-	}
-	if awssdk.StringValue(instance.SubnetId) == "" {
-		return nil
-	}
-	subnetN, err := g.GetResource(graph.Subnet, awssdk.StringValue(instance.SubnetId))
-	if err != nil {
-		return err
-	}
-	g.AddParent(subnetN, instanceN)
-	return nil
-}
-
-func subnetAddVpcParent(g *graph.Graph, i interface{}) error {
-	subnet, ok := i.(*ec2.Subnet)
-	if !ok {
-		return fmt.Errorf("aws fetch: not an subnet, but a %T", i)
-	}
-	n, err := g.GetResource(graph.Subnet, awssdk.StringValue(subnet.SubnetId))
-	if err != nil {
-		return err
-	}
-	if awssdk.StringValue(subnet.VpcId) == "" {
-		return nil
-	}
-	parent, err := g.GetResource(graph.Vpc, awssdk.StringValue(subnet.VpcId))
-	if err != nil {
-		return err
-	}
-	g.AddParent(parent, n)
-	return nil
-}
-
-func secgroupAddVpcParent(g *graph.Graph, i interface{}) error {
-	secgroup, ok := i.(*ec2.SecurityGroup)
-	if !ok {
-		return fmt.Errorf("aws fetch: not a security group, but a %T", i)
-	}
-	n, err := g.GetResource(graph.SecurityGroup, awssdk.StringValue(secgroup.GroupId))
-	if err != nil {
-		return err
-	}
-	if awssdk.StringValue(secgroup.VpcId) == "" {
-		return nil
-	}
-	parent, err := g.GetResource(graph.Vpc, awssdk.StringValue(secgroup.VpcId))
-	if err != nil {
-		return err
-	}
-	g.AddParent(parent, n)
-	return nil
-}
-
-func routeTableAddVpcParent(g *graph.Graph, i interface{}) error {
-	rT, ok := i.(*ec2.RouteTable)
-	if !ok {
-		return fmt.Errorf("aws fetch: not a route table, but a %T", i)
-	}
-	n, err := g.GetResource(graph.RouteTable, awssdk.StringValue(rT.RouteTableId))
-	if err != nil {
-		return err
-	}
-	if awssdk.StringValue(rT.VpcId) == "" {
-		return nil
-	}
-	parent, err := g.GetResource(graph.Vpc, awssdk.StringValue(rT.VpcId))
-	if err != nil {
-		return err
-	}
-	g.AddParent(parent, n)
-	return nil
-}
-
-func instanceAddSecurityGroupsParents(g *graph.Graph, i interface{}) error {
-	instance, ok := i.(*ec2.Instance)
-	if !ok {
-		return fmt.Errorf("aws fetch: not an instance, but a %T", i)
-	}
-	instanceN, err := g.GetResource(graph.Instance, awssdk.StringValue(instance.InstanceId))
-	if err != nil {
-		return err
-	}
-
-	for _, refSecGroup := range instance.SecurityGroups {
-		if awssdk.StringValue(refSecGroup.GroupId) == "" {
-			continue
-		}
-		secGroupN, err := g.GetResource(graph.SecurityGroup, awssdk.StringValue(refSecGroup.GroupId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(secGroupN, instanceN)
-	}
-	return nil
-}
-
-func gatewayAddVpcParents(g *graph.Graph, i interface{}) error {
-	igw, ok := i.(*ec2.InternetGateway)
-	if !ok {
-		return fmt.Errorf("aws fetch: not a gateway, but a %T", i)
-	}
-	n, err := g.GetResource(graph.InternetGateway, awssdk.StringValue(igw.InternetGatewayId))
-	if err != nil {
-		return err
-	}
-
-	for _, att := range igw.Attachments {
-		if awssdk.StringValue(att.VpcId) == "" {
-			continue
-		}
-		vpc, err := g.GetResource(graph.Vpc, awssdk.StringValue(att.VpcId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(vpc, n)
-	}
-	return nil
-}
-
-func routeTableAddSubnetParents(g *graph.Graph, i interface{}) error {
-	rt, ok := i.(*ec2.RouteTable)
-	if !ok {
-		return fmt.Errorf("aws fetch: not a route table, but a %T", i)
-	}
-	n, err := g.GetResource(graph.RouteTable, awssdk.StringValue(rt.RouteTableId))
-	if err != nil {
-		return err
-	}
-
-	for _, ass := range rt.Associations {
-		if awssdk.StringValue(ass.RouteTableId) != awssdk.StringValue(rt.RouteTableId) {
-			continue
-		}
-		if awssdk.StringValue(ass.SubnetId) == "" {
-			continue
-		}
-		subnet, err := g.GetResource(graph.Subnet, awssdk.StringValue(ass.SubnetId))
-		if err != nil {
-			return err
-		}
-		g.AddParent(subnet, n)
 	}
 	return nil
 }
