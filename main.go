@@ -1,7 +1,7 @@
 package main
 
-import "github.com/wallix/awless/cmd"
+import "github.com/wallix/awless/commands"
 
 func main() {
-	cmd.ExecuteRoot()
+	commands.ExecuteRoot()
 }
