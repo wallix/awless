@@ -95,6 +95,22 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 	return resource, nil
 }
 
+func (g *Graph) FindResource(id string) (*Resource, error) {
+	triples, err := g.rdfG.TriplesForGivenPredicate(rdf.HasTypePredicate)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, triple := range triples {
+		sub := triple.Subject()
+		if sub.ID().String() == id {
+			return g.GetResource(newResourceType(sub), sub.ID().String())
+		}
+	}
+
+	return nil, nil
+}
+
 func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 	var res []*Resource
 	nodes, err := g.rdfG.NodesForType(t.ToRDFString())

@@ -40,13 +40,8 @@ func (g *Graph) TriplesForType(t string) ([]*triple.Triple, error) {
 	return g.returnTriples(PREDICATE_OBJECT, HasTypePredicate, triple.NewLiteralObject(literal))
 }
 
-func (g *Graph) TriplesForPredicateName(name string) ([]*triple.Triple, error) {
-	predicate, err := predicate.NewImmutable(name)
-	if err != nil {
-		return []*triple.Triple{}, err
-	}
-
-	return g.returnTriples(PREDICATE_ONLY, predicate)
+func (g *Graph) TriplesForGivenPredicate(pred *predicate.Predicate) ([]*triple.Triple, error) {
+	return g.returnTriples(PREDICATE_ONLY, pred)
 }
 
 func (g *Graph) CountTriplesForSubjectAndPredicateObjectOfType(subject *node.Node, predicate *predicate.Predicate, objectType string) (int, error) {

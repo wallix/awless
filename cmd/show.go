@@ -13,70 +13,88 @@ import (
 )
 
 func init() {
-	for apiName, types := range aws.ResourceTypesPerAPI {
-		for _, resType := range types {
-			showCmd.AddCommand(showServiceResourceCmd(apiName, resType))
-		}
-	}
-
 	RootCmd.AddCommand(showCmd)
 }
 
 var showCmd = &cobra.Command{
 	Use:                "show",
 	Short:              "Show resource and their relations via a given id: users, groups, instances, vpcs, ...",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
-}
 
-var showServiceResourceCmd = func(apiName, resType string) *cobra.Command {
-	command := &cobra.Command{
-		Use:   resType + " id",
-		Short: fmt.Sprintf("Show properties and relations of an AWS %s %s", apiName, resType),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return fmt.Errorf("id required")
+		}
 
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return fmt.Errorf("id required")
-			}
-			id := args[0]
-			var g *graph.Graph
+		id := args[0]
+		notFound := fmt.Sprintf("resource with id %s not found", id)
+		var gph *graph.Graph
+		var graphs map[string]*graph.Graph
 
-			srv, err := cloud.GetServiceForType(resType)
-			exitOn(err)
+		resType := resolveResourceType(id)
 
-			if localResources {
-				g = sync.LoadCurrentLocalGraph(srv.Name())
-			} else {
-				g, err = srv.FetchByType(resType)
-			}
-			exitOn(err)
-
-			printResource(g, graph.ResourceType(resType), id)
-
+		if resType == "" && localFlag {
+			fmt.Println(notFound)
 			return nil
-		},
-	}
+		} else if resType == "" {
+			graphs = runFullSync()
 
-	command.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
-	return command
+			if resType = resolveResourceType(id); resType == "" {
+				fmt.Println(notFound)
+				return nil
+			}
+		}
+
+		srv, err := cloud.GetServiceForType(resType)
+		exitOn(err)
+
+		if graphs == nil {
+			fmt.Printf("syncing service for %s type\n", resType)
+			graphs, err = sync.DefaultSyncer.Sync(srv)
+			exitOn(err)
+		}
+
+		gph = graphs[srv.Name()]
+
+		res, err := gph.FindResource(args[0])
+		exitOn(err)
+
+		if res != nil {
+			displayer := display.BuildOptions(
+				display.WithHeaders(display.DefaultsColumnDefinitions[res.Type()]),
+				display.WithFormat(listingFormat),
+			).SetSource(res).Build()
+
+			exitOn(displayer.Print(os.Stderr))
+		}
+
+		return nil
+	},
 }
 
-func printResource(g *graph.Graph, resourceType graph.ResourceType, id string) {
-	a := graph.Alias(id)
-	if aID, ok := a.ResolveToId(g, resourceType); ok {
-		id = aID
+func runFullSync() map[string]*graph.Graph {
+	fmt.Println("cannot resolve resource: running full sync")
+
+	var services []cloud.Service
+	for _, srv := range cloud.ServiceRegistry {
+		services = append(services, srv)
 	}
 
-	resource, err := g.GetResource(resourceType, id)
-	if err != nil {
-		exitOn(err)
-	}
-
-	displayer := display.BuildOptions(
-		display.WithHeaders(display.DefaultsColumnDefinitions[resourceType]),
-		display.WithFormat(listingFormat),
-	).SetSource(resource).Build()
-
-	err = displayer.Print(os.Stderr)
+	graphs, err := sync.DefaultSyncer.Sync(services...)
 	exitOn(err)
+
+	return graphs
+}
+
+func resolveResourceType(id string) (resType string) {
+	for _, name := range aws.ServiceNames {
+		g := sync.LoadCurrentLocalGraph(name)
+		localRes, err := g.FindResource(id)
+		exitOn(err)
+		if localRes != nil {
+			resType = localRes.Type().String()
+		}
+	}
+	return
 }

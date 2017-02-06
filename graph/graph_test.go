@@ -35,6 +35,39 @@ func TestGetResource(t *testing.T) {
 	}
 }
 
+func TestFindResource(t *testing.T) {
+	g := NewGraph()
+
+	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
+  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
+  /instance<inst_2>  "has_type"@[] "/instance"^^type:text
+  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
+  /subnet<sub_1>  "has_type"@[] "/subnet"^^type:text`))
+
+	res, err := g.FindResource("inst_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := res.Properties["Name"], "redis"; got != want {
+		t.Fatalf("got %s want %s", got, want)
+	}
+
+	if res, err = g.FindResource("none"); err != nil {
+		t.Fatal(err)
+	}
+	if res != nil {
+		t.Fatalf("expected nil got %v", res)
+	}
+
+	if res, err = g.FindResource("sub_1"); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := res.Type().String(), "subnet"; got != want {
+		t.Fatalf("got %s want %s", got, want)
+	}
+}
+
 func TestGetAllResources(t *testing.T) {
 	g := NewGraph()
 

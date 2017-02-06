@@ -36,9 +36,7 @@ func init() {
 	}
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Format for the display of resources: table or csv")
-
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
-	listCmd.PersistentFlags().BoolVar(&localResources, "local", false, "List locally sync resources")
 	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort", []string{"Id"}, "Sort tables by column(s) name(s)")
 }
 

@@ -91,7 +91,7 @@ func TestGetTriplesAndNodesForType(t *testing.T) {
 	}
 }
 
-func TestGetTriplesForPredicateName(t *testing.T) {
+func TestGetTriplesForGivenPredicate(t *testing.T) {
 	aLiteral, err := literal.DefaultBuilder().Build(literal.Text, "/a")
 	if err != nil {
 		t.Fatal(err)
@@ -121,7 +121,7 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 	g.Add(noErrTriple(aone, ParentOfPredicate, bone))
 	g.Add(noErrTriple(atwo, ParentOfPredicate, btwo))
 
-	triples, err := g.TriplesForPredicateName(string(ParentOfPredicate.ID()))
+	triples, err := g.TriplesForGivenPredicate(ParentOfPredicate)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestGetTriplesForPredicateName(t *testing.T) {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	triples, err = g.TriplesForPredicateName(string(HasTypePredicate.ID()))
+	triples, err = g.TriplesForGivenPredicate(HasTypePredicate)
 	if err != nil {
 		t.Fatal(err)
 	}
