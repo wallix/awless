@@ -2,19 +2,19 @@
 
 # Why awless
 
-`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and runnable/scriptable templates for resource creations (see `awless` templates).
+`awless` has been created with the idea to run the most frequent actions easily by using simple commands, smart defaults, security best practices and runnable/scriptable templates for resource creations (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates)).
 
 There is no need to edit manually any line of JSON, deal with policies, etc.
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
 
 # Overview
 
-- Clear and easy listing of virtualized resources (subnets, instances, groups, users, etc.): `awless list`
-- Multiple output formats either human (tabular, trees, ...) or machine readable (csv, json, ...): `--format`
-- Create a local snapshot of the infrastructure (ec2, iam, s3) deployed in the remote cloud: `awless sync`
-- Show what has changed on the cloud since the last local snapshot: `awless diff`
-- A local history and versioning of the snapshots: `awless show revisions`
-- Creation of cloud resources (instances, groups, users, policies) with smart and secure default through powerful awless templates
+- Clear and easy listing of cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
+- Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
+- Creation, update and deletion of cloud resources with smart and secure default through powerful awless templates: `awless create/delete/update/run/...`
+- Easy revert of resources creation: `awless revert`  
+- Show what has changed on the cloud since the last local changes: `awless diff`
+- A local history and versioning of the changes that occurred on the cloud: `awless history`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 
 # Install
@@ -53,31 +53,45 @@ You can list various resources:
     $ awless list roles --sort name,id
 
 Listing resources by default performs queries directly to AWS.
-If you want, you can also query the local snapshot:
+If you want, you can also query the local snapshot (works offline, with potentially outdated data):
 
     $ awless list subnets --local
 
 See the [manual](https://github.com/wallix/awless/wiki/Commands#awless-list) for a complete reference of `awless list`.
 
-### Updating the local snapshot
+### Creating, Updating and Deleting resources
 
-<!-- WHY!!! -->
+`awless` provides a powerful template system to interact with cloud infrastructures.
 
-You can synchronize your local snapshot with the current cloud infrastructure on AWS using:
+`awless` templates can be used through shortcut commands:
 
-    $ awless sync
+    awless create instance
+    awless delete subnet id=subnet-12345678
+    awless attach volume id=vol-12345678 instance=i-12345678
+    
+See [templates commands (wiki)](https://github.com/wallix/awless/wiki/Templates#Commands) for more commands.
 
-Once the sync is done, changes (either to the local model or to the cloud infrastructure) can be tracked easily:
+You can also load an `awless` template from a file with
 
-    $ awless diff
+    awless run awless-templates/create_instance_ssh.awless
 
-### Creating a new resource
+Note that you can download preexisting templates from the dedicated git repository: https://github.com/wallix/awless-templates. See [templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more details about `awless` templates.
 
-<!-- TODO -->
+### Reverting commands
 
+Each `awless` command that changes the cloud infrastructure is associated with an unique *id* referencing the (un)successful actions.
+
+To list the last actions you have run on your cloud, run
+
+    awless revert -l
+
+Then, you can revert a command with 
+
+    awless revert -i 01B89ZY529E5D7WKDTQHFC0RPA # for now, revert only resource creations
+    
 ### Much more
 
-		$ awless show revisions --group-by-week
+		$ awless history -p
 		$ awless ssh ubuntu@i-abcd1234
 
 See [commands (wiki)](https://github.com/wallix/awless/wiki/Commands) for a more complete reference.
