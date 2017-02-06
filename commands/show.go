@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
 
@@ -19,12 +21,12 @@ func init() {
 var showCmd = &cobra.Command{
 	Use:                "show",
 	Short:              "Show resource and their relations via a given id: users, groups, instances, vpcs, ...",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return fmt.Errorf("id required")
+			return errors.New("id required")
 		}
 
 		id := args[0]
@@ -35,13 +37,13 @@ var showCmd = &cobra.Command{
 		resType := resolveResourceType(id)
 
 		if resType == "" && localFlag {
-			fmt.Println(notFound)
+			logger.Info(notFound)
 			return nil
 		} else if resType == "" {
 			graphs = runFullSync()
 
 			if resType = resolveResourceType(id); resType == "" {
-				fmt.Println(notFound)
+				logger.Info(notFound)
 				return nil
 			}
 		}
@@ -50,7 +52,7 @@ var showCmd = &cobra.Command{
 		exitOn(err)
 
 		if graphs == nil {
-			fmt.Printf("syncing service for %s type\n", resType)
+			logger.Verbosef("syncing service for %s type", resType)
 			graphs, err = sync.DefaultSyncer.Sync(srv)
 			exitOn(err)
 		}
@@ -74,7 +76,7 @@ var showCmd = &cobra.Command{
 }
 
 func runFullSync() map[string]*graph.Graph {
-	fmt.Println("cannot resolve resource: running full sync")
+	logger.Info("cannot resolve resource - running full sync")
 
 	var services []cloud.Service
 	for _, srv := range cloud.ServiceRegistry {

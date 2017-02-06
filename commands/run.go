@@ -15,6 +15,7 @@ import (
 	awscloud "github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/ast"
@@ -36,7 +37,7 @@ func init() {
 var runCmd = &cobra.Command{
 	Use:                "run",
 	Short:              "Run an awless template file given as the only argument. Ex: awless run mycloud.awless",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -184,9 +185,9 @@ func runSync(entities []string) {
 	}
 
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
-		fmt.Fprintf(os.Stderr, "error while synching for %s\n", strings.Join(entities, ", "))
+		logger.Errorf("error while synching for %s\n", strings.Join(entities, ", "))
 	} else if verboseFlag {
-		fmt.Printf("(performed sync for %s)\n", strings.Join(entities, ", "))
+		logger.Infof("performed sync for %s", strings.Join(entities, ", "))
 	}
 }
 
@@ -220,9 +221,8 @@ func printReport(t *template.TemplateExecution) {
 	}
 
 	fmt.Println()
-	fmt.Printf("Revert this template with `awless revert -i %s`\n", t.ID)
-	fmt.Println()
-	fmt.Println("(List executed template executions using `awless revert -l`)")
+	logger.Info("list executed template executions using `awless revert -l`")
+	logger.Infof("revert this template with `awless revert -i %s`", t.ID)
 }
 
 func addAliasesToParams(expr *ast.ExpressionNode) error {
@@ -250,7 +250,7 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 		if id, ok := a.ResolveToId(graphForResource, rT); ok {
 			expr.Params[k] = id
 		} else {
-			fmt.Printf("Alias '%s' not found in local snapshot. You might want to perform an `awless sync`\n", a)
+			logger.Infof("Alias '%s' not found in local snapshot. You might want to perform an `awless sync`\n", a)
 		}
 	}
 	return nil

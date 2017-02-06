@@ -10,6 +10,7 @@ import (
 	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/stats"
 	"github.com/wallix/awless/sync"
 )
@@ -51,6 +52,11 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 
 func initSyncerHook(cmd *cobra.Command, args []string) error {
 	sync.DefaultSyncer = sync.NewSyncer()
+	return nil
+}
+
+func initLoggerHook(cmd *cobra.Command, args []string) error {
+	logger.DefaultLogger.SetVerbose(verboseFlag)
 	return nil
 }
 
