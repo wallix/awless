@@ -288,8 +288,17 @@ var DriverDefinitions = []struct {
 			"GroupName": "name",
 		},
 	},
+
+	// POLICY
 	{
 		Action: "attach", Entity: graph.Policy.String(), Api: "iam", DryRunUnsupported: true, Input: "AttachUserPolicyInput", ApiMethod: "AttachUserPolicy",
+		RequiredParams: map[string]string{
+			"PolicyArn": "arn",
+			"UserName":  "user",
+		},
+	},
+	{
+		Action: "detach", Entity: "policy", Api: "iam", DryRunUnsupported: true, Input: "DetachUserPolicyInput", ApiMethod: "DetachUserPolicy",
 		RequiredParams: map[string]string{
 			"PolicyArn": "arn",
 			"UserName":  "user",

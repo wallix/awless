@@ -1280,6 +1280,38 @@ func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
+func (d *AwsDriver) Detach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("detach policy: missing required params 'arn'")
+	}
+
+	if _, ok := params["user"]; !ok {
+		return nil, errors.New("detach policy: missing required params 'user'")
+	}
+
+	d.logger.Println("params dry run: detach policy ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DetachUserPolicyInput{}
+
+	// Required params
+	setField(params["arn"], input, "PolicyArn")
+	setField(params["user"], input, "UserName")
+
+	output, err := d.iam.DetachUserPolicy(input)
+	if err != nil {
+		d.logger.Printf("detach policy error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.Println("detach policy done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *AwsDriver) Create_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create bucket: missing required params 'name'")

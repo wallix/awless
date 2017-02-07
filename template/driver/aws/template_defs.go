@@ -38,6 +38,7 @@ var AWSTemplatesDefinitions = map[string]string{
 	"creategroup":           "create group name={ group.name } ",
 	"deletegroup":           "delete group name={ group.name } ",
 	"attachpolicy":          "attach policy arn={ policy.arn } user={ policy.user } ",
+	"detachpolicy":          "detach policy arn={ policy.arn } user={ policy.user } ",
 	"createbucket":          "create bucket name={ bucket.name } ",
 	"deletebucket":          "delete bucket name={ bucket.name } ",
 	"createstorageobject":   "create storageobject bucket={ storageobject.bucket } key={ storageobject.key } ",

@@ -154,11 +154,11 @@ func TestTemplateExecutionHasErrors(t *testing.T) {
 
 func TestRevertTemplateExecution(t *testing.T) {
 	exec := &TemplateExecution{
-		ID: "",
 		Executed: []*ExecutedStatement{
+			{Line: "attach policy arn=stuff user=mrT", Result: "", Err: ""},
 			{Line: "create vpc", Result: "vpc-56g4h", Err: ""},
 			{Line: "create subnet", Result: "sub-65bh4nj", Err: ""},
-			{Line: "start instance", Result: "i-54g3hj", Err: ""},
+			{Line: "start instance id=i-54g3hj", Result: "i-54g3hj", Err: ""},
 			{Line: "create tags", Result: "", Err: ""},
 			{Line: "create instance", Result: "", Err: "cannot create instance"},
 		},
@@ -169,8 +169,8 @@ func TestRevertTemplateExecution(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := len(tpl.Statements), 3; got != want {
-		t.Fatal("got %d, want %d")
+	if got, want := len(tpl.Statements), 4; got != want {
+		t.Fatalf("got %d, want %d")
 	}
 	expr := tpl.Statements[0].Node.(*ast.ExpressionNode)
 	if got, want := "stop", expr.Action; got != want {
@@ -207,6 +207,18 @@ func TestRevertTemplateExecution(t *testing.T) {
 	if got, want := expected, expr.Params; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
+
+	expr = tpl.Statements[3].Node.(*ast.ExpressionNode)
+	if got, want := "detach", expr.Action; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := "policy", expr.Entity; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	expected = map[string]interface{}{"arn": "stuff", "user": "mrT"}
+	if got, want := expected, expr.Params; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
 }
 
 func TestExecutedStatementIsRevertible(t *testing.T) {
@@ -221,6 +233,8 @@ func TestExecutedStatementIsRevertible(t *testing.T) {
 		{line: "start instance", revertible: false},
 		{line: "create vpc", result: "any", revertible: true},
 		{line: "stop instance", result: "any", revertible: true},
+		{line: "attach policy", result: "", revertible: true},
+		{line: "detach policy", result: "", revertible: true},
 	}
 
 	for _, tc := range tcases {

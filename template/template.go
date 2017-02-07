@@ -160,7 +160,18 @@ type ExecutedStatement struct {
 }
 
 func (ex *ExecutedStatement) IsRevertible() bool {
-	return (strings.Contains(ex.Line, "create") || strings.Contains(ex.Line, "start") || strings.Contains(ex.Line, "stop")) && ex.Result != "" && ex.Err == ""
+	if ex.Err != "" {
+		return false
+	}
+	if ex.Result != "" {
+		if strings.Contains(ex.Line, "create") || strings.Contains(ex.Line, "start") || strings.Contains(ex.Line, "stop") {
+			return true
+		}
+	} else {
+		return strings.Contains(ex.Line, "attach") || strings.Contains(ex.Line, "detach")
+	}
+
+	return false
 }
 
 func NewTemplateExecution(tpl *Template) *TemplateExecution {
@@ -226,6 +237,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 			case *ast.ExpressionNode:
 				node := n.(*ast.ExpressionNode)
 				var revertAction string
+				var params []string
 				switch node.Action {
 				case "create":
 					revertAction = "delete"
@@ -233,11 +245,28 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 					revertAction = "stop"
 				case "stop":
 					revertAction = "start"
-				default:
-					continue
+				case "detach":
+					revertAction = "attach"
+				case "attach":
+					revertAction = "detach"
 				}
 
-				lines = append(lines, fmt.Sprintf("%s %s id=%s\n", revertAction, node.Entity, exec.Result))
+				switch node.Action {
+				case "start", "stop", "attach", "detach":
+					for k, v := range node.Params {
+						params = append(params, fmt.Sprintf("%s=%s", k, v))
+					}
+				case "create":
+					_, hasNameParam := node.Params["name"]
+					_, hasIdParam := node.Params["id"]
+					if !hasIdParam && hasNameParam {
+						params = append(params, fmt.Sprintf("name=%s", exec.Result))
+					} else {
+						params = append(params, fmt.Sprintf("id=%s", exec.Result))
+					}
+				}
+
+				lines = append(lines, fmt.Sprintf("%s %s %s\n", revertAction, node.Entity, strings.Join(params, " ")))
 			default:
 				return nil, fmt.Errorf("cannot parse [%s] as expression node", exec.Line)
 			}
