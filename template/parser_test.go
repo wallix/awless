@@ -11,6 +11,34 @@ import (
 
 func TestTemplateParsing(t *testing.T) {
 
+	t.Run("Parse special characters", func(t *testing.T) {
+		tcases := []struct {
+			input    string
+			verifyFn func(tpl *Template) error
+		}{
+			{
+				input: "attach policy arn=arn:aws:iam::aws:policy/AmazonS3FullAccess",
+				verifyFn: func(tpl *Template) error {
+					if err := isExpressionNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return nil
+				},
+			},
+		}
+
+		for _, tcase := range tcases {
+			node, err := Parse(tcase.input)
+			if err != nil {
+				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
+			}
+
+			if err := tcase.verifyFn(node); err != nil {
+				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
+			}
+		}
+	})
+
 	t.Run("Allow and ignore comments", func(t *testing.T) {
 		tcases := []struct {
 			input    string
@@ -19,7 +47,6 @@ func TestTemplateParsing(t *testing.T) {
 			{
 				input: "create vpc\n#my comment\ncreate subnet",
 				verifyFn: func(tpl *Template) error {
-					fmt.Println(tpl)
 					if got, want := len(tpl.Statements), 2; got != want {
 						t.Fatalf("got %d, want %d", got, want)
 					}

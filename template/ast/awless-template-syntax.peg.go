@@ -1716,6 +1716,18 @@ func (p *Peg) Init() {
 													position129 := position
 													{
 														switch buffer[position] {
+														case '/':
+															if buffer[position] != rune('/') {
+																goto l68
+															}
+															position++
+															break
+														case ':':
+															if buffer[position] != rune(':') {
+																goto l68
+															}
+															position++
+															break
 														case '_':
 															if buffer[position] != rune('_') {
 																goto l68
@@ -1760,6 +1772,18 @@ func (p *Peg) Init() {
 														position131, tokenIndex131 := position, tokenIndex
 														{
 															switch buffer[position] {
+															case '/':
+																if buffer[position] != rune('/') {
+																	goto l131
+																}
+																position++
+																break
+															case ':':
+																if buffer[position] != rune(':') {
+																	goto l131
+																}
+																position++
+																break
 															case '_':
 																if buffer[position] != rune('_') {
 																	goto l131
@@ -2186,6 +2210,18 @@ func (p *Peg) Init() {
 														position191 := position
 														{
 															switch buffer[position] {
+															case '/':
+																if buffer[position] != rune('/') {
+																	goto l72
+																}
+																position++
+																break
+															case ':':
+																if buffer[position] != rune(':') {
+																	goto l72
+																}
+																position++
+																break
 															case '_':
 																if buffer[position] != rune('_') {
 																	goto l72
@@ -2230,6 +2266,18 @@ func (p *Peg) Init() {
 															position193, tokenIndex193 := position, tokenIndex
 															{
 																switch buffer[position] {
+																case '/':
+																	if buffer[position] != rune('/') {
+																		goto l193
+																	}
+																	position++
+																	break
+																case ':':
+																	if buffer[position] != rune(':') {
+																		goto l193
+																	}
+																	position++
+																	break
 																case '_':
 																	if buffer[position] != rune('_') {
 																		goto l193
@@ -2407,9 +2455,9 @@ func (p *Peg) Init() {
 			position, tokenIndex = position200, tokenIndex200
 			return false
 		},
-		/* 9 Value <- <((<CidrValue> Action8) / (<IpValue> Action9) / (<IntRangeValue> Action10) / (<IntValue> Action11) / ((&('$') (RefValue Action7)) | (&('@') (AliasValue Action6)) | (&('{') (HoleValue Action5)) | (&('-' | '.' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '_' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z') (<StringValue> Action12))))> */
+		/* 9 Value <- <((<CidrValue> Action8) / (<IpValue> Action9) / (<IntRangeValue> Action10) / (<IntValue> Action11) / ((&('$') (RefValue Action7)) | (&('@') (AliasValue Action6)) | (&('{') (HoleValue Action5)) | (&('-' | '.' | '/' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ':' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '_' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z') (<StringValue> Action12))))> */
 		nil,
-		/* 10 StringValue <- <((&('_') '_') | (&('.') '.') | (&('-') '-') | (&('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9') [0-9]) | (&('A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z') [A-Z]) | (&('a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z') [a-z]))+> */
+		/* 10 StringValue <- <((&('/') '/') | (&(':') ':') | (&('_') '_') | (&('.') '.') | (&('-') '-') | (&('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9') [0-9]) | (&('A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z') [A-Z]) | (&('a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z') [a-z]))+> */
 		nil,
 		/* 11 CidrValue <- <([0-9]+ . [0-9]+ . [0-9]+ . [0-9]+ '/' [0-9]+)> */
 		nil,

@@ -286,4 +286,11 @@ var DriverDefinitions = []struct {
 			"GroupName": "name",
 		},
 	},
+	{
+		Action: "attach", Entity: "policy", Api: "iam", DryRunUnsupported: true, Input: "AttachUserPolicyInput", ApiMethod: "AttachUserPolicy",
+		RequiredParams: map[string]string{
+			"PolicyArn": "arn",
+			"UserName":  "user",
+		},
+	},
 }

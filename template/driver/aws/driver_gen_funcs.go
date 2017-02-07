@@ -1215,3 +1215,34 @@ func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 	d.logger.Println("delete group done")
 	return output, nil
 }
+
+// This function was auto generated
+func (d *AwsDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("attach policy: missing required params 'arn'")
+	}
+
+	if _, ok := params["user"]; !ok {
+		return nil, errors.New("attach policy: missing required params 'user'")
+	}
+
+	d.logger.Println("params dry run: attach policy ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
+	input := &iam.AttachUserPolicyInput{}
+
+	// Required params
+	setField(params["arn"], input, "PolicyArn")
+	setField(params["user"], input, "UserName")
+
+	output, err := d.iam.AttachUserPolicy(input)
+	if err != nil {
+		d.logger.Printf("attach policy error: %s", err)
+		return nil, err
+	}
+	d.logger.Println("attach policy done")
+	return output, nil
+}

@@ -35,7 +35,7 @@ Value <- HoleValue {  p.AddParamHoleValue(text) }
         / <StringValue> { p.AddParamValue(text) }
 
 
-StringValue <- [a-zA-Z0-9-._]+
+StringValue <- [a-zA-Z0-9-._:/]+
 CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
 IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
 IntValue <- [0-9]+
