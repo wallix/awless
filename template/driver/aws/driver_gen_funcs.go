@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 // This function was auto generated
@@ -46,6 +47,7 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 		d.logger.Printf("create vpc error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.Vpc.VpcId)
 	d.logger.Printf("create vpc '%s' done", id)
 	return aws.StringValue(output.Vpc.VpcId), nil
@@ -85,6 +87,7 @@ func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 		d.logger.Printf("delete vpc error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete vpc done")
 	return output, nil
 }
@@ -135,6 +138,7 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("create subnet error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.Subnet.SubnetId)
 	d.logger.Printf("create subnet '%s' done", id)
 	return aws.StringValue(output.Subnet.SubnetId), nil
@@ -167,6 +171,7 @@ func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("update subnet error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("update subnet done")
 	return output, nil
 }
@@ -205,6 +210,7 @@ func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("delete subnet error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete subnet done")
 	return output, nil
 }
@@ -292,6 +298,7 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 		d.logger.Printf("create instance error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.Instances[0].InstanceId)
 	tagsParams := map[string]interface{}{"resource": id}
 	if v, ok := params["name"]; ok {
@@ -360,6 +367,7 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 		d.logger.Printf("update instance error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("update instance done")
 	return output, nil
 }
@@ -398,6 +406,7 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 		d.logger.Printf("delete instance error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete instance done")
 	return output, nil
 }
@@ -436,6 +445,7 @@ func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, 
 		d.logger.Printf("start instance error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.StartingInstances[0].InstanceId)
 	d.logger.Printf("start instance '%s' done", id)
 	return aws.StringValue(output.StartingInstances[0].InstanceId), nil
@@ -475,6 +485,7 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("stop instance error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
 	d.logger.Printf("stop instance '%s' done", id)
 	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
@@ -518,6 +529,7 @@ func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interfa
 		d.logger.Printf("create securitygroup error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.GroupId)
 	d.logger.Printf("create securitygroup '%s' done", id)
 	return aws.StringValue(output.GroupId), nil
@@ -557,6 +569,7 @@ func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interfa
 		d.logger.Printf("delete securitygroup error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete securitygroup done")
 	return output, nil
 }
@@ -597,6 +610,7 @@ func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("create volume error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.VolumeId)
 	d.logger.Printf("create volume '%s' done", id)
 	return aws.StringValue(output.VolumeId), nil
@@ -636,6 +650,7 @@ func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("delete volume error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete volume done")
 	return output, nil
 }
@@ -678,6 +693,7 @@ func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("attach volume error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.VolumeId)
 	d.logger.Printf("attach volume '%s' done", id)
 	return aws.StringValue(output.VolumeId), nil
@@ -711,6 +727,7 @@ func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (inter
 		d.logger.Printf("create internetgateway error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
 	d.logger.Printf("create internetgateway '%s' done", id)
 	return aws.StringValue(output.InternetGateway.InternetGatewayId), nil
@@ -750,6 +767,7 @@ func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (inter
 		d.logger.Printf("delete internetgateway error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete internetgateway done")
 	return output, nil
 }
@@ -790,6 +808,7 @@ func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (inter
 		d.logger.Printf("attach internetgateway error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("attach internetgateway done")
 	return output, nil
 }
@@ -830,6 +849,7 @@ func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (inter
 		d.logger.Printf("detach internetgateway error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("detach internetgateway done")
 	return output, nil
 }
@@ -868,6 +888,7 @@ func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{
 		d.logger.Printf("create routetable error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.RouteTable.RouteTableId)
 	d.logger.Printf("create routetable '%s' done", id)
 	return aws.StringValue(output.RouteTable.RouteTableId), nil
@@ -907,6 +928,7 @@ func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{
 		d.logger.Printf("delete routetable error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete routetable done")
 	return output, nil
 }
@@ -947,6 +969,7 @@ func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{
 		d.logger.Printf("attach routetable error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.AssociationId)
 	d.logger.Printf("attach routetable '%s' done", id)
 	return aws.StringValue(output.AssociationId), nil
@@ -986,6 +1009,7 @@ func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{
 		d.logger.Printf("detach routetable error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("detach routetable done")
 	return output, nil
 }
@@ -1028,6 +1052,7 @@ func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, er
 		d.logger.Printf("create route error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("create route done")
 	return output, nil
 }
@@ -1068,6 +1093,7 @@ func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, er
 		d.logger.Printf("delete route error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete route done")
 	return output, nil
 }
@@ -1106,6 +1132,7 @@ func (d *AwsDriver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 		d.logger.Printf("delete keypair error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete keypair done")
 	return output, nil
 }
@@ -1132,6 +1159,7 @@ func (d *AwsDriver) Create_User(params map[string]interface{}) (interface{}, err
 		d.logger.Printf("create user error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.User.UserId)
 	d.logger.Printf("create user '%s' done", id)
 	return aws.StringValue(output.User.UserId), nil
@@ -1159,6 +1187,7 @@ func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, err
 		d.logger.Printf("delete user error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete user done")
 	return output, nil
 }
@@ -1185,6 +1214,7 @@ func (d *AwsDriver) Create_Group(params map[string]interface{}) (interface{}, er
 		d.logger.Printf("create group error: %s", err)
 		return nil, err
 	}
+	output = output
 	id := aws.StringValue(output.Group.GroupId)
 	d.logger.Printf("create group '%s' done", id)
 	return aws.StringValue(output.Group.GroupId), nil
@@ -1212,6 +1242,7 @@ func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 		d.logger.Printf("delete group error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("delete group done")
 	return output, nil
 }
@@ -1243,6 +1274,126 @@ func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 		d.logger.Printf("attach policy error: %s", err)
 		return nil, err
 	}
+	output = output
 	d.logger.Println("attach policy done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create bucket: missing required params 'name'")
+	}
+
+	d.logger.Println("params dry run: create bucket ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Bucket(params map[string]interface{}) (interface{}, error) {
+	input := &s3.CreateBucketInput{}
+
+	// Required params
+	setField(params["name"], input, "Bucket")
+
+	output, err := d.s3.CreateBucket(input)
+	if err != nil {
+		d.logger.Printf("create bucket error: %s", err)
+		return nil, err
+	}
+	output = output
+	id := params["name"]
+	d.logger.Printf("create bucket '%s' done", id)
+	return params["name"], nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete bucket: missing required params 'name'")
+	}
+
+	d.logger.Println("params dry run: delete bucket ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Bucket(params map[string]interface{}) (interface{}, error) {
+	input := &s3.DeleteBucketInput{}
+
+	// Required params
+	setField(params["name"], input, "Bucket")
+
+	output, err := d.s3.DeleteBucket(input)
+	if err != nil {
+		d.logger.Printf("delete bucket error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.Println("delete bucket done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Object_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["bucket"]; !ok {
+		return nil, errors.New("create object: missing required params 'bucket'")
+	}
+
+	if _, ok := params["key"]; !ok {
+		return nil, errors.New("create object: missing required params 'key'")
+	}
+
+	d.logger.Println("params dry run: create object ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Object(params map[string]interface{}) (interface{}, error) {
+	input := &s3.PutObjectInput{}
+
+	// Required params
+	setField(params["bucket"], input, "Bucket")
+	setField(params["key"], input, "Key")
+
+	output, err := d.s3.PutObject(input)
+	if err != nil {
+		d.logger.Printf("create object error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.Println("create object done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Object_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["bucket"]; !ok {
+		return nil, errors.New("delete object: missing required params 'bucket'")
+	}
+
+	if _, ok := params["key"]; !ok {
+		return nil, errors.New("delete object: missing required params 'key'")
+	}
+
+	d.logger.Println("params dry run: delete object ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Object(params map[string]interface{}) (interface{}, error) {
+	input := &s3.DeleteObjectInput{}
+
+	// Required params
+	setField(params["bucket"], input, "Bucket")
+	setField(params["key"], input, "Key")
+
+	output, err := d.s3.DeleteObject(input)
+	if err != nil {
+		d.logger.Printf("delete object error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.Println("delete object done")
 	return output, nil
 }

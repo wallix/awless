@@ -75,6 +75,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	awsDriver := aws.NewDriver(
 		awscloud.InfraService.ProviderRunnableAPI(),
 		awscloud.AccessService.ProviderRunnableAPI(),
+		awscloud.StorageService.ProviderRunnableAPI(),
 	)
 
 	if verboseFlag {

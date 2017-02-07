@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 func TestHumanizeString(t *testing.T) {
@@ -29,7 +30,7 @@ func TestHumanizeString(t *testing.T) {
 
 func TestDriver(t *testing.T) {
 	awsMock := &mockEc2{}
-	driv := NewDriver(awsMock, &mockIam{})
+	driv := NewDriver(awsMock, &mockIam{}, &mockS3{})
 
 	t.Run("Create vpc", func(t *testing.T) {
 		cidr := "10.0.0.0/16"
@@ -210,6 +211,10 @@ func TestBuildIpPermissionsFromParams(t *testing.T) {
 
 type mockIam struct {
 	iamiface.IAMAPI
+}
+
+type mockS3 struct {
+	s3iface.S3API
 }
 
 type mockEc2 struct {

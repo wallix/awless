@@ -4,9 +4,9 @@ package main
 import (
 	"bytes"
 	"go/format"
-	"html/template"
 	"io/ioutil"
 	"strings"
+	"text/template"
 
 	"github.com/wallix/awless/template/driver/aws"
 )
@@ -85,6 +85,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 {{ range $index, $def := . }}
 {{- if not $def.ManualFuncDefinition }}
@@ -168,9 +169,10 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 		d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err
 	}
+	output = output
 
 	{{- if ne $def.OutputExtractor "" }}
-	id := aws.StringValue(output.{{ $def.OutputExtractor }})
+	id := {{ $def.OutputExtractor }}
 	{{- if gt (len $def.TagsMapping) 0 }}
 	tagsParams := map[string]interface{}{"resource": id}
 	{{- range $tagName, $field := $def.TagsMapping }}
@@ -183,7 +185,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	}
 	{{- end }}
 	d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)
-	return aws.StringValue(output.{{ $def.OutputExtractor }}), nil
+	return {{ $def.OutputExtractor }}, nil
 	{{- else }}
 	d.logger.Println("{{ $def.Action }} {{ $def.Entity }} done")
 	return output, nil

@@ -23,7 +23,7 @@ var DriverDefinitions = []struct {
 
 	// VPC
 	{
-		Action: "create", Entity: "vpc", Api: "ec2", Input: "CreateVpcInput", ApiMethod: "CreateVpc", OutputExtractor: "Vpc.VpcId",
+		Action: "create", Entity: "vpc", Api: "ec2", Input: "CreateVpcInput", ApiMethod: "CreateVpc", OutputExtractor: "aws.StringValue(output.Vpc.VpcId)",
 		RequiredParams: map[string]string{
 			"CidrBlock": "cidr",
 		},
@@ -37,7 +37,7 @@ var DriverDefinitions = []struct {
 
 	// SUBNET
 	{
-		Action: "create", Entity: "subnet", Api: "ec2", Input: "CreateSubnetInput", ApiMethod: "CreateSubnet", OutputExtractor: "Subnet.SubnetId",
+		Action: "create", Entity: "subnet", Api: "ec2", Input: "CreateSubnetInput", ApiMethod: "CreateSubnet", OutputExtractor: "aws.StringValue(output.Subnet.SubnetId)",
 		RequiredParams: map[string]string{
 			"CidrBlock": "cidr",
 			"VpcId":     "vpc",
@@ -64,7 +64,7 @@ var DriverDefinitions = []struct {
 
 	// INSTANCES
 	{
-		Action: "create", Entity: "instance", Api: "ec2", Input: "RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "Instances[0].InstanceId",
+		Action: "create", Entity: "instance", Api: "ec2", Input: "RunInstancesInput", ApiMethod: "RunInstances", OutputExtractor: "aws.StringValue(output.Instances[0].InstanceId)",
 		RequiredParams: map[string]string{
 			"ImageId":      "image",
 			"MaxCount":     "count",
@@ -101,13 +101,13 @@ var DriverDefinitions = []struct {
 		},
 	},
 	{
-		Action: "start", Entity: "instance", Api: "ec2", Input: "StartInstancesInput", ApiMethod: "StartInstances", OutputExtractor: "StartingInstances[0].InstanceId",
+		Action: "start", Entity: "instance", Api: "ec2", Input: "StartInstancesInput", ApiMethod: "StartInstances", OutputExtractor: "aws.StringValue(output.StartingInstances[0].InstanceId)",
 		RequiredParams: map[string]string{
 			"InstanceIds": "id",
 		},
 	},
 	{
-		Action: "stop", Entity: "instance", Api: "ec2", Input: "StopInstancesInput", ApiMethod: "StopInstances", OutputExtractor: "StoppingInstances[0].InstanceId",
+		Action: "stop", Entity: "instance", Api: "ec2", Input: "StopInstancesInput", ApiMethod: "StopInstances", OutputExtractor: "aws.StringValue(output.StoppingInstances[0].InstanceId)",
 		RequiredParams: map[string]string{
 			"InstanceIds": "id",
 		},
@@ -123,7 +123,7 @@ var DriverDefinitions = []struct {
 
 	// Security Group
 	{
-		Action: "create", Entity: "securitygroup", Api: "ec2", Input: "CreateSecurityGroupInput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "GroupId",
+		Action: "create", Entity: "securitygroup", Api: "ec2", Input: "CreateSecurityGroupInput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
 		RequiredParams: map[string]string{
 			"GroupName":   "name",
 			"VpcId":       "vpc",
@@ -149,7 +149,7 @@ var DriverDefinitions = []struct {
 
 	// VOLUME
 	{
-		Action: "create", Entity: "volume", Api: "ec2", Input: "CreateVolumeInput", ApiMethod: "CreateVolume", OutputExtractor: "VolumeId",
+		Action: "create", Entity: "volume", Api: "ec2", Input: "CreateVolumeInput", ApiMethod: "CreateVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
 		RequiredParams: map[string]string{
 			"AvailabilityZone": "zone",
 			"Size":             "size",
@@ -162,7 +162,7 @@ var DriverDefinitions = []struct {
 		},
 	},
 	{
-		Action: "attach", Entity: "volume", Api: "ec2", Input: "AttachVolumeInput", ApiMethod: "AttachVolume", OutputExtractor: "VolumeId",
+		Action: "attach", Entity: "volume", Api: "ec2", Input: "AttachVolumeInput", ApiMethod: "AttachVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
 		RequiredParams: map[string]string{
 			"Device":     "device",
 			"VolumeId":   "id",
@@ -171,7 +171,7 @@ var DriverDefinitions = []struct {
 	},
 	// INTERNET GATEWAYS
 	{
-		Action: "create", Entity: "internetgateway", Api: "ec2", Input: "CreateInternetGatewayInput", ApiMethod: "CreateInternetGateway", OutputExtractor: "InternetGateway.InternetGatewayId",
+		Action: "create", Entity: "internetgateway", Api: "ec2", Input: "CreateInternetGatewayInput", ApiMethod: "CreateInternetGateway", OutputExtractor: "aws.StringValue(output.InternetGateway.InternetGatewayId)",
 		RequiredParams: map[string]string{},
 	},
 	{
@@ -196,7 +196,7 @@ var DriverDefinitions = []struct {
 	},
 	// ROUTE TABLES
 	{
-		Action: "create", Entity: "routetable", Api: "ec2", Input: "CreateRouteTableInput", ApiMethod: "CreateRouteTable", OutputExtractor: "RouteTable.RouteTableId",
+		Action: "create", Entity: "routetable", Api: "ec2", Input: "CreateRouteTableInput", ApiMethod: "CreateRouteTable", OutputExtractor: "aws.StringValue(output.RouteTable.RouteTableId)",
 		RequiredParams: map[string]string{
 			"VpcId": "vpc"},
 	},
@@ -207,7 +207,7 @@ var DriverDefinitions = []struct {
 		},
 	},
 	{
-		Action: "attach", Entity: "routetable", Api: "ec2", Input: "AssociateRouteTableInput", ApiMethod: "AssociateRouteTable", OutputExtractor: "AssociationId",
+		Action: "attach", Entity: "routetable", Api: "ec2", Input: "AssociateRouteTableInput", ApiMethod: "AssociateRouteTable", OutputExtractor: "aws.StringValue(output.AssociationId)",
 		RequiredParams: map[string]string{
 			"RouteTableId": "id",
 			"SubnetId":     "subnet",
@@ -261,7 +261,7 @@ var DriverDefinitions = []struct {
 
 	// USER
 	{
-		Action: "create", Entity: "user", Api: "iam", DryRunUnsupported: true, Input: "CreateUserInput", ApiMethod: "CreateUser", OutputExtractor: "User.UserId",
+		Action: "create", Entity: "user", Api: "iam", DryRunUnsupported: true, Input: "CreateUserInput", ApiMethod: "CreateUser", OutputExtractor: "aws.StringValue(output.User.UserId)",
 		RequiredParams: map[string]string{
 			"UserName": "name",
 		},
@@ -275,7 +275,7 @@ var DriverDefinitions = []struct {
 
 	// GROUP
 	{
-		Action: "create", Entity: "group", Api: "iam", DryRunUnsupported: true, Input: "CreateGroupInput", ApiMethod: "CreateGroup", OutputExtractor: "Group.GroupId",
+		Action: "create", Entity: "group", Api: "iam", DryRunUnsupported: true, Input: "CreateGroupInput", ApiMethod: "CreateGroup", OutputExtractor: "aws.StringValue(output.Group.GroupId)",
 		RequiredParams: map[string]string{
 			"GroupName": "name",
 		},
@@ -291,6 +291,38 @@ var DriverDefinitions = []struct {
 		RequiredParams: map[string]string{
 			"PolicyArn": "arn",
 			"UserName":  "user",
+		},
+	},
+
+	//// S3
+
+	// BUCKET
+	{
+		Action: "create", Entity: "bucket", Api: "s3", DryRunUnsupported: true, Input: "CreateBucketInput", ApiMethod: "CreateBucket", OutputExtractor: "params[\"name\"]",
+		RequiredParams: map[string]string{
+			"Bucket": "name",
+		},
+	},
+	{
+		Action: "delete", Entity: "bucket", Api: "s3", DryRunUnsupported: true, Input: "DeleteBucketInput", ApiMethod: "DeleteBucket",
+		RequiredParams: map[string]string{
+			"Bucket": "name",
+		},
+	},
+
+	// OBJECT
+	{
+		Action: "create", Entity: "object", Api: "s3", DryRunUnsupported: true, Input: "PutObjectInput", ApiMethod: "PutObject",
+		RequiredParams: map[string]string{
+			"Bucket": "bucket",
+			"Key":    "key",
+		},
+	},
+	{
+		Action: "delete", Entity: "object", Api: "s3", DryRunUnsupported: true, Input: "DeleteObjectInput", ApiMethod: "DeleteObject",
+		RequiredParams: map[string]string{
+			"Bucket": "bucket",
+			"Key":    "key",
 		},
 	},
 }
