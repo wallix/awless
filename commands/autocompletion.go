@@ -1,5 +1,19 @@
 package commands
 
+// Copyright 2016 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import (
 	"bufio"
 	"bytes"
@@ -7,22 +21,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-const boilerPlate = `
-# Copyright 2016 The Kubernetes Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-`
 
 func init() {
 	autocompleteCmd.AddCommand(bashAutocompleteCmd)
@@ -34,6 +32,26 @@ func init() {
 var autocompleteCmd = &cobra.Command{
 	Use:   "completion",
 	Short: "Output shell completion code for the given shell (bash or zsh)",
+	Long: `
+Output shell completion code for bash or zsh
+This command prints shell code which must be evaluated to provide interactive
+completion of awless commands.
+
+Bash
+	$ source <(awless completion bash)
+will load the awless completion code for bash. Note that this depends on the
+bash-completion framework. It must be sourced before sourcing the awless
+completion, e.g. on macOS:
+	$ brew install bash-completion
+	$ source $(brew --prefix)/etc/bash_completion
+	$ source <(awless completion bash)
+	(or, if you want to preserve completion within new terminal sessions)
+	$ echo 'source <(awless completion bash)\n' >> ~/.bashrc
+
+Zsh
+	$ source <(awless completion zsh)
+	(or, if you want to preserve completion within new terminal sessions)
+	$ echo 'source <(awless completion zsh)\n' >> ~/.zshrc`,
 }
 
 var bashAutocompleteCmd = &cobra.Command{
@@ -43,13 +61,15 @@ var bashAutocompleteCmd = &cobra.Command{
 Output shell completion code for bash.
 This command prints shell code which must be evaluated to provide interactive
 completion of awless commands.
-		$ source <(awless completion bash)
+	$ source <(awless completion bash)
 will load the awless completion code for bash. Note that this depends on the
 bash-completion framework. It must be sourced before sourcing the awless
-completion, e.g. on the Mac:
-		$ brew install bash-completion
-		$ source $(brew --prefix)/etc/bash_completion
-		$ source <(awless completion bash)`,
+completion, e.g. on macOS:
+	$ brew install bash-completion
+	$ source $(brew --prefix)/etc/bash_completion
+	$ source <(awless completion bash)
+	(or, if you want to preserve completion within new terminal sessions)
+	$ echo 'source <(awless completion bash)\n' >> ~/.bashrc`,
 	RunE: runCompletionBash,
 }
 
@@ -61,23 +81,21 @@ Output shell completion code for zsh.
 This command prints shell code which must be evaluated to provide interactive
 completion of awless commands.
 	$ source <(awless completion zsh)
-[1] zsh completions are only supported in versions of zsh >= 5.2`,
+	(or, if you want to preserve completion within new terminal sessions)
+	$ echo 'source <(awless completion zsh)\n' >> ~/.zshrc
+zsh completions are only supported in versions of zsh >= 5.2`,
 	RunE: runCompletionZsh,
 }
 
 func runCompletionBash(cmd *cobra.Command, args []string) error {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
-	_, err := out.Write([]byte(boilerPlate))
-	exitOn(err)
 	return RootCmd.GenBashCompletion(out)
 }
 
 func runCompletionZsh(cmd *cobra.Command, args []string) error {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
-	_, err := out.Write([]byte(boilerPlate))
-	exitOn(err)
 	zshInitialization := `
 __awless_bash_source() {
 	alias shopt=':'
