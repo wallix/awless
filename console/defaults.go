@@ -6,6 +6,7 @@ import (
 )
 
 var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
+	//EC2
 	graph.Instance: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "SubnetId"},
@@ -80,6 +81,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
 		StringColumnDefinition{Prop: "AvailabilityZone"},
 	},
+	//IAM
 	graph.User: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
@@ -101,5 +103,18 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
+	},
+	// S3
+	graph.Bucket: []ColumnDefinition{
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
+	},
+	graph.Object: []ColumnDefinition{
+		StringColumnDefinition{Prop: "Key", TruncateRight: true},
+		StringColumnDefinition{Prop: "BucketName"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "ModifiedDate"}},
+		StringColumnDefinition{Prop: "OwnerId", TruncateRight: true},
+		StringColumnDefinition{Prop: "Size"},
+		StringColumnDefinition{Prop: "Class"},
 	},
 }

@@ -39,4 +39,12 @@ var Services = []service{
 			{ResourceType: "policy", AWSType: "Policy", ApiMethod: "ListPolicies", Input: "ListPoliciesInput{OnlyAttached: awssdk.Bool(true)}", Output: "ListPoliciesOutput", OutputsExtractor: "Policies"},
 		},
 	},
+	{
+		Name: "storage",
+		Api:  "s3",
+		Fetchers: []fetcher{
+			{ResourceType: "bucket", AWSType: "Bucket", ApiMethod: "ListBuckets", Input: "ListBucketsInput{}", Output: "ListBucketsOutput", OutputsExtractor: "Buckets"},
+			{ResourceType: "object", AWSType: "Object", ManualFetcher: true},
+		},
+	},
 }

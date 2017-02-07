@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	Region          ResourceType = "region"
+	Region ResourceType = "region"
+	//infra
 	Vpc             ResourceType = "vpc"
 	Subnet          ResourceType = "subnet"
 	Image           ResourceType = "image"
@@ -16,10 +17,16 @@ const (
 	Instance        ResourceType = "instance"
 	InternetGateway ResourceType = "internetgateway"
 	RouteTable      ResourceType = "routetable"
-	User            ResourceType = "user"
-	Role            ResourceType = "role"
-	Group           ResourceType = "group"
-	Policy          ResourceType = "policy"
+
+	//access
+	User   ResourceType = "user"
+	Role   ResourceType = "role"
+	Group  ResourceType = "group"
+	Policy ResourceType = "policy"
+
+	//s3
+	Bucket ResourceType = "bucket"
+	Object ResourceType = "object"
 )
 
 type FirewallRule struct {

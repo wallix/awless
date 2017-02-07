@@ -13,12 +13,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/wallix/awless/graph"
 )
 
 func init() {
 	ServiceNames = append(ServiceNames, "infra")
 	ServiceNames = append(ServiceNames, "access")
+	ServiceNames = append(ServiceNames, "storage")
 }
 
 var ServiceNames = []string{}
@@ -40,6 +43,10 @@ var ResourceTypesPerAPI = map[string][]string{
 		"role",
 		"policy",
 	},
+	"s3": []string{
+		"bucket",
+		"object",
+	},
 }
 
 var ServicePerResourceType = map[string]string{
@@ -55,6 +62,8 @@ var ServicePerResourceType = map[string]string{
 	"group":           "access",
 	"role":            "access",
 	"policy":          "access",
+	"bucket":          "storage",
+	"object":          "storage",
 }
 
 type Infra struct {
@@ -807,6 +816,162 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 	}
 
 	for _, output := range out.(*iam.ListPoliciesOutput).Policies {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, cloudResources, nil
+}
+
+type Storage struct {
+	region string
+	s3iface.S3API
+}
+
+func NewStorage(sess *session.Session) *Storage {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Storage{S3API: s3.New(sess), region: region}
+}
+
+func (s *Storage) Name() string {
+	return "storage"
+}
+
+func (s *Storage) Provider() string {
+	return "aws"
+}
+
+func (s *Storage) ProviderAPI() string {
+	return "s3"
+}
+
+func (s *Storage) ProviderRunnableAPI() interface{} {
+	return s.S3API
+}
+
+func (s *Storage) ResourceTypes() (all []string) {
+	all = append(all, "bucket")
+	all = append(all, "object")
+	return
+}
+
+func (s *Storage) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	var bucketList []*s3.Bucket
+	var objectList []*s3.Object
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, bucketList, err = s.fetch_all_bucket_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, objectList, err = s.fetch_all_object_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	errc = make(chan error)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range bucketList {
+			for _, fn := range addParentsFns["bucket"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range objectList {
+			for _, fn := range addParentsFns["object"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Storage) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "bucket":
+		graph, _, err := s.fetch_all_bucket_graph()
+		return graph, err
+	case "object":
+		graph, _, err := s.fetch_all_object_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws storage: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Storage) fetch_all_bucket() (interface{}, error) {
+	return s.ListBuckets(&s3.ListBucketsInput{})
+}
+
+func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
+	g := graph.NewGraph()
+	var cloudResources []*s3.Bucket
+	out, err := s.fetch_all_bucket()
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

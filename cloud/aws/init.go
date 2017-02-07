@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	AccessService, InfraService cloud.Service
+	AccessService, InfraService, StorageService cloud.Service
 
 	SecuAPI Security
 )
@@ -43,10 +43,12 @@ func InitServices(region string) error {
 	}
 	AccessService = NewAccess(sess)
 	InfraService = NewInfra(sess)
+	StorageService = NewStorage(sess)
 	SecuAPI = NewSecu(sess)
 
 	cloud.ServiceRegistry[InfraService.Name()] = InfraService
 	cloud.ServiceRegistry[AccessService.Name()] = AccessService
+	cloud.ServiceRegistry[StorageService.Name()] = StorageService
 
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/wallix/awless/graph"
 )
 
@@ -43,6 +44,10 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), graph.Policy)
 	case *iam.ManagedPolicyDetail:
 		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), graph.Policy)
+	case *s3.Bucket:
+		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Bucket)
+	case *s3.Object:
+		res = graph.InitResource(awssdk.StringValue(ss.Key), graph.Object)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}

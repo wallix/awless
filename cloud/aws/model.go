@@ -3,6 +3,7 @@ package aws
 import "github.com/wallix/awless/graph"
 
 var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
+	//EC2
 	graph.Instance: {
 		"Id":             {name: "InstanceId", transform: extractValueFn},
 		"Name":           {name: "Tags", transform: extractTagFn("Name")},
@@ -70,6 +71,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Routes": {name: "Routes", transform: extractRoutesSliceFn},
 		"Main":   {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
 	},
+	//IAM
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
 		"Name":                 {name: "UserName", transform: extractValueFn},
@@ -104,5 +106,19 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Description":  {name: "Description", transform: extractValueFn},
 		"IsAttachable": {name: "IsAttachable", transform: extractValueFn},
 		"Path":         {name: "Path", transform: extractValueFn},
+	},
+	//S3
+	graph.Bucket: {
+		"Id":         {name: "Name", transform: extractValueFn},
+		"Name":       {name: "Name", transform: extractValueFn},
+		"CreateDate": {name: "CreationDate", transform: extractValueFn},
+	},
+	graph.Object: {
+		"Id":           {name: "Key", transform: extractValueFn},
+		"Key":          {name: "Key", transform: extractValueFn},
+		"ModifiedDate": {name: "LastModified", transform: extractValueFn},
+		"OwnerId":      {name: "Owner", transform: extractFieldFn("ID")},
+		"Size":         {name: "Size", transform: extractValueFn},
+		"Class":        {name: "StorageClass", transform: extractValueFn},
 	},
 }

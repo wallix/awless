@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
@@ -23,13 +23,16 @@ var syncCmd = &cobra.Command{
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		region := database.MustGetDefaultRegion()
-
-		graphs, err := sync.DefaultSyncer.Sync(aws.InfraService, aws.AccessService)
+		var services []cloud.Service
+		for _, srv := range cloud.ServiceRegistry {
+			services = append(services, srv)
+		}
+		graphs, err := sync.DefaultSyncer.Sync(services...)
 		if err != nil {
 			return err
 		}
 
+		region := database.MustGetDefaultRegion()
 		if verboseFlag {
 			printWithTabs := func(res *graph.Resource, distance int) {
 				var tabs bytes.Buffer
@@ -41,8 +44,9 @@ var syncCmd = &cobra.Command{
 
 			root := graph.InitResource(region, graph.Region)
 
-			graphs[aws.InfraService.Name()].VisitChildren(root, printWithTabs)
-			graphs[aws.AccessService.Name()].VisitChildren(root, printWithTabs)
+			for _, service := range services {
+				graphs[service.Name()].VisitChildren(root, printWithTabs)
+			}
 		}
 
 		return nil
