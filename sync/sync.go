@@ -21,7 +21,6 @@ type Syncer interface {
 
 type syncer struct {
 	repo.Repo
-	infraService, accessService cloud.Service
 }
 
 func NewSyncer() Syncer {

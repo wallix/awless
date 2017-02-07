@@ -9,8 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-type convertFn func(s interface{}) reflect.Value
-
 func setField(s, i interface{}, fieldName string) {
 	sval := reflect.ValueOf(s)
 	ival := reflect.ValueOf(i)

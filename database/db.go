@@ -18,10 +18,6 @@ const (
 	databaseFilename = "awless.db"
 )
 
-var (
-	current *DB
-)
-
 // A DB stores awless config, logs...
 type DB struct {
 	bolt *bolt.DB

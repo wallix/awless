@@ -302,7 +302,6 @@ type mockIam struct {
 	iamiface.IAMAPI
 	groups          []*iam.GroupDetail
 	managedPolicies []*iam.ManagedPolicyDetail
-	policies        []*iam.Policy
 	roles           []*iam.RoleDetail
 	users           []*iam.User
 	usersDetails    []*iam.UserDetail

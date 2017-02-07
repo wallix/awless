@@ -16,7 +16,6 @@ var (
 	listingFormat string
 
 	listOnlyIDs    bool
-	listForService string
 	localResources bool
 	sortBy         []string
 )

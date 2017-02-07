@@ -23,8 +23,6 @@ func init() {
 	historyCmd.Flags().BoolVarP(&showProperties, "properties", "p", false, "Full diff with resources properties")
 }
 
-type revPair [2]*repo.Rev
-
 var historyCmd = &cobra.Command{
 	Use:                "history",
 	Short:              "Show your infrastucture history",
