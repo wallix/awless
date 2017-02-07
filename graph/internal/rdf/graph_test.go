@@ -66,7 +66,7 @@ func TestGraphSize(t *testing.T) {
 	if got, want := g.IsEmpty(), true; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
-	if got, want := g.size(), 0; got != want {
+	if got, want := g.size(), uint32(0); got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
@@ -77,7 +77,7 @@ func TestGraphSize(t *testing.T) {
 	if got, want := g.IsEmpty(), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
-	if got, want := g.size(), 1; got != want {
+	if got, want := g.size(), uint32(1); got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 
@@ -85,7 +85,7 @@ func TestGraphSize(t *testing.T) {
 	if got, want := g.IsEmpty(), false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
-	if got, want := g.size(), 2; got != want {
+	if got, want := g.size(), uint32(2); got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 }

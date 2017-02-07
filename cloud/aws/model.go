@@ -112,6 +112,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Id":         {name: "Name", transform: extractValueFn},
 		"Name":       {name: "Name", transform: extractValueFn},
 		"CreateDate": {name: "CreationDate", transform: extractValueFn},
+		"Grants":     {fetch: fetchAndExtractGrantsFn},
 	},
 	graph.Object: {
 		"Id":           {name: "Key", transform: extractValueFn},

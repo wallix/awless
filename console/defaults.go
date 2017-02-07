@@ -107,6 +107,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	// S3
 	graph.Bucket: []ColumnDefinition{
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Grants"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
 	graph.Object: []ColumnDefinition{

@@ -184,3 +184,44 @@ func (h RoutesColumnDefinition) format(i interface{}) string {
 	}
 	return w.String()
 }
+
+type GrantsColumnDefinition struct {
+	StringColumnDefinition
+}
+
+func (h GrantsColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	ii, ok := i.([]*graph.Grant)
+	if !ok {
+		return "invalid grants"
+	}
+	var w bytes.Buffer
+
+	for _, g := range ii {
+		w.WriteString(g.Permission)
+		w.WriteString("[")
+		switch g.GranteeType {
+		case "CanonicalUser":
+			w.WriteString("user:")
+			if g.GranteeDisplayName != "" {
+				w.WriteString(g.GranteeDisplayName)
+			} else {
+				w.WriteString(g.GranteeID)
+			}
+		case "Group":
+			w.WriteString("group:")
+			w.WriteString(g.GranteeID)
+
+		default:
+			w.WriteString(g.GranteeType)
+			w.WriteString(":")
+			w.WriteString(g.GranteeID)
+
+		}
+		w.WriteString("]")
+		w.WriteString(" ")
+	}
+	return w.String()
+}

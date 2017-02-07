@@ -26,7 +26,8 @@ const (
 
 	//s3
 	Bucket ResourceType = "bucket"
-	Object ResourceType = "object"
+	Object ResourceType = "storageobject"
+	Acl    ResourceType = "storageacl"
 )
 
 type FirewallRule struct {
@@ -63,6 +64,17 @@ type Route struct {
 
 func (r *Route) String() string {
 	return fmt.Sprintf("Destination:%+v; TargetType:%v; Target:%s", r.Destination, r.TargetType, r.Target)
+}
+
+type Grant struct {
+	Permission,
+	GranteeID,
+	GranteeDisplayName,
+	GranteeType string
+}
+
+func (g *Grant) String() string {
+	return fmt.Sprintf("Permission:%s; GranteeID:%s; GranteeDisplayName:%s; GranteeType:%s", g.Permission, g.GranteeID, g.GranteeDisplayName, g.GranteeType)
 }
 
 type ResourceType string

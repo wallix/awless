@@ -173,6 +173,15 @@ func (prop *Property) unmarshalRDF(t *triple.Triple) error {
 		if err == nil {
 			prop.Value = propRoutes.Value
 		}
+	case strings.HasSuffix(strings.ToLower(prop.Key), "grants"):
+		var propGrants struct {
+			Key   string
+			Value []*Grant
+		}
+		err = json.Unmarshal([]byte(propStr), &propGrants)
+		if err == nil {
+			prop.Value = propGrants.Value
+		}
 	}
 
 	return nil

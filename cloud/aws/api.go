@@ -133,45 +133,20 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 	return g, userDetails, nil
 }
 
-func (s *Storage) fetch_all_object_graph() (*graph.Graph, []*s3.Object, error) {
+func (s *Storage) fetch_all_storageobject_graph() (*graph.Graph, []*s3.Object, error) {
 	g := graph.NewGraph()
 	var cloudResources []*s3.Object
-
 	var wg sync.WaitGroup
 	errc := make(chan error)
-	buckets, err := s.fetch_all_bucket()
-	if err != nil {
-		return g, cloudResources, err
-	}
 
-	for _, b := range buckets.(*s3.ListBucketsOutput).Buckets {
+	s.foreach_bucket(func(b *s3.Bucket) error {
 		wg.Add(1)
 		go func(bucket *s3.Bucket) {
 			defer wg.Done()
-			out, err := s.ListObjects(&s3.ListObjectsInput{Bucket: bucket.Name})
-			if err != nil {
-				errc <- err
-				return
-			}
-
-			for _, output := range out.Contents {
-				cloudResources = append(cloudResources, output)
-				res, err := newResource(output)
-				if err != nil {
-					errc <- err
-					return
-				}
-				res.Properties["BucketName"] = awssdk.StringValue(bucket.Name)
-				g.AddResource(res)
-				parent, err := initResource(bucket)
-				if err != nil {
-					errc <- err
-					return
-				}
-				g.AddParent(parent, res)
-			}
+			errc <- s.fetchObjectsForBucket(bucket, g)
 		}(b)
-	}
+		return nil
+	})
 
 	go func() {
 		wg.Wait()
@@ -185,4 +160,83 @@ func (s *Storage) fetch_all_object_graph() (*graph.Graph, []*s3.Object, error) {
 	}
 
 	return g, cloudResources, nil
+}
+
+func (s *Storage) fetchObjectsForBucket(bucket *s3.Bucket, g *graph.Graph) error {
+	out, err := s.ListObjects(&s3.ListObjectsInput{Bucket: bucket.Name})
+	if err != nil {
+		return err
+	}
+
+	for _, output := range out.Contents {
+		res, err := newResource(output)
+		if err != nil {
+			return err
+		}
+		res.Properties["BucketName"] = awssdk.StringValue(bucket.Name)
+		g.AddResource(res)
+		parent, err := initResource(bucket)
+		if err != nil {
+			return err
+		}
+		g.AddParent(parent, res)
+	}
+
+	return nil
+}
+
+func (s *Storage) foreach_bucket(f func(b *s3.Bucket) error) error {
+	out, err := s.fetch_all_bucket()
+	if err != nil {
+		return err
+	}
+
+	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
+		err := f(output)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Storage) fetch_all_bucket() (interface{}, error) {
+	return s.ListBuckets(&s3.ListBucketsInput{})
+}
+
+func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
+	g := graph.NewGraph()
+	out, err := s.fetch_all_bucket()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
+		wg.Add(1)
+		go func(b *s3.Bucket) {
+			defer wg.Done()
+			res, err := newResource(b)
+			if err != nil {
+				errc <- err
+			}
+			g.AddResource(res)
+		}(output)
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, nil, nil
+		}
+	}
+
+	return g, nil, nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/wallix/awless/graph"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 func TestTransformFunctions(t *testing.T) {
@@ -275,6 +276,60 @@ func TestTransformFunctions(t *testing.T) {
 		}
 		if got, want := val.(bool), false; got != want {
 			t.Fatalf("got %t, want %t", got, want)
+		}
+	})
+}
+
+func TestFetchFunctions(t *testing.T) {
+	t.Parallel()
+	t.Run("fetchAndExtractGrants", func(t *testing.T) {
+		bucketsACL := map[string][]*s3.Grant{
+			"bucket_1": []*s3.Grant{
+				{Permission: awssdk.String("Read"), Grantee: &s3.Grantee{ID: awssdk.String("usr_1"), Type: awssdk.String("my_type_1")}},
+				{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{ID: awssdk.String("usr_2"), DisplayName: awssdk.String("my_user_2"), Type: awssdk.String("my_type_2")}},
+				{Permission: awssdk.String("Execute"), Grantee: &s3.Grantee{ID: awssdk.String("usr_3"), DisplayName: awssdk.String("my_user_3"), EmailAddress: awssdk.String("user@domain"), Type: awssdk.String("my_type_3")}},
+			},
+			"bucket_2": []*s3.Grant{
+				{Permission: awssdk.String("Read"), Grantee: &s3.Grantee{URI: awssdk.String("group_uri"), Type: awssdk.String("Group")}},
+				{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{ID: awssdk.String("usr_1"), Type: awssdk.String("my_type_2")}},
+			},
+		}
+		StorageService = &mockS3{bucketsACL: bucketsACL}
+
+		bucket1 := &s3.Bucket{Name: awssdk.String("bucket_1")}
+		i, err := fetchAndExtractGrantsFn(bucket1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res := i.([]*graph.Grant)
+		expected := []*graph.Grant{
+			{Permission: "Read", GranteeID: "usr_1", GranteeType: "my_type_1"},
+			{Permission: "Write", GranteeID: "usr_2", GranteeDisplayName: "my_user_2", GranteeType: "my_type_2"},
+			{Permission: "Execute", GranteeID: "usr_3", GranteeDisplayName: "my_user_3<user@domain>", GranteeType: "my_type_3"},
+		}
+		if got, want := len(res), len(expected); got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		for i := range expected {
+			if got, want := res[i].String(), expected[i].String(); got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+		}
+
+		bucket2 := &s3.Bucket{Name: awssdk.String("bucket_2")}
+		i, err = fetchAndExtractGrantsFn(bucket2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res = i.([]*graph.Grant)
+		expected = []*graph.Grant{
+			{Permission: "Read", GranteeID: "group_uri", GranteeType: "Group"},
+			{Permission: "Write", GranteeID: "usr_1", GranteeType: "my_type_2"},
+		}
+		for i := range expected {
+			if got, want := res[i].String(), expected[i].String(); got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
 		}
 	})
 }

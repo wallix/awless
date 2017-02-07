@@ -11,6 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/wallix/awless/graph"
 )
 
 func TestRegionsValid(t *testing.T) {
@@ -331,4 +334,34 @@ func stringInSlice(s string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+type mockS3 struct {
+	s3iface.S3API
+	bucketsACL map[string][]*s3.Grant
+}
+
+func (m *mockS3) GetBucketAcl(input *s3.GetBucketAclInput) (*s3.GetBucketAclOutput, error) {
+	return &s3.GetBucketAclOutput{Grants: m.bucketsACL[awssdk.StringValue(input.Bucket)]}, nil
+}
+func (m *mockS3) Name() string {
+	return ""
+}
+func (m *mockS3) Provider() string {
+	return ""
+}
+func (m *mockS3) ProviderAPI() string {
+	return ""
+}
+func (m *mockS3) ProviderRunnableAPI() interface{} {
+	return m
+}
+func (m *mockS3) ResourceTypes() []string {
+	return []string{}
+}
+func (m *mockS3) FetchResources() (*graph.Graph, error) {
+	return nil, nil
+}
+func (m *mockS3) FetchByType(t string) (*graph.Graph, error) {
+	return nil, nil
 }

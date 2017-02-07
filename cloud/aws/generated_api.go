@@ -45,7 +45,7 @@ var ResourceTypesPerAPI = map[string][]string{
 	},
 	"s3": []string{
 		"bucket",
-		"object",
+		"storageobject",
 	},
 }
 
@@ -63,7 +63,7 @@ var ServicePerResourceType = map[string]string{
 	"role":            "access",
 	"policy":          "access",
 	"bucket":          "storage",
-	"object":          "storage",
+	"storageobject":   "storage",
 }
 
 type Infra struct {
@@ -855,7 +855,7 @@ func (s *Storage) ProviderRunnableAPI() interface{} {
 
 func (s *Storage) ResourceTypes() (all []string) {
 	all = append(all, "bucket")
-	all = append(all, "object")
+	all = append(all, "storageobject")
 	return
 }
 
@@ -864,7 +864,7 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var bucketList []*s3.Bucket
-	var objectList []*s3.Object
+	var storageobjectList []*s3.Object
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -885,7 +885,7 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		defer wg.Done()
 		var resGraph *graph.Graph
 		var err error
-		resGraph, objectList, err = s.fetch_all_object_graph()
+		resGraph, storageobjectList, err = s.fetch_all_storageobject_graph()
 		if err != nil {
 			errc <- err
 			return
@@ -921,8 +921,8 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for _, r := range objectList {
-			for _, fn := range addParentsFns["object"] {
+		for _, r := range storageobjectList {
+			for _, fn := range addParentsFns["storageobject"] {
 				err := fn(g, r)
 				if err != nil {
 					errc <- err
@@ -951,34 +951,10 @@ func (s *Storage) FetchByType(t string) (*graph.Graph, error) {
 	case "bucket":
 		graph, _, err := s.fetch_all_bucket_graph()
 		return graph, err
-	case "object":
-		graph, _, err := s.fetch_all_object_graph()
+	case "storageobject":
+		graph, _, err := s.fetch_all_storageobject_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws storage: unsupported fetch for type %s", t)
 	}
-}
-
-func (s *Storage) fetch_all_bucket() (interface{}, error) {
-	return s.ListBuckets(&s3.ListBucketsInput{})
-}
-
-func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
-	g := graph.NewGraph()
-	var cloudResources []*s3.Bucket
-	out, err := s.fetch_all_bucket()
-	if err != nil {
-		return nil, cloudResources, err
-	}
-
-	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
-		cloudResources = append(cloudResources, output)
-		res, err := newResource(output)
-		if err != nil {
-			return g, cloudResources, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, cloudResources, nil
 }

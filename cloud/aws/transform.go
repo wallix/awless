@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"net"
 	"reflect"
+	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/wallix/awless/graph"
 )
 
 func initResource(source interface{}) (*graph.Resource, error) {
 	var res *graph.Resource
 	switch ss := source.(type) {
+	// EC2
 	case *ec2.Instance:
 		res = graph.InitResource(awssdk.StringValue(ss.InstanceId), graph.Instance)
 	case *ec2.Vpc:
@@ -32,6 +35,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.InternetGatewayId), graph.InternetGateway)
 	case *ec2.RouteTable:
 		res = graph.InitResource(awssdk.StringValue(ss.RouteTableId), graph.RouteTable)
+	// IAM
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
 	case *iam.UserDetail:
@@ -44,6 +48,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), graph.Policy)
 	case *iam.ManagedPolicyDetail:
 		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), graph.Policy)
+	// S3
 	case *s3.Bucket:
 		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Bucket)
 	case *s3.Object:
@@ -66,21 +71,59 @@ func newResource(source interface{}) (*graph.Resource, error) {
 	}
 	nodeV := value.Elem()
 
+	resultc := make(chan graph.Property)
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
 	for prop, trans := range awsResourcesDef[res.Type()] {
-		sourceField := nodeV.FieldByName(trans.name)
-		if sourceField.IsValid() && !sourceField.IsNil() {
-			val, err := trans.transform(sourceField.Interface())
-			if err == ErrTagNotFound {
-				continue
+		wg.Add(1)
+		go func(p string, t *propertyTransform) {
+			defer wg.Done()
+			if t.transform != nil {
+				sourceField := nodeV.FieldByName(t.name)
+				if sourceField.IsValid() && !sourceField.IsNil() {
+					val, err := t.transform(sourceField.Interface())
+					if err == ErrTagNotFound {
+						return
+					}
+					if err != nil {
+						errc <- err
+					}
+					p := graph.Property{Key: p, Value: val}
+					resultc <- p
+				}
 			}
-			if err != nil {
-				return res, err
+			if t.fetch != nil {
+				val, err := t.fetch(source)
+				if err != nil {
+					errc <- err
+				}
+				p := graph.Property{Key: p, Value: val}
+				resultc <- p
 			}
-			res.Properties[prop] = val
+		}(prop, trans)
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+		close(resultc)
+	}()
+
+	for {
+		select {
+		case e := <-errc:
+			if e != nil {
+				return res, e
+			}
+		case p, ok := <-resultc:
+			if !ok {
+				return res, nil
+			}
+			res.Properties[p.Key] = p.Value
 		}
 	}
 
-	return res, nil
 }
 
 var ErrTagNotFound = errors.New("aws tag key not found")
@@ -89,9 +132,11 @@ var ErrFieldNotFound = errors.New("aws struct field not found")
 type propertyTransform struct {
 	name      string
 	transform transformFn
+	fetch     fetchFn
 }
 
 type transformFn func(i interface{}) (interface{}, error)
+type fetchFn func(i interface{}) (interface{}, error)
 
 var extractValueFn = func(i interface{}) (interface{}, error) {
 	iv := reflect.ValueOf(i)
@@ -299,6 +344,35 @@ var extractHasATrueBoolInStructSliceFn = func(key string) transformFn {
 
 		return res, nil
 	}
+}
+
+var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
+	b, ok := i.(*s3.Bucket)
+	if !ok {
+		return nil, fmt.Errorf("aws type unknown: %T", i)
+	}
+
+	acls, err := StorageService.ProviderRunnableAPI().(s3iface.S3API).GetBucketAcl(&s3.GetBucketAclInput{Bucket: b.Name})
+	if err != nil {
+		return nil, err
+	}
+	var grants []*graph.Grant
+	for _, acl := range acls.Grants {
+		grant := &graph.Grant{
+			Permission:         awssdk.StringValue(acl.Permission),
+			GranteeID:          awssdk.StringValue(acl.Grantee.ID),
+			GranteeType:        awssdk.StringValue(acl.Grantee.Type),
+			GranteeDisplayName: awssdk.StringValue(acl.Grantee.DisplayName),
+		}
+		if awssdk.StringValue(acl.Grantee.EmailAddress) != "" {
+			grant.GranteeDisplayName += "<" + awssdk.StringValue(acl.Grantee.EmailAddress) + ">"
+		}
+		if grant.GranteeType == "Group" {
+			grant.GranteeID += awssdk.StringValue(acl.Grantee.URI)
+		}
+		grants = append(grants, grant)
+	}
+	return grants, nil
 }
 
 func notEmpty(str *string) bool {

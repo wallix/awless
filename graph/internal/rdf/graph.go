@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/google/badwolf/storage"
@@ -24,7 +25,7 @@ func init() {
 
 type Graph struct {
 	storage.Graph
-	triplesCount int
+	triplesCount uint32 // atomic
 }
 
 func NewGraph() *Graph {
@@ -37,7 +38,7 @@ func NewGraph() *Graph {
 
 func NewGraphFromTriples(triples []*triple.Triple) *Graph {
 	g := NewGraph()
-	g.triplesCount = len(triples)
+	atomic.StoreUint32(&g.triplesCount, uint32(len(triples)))
 	g.Add(triples...)
 	return g
 }
@@ -58,7 +59,7 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 }
 
 func (g *Graph) Add(triples ...*triple.Triple) {
-	g.triplesCount += len(triples)
+	atomic.AddUint32(&g.triplesCount, uint32(len(triples)))
 	_ = g.AddTriples(context.Background(), triples) // badwolf mem store implementation always returns nil error
 }
 
@@ -116,8 +117,8 @@ func (g *Graph) copy() *Graph {
 	return newg
 }
 
-func (g *Graph) size() int {
-	return g.triplesCount
+func (g *Graph) size() uint32 {
+	return atomic.LoadUint32(&g.triplesCount)
 }
 
 func (g *Graph) allTriples() ([]*triple.Triple, error) {
