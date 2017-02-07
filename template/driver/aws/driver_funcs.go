@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
@@ -307,6 +308,63 @@ func (d *AwsDriver) Update_Securitygroup(params map[string]interface{}) (interfa
 	}
 
 	d.logger.Println("update securitygroup done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["bucket"]; !ok {
+		return nil, errors.New("create storageobject: missing required params 'bucket'")
+	}
+
+	if _, ok := params["file"].(string); !ok {
+		return nil, errors.New("create storageobject: missing required string params 'file'")
+	}
+
+	stat, err := os.Stat(params["file"].(string))
+	if os.IsNotExist(err) {
+		return nil, fmt.Errorf("cannot find file '%s'", params["file"])
+	}
+	if err != nil {
+		return nil, err
+	}
+	if stat.IsDir() {
+		return nil, fmt.Errorf("'%s' is a directory", params["file"])
+	}
+
+	d.logger.Println("params dry run: create storageobject ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
+	input := &s3.PutObjectInput{}
+
+	f, err := os.Open(params["file"].(string))
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	input.Body = f
+
+	var fileName string
+	if n, ok := params["name"].(string); ok && n != "" {
+		fileName = n
+	} else {
+		fileName = f.Name()
+	}
+	input.Key = aws.String(fileName)
+
+	// Required params
+	setField(params["bucket"], input, "Bucket")
+
+	output, err := d.s3.PutObject(input)
+	if err != nil {
+		d.logger.Printf("create storageobject error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.Println("create storageobject done")
 	return output, nil
 }
 

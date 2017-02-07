@@ -323,10 +323,13 @@ var DriverDefinitions = []struct {
 
 	// OBJECT
 	{
-		Action: "create", Entity: graph.Object.String(), Api: "s3", DryRunUnsupported: true, Input: "PutObjectInput", ApiMethod: "PutObject",
+		Action: "create", Entity: graph.Object.String(), Api: "s3", ManualFuncDefinition: true,
 		RequiredParams: map[string]string{
 			"Bucket": "bucket",
-			"Key":    "key",
+			"Body":   "file",
+		},
+		ExtraParams: map[string]string{
+			"Key": "name",
 		},
 	},
 	{
