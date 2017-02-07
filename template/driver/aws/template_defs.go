@@ -40,6 +40,6 @@ var AWSTemplatesDefinitions = map[string]string{
 	"attachpolicy":          "attach policy arn={ policy.arn } user={ policy.user } ",
 	"createbucket":          "create bucket name={ bucket.name } ",
 	"deletebucket":          "delete bucket name={ bucket.name } ",
-	"createobject":          "create object bucket={ object.bucket } key={ object.key } ",
-	"deleteobject":          "delete object bucket={ object.bucket } key={ object.key } ",
+	"createstorageobject":   "create storageobject bucket={ storageobject.bucket } key={ storageobject.key } ",
+	"deletestorageobject":   "delete storageobject bucket={ storageobject.bucket } key={ storageobject.key } ",
 }

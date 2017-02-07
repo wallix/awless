@@ -1335,21 +1335,21 @@ func (d *AwsDriver) Delete_Bucket(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *AwsDriver) Create_Object_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AwsDriver) Create_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
-		return nil, errors.New("create object: missing required params 'bucket'")
+		return nil, errors.New("create storageobject: missing required params 'bucket'")
 	}
 
 	if _, ok := params["key"]; !ok {
-		return nil, errors.New("create object: missing required params 'key'")
+		return nil, errors.New("create storageobject: missing required params 'key'")
 	}
 
-	d.logger.Println("params dry run: create object ok")
+	d.logger.Println("params dry run: create storageobject ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *AwsDriver) Create_Object(params map[string]interface{}) (interface{}, error) {
+func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
 	// Required params
@@ -1358,30 +1358,30 @@ func (d *AwsDriver) Create_Object(params map[string]interface{}) (interface{}, e
 
 	output, err := d.s3.PutObject(input)
 	if err != nil {
-		d.logger.Printf("create object error: %s", err)
+		d.logger.Printf("create storageobject error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("create object done")
+	d.logger.Println("create storageobject done")
 	return output, nil
 }
 
 // This function was auto generated
-func (d *AwsDriver) Delete_Object_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AwsDriver) Delete_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
-		return nil, errors.New("delete object: missing required params 'bucket'")
+		return nil, errors.New("delete storageobject: missing required params 'bucket'")
 	}
 
 	if _, ok := params["key"]; !ok {
-		return nil, errors.New("delete object: missing required params 'key'")
+		return nil, errors.New("delete storageobject: missing required params 'key'")
 	}
 
-	d.logger.Println("params dry run: delete object ok")
+	d.logger.Println("params dry run: delete storageobject ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *AwsDriver) Delete_Object(params map[string]interface{}) (interface{}, error) {
+func (d *AwsDriver) Delete_Storageobject(params map[string]interface{}) (interface{}, error) {
 	input := &s3.DeleteObjectInput{}
 
 	// Required params
@@ -1390,10 +1390,10 @@ func (d *AwsDriver) Delete_Object(params map[string]interface{}) (interface{}, e
 
 	output, err := d.s3.DeleteObject(input)
 	if err != nil {
-		d.logger.Printf("delete object error: %s", err)
+		d.logger.Printf("delete storageobject error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete object done")
+	d.logger.Println("delete storageobject done")
 	return output, nil
 }
