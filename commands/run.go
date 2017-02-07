@@ -153,9 +153,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				}
 
 				addAliasesToParams(expr)
-
 				templ.ResolveTemplate(expr.Params)
-
 				templ.MergeParams(expr.Params)
 
 				return runTemplate(templ, getCurrentDefaults())
@@ -203,12 +201,6 @@ func getCurrentDefaults() map[string]interface{} {
 func printReport(t *template.TemplateExecution) {
 	for _, done := range t.Executed {
 		var line bytes.Buffer
-		if done.Err == "" {
-			line.WriteString(renderGreenFn("[DONE] "))
-		} else {
-			line.WriteString(renderRedFn("[ERROR] "))
-		}
-
 		if done.Result != "" {
 			line.WriteString(fmt.Sprintf("%s %s ", done.Result, renderGreenFn("<-")))
 		}
@@ -218,12 +210,16 @@ func printReport(t *template.TemplateExecution) {
 			line.WriteString(fmt.Sprintf("\n\terror: %s", done.Err))
 		}
 
-		fmt.Println(line.String())
+		if done.Err == "" {
+			logger.Info(line.String())
+		} else {
+			logger.Error(line.String())
+		}
 	}
 
-	fmt.Println()
-	logger.Info("list executed template executions using `awless revert -l`")
-	logger.Infof("revert this template with `awless revert -i %s`", t.ID)
+	if t.IsRevertible() {
+		logger.Infof("revert this template with `awless revert -i %s`", t.ID)
+	}
 }
 
 func addAliasesToParams(expr *ast.ExpressionNode) error {

@@ -69,6 +69,18 @@ func (s *Template) GetEntitiesSet() (entities []string) {
 	return
 }
 
+func (s *Template) GetActionsSet() (actions []string) {
+	unique := make(map[string]bool)
+	s.visitExpressionNodes(func(n *ast.ExpressionNode) {
+		unique[n.Action] = true
+	})
+
+	for action, _ := range unique {
+		actions = append(actions, action)
+	}
+	return
+}
+
 func (s *Template) GetAliases() map[string]string {
 	aliases := make(map[string]string)
 	each := func(expr *ast.ExpressionNode) {
@@ -147,6 +159,10 @@ type ExecutedStatement struct {
 	Line, Err, Result string
 }
 
+func (ex *ExecutedStatement) IsRevertible() bool {
+	return (strings.Contains(ex.Line, "create") || strings.Contains(ex.Line, "start") || strings.Contains(ex.Line, "stop")) && ex.Result != "" && ex.Err == ""
+}
+
 func NewTemplateExecution(tpl *Template) *TemplateExecution {
 	out := &TemplateExecution{
 		ID: ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String(),
@@ -179,6 +195,15 @@ func (te *TemplateExecution) HasErrors() (inError bool) {
 	return
 }
 
+func (te *TemplateExecution) IsRevertible() bool {
+	for _, ex := range te.Executed {
+		if ex.IsRevertible() {
+			return true
+		}
+	}
+	return false
+}
+
 func (te *TemplateExecution) lines() (lines []string) {
 	for _, ex := range te.Executed {
 		lines = append(lines, ex.Line)
@@ -191,7 +216,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 	var lines []string
 
 	for i := len(te.Executed) - 1; i >= 0; i-- {
-		if exec := te.Executed[i]; exec.Err == "" && exec.Result != "" {
+		if exec := te.Executed[i]; exec.IsRevertible() {
 			n, err := ParseStatement(exec.Line)
 			if err != nil {
 				return nil, err

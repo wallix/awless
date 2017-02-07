@@ -209,6 +209,28 @@ func TestRevertTemplateExecution(t *testing.T) {
 	}
 }
 
+func TestExecutedStatementIsRevertible(t *testing.T) {
+	tcases := []struct {
+		line, result, err string
+		revertible        bool
+	}{
+		{line: "update vpc", result: "any", revertible: false},
+		{line: "delete vpc", result: "any", revertible: false},
+		{line: "create vpc", result: "any", err: "any", revertible: false},
+		{line: "create vpc", revertible: false},
+		{line: "start instance", revertible: false},
+		{line: "create vpc", result: "any", revertible: true},
+		{line: "stop instance", result: "any", revertible: true},
+	}
+
+	for _, tc := range tcases {
+		ex := &ExecutedStatement{Line: tc.line, Result: tc.result, Err: tc.err}
+		if tc.revertible != ex.IsRevertible() {
+			t.Fatalf("expected %#v to have revertible=%t", ex, tc.revertible)
+		}
+	}
+}
+
 func TestRunDriverOnTemplate(t *testing.T) {
 	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
 		s := &Template{AST: &ast.AST{}}
@@ -353,7 +375,7 @@ func TestGetAliases(t *testing.T) {
 	}
 }
 
-func TestGetEntitiesFromTemplate(t *testing.T) {
+func TestGetEntitiesAsSetFromTemplate(t *testing.T) {
 	temp, err := Parse("create vpc\ncreate subnet\ndelete instance\ncreate vpc")
 	if err != nil {
 		t.Fatal(err)
@@ -365,6 +387,22 @@ func TestGetEntitiesFromTemplate(t *testing.T) {
 	}
 
 	if got, want := actual, map[string]bool{"vpc": true, "subnet": true, "instance": true}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
+func TestGetActionsAsSetFromTemplate(t *testing.T) {
+	temp, err := Parse("create vpc\nupdate subnet\ndelete instance\ncreate vpc")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := make(map[string]bool)
+	for _, ent := range temp.GetActionsSet() {
+		actual[ent] = true
+	}
+
+	if got, want := actual, map[string]bool{"create": true, "update": true, "delete": true}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 }

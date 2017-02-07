@@ -100,6 +100,10 @@ func listHistory() {
 
 		date := time.Unix(int64(uid.Time())/int64(1000), time.Nanosecond.Nanoseconds())
 
-		fmt.Printf("Date: %s, Id: %s%s\n", date.Format(time.Stamp), templ.ID, buff.String())
+		if templ.IsRevertible() {
+			fmt.Printf("Date: %s, Revert Id: %s%s\n", date.Format(time.Stamp), templ.ID, buff.String())
+		} else {
+			fmt.Printf("Date: %s%s\n", date.Format(time.Stamp), buff.String())
+		}
 	}
 }
