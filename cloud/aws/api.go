@@ -211,11 +211,13 @@ func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	var buckets []*s3.Bucket
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
 	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
+		buckets = append(buckets, output)
 		wg.Add(1)
 		go func(b *s3.Bucket) {
 			defer wg.Done()
@@ -238,5 +240,5 @@ func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
 		}
 	}
 
-	return g, nil, nil
+	return g, buckets, nil
 }

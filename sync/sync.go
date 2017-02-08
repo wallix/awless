@@ -21,15 +21,16 @@ type Syncer interface {
 
 type syncer struct {
 	repo.Repo
+	dryrun bool
 }
 
-func NewSyncer() Syncer {
+func NewSyncer(dryrun bool) Syncer {
 	repo, err := repo.New()
 	if err != nil {
 		panic(err)
 	}
 
-	return &syncer{Repo: repo}
+	return &syncer{Repo: repo, dryrun: dryrun}
 }
 
 func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
@@ -75,22 +76,24 @@ Loop:
 		}
 	}
 
-	var filenames []string
+	if !s.dryrun {
+		var filenames []string
 
-	for name, g := range graphs {
-		filename := fmt.Sprintf("%s.rdf", name)
-		tofile, err := g.Marshal()
-		if err != nil {
+		for name, g := range graphs {
+			filename := fmt.Sprintf("%s.rdf", name)
+			tofile, err := g.Marshal()
+			if err != nil {
+				return graphs, err
+			}
+			if err = ioutil.WriteFile(filepath.Join(config.RepoDir, filename), tofile, 0600); err != nil {
+				return graphs, err
+			}
+			filenames = append(filenames, filename)
+		}
+
+		if err := s.Commit(filenames...); err != nil {
 			return graphs, err
 		}
-		if err = ioutil.WriteFile(filepath.Join(config.RepoDir, filename), tofile, 0600); err != nil {
-			return graphs, err
-		}
-		filenames = append(filenames, filename)
-	}
-
-	if err := s.Commit(filenames...); err != nil {
-		return graphs, err
 	}
 
 	return graphs, nil

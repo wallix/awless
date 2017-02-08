@@ -25,6 +25,7 @@ var addParentsFns = map[string][]addParentFn{
 	graph.Role.String():            {addRegionParent, addManagedPoliciesParents},
 	graph.Group.String():           {addRegionParent, addManagedPoliciesParents},
 	graph.Policy.String():          {addRegionParent},
+	graph.Bucket.String():          {addRegionParent},
 }
 
 var ParentNotFound = errors.New("empty field to add parent")
