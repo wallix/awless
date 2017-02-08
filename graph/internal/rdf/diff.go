@@ -32,18 +32,18 @@ func (d *Diff) ToGraph() *Graph {
 }
 
 func (d *Diff) MergedGraph() *Graph {
-	d.mergedGraph = d.fromGraph.copy()
+	d.mergedGraph = d.toGraph.copy()
 
-	toTriples, err := d.toGraph.allTriples()
+	fromTriples, err := d.fromGraph.allTriples()
 	if err != nil {
 		panic(err)
 	}
 
-	for _, toT := range toTriples {
-		if MetaPredicate.ID() == toT.Predicate().ID() {
-			attachLiteralToNode(d.mergedGraph, toT.Subject(), MetaPredicate, MissingLiteral)
+	for _, fromT := range fromTriples {
+		if MetaPredicate.ID() == fromT.Predicate().ID() {
+			attachLiteralToNode(d.mergedGraph, fromT.Subject(), MetaPredicate, MissingLiteral)
 		} else {
-			d.mergedGraph.Add(toT)
+			d.mergedGraph.Add(fromT)
 		}
 	}
 
@@ -84,7 +84,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, from *Graph, to *Graph) (*Diff, 
 				if err != nil {
 					return diff, err
 				}
-				attachLiteralToNode(diff.fromGraph, node, MetaPredicate, ExtraLiteral)
+				attachLiteralToNode(diff.toGraph, node, MetaPredicate, ExtraLiteral)
 				processing <- node
 			}
 
@@ -94,7 +94,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, from *Graph, to *Graph) (*Diff, 
 				if err != nil {
 					return diff, err
 				}
-				attachLiteralToNode(diff.toGraph, node, MetaPredicate, ExtraLiteral)
+				attachLiteralToNode(diff.fromGraph, node, MetaPredicate, ExtraLiteral)
 				processing <- node
 			}
 
@@ -124,8 +124,8 @@ func compareChildTriplesOf(onPredicate *predicate.Predicate, root *node.Node, fr
 		return extras, missings, commons, err
 	}
 
-	extras = append(extras, substractTriples(fromTriples, toTriples)...)
-	missings = append(missings, substractTriples(toTriples, fromTriples)...)
+	extras = append(extras, substractTriples(toTriples, fromTriples)...)
+	missings = append(missings, substractTriples(fromTriples, toTriples)...)
 	commons = append(commons, intersectTriples(fromTriples, toTriples)...)
 
 	return extras, missings, commons, nil

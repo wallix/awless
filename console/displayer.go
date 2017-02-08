@@ -447,17 +447,16 @@ type diffTableDisplayer struct {
 func (d *diffTableDisplayer) Print(w io.Writer) error {
 	var values table
 
-	localCommons := make(map[string]*graph.Resource)
-	remoteCommons := make(map[string]*graph.Resource)
-
+	fromCommons := make(map[string]*graph.Resource)
+	toCommons := make(map[string]*graph.Resource)
 	d.diff.FromGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
-				res.Type().String(), color.New(color.FgGreen).SprintFunc()("+ " + nameOrID(res)), "", "",
+				res.Type().String(), color.New(color.FgGreen).SprintFunc()("- " + nameOrID(res)), "", "",
 			})
 		default:
-			localCommons[res.Id()] = res
+			fromCommons[res.Id()] = res
 		}
 	})
 
@@ -465,29 +464,29 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
-				res.Type().String(), color.New(color.FgRed).SprintFunc()("- " + nameOrID(res)), "", "",
+				res.Type().String(), color.New(color.FgRed).SprintFunc()("+ " + nameOrID(res)), "", "",
 			})
 		default:
-			remoteCommons[res.Id()] = res
+			toCommons[res.Id()] = res
 		}
 	})
 
-	for _, common := range localCommons {
+	for _, common := range fromCommons {
 		resType := common.Type().String()
 		naming := nameOrID(common)
 
-		if rem, ok := remoteCommons[common.Id()]; ok {
+		if rem, ok := toCommons[common.Id()]; ok {
 			added := rem.Properties.Substract(common.Properties)
 			for k, v := range added {
 				values = append(values, []interface{}{
-					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
+					resType, naming, k, color.New(color.FgRed).SprintFunc()("+ " + fmt.Sprint(v)),
 				})
 			}
 
 			deleted := common.Properties.Substract(rem.Properties)
 			for k, v := range deleted {
 				values = append(values, []interface{}{
-					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
+					resType, naming, k, color.New(color.FgGreen).SprintFunc()("- " + fmt.Sprint(v)),
 				})
 			}
 		}
