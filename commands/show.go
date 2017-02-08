@@ -1,9 +1,11 @@
 package commands
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
@@ -31,44 +33,60 @@ var showCmd = &cobra.Command{
 
 		id := args[0]
 		notFound := fmt.Sprintf("resource with id %s not found", id)
+
+		var resource *graph.Resource
 		var gph *graph.Graph
-		var graphs map[string]*graph.Graph
 
-		resType := resolveResourceType(id)
+		resource, gph = findResourceInLocalGraphs(id)
 
-		if resType == "" && localFlag {
+		if resource == nil && localFlag {
 			logger.Info(notFound)
 			return nil
-		} else if resType == "" {
-			graphs = runFullSync()
+		} else if resource == nil {
+			runFullSync()
 
-			if resType = resolveResourceType(id); resType == "" {
+			if resource, gph = findResourceInLocalGraphs(id); resource == nil {
 				logger.Info(notFound)
 				return nil
 			}
 		}
 
-		srv, err := cloud.GetServiceForType(resType)
-		exitOn(err)
-
-		if graphs == nil {
-			logger.Verbosef("syncing service for %s type", resType)
-			graphs, err = sync.DefaultSyncer.Sync(srv)
+		if !localFlag {
+			srv, err := cloud.GetServiceForType(resource.Type().String())
+			exitOn(err)
+			logger.Verbosef("syncing service for %s type", resource.Type())
+			_, err = sync.DefaultSyncer.Sync(srv)
 			exitOn(err)
 		}
 
-		gph = graphs[srv.Name()]
-
-		res, err := gph.FindResource(args[0])
-		exitOn(err)
-
-		if res != nil {
+		if resource != nil {
 			displayer := console.BuildOptions(
-				console.WithHeaders(console.DefaultsColumnDefinitions[res.Type()]),
+				console.WithHeaders(console.DefaultsColumnDefinitions[resource.Type()]),
 				console.WithFormat(listingFormat),
-			).SetSource(res).Build()
+			).SetSource(resource).Build()
 
 			exitOn(displayer.Print(os.Stderr))
+
+			printWithTabs := func(r *graph.Resource, distance int) {
+				var tabs bytes.Buffer
+				for i := 0; i < distance; i++ {
+					tabs.WriteByte('\t')
+				}
+				if resource.Id() != r.Id() {
+					fmt.Fprintf(os.Stdout, "%s%s[%s]\n", tabs.String(), r.Type(), r.Id())
+				}
+			}
+
+			fmt.Println("\nParents:")
+			gph.VisitParents(resource, printWithTabs)
+			fmt.Println("\nChildrens:")
+			gph.VisitChildren(resource, printWithTabs)
+
+			var siblings []string
+			gph.VisitSiblings(resource, func(r *graph.Resource, distance int) {
+				siblings = append(siblings, fmt.Sprintf("%s[%s]", r.Type(), r.Id()))
+			})
+			fmt.Printf("\nSiblings: %s\n", strings.Join(siblings, ", "))
 		}
 
 		return nil
@@ -89,14 +107,14 @@ func runFullSync() map[string]*graph.Graph {
 	return graphs
 }
 
-func resolveResourceType(id string) (resType string) {
+func findResourceInLocalGraphs(id string) (*graph.Resource, *graph.Graph) {
 	for _, name := range aws.ServiceNames {
 		g := sync.LoadCurrentLocalGraph(name)
 		localRes, err := g.FindResource(id)
 		exitOn(err)
 		if localRes != nil {
-			resType = localRes.Type().String()
+			return localRes, g
 		}
 	}
-	return
+	return nil, nil
 }

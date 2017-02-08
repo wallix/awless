@@ -7,9 +7,8 @@ import (
 	"github.com/google/badwolf/triple/node"
 )
 
-func TestVisitDepthFirstGraph(t *testing.T) {
+func TestVisitHierarchically(t *testing.T) {
 	g := NewGraph()
-
 	//       1
 	//   2       3       4
 	// 5   6   7  8        9
@@ -36,6 +35,7 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 	g.Add(noErrTriple(nine, ParentOfPredicate, ten))
 
 	var result bytes.Buffer
+
 	each := func(g *Graph, n *node.Node, distance int) {
 		for i := 0; i < distance; i++ {
 			result.WriteByte('/')
@@ -43,21 +43,106 @@ func TestVisitDepthFirstGraph(t *testing.T) {
 		result.WriteString(n.ID().String())
 	}
 
-	g.VisitDepthFirst(one, each)
-	if got, want := result.String(), "1/2//5//6/3//7//8/4//9///10"; got != want {
-		t.Fatalf("got '%s', want '%s'", got, want)
+	t.Run("Visit top down", func(t *testing.T) {
+		result.Reset()
+		g.VisitTopDown(one, each)
+		if got, want := result.String(), "1/2//5//6/3//7//8/4//9///10"; got != want {
+			t.Fatalf("got '%s', want '%s'", got, want)
+		}
+
+		result.Reset()
+		g.VisitTopDown(four, each)
+		if got, want := result.String(), "4/9//10"; got != want {
+			t.Fatalf("got '%s', want '%s'", got, want)
+		}
+
+		result.Reset()
+		g.VisitTopDown(three, each)
+		if got, want := result.String(), "3/7/8"; got != want {
+			t.Fatalf("got '%s', want '%s'", got, want)
+		}
+	})
+
+	t.Run("Visit bottom up", func(t *testing.T) {
+		result.Reset()
+		g.VisitBottomUp(ten, each)
+		if got, want := result.String(), "10/9//4///1"; got != want {
+			t.Fatalf("got '%s', want '%s'", got, want)
+		}
+
+		result.Reset()
+		g.VisitBottomUp(eight, each)
+		if got, want := result.String(), "8/3//1"; got != want {
+			t.Fatalf("got '%s', want '%s'", got, want)
+		}
+
+		result.Reset()
+		g.VisitBottomUp(two, each)
+		if got, want := result.String(), "2/1"; got != want {
+			t.Fatalf("got '%s', want '%s'", got, want)
+		}
+	})
+}
+
+func TestVisitSiblings(t *testing.T) {
+	g := NewGraph()
+	//                1
+	//     2          3           4
+	// 5   6  7    8  9  10    11  12
+	//                               13
+	one, _ := node.NewNodeFromStrings("/mamal", "1")
+	two, _ := node.NewNodeFromStrings("/fish", "2")
+	three, _ := node.NewNodeFromStrings("/fish", "3")
+	four, _ := node.NewNodeFromStrings("/mamal", "4")
+	five, _ := node.NewNodeFromStrings("/nemo", "5")
+	six, _ := node.NewNodeFromStrings("/nemo", "6")
+	seven, _ := node.NewNodeFromStrings("/nemo", "7")
+	eight, _ := node.NewNodeFromStrings("/doris", "8")
+	nine, _ := node.NewNodeFromStrings("/doris", "9")
+	ten, _ := node.NewNodeFromStrings("/nemo", "10")
+	eleven, _ := node.NewNodeFromStrings("/dog", "11")
+	twelve, _ := node.NewNodeFromStrings("/cat", "12")
+	thirteen, _ := node.NewNodeFromStrings("/any", "13")
+
+	g.Add(noErrTriple(one, ParentOfPredicate, two))
+	g.Add(noErrTriple(one, ParentOfPredicate, three))
+	g.Add(noErrTriple(one, ParentOfPredicate, four))
+	g.Add(noErrTriple(two, ParentOfPredicate, five))
+	g.Add(noErrTriple(two, ParentOfPredicate, six))
+	g.Add(noErrTriple(two, ParentOfPredicate, seven))
+	g.Add(noErrTriple(three, ParentOfPredicate, eight))
+	g.Add(noErrTriple(three, ParentOfPredicate, nine))
+	g.Add(noErrTriple(three, ParentOfPredicate, ten))
+	g.Add(noErrTriple(four, ParentOfPredicate, eleven))
+	g.Add(noErrTriple(four, ParentOfPredicate, twelve))
+	g.Add(noErrTriple(twelve, ParentOfPredicate, thirteen))
+
+	var result bytes.Buffer
+
+	each := func(g *Graph, n *node.Node, distance int) {
+		for i := 0; i < distance; i++ {
+			result.WriteByte('/')
+		}
+		result.WriteString(n.ID().String())
 	}
 
-	result.Reset()
-	g.VisitDepthFirst(four, each)
-	if got, want := result.String(), "4/9//10"; got != want {
-		t.Fatalf("got '%s', want '%s'", got, want)
+	tcases := []struct {
+		node *node.Node
+		out  string
+	}{
+		{one, ""},
+		{two, "3"}, {three, "2"}, {four, ""},
+		{five, "67"}, {six, "57"}, {seven, "56"},
+		{eight, "9"}, {nine, "8"}, {ten, ""},
+		{eleven, ""}, {twelve, ""}, {thirteen, ""},
 	}
 
-	result.Reset()
-	g.VisitDepthFirst(three, each)
-	if got, want := result.String(), "3/7/8"; got != want {
-		t.Fatalf("got '%s', want '%s'", got, want)
+	for _, tc := range tcases {
+		result.Reset()
+		g.VisitSiblings(tc.node, each)
+		if got, want := result.String(), tc.out; got != want {
+			t.Fatalf("node %s: got '%s', want '%s'", tc.node, got, want)
+		}
 	}
 }
 

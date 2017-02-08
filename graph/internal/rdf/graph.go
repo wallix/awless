@@ -68,7 +68,7 @@ func (g *Graph) AddGraph(graph *Graph) {
 	g.Add(all...)
 }
 
-func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
+func (g *Graph) VisitTopDown(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
 	var dist int
 	if len(distances) > 0 {
 		dist = distances[0]
@@ -93,7 +93,76 @@ func (g *Graph) VisitDepthFirst(root *node.Node, each func(*Graph, *node.Node, i
 	sort.Sort(&nodeSorter{childs})
 
 	for _, child := range childs {
-		g.VisitDepthFirst(child, each, dist+1)
+		g.VisitTopDown(child, each, dist+1)
+	}
+
+	return nil
+}
+
+func (g *Graph) VisitBottomUp(startNode *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
+	var dist int
+	if len(distances) > 0 {
+		dist = distances[0]
+	}
+
+	each(g, startNode, dist)
+
+	relations, err := g.TriplesForPredicateObject(ParentOfPredicate, triple.NewNodeObject(startNode))
+	if err != nil {
+		return err
+	}
+
+	var parents []*node.Node
+	for _, relation := range relations {
+		parents = append(parents, relation.Subject())
+	}
+
+	sort.Sort(&nodeSorter{parents})
+
+	for _, child := range parents {
+		g.VisitBottomUp(child, each, dist+1)
+	}
+
+	return nil
+}
+
+func (g *Graph) VisitSiblings(start *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
+	relations, err := g.TriplesForPredicateObject(ParentOfPredicate, triple.NewNodeObject(start))
+	if err != nil {
+		return err
+	}
+
+	var parents []*node.Node
+	for _, relation := range relations {
+		parents = append(parents, relation.Subject())
+	}
+
+	sort.Sort(&nodeSorter{parents})
+
+	for _, parent := range parents {
+		triples, err := g.TriplesForSubjectPredicate(parent, ParentOfPredicate)
+		if err != nil {
+			return nil
+		}
+
+		var childs []*node.Node
+		for _, triple := range triples {
+			child, err := triple.Object().Node()
+			if err != nil {
+				return err
+			}
+			childs = append(childs, child)
+		}
+
+		sort.Sort(&nodeSorter{childs})
+
+		for _, child := range childs {
+			sameType := child.Type().String() == start.Type().String()
+			notStartNode := child.ID().String() != start.ID().String()
+			if sameType && notStartNode {
+				each(g, child, 0)
+			}
+		}
 	}
 
 	return nil

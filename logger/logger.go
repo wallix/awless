@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"sync/atomic"
+
+	"github.com/fatih/color"
 )
 
 var DefaultLogger *Logger = &Logger{out: log.New(os.Stdout, "", 0)}
@@ -14,10 +16,10 @@ type Logger struct {
 	out     *log.Logger
 }
 
-const (
-	infoPrefix    = "\033[32m[info]\033[m"
-	errorPrefix   = "\033[31m[erro]\033[m"
-	verbosePrefix = "[verb]"
+var (
+	infoPrefix    = color.GreenString("[info]")
+	errorPrefix   = color.RedString("[error]")
+	verbosePrefix = color.YellowString("[verbose]")
 )
 
 func New(prefix string, flag int) *Logger {

@@ -128,8 +128,8 @@ func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 	return res, nil
 }
 
-func (g *Graph) VisitChildren(root *Resource, each func(*Resource, int)) error {
-	rootNode, err := root.toRDFNode()
+func (g *Graph) VisitChildren(start *Resource, each func(*Resource, int)) error {
+	startNode, err := start.toRDFNode()
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,41 @@ func (g *Graph) VisitChildren(root *Resource, each func(*Resource, int)) error {
 		each(res, i)
 	}
 
-	return g.rdfG.VisitDepthFirst(rootNode, foreach)
+	return g.rdfG.VisitTopDown(startNode, foreach)
+}
+
+func (g *Graph) VisitParents(start *Resource, each func(*Resource, int)) error {
+	startNode, err := start.toRDFNode()
+	if err != nil {
+		return err
+	}
+
+	foreach := func(rdfG *rdf.Graph, n *node.Node, i int) {
+		res, err := g.GetResource(newResourceType(n), n.ID().String())
+		if err != nil {
+			panic(err)
+		}
+		each(res, i)
+	}
+
+	return g.rdfG.VisitBottomUp(startNode, foreach)
+}
+
+func (g *Graph) VisitSiblings(res *Resource, each func(*Resource, int)) error {
+	resNode, err := res.toRDFNode()
+	if err != nil {
+		return err
+	}
+
+	foreach := func(rdfG *rdf.Graph, n *node.Node, i int) {
+		res, err := g.GetResource(newResourceType(n), n.ID().String())
+		if err != nil {
+			panic(err)
+		}
+		each(res, i)
+	}
+
+	return g.rdfG.VisitSiblings(resNode, foreach)
 }
 
 func (g *Graph) CountChildrenOfTypeForNode(res *Resource, childType ResourceType) (int, error) {
