@@ -47,9 +47,9 @@ var addParentsFns = map[string][]addParentFn{
 	},
 	graph.Vpc.String():     {addRegionParent},
 	graph.Keypair.String(): {addRegionParent},
-	graph.User.String():    {addRegionParent, userAddGroupsParents, addManagedPoliciesParents},
-	graph.Role.String():    {addRegionParent, addManagedPoliciesParents},
-	graph.Group.String():   {addRegionParent, addManagedPoliciesParents},
+	graph.User.String():    {addRegionParent, userAddGroupsRelations, addManagedPoliciesRelations},
+	graph.Role.String():    {addRegionParent, addManagedPoliciesRelations},
+	graph.Group.String():   {addRegionParent, addManagedPoliciesRelations},
 	graph.Policy.String():  {addRegionParent},
 	graph.Bucket.String():  {addRegionParent},
 }
@@ -195,7 +195,7 @@ func addRegionParent(g *graph.Graph, i interface{}) error {
 	return nil
 }
 
-func addManagedPoliciesParents(g *graph.Graph, i interface{}) error {
+func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
 	res, err := initResource(i)
 	if err != nil {
 		return err
@@ -229,12 +229,12 @@ func addManagedPoliciesParents(g *graph.Graph, i interface{}) error {
 		if err != nil {
 			return err
 		}
-		g.AddParentRelation(parent, res)
+		g.AddAppliesOnRelation(parent, res)
 	}
 	return nil
 }
 
-func userAddGroupsParents(g *graph.Graph, i interface{}) error {
+func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 	user, ok := i.(*iam.UserDetail)
 	if !ok {
 		return fmt.Errorf("aws fetch: not a user, but a %T", i)
@@ -249,7 +249,7 @@ func userAddGroupsParents(g *graph.Graph, i interface{}) error {
 		if err != nil {
 			return err
 		}
-		g.AddParentRelation(parent, n)
+		g.AddAppliesOnRelation(parent, n)
 	}
 	return nil
 }
