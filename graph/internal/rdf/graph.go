@@ -17,6 +17,7 @@ import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/literal"
 	"github.com/google/badwolf/triple/node"
+	"github.com/google/badwolf/triple/predicate"
 )
 
 func init() {
@@ -66,6 +67,14 @@ func (g *Graph) Add(triples ...*triple.Triple) {
 func (g *Graph) AddGraph(graph *Graph) {
 	all, _ := graph.allTriples()
 	g.Add(all...)
+}
+
+func (g *Graph) ListAttachedTo(n *node.Node, pred *predicate.Predicate) ([]*node.Node, error) {
+	return g.listAttached(n, pred, DOWN)
+}
+
+func (g *Graph) ListAttachedFrom(n *node.Node, pred *predicate.Predicate) ([]*node.Node, error) {
+	return g.listAttached(n, pred, UP)
 }
 
 func (g *Graph) VisitTopDown(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
@@ -246,6 +255,54 @@ func (g *Graph) MustMarshal() string {
 	toSort := strings.Split(string(b), "\n")
 	sort.Strings(toSort)
 	return strings.Join(toSort, "\n")
+}
+
+type direction int
+
+const (
+	UP direction = iota
+	DOWN
+)
+
+func (g *Graph) listAttached(n *node.Node, pred *predicate.Predicate, dir direction) ([]*node.Node, error) {
+	var nodes []*node.Node
+	var attached []*triple.Triple
+	var err error
+
+	switch dir {
+	case DOWN:
+		attached, err = g.TriplesForSubjectPredicate(n, pred)
+	case UP:
+		attached, err = g.TriplesForPredicateObject(pred, triple.NewNodeObject(n))
+	default:
+		panic("undefined direction")
+	}
+
+	if err != nil {
+		return nodes, err
+	}
+
+	for _, triple := range attached {
+		var nod *node.Node
+		switch dir {
+		case UP:
+			nod = triple.Subject()
+		case DOWN:
+			nod, err = triple.Object().Node()
+		default:
+			panic("undefined direction")
+		}
+
+		if err != nil {
+			return nodes, err
+		}
+
+		if nod != nil {
+			nodes = append(nodes, nod)
+		}
+	}
+
+	return nodes, nil
 }
 
 func randString() string {

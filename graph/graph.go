@@ -126,6 +126,46 @@ func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 	return res, nil
 }
 
+func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
+	var resources []*Resource
+
+	node, err := start.toRDFNode()
+	if err != nil {
+		return resources, err
+	}
+
+	relations, err := g.rdfG.ListAttachedTo(node, rdf.AppliesOnPredicate)
+	for _, node := range relations {
+		res, err := g.GetResource(newResourceType(node), node.ID().String())
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, res)
+	}
+
+	return resources, nil
+}
+
+func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
+	var resources []*Resource
+
+	node, err := start.toRDFNode()
+	if err != nil {
+		return resources, err
+	}
+
+	relations, err := g.rdfG.ListAttachedFrom(node, rdf.AppliesOnPredicate)
+	for _, node := range relations {
+		res, err := g.GetResource(newResourceType(node), node.ID().String())
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, res)
+	}
+
+	return resources, nil
+}
+
 func (g *Graph) VisitChildren(start *Resource, each func(*Resource, int)) error {
 	startNode, err := start.toRDFNode()
 	if err != nil {

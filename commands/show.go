@@ -77,16 +77,30 @@ var showCmd = &cobra.Command{
 				}
 			}
 
+			var collected []*graph.Resource
+			collectFn := func(r *graph.Resource, distance int) {
+				if resource.Id() != r.Id() {
+					collected = append(collected, r)
+				}
+			}
+
 			fmt.Println("\nParents:")
 			gph.VisitParents(resource, printWithTabs)
-			fmt.Println("\nChildrens:")
+
+			fmt.Println("\nChildren:")
 			gph.VisitChildren(resource, printWithTabs)
 
-			var siblings []string
-			gph.VisitSiblings(resource, func(r *graph.Resource, distance int) {
-				siblings = append(siblings, fmt.Sprintf("%s[%s]", r.Type(), r.Id()))
-			})
-			fmt.Printf("\nSiblings: %s\n", strings.Join(siblings, ", "))
+			collected = collected[:0]
+			gph.VisitSiblings(resource, collectFn)
+			printResourceList("Siblings", collected)
+
+			appliedOn, err := gph.ListResourcesAppliedOn(resource)
+			exitOn(err)
+			printResourceList("Applied on", appliedOn)
+
+			dependingOn, err := gph.ListResourcesDependingOn(resource)
+			exitOn(err)
+			printResourceList("Depending on", dependingOn)
 		}
 
 		return nil
@@ -117,4 +131,14 @@ func findResourceInLocalGraphs(id string) (*graph.Resource, *graph.Graph) {
 		}
 	}
 	return nil, nil
+}
+
+func printResourceList(title string, list []*graph.Resource) {
+	var all []string
+	for _, res := range list {
+		all = append(all, fmt.Sprintf("%s[%s]", res.Type(), res.Id()))
+	}
+	if len(all) > 0 {
+		fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
+	}
 }

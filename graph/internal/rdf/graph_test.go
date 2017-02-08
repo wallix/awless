@@ -7,6 +7,49 @@ import (
 	"github.com/google/badwolf/triple/node"
 )
 
+func TestListAttached(t *testing.T) {
+	g := NewGraph()
+	one, _ := node.NewNodeFromStrings("/any", "1")
+	two, _ := node.NewNodeFromStrings("/any", "2")
+	three, _ := node.NewNodeFromStrings("/any", "3")
+	four, _ := node.NewNodeFromStrings("/any", "4")
+	five, _ := node.NewNodeFromStrings("/any", "5")
+
+	g.Add(noErrTriple(one, ParentOfPredicate, two))
+	g.Add(noErrTriple(one, ParentOfPredicate, three))
+	g.Add(noErrTriple(two, ParentOfPredicate, four))
+	g.Add(noErrTriple(two, ParentOfPredicate, five))
+
+	verify := func(nodes []*node.Node, expLength int, expected ...*node.Node) {
+		if got, want := len(nodes), expLength; got != want {
+			t.Fatalf("nodes length: got %d, want %d", got, want)
+		}
+		for _, ex := range expected {
+			var found bool
+			for _, n := range nodes {
+				if (n.Type().String() == ex.Type().String()) && (n.ID().String() == ex.ID().String()) {
+					found = true
+				}
+			}
+			if !found {
+				t.Fatalf("%v does not contain %v", nodes, ex)
+			}
+		}
+	}
+
+	nodes, _ := g.ListAttachedTo(one, ParentOfPredicate)
+	verify(nodes, 2, two, three)
+
+	nodes, _ = g.ListAttachedTo(two, ParentOfPredicate)
+	verify(nodes, 2, four, five)
+
+	nodes, _ = g.ListAttachedFrom(four, ParentOfPredicate)
+	verify(nodes, 1, two)
+
+	nodes, _ = g.ListAttachedFrom(two, ParentOfPredicate)
+	verify(nodes, 1, one)
+}
+
 func TestVisitHierarchically(t *testing.T) {
 	g := NewGraph()
 	//       1
