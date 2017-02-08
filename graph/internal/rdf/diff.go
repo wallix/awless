@@ -42,6 +42,8 @@ func (d *Diff) MergedGraph() *Graph {
 	for _, toT := range toTriples {
 		if MetaPredicate.ID() == toT.Predicate().ID() {
 			attachLiteralToNode(d.mergedGraph, toT.Subject(), MetaPredicate, MissingLiteral)
+		} else {
+			d.mergedGraph.Add(toT)
 		}
 	}
 
@@ -83,6 +85,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, from *Graph, to *Graph) (*Diff, 
 					return diff, err
 				}
 				attachLiteralToNode(diff.fromGraph, node, MetaPredicate, ExtraLiteral)
+				processing <- node
 			}
 
 			for _, missing := range missings {
@@ -92,6 +95,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, from *Graph, to *Graph) (*Diff, 
 					return diff, err
 				}
 				attachLiteralToNode(diff.toGraph, node, MetaPredicate, ExtraLiteral)
+				processing <- node
 			}
 
 			for _, nextNodeToProcess := range commons {

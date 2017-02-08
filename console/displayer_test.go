@@ -246,9 +246,11 @@ my_vpc_2`
 }
 
 func TestDiffDisplay(t *testing.T) {
-	diff := createDiff()
-
 	rootNode := graph.InitResource("eu-west-1", graph.Region)
+	diff, err := createDiff(rootNode)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	displayer := BuildOptions(
 		WithFormat("table"),
@@ -269,7 +271,7 @@ func TestDiffDisplay(t *testing.T) {
 +----------+--------------+----------+------------+
 `
 	var w bytes.Buffer
-	err := displayer.Print(&w)
+	err = displayer.Print(&w)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -547,7 +549,7 @@ func createInfraGraph() *graph.Graph {
 	return g
 }
 
-func createDiff() *graph.Diff {
+func createDiff(root *graph.Resource) (*graph.Diff, error) {
 	localDiffG, err := graph.NewGraphFromFile(filepath.Join("testdata", "local_infra_diff.rdf"))
 	if err != nil {
 		panic(err)
@@ -557,8 +559,7 @@ func createDiff() *graph.Diff {
 	if err != nil {
 		panic(err)
 	}
-
-	return graph.NewDiff(localDiffG, remoteDiffG)
+	return graph.Differ.Run(root, localDiffG, remoteDiffG)
 }
 
 func TestEmotyDisplays(t *testing.T) {

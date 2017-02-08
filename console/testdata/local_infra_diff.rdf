@@ -1,13 +1,10 @@
 /region<eu-west-1> "has_type"@[] "/region"^^type:text
 
 /instance<inst_4>  "has_type"@[] "/instance"^^type:text
-/instance<inst_4>  "meta"@[] "{"Key":"diff","Value":"extra"}"^^type:text
 
 /instance<inst_5>  "has_type"@[] "/instance"^^type:text
-/instance<inst_5>  "meta"@[] "{"Key":"diff","Value":"extra"}"^^type:text
 
 /instance<inst_6>  "has_type"@[] "/instance"^^type:text
-/instance<inst_6>  "meta"@[] "{"Key":"diff","Value":"extra"}"^^type:text
 
 /instance<inst_1>  "has_type"@[] "/instance"^^type:text
 /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"new_id"}"^^type:text
@@ -26,7 +23,6 @@
 /region<eu-west-1>  "parent_of"@[] /vpc<vpc_2>
 
 /subnet<new_subnet>  "has_type"@[] "/subnet"^^type:text
-/subnet<new_subnet>  "meta"@[] "{"Key":"diff","Value":"extra"}"^^type:text
 /subnet<new_subnet>  "parent_of"@[]  /instance<inst_6>
 
 /subnet<sub_1>  "has_type"@[] "/subnet"^^type:text
@@ -36,7 +32,6 @@
 /subnet<sub_1>  "property"@[] "{"Key":"VpcId","Value":"vpc_1"}"^^type:text
 
 /subnet<sub_2>  "has_type"@[] "/subnet"^^type:text
-/subnet<sub_2>  "parent_of"@[]  /instance<inst_2>
 /subnet<sub_2>  "parent_of"@[]  /instance<inst_3>
 /subnet<sub_2>  "parent_of"@[]  /instance<inst_4>
 /subnet<sub_2>  "parent_of"@[]  /instance<inst_5>

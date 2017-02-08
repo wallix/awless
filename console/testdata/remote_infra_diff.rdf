@@ -7,7 +7,6 @@
 /instance<inst_1>  "property"@[] "{"Key":"State","Value":"running"}"^^type:text
 
 /instance<inst_2>  "has_type"@[] "/instance"^^type:text
-/instance<inst_2>  "meta"@[] "{"Key":"diff","Value":"extra"}"^^type:text
 
 /instance<inst_3>  "has_type"@[] "/instance"^^type:text
 /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
