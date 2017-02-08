@@ -6,16 +6,16 @@ type Diff struct {
 	*rdf.Diff
 }
 
-func NewDiff(localG, remoteG *Graph) *Diff {
-	return &Diff{rdf.NewDiff(localG.rdfG, remoteG.rdfG)}
+func NewDiff(fromG, toG *Graph) *Diff {
+	return &Diff{rdf.NewDiff(fromG.rdfG, toG.rdfG)}
 }
 
-func (d *Diff) LocalGraph() *Graph {
-	return &Graph{d.Diff.LocalGraph()}
+func (d *Diff) FromGraph() *Graph {
+	return &Graph{d.Diff.FromGraph()}
 }
 
-func (d *Diff) RemoteGraph() *Graph {
-	return &Graph{d.Diff.RemoteGraph()}
+func (d *Diff) ToGraph() *Graph {
+	return &Graph{d.Diff.ToGraph()}
 }
 
 func (d *Diff) MergedGraph() *Graph {
@@ -28,11 +28,11 @@ type differ struct {
 	rdf.Differ
 }
 
-func (d *differ) Run(root *Resource, local *Graph, remote *Graph) (*Diff, error) {
+func (d *differ) Run(root *Resource, from *Graph, to *Graph) (*Diff, error) {
 	rootNode, err := root.toRDFNode()
 	if err != nil {
 		return nil, err
 	}
-	diff, err := d.Differ.Run(rootNode, local.rdfG, remote.rdfG)
+	diff, err := d.Differ.Run(rootNode, from.rdfG, to.rdfG)
 	return &Diff{diff}, err
 }

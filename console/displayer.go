@@ -450,7 +450,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 	localCommons := make(map[string]*graph.Resource)
 	remoteCommons := make(map[string]*graph.Resource)
 
-	d.diff.LocalGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+	d.diff.FromGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
@@ -461,7 +461,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		}
 	})
 
-	d.diff.RemoteGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+	d.diff.ToGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{

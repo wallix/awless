@@ -13,35 +13,35 @@ type Differ interface {
 }
 
 type Diff struct {
-	localGraph  *Graph
-	remoteGraph *Graph
+	fromGraph   *Graph
+	toGraph     *Graph
 	mergedGraph *Graph
 	hasDiffs    bool
 }
 
-func NewDiff(localG, remoteG *Graph) *Diff {
-	return &Diff{localGraph: localG, remoteGraph: remoteG}
+func NewDiff(fromG, toG *Graph) *Diff {
+	return &Diff{fromGraph: fromG, toGraph: toG}
 }
 
-func (d *Diff) LocalGraph() *Graph {
-	return d.localGraph
+func (d *Diff) FromGraph() *Graph {
+	return d.fromGraph
 }
 
-func (d *Diff) RemoteGraph() *Graph {
-	return d.remoteGraph
+func (d *Diff) ToGraph() *Graph {
+	return d.toGraph
 }
 
 func (d *Diff) MergedGraph() *Graph {
-	d.mergedGraph = d.localGraph.copy()
+	d.mergedGraph = d.fromGraph.copy()
 
-	remotes, err := d.remoteGraph.allTriples()
+	toTriples, err := d.toGraph.allTriples()
 	if err != nil {
 		panic(err)
 	}
 
-	for _, remote := range remotes {
-		if MetaPredicate.ID() == remote.Predicate().ID() {
-			attachLiteralToNode(d.mergedGraph, remote.Subject(), MetaPredicate, MissingLiteral)
+	for _, toT := range toTriples {
+		if MetaPredicate.ID() == toT.Predicate().ID() {
+			attachLiteralToNode(d.mergedGraph, toT.Subject(), MetaPredicate, MissingLiteral)
 		}
 	}
 
@@ -56,10 +56,10 @@ type hierarchicDiffer struct {
 	predicate *predicate.Predicate
 }
 
-func (d *hierarchicDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*Diff, error) {
-	diff := &Diff{localGraph: local, remoteGraph: remote}
+func (d *hierarchicDiffer) Run(root *node.Node, from *Graph, to *Graph) (*Diff, error) {
+	diff := &Diff{fromGraph: from, toGraph: to}
 
-	maxCount := max(local.size(), remote.size())
+	maxCount := max(from.size(), to.size())
 	processing := make(chan *node.Node, maxCount)
 
 	if maxCount < 1 {
@@ -71,7 +71,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*D
 	for len(processing) > 0 {
 		select {
 		case node := <-processing:
-			extras, missings, commons, err := compareChildTriplesOf(d.predicate, node, local, remote)
+			extras, missings, commons, err := compareChildTriplesOf(d.predicate, node, from, to)
 			if err != nil {
 				return diff, err
 			}
@@ -82,7 +82,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*D
 				if err != nil {
 					return diff, err
 				}
-				attachLiteralToNode(diff.localGraph, node, MetaPredicate, ExtraLiteral)
+				attachLiteralToNode(diff.fromGraph, node, MetaPredicate, ExtraLiteral)
 			}
 
 			for _, missing := range missings {
@@ -91,7 +91,7 @@ func (d *hierarchicDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*D
 				if err != nil {
 					return diff, err
 				}
-				attachLiteralToNode(diff.remoteGraph, node, MetaPredicate, ExtraLiteral)
+				attachLiteralToNode(diff.toGraph, node, MetaPredicate, ExtraLiteral)
 			}
 
 			for _, nextNodeToProcess := range commons {
@@ -107,22 +107,22 @@ func (d *hierarchicDiffer) Run(root *node.Node, local *Graph, remote *Graph) (*D
 	return diff, nil
 }
 
-func compareChildTriplesOf(onPredicate *predicate.Predicate, root *node.Node, localGraph *Graph, remoteGraph *Graph) ([]*triple.Triple, []*triple.Triple, []*triple.Triple, error) {
+func compareChildTriplesOf(onPredicate *predicate.Predicate, root *node.Node, fromGraph *Graph, toGraph *Graph) ([]*triple.Triple, []*triple.Triple, []*triple.Triple, error) {
 	var extras, missings, commons []*triple.Triple
 
-	locals, err := localGraph.TriplesForSubjectPredicate(root, onPredicate)
+	fromTriples, err := fromGraph.TriplesForSubjectPredicate(root, onPredicate)
 	if err != nil {
 		return extras, missings, commons, err
 	}
 
-	remotes, err := remoteGraph.TriplesForSubjectPredicate(root, onPredicate)
+	toTriples, err := toGraph.TriplesForSubjectPredicate(root, onPredicate)
 	if err != nil {
 		return extras, missings, commons, err
 	}
 
-	extras = append(extras, substractTriples(locals, remotes)...)
-	missings = append(missings, substractTriples(remotes, locals)...)
-	commons = append(commons, intersectTriples(locals, remotes)...)
+	extras = append(extras, substractTriples(fromTriples, toTriples)...)
+	missings = append(missings, substractTriples(toTriples, fromTriples)...)
+	commons = append(commons, intersectTriples(fromTriples, toTriples)...)
 
 	return extras, missings, commons, nil
 }

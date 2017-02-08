@@ -274,7 +274,7 @@ func TestDiffDisplay(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
-		t.Errorf("got \n%q\n\nwant\n\n%q\n", got, want)
+		t.Errorf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
 	displayer = BuildOptions(
