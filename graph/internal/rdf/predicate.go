@@ -3,16 +3,20 @@ package rdf
 import "github.com/google/badwolf/triple/predicate"
 
 var (
-	ParentOfPredicate *predicate.Predicate
-	HasTypePredicate  *predicate.Predicate
-	DiffPredicate     *predicate.Predicate
-	PropertyPredicate *predicate.Predicate
-	MetaPredicate     *predicate.Predicate
+	ParentOfPredicate  *predicate.Predicate
+	AppliesOnPredicate *predicate.Predicate
+	HasTypePredicate   *predicate.Predicate
+	DiffPredicate      *predicate.Predicate
+	PropertyPredicate  *predicate.Predicate
+	MetaPredicate      *predicate.Predicate
 )
 
 func init() {
 	var err error
 	if ParentOfPredicate, err = predicate.NewImmutable("parent_of"); err != nil {
+		panic(err)
+	}
+	if AppliesOnPredicate, err = predicate.NewImmutable("applies_on"); err != nil {
 		panic(err)
 	}
 	if MetaPredicate, err = predicate.NewImmutable("meta"); err != nil {

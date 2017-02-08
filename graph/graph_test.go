@@ -8,6 +8,45 @@ import (
 	"time"
 )
 
+func TestAddGraphRelation(t *testing.T) {
+
+	t.Run("Add parent", func(t *testing.T) {
+		g := NewGraph()
+		g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text`))
+
+		res, err := g.GetResource(Instance, "inst_1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		g.AddParentRelation(InitResource("subnet_1", Subnet), res)
+
+		exp := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
+/subnet<subnet_1>	"parent_of"@[]	/instance<inst_1>`
+
+		if got, want := g.MustMarshal(), exp; got != want {
+			t.Fatalf("got\n%q\nwant\n%q\n", got, want)
+		}
+	})
+
+	t.Run("Add applies on", func(t *testing.T) {
+		g := NewGraph()
+		g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text`))
+
+		res, err := g.GetResource(Instance, "inst_1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		g.AddAppliesOnRelation(InitResource("subnet_1", Subnet), res)
+
+		exp := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
+/subnet<subnet_1>	"applies_on"@[]	/instance<inst_1>`
+
+		if got, want := g.MustMarshal(), exp; got != want {
+			t.Fatalf("got\n%q\nwant\n%q\n", got, want)
+		}
+	})
+}
+
 func TestGetResource(t *testing.T) {
 	g := NewGraph()
 

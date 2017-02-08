@@ -11,89 +11,103 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+const (
+	PARENT_OF = iota // default
+	APPLIES_ON
+)
+
+type funcBuilder struct {
+	parent              graph.ResourceType
+	fieldName, listName string
+	relation            int
+	must                bool
+}
+
 type addParentFn func(*graph.Graph, interface{}) error
 
 var addParentsFns = map[string][]addParentFn{
-	graph.Vpc.String():             {addRegionParent},
-	graph.Subnet.String():          {addParentWithFieldIfExists(graph.Vpc, "VpcId")},
-	graph.Instance.String():        {addParentWithFieldIfExists(graph.Subnet, "SubnetId"), addParentListWithField(graph.SecurityGroup, "SecurityGroups", "GroupId")},
-	graph.SecurityGroup.String():   {addParentWithFieldMustExist(graph.Vpc, "VpcId")},
-	graph.Keypair.String():         {addRegionParent},
-	graph.InternetGateway.String(): {addRegionParent, addParentListWithField(graph.Vpc, "Attachments", "VpcId")},
-	graph.RouteTable.String():      {addParentListWithField(graph.Subnet, "Associations", "SubnetId"), addParentWithFieldMustExist(graph.Vpc, "VpcId")},
-	graph.User.String():            {addRegionParent, userAddGroupsParents, addManagedPoliciesParents},
-	graph.Role.String():            {addRegionParent, addManagedPoliciesParents},
-	graph.Group.String():           {addRegionParent, addManagedPoliciesParents},
-	graph.Policy.String():          {addRegionParent},
-	graph.Bucket.String():          {addRegionParent},
+	graph.Subnet.String(): {
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
+	},
+	graph.Instance.String(): {
+		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId"}.build(),
+		funcBuilder{parent: graph.SecurityGroup, fieldName: "GroupId", listName: "SecurityGroups", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: graph.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
+	},
+	graph.SecurityGroup.String(): {
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", must: true}.build(),
+	},
+	graph.InternetGateway.String(): {
+		addRegionParent,
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", listName: "Attachments"}.build(),
+	},
+	graph.RouteTable.String(): {
+		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "Associations"}.build(),
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", must: true}.build(),
+	},
+	graph.Vpc.String():     {addRegionParent},
+	graph.Keypair.String(): {addRegionParent},
+	graph.User.String():    {addRegionParent, userAddGroupsParents, addManagedPoliciesParents},
+	graph.Role.String():    {addRegionParent, addManagedPoliciesParents},
+	graph.Group.String():   {addRegionParent, addManagedPoliciesParents},
+	graph.Policy.String():  {addRegionParent},
+	graph.Bucket.String():  {addRegionParent},
 }
 
 var ParentNotFound = errors.New("empty field to add parent")
 
-func addParentWithFieldIfExists(parentT graph.ResourceType, field string) addParentFn {
-	return func(g *graph.Graph, i interface{}) error {
-		err := addParentWithFieldMustExist(parentT, field)(g, i)
-		if err != ParentNotFound {
-			return err
-		}
-		return nil
+func (fb funcBuilder) build() addParentFn {
+	if fb.listName != "" {
+		return fb.addRelationListWithField()
 	}
+
+	return fb.addRelationWithField()
 }
 
-func addParentWithFieldMustExist(parentT graph.ResourceType, field string) addParentFn {
+func (fb funcBuilder) addRelationWithField() addParentFn {
 	return func(g *graph.Graph, i interface{}) error {
-		res, err := initResource(i)
+		structField, err := verifyValidStructField(i, fb.fieldName)
 		if err != nil {
 			return err
 		}
-		value := reflect.ValueOf(i)
-		if value.Kind() != reflect.Ptr {
-			return fmt.Errorf("add parent to %s: %T not a pointer", res.Id(), i)
-		}
-		struc := value.Elem()
-		if struc.Kind() != reflect.Struct {
-			return fmt.Errorf("add parent to %s: %T not a stuct pointer", res.Id(), i)
-		}
 
-		structField := struc.FieldByName(field)
-		if !structField.IsValid() {
-			return fmt.Errorf("add parent to %s: ", field, i)
-		}
 		str, ok := structField.Interface().(*string)
 		if !ok {
-			return fmt.Errorf("add parent to %s: %T not a string pointer", field, structField.Interface())
+			return fmt.Errorf("add parent to %s: %T not a string pointer", fb.fieldName, structField.Interface())
+		}
+
+		res, err := initResource(i)
+		if err != nil {
+			return err
 		}
 
 		if awssdk.StringValue(str) == "" {
-			return ParentNotFound
+			if fb.must {
+				return ParentNotFound
+			} else {
+				return nil
+			}
 		}
-		parent, err := g.GetResource(parentT, awssdk.StringValue(str))
+
+		parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
 		if err != nil {
 			return err
 		}
-		g.AddParent(parent, res)
-		return nil
+
+		return addRelation(g, parent, res, fb.relation)
 	}
 }
 
-func addParentListWithField(parentT graph.ResourceType, listField, parentField string) addParentFn {
+func (fb funcBuilder) addRelationListWithField() addParentFn {
 	return func(g *graph.Graph, i interface{}) error {
-		res, err := initResource(i)
+		structField, err := verifyValidStructField(i, fb.listName)
 		if err != nil {
 			return err
 		}
-		value := reflect.ValueOf(i)
-		if value.Kind() != reflect.Ptr {
-			return fmt.Errorf("add parent to %s: %T not a pointer", res.Id(), i)
-		}
-		struc := value.Elem()
-		if struc.Kind() != reflect.Struct {
-			return fmt.Errorf("add parent to %s: %T not a struct pointer", res.Id(), i)
-		}
 
-		structField := struc.FieldByName(listField)
-		if !structField.IsValid() {
-			return fmt.Errorf("add parent to %s: %T not a struct field", structField, i)
+		res, err := initResource(i)
+		if err != nil {
+			return err
 		}
 
 		if !structField.IsValid() || structField.Kind() != reflect.Slice {
@@ -109,7 +123,7 @@ func addParentListWithField(parentT graph.ResourceType, listField, parentField s
 			if listStruc.Kind() != reflect.Struct {
 				return fmt.Errorf("add parent to %s: not a struct: %s", res.Id(), listStruc.Kind())
 			}
-			listStructField := listStruc.FieldByName(parentField)
+			listStructField := listStruc.FieldByName(fb.fieldName)
 			if !listStructField.IsValid() {
 				return fmt.Errorf("add parent to %s: unknown field %s in %T", listStructField, i)
 			}
@@ -121,14 +135,47 @@ func addParentListWithField(parentT graph.ResourceType, listField, parentField s
 			if awssdk.StringValue(str) == "" {
 				continue
 			}
-			parent, err := g.GetResource(parentT, awssdk.StringValue(str))
+			parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
 			if err != nil {
 				return err
 			}
-			g.AddParent(parent, res)
+
+			if err = addRelation(g, parent, res, fb.relation); err != nil {
+				return err
+			}
 		}
 		return nil
 	}
+}
+
+func verifyValidStructField(i interface{}, name string) (reflect.Value, error) {
+	value := reflect.ValueOf(i)
+	if value.Kind() != reflect.Ptr {
+		return reflect.Value{}, fmt.Errorf("%T not a pointer", i)
+	}
+	struc := value.Elem()
+	if struc.Kind() != reflect.Struct {
+		return reflect.Value{}, fmt.Errorf("%T not a stuct pointer", i)
+	}
+
+	structField := struc.FieldByName(name)
+	if !structField.IsValid() {
+		return reflect.Value{}, fmt.Errorf("invalid field %s: ", name)
+	}
+
+	return structField, nil
+}
+
+func addRelation(g *graph.Graph, first, other *graph.Resource, relation int) error {
+	switch relation {
+	case PARENT_OF:
+		g.AddParentRelation(first, other)
+	case APPLIES_ON:
+		g.AddAppliesOnRelation(first, other)
+	default:
+		return errors.New("unknown relation type")
+	}
+	return nil
 }
 
 func addRegionParent(g *graph.Graph, i interface{}) error {
@@ -144,7 +191,7 @@ func addRegionParent(g *graph.Graph, i interface{}) error {
 	if err != nil {
 		return err
 	}
-	g.AddParent(regionN, res)
+	g.AddParentRelation(regionN, res)
 	return nil
 }
 
@@ -182,7 +229,7 @@ func addManagedPoliciesParents(g *graph.Graph, i interface{}) error {
 		if err != nil {
 			return err
 		}
-		g.AddParent(parent, res)
+		g.AddParentRelation(parent, res)
 	}
 	return nil
 }
@@ -202,7 +249,7 @@ func userAddGroupsParents(g *graph.Graph, i interface{}) error {
 		if err != nil {
 			return err
 		}
-		g.AddParent(parent, n)
+		g.AddParentRelation(parent, n)
 	}
 	return nil
 }

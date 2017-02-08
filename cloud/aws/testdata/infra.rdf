@@ -14,6 +14,7 @@
 /instance<inst_3>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
 /instance<inst_4>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"Id","Value":"inst_4"}"^^type:text
+/instance<inst_4>	"property"@[]	"{"Key":"KeyName","Value":"my_key_pair"}"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"SecurityGroups","Value":["secgroup_1","secgroup_2"]}"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"SubnetId","Value":"sub_3"}"^^type:text
 /instance<inst_4>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
@@ -22,6 +23,7 @@
 /internetgateway<igw_1>	"has_type"@[]	"/internetgateway"^^type:text
 /internetgateway<igw_1>	"property"@[]	"{"Key":"Id","Value":"igw_1"}"^^type:text
 /internetgateway<igw_1>	"property"@[]	"{"Key":"Vpcs","Value":["vpc_2"]}"^^type:text
+/keypair<my_key_pair>	"applies_on"@[]	/instance<inst_4>
 /keypair<my_key_pair>	"has_type"@[]	"/keypair"^^type:text
 /keypair<my_key_pair>	"property"@[]	"{"Key":"Id","Value":"my_key_pair"}"^^type:text
 /keypair<my_key_pair>	"property"@[]	"{"Key":"Name","Value":"my_key_pair"}"^^type:text
@@ -34,14 +36,14 @@
 /routetable<rt_1>	"property"@[]	"{"Key":"Id","Value":"rt_1"}"^^type:text
 /routetable<rt_1>	"property"@[]	"{"Key":"Main","Value":false}"^^type:text
 /routetable<rt_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
+/securitygroup<secgroup_1>	"applies_on"@[]	/instance<inst_2>
+/securitygroup<secgroup_1>	"applies_on"@[]	/instance<inst_4>
 /securitygroup<secgroup_1>	"has_type"@[]	"/securitygroup"^^type:text
-/securitygroup<secgroup_1>	"parent_of"@[]	/instance<inst_2>
-/securitygroup<secgroup_1>	"parent_of"@[]	/instance<inst_4>
 /securitygroup<secgroup_1>	"property"@[]	"{"Key":"Id","Value":"secgroup_1"}"^^type:text
 /securitygroup<secgroup_1>	"property"@[]	"{"Key":"Name","Value":"my_secgroup"}"^^type:text
 /securitygroup<secgroup_1>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
+/securitygroup<secgroup_2>	"applies_on"@[]	/instance<inst_4>
 /securitygroup<secgroup_2>	"has_type"@[]	"/securitygroup"^^type:text
-/securitygroup<secgroup_2>	"parent_of"@[]	/instance<inst_4>
 /securitygroup<secgroup_2>	"property"@[]	"{"Key":"Id","Value":"secgroup_2"}"^^type:text
 /securitygroup<secgroup_2>	"property"@[]	"{"Key":"VpcId","Value":"vpc_1"}"^^type:text
 /subnet<sub_1>	"has_type"@[]	"/subnet"^^type:text

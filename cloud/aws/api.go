@@ -179,7 +179,7 @@ func (s *Storage) fetchObjectsForBucket(bucket *s3.Bucket, g *graph.Graph) error
 		if err != nil {
 			return err
 		}
-		g.AddParent(parent, res)
+		g.AddParentRelation(parent, res)
 	}
 
 	return nil

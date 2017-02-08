@@ -3,6 +3,7 @@ package graph
 import (
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
+	"github.com/google/badwolf/triple/predicate"
 	"github.com/wallix/awless/graph/internal/rdf"
 )
 
@@ -35,37 +36,12 @@ func (g *Graph) AddGraph(graph *Graph) {
 	g.rdfG.AddGraph(graph.rdfG)
 }
 
-func (g *Graph) AddParent(parent, child *Resource) error {
-	n, err := child.toRDFNode()
-	if err != nil {
-		return err
-	}
-
-	parentN, err := node.NewNodeFromStrings(parent.Type().ToRDFString(), parent.Id())
-	if err != nil {
-		return err
-	}
-
-	t, err := triple.New(parentN, rdf.ParentOfPredicate, triple.NewNodeObject(n))
-	if err != nil {
-		return err
-	}
-
-	g.rdfG.Add(t)
-
-	return nil
+func (g *Graph) AddParentRelation(parent, child *Resource) error {
+	return g.addRelation(parent, child, rdf.ParentOfPredicate)
 }
 
-func (g *Graph) Unmarshal(data []byte) error {
-	return g.rdfG.Unmarshal(data)
-}
-
-func (g *Graph) MustMarshal() string {
-	return g.rdfG.MustMarshal()
-}
-
-func (g *Graph) Marshal() ([]byte, error) {
-	return g.rdfG.Marshal()
+func (g *Graph) AddAppliesOnRelation(parent, child *Resource) error {
+	return g.addRelation(parent, child, rdf.AppliesOnPredicate)
 }
 
 func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
@@ -193,4 +169,37 @@ func (g *Graph) CountChildrenForNode(res *Resource) (int, error) {
 		return 0, err
 	}
 	return g.rdfG.CountTriplesForSubjectAndPredicate(n, rdf.ParentOfPredicate)
+}
+
+func (g *Graph) Unmarshal(data []byte) error {
+	return g.rdfG.Unmarshal(data)
+}
+
+func (g *Graph) MustMarshal() string {
+	return g.rdfG.MustMarshal()
+}
+
+func (g *Graph) Marshal() ([]byte, error) {
+	return g.rdfG.Marshal()
+}
+
+func (g *Graph) addRelation(one, other *Resource, pred *predicate.Predicate) error {
+	n, err := other.toRDFNode()
+	if err != nil {
+		return err
+	}
+
+	oneN, err := node.NewNodeFromStrings(one.Type().ToRDFString(), one.Id())
+	if err != nil {
+		return err
+	}
+
+	t, err := triple.New(oneN, pred, triple.NewNodeObject(n))
+	if err != nil {
+		return err
+	}
+
+	g.rdfG.Add(t)
+
+	return nil
 }
