@@ -11,7 +11,7 @@ There is no need to edit manually any line of JSON, deal with policies, etc.
 
 - Clear and easy listing of cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
-- Explore a resource given only an *id*. Its properties, relations, dependencies, etc ...: `awless show`
+- Explore a resource given only an *id* or name (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI onliner (integrated in our awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy listing or revert of resources creation: `awless revert`
@@ -20,7 +20,7 @@ There is no need to edit manually any line of JSON, deal with policies, etc.
 
 # Design concepts
 
-1. [RDF](https://www.w3.org/TR/rdf11-concepts/) is used internally to synced and modeled cloud resources locally. This permits a good flexibility in modeling while still allowing for DAG (Directed Acyclic Graph) properties and classic graph/tree traversal.
+1. [RDF](https://www.w3.org/TR/rdf11-concepts/) is used internally to sync and model cloud resources locally. This permits a good flexibility in modeling while still allowing for DAG (Directed Acyclic Graph) properties and classic graph/tree traversal.
 2. Awless templates define a basic DSL (Domain Specific Language) for managing cloud resources. Templates are parsed against a [PEG (parsing expression grammar)](https://en.wikipedia.org/wiki/Parsing_expression_grammar) allowing for robust parsing, AST building/validation and execution of this AST through given official cloud drivers (ex: aws-sdk-go for AWS). More details on awless templates on the [wiki](https://github.com/wallix/awless/wiki/Templates).
 
 # Install
@@ -29,7 +29,7 @@ Choose one of the following options:
 
 1. Download the latest `awless` executable (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
 2. Build the source with Go: Run `go get github.com/wallix/awless` (if `go` is already installed, on Windows/Linux/macOS)
-3. On macOS, use [homebrew](http://brew.sh):  `brew install awless`
+<!--- 3. On macOS, use [homebrew](http://brew.sh):  `brew install awless` -->
 
 # Getting started
 
@@ -40,7 +40,7 @@ You basically need your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` exported
 If you have previously used `aws` CLI or `aws-shell`, you don't need to do anything! Your credentials will be automatically loaded by `awless` from the `~/.aws/credentials` folder.
 
 Otherwise, get your AWS credentials from [IAM console](https://console.aws.amazon.com/iam/home?#home).
-Then, you can either download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws\credentials` (Windows).
+Then, you can download and store them to `~/.aws/credentials` (Unix) or `%UserProfile%\.aws\credentials` (Windows).
 
 For more options, see [Installation (wiki)](https://github.com/wallix/awless/wiki/Installation#setup-your-aws-account-with-awless).
 
