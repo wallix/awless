@@ -41,7 +41,10 @@ func InitAwlessEnv() error {
 		region = resolveRegion()
 		addDefaults(region)
 	} else {
-		db, close := database.Current()
+		db, err, close := database.Current()
+		if err != nil {
+			return fmt.Errorf("init env: database error: ", err)
+		}
 		defer close()
 		region = db.MustGetDefaultRegion()
 	}
@@ -94,7 +97,10 @@ func addDefaults(region string) error {
 		database.InstanceImageKey: "ami-9398d3e0",
 		database.InstanceCountKey: 1,
 	}
-	db, close := database.Current()
+	db, err, close := database.Current()
+	if err != nil {
+		return fmt.Errorf("database error: ", err)
+	}
 	defer close()
 	for k, v := range defaults {
 		err := db.SetDefault(k, v)

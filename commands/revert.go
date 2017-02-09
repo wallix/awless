@@ -45,8 +45,9 @@ var revertCmd = &cobra.Command{
 			exitOn(err)
 
 			if strings.TrimSpace(yesorno) == "y" {
-				db, dbclose := database.Current()
-				err := db.DeleteTemplateExecutions()
+				db, err, dbclose := database.Current()
+				exitOn(err)
+				err = db.DeleteTemplateExecutions()
 				dbclose()
 				exitOn(err)
 			}
@@ -55,7 +56,8 @@ var revertCmd = &cobra.Command{
 		}
 
 		if revertFromIdFlag != "" {
-			db, dbclose := database.Current()
+			db, err, dbclose := database.Current()
+			exitOn(err)
 			tplExec, err := db.GetTemplateExecution(revertFromIdFlag)
 			dbclose()
 			exitOn(err)
@@ -73,7 +75,8 @@ var revertCmd = &cobra.Command{
 }
 
 func listHistory() {
-	db, dbclose := database.Current()
+	db, err, dbclose := database.Current()
+	exitOn(err)
 	all, err := db.ListTemplateExecutions()
 	dbclose()
 	exitOn(err)

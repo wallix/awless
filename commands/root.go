@@ -35,10 +35,10 @@ func ExecuteRoot() error {
 	err := RootCmd.Execute()
 
 	if err != nil {
-		db, dbclose := database.Current()
-		defer dbclose()
-		if db != nil {
+		db, err, dbclose := database.Current()
+		if err == nil && db != nil {
 			db.AddLog(err.Error())
+			dbclose()
 		}
 	}
 

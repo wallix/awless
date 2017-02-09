@@ -9,9 +9,9 @@ import (
 
 func exitOn(err error) {
 	if err != nil {
-		db, close := database.Current()
-		defer close()
-		if db != nil {
+		db, dberr, close := database.Current()
+		if dberr == nil && db != nil {
+			defer close()
 			db.AddLog(err.Error())
 		}
 		fmt.Fprintln(os.Stderr, "Error:", err)

@@ -3,6 +3,7 @@ package database
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -23,21 +24,27 @@ type DB struct {
 	bolt *bolt.DB
 }
 
-func Current() (*DB, func()) {
+func MustGetCurrent() (*DB, func()) {
+	db, err, close := Current()
+	if err != nil {
+		panic(err)
+	}
+	return db, close
+}
+
+func Current() (*DB, error, func()) {
 	awlessHome := os.Getenv("__AWLESS_HOME")
 	if awlessHome == "" {
-		fmt.Fprintf(os.Stderr, "database: awless home is not set\n")
-		os.Exit(-1)
+		return nil, errors.New("database: awless home is not set"), nil
 	}
 	db, err := open(filepath.Join(awlessHome, databaseFilename))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "database: %s\n", err)
-		os.Exit(-1)
+		return nil, err, nil
 	}
 	todefer := func() {
 		db.Close()
 	}
-	return db, todefer
+	return db, nil, todefer
 }
 
 func open(path string) (*DB, error) {
@@ -50,10 +57,10 @@ func open(path string) (*DB, error) {
 }
 
 func InitDB(firstInstall bool) error {
-	db, closing := Current()
+	db, err, closing := Current()
 	defer closing()
-	if db == nil {
-		return fmt.Errorf("database: empty current database")
+	if err != nil {
+		return fmt.Errorf("database init: %s", err)
 	}
 	id, err := db.GetStringValue(AwlessIdKey)
 	if err != nil || id == "" {

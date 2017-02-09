@@ -36,7 +36,7 @@ func newTestDb() (*database.DB, func()) {
 	os.Setenv("__AWLESS_HOME", f)
 
 	database.InitDB(true)
-	db, closing := database.Current()
+	db, closing := database.MustGetCurrent()
 
 	todefer := func() {
 		closing()

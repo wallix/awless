@@ -33,7 +33,8 @@ var configListCmd = &cobra.Command{
 	Short: "List all configuration values",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		db, close := database.Current()
+		db, err, close := database.Current()
+		exitOn(err)
 		defer close()
 		d, err := db.GetDefaults()
 		exitOn(err)
@@ -55,7 +56,8 @@ var configGetCmd = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("not enough parameters")
 		}
-		db, close := database.Current()
+		db, err, close := database.Current()
+		exitOn(err)
 		defer close()
 		d, ok := db.GetDefault(args[0])
 		if !ok {
@@ -109,7 +111,8 @@ var configSetCmd = &cobra.Command{
 			i = value
 		}
 
-		db, close := database.Current()
+		db, err, close := database.Current()
+		exitOn(err)
 		defer close()
 		exitOn(db.SetDefault(key, i))
 
@@ -125,7 +128,8 @@ var configUnsetCmd = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("not enough parameters")
 		}
-		db, close := database.Current()
+		db, err, close := database.Current()
+		exitOn(err)
 		defer close()
 		_, ok := db.GetDefault(args[0])
 		if !ok {

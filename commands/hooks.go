@@ -61,14 +61,19 @@ func initLoggerHook(cmd *cobra.Command, args []string) error {
 }
 
 func saveHistoryHook(cmd *cobra.Command, args []string) error {
-	db, close := database.Current()
-	defer close()
-	db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+	db, err, close := database.Current()
+	if err == nil && db != nil {
+		db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
+		defer close()
+	}
 	return nil
 }
 
 func checkStatsHook(cmd *cobra.Command, args []string) error {
-	db, dbclose := database.Current()
+	db, err, dbclose := database.Current()
+	if err != nil {
+		return nil
+	}
 	statsToSend := stats.CheckStatsToSend(db)
 	dbclose()
 
@@ -77,7 +82,10 @@ func checkStatsHook(cmd *cobra.Command, args []string) error {
 			localInfra := sync.LoadCurrentLocalGraph(aws.InfraService.Name())
 			localAccess := sync.LoadCurrentLocalGraph(aws.AccessService.Name())
 
-			db, dbclose := database.Current()
+			db, dberr, dbclose := database.Current()
+			if dberr != nil {
+				return
+			}
 			if err := stats.SendStats(db, localInfra, localAccess); err != nil {
 				db.AddLog(err.Error())
 			}

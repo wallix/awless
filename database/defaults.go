@@ -18,7 +18,7 @@ const (
 type defaults map[string]interface{}
 
 func MustGetDefaultRegion() string {
-	db, close := Current()
+	db, close := MustGetCurrent()
 	defer close()
 	return db.MustGetDefaultRegion()
 }

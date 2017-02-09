@@ -100,7 +100,8 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		fmt.Println()
 		printReport(executed)
 
-		db, close := database.Current()
+		db, err, close := database.Current()
+		exitOn(err)
 		defer close()
 
 		db.AddTemplateExecution(executed)
@@ -191,7 +192,8 @@ func runSync(entities []string) {
 }
 
 func getCurrentDefaults() map[string]interface{} {
-	db, dbclose := database.Current()
+	db, err, dbclose := database.Current()
+	exitOn(err)
 	defaults, err := db.GetDefaults()
 	exitOn(err)
 	dbclose()
