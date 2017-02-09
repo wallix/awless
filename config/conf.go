@@ -35,11 +35,13 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	var region string
+
 	if AwlessFirstInstall {
-		fmt.Println("First install. Welcome!")
-		fmt.Println()
-		region = resolveRegion()
-		addDefaults(region)
+		fmt.Println("First install. Welcome!\n")
+		region, err = resolveAndSetDefaults()
+		if err != nil {
+			return err
+		}
 	} else {
 		db, err, close := database.Current()
 		if err != nil {
@@ -54,7 +56,9 @@ func InitAwlessEnv() error {
 	return nil
 }
 
-func resolveRegion() (region string) {
+func resolveAndSetDefaults() (string, error) {
+	var region, ami string
+
 	if sess, err := session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}); err == nil {
 		region = awssdk.StringValue(sess.Config.Region)
 	}
@@ -64,14 +68,46 @@ func resolveRegion() (region string) {
 		fmt.Println("Setting it as your default region.")
 		fmt.Println("Show config with `awless config list`. Change region with `awless config set region`")
 		fmt.Println()
-		return
+	} else {
+		fmt.Println("Could not find any AWS region in your environment.")
+		region = askRegion()
 	}
 
-	fmt.Println("Could not find any AWS region in your environment.")
+	var hasAMI bool
+	if ami, hasAMI = amiPerRegion[region]; !hasAMI {
+		fmt.Printf("Could not find a default ami for your region %s\n. Set it manually with `awless config set region ...`", region)
+	}
 
-	region = askRegion()
+	defaults := map[string]interface{}{
+		database.SyncAuto:         true,
+		database.RegionKey:        region,
+		database.InstanceTypeKey:  "t1.micro",
+		database.InstanceCountKey: 1,
+	}
 
-	return
+	if hasAMI {
+		defaults[database.InstanceImageKey] = ami
+	}
+
+	db, err, close := database.Current()
+	if err != nil {
+		return region, fmt.Errorf("database error: ", err)
+	}
+	defer close()
+	for k, v := range defaults {
+		err := db.SetDefault(k, v)
+		if err != nil {
+			return region, err
+		}
+	}
+
+	fmt.Println("\nThose defaults have been set in your config (manage them with `awless config`):")
+	for k, v := range defaults {
+		fmt.Printf("\t%s = %v\n", k, v)
+	}
+	fmt.Println("\nAll done. Enjoy!\n")
+
+	return region, nil
 }
 
 func askRegion() string {
@@ -89,24 +125,13 @@ func askRegion() string {
 	return region
 }
 
-func addDefaults(region string) error {
-	defaults := map[string]interface{}{
-		database.SyncAuto:         true,
-		database.RegionKey:        region,
-		database.InstanceTypeKey:  "t2.micro",
-		database.InstanceImageKey: "ami-9398d3e0",
-		database.InstanceCountKey: 1,
-	}
-	db, err, close := database.Current()
-	if err != nil {
-		return fmt.Errorf("database error: ", err)
-	}
-	defer close()
-	for k, v := range defaults {
-		err := db.SetDefault(k, v)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+var amiPerRegion = map[string]string{
+  "us-east-1"      : "ami-1b814f72",
+  "us-west-2"      : "ami-30fe7300",
+  "us-west-1"      : "ami-11d68a54",
+  "eu-west-1"      : "ami-973b06e3",
+  "ap-southeast-1" : "ami-b4b0cae6",
+  "ap-southeast-2" : "ami-b3990e89",
+  "ap-northeast-1" : "ami-0644f007",
+  "sa-east-1"      : "ami-3e3be423",
 }

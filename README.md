@@ -17,12 +17,13 @@
 - Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
 - Explore a resource given only an *id* or name (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
-- Powerful CRUD CLI onliner (integrated in our awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
+- Powerful CRUD CLI onliner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
-- A local history and versioning of the changes that occurred in your cloud: `awless history`
+- Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
+- (in progress) A local history and versioning of the changes that occurred in your cloud: `awless history`
 
 # Design concepts
 
@@ -96,19 +97,21 @@ You can also run an `awless` template from a predefined template file with:
 
     awless run awless-templates/create_instance_ssh.awless
 
+In each case, the CLI guide you through any running of a template (file template or oneliner) so you always have the chance to confirm or quit.
+
 Note that you can get inspired with pre-existing templates from the dedicated git repository: https://github.com/wallix/awless-templates. See [templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more details about `awless` templates.
 
-### Reverting commands
+### Log & revert executed template commands
 
-Each `awless` command that changes the cloud infrastructure is associated with an unique *id* referencing the (un)successful actions.
+To list a detailled account of the last actions you have run on your cloud:
 
-To list the last actions you have run on your cloud, run
+    awless log
 
-    awless revert -l
+Each `awless` command that changes the cloud infrastructure is associated with an unique *id* referencing the (un)successful actions. Using this id you can revert a executed template with:
 
-Then, you can revert a command with
+    awless revert 01B89ZY529E5D7WKDTQHFC0RPA
 
-    awless revert -i 01B89ZY529E5D7WKDTQHFC0RPA # for now, revert only resource creations
+The CLI guide you through a revert action and you have the chance to confirm or quit.
 
 ### SSH
 
