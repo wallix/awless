@@ -11,17 +11,17 @@ There is no need to edit manually any line of JSON, deal with policies, etc.
 
 - Clear and easy listing of cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
-- Explore a resource with only an *id*. Its properties, dependencies, etc ...: `awless show`
-- Creation, update and deletion of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
+- Explore a resource given only an *id*. Its properties, relations, dependencies, etc ...: `awless show`
+- Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI onliner (integrated in our awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy listing or revert of resources creation: `awless revert`
-- A local history and versioning of the changes that occurred: `awless history`
+- A local history and versioning of the changes that occurred in your cloud: `awless history`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 
 # Design concepts
 
-1. [RDF](https://www.w3.org/TR/rdf11-concepts/) is used internally to fetched, synced and modeled cloud resources. This permits a good flexibility in modeling while still allowing for DAG (Directed Acyclic Graph) properties and classic graph or tree traversal.
-2. Awless templates are parsed against a [PEG (parsing expression grammar)](https://en.wikipedia.org/wiki/Parsing_expression_grammar). As a cloud resource DSL (Domain specific language), this allows for robust parsing, AST building/validation and execution of this AST through given official cloud drivers (ex: aws-sdk-go for AWS). More details on awless templates on the [wiki](https://github.com/wallix/awless/wiki/Templates).
+1. [RDF](https://www.w3.org/TR/rdf11-concepts/) is used internally to synced and modeled cloud resources locally. This permits a good flexibility in modeling while still allowing for DAG (Directed Acyclic Graph) properties and classic graph/tree traversal.
+2. Awless templates define a basic DSL (Domain Specific Language) for managing cloud resources. Templates are parsed against a [PEG (parsing expression grammar)](https://en.wikipedia.org/wiki/Parsing_expression_grammar) allowing for robust parsing, AST building/validation and execution of this AST through given official cloud drivers (ex: aws-sdk-go for AWS). More details on awless templates on the [wiki](https://github.com/wallix/awless/wiki/Templates).
 
 # Install
 
@@ -49,6 +49,12 @@ For more options, see [Installation (wiki)](https://github.com/wallix/awless/wik
 Awless has commands, subcommands and flag completion. It becomes really useful for CRUD onliner when managing resources for example.
 
 Read the wiki page for setting autocompletion for [bash](https://github.com/wallix/awless/wiki/Setup-Autocomplete#bash) or [zsh](https://github.com/wallix/awless/wiki/Setup-Autocomplete#zsh).
+
+## Disclaimer
+
+Awless allows for easy resource creation with your cloud provider; We will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
+
+We also collect a few anonymous data (CLI errors, most frequently used commands and count of resources).
 
 ## First `awless` commands
 
@@ -84,7 +90,7 @@ You can also run an `awless` template from a predefined template file with:
 
     awless run awless-templates/create_instance_ssh.awless
 
-Note that you can get inspired with preexisting templates from the dedicated git repository: https://github.com/wallix/awless-templates. See [templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more details about `awless` templates.
+Note that you can get inspired with pre-existing templates from the dedicated git repository: https://github.com/wallix/awless-templates. See [templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more details about `awless` templates.
 
 ### Reverting commands
 
