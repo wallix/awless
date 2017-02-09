@@ -122,6 +122,25 @@ func runFullSync() map[string]*graph.Graph {
 }
 
 func findResourceInLocalGraphs(id string) (*graph.Resource, *graph.Graph) {
+	if strings.HasPrefix(id, "@") {
+		name := id[1:]
+		resources := findResourcesByNameInLocalGraphs(name)
+		switch len(resources) {
+		case 0:
+			return nil, nil
+		case 1:
+			res := resources[0]
+			return res, sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[res.Type().String()])
+		default:
+			var resourcesStr []string
+			for _, res := range resources {
+				resourcesStr = append(resourcesStr, fmt.Sprintf("%s[%s]", res.Id(), res.Type()))
+			}
+			logger.Infof("%d resources found with the name '%s': %s", len(resources), name, strings.Join(resourcesStr, ", "))
+			logger.Info("Show them using their id")
+			os.Exit(0)
+		}
+	}
 	for _, name := range aws.ServiceNames {
 		g := sync.LoadCurrentLocalGraph(name)
 		localRes, err := g.FindResource(id)
@@ -141,4 +160,15 @@ func printResourceList(title string, list []*graph.Resource) {
 	if len(all) > 0 {
 		fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
 	}
+}
+
+func findResourcesByNameInLocalGraphs(name string) []*graph.Resource {
+	var res []*graph.Resource
+	for _, s := range aws.ServiceNames {
+		g := sync.LoadCurrentLocalGraph(s)
+		localRes, err := g.FindResourcesByProperty("Name", name)
+		exitOn(err)
+		res = append(res, localRes...)
+	}
+	return res
 }
