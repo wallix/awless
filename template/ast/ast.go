@@ -28,6 +28,39 @@ func (s *Statement) clone() *Statement {
 	return newStat
 }
 
+func (s *Statement) Action() string {
+	switch n := s.Node.(type) {
+	case *ExpressionNode:
+		return n.Action
+	case *DeclarationNode:
+		return n.Right.Action
+	default:
+		panic(fmt.Sprintf("unknown type of node %T", s.Node))
+	}
+}
+
+func (s *Statement) Entity() string {
+	switch n := s.Node.(type) {
+	case *ExpressionNode:
+		return n.Entity
+	case *DeclarationNode:
+		return n.Right.Entity
+	default:
+		panic(fmt.Sprintf("unknown type of node %T", s.Node))
+	}
+}
+
+func (s *Statement) Params() map[string]interface{} {
+	switch n := s.Node.(type) {
+	case *ExpressionNode:
+		return n.Params
+	case *DeclarationNode:
+		return n.Right.Params
+	default:
+		panic(fmt.Sprintf("unknown type of node %T", s.Node))
+	}
+}
+
 type AST struct {
 	Statements []*Statement
 

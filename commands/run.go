@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	awscloud "github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/cloud/aws/validation"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
@@ -80,6 +81,17 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 
 	if verboseFlag {
 		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
+	}
+
+	for _, st := range templ.Statements {
+		if validators, ok := validation.ValidatorsPerActions[st.Action()]; ok {
+			graph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[st.Entity()])
+			for _, v := range validators {
+				if err := v.Validate(graph, st.Params()); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	_, err := templ.Compile(awsDriver)
@@ -157,7 +169,8 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				templ.ResolveTemplate(expr.Params)
 				templ.MergeParams(expr.Params)
 
-				return runTemplate(templ, getCurrentDefaults())
+				exitOn(runTemplate(templ, getCurrentDefaults()))
+				return nil
 			}
 		}
 

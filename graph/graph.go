@@ -87,6 +87,28 @@ func (g *Graph) FindResource(id string) (*Resource, error) {
 	return nil, nil
 }
 
+func (g *Graph) FindResourcesByProperty(key string, value interface{}) ([]*Resource, error) {
+	var res []*Resource
+	prop := Property{Key: key, Value: value}
+	propL, err := prop.marshalRDF()
+	if err != nil {
+		return res, err
+	}
+	triples, err := g.rdfG.TriplesForPredicateObject(rdf.PropertyPredicate, propL)
+	if err != nil {
+		return res, err
+	}
+	for _, t := range triples {
+		s := t.Subject()
+		r, err := g.GetResource(newResourceType(s), s.ID().String())
+		if err != nil {
+			return res, err
+		}
+		res = append(res, r)
+	}
+	return res, nil
+}
+
 func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
 	var res []*Resource
 	nodes, err := g.rdfG.NodesForType(t.ToRDFString())

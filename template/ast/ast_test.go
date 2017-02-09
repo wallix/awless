@@ -45,3 +45,34 @@ func TestCloneAST(t *testing.T) {
 		t.Fatalf("\ngot %s\n\nwant %s", got, want)
 	}
 }
+
+func TestGetStatementAttributes(t *testing.T) {
+	params := map[string]interface{}{"count": 1}
+	st := &Statement{Node: &DeclarationNode{
+		Left: &IdentifierNode{},
+		Right: &ExpressionNode{
+			Action: "create", Entity: "vpc", Params: params,
+		}}}
+	if got, want := st.Action(), "create"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := st.Entity(), "vpc"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := st.Params(), params; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	st = &Statement{Node: &ExpressionNode{
+		Action: "delete", Entity: "subnet", Params: params,
+	}}
+	if got, want := st.Action(), "delete"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := st.Entity(), "subnet"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := st.Params(), params; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}

@@ -74,7 +74,8 @@ func TestGetResource(t *testing.T) {
 	}
 }
 
-func TestFindResource(t *testing.T) {
+func TestFindResources(t *testing.T) {
+	t.Parallel()
 	g := NewGraph()
 
 	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
@@ -82,29 +83,66 @@ func TestFindResource(t *testing.T) {
   /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
   /instance<inst_2>  "has_type"@[] "/instance"^^type:text
   /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-  /subnet<sub_1>  "has_type"@[] "/subnet"^^type:text`))
+  /subnet<sub_1>  "has_type"@[] "/subnet"^^type:text
+  /subnet<sub_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text`))
 
-	res, err := g.FindResource("inst_1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := res.Properties["Name"], "redis"; got != want {
-		t.Fatalf("got %s want %s", got, want)
-	}
+	t.Run("FindResource", func(t *testing.T) {
+		t.Parallel()
+		res, err := g.FindResource("inst_1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := res.Properties["Name"], "redis"; got != want {
+			t.Fatalf("got %s want %s", got, want)
+		}
 
-	if res, err = g.FindResource("none"); err != nil {
-		t.Fatal(err)
-	}
-	if res != nil {
-		t.Fatalf("expected nil got %v", res)
-	}
+		if res, err = g.FindResource("none"); err != nil {
+			t.Fatal(err)
+		}
+		if res != nil {
+			t.Fatalf("expected nil got %v", res)
+		}
 
-	if res, err = g.FindResource("sub_1"); err != nil {
-		t.Fatal(err)
-	}
-	if got, want := res.Type().String(), "subnet"; got != want {
-		t.Fatalf("got %s want %s", got, want)
-	}
+		if res, err = g.FindResource("sub_1"); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := res.Type().String(), "subnet"; got != want {
+			t.Fatalf("got %s want %s", got, want)
+		}
+	})
+	t.Run("FindResourcesByProperty", func(t *testing.T) {
+		t.Parallel()
+		res, err := g.FindResourcesByProperty("Id", "inst_1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected := []*Resource{
+			{id: "inst_1", kind: Instance, Properties: map[string]interface{}{"Id": interface{}("inst_1"), "Name": interface{}("redis")}, Meta: make(Properties)},
+		}
+		if got, want := len(res), len(expected); got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+		if got, want := res[0], expected[0]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %+v want %+v", got, want)
+		}
+		res, err = g.FindResourcesByProperty("Name", "redis")
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected = []*Resource{
+			{id: "inst_1", kind: Instance, Properties: map[string]interface{}{"Id": "inst_1", "Name": "redis"}, Meta: make(Properties)},
+			{id: "sub_1", kind: Subnet, Properties: map[string]interface{}{"Name": "redis"}, Meta: make(Properties)},
+		}
+		if got, want := len(res), len(expected); got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+		if got, want := res[0], expected[0]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %T want %T", got, want)
+		}
+		if got, want := res[1], expected[1]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %+v want %+v", got, want)
+		}
+	})
 }
 
 func TestGetAllResources(t *testing.T) {
