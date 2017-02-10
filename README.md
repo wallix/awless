@@ -2,9 +2,13 @@
 
 # Why awless
 
-`awless` has been created with the idea to run frequent actions easily by using simple commands, smart defaults, security best practices and runnable/scriptable templates for resource creations (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates)).
+`awless` has been created with the idea to:
 
-There is no need to edit manually any line of JSON, deal with policies, etc.
+- run frequent actions easily by using simple commands
+- explore easily your infrastructure and cloud resources inter relations via CLI
+- ensure smart defaults & security best practices
+- manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
+
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
 
 # Overview
@@ -16,6 +20,7 @@ There is no need to edit manually any line of JSON, deal with policies, etc.
 - Powerful CRUD CLI onliner (integrated in our awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy listing or revert of resources creation: `awless revert`
 - A local history and versioning of the changes that occurred in your cloud: `awless history`
+- Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 
 # Design concepts
@@ -117,8 +122,34 @@ In the first case, note that `awless` can work out the default ssh user to use g
 
 When it makes sense we provide the concept of *alias*. Cloud resources ids can be a bit cryptic. An alias is just an already existing name of a resource. Given a alias we resolve the proper resource id. For instance:
 
-        $ awless ssh my-instance         # ssh to the instance using its name. Behind the scene awless resolve the id
+        $ awless ssh my-instance         # ssh to the instance by name. awless resolves its id
         $ awless delete id=@my-instance  # delete an instance using its name
+
+### Inspectors
+
+Inspectors are small CLI utilities that leverage `awless` graph modeling of cloud resources. Basically an inspector is a program that implements the following interface:
+
+```go
+type Inspector interface {
+    Inspect(...*graph.Graph) error
+    Print(io.Writer)
+    Name() string            # name of the inspector
+    Services() []string      # name of the services (ec2, iam, s3, ...) the inspector operates on
+}
+```
+
+Using `awless` cloud resources local synchronisation functionality, you can analyse your data offline (i.e: on your local graphs). There are some builtin inspectors that serve as examples: `pricer`, `bucket_sizer`, etc...
+
+For example, you would run the `bucket_sizer` inspector with:
+
+       $ awless inspect -i bucket_sizer --local
+       Bucket           Object count    S3 total storage
+       --------         ----------      -----------------
+       my-first-bucket     4            0.00358 Gb
+       my-other-bucket     1            3.49460 Gb
+       third-bucket        422          0.00003 Gb
+       fouth-bucket        1000         0.00772 Gb
+                                        3.5059 Gb
 
 # About
 
