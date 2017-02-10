@@ -64,24 +64,21 @@ func resolveAndSetDefaults() (string, error) {
 	}
 
 	if aws.IsValidRegion(region) {
-		fmt.Printf("Found existing AWS region '%s'\n", region)
-		fmt.Println("Setting it as your default region.")
-		fmt.Println("Show config with `awless config list`. Change region with `awless config set region`")
-		fmt.Println()
+		fmt.Printf("Found existing AWS region '%s'. Setting it as your default region.\n", region)
 	} else {
-		fmt.Println("Could not find any AWS region in your environment.")
+		fmt.Println("Could not find any AWS region in your environment. Please choose one region:")
 		region = askRegion()
 	}
 
 	var hasAMI bool
 	if ami, hasAMI = amiPerRegion[region]; !hasAMI {
-		fmt.Printf("Could not find a default ami for your region %s\n. Set it manually with `awless config set region ...`", region)
+		fmt.Printf("Could not find a default ami for your region %s\n. Set it manually with `awless config set instance.image ...`", region)
 	}
 
 	defaults := map[string]interface{}{
 		database.SyncAuto:         true,
 		database.RegionKey:        region,
-		database.InstanceTypeKey:  "t1.micro",
+		database.InstanceTypeKey:  "t2.micro",
 		database.InstanceCountKey: 1,
 	}
 
@@ -101,10 +98,11 @@ func resolveAndSetDefaults() (string, error) {
 		}
 	}
 
-	fmt.Println("\nThose defaults have been set in your config (manage them with `awless config`):")
+	fmt.Println("\nThose defaults have been set in your config:")
 	for k, v := range defaults {
 		fmt.Printf("\t%s = %v\n", k, v)
 	}
+	fmt.Println("\nShow and update config with `awless config`. Ex: `awless config set region`")
 	fmt.Println("\nAll done. Enjoy!\n")
 
 	return region, nil
@@ -112,7 +110,6 @@ func resolveAndSetDefaults() (string, error) {
 
 func askRegion() string {
 	var region string
-	fmt.Println("Please choose one region:")
 
 	fmt.Println(strings.Join(aws.AllRegions(), ", "))
 	fmt.Println()
@@ -126,12 +123,18 @@ func askRegion() string {
 }
 
 var amiPerRegion = map[string]string{
-	"us-east-1":      "ami-1b814f72",
-	"us-west-2":      "ami-30fe7300",
-	"us-west-1":      "ami-11d68a54",
-	"eu-west-1":      "ami-973b06e3",
-	"ap-southeast-1": "ami-b4b0cae6",
-	"ap-southeast-2": "ami-b3990e89",
-	"ap-northeast-1": "ami-0644f007",
-	"sa-east-1":      "ami-3e3be423",
+	"us-east-1":      "ami-0b33d91d",
+	"us-east-2":      "ami-c55673a0",
+	"us-west-1":      "ami-165a0876",
+	"us-west-2":      "ami-f173cc91",
+	"ca-central-1":   "ami-ebed508f",
+	"eu-west-1":      "ami-70edb016",
+	"eu-west-2":      "ami-f1949e95",
+	"eu-central-1":   "ami-af0fc0c0",
+	"ap-southeast-1": "ami-dc9339bf",
+	"ap-southeast-2": "ami-1c47407f",
+	"ap-northeast-1": "ami-56d4ad31",
+	"ap-northeast-2": "ami-dac312b4",
+	"ap-south-1":     "ami-f9daac96",
+	"sa-east-1":      "ami-80086dec",
 }
