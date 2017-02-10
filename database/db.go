@@ -72,7 +72,7 @@ func open(path string) (*DB, error) {
 	return &DB{bolt: boltdb}, nil
 }
 
-func InitDB(firstInstall bool) error {
+func InitDB() error {
 	db, err, closing := Current()
 	defer closing()
 	if err != nil {

@@ -51,7 +51,10 @@ func newTestDb() (*database.DB, func()) {
 
 	os.Setenv("__AWLESS_HOME", f)
 
-	database.InitDB(true)
+	err := database.InitDB()
+	if err != nil {
+		panic(err)
+	}
 	db, closing := database.MustGetCurrent()
 
 	todefer := func() {

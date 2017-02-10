@@ -59,8 +59,12 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := database.InitDB(config.AwlessFirstInstall); err != nil {
-		return fmt.Errorf("cannot init database: %s", err)
+	if err := database.InitDB(); err != nil {
+		db, err, closing := database.Current()
+		if err == nil && db != nil {
+			db.AddLog(fmt.Sprintf("cannot init database: %s", err))
+		}
+		closing()
 	}
 
 	return nil
