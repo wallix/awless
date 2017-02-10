@@ -18,7 +18,7 @@ func init() {
 var logCmd = &cobra.Command{
 	Use:                "log",
 	Short:              "Logs all your awless template executions",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(c *cobra.Command, args []string) error {
