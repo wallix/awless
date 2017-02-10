@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
@@ -32,6 +33,8 @@ var revertCmd = &cobra.Command{
 
 		reverted, err := tplExec.Revert()
 		exitOn(err)
+
+		fmt.Printf("%s\n", reverted)
 
 		exitOn(runTemplate(reverted, getCurrentDefaults()))
 

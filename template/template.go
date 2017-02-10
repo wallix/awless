@@ -261,13 +261,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 						params = append(params, fmt.Sprintf("%s=%s", k, v))
 					}
 				case "create":
-					_, hasNameParam := node.Params["name"]
-					_, hasIdParam := node.Params["id"]
-					if !hasIdParam && hasNameParam {
-						params = append(params, fmt.Sprintf("name=%s", exec.Result))
-					} else {
-						params = append(params, fmt.Sprintf("id=%s", exec.Result))
-					}
+					params = append(params, fmt.Sprintf("id=%s", exec.Result))
 				}
 
 				lines = append(lines, fmt.Sprintf("%s %s %s\n", revertAction, node.Entity, strings.Join(params, " ")))
