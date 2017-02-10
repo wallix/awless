@@ -61,14 +61,20 @@ var runCmd = &cobra.Command{
 }
 
 func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
-	templ.ResolveTemplate(defaults)
-
+	resolved, err := templ.ResolveTemplate(defaults)
+	exitOn(err)
+	logger.Infof("used default params: %s (list and set defaults with `awless config`)", sprintProcessedParams(resolved))
+	fmt.Println("\nMissing required params:")
 	prompt := func(question string) interface{} {
 		var resp string
-		fmt.Printf("%s ? ", question)
-		_, err := fmt.Scanln(&resp)
-		exitOn(err)
-
+		for {
+			fmt.Printf("%s ? ", question)
+			_, err := fmt.Scanln(&resp)
+			if err == nil {
+				break
+			}
+			logger.Error("invalid value:", err)
+		}
 		return resp
 	}
 	templ.InteractiveResolveTemplate(prompt)
@@ -94,7 +100,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		}
 	}
 
-	_, err := templ.Compile(awsDriver)
+	_, err = templ.Compile(awsDriver)
 	exitOn(err)
 
 	fmt.Println()
@@ -144,7 +150,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 				expr, ok := node.(*ast.ExpressionNode)
 				if !ok {
-					return errors.New("Expecting an template expression not a template declaration")
+					return errors.New("Expecting a template expression not a template declaration")
 				}
 
 				templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
@@ -157,6 +163,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				if err != nil {
 					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", templDef, err))
 				}
+				logger.Verbosef("template definition: %s", templDef)
 
 				for k, v := range expr.Params {
 					if !strings.Contains(k, ".") {
@@ -166,7 +173,9 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				}
 
 				addAliasesToParams(expr)
-				templ.ResolveTemplate(expr.Params)
+				resolved, err := templ.ResolveTemplate(expr.Params)
+				exitOn(err)
+				logger.Infof("used provided params: %s.", sprintProcessedParams(resolved))
 				templ.MergeParams(expr.Params)
 
 				exitOn(runTemplate(templ, getCurrentDefaults()))
@@ -177,7 +186,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:                entity,
-				PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 				PersistentPostRunE: saveHistoryHook,
 				Short:              fmt.Sprintf("Use it to %s a %s", action, entity),
 				RunE:               run(action, entity),
@@ -266,4 +275,15 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 		}
 	}
 	return nil
+}
+
+func sprintProcessedParams(processed map[string]interface{}) string {
+	if len(processed) == 0 {
+		return "<none>"
+	}
+	var str []string
+	for k, v := range processed {
+		str = append(str, fmt.Sprintf("%s=%v", k, v))
+	}
+	return strings.Join(str, ", ")
 }

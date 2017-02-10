@@ -106,14 +106,18 @@ func (s *Template) MergeParams(newParams map[string]interface{}) {
 	s.visitExpressionNodes(each)
 }
 
-func (s *Template) ResolveTemplate(refs map[string]interface{}) error {
+func (s *Template) ResolveTemplate(refs map[string]interface{}) (map[string]interface{}, error) {
+	processed := make(map[string]interface{})
 	each := func(expr *ast.ExpressionNode) {
-		expr.ProcessHoles(refs)
+		nodeProcessed := expr.ProcessHoles(refs)
+		for k, v := range nodeProcessed {
+			processed[expr.Entity+"."+k] = v
+		}
 	}
 
 	s.visitExpressionNodes(each)
 
-	return nil
+	return processed, nil
 }
 
 func (s *Template) InteractiveResolveTemplate(each func(question string) interface{}) error {

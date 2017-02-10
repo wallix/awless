@@ -475,13 +475,15 @@ func TestResolveTemplate(t *testing.T) {
 		s := &Template{AST: &ast.AST{}}
 
 		expr := &ast.ExpressionNode{
-			Holes: map[string]string{"name": "presidentName", "rank": "presidentRank"},
+			Entity: "president",
+			Holes:  map[string]string{"name": "presidentName", "rank": "presidentRank"},
 		}
 		s.Statements = append(s.Statements, &ast.Statement{Node: expr})
 
 		decl := &ast.DeclarationNode{
 			Right: &ast.ExpressionNode{
-				Holes: map[string]string{"age": "presidentAge", "wife": "presidentWife"},
+				Entity: "wife",
+				Holes:  map[string]string{"age": "wifeAge", "name": "wifeName"},
 			},
 		}
 		s.Statements = append(s.Statements, &ast.Statement{Node: decl})
@@ -489,11 +491,14 @@ func TestResolveTemplate(t *testing.T) {
 		fills := map[string]interface{}{
 			"presidentName": "trump",
 			"presidentRank": 45,
-			"presidentAge":  70,
-			"presidentWife": "melania",
+			"wifeAge":       40,
+			"wifeName":      "melania",
 		}
 
-		s.ResolveTemplate(fills)
+		filled, err := s.ResolveTemplate(fills)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		expected := map[string]interface{}{"name": "trump", "rank": 45}
 		if got, want := expr.Params, expected; !reflect.DeepEqual(got, want) {
@@ -503,12 +508,22 @@ func TestResolveTemplate(t *testing.T) {
 			t.Fatalf("length of holes: got %d, want %d", got, want)
 		}
 
-		expected = map[string]interface{}{"age": 70, "wife": "melania"}
+		expected = map[string]interface{}{"age": 40, "name": "melania"}
 		if got, want := decl.Right.Params, expected; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %v, want %v", got, want)
 		}
 		if got, want := len(decl.Right.Holes), 0; got != want {
 			t.Fatalf("length of holes: got %d, want %d", got, want)
+		}
+
+		expectedFilled := map[string]interface{}{
+			"president.name": "trump",
+			"president.rank": 45,
+			"wife.age":       40,
+			"wife.name":      "melania",
+		}
+		if got, want := filled, expectedFilled; !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %+v, want %+v", got, want)
 		}
 	})
 

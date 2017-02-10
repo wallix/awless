@@ -158,16 +158,19 @@ func (n *ExpressionNode) String() string {
 	return fmt.Sprintf("%s %s %s", n.Action, n.Entity, strings.Join(all, " "))
 }
 
-func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) {
+func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
+	processed := make(map[string]interface{})
 	for key, hole := range n.Holes {
 		if val, ok := fills[hole]; ok {
 			if n.Params == nil {
 				n.Params = make(map[string]interface{})
 			}
 			n.Params[key] = val
+			processed[key] = val
 			delete(n.Holes, key)
 		}
 	}
+	return processed
 }
 
 func (n *ExpressionNode) ProcessRefs(fills map[string]interface{}) {
