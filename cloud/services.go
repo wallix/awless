@@ -1,11 +1,14 @@
 package cloud
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/wallix/awless/graph"
 )
+
+var ErrFetchAccessDenied = errors.New("access denied to cloud resource")
 
 type Service interface {
 	Name() string

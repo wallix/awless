@@ -42,15 +42,20 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 		gph  *graph.Graph
 	}
 
+	type srvErr struct {
+		name string
+		err  error
+	}
+
 	resultc := make(chan *result, len(services))
-	errorc := make(chan error, len(services))
+	errorc := make(chan *srvErr, len(services))
 
 	for _, service := range services {
 		workers.Add(1)
 		go func(srv cloud.Service) {
 			defer workers.Done()
 			g, err := srv.FetchResources()
-			errorc <- err
+			errorc <- &srvErr{name: srv.Name(), err: err}
 			resultc <- &result{name: srv.Name(), gph: g}
 		}(service)
 	}
@@ -64,9 +69,13 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 Loop:
 	for {
 		select {
-		case err := <-errorc:
-			if err != nil {
-				return graphs, err
+		case srvErr, ok := <-errorc:
+			if ok {
+				if srvErr.err == cloud.ErrFetchAccessDenied {
+					fmt.Printf("sync: access denied to service %s\n", srvErr.name)
+				} else if srvErr.err != nil {
+					return graphs, srvErr.err
+				}
 			}
 		case res, ok := <-resultc:
 			if !ok {

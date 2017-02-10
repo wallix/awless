@@ -52,11 +52,13 @@ import (
 	"sync"
 
   awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/aws/aws-sdk-go/aws/session"
   {{- range $index, $service := . }}
   "github.com/aws/aws-sdk-go/service/{{ $service.Api }}"
   "github.com/aws/aws-sdk-go/service/{{ $service.Api }}/{{ $service.Api }}iface"
   {{- end }}
+	"github.com/wallix/awless/cloud"
   "github.com/wallix/awless/graph"
 )
 
@@ -153,8 +155,18 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	}()
 
 	for err := range errc {
-		if err != nil {
-			return g, err
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case "Access Denied":
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
 		}
 	}
 

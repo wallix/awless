@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -15,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
 
@@ -222,8 +224,18 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	}()
 
 	for err := range errc {
-		if err != nil {
-			return g, err
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case "Access Denied":
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
 		}
 	}
 
@@ -665,8 +677,18 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 	}()
 
 	for err := range errc {
-		if err != nil {
-			return g, err
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case "Access Denied":
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
 		}
 	}
 
@@ -899,8 +921,18 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	}()
 
 	for err := range errc {
-		if err != nil {
-			return g, err
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case "Access Denied":
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
 		}
 	}
 
