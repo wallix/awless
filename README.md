@@ -13,7 +13,7 @@
 
 # Overview
 
-- Clear and easy listing of cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
+- Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
 - Explore a resource given only an *id* or name (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
