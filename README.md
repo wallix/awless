@@ -18,7 +18,8 @@
 - Explore a resource given only an *id* or name (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI onliner (integrated in our awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
-- Easy listing or revert of resources creation: `awless revert`
+- Easy reporting of all the CLI template executions: `awless log`
+- Revert of executed templates and resources creation: `awless revert`
 - A local history and versioning of the changes that occurred in your cloud: `awless history`
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
