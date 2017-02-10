@@ -71,7 +71,8 @@ We also collect a few anonymous data (CLI errors, most frequently used commands 
 
 You can list various resources:
 
-    $ awless list instances
+    $ awless list buckets
+    $ awless list instances --sort launchtime
     $ awless list users --format csv
     $ awless list roles --sort name,id
 

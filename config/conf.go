@@ -126,12 +126,12 @@ func askRegion() string {
 }
 
 var amiPerRegion = map[string]string{
-  "us-east-1"      : "ami-1b814f72",
-  "us-west-2"      : "ami-30fe7300",
-  "us-west-1"      : "ami-11d68a54",
-  "eu-west-1"      : "ami-973b06e3",
-  "ap-southeast-1" : "ami-b4b0cae6",
-  "ap-southeast-2" : "ami-b3990e89",
-  "ap-northeast-1" : "ami-0644f007",
-  "sa-east-1"      : "ami-3e3be423",
+	"us-east-1":      "ami-1b814f72",
+	"us-west-2":      "ami-30fe7300",
+	"us-west-1":      "ami-11d68a54",
+	"eu-west-1":      "ami-973b06e3",
+	"ap-southeast-1": "ami-b4b0cae6",
+	"ap-southeast-2": "ami-b3990e89",
+	"ap-northeast-1": "ami-0644f007",
+	"sa-east-1":      "ami-3e3be423",
 }

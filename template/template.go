@@ -81,6 +81,17 @@ func (s *Template) GetActionsSet() (actions []string) {
 	return
 }
 
+func (s *Template) GetHoles() map[string]interface{} {
+	holes := make(map[string]interface{})
+	each := func(expr *ast.ExpressionNode) {
+		for k, v := range expr.Holes {
+			holes[k] = v
+		}
+	}
+	s.visitExpressionNodes(each)
+	return holes
+}
+
 func (s *Template) GetAliases() map[string]string {
 	aliases := make(map[string]string)
 	each := func(expr *ast.ExpressionNode) {

@@ -64,20 +64,23 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	resolved, err := templ.ResolveTemplate(defaults)
 	exitOn(err)
 	logger.Infof("used default params: %s (list and set defaults with `awless config`)", sprintProcessedParams(resolved))
-	fmt.Println("\nMissing required params:")
-	prompt := func(question string) interface{} {
-		var resp string
-		for {
-			fmt.Printf("%s ? ", question)
-			_, err := fmt.Scanln(&resp)
-			if err == nil {
-				break
+
+	if len(templ.GetHoles()) > 0 {
+		fmt.Println("\nMissing required params:")
+		prompt := func(question string) interface{} {
+			var resp string
+			for {
+				fmt.Printf("%s ? ", question)
+				_, err := fmt.Scanln(&resp)
+				if err == nil {
+					break
+				}
+				logger.Error("invalid value:", err)
 			}
-			logger.Error("invalid value:", err)
+			return resp
 		}
-		return resp
+		templ.InteractiveResolveTemplate(prompt)
 	}
-	templ.InteractiveResolveTemplate(prompt)
 
 	awsDriver := aws.NewDriver(
 		awscloud.InfraService.ProviderRunnableAPI(),
@@ -242,7 +245,7 @@ func printReport(t *template.TemplateExecution) {
 	}
 
 	if t.IsRevertible() {
-		logger.Infof("revert this template with `awless revert -i %s`", t.ID)
+		logger.Infof("revert this template with `awless revert %s`", t.ID)
 	}
 }
 
