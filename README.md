@@ -34,8 +34,9 @@
 
 Choose one of the following options:
 
-1. Download the latest `awless` executable (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
-2. Build the source with Go: Run `go get github.com/wallix/awless` (if `go` is already installed, on Windows/Linux/macOS)
+1. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
+2. If you have Golang already installed, build the source with: `go get github.com/wallix/awless`
+
 <!--- 3. On macOS, use [homebrew](http://brew.sh):  `brew install awless` -->
 
 # Getting started
