@@ -9,6 +9,7 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync/repo"
 )
 
@@ -17,11 +18,13 @@ var DefaultSyncer Syncer
 type Syncer interface {
 	repo.Repo
 	Sync(...cloud.Service) (map[string]*graph.Graph, error)
+	SetLogger(*logger.Logger)
 }
 
 type syncer struct {
 	repo.Repo
 	dryrun bool
+	logger *logger.Logger
 }
 
 func NewSyncer(dryrun bool) Syncer {
@@ -30,8 +33,10 @@ func NewSyncer(dryrun bool) Syncer {
 		panic(err)
 	}
 
-	return &syncer{Repo: repo, dryrun: dryrun}
+	return &syncer{Repo: repo, dryrun: dryrun, logger: logger.DiscardLogger}
 }
+
+func (s *syncer) SetLogger(l *logger.Logger) { s.logger = l }
 
 func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
 	graphs := make(map[string]*graph.Graph)
@@ -72,7 +77,7 @@ Loop:
 		case srvErr, ok := <-errorc:
 			if ok {
 				if srvErr.err == cloud.ErrFetchAccessDenied {
-					fmt.Printf("sync: access denied to service %s\n", srvErr.name)
+					logger.Verbosef("sync: access denied to service %s", srvErr.name)
 				} else if srvErr.err != nil {
 					return graphs, srvErr.err
 				}

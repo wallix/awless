@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync/atomic"
@@ -10,6 +11,7 @@ import (
 )
 
 var DefaultLogger *Logger = &Logger{out: log.New(os.Stdout, "", 0)}
+var DiscardLogger *Logger = &Logger{out: log.New(ioutil.Discard, "", 0)}
 
 type Logger struct {
 	verbose uint32 // atomic

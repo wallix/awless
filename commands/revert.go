@@ -15,7 +15,7 @@ func init() {
 var revertCmd = &cobra.Command{
 	Use:                "revert",
 	Short:              "Revert an template action given an revert ID (see `awless log` to list revert ids)",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(c *cobra.Command, args []string) error {

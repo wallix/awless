@@ -52,6 +52,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 
 func initSyncerHook(cmd *cobra.Command, args []string) error {
 	sync.DefaultSyncer = sync.NewSyncer(dryRunSyncFlag)
+	sync.DefaultSyncer.SetLogger(logger.DefaultLogger)
 	return nil
 }
 
