@@ -54,6 +54,13 @@ __awless_get_all_ids()
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }
+__awless_get_instances_ids()
+{
+		local all_ids_output
+		if all_ids_output=$(awless list instances --local --ids 2>/dev/null); then
+		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
+		fi
+}
 __awless_get_conf_keys()
 {
 		local all_keys_output

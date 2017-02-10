@@ -15,9 +15,8 @@ import (
 var (
 	listingFormat string
 
-	listOnlyIDs    bool
-	localResources bool
-	sortBy         []string
+	listOnlyIDs bool
+	sortBy      []string
 )
 
 func init() {
@@ -56,7 +55,7 @@ var listSpecificResourceCmd = func(apiName string, resType string) *cobra.Comman
 			srv, err := cloud.GetServiceForType(resType)
 			exitOn(err)
 
-			if localResources {
+			if localFlag {
 				g = sync.LoadCurrentLocalGraph(srv.Name())
 			} else {
 				g, err = srv.FetchByType(resType)
