@@ -17,7 +17,7 @@
 - Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
 - Explore a resource given only an *id* or name (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
-- Powerful CRUD CLI onliner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
+- Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
