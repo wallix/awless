@@ -33,7 +33,10 @@ import (
 )
 
 var (
-	releaseTag = flag.String("rtag", "", "Git tag to be released")
+	releaseTag = flag.String("tag", "", "Git tag to be released")
+	brew       = flag.Bool("brew", false, "Brew build (disable zipping and build only for specify os and arch)")
+	buildOS    = flag.String("os", runtime.GOOS, "The OS to build")
+	buildArch  = flag.String("arch", runtime.GOARCH, "The ARCH to build")
 )
 
 var builds = map[string][]string{
@@ -46,10 +49,10 @@ func main() {
 	flag.Parse()
 
 	allBuild := map[string][]string{
-		runtime.GOOS: []string{runtime.GOARCH},
+		*buildOS: []string{*buildArch},
 	}
 
-	if *releaseTag != "" {
+	if *releaseTag != "" && !*brew {
 		allBuild = builds
 		printInfo("RELEASING")
 	}
@@ -123,29 +126,32 @@ func buildAndZip(osname, arch string) error {
 	if _, err := runCmd(env, "go", "build", "-o", artefactPath, ldflags); err != nil {
 		return err
 	}
+	if *brew { //Disable zipping
+		return os.Rename(artefactPath, "awless")
+	} else {
+		zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", strings.Split(binName, ".")[0], osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
 
-	zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", strings.Split(binName, ".")[0], osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
-	if err != nil {
-		return err
+		w := zip.NewWriter(zipFile)
+
+		f, err := w.Create(binName)
+		if err != nil {
+			return err
+		}
+
+		content, err := ioutil.ReadFile(artefactPath)
+		if err != nil {
+			return err
+		}
+
+		if _, err = f.Write(content); err != nil {
+			return err
+		}
+
+		return w.Close()
 	}
-
-	w := zip.NewWriter(zipFile)
-
-	f, err := w.Create(binName)
-	if err != nil {
-		return err
-	}
-
-	content, err := ioutil.ReadFile(artefactPath)
-	if err != nil {
-		return err
-	}
-
-	if _, err = f.Write(content); err != nil {
-		return err
-	}
-
-	return w.Close()
 }
 
 type environment []string
