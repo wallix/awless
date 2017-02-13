@@ -29,6 +29,28 @@ func init() {
 	color.NoColor = true
 }
 
+func TestJSONDisplays(t *testing.T) {
+	g := createInfraGraph()
+
+	displayer := BuildOptions(
+		WithRdfType(graph.Instance),
+		WithFormat("json"),
+		WithSortBy("Id"),
+	).SetSource(g).Build()
+
+	expected := `[{"Id": "inst_1", "Name": "redis", "PublicIp": "1.2.3.4", "State": "running", "Type": "t2.micro"},
+	{"Id": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
+	{"Id": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge"}]`
+
+	var w bytes.Buffer
+	err := displayer.Print(&w)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	compareJSONString(t, expected, w.String())
+}
+
 func TestTabularDisplays(t *testing.T) {
 	g := createInfraGraph()
 	headers := []ColumnDefinition{

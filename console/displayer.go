@@ -18,6 +18,7 @@ package console
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -82,6 +83,10 @@ func (b *Builder) Build() Displayer {
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}
+			dis.setGraph(b.dataSource.(*graph.Graph))
+			return dis
+		case "json":
+			dis := &jsonDisplayer{base}
 			dis.setGraph(b.dataSource.(*graph.Graph))
 			return dis
 		case "porcelain":
@@ -264,6 +269,27 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 
 	_, err = w.Write([]byte(strings.Join(lines, "\n")))
 	return err
+}
+
+type jsonDisplayer struct {
+	fromGraphDisplayer
+}
+
+func (d *jsonDisplayer) Print(w io.Writer) error {
+	resources, err := d.g.GetAllResources(d.rdfType)
+	if err != nil {
+		return err
+	}
+
+	var props []graph.Properties
+	for _, res := range resources {
+		props = append(props, res.Properties)
+	}
+
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", " ")
+
+	return enc.Encode(props)
 }
 
 type tableDisplayer struct {
