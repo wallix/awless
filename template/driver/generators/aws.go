@@ -100,9 +100,45 @@ limitations under the License.
 
 package aws
 
-var AWSTemplatesDefinitions = map[string]string{
+import (
+	"fmt"
+	"strings"
+)
+
+type TemplateDefinition struct {
+	Action, Entity string
+	requiredParams, extraParams, tagsMapping []string
+}
+
+func (def TemplateDefinition) String() string {
+	var required []string
+	for _, v := range def.Required() {
+		required = append(required, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
+	}
+	var tags []string
+	for _, v := range def.tagsMapping {
+		tags = append(tags, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
+	}
+	return fmt.Sprintf("%s %s %s %s", def.Action, def.Entity, strings.Join(required, " "), strings.Join(tags, " "))
+}
+
+func (def TemplateDefinition) Required() []string{
+	return def.requiredParams
+}
+
+func (def TemplateDefinition) Extra() []string{
+	return def.extraParams
+}
+
+var AWSTemplatesDefinitions = map[string]TemplateDefinition{
 {{- range $index, $def := . }}
-	"{{ $def.Action }}{{ $def.Entity }}": "{{ $def.Action }} {{ $def.Entity }}{{ range $awsField, $field := $def.RequiredParams }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }} {{ range $awsField, $field := $def.TagsMapping }} {{ $field }}={ {{ $def.Entity }}.{{ $field }} }{{ end }}",
+	"{{ $def.Action }}{{ $def.Entity }}": TemplateDefinition{
+			Action: "{{ $def.Action }}",
+			Entity: "{{ $def.Entity }}",
+			requiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field }}", {{- end}} },
+			extraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field }}", {{- end}} },
+			tagsMapping: []string{ {{- range $awsField, $field := $def.TagsMapping }}"{{ $field }}", {{- end}} },
+		},
 {{- end }}
 }
 `

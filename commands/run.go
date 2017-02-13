@@ -82,7 +82,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	logger.Infof("used default params: %s (list and set defaults with `awless config`)", sprintProcessedParams(resolved))
 
 	if len(templ.GetHoles()) > 0 {
-		fmt.Println("\nMissing required params:")
+		fmt.Println("\nMissing required params (Ctrl+C to quit):")
 		prompt := func(question string) interface{} {
 			var resp string
 			for {
@@ -160,9 +160,14 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	for _, entity := range entities {
-		run := func(act, ent string) func(cmd *cobra.Command, args []string) error {
+		templDef, ok := aws.AWSTemplatesDefinitions[fmt.Sprintf("%s%s", action, entity)]
+		if !ok {
+			exitOn(errors.New("command unsupported on inline mode"))
+		}
+
+		run := func(def aws.TemplateDefinition) func(cmd *cobra.Command, args []string) error {
 			return func(cmd *cobra.Command, args []string) error {
-				text := fmt.Sprintf("%s %s %s", act, ent, strings.Join(args, " "))
+				text := fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(args, " "))
 
 				node, err := template.ParseStatement(text)
 				exitOn(err)
@@ -172,13 +177,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 					return errors.New("Expecting a template expression not a template declaration")
 				}
 
-				templName := fmt.Sprintf("%s%s", expr.Action, expr.Entity)
-				templDef, ok := aws.AWSTemplatesDefinitions[templName]
-				if !ok {
-					exitOn(errors.New("command unsupported on inline mode"))
-				}
-
-				templ, err := template.Parse(templDef)
+				templ, err := template.Parse(templDef.String())
 				if err != nil {
 					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", templDef, err))
 				}
@@ -204,11 +203,12 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 		actionCmd.AddCommand(
 			&cobra.Command{
-				Use:                entity,
+				Use:                templDef.Entity,
 				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 				PersistentPostRunE: saveHistoryHook,
-				Short:              fmt.Sprintf("Use it to %s a %s", action, entity),
-				RunE:               run(action, entity),
+				Short:              fmt.Sprintf("%s a %s", strings.Title(action), templDef.Entity),
+				Long:               fmt.Sprintf("%s a %s\n\tRequired params: %s\n\tExtra params: %s", strings.Title(templDef.Action), templDef.Entity, strings.Join(templDef.Required(), ", "), strings.Join(templDef.Extra(), ", ")),
+				RunE:               run(templDef),
 			},
 		)
 	}

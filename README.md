@@ -89,7 +89,15 @@ See the [manual](https://github.com/wallix/awless/wiki/Commands#awless-list) for
 
 `awless` templates can be used through onliner shortcut commands:
 
-    awless create instance
+Using the help:
+
+    awless create                # show what resource can be created
+    awless delete -h             # same as above
+    awless create instance -h    # show required & extra params for instance creation
+
+Then:
+
+    awless create instance       # will start a prompt for any missing params
     awless delete subnet id=subnet-12345678
     awless attach volume id=vol-12345678 instance=i-12345678
 
@@ -99,7 +107,7 @@ You can also run an `awless` template from a predefined template file with:
 
     awless run awless-templates/create_instance_ssh.awless
 
-In each case, the CLI guide you through any running of a template (file template or oneliner) so you always have the chance to confirm or quit.
+In each case, the CLI guide you through any running of a template (file template or one-liner) so you always have the chance to confirm or quit.
 
 Note that you can get inspired with pre-existing templates from the dedicated git repository: https://github.com/wallix/awless-templates. See [templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more details about `awless` templates.
 
