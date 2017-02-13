@@ -93,13 +93,15 @@ func (g *Graph) ListAttachedFrom(n *node.Node, pred *predicate.Predicate) ([]*no
 	return g.listAttached(n, pred, UP)
 }
 
-func (g *Graph) VisitTopDown(root *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
+func (g *Graph) VisitTopDown(root *node.Node, each func(*Graph, *node.Node, int) error, distances ...int) error {
 	var dist int
 	if len(distances) > 0 {
 		dist = distances[0]
 	}
 
-	each(g, root, dist)
+	if err := each(g, root, dist); err != nil {
+		return err
+	}
 
 	relations, err := g.TriplesForSubjectPredicate(root, ParentOfPredicate)
 	if err != nil {
@@ -124,13 +126,15 @@ func (g *Graph) VisitTopDown(root *node.Node, each func(*Graph, *node.Node, int)
 	return nil
 }
 
-func (g *Graph) VisitBottomUp(startNode *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
+func (g *Graph) VisitBottomUp(startNode *node.Node, each func(*Graph, *node.Node, int) error, distances ...int) error {
 	var dist int
 	if len(distances) > 0 {
 		dist = distances[0]
 	}
 
-	each(g, startNode, dist)
+	if err := each(g, startNode, dist); err != nil {
+		return err
+	}
 
 	relations, err := g.TriplesForPredicateObject(ParentOfPredicate, triple.NewNodeObject(startNode))
 	if err != nil {
@@ -151,7 +155,7 @@ func (g *Graph) VisitBottomUp(startNode *node.Node, each func(*Graph, *node.Node
 	return nil
 }
 
-func (g *Graph) VisitSiblings(start *node.Node, each func(*Graph, *node.Node, int), distances ...int) error {
+func (g *Graph) VisitSiblings(start *node.Node, each func(*Graph, *node.Node, int) error, distances ...int) error {
 	relations, err := g.TriplesForPredicateObject(ParentOfPredicate, triple.NewNodeObject(start))
 	if err != nil {
 		return err
@@ -160,6 +164,10 @@ func (g *Graph) VisitSiblings(start *node.Node, each func(*Graph, *node.Node, in
 	var parents []*node.Node
 	for _, relation := range relations {
 		parents = append(parents, relation.Subject())
+	}
+
+	if len(parents) == 0 {
+		return each(g, start, 0)
 	}
 
 	sort.Sort(&nodeSorter{parents})
@@ -183,9 +191,10 @@ func (g *Graph) VisitSiblings(start *node.Node, each func(*Graph, *node.Node, in
 
 		for _, child := range childs {
 			sameType := child.Type().String() == start.Type().String()
-			notStartNode := child.ID().String() != start.ID().String()
-			if sameType && notStartNode {
-				each(g, child, 0)
+			if sameType {
+				if err := each(g, child, 0); err != nil {
+					return err
+				}
 			}
 		}
 	}

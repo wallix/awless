@@ -527,7 +527,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 
 	fromCommons := make(map[string]*graph.Resource)
 	toCommons := make(map[string]*graph.Resource)
-	d.diff.FromGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+	each := func(res *graph.Resource, distance int) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
@@ -536,9 +536,14 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		default:
 			fromCommons[res.Id()] = res
 		}
-	})
+		return nil
+	}
+	err := d.diff.FromGraph().Accept(&graph.ChildrenVisitor{From: d.root, Each: each})
+	if err != nil {
+		return err
+	}
 
-	d.diff.ToGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+	each = func(res *graph.Resource, distance int) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
@@ -547,7 +552,12 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		default:
 			toCommons[res.Id()] = res
 		}
-	})
+		return nil
+	}
+	err = d.diff.ToGraph().Accept(&graph.ChildrenVisitor{From: d.root, Each: each})
+	if err != nil {
+		return err
+	}
 
 	for _, common := range fromCommons {
 		resType := common.Type().String()
@@ -593,7 +603,33 @@ type diffTreeDisplayer struct {
 }
 
 func (d *diffTreeDisplayer) Print(w io.Writer) error {
-	d.diff.MergedGraph().VisitChildren(d.root, func(res *graph.Resource, distance int) {
+	g := graph.NewGraph()
+
+	each := func(res *graph.Resource, distance int) error {
+		switch res.Meta["diff"] {
+		case "extra", "missing":
+			var parents []*graph.Resource
+			err := d.diff.MergedGraph().Accept(&graph.ParentsVisitor{From: res, Each: graph.VisitorCollectFunc(&parents)})
+			if err != nil {
+				return err
+			}
+			g.AddResource(res)
+			previous := res
+			for _, parent := range parents {
+				g.AddResource(parent)
+				g.AddParentRelation(parent, previous)
+				previous = parent
+			}
+		}
+		return nil
+	}
+
+	err := d.diff.MergedGraph().Accept(&graph.ChildrenVisitor{From: d.root, Each: each, IncludeFrom: true})
+	if err != nil {
+		return err
+	}
+
+	each = func(res *graph.Resource, distance int) error {
 		var tabs bytes.Buffer
 		for i := 0; i < distance; i++ {
 			tabs.WriteByte('\t')
@@ -611,7 +647,13 @@ func (d *diffTreeDisplayer) Print(w io.Writer) error {
 		default:
 			fmt.Fprintf(w, "%s%s, %s\n", tabs.String(), res.Type(), res.Id())
 		}
-	})
+		return nil
+	}
+
+	err = g.Accept(&graph.ChildrenVisitor{From: d.root, Each: each, IncludeFrom: true})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

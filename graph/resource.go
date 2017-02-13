@@ -45,12 +45,36 @@ func newResourceType(n *node.Node) ResourceType {
 	return ResourceType(typ)
 }
 
+func (res *Resource) String() string {
+	var identifier string
+	if res == nil || (res.Id() == "" && res.Type() == "") {
+		return "[none]"
+	}
+	if name, ok := res.Properties["Name"]; ok && name != "" {
+		identifier = fmt.Sprintf("@%v", name)
+	} else {
+		identifier = res.Id()
+	}
+	return fmt.Sprintf("%s[%s]", identifier, res.Type())
+}
+
 func (res *Resource) Type() ResourceType {
 	return res.kind
 }
 
 func (res *Resource) Id() string {
 	return res.id
+}
+
+// Compare only the id and type of the resources (no properties nor meta)
+func (res *Resource) Same(other *Resource) bool {
+	if res == nil && other == nil {
+		return true
+	}
+	if res == nil || other == nil {
+		return false
+	}
+	return res.Id() == other.Id() && res.Type() == other.Type()
 }
 
 func (res *Resource) toRDFNode() (*node.Node, error) {
@@ -100,6 +124,15 @@ func (res *Resource) marshalRDF() ([]*triple.Triple, error) {
 	}
 
 	return triples, nil
+}
+
+type Resources []*Resource
+
+func (res Resources) Map(f func(*Resource) string) (out []string) {
+	for _, r := range res {
+		out = append(out, f(r))
+	}
+	return
 }
 
 type Properties map[string]interface{}

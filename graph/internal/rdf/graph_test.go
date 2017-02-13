@@ -95,11 +95,12 @@ func TestVisitHierarchically(t *testing.T) {
 
 	var result bytes.Buffer
 
-	each := func(g *Graph, n *node.Node, distance int) {
+	each := func(g *Graph, n *node.Node, distance int) error {
 		for i := 0; i < distance; i++ {
 			result.WriteByte('/')
 		}
 		result.WriteString(n.ID().String())
+		return nil
 	}
 
 	t.Run("Visit top down", func(t *testing.T) {
@@ -178,22 +179,23 @@ func TestVisitSiblings(t *testing.T) {
 
 	var result bytes.Buffer
 
-	each := func(g *Graph, n *node.Node, distance int) {
+	each := func(g *Graph, n *node.Node, distance int) error {
 		for i := 0; i < distance; i++ {
 			result.WriteByte('/')
 		}
 		result.WriteString(n.ID().String())
+		return nil
 	}
 
 	tcases := []struct {
 		node *node.Node
 		out  string
 	}{
-		{one, ""},
-		{two, "3"}, {three, "2"}, {four, ""},
-		{five, "67"}, {six, "57"}, {seven, "56"},
-		{eight, "9"}, {nine, "8"}, {ten, ""},
-		{eleven, ""}, {twelve, ""}, {thirteen, ""},
+		{one, "1"},
+		{two, "23"}, {three, "23"}, {four, "4"},
+		{five, "567"}, {six, "567"}, {seven, "567"},
+		{eight, "89"}, {nine, "89"}, {ten, "10"},
+		{eleven, "11"}, {twelve, "12"}, {thirteen, "13"},
 	}
 
 	for _, tc := range tcases {

@@ -341,15 +341,11 @@ func TestDiffDisplay(t *testing.T) {
 	).SetSource(diff).Build()
 
 	expected = `region, eu-west-1
-	vpc, vpc_1
-		subnet, sub_1
-			instance, inst_1
 	vpc, vpc_2
 +		subnet, new_subnet
 +			instance, inst_6
 		subnet, sub_2
 -			instance, inst_2
-			instance, inst_3
 +			instance, inst_4
 +			instance, inst_5
 `

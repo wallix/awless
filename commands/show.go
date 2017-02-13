@@ -83,32 +83,35 @@ var showCmd = &cobra.Command{
 
 			exitOn(displayer.Print(os.Stderr))
 
-			printWithTabs := func(r *graph.Resource, distance int) {
+			printWithTabs := func(r *graph.Resource, distance int) error {
 				var tabs bytes.Buffer
 				for i := 0; i < distance; i++ {
 					tabs.WriteByte('\t')
 				}
-				if resource.Id() != r.Id() {
-					fmt.Fprintf(os.Stdout, "%s%s[%s]\n", tabs.String(), r.Type(), r.Id())
+				if r.Same(resource) {
+					fmt.Println(renderGreenFn(resource.String()))
+				} else {
+					fmt.Printf("%s↳ %s\n", tabs.String(), r.String())
 				}
+				return nil
 			}
+			var parents []*graph.Resource
+			err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents), IncludeFrom: true})
+			exitOn(err)
+			parentsStr := graph.Resources(parents).Map(func(r *graph.Resource) string { return r.String() })
+			parentsStr[0] = renderGreenFn(parentsStr[0])
 
-			var collected []*graph.Resource
-			collectFn := func(r *graph.Resource, distance int) {
-				if resource.Id() != r.Id() {
-					collected = append(collected, r)
-				}
-			}
+			fmt.Println("\nRelations:")
+			fmt.Println(strings.Join(parentsStr, " <- "))
 
-			fmt.Println("\nParents:")
-			gph.VisitParents(resource, printWithTabs)
+			fmt.Println()
+			err = gph.Accept(&graph.ChildrenVisitor{From: resource, Each: printWithTabs, IncludeFrom: true})
+			exitOn(err)
 
-			fmt.Println("\nChildren:")
-			gph.VisitChildren(resource, printWithTabs)
-
-			collected = collected[:0]
-			gph.VisitSiblings(resource, collectFn)
-			printResourceList("Siblings", collected)
+			var siblings []*graph.Resource
+			err = gph.Accept(&graph.SiblingsVisitor{From: resource, Each: graph.VisitorCollectFunc(&siblings)})
+			exitOn(err)
+			printResourceList("Siblings", siblings)
 
 			appliedOn, err := gph.ListResourcesAppliedOn(resource)
 			exitOn(err)
@@ -169,10 +172,7 @@ func findResourceInLocalGraphs(id string) (*graph.Resource, *graph.Graph) {
 }
 
 func printResourceList(title string, list []*graph.Resource) {
-	var all []string
-	for _, res := range list {
-		all = append(all, fmt.Sprintf("%s[%s]", res.Type(), res.Id()))
-	}
+	all := graph.Resources(list).Map(func(r *graph.Resource) string { return r.String() })
 	if len(all) > 0 {
 		fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
 	}

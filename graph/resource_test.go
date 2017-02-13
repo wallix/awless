@@ -40,6 +40,68 @@ func TestSortResource(t *testing.T) {
 	}
 }
 
+func TestEqualResources(t *testing.T) {
+	i1 := &Resource{id: "inst_1", kind: Instance}
+	i2 := &Resource{id: "inst_2", kind: Instance}
+	i3 := &Resource{id: "toto", kind: Instance}
+	s1 := &Resource{id: "subnet_1", kind: Subnet}
+	s2 := &Resource{id: "subnet_1", kind: Subnet}
+	s3 := &Resource{id: "toto", kind: Subnet}
+	empty := &Resource{}
+	tcases := []struct {
+		from, to *Resource
+		exp      bool
+	}{
+		{from: i1, to: i1, exp: true},
+		{from: i1, to: i2, exp: false},
+		{from: i1, to: i3, exp: false},
+		{from: i1, to: s1, exp: false},
+		{from: s1, to: s2, exp: true},
+		{from: s2, to: s1, exp: true},
+		{from: s1, to: s3, exp: false},
+		{from: i3, to: s3, exp: false},
+		{from: empty, to: empty, exp: true},
+		{from: empty, to: nil, exp: false},
+		{from: nil, to: empty, exp: false},
+		{from: nil, to: nil, exp: true},
+		{from: empty, to: i1, exp: false},
+		{from: i1, to: empty, exp: false},
+	}
+
+	for _, tcase := range tcases {
+		if tcase.from.Same(tcase.to) != tcase.exp {
+			t.Fatalf("expected %t, from %+v, to %+v", tcase.exp, tcase.from, tcase.to)
+		}
+	}
+}
+
+func TestPrintResource(t *testing.T) {
+	tcases := []struct {
+		res *Resource
+		exp string
+	}{
+		{res: &Resource{id: "inst_1", kind: Instance}, exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: Instance, Properties: Properties{"Id": "notthis"}}, exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: Instance, Properties: Properties{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: Instance, Properties: Properties{"Name": ""}}, exp: "inst_1[instance]"},
+		{res: &Resource{kind: Instance, Properties: Properties{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{}, exp: "[none]"},
+		{res: nil, exp: "[none]"},
+	}
+	for _, tcase := range tcases {
+		if got, want := tcase.res.String(), tcase.exp; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+	}
+}
+
+func TestReduceResources(t *testing.T) {
+	res := Resources{{id: "1"}, {id: "2"}, {id: "3"}}
+	if got, want := res.Map(func(r *Resource) string { return r.String() }), []string{"1[]", "2[]", "3[]"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
 func TestCompareProperties(t *testing.T) {
 	props1 := Properties(map[string]interface{}{
 		"one":   1,

@@ -60,8 +60,8 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := database.InitDB(); err != nil {
-		db, err, closing := database.Current()
-		if err == nil && db != nil {
+		db, e, closing := database.Current()
+		if e == nil && db != nil {
 			db.AddLog(fmt.Sprintf("cannot init database: %s", err))
 		}
 		closing()
