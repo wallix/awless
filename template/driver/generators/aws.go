@@ -167,13 +167,13 @@ package aws
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/wallix/awless/logger"
 )
 {{ range $index, $def := . }}
 {{- if not $def.ManualFuncDefinition }}
@@ -252,12 +252,15 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	{{- end }}
 	{{- end }}
 
+	start := time.Now()
 	output, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
 	if err != nil {
 		d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("{{ $def.Api }}.{{ $def.ApiMethod }} call took %s", time.Since(start))
+
 
 	{{- if ne $def.OutputExtractor "" }}
 	id := {{ $def.OutputExtractor }}

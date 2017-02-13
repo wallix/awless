@@ -29,15 +29,21 @@ import (
 var DefaultLogger *Logger = &Logger{out: log.New(os.Stdout, "", 0)}
 var DiscardLogger *Logger = &Logger{out: log.New(ioutil.Discard, "", 0)}
 
+const (
+	VerboseF = 1 << iota
+	ExtraVerboseF
+)
+
 type Logger struct {
 	verbose uint32 // atomic
 	out     *log.Logger
 }
 
 var (
-	infoPrefix    = color.GreenString("[info]")
-	errorPrefix   = color.RedString("[error]")
-	verbosePrefix = color.YellowString("[verbose]")
+	infoPrefix         = color.GreenString("[info]")
+	errorPrefix        = color.RedString("[error]")
+	verbosePrefix      = color.YellowString("[verbo]")
+	extraVerbosePrefix = color.MagentaString("[extra]")
 )
 
 func New(prefix string, flag int) *Logger {
@@ -45,14 +51,26 @@ func New(prefix string, flag int) *Logger {
 }
 
 func (l *Logger) Verbosef(format string, v ...interface{}) {
-	if l.isVerbose() {
+	if l.verbosity() > 0 {
 		l.out.Println(prepend(verbosePrefix, fmt.Sprintf(format, v...))...)
 	}
 }
 
 func (l *Logger) Verbose(v ...interface{}) {
-	if l.isVerbose() {
+	if l.verbosity() > 0 {
 		l.out.Println(prepend(verbosePrefix, v...)...)
+	}
+}
+
+func (l *Logger) ExtraVerbosef(format string, v ...interface{}) {
+	if l.verbosity() > 1 {
+		l.out.Println(prepend(extraVerbosePrefix, fmt.Sprintf(format, v...))...)
+	}
+}
+
+func (l *Logger) ExtraVerbose(v ...interface{}) {
+	if l.verbosity() > 1 {
+		l.out.Println(prepend(extraVerbosePrefix, v...)...)
 	}
 }
 
@@ -72,16 +90,12 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.out.Println(prepend(errorPrefix, fmt.Sprintf(format, v...))...)
 }
 
-func (l *Logger) SetVerbose(v bool) {
-	if v {
-		atomic.StoreUint32(&l.verbose, 1)
-	} else {
-		atomic.StoreUint32(&l.verbose, 0)
-	}
+func (l *Logger) SetVerbose(level int) {
+	atomic.StoreUint32(&l.verbose, uint32(level))
 }
 
-func (l *Logger) isVerbose() bool {
-	return atomic.LoadUint32(&l.verbose) > 0
+func (l *Logger) verbosity() uint32 {
+	return atomic.LoadUint32(&l.verbose)
 }
 
 func Verbosef(format string, v ...interface{}) {
@@ -90,6 +104,14 @@ func Verbosef(format string, v ...interface{}) {
 
 func Verbose(v ...interface{}) {
 	DefaultLogger.Verbose(v...)
+}
+
+func ExtraVerbosef(format string, v ...interface{}) {
+	DefaultLogger.ExtraVerbosef(format, v...)
+}
+
+func ExtraVerbose(v ...interface{}) {
+	DefaultLogger.ExtraVerbose(v...)
 }
 
 func Info(v ...interface{}) {

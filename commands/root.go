@@ -22,13 +22,15 @@ import (
 )
 
 var (
-	verboseFlag bool
-	localFlag   bool
-	versionFlag bool
+	verboseFlag      bool
+	extraVerboseFlag bool
+	localFlag        bool
+	versionFlag      bool
 )
 
 func init() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
+	RootCmd.PersistentFlags().BoolVarP(&extraVerboseFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (i.e: debug) for all commands")
 	RootCmd.PersistentFlags().BoolVar(&localFlag, "local", false, "Work offline only with synced/local resources")
 	RootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print awless version")
 }

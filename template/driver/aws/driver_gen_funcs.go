@@ -22,6 +22,7 @@ package aws
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -59,12 +60,14 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 	// Required params
 	setField(params["cidr"], input, "CidrBlock")
 
+	start := time.Now()
 	output, err := d.ec2.CreateVpc(input)
 	if err != nil {
 		d.logger.Errorf("create vpc error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateVpc call took %s", time.Since(start))
 	id := aws.StringValue(output.Vpc.VpcId)
 	d.logger.Verbosef("create vpc '%s' done", id)
 	return aws.StringValue(output.Vpc.VpcId), nil
@@ -99,12 +102,14 @@ func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 	// Required params
 	setField(params["id"], input, "VpcId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteVpc(input)
 	if err != nil {
 		d.logger.Errorf("delete vpc error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteVpc call took %s", time.Since(start))
 	d.logger.Verbose("delete vpc done")
 	return output, nil
 }
@@ -150,12 +155,14 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 		setField(params["zone"], input, "AvailabilityZone")
 	}
 
+	start := time.Now()
 	output, err := d.ec2.CreateSubnet(input)
 	if err != nil {
 		d.logger.Errorf("create subnet error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateSubnet call took %s", time.Since(start))
 	id := aws.StringValue(output.Subnet.SubnetId)
 	d.logger.Verbosef("create subnet '%s' done", id)
 	return aws.StringValue(output.Subnet.SubnetId), nil
@@ -183,12 +190,14 @@ func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, e
 		setField(params["public-vms"], input, "MapPublicIpOnLaunch")
 	}
 
+	start := time.Now()
 	output, err := d.ec2.ModifySubnetAttribute(input)
 	if err != nil {
 		d.logger.Errorf("update subnet error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.ModifySubnetAttribute call took %s", time.Since(start))
 	d.logger.Verbose("update subnet done")
 	return output, nil
 }
@@ -222,12 +231,14 @@ func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 	// Required params
 	setField(params["id"], input, "SubnetId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteSubnet(input)
 	if err != nil {
 		d.logger.Errorf("delete subnet error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteSubnet call took %s", time.Since(start))
 	d.logger.Verbose("delete subnet done")
 	return output, nil
 }
@@ -310,12 +321,14 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 		setField(params["userdata"], input, "UserData")
 	}
 
+	start := time.Now()
 	output, err := d.ec2.RunInstances(input)
 	if err != nil {
 		d.logger.Errorf("create instance error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.Instances[0].InstanceId)
 	tagsParams := map[string]interface{}{"resource": id}
 	if v, ok := params["name"]; ok {
@@ -379,12 +392,14 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 		setField(params["type"], input, "InstanceType")
 	}
 
+	start := time.Now()
 	output, err := d.ec2.ModifyInstanceAttribute(input)
 	if err != nil {
 		d.logger.Errorf("update instance error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.ModifyInstanceAttribute call took %s", time.Since(start))
 	d.logger.Verbose("update instance done")
 	return output, nil
 }
@@ -418,12 +433,14 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 	// Required params
 	setField(params["id"], input, "InstanceIds")
 
+	start := time.Now()
 	output, err := d.ec2.TerminateInstances(input)
 	if err != nil {
 		d.logger.Errorf("delete instance error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.TerminateInstances call took %s", time.Since(start))
 	d.logger.Verbose("delete instance done")
 	return output, nil
 }
@@ -457,12 +474,14 @@ func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, 
 	// Required params
 	setField(params["id"], input, "InstanceIds")
 
+	start := time.Now()
 	output, err := d.ec2.StartInstances(input)
 	if err != nil {
 		d.logger.Errorf("start instance error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StartingInstances[0].InstanceId)
 	d.logger.Verbosef("start instance '%s' done", id)
 	return aws.StringValue(output.StartingInstances[0].InstanceId), nil
@@ -497,12 +516,14 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	// Required params
 	setField(params["id"], input, "InstanceIds")
 
+	start := time.Now()
 	output, err := d.ec2.StopInstances(input)
 	if err != nil {
 		d.logger.Errorf("stop instance error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
 	d.logger.Verbosef("stop instance '%s' done", id)
 	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
@@ -541,12 +562,14 @@ func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interfa
 	setField(params["name"], input, "GroupName")
 	setField(params["vpc"], input, "VpcId")
 
+	start := time.Now()
 	output, err := d.ec2.CreateSecurityGroup(input)
 	if err != nil {
 		d.logger.Errorf("create securitygroup error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.GroupId)
 	d.logger.Verbosef("create securitygroup '%s' done", id)
 	return aws.StringValue(output.GroupId), nil
@@ -581,12 +604,14 @@ func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interfa
 	// Required params
 	setField(params["id"], input, "GroupId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteSecurityGroup(input)
 	if err != nil {
 		d.logger.Errorf("delete securitygroup error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
 	d.logger.Verbose("delete securitygroup done")
 	return output, nil
 }
@@ -622,12 +647,14 @@ func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, e
 	setField(params["zone"], input, "AvailabilityZone")
 	setField(params["size"], input, "Size")
 
+	start := time.Now()
 	output, err := d.ec2.CreateVolume(input)
 	if err != nil {
 		d.logger.Errorf("create volume error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 	d.logger.Verbosef("create volume '%s' done", id)
 	return aws.StringValue(output.VolumeId), nil
@@ -662,12 +689,14 @@ func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, e
 	// Required params
 	setField(params["id"], input, "VolumeId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteVolume(input)
 	if err != nil {
 		d.logger.Errorf("delete volume error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteVolume call took %s", time.Since(start))
 	d.logger.Verbose("delete volume done")
 	return output, nil
 }
@@ -705,12 +734,14 @@ func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, e
 	setField(params["instance"], input, "InstanceId")
 	setField(params["id"], input, "VolumeId")
 
+	start := time.Now()
 	output, err := d.ec2.AttachVolume(input)
 	if err != nil {
 		d.logger.Errorf("attach volume error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 	d.logger.Verbosef("attach volume '%s' done", id)
 	return aws.StringValue(output.VolumeId), nil
@@ -739,12 +770,14 @@ func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{})
 func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 
+	start := time.Now()
 	output, err := d.ec2.CreateInternetGateway(input)
 	if err != nil {
 		d.logger.Errorf("create internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
 	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
 	d.logger.Verbosef("create internetgateway '%s' done", id)
 	return aws.StringValue(output.InternetGateway.InternetGatewayId), nil
@@ -779,12 +812,14 @@ func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (inter
 	// Required params
 	setField(params["id"], input, "InternetGatewayId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteInternetGateway(input)
 	if err != nil {
 		d.logger.Errorf("delete internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteInternetGateway call took %s", time.Since(start))
 	d.logger.Verbose("delete internetgateway done")
 	return output, nil
 }
@@ -820,12 +855,14 @@ func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (inter
 	setField(params["id"], input, "InternetGatewayId")
 	setField(params["vpc"], input, "VpcId")
 
+	start := time.Now()
 	output, err := d.ec2.AttachInternetGateway(input)
 	if err != nil {
 		d.logger.Errorf("attach internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.AttachInternetGateway call took %s", time.Since(start))
 	d.logger.Verbose("attach internetgateway done")
 	return output, nil
 }
@@ -861,12 +898,14 @@ func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (inter
 	setField(params["id"], input, "InternetGatewayId")
 	setField(params["vpc"], input, "VpcId")
 
+	start := time.Now()
 	output, err := d.ec2.DetachInternetGateway(input)
 	if err != nil {
 		d.logger.Errorf("detach internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DetachInternetGateway call took %s", time.Since(start))
 	d.logger.Verbose("detach internetgateway done")
 	return output, nil
 }
@@ -900,12 +939,14 @@ func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{
 	// Required params
 	setField(params["vpc"], input, "VpcId")
 
+	start := time.Now()
 	output, err := d.ec2.CreateRouteTable(input)
 	if err != nil {
 		d.logger.Errorf("create routetable error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.RouteTable.RouteTableId)
 	d.logger.Verbosef("create routetable '%s' done", id)
 	return aws.StringValue(output.RouteTable.RouteTableId), nil
@@ -940,12 +981,14 @@ func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{
 	// Required params
 	setField(params["id"], input, "RouteTableId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteRouteTable(input)
 	if err != nil {
 		d.logger.Errorf("delete routetable error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteRouteTable call took %s", time.Since(start))
 	d.logger.Verbose("delete routetable done")
 	return output, nil
 }
@@ -981,12 +1024,14 @@ func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{
 	setField(params["id"], input, "RouteTableId")
 	setField(params["subnet"], input, "SubnetId")
 
+	start := time.Now()
 	output, err := d.ec2.AssociateRouteTable(input)
 	if err != nil {
 		d.logger.Errorf("attach routetable error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.AssociationId)
 	d.logger.Verbosef("attach routetable '%s' done", id)
 	return aws.StringValue(output.AssociationId), nil
@@ -1021,12 +1066,14 @@ func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{
 	// Required params
 	setField(params["association"], input, "AssociationId")
 
+	start := time.Now()
 	output, err := d.ec2.DisassociateRouteTable(input)
 	if err != nil {
 		d.logger.Errorf("detach routetable error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DisassociateRouteTable call took %s", time.Since(start))
 	d.logger.Verbose("detach routetable done")
 	return output, nil
 }
@@ -1064,12 +1111,14 @@ func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, er
 	setField(params["gateway"], input, "GatewayId")
 	setField(params["table"], input, "RouteTableId")
 
+	start := time.Now()
 	output, err := d.ec2.CreateRoute(input)
 	if err != nil {
 		d.logger.Errorf("create route error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.CreateRoute call took %s", time.Since(start))
 	d.logger.Verbose("create route done")
 	return output, nil
 }
@@ -1105,12 +1154,14 @@ func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, er
 	setField(params["cidr"], input, "DestinationCidrBlock")
 	setField(params["table"], input, "RouteTableId")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteRoute(input)
 	if err != nil {
 		d.logger.Errorf("delete route error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteRoute call took %s", time.Since(start))
 	d.logger.Verbose("delete route done")
 	return output, nil
 }
@@ -1144,12 +1195,14 @@ func (d *AwsDriver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 	// Required params
 	setField(params["id"], input, "KeyName")
 
+	start := time.Now()
 	output, err := d.ec2.DeleteKeyPair(input)
 	if err != nil {
 		d.logger.Errorf("delete keypair error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
 	d.logger.Verbose("delete keypair done")
 	return output, nil
 }
@@ -1171,12 +1224,14 @@ func (d *AwsDriver) Create_User(params map[string]interface{}) (interface{}, err
 	// Required params
 	setField(params["name"], input, "UserName")
 
+	start := time.Now()
 	output, err := d.iam.CreateUser(input)
 	if err != nil {
 		d.logger.Errorf("create user error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
 	id := aws.StringValue(output.User.UserId)
 	d.logger.Verbosef("create user '%s' done", id)
 	return aws.StringValue(output.User.UserId), nil
@@ -1199,12 +1254,14 @@ func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, err
 	// Required params
 	setField(params["name"], input, "UserName")
 
+	start := time.Now()
 	output, err := d.iam.DeleteUser(input)
 	if err != nil {
 		d.logger.Errorf("delete user error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("iam.DeleteUser call took %s", time.Since(start))
 	d.logger.Verbose("delete user done")
 	return output, nil
 }
@@ -1226,12 +1283,14 @@ func (d *AwsDriver) Create_Group(params map[string]interface{}) (interface{}, er
 	// Required params
 	setField(params["name"], input, "GroupName")
 
+	start := time.Now()
 	output, err := d.iam.CreateGroup(input)
 	if err != nil {
 		d.logger.Errorf("create group error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.Group.GroupId)
 	d.logger.Verbosef("create group '%s' done", id)
 	return aws.StringValue(output.Group.GroupId), nil
@@ -1254,12 +1313,14 @@ func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 	// Required params
 	setField(params["name"], input, "GroupName")
 
+	start := time.Now()
 	output, err := d.iam.DeleteGroup(input)
 	if err != nil {
 		d.logger.Errorf("delete group error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("iam.DeleteGroup call took %s", time.Since(start))
 	d.logger.Verbose("delete group done")
 	return output, nil
 }
@@ -1286,12 +1347,14 @@ func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 	setField(params["arn"], input, "PolicyArn")
 	setField(params["user"], input, "UserName")
 
+	start := time.Now()
 	output, err := d.iam.AttachUserPolicy(input)
 	if err != nil {
 		d.logger.Errorf("attach policy error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("iam.AttachUserPolicy call took %s", time.Since(start))
 	d.logger.Verbose("attach policy done")
 	return output, nil
 }
@@ -1318,12 +1381,14 @@ func (d *AwsDriver) Detach_Policy(params map[string]interface{}) (interface{}, e
 	setField(params["arn"], input, "PolicyArn")
 	setField(params["user"], input, "UserName")
 
+	start := time.Now()
 	output, err := d.iam.DetachUserPolicy(input)
 	if err != nil {
 		d.logger.Errorf("detach policy error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("iam.DetachUserPolicy call took %s", time.Since(start))
 	d.logger.Verbose("detach policy done")
 	return output, nil
 }
@@ -1345,12 +1410,14 @@ func (d *AwsDriver) Create_Bucket(params map[string]interface{}) (interface{}, e
 	// Required params
 	setField(params["name"], input, "Bucket")
 
+	start := time.Now()
 	output, err := d.s3.CreateBucket(input)
 	if err != nil {
 		d.logger.Errorf("create bucket error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
 	id := params["name"]
 	d.logger.Verbosef("create bucket '%s' done", id)
 	return params["name"], nil
@@ -1373,12 +1440,14 @@ func (d *AwsDriver) Delete_Bucket(params map[string]interface{}) (interface{}, e
 	// Required params
 	setField(params["name"], input, "Bucket")
 
+	start := time.Now()
 	output, err := d.s3.DeleteBucket(input)
 	if err != nil {
 		d.logger.Errorf("delete bucket error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
 	d.logger.Verbose("delete bucket done")
 	return output, nil
 }
@@ -1405,12 +1474,14 @@ func (d *AwsDriver) Delete_Storageobject(params map[string]interface{}) (interfa
 	setField(params["bucket"], input, "Bucket")
 	setField(params["key"], input, "Key")
 
+	start := time.Now()
 	output, err := d.s3.DeleteObject(input)
 	if err != nil {
 		d.logger.Errorf("delete storageobject error: %s", err)
 		return nil, err
 	}
 	output = output
+	d.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
 	d.logger.Verbose("delete storageobject done")
 	return output, nil
 }

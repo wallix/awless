@@ -77,7 +77,15 @@ func initSyncerHook(cmd *cobra.Command, args []string) error {
 }
 
 func initLoggerHook(cmd *cobra.Command, args []string) error {
-	logger.DefaultLogger.SetVerbose(verboseFlag)
+	var flag int
+	if verboseFlag {
+		flag = logger.VerboseF
+	}
+	if extraVerboseFlag {
+		flag = flag | logger.ExtraVerboseF
+	}
+
+	logger.DefaultLogger.SetVerbose(flag)
 	return nil
 }
 

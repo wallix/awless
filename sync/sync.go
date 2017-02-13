@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	gosync "sync"
+	"time"
 
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
@@ -59,8 +60,9 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 	var workers gosync.WaitGroup
 
 	type result struct {
-		name string
-		gph  *graph.Graph
+		name  string
+		gph   *graph.Graph
+		start time.Time
 	}
 
 	type srvErr struct {
@@ -75,9 +77,10 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 		workers.Add(1)
 		go func(srv cloud.Service) {
 			defer workers.Done()
+			start := time.Now()
 			g, err := srv.FetchResources()
 			errorc <- &srvErr{name: srv.Name(), err: err}
-			resultc <- &result{name: srv.Name(), gph: g}
+			resultc <- &result{name: srv.Name(), gph: g, start: start}
 		}(service)
 	}
 
@@ -93,7 +96,7 @@ Loop:
 		case srvErr, ok := <-errorc:
 			if ok {
 				if srvErr.err == cloud.ErrFetchAccessDenied {
-					logger.Verbosef("sync: access denied to service %s", srvErr.name)
+					logger.Errorf("sync: access denied to service %s", srvErr.name)
 				} else if srvErr.err != nil {
 					return graphs, srvErr.err
 				}
@@ -102,6 +105,7 @@ Loop:
 			if !ok {
 				break Loop
 			}
+			logger.ExtraVerbosef("sync: fetched %s service took %s", res.name, time.Since(res.start))
 			graphs[res.name] = res.gph
 		}
 	}
