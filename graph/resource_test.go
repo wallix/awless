@@ -18,8 +18,27 @@ package graph
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
+
+func TestSortResource(t *testing.T) {
+	resources := []*Resource{&Resource{id: "b"}, &Resource{id: "c"}, &Resource{id: "a"}}
+	sort.Sort(ResourceById(resources))
+
+	if got, want := len(resources), 3; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := resources[0].Id(), "a"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := resources[1].Id(), "b"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := resources[2].Id(), "c"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
 
 func TestCompareProperties(t *testing.T) {
 	props1 := Properties(map[string]interface{}{

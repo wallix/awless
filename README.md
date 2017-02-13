@@ -76,6 +76,7 @@ You can list various resources:
     $ awless list instances --sort launchtime
     $ awless list users --format csv
     $ awless list roles --sort name,id
+    $ awless list vpcs --format=json
 
 Listing resources by default performs queries directly to AWS. If you want, you can also query the local snapshot:
 

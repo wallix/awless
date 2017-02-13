@@ -202,3 +202,9 @@ func (prop *Property) unmarshalRDF(t *triple.Triple) error {
 
 	return nil
 }
+
+type ResourceById []*Resource
+
+func (r ResourceById) Len() int           { return len(r) }
+func (r ResourceById) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r ResourceById) Less(i, j int) bool { return r[i].Id() < r[j].Id() }

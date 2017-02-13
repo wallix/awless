@@ -31,24 +31,49 @@ func init() {
 
 func TestJSONDisplays(t *testing.T) {
 	g := createInfraGraph()
-
-	displayer := BuildOptions(
-		WithRdfType(graph.Instance),
-		WithFormat("json"),
-		WithSortBy("Id"),
-	).SetSource(g).Build()
-
-	expected := `[{"Id": "inst_1", "Name": "redis", "PublicIp": "1.2.3.4", "State": "running", "Type": "t2.micro"},
-	{"Id": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
-	{"Id": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge"}]`
-
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	compareJSONString(t, expected, w.String())
+	t.Run("Single resource", func(t *testing.T) {
+		displayer := BuildOptions(
+			WithRdfType(graph.Instance),
+			WithFormat("json"),
+		).SetSource(g).Build()
+
+		expected := `[{"Id": "inst_1", "Name": "redis", "PublicIp": "1.2.3.4", "State": "running", "Type": "t2.micro"},
+		{"Id": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
+		{"Id": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge"}]`
+
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+
+		compareJSON(t, w.String(), expected)
+	})
+
+	t.Run("Multi resource", func(t *testing.T) {
+		t.Skip("Comparison fail: until we can order what is inside each resource")
+
+		displayer := BuildOptions(
+			WithFormat("json"),
+		).SetSource(g).Build()
+
+		expected := `{"instances": [
+			{ "Id": "inst_1", "Name": "redis", "PublicIp": "1.2.3.4", "State": "running", "Type": "t2.micro"},
+		  { "Id": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
+		  { "Id": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge" }
+		 ], "subnets": [
+		  { "Id": "sub_1", "Name": "my_subnet", "VpcId": "vpc_1" }, {"Id": "sub_2", "VpcId": "vpc_2" }
+		 ], "vpcs": [
+		  { "Id": "vpc_1", "NewProp": "my_value" }, { "Id": "vpc_2", "Name": "my_vpc_2" }
+		 ]}`
+
+		w.Reset()
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+
+		compareJSON(t, w.String(), expected)
+	})
 }
 
 func TestTabularDisplays(t *testing.T) {
@@ -72,8 +97,7 @@ func TestTabularDisplays(t *testing.T) {
 		"inst_2, django, stopped, t2.medium, \n" +
 		"inst_3, apache, running, t2.xlarge, "
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -93,8 +117,7 @@ func TestTabularDisplays(t *testing.T) {
 		"inst_1, redis, running, t2.micro, 1.2.3.4"
 
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -126,8 +149,7 @@ func TestTabularDisplays(t *testing.T) {
 +--------+--------+---------+-----------+-----------+
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -149,8 +171,7 @@ func TestTabularDisplays(t *testing.T) {
 +--------+--------+---------+-----------+-----------+
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -172,8 +193,7 @@ func TestTabularDisplays(t *testing.T) {
 +--------+--------+---------+-----------+-----------+
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -197,9 +217,9 @@ inst_2
 django
 inst_3
 apache`
+
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -242,8 +262,7 @@ func TestMultiResourcesDisplays(t *testing.T) {
 +----------+-----------+-----------+-----------+
 `
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -273,9 +292,9 @@ sub_2
 vpc_1
 vpc_2
 my_vpc_2`
+
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -309,8 +328,7 @@ func TestDiffDisplay(t *testing.T) {
 +----------+--------------+----------+------------+
 `
 	var w bytes.Buffer
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -336,8 +354,7 @@ func TestDiffDisplay(t *testing.T) {
 +			instance, inst_5
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -385,8 +402,7 @@ func TestDateLists(t *testing.T) {
 +-------+---------------+----------------------+
 `
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -408,8 +424,7 @@ func TestDateLists(t *testing.T) {
 +-------+---------------+------------------------+
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -442,8 +457,7 @@ func TestMaxWidth(t *testing.T) {
 +--------+--------+---------+-----------+-----------+
 `
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -473,8 +487,7 @@ func TestMaxWidth(t *testing.T) {
 +------+--------+---------+--------+-----------+
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -504,8 +517,7 @@ func TestMaxWidth(t *testing.T) {
 +-------+-------+-------+-------+-------+
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -520,8 +532,7 @@ func TestMaxWidth(t *testing.T) {
 	).SetSource(g).Build()
 
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -545,8 +556,7 @@ func TestMaxWidth(t *testing.T) {
 Columns truncated to fit terminal: 'T', 'P'
 `
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -616,8 +626,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	expected := "Id, Name, Public IP"
 	var w bytes.Buffer
-	err := displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -632,8 +641,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	expected = "No results found.\n"
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -652,8 +660,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	expected = ""
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
@@ -668,8 +675,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	expected = "No columns to display.\n"
 	w.Reset()
-	err = displayer.Print(&w)
-	if err != nil {
+	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {

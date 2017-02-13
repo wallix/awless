@@ -31,6 +31,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
 
@@ -67,6 +68,10 @@ func (b *Builder) Build() Displayer {
 			switch b.format {
 			case "table":
 				dis := &multiResourcesTableDisplayer{base}
+				dis.setGraph(b.dataSource.(*graph.Graph))
+				return dis
+			case "json":
+				dis := &multiResourcesJSONDisplayer{base}
 				dis.setGraph(b.dataSource.(*graph.Graph))
 				return dis
 			case "porcelain":
@@ -281,6 +286,8 @@ func (d *jsonDisplayer) Print(w io.Writer) error {
 		return err
 	}
 
+	sort.Sort(graph.ResourceById(resources))
+
 	var props []graph.Properties
 	for _, res := range resources {
 		props = append(props, res.Properties)
@@ -471,6 +478,35 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 	table.Render()
 
 	return nil
+}
+
+type multiResourcesJSONDisplayer struct {
+	fromGraphDisplayer
+}
+
+func (d *multiResourcesJSONDisplayer) Print(w io.Writer) error {
+	var resources []*graph.Resource
+	var err error
+
+	all := make(map[string]interface{})
+	for t, _ := range DefaultsColumnDefinitions {
+		resources, err = d.g.GetAllResources(t)
+		if err != nil {
+			return err
+		}
+		var props []graph.Properties
+		for _, res := range resources {
+			props = append(props, res.Properties)
+		}
+		if len(resources) > 0 {
+			all[cloud.PluralizeResource(t.String())] = props
+		}
+	}
+
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", " ")
+
+	return enc.Encode(all)
 }
 
 type fromDiffDisplayer struct {
