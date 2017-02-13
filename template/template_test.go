@@ -19,11 +19,11 @@ package template
 import (
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"testing"
 
 	"github.com/oklog/ulid"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver"
 )
@@ -33,8 +33,8 @@ type noopDriver struct{}
 func (d *noopDriver) Lookup(lookups ...string) driver.DriverFn {
 	return func(map[string]interface{}) (interface{}, error) { return nil, nil }
 }
-func (d *noopDriver) SetLogger(*log.Logger) {}
-func (d *noopDriver) SetDryRun(bool)        {}
+func (d *noopDriver) SetLogger(*logger.Logger) {}
+func (d *noopDriver) SetDryRun(bool)           {}
 
 type errorDriver struct {
 	err error
@@ -43,8 +43,8 @@ type errorDriver struct {
 func (d *errorDriver) Lookup(lookups ...string) driver.DriverFn {
 	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }
 }
-func (d *errorDriver) SetLogger(*log.Logger) {}
-func (d *errorDriver) SetDryRun(bool)        {}
+func (d *errorDriver) SetLogger(*logger.Logger) {}
+func (d *errorDriver) SetDryRun(bool)           {}
 
 func TestRunDriverReportsInStatement(t *testing.T) {
 	anErr := errors.New("my error message")
@@ -614,5 +614,5 @@ func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
 	}
 }
 
-func (r *mockDriver) SetLogger(*log.Logger) {}
-func (r *mockDriver) SetDryRun(bool)        {}
+func (r *mockDriver) SetLogger(*logger.Logger) {}
+func (r *mockDriver) SetDryRun(bool)           {}

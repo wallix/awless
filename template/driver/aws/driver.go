@@ -18,14 +18,13 @@ package aws
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"reflect"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
 )
 
@@ -35,7 +34,7 @@ type AwsDriver struct {
 	s3  s3iface.S3API
 
 	dryRun bool
-	logger *log.Logger
+	logger *logger.Logger
 }
 
 func NewDriver(ec2 interface{}, iam interface{}, s3 interface{}) *AwsDriver {
@@ -43,12 +42,12 @@ func NewDriver(ec2 interface{}, iam interface{}, s3 interface{}) *AwsDriver {
 		ec2:    ec2.(ec2iface.EC2API),
 		iam:    iam.(iamiface.IAMAPI),
 		s3:     s3.(s3iface.S3API),
-		logger: log.New(ioutil.Discard, "", 0),
+		logger: logger.DiscardLogger,
 	}
 }
 
-func (d *AwsDriver) SetDryRun(dry bool)      { d.dryRun = dry }
-func (d *AwsDriver) SetLogger(l *log.Logger) { d.logger = l }
+func (d *AwsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *AwsDriver) SetLogger(l *logger.Logger) { d.logger = l }
 
 func (d *AwsDriver) Lookup(lookups ...string) driver.DriverFn {
 	if len(lookups) < 2 {

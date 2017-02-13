@@ -50,6 +50,12 @@ func (l *Logger) Verbosef(format string, v ...interface{}) {
 	}
 }
 
+func (l *Logger) Verbose(v ...interface{}) {
+	if l.isVerbose() {
+		l.out.Println(prepend(verbosePrefix, v...)...)
+	}
+}
+
 func (l *Logger) Info(v ...interface{}) {
 	l.out.Println(prepend(infoPrefix, v...)...)
 }
@@ -80,6 +86,10 @@ func (l *Logger) isVerbose() bool {
 
 func Verbosef(format string, v ...interface{}) {
 	DefaultLogger.Verbosef(format, v...)
+}
+
+func Verbose(v ...interface{}) {
+	DefaultLogger.Verbose(v...)
 }
 
 func Info(v ...interface{}) {

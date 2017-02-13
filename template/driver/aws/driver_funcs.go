@@ -43,14 +43,14 @@ func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interf
 	for _, val := range []string{"state", "id", "timeout"} {
 		if _, ok := params[val]; !ok {
 			err := fmt.Errorf("check instance error: missing required param '%s'", val)
-			d.logger.Printf("%s", err)
+			d.logger.Errorf("%s", err)
 			return nil, err
 		}
 	}
 
 	if _, ok := params["timeout"].(int); !ok {
 		err := errors.New("check instance error: timeout param is not int")
-		d.logger.Printf("%s", err)
+		d.logger.Errorf("%s", err)
 		return nil, err
 	}
 
@@ -62,12 +62,12 @@ func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interf
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("instance")
-			d.logger.Println("full dry run: check instance ok")
+			d.logger.Verbose("full dry run: check instance ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: check instance error: %s", err)
+	d.logger.Errorf("dry run: check instance error: %s", err)
 	return nil, err
 }
 
@@ -85,7 +85,7 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 		case <-time.After(1 * time.Second):
 			output, err := d.ec2.DescribeInstances(input)
 			if err != nil {
-				d.logger.Printf("check instance error: %s", err)
+				d.logger.Errorf("check instance error: %s", err)
 				return nil, err
 			}
 
@@ -94,7 +94,7 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 					for _, inst := range instances {
 						if aws.StringValue(inst.InstanceId) == params["id"] {
 							if aws.StringValue(inst.State.Name) == params["state"] {
-								d.logger.Printf("check instance status '%s' done", params["state"])
+								d.logger.Verbose("check instance status '%s' done", params["state"])
 								return nil, nil
 							}
 						}
@@ -104,12 +104,12 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 
 		case <-timer.C:
 			err := fmt.Errorf("timeout of %s expired", timeout)
-			d.logger.Printf("%s", err)
+			d.logger.Errorf("%s", err)
 			return nil, err
 		}
 	}
 
-	d.logger.Println("check instance done")
+	d.logger.Verbose("check instance done")
 	return nil, nil
 }
 
@@ -130,12 +130,12 @@ func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("full dry run: create tags ok")
+			d.logger.Verbose("full dry run: create tags ok")
 			return nil, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create tags error: %s", err)
+	d.logger.Errorf("dry run: create tags error: %s", err)
 	return nil, err
 }
 
@@ -153,10 +153,10 @@ func (d *AwsDriver) Create_Tags(params map[string]interface{}) (interface{}, err
 	_, err := d.ec2.CreateTags(input)
 
 	if err != nil {
-		d.logger.Printf("create tags error: %s", err)
+		d.logger.Errorf("create tags error: %s", err)
 		return nil, err
 	}
-	d.logger.Println("create tags done")
+	d.logger.Verbose("create tags done")
 
 	return nil, nil
 }
@@ -169,7 +169,7 @@ func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 
 	if params["name"] == "" {
 		err := fmt.Errorf("empty 'name' parameter")
-		d.logger.Printf("dry run: saving private key error: %s", err)
+		d.logger.Errorf("dry run: saving private key error: %s", err)
 		return nil, err
 	}
 
@@ -177,7 +177,7 @@ func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 	_, err := os.Stat(privKeyPath)
 	if err == nil {
 		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
-		d.logger.Printf("dry run: saving private key error: %s", fileExist)
+		d.logger.Errorf("dry run: saving private key error: %s", fileExist)
 		return nil, fileExist
 	}
 
@@ -188,22 +188,22 @@ func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	input := &ec2.ImportKeyPairInput{}
 	setField(params["name"], input, "KeyName")
 
-	d.logger.Printf("Generating locally a RSA 4096 bits keypair...")
+	d.logger.Info("Generating locally a RSA 4096 bits keypair...")
 	pub, priv, err := console.GenerateSSHKeyPair(4096)
 	if err != nil {
-		d.logger.Printf("generating keypair error: %s", err)
+		d.logger.Errorf("generating keypair error: %s", err)
 		return nil, err
 	}
 	privKeyPath := filepath.Join(config.KeysDir, fmt.Sprint(params["name"])+".pem")
 	_, err = os.Stat(privKeyPath)
 	if err == nil {
 		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
-		d.logger.Printf("saving private key error: %s", fileExist)
+		d.logger.Errorf("saving private key error: %s", fileExist)
 		return nil, fileExist
 	}
 	err = ioutil.WriteFile(privKeyPath, priv, 0400)
 	if err != nil {
-		d.logger.Printf("saving private key error: %s", err)
+		d.logger.Errorf("saving private key error: %s", err)
 		return nil, err
 	}
 	fmt.Printf("4096 RSA keypair generated locally and stored in '%s'\n", privKeyPath)
@@ -211,11 +211,11 @@ func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, 
 
 	output, err := d.ec2.ImportKeyPair(input)
 	if err != nil {
-		d.logger.Printf("create keypair error: %s", err)
+		d.logger.Errorf("create keypair error: %s", err)
 		return nil, err
 	}
 	id := aws.StringValue(output.KeyName)
-	d.logger.Printf("create keypair '%s' done", id)
+	d.logger.Infof("create keypair '%s' done", id)
 	return aws.StringValue(output.KeyName), nil
 }
 
@@ -265,12 +265,12 @@ func (d *AwsDriver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
-			d.logger.Println("full dry run: update securitygroup ok")
+			d.logger.Verbose("full dry run: update securitygroup ok")
 			return nil, nil
 		}
 	}
 
-	d.logger.Printf("dry run: update securitygroup error: %s", err)
+	d.logger.Errorf("dry run: update securitygroup error: %s", err)
 	return nil, err
 }
 
@@ -319,11 +319,11 @@ func (d *AwsDriver) Update_Securitygroup(params map[string]interface{}) (interfa
 		output, err = d.ec2.RevokeSecurityGroupEgress(ii)
 	}
 	if err != nil {
-		d.logger.Printf("update securitygroup error: %s", err)
+		d.logger.Errorf("update securitygroup error: %s", err)
 		return nil, err
 	}
 
-	d.logger.Println("update securitygroup done")
+	d.logger.Verbose("update securitygroup done")
 	return output, nil
 }
 
@@ -348,7 +348,7 @@ func (d *AwsDriver) Create_Storageobject_DryRun(params map[string]interface{}) (
 		return nil, fmt.Errorf("'%s' is a directory", params["file"])
 	}
 
-	d.logger.Println("params dry run: create storageobject ok")
+	d.logger.Verbose("params dry run: create storageobject ok")
 	return nil, nil
 }
 
@@ -376,11 +376,11 @@ func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interfa
 
 	output, err := d.s3.PutObject(input)
 	if err != nil {
-		d.logger.Printf("create storageobject error: %s", err)
+		d.logger.Errorf("create storageobject error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("create storageobject done")
+	d.logger.Verbose("create storageobject done")
 	return output, nil
 }
 

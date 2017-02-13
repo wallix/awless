@@ -16,12 +16,12 @@ limitations under the License.
 
 package driver
 
-import "log"
+import "github.com/wallix/awless/logger"
 
 type Driver interface {
 	Lookup(...string) DriverFn
 	SetDryRun(bool)
-	SetLogger(*log.Logger)
+	SetLogger(*logger.Logger)
 }
 
 type DriverFn func(map[string]interface{}) (interface{}, error)

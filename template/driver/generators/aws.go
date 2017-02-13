@@ -173,6 +173,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/wallix/awless/logger"
 )
 {{ range $index, $def := . }}
 {{- if not $def.ManualFuncDefinition }}
@@ -185,7 +186,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 		return nil, errors.New("{{ $def.Action }} {{ $def.Entity }}: missing required params '{{ $field }}'")
 	}
 	{{ end }}
-	d.logger.Println("params dry run: {{ $def.Action }} {{ $def.Entity }} ok")
+	d.logger.Verbose("params dry run: {{ $def.Action }} {{ $def.Entity }} ok")
 	return nil, nil
 }
 {{ else }}
@@ -224,12 +225,12 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 				d.Create_Tags_DryRun(tagsParams)
 			}
 			{{- end }}
-			d.logger.Println("full dry run: {{ $def.Action }} {{ $def.Entity }} ok")
+			d.logger.Verbose("full dry run: {{ $def.Action }} {{ $def.Entity }} ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: {{ $def.Action }} {{ $def.Entity }} error: %s", err)
+	d.logger.Errorf("dry run: {{ $def.Action }} {{ $def.Entity }} error: %s", err)
 	return nil, err
 }
 {{ end }}
@@ -253,7 +254,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 
 	output, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
 	if err != nil {
-		d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
+		d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err
 	}
 	output = output
@@ -271,10 +272,10 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 		d.Create_Tags(tagsParams)
 	}
 	{{- end }}
-	d.logger.Printf("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)
+	d.logger.Verbosef("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)
 	return {{ $def.OutputExtractor }}, nil
 	{{- else }}
-	d.logger.Println("{{ $def.Action }} {{ $def.Entity }} done")
+	d.logger.Verbose("{{ $def.Action }} {{ $def.Entity }} done")
 	return output, nil
 	{{- end }}
 }

@@ -21,8 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -103,10 +101,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		awscloud.AccessService.ProviderRunnableAPI(),
 		awscloud.StorageService.ProviderRunnableAPI(),
 	)
-
-	if verboseFlag {
-		awsDriver.SetLogger(log.New(os.Stdout, "[aws driver] ", log.Ltime))
-	}
+	awsDriver.SetLogger(logger.DefaultLogger)
 
 	for _, st := range templ.Statements {
 		if validators, ok := validation.ValidatorsPerActions[st.Action()]; ok {

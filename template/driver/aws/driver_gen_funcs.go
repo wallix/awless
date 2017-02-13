@@ -43,12 +43,12 @@ func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("vpc")
-			d.logger.Println("full dry run: create vpc ok")
+			d.logger.Verbose("full dry run: create vpc ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create vpc error: %s", err)
+	d.logger.Errorf("dry run: create vpc error: %s", err)
 	return nil, err
 }
 
@@ -61,12 +61,12 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 
 	output, err := d.ec2.CreateVpc(input)
 	if err != nil {
-		d.logger.Printf("create vpc error: %s", err)
+		d.logger.Errorf("create vpc error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.Vpc.VpcId)
-	d.logger.Printf("create vpc '%s' done", id)
+	d.logger.Verbosef("create vpc '%s' done", id)
 	return aws.StringValue(output.Vpc.VpcId), nil
 }
 
@@ -83,12 +83,12 @@ func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("vpc")
-			d.logger.Println("full dry run: delete vpc ok")
+			d.logger.Verbose("full dry run: delete vpc ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete vpc error: %s", err)
+	d.logger.Errorf("dry run: delete vpc error: %s", err)
 	return nil, err
 }
 
@@ -101,11 +101,11 @@ func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 
 	output, err := d.ec2.DeleteVpc(input)
 	if err != nil {
-		d.logger.Printf("delete vpc error: %s", err)
+		d.logger.Errorf("delete vpc error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete vpc done")
+	d.logger.Verbose("delete vpc done")
 	return output, nil
 }
 
@@ -128,12 +128,12 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("subnet")
-			d.logger.Println("full dry run: create subnet ok")
+			d.logger.Verbose("full dry run: create subnet ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create subnet error: %s", err)
+	d.logger.Errorf("dry run: create subnet error: %s", err)
 	return nil, err
 }
 
@@ -152,12 +152,12 @@ func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.CreateSubnet(input)
 	if err != nil {
-		d.logger.Printf("create subnet error: %s", err)
+		d.logger.Errorf("create subnet error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.Subnet.SubnetId)
-	d.logger.Printf("create subnet '%s' done", id)
+	d.logger.Verbosef("create subnet '%s' done", id)
 	return aws.StringValue(output.Subnet.SubnetId), nil
 }
 
@@ -167,7 +167,7 @@ func (d *AwsDriver) Update_Subnet_DryRun(params map[string]interface{}) (interfa
 		return nil, errors.New("update subnet: missing required params 'id'")
 	}
 
-	d.logger.Println("params dry run: update subnet ok")
+	d.logger.Verbose("params dry run: update subnet ok")
 	return nil, nil
 }
 
@@ -185,11 +185,11 @@ func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.ModifySubnetAttribute(input)
 	if err != nil {
-		d.logger.Printf("update subnet error: %s", err)
+		d.logger.Errorf("update subnet error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("update subnet done")
+	d.logger.Verbose("update subnet done")
 	return output, nil
 }
 
@@ -206,12 +206,12 @@ func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("subnet")
-			d.logger.Println("full dry run: delete subnet ok")
+			d.logger.Verbose("full dry run: delete subnet ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete subnet error: %s", err)
+	d.logger.Errorf("dry run: delete subnet error: %s", err)
 	return nil, err
 }
 
@@ -224,11 +224,11 @@ func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.DeleteSubnet(input)
 	if err != nil {
-		d.logger.Printf("delete subnet error: %s", err)
+		d.logger.Errorf("delete subnet error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete subnet done")
+	d.logger.Verbose("delete subnet done")
 	return output, nil
 }
 
@@ -273,12 +273,12 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 			if len(tagsParams) > 1 {
 				d.Create_Tags_DryRun(tagsParams)
 			}
-			d.logger.Println("full dry run: create instance ok")
+			d.logger.Verbose("full dry run: create instance ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create instance error: %s", err)
+	d.logger.Errorf("dry run: create instance error: %s", err)
 	return nil, err
 }
 
@@ -312,7 +312,7 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 
 	output, err := d.ec2.RunInstances(input)
 	if err != nil {
-		d.logger.Printf("create instance error: %s", err)
+		d.logger.Errorf("create instance error: %s", err)
 		return nil, err
 	}
 	output = output
@@ -324,7 +324,7 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 	if len(tagsParams) > 1 {
 		d.Create_Tags(tagsParams)
 	}
-	d.logger.Printf("create instance '%s' done", id)
+	d.logger.Verbosef("create instance '%s' done", id)
 	return aws.StringValue(output.Instances[0].InstanceId), nil
 }
 
@@ -352,12 +352,12 @@ func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (inter
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("instance")
-			d.logger.Println("full dry run: update instance ok")
+			d.logger.Verbose("full dry run: update instance ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: update instance error: %s", err)
+	d.logger.Errorf("dry run: update instance error: %s", err)
 	return nil, err
 }
 
@@ -381,11 +381,11 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 
 	output, err := d.ec2.ModifyInstanceAttribute(input)
 	if err != nil {
-		d.logger.Printf("update instance error: %s", err)
+		d.logger.Errorf("update instance error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("update instance done")
+	d.logger.Verbose("update instance done")
 	return output, nil
 }
 
@@ -402,12 +402,12 @@ func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("instance")
-			d.logger.Println("full dry run: delete instance ok")
+			d.logger.Verbose("full dry run: delete instance ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete instance error: %s", err)
+	d.logger.Errorf("dry run: delete instance error: %s", err)
 	return nil, err
 }
 
@@ -420,11 +420,11 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 
 	output, err := d.ec2.TerminateInstances(input)
 	if err != nil {
-		d.logger.Printf("delete instance error: %s", err)
+		d.logger.Errorf("delete instance error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete instance done")
+	d.logger.Verbose("delete instance done")
 	return output, nil
 }
 
@@ -441,12 +441,12 @@ func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interf
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("instance")
-			d.logger.Println("full dry run: start instance ok")
+			d.logger.Verbose("full dry run: start instance ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: start instance error: %s", err)
+	d.logger.Errorf("dry run: start instance error: %s", err)
 	return nil, err
 }
 
@@ -459,12 +459,12 @@ func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, 
 
 	output, err := d.ec2.StartInstances(input)
 	if err != nil {
-		d.logger.Printf("start instance error: %s", err)
+		d.logger.Errorf("start instance error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.StartingInstances[0].InstanceId)
-	d.logger.Printf("start instance '%s' done", id)
+	d.logger.Verbosef("start instance '%s' done", id)
 	return aws.StringValue(output.StartingInstances[0].InstanceId), nil
 }
 
@@ -481,12 +481,12 @@ func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("instance")
-			d.logger.Println("full dry run: stop instance ok")
+			d.logger.Verbose("full dry run: stop instance ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: stop instance error: %s", err)
+	d.logger.Errorf("dry run: stop instance error: %s", err)
 	return nil, err
 }
 
@@ -499,12 +499,12 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.StopInstances(input)
 	if err != nil {
-		d.logger.Printf("stop instance error: %s", err)
+		d.logger.Errorf("stop instance error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
-	d.logger.Printf("stop instance '%s' done", id)
+	d.logger.Verbosef("stop instance '%s' done", id)
 	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
 }
 
@@ -523,12 +523,12 @@ func (d *AwsDriver) Create_Securitygroup_DryRun(params map[string]interface{}) (
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("securitygroup")
-			d.logger.Println("full dry run: create securitygroup ok")
+			d.logger.Verbose("full dry run: create securitygroup ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create securitygroup error: %s", err)
+	d.logger.Errorf("dry run: create securitygroup error: %s", err)
 	return nil, err
 }
 
@@ -543,12 +543,12 @@ func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interfa
 
 	output, err := d.ec2.CreateSecurityGroup(input)
 	if err != nil {
-		d.logger.Printf("create securitygroup error: %s", err)
+		d.logger.Errorf("create securitygroup error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.GroupId)
-	d.logger.Printf("create securitygroup '%s' done", id)
+	d.logger.Verbosef("create securitygroup '%s' done", id)
 	return aws.StringValue(output.GroupId), nil
 }
 
@@ -565,12 +565,12 @@ func (d *AwsDriver) Delete_Securitygroup_DryRun(params map[string]interface{}) (
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("securitygroup")
-			d.logger.Println("full dry run: delete securitygroup ok")
+			d.logger.Verbose("full dry run: delete securitygroup ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete securitygroup error: %s", err)
+	d.logger.Errorf("dry run: delete securitygroup error: %s", err)
 	return nil, err
 }
 
@@ -583,11 +583,11 @@ func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interfa
 
 	output, err := d.ec2.DeleteSecurityGroup(input)
 	if err != nil {
-		d.logger.Printf("delete securitygroup error: %s", err)
+		d.logger.Errorf("delete securitygroup error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete securitygroup done")
+	d.logger.Verbose("delete securitygroup done")
 	return output, nil
 }
 
@@ -605,12 +605,12 @@ func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("volume")
-			d.logger.Println("full dry run: create volume ok")
+			d.logger.Verbose("full dry run: create volume ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create volume error: %s", err)
+	d.logger.Errorf("dry run: create volume error: %s", err)
 	return nil, err
 }
 
@@ -624,12 +624,12 @@ func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.CreateVolume(input)
 	if err != nil {
-		d.logger.Printf("create volume error: %s", err)
+		d.logger.Errorf("create volume error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.VolumeId)
-	d.logger.Printf("create volume '%s' done", id)
+	d.logger.Verbosef("create volume '%s' done", id)
 	return aws.StringValue(output.VolumeId), nil
 }
 
@@ -646,12 +646,12 @@ func (d *AwsDriver) Delete_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("volume")
-			d.logger.Println("full dry run: delete volume ok")
+			d.logger.Verbose("full dry run: delete volume ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete volume error: %s", err)
+	d.logger.Errorf("dry run: delete volume error: %s", err)
 	return nil, err
 }
 
@@ -664,11 +664,11 @@ func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.DeleteVolume(input)
 	if err != nil {
-		d.logger.Printf("delete volume error: %s", err)
+		d.logger.Errorf("delete volume error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete volume done")
+	d.logger.Verbose("delete volume done")
 	return output, nil
 }
 
@@ -687,12 +687,12 @@ func (d *AwsDriver) Attach_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("volume")
-			d.logger.Println("full dry run: attach volume ok")
+			d.logger.Verbose("full dry run: attach volume ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: attach volume error: %s", err)
+	d.logger.Errorf("dry run: attach volume error: %s", err)
 	return nil, err
 }
 
@@ -707,12 +707,12 @@ func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, e
 
 	output, err := d.ec2.AttachVolume(input)
 	if err != nil {
-		d.logger.Printf("attach volume error: %s", err)
+		d.logger.Errorf("attach volume error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.VolumeId)
-	d.logger.Printf("attach volume '%s' done", id)
+	d.logger.Verbosef("attach volume '%s' done", id)
 	return aws.StringValue(output.VolumeId), nil
 }
 
@@ -726,12 +726,12 @@ func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Println("full dry run: create internetgateway ok")
+			d.logger.Verbose("full dry run: create internetgateway ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create internetgateway error: %s", err)
+	d.logger.Errorf("dry run: create internetgateway error: %s", err)
 	return nil, err
 }
 
@@ -741,12 +741,12 @@ func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (inter
 
 	output, err := d.ec2.CreateInternetGateway(input)
 	if err != nil {
-		d.logger.Printf("create internetgateway error: %s", err)
+		d.logger.Errorf("create internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
-	d.logger.Printf("create internetgateway '%s' done", id)
+	d.logger.Verbosef("create internetgateway '%s' done", id)
 	return aws.StringValue(output.InternetGateway.InternetGatewayId), nil
 }
 
@@ -763,12 +763,12 @@ func (d *AwsDriver) Delete_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Println("full dry run: delete internetgateway ok")
+			d.logger.Verbose("full dry run: delete internetgateway ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete internetgateway error: %s", err)
+	d.logger.Errorf("dry run: delete internetgateway error: %s", err)
 	return nil, err
 }
 
@@ -781,11 +781,11 @@ func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (inter
 
 	output, err := d.ec2.DeleteInternetGateway(input)
 	if err != nil {
-		d.logger.Printf("delete internetgateway error: %s", err)
+		d.logger.Errorf("delete internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete internetgateway done")
+	d.logger.Verbose("delete internetgateway done")
 	return output, nil
 }
 
@@ -803,12 +803,12 @@ func (d *AwsDriver) Attach_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Println("full dry run: attach internetgateway ok")
+			d.logger.Verbose("full dry run: attach internetgateway ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: attach internetgateway error: %s", err)
+	d.logger.Errorf("dry run: attach internetgateway error: %s", err)
 	return nil, err
 }
 
@@ -822,11 +822,11 @@ func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (inter
 
 	output, err := d.ec2.AttachInternetGateway(input)
 	if err != nil {
-		d.logger.Printf("attach internetgateway error: %s", err)
+		d.logger.Errorf("attach internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("attach internetgateway done")
+	d.logger.Verbose("attach internetgateway done")
 	return output, nil
 }
 
@@ -844,12 +844,12 @@ func (d *AwsDriver) Detach_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Println("full dry run: detach internetgateway ok")
+			d.logger.Verbose("full dry run: detach internetgateway ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: detach internetgateway error: %s", err)
+	d.logger.Errorf("dry run: detach internetgateway error: %s", err)
 	return nil, err
 }
 
@@ -863,11 +863,11 @@ func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (inter
 
 	output, err := d.ec2.DetachInternetGateway(input)
 	if err != nil {
-		d.logger.Printf("detach internetgateway error: %s", err)
+		d.logger.Errorf("detach internetgateway error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("detach internetgateway done")
+	d.logger.Verbose("detach internetgateway done")
 	return output, nil
 }
 
@@ -884,12 +884,12 @@ func (d *AwsDriver) Create_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("routetable")
-			d.logger.Println("full dry run: create routetable ok")
+			d.logger.Verbose("full dry run: create routetable ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create routetable error: %s", err)
+	d.logger.Errorf("dry run: create routetable error: %s", err)
 	return nil, err
 }
 
@@ -902,12 +902,12 @@ func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{
 
 	output, err := d.ec2.CreateRouteTable(input)
 	if err != nil {
-		d.logger.Printf("create routetable error: %s", err)
+		d.logger.Errorf("create routetable error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.RouteTable.RouteTableId)
-	d.logger.Printf("create routetable '%s' done", id)
+	d.logger.Verbosef("create routetable '%s' done", id)
 	return aws.StringValue(output.RouteTable.RouteTableId), nil
 }
 
@@ -924,12 +924,12 @@ func (d *AwsDriver) Delete_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("routetable")
-			d.logger.Println("full dry run: delete routetable ok")
+			d.logger.Verbose("full dry run: delete routetable ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete routetable error: %s", err)
+	d.logger.Errorf("dry run: delete routetable error: %s", err)
 	return nil, err
 }
 
@@ -942,11 +942,11 @@ func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{
 
 	output, err := d.ec2.DeleteRouteTable(input)
 	if err != nil {
-		d.logger.Printf("delete routetable error: %s", err)
+		d.logger.Errorf("delete routetable error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete routetable done")
+	d.logger.Verbose("delete routetable done")
 	return output, nil
 }
 
@@ -964,12 +964,12 @@ func (d *AwsDriver) Attach_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("routetable")
-			d.logger.Println("full dry run: attach routetable ok")
+			d.logger.Verbose("full dry run: attach routetable ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: attach routetable error: %s", err)
+	d.logger.Errorf("dry run: attach routetable error: %s", err)
 	return nil, err
 }
 
@@ -983,12 +983,12 @@ func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{
 
 	output, err := d.ec2.AssociateRouteTable(input)
 	if err != nil {
-		d.logger.Printf("attach routetable error: %s", err)
+		d.logger.Errorf("attach routetable error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.AssociationId)
-	d.logger.Printf("attach routetable '%s' done", id)
+	d.logger.Verbosef("attach routetable '%s' done", id)
 	return aws.StringValue(output.AssociationId), nil
 }
 
@@ -1005,12 +1005,12 @@ func (d *AwsDriver) Detach_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("routetable")
-			d.logger.Println("full dry run: detach routetable ok")
+			d.logger.Verbose("full dry run: detach routetable ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: detach routetable error: %s", err)
+	d.logger.Errorf("dry run: detach routetable error: %s", err)
 	return nil, err
 }
 
@@ -1023,11 +1023,11 @@ func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{
 
 	output, err := d.ec2.DisassociateRouteTable(input)
 	if err != nil {
-		d.logger.Printf("detach routetable error: %s", err)
+		d.logger.Errorf("detach routetable error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("detach routetable done")
+	d.logger.Verbose("detach routetable done")
 	return output, nil
 }
 
@@ -1046,12 +1046,12 @@ func (d *AwsDriver) Create_Route_DryRun(params map[string]interface{}) (interfac
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("route")
-			d.logger.Println("full dry run: create route ok")
+			d.logger.Verbose("full dry run: create route ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: create route error: %s", err)
+	d.logger.Errorf("dry run: create route error: %s", err)
 	return nil, err
 }
 
@@ -1066,11 +1066,11 @@ func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, er
 
 	output, err := d.ec2.CreateRoute(input)
 	if err != nil {
-		d.logger.Printf("create route error: %s", err)
+		d.logger.Errorf("create route error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("create route done")
+	d.logger.Verbose("create route done")
 	return output, nil
 }
 
@@ -1088,12 +1088,12 @@ func (d *AwsDriver) Delete_Route_DryRun(params map[string]interface{}) (interfac
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("route")
-			d.logger.Println("full dry run: delete route ok")
+			d.logger.Verbose("full dry run: delete route ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete route error: %s", err)
+	d.logger.Errorf("dry run: delete route error: %s", err)
 	return nil, err
 }
 
@@ -1107,11 +1107,11 @@ func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, er
 
 	output, err := d.ec2.DeleteRoute(input)
 	if err != nil {
-		d.logger.Printf("delete route error: %s", err)
+		d.logger.Errorf("delete route error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete route done")
+	d.logger.Verbose("delete route done")
 	return output, nil
 }
 
@@ -1128,12 +1128,12 @@ func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 		switch code := awsErr.Code(); {
 		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
 			id := fakeDryRunId("keypair")
-			d.logger.Println("full dry run: delete keypair ok")
+			d.logger.Verbose("full dry run: delete keypair ok")
 			return id, nil
 		}
 	}
 
-	d.logger.Printf("dry run: delete keypair error: %s", err)
+	d.logger.Errorf("dry run: delete keypair error: %s", err)
 	return nil, err
 }
 
@@ -1146,11 +1146,11 @@ func (d *AwsDriver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 
 	output, err := d.ec2.DeleteKeyPair(input)
 	if err != nil {
-		d.logger.Printf("delete keypair error: %s", err)
+		d.logger.Errorf("delete keypair error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete keypair done")
+	d.logger.Verbose("delete keypair done")
 	return output, nil
 }
 
@@ -1160,7 +1160,7 @@ func (d *AwsDriver) Create_User_DryRun(params map[string]interface{}) (interface
 		return nil, errors.New("create user: missing required params 'name'")
 	}
 
-	d.logger.Println("params dry run: create user ok")
+	d.logger.Verbose("params dry run: create user ok")
 	return nil, nil
 }
 
@@ -1173,12 +1173,12 @@ func (d *AwsDriver) Create_User(params map[string]interface{}) (interface{}, err
 
 	output, err := d.iam.CreateUser(input)
 	if err != nil {
-		d.logger.Printf("create user error: %s", err)
+		d.logger.Errorf("create user error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.User.UserId)
-	d.logger.Printf("create user '%s' done", id)
+	d.logger.Verbosef("create user '%s' done", id)
 	return aws.StringValue(output.User.UserId), nil
 }
 
@@ -1188,7 +1188,7 @@ func (d *AwsDriver) Delete_User_DryRun(params map[string]interface{}) (interface
 		return nil, errors.New("delete user: missing required params 'name'")
 	}
 
-	d.logger.Println("params dry run: delete user ok")
+	d.logger.Verbose("params dry run: delete user ok")
 	return nil, nil
 }
 
@@ -1201,11 +1201,11 @@ func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, err
 
 	output, err := d.iam.DeleteUser(input)
 	if err != nil {
-		d.logger.Printf("delete user error: %s", err)
+		d.logger.Errorf("delete user error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete user done")
+	d.logger.Verbose("delete user done")
 	return output, nil
 }
 
@@ -1215,7 +1215,7 @@ func (d *AwsDriver) Create_Group_DryRun(params map[string]interface{}) (interfac
 		return nil, errors.New("create group: missing required params 'name'")
 	}
 
-	d.logger.Println("params dry run: create group ok")
+	d.logger.Verbose("params dry run: create group ok")
 	return nil, nil
 }
 
@@ -1228,12 +1228,12 @@ func (d *AwsDriver) Create_Group(params map[string]interface{}) (interface{}, er
 
 	output, err := d.iam.CreateGroup(input)
 	if err != nil {
-		d.logger.Printf("create group error: %s", err)
+		d.logger.Errorf("create group error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := aws.StringValue(output.Group.GroupId)
-	d.logger.Printf("create group '%s' done", id)
+	d.logger.Verbosef("create group '%s' done", id)
 	return aws.StringValue(output.Group.GroupId), nil
 }
 
@@ -1243,7 +1243,7 @@ func (d *AwsDriver) Delete_Group_DryRun(params map[string]interface{}) (interfac
 		return nil, errors.New("delete group: missing required params 'name'")
 	}
 
-	d.logger.Println("params dry run: delete group ok")
+	d.logger.Verbose("params dry run: delete group ok")
 	return nil, nil
 }
 
@@ -1256,11 +1256,11 @@ func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 
 	output, err := d.iam.DeleteGroup(input)
 	if err != nil {
-		d.logger.Printf("delete group error: %s", err)
+		d.logger.Errorf("delete group error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete group done")
+	d.logger.Verbose("delete group done")
 	return output, nil
 }
 
@@ -1274,7 +1274,7 @@ func (d *AwsDriver) Attach_Policy_DryRun(params map[string]interface{}) (interfa
 		return nil, errors.New("attach policy: missing required params 'user'")
 	}
 
-	d.logger.Println("params dry run: attach policy ok")
+	d.logger.Verbose("params dry run: attach policy ok")
 	return nil, nil
 }
 
@@ -1288,11 +1288,11 @@ func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 
 	output, err := d.iam.AttachUserPolicy(input)
 	if err != nil {
-		d.logger.Printf("attach policy error: %s", err)
+		d.logger.Errorf("attach policy error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("attach policy done")
+	d.logger.Verbose("attach policy done")
 	return output, nil
 }
 
@@ -1306,7 +1306,7 @@ func (d *AwsDriver) Detach_Policy_DryRun(params map[string]interface{}) (interfa
 		return nil, errors.New("detach policy: missing required params 'user'")
 	}
 
-	d.logger.Println("params dry run: detach policy ok")
+	d.logger.Verbose("params dry run: detach policy ok")
 	return nil, nil
 }
 
@@ -1320,11 +1320,11 @@ func (d *AwsDriver) Detach_Policy(params map[string]interface{}) (interface{}, e
 
 	output, err := d.iam.DetachUserPolicy(input)
 	if err != nil {
-		d.logger.Printf("detach policy error: %s", err)
+		d.logger.Errorf("detach policy error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("detach policy done")
+	d.logger.Verbose("detach policy done")
 	return output, nil
 }
 
@@ -1334,7 +1334,7 @@ func (d *AwsDriver) Create_Bucket_DryRun(params map[string]interface{}) (interfa
 		return nil, errors.New("create bucket: missing required params 'name'")
 	}
 
-	d.logger.Println("params dry run: create bucket ok")
+	d.logger.Verbose("params dry run: create bucket ok")
 	return nil, nil
 }
 
@@ -1347,12 +1347,12 @@ func (d *AwsDriver) Create_Bucket(params map[string]interface{}) (interface{}, e
 
 	output, err := d.s3.CreateBucket(input)
 	if err != nil {
-		d.logger.Printf("create bucket error: %s", err)
+		d.logger.Errorf("create bucket error: %s", err)
 		return nil, err
 	}
 	output = output
 	id := params["name"]
-	d.logger.Printf("create bucket '%s' done", id)
+	d.logger.Verbosef("create bucket '%s' done", id)
 	return params["name"], nil
 }
 
@@ -1362,7 +1362,7 @@ func (d *AwsDriver) Delete_Bucket_DryRun(params map[string]interface{}) (interfa
 		return nil, errors.New("delete bucket: missing required params 'name'")
 	}
 
-	d.logger.Println("params dry run: delete bucket ok")
+	d.logger.Verbose("params dry run: delete bucket ok")
 	return nil, nil
 }
 
@@ -1375,11 +1375,11 @@ func (d *AwsDriver) Delete_Bucket(params map[string]interface{}) (interface{}, e
 
 	output, err := d.s3.DeleteBucket(input)
 	if err != nil {
-		d.logger.Printf("delete bucket error: %s", err)
+		d.logger.Errorf("delete bucket error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete bucket done")
+	d.logger.Verbose("delete bucket done")
 	return output, nil
 }
 
@@ -1393,7 +1393,7 @@ func (d *AwsDriver) Delete_Storageobject_DryRun(params map[string]interface{}) (
 		return nil, errors.New("delete storageobject: missing required params 'key'")
 	}
 
-	d.logger.Println("params dry run: delete storageobject ok")
+	d.logger.Verbose("params dry run: delete storageobject ok")
 	return nil, nil
 }
 
@@ -1407,10 +1407,10 @@ func (d *AwsDriver) Delete_Storageobject(params map[string]interface{}) (interfa
 
 	output, err := d.s3.DeleteObject(input)
 	if err != nil {
-		d.logger.Printf("delete storageobject error: %s", err)
+		d.logger.Errorf("delete storageobject error: %s", err)
 		return nil, err
 	}
 	output = output
-	d.logger.Println("delete storageobject done")
+	d.logger.Verbose("delete storageobject done")
 	return output, nil
 }
