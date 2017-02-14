@@ -165,6 +165,8 @@ For example, you would run the `bucket_sizer` inspector with:
        fouth-bucket        1000         0.00772 Gb
                                         3.5059 Gb
 
+Note that - as a upcoming feature - using the local infrastructure snaphosts (automatically synced), we will be able to run inspectors through time very fast (i.e: all done locally)! For instance, in this case you would see the evolution of your bucket sizing!
+
 # About
 
 `awless` is an open source project created by Henri Binsztok, Quentin Bourgerie, Simon Caplette and François-Xavier Aguessy at Wallix.

@@ -33,7 +33,7 @@ func init() {
 
 var logCmd = &cobra.Command{
 	Use:                "log",
-	Short:              "Logs all your awless template executions",
+	Short:              "Logs all executions done against your cloud",
 	PersistentPreRun:   applyHooks(initAwlessEnvHook),
 	PersistentPostRunE: saveHistoryHook,
 

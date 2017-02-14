@@ -51,7 +51,7 @@ func init() {
 
 var runCmd = &cobra.Command{
 	Use:                "run",
-	Short:              "Run an awless template file given as the only argument. Ex: awless run mycloud.awless",
+	Short:              "Run a template given a filepath",
 	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 

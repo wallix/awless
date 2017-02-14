@@ -57,7 +57,7 @@ var listCmd = &cobra.Command{
 	Use:                "list",
 	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
-	Short:              "List various type of items: instances, vpc, subnet ...",
+	Short:              "List various type of resources",
 }
 
 var listSpecificResourceCmd = func(apiName string, resType string) *cobra.Command {

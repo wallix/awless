@@ -41,7 +41,7 @@ func init() {
 
 var historyCmd = &cobra.Command{
 	Use:                "history",
-	Short:              "Show your infrastucture history",
+	Short:              "(in progress) Show a resource/service/infrastructure history & changes using your locally sync snapshots",
 	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
 	PersistentPostRunE: saveHistoryHook,
 
