@@ -8,6 +8,7 @@
 - explore easily your infrastructure and cloud resources inter relations via CLI
 - ensure smart defaults & security best practices
 - manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
+- explore and analyse your infrastructure through time
 
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
 
@@ -20,10 +21,10 @@
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
+- A local history and versioning of the changes that occurred in your cloud: `awless history`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
-- (in progress) A local history and versioning of the changes that occurred in your cloud: `awless history`
 
 # Design concepts
 
@@ -123,12 +124,19 @@ Each `awless` command that changes the cloud infrastructure is associated with a
 
 The CLI guide you through a revert action and you have the chance to confirm or quit.
 
+### Cloud history
+
+Using the local auto sync functionnality of the cloud resources `awless history` will display in a digested manner the changes that occured in your infra:
+
+     awless history      # show changes at the resources level
+     awless history -p   # show changes including changes in the resources properties
+
 ### SSH
 
 You can directly ssh to an instance with:
 
-        $ awless ssh i-abcd1234
-        $ awless ssh ubuntu@i-abcd1234
+        awless ssh i-abcd1234
+        awless ssh ubuntu@i-abcd1234
 
 In the first case, note that `awless` can work out the default ssh user to use given a cloud (ex: `ec2` for AWS)
 
@@ -136,8 +144,8 @@ In the first case, note that `awless` can work out the default ssh user to use g
 
 When it makes sense we provide the concept of *alias*. Cloud resources ids can be a bit cryptic. An alias is just an already existing name of a resource. Given a alias we resolve the proper resource id. For instance:
 
-        $ awless ssh my-instance         # ssh to the instance by name. awless resolves its id
-        $ awless delete id=@my-instance  # delete an instance using its name
+        awless ssh my-instance         # ssh to the instance by name. awless resolves its id
+        awless delete id=@my-instance  # delete an instance using its name
 
 ### Inspectors
 
