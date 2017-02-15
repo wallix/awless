@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -37,7 +38,8 @@ import (
 )
 
 var (
-	serverUrl          = "http://updates.awless.io"
+	serverUrl          = "https://updates.awless.io"
+	upgradeStd         = os.Stderr
 	expirationDuration = 24 * time.Hour
 )
 
@@ -112,7 +114,7 @@ func sendPayloadAndCheckUpgrade(url string, payload []byte) error {
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&latest); err == nil {
 		if config.IsUpgrade(config.Version, latest.Version) {
-			fmt.Printf("New version of awless %s available at %s\n", latest.Version, latest.URL)
+			fmt.Fprintf(upgradeStd, "New version of awless %s available at %s\n", latest.Version, latest.URL)
 		}
 	}
 

@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -45,6 +46,7 @@ func ExampleUpgrade() {
 	tserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"URL":"https://github.com/wallix/awless/releases/latest","Version":"1000.0.0"}`))
 	}))
+	upgradeStd = os.Stdout
 	err := sendPayloadAndCheckUpgrade(tserver.URL, nil)
 	if err != nil {
 		panic(err)
