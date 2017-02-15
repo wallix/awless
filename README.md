@@ -1,4 +1,9 @@
+[![Build Status](https://api.travis-ci.org/wallix/awless.svg?branch=master)](https://travis-ci.org/wallix/awless)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wallix/awless)](https://goreportcard.com/report/github.com/wallix/awless)
+
 `awless` is a fast, powerful and easy-to-use command line interface (CLI) to manage Amazon Web Services.
+
+[Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki)
 
 # Why awless
 
@@ -11,7 +16,6 @@
 - explore and analyse your infrastructure through time
 
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
-We will post project updates on [Twitter](https://twitter.com/awlessCLI).
 
 # Overview
 
