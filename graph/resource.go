@@ -195,7 +195,7 @@ func (prop *Property) unmarshalRDF(t *triple.Triple) error {
 	}
 
 	if err = json.Unmarshal([]byte(propStr), prop); err != nil {
-		fmt.Println("cannot unmarshal %s: %s\n", propStr, err)
+		fmt.Printf("cannot unmarshal %s: %s\n", propStr, err)
 	}
 
 	switch {

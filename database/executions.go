@@ -63,8 +63,6 @@ func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, erro
 		} else {
 			return fmt.Errorf("no content for id '%s'", id)
 		}
-
-		return nil
 	})
 
 	return tpl, err

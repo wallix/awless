@@ -40,16 +40,16 @@ var (
 )
 
 var builds = map[string][]string{
-	"darwin":  []string{"amd64"},
-	"linux":   []string{"386", "amd64"},
-	"windows": []string{"386", "amd64"},
+	"darwin":  {"amd64"},
+	"linux":   {"386", "amd64"},
+	"windows": {"386", "amd64"},
 }
 
 func main() {
 	flag.Parse()
 
 	allBuild := map[string][]string{
-		*buildOS: []string{*buildArch},
+		*buildOS: {*buildArch},
 	}
 
 	if *releaseTag != "" && !*brew {

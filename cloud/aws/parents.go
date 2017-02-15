@@ -141,7 +141,7 @@ func (fb funcBuilder) addRelationListWithField() addParentFn {
 			}
 			listStructField := listStruc.FieldByName(fb.fieldName)
 			if !listStructField.IsValid() {
-				return fmt.Errorf("add parent to %s: unknown field %s in %T", listStructField, i)
+				return fmt.Errorf("add parent to %s: unknown field %s in %d", res.Id(), listStructField, i)
 			}
 			str, ok := listStructField.Interface().(*string)
 			if !ok {
@@ -227,7 +227,7 @@ func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
 
 	structField := struc.FieldByName("AttachedManagedPolicies")
 	if !structField.IsValid() {
-		return fmt.Errorf("add parent to %s: unknown field %s in %T", structField, i)
+		return fmt.Errorf("add parent to %s: unknown field %s in %d", res.Id(), structField, i)
 	}
 	policies, ok := structField.Interface().([]*iam.AttachedPolicy)
 	if !ok {

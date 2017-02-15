@@ -61,7 +61,7 @@ func InitAwlessEnv() error {
 	} else {
 		db, err, close := database.Current()
 		if err != nil {
-			return fmt.Errorf("init env: database error: ", err)
+			return fmt.Errorf("init env: database error: %s", err)
 		}
 		defer close()
 		region = db.MustGetDefaultRegion()
@@ -104,7 +104,7 @@ func resolveAndSetDefaults() (string, error) {
 
 	db, err, close := database.Current()
 	if err != nil {
-		return region, fmt.Errorf("database error: ", err)
+		return region, fmt.Errorf("database error: %s", err)
 	}
 	defer close()
 	for k, v := range defaults {

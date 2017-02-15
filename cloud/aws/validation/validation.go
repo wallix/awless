@@ -46,6 +46,4 @@ func (v *uniqueName) Validate(g *graph.Graph, params map[string]interface{}) err
 	default:
 		return fmt.Errorf("name='%s' is alread used by %d resource", params["name"], len(resources))
 	}
-
-	return nil
 }

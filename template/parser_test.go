@@ -279,8 +279,6 @@ func assertParams(n ast.Node, expected map[string]interface{}) error {
 	default:
 		return errors.New("unexpected node type")
 	}
-
-	return nil
 }
 
 func assertRefs(n ast.Node, expected map[string]string) error {
@@ -301,8 +299,6 @@ func assertRefs(n ast.Node, expected map[string]string) error {
 	default:
 		return errors.New("unexpected node type")
 	}
-
-	return nil
 }
 
 func assertAliases(n ast.Node, expected map[string]string) error {
@@ -323,8 +319,6 @@ func assertAliases(n ast.Node, expected map[string]string) error {
 	default:
 		return errors.New("unexpected node type")
 	}
-
-	return nil
 }
 
 func assertHoles(n ast.Node, expected map[string]string) error {
@@ -345,8 +339,6 @@ func assertHoles(n ast.Node, expected map[string]string) error {
 	default:
 		return errors.New("unexpected node type")
 	}
-
-	return nil
 }
 
 func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {

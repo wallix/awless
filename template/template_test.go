@@ -153,7 +153,7 @@ func TestTemplateExecutionHasErrors(t *testing.T) {
 	}
 
 	if got, want := exec.HasErrors(), true; got != want {
-		t.Fatal("got %t, want %t")
+		t.Fatalf("got %t, want %t", got, want)
 	}
 
 	exec = &TemplateExecution{
@@ -164,7 +164,7 @@ func TestTemplateExecutionHasErrors(t *testing.T) {
 	}
 
 	if got, want := exec.HasErrors(), false; got != want {
-		t.Fatal("got %t, want %t")
+		t.Fatalf("got %t, want %t", got, want)
 	}
 }
 
@@ -186,7 +186,7 @@ func TestRevertTemplateExecution(t *testing.T) {
 	}
 
 	if got, want := len(tpl.Statements), 4; got != want {
-		t.Fatalf("got %d, want %d")
+		t.Fatalf("got %d, want %d", got, want)
 	}
 	expr := tpl.Statements[0].Node.(*ast.ExpressionNode)
 	if got, want := "stop", expr.Action; got != want {
