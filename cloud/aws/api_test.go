@@ -17,8 +17,10 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -184,8 +186,8 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := result, string(expectContent); got != want {
-		t.Fatalf("got\n[%s]\n\nwant\n[%s]", got, want)
+	if err := diffText(result, string(expectContent)); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -381,4 +383,21 @@ func (m *mockS3) FetchResources() (*graph.Graph, error) {
 }
 func (m *mockS3) FetchByType(t string) (*graph.Graph, error) {
 	return nil, nil
+}
+
+func diffText(actual, expected string) error {
+	actuals := strings.Split(actual, "\n")
+	expecteds := strings.Split(expected, "\n")
+
+	if len(actuals) != len(expecteds) {
+		return fmt.Errorf("text diff: not same number of lines: got %d, want %d", len(actuals), len(expecteds))
+	}
+
+	for i := 0; i < len(actuals); i++ {
+		if actuals[i] != expecteds[i] {
+			return fmt.Errorf("text diff: diff at line %d\ngot:\n%s\nwant:\n%s", i+1, actuals[i], expecteds[i])
+		}
+	}
+
+	return nil
 }
