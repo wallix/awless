@@ -87,20 +87,20 @@ Listing resources by default performs queries directly to AWS. If you want, you 
 
     $ awless list subnets --local
 
-Use `awless list`, `awless list -h` or `awless help list` for more commands.
+Use `awless list`, `awless list -h` or `awless help list` to see all resources that can be listed.
 
 ### Showing resources
 
-`awless show` is quite useful to a good overview on a resource and to show where its stands in your cloud.
+`awless show` is quite useful to get a good overview on a resource and to show where its stands in your cloud.
 
-You can either provide the resource _id_ to the command or even simpler the resource's _name_. `awless` resolves its id behind the scene (this is the concept of _aliasing_)
+You can either provide the resource _id_, or simpler the resource's _name_. `awless` resolves the id behind the scene (this is the concept of _aliasing_)
 
     $ awless show i-34vgbh23jn        # show instance info, relations to subnets, vpcs, region, ...
     $ awless show @my-bucket          # show bucket info, objects it contains, siblings, etc...
     $ awless show admin-user --local  # show user, policy applying to this user, etc...
                                         snappy! will not refetch but work with the local graph
 
-Basically `awless show` try to maximize the info for a resource in a nice terminal format
+Basically `awless show` try to maximize the info nicely on your terminal for a given resource
 
 ### Creating, Updating and Deleting resources
 
