@@ -1,0 +1,7 @@
+dependencies:
+    override:
+      - go build
+
+test:
+  override:
+      - go test ./...
