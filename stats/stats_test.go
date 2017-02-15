@@ -41,6 +41,17 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+func ExampleUpgrade() {
+	tserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"URL":"https://github.com/wallix/awless/releases/latest","Version":"1000.0.0"}`))
+	}))
+	err := sendPayloadAndCheckUpgrade(tserver.URL, nil)
+	if err != nil {
+		panic(err)
+	}
+	// Output: New version of awless 1000.0.0 available at https://github.com/wallix/awless/releases/latest
+}
+
 func TestStats(t *testing.T) {
 	db, close := newTestDb()
 	defer close()

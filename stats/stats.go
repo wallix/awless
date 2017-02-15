@@ -37,7 +37,7 @@ import (
 )
 
 var (
-	serverUrl          = "http://52.213.243.16"
+	serverUrl          = "http://updates.awless.io"
 	expirationDuration = 24 * time.Hour
 )
 
@@ -77,8 +77,8 @@ func SendStats(db *database.DB, localInfra, localAccess *graph.Graph) error {
 		return err
 	}
 
-	client := &http.Client{Timeout: 2 * time.Second}
-	if _, err := client.Post(serverUrl, "application/json", bytes.NewReader(payload)); err != nil {
+	err = sendPayloadAndCheckUpgrade(serverUrl, payload)
+	if err != nil {
 		return err
 	}
 
@@ -94,6 +94,28 @@ func SendStats(db *database.DB, localInfra, localAccess *graph.Graph) error {
 	if err := db.DeleteHistory(); err != nil {
 		return err
 	}
+	return nil
+}
+
+func sendPayloadAndCheckUpgrade(url string, payload []byte) error {
+	client := &http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Post(url, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	latest := struct {
+		Version, URL string
+	}{}
+
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&latest); err == nil {
+		if config.IsUpgrade(config.Version, latest.Version) {
+			fmt.Printf("New version of awless %s available at %s\n", latest.Version, latest.URL)
+		}
+	}
+
 	return nil
 }
 
