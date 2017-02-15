@@ -18,6 +18,7 @@ package database
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/wallix/awless/template"
@@ -54,11 +55,16 @@ func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, erro
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
+		if b == nil {
+			return errors.New("no template executions stored yet")
+		}
 		if content := b.Get([]byte(id)); content != nil {
 			return json.Unmarshal(b.Get([]byte(id)), tpl)
 		} else {
 			return fmt.Errorf("no content for id '%s'", id)
 		}
+
+		return nil
 	})
 
 	return tpl, err
