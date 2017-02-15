@@ -11,6 +11,7 @@
 - explore and analyse your infrastructure through time
 
 `awless` brings a new approach to manage virtualized infrastructures through CLI.
+We will post project updates on [Twitter](https://twitter.com/awlessCLI).
 
 # Overview
 
