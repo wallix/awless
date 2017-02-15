@@ -22,6 +22,7 @@ import (
 	"net"
 	"reflect"
 	"sync"
+	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -160,6 +161,15 @@ var extractValueFn = func(i interface{}) (interface{}, error) {
 		return iv.Elem().Interface(), nil
 	}
 	return nil, fmt.Errorf("aws type unknown: %T", i)
+}
+
+// Extract time forcing timezone to UTC (friendlier when running test in different timezones i.e. travis)
+var extractTimeFn = func(i interface{}) (interface{}, error) {
+	t, ok := i.(*time.Time)
+	if !ok {
+		return nil, fmt.Errorf("expected time pointer, got: %T", i)
+	}
+	return t.UTC(), nil
 }
 
 var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {

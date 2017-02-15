@@ -86,7 +86,7 @@
 /user<usr_1>	"has_type"@[]	"/user"^^type:text
 /user<usr_1>	"property"@[]	"{"Key":"Id","Value":"usr_1"}"^^type:text
 /user<usr_1>	"property"@[]	"{"Key":"InlinePolicies","Value":["npolicy_1","npolicy_2"]}"^^type:text
-/user<usr_1>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2017-02-03T17:24:37+01:00"}"^^type:text
+/user<usr_1>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2017-02-03T16:24:37Z"}"^^type:text
 /user<usr_2>	"has_type"@[]	"/user"^^type:text
 /user<usr_2>	"property"@[]	"{"Key":"Id","Value":"usr_2"}"^^type:text
 /user<usr_2>	"property"@[]	"{"Key":"InlinePolicies","Value":["npolicy_1"]}"^^type:text

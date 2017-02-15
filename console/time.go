@@ -22,7 +22,7 @@ import (
 )
 
 func humanizeTime(t time.Time) string {
-	d := time.Now().Sub(t)
+	d := time.Now().UTC().Sub(t)
 	switch {
 	case d.Seconds() <= time.Second.Seconds():
 		return "now"
