@@ -87,7 +87,7 @@ Listing resources by default performs queries directly to AWS. If you want, you 
 
     $ awless list subnets --local
 
-See the [manual](https://github.com/wallix/awless/wiki/Commands#awless-list) for a complete reference of `awless list`.
+Use `awless list`, `awless list -h` or `awless help list` for more commands.
 
 ### Showing resources
 
@@ -120,7 +120,7 @@ Then:
     awless delete subnet id=subnet-12345678
     awless attach volume id=vol-12345678 instance=i-12345678
 
-See [templates commands (wiki)](https://github.com/wallix/awless/wiki/Templates#Commands) for more commands.
+See [Templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more.
 
 You can also run an `awless` template from a predefined template file with:
 
