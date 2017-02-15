@@ -86,7 +86,7 @@ var inspectCmd = &cobra.Command{
 
 func allInspectors() string {
 	var all []string
-	for name, _ := range inspect.InspectorsRegister {
+	for name := range inspect.InspectorsRegister {
 		all = append(all, name)
 	}
 	return strings.Join(all, ", ")

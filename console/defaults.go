@@ -23,7 +23,7 @@ import (
 
 var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	//EC2
-	graph.Instance: []ColumnDefinition{
+	graph.Instance: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "SubnetId"},
 		StringColumnDefinition{Prop: "Name"},
@@ -36,7 +36,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime"}},
 	},
-	graph.Vpc: []ColumnDefinition{
+	graph.Vpc: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
@@ -46,7 +46,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "CidrBlock"},
 	},
-	graph.Subnet: []ColumnDefinition{
+	graph.Subnet: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "CidrBlock"},
@@ -63,7 +63,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 			ColoredValues:          map[string]color.Attribute{"true": color.FgGreen},
 		},
 	},
-	graph.SecurityGroup: []ColumnDefinition{
+	graph.SecurityGroup: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "VpcId"},
 		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "InboundRules", Friendly: "Inbound"}},
@@ -71,23 +71,23 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Description", DisableTruncate: true},
 	},
-	graph.InternetGateway: []ColumnDefinition{
+	graph.InternetGateway: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Vpcs", DisableTruncate: true},
 	},
-	graph.RouteTable: []ColumnDefinition{
+	graph.RouteTable: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Main"},
 		RoutesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Routes"}},
 	},
-	graph.Keypair: []ColumnDefinition{
+	graph.Keypair: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "KeyFingerprint", DisableTruncate: true},
 	},
-	graph.Volume: []ColumnDefinition{
+	graph.Volume: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "VolumeType"},
@@ -98,35 +98,35 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "AvailabilityZone"},
 	},
 	//IAM
-	graph.User: []ColumnDefinition{
+	graph.User: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate", Friendly: "PasswordLastUsed"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
-	graph.Role: []ColumnDefinition{
+	graph.Role: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
-	graph.Policy: []ColumnDefinition{
+	graph.Policy: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "UpdateDate"}},
 	},
-	graph.Group: []ColumnDefinition{
+	graph.Group: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
 	// S3
-	graph.Bucket: []ColumnDefinition{
+	graph.Bucket: {
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Grants"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
-	graph.Object: []ColumnDefinition{
+	graph.Object: {
 		StringColumnDefinition{Prop: "Key", TruncateRight: true},
 		StringColumnDefinition{Prop: "BucketName"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "ModifiedDate"}},

@@ -259,7 +259,7 @@ func (m *mockEc2) RunInstances(input *ec2.RunInstancesInput) (*ec2.Reservation, 
 	if err := m.verifyInstanceInput(input); err != nil {
 		return nil, err
 	}
-	return &ec2.Reservation{Instances: []*ec2.Instance{&ec2.Instance{InstanceId: aws.String("mynewinstance")}}}, nil
+	return &ec2.Reservation{Instances: []*ec2.Instance{{InstanceId: aws.String("mynewinstance")}}}, nil
 }
 
 func (m *mockEc2) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {

@@ -96,7 +96,7 @@ func TestTransformFunctions(t *testing.T) {
 			{FromPort: awssdk.Int64(-1),
 				ToPort:     awssdk.Int64(-1),
 				IpProtocol: awssdk.String("-1"),
-				IpRanges:   []*ec2.IpRange{&ec2.IpRange{CidrIp: awssdk.String("10.192.24.0/24")}},
+				IpRanges:   []*ec2.IpRange{{CidrIp: awssdk.String("10.192.24.0/24")}},
 			},
 			{FromPort: awssdk.Int64(12),
 				ToPort:     awssdk.Int64(12),
@@ -300,12 +300,12 @@ func TestFetchFunctions(t *testing.T) {
 	t.Parallel()
 	t.Run("fetchAndExtractGrants", func(t *testing.T) {
 		bucketsACL := map[string][]*s3.Grant{
-			"bucket_1": []*s3.Grant{
+			"bucket_1": {
 				{Permission: awssdk.String("Read"), Grantee: &s3.Grantee{ID: awssdk.String("usr_1"), Type: awssdk.String("my_type_1")}},
 				{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{ID: awssdk.String("usr_2"), DisplayName: awssdk.String("my_user_2"), Type: awssdk.String("my_type_2")}},
 				{Permission: awssdk.String("Execute"), Grantee: &s3.Grantee{ID: awssdk.String("usr_3"), DisplayName: awssdk.String("my_user_3"), EmailAddress: awssdk.String("user@domain"), Type: awssdk.String("my_type_3")}},
 			},
-			"bucket_2": []*s3.Grant{
+			"bucket_2": {
 				{Permission: awssdk.String("Read"), Grantee: &s3.Grantee{URI: awssdk.String("group_uri"), Type: awssdk.String("Group")}},
 				{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{ID: awssdk.String("usr_1"), Type: awssdk.String("my_type_2")}},
 			},

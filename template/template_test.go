@@ -58,15 +58,15 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 			input:  "create vpc cidr=10.0.0.0/25\ndelete subnet id=sub-5f4g3hj",
 			driver: &noopDriver{},
 			expect: []*ast.Statement{
-				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25"},
-				&ast.Statement{Line: "delete subnet id=sub-5f4g3hj"},
+				{Line: "create vpc cidr=10.0.0.0/25"},
+				{Line: "delete subnet id=sub-5f4g3hj"},
 			},
 		},
 		{
 			input:  "create vpc cidr=10.0.0.0/25",
 			driver: &errorDriver{anErr},
 			expect: []*ast.Statement{
-				&ast.Statement{Line: "create vpc cidr=10.0.0.0/25", Err: anErr},
+				{Line: "create vpc cidr=10.0.0.0/25", Err: anErr},
 			},
 		},
 	}
@@ -461,21 +461,21 @@ func TestMergeParams(t *testing.T) {
 	})
 
 	expect := []*ast.Statement{
-		&ast.Statement{Node: &ast.DeclarationNode{
+		{Node: &ast.DeclarationNode{
 			Left: &ast.IdentifierNode{},
 			Right: &ast.ExpressionNode{
 				Action: "create", Entity: "vpc",
 				Params: map[string]interface{}{"count": 10},
 			},
 		}},
-		&ast.Statement{Node: &ast.DeclarationNode{
+		{Node: &ast.DeclarationNode{
 			Left: &ast.IdentifierNode{},
 			Right: &ast.ExpressionNode{
 				Action: "create", Entity: "subnet",
 				Params: map[string]interface{}{"cidr": "10.0.0.0/24"},
 			},
 		}},
-		&ast.Statement{Node: &ast.ExpressionNode{
+		{Node: &ast.ExpressionNode{
 			Action: "create", Entity: "instance",
 			Params: map[string]interface{}{"type": "t1", "image": "image2", "subnet": "mysubnet"},
 		}},

@@ -50,280 +50,280 @@ func (def TemplateDefinition) Extra() []string {
 }
 
 var AWSTemplatesDefinitions = map[string]TemplateDefinition{
-	"createvpc": TemplateDefinition{
+	"createvpc": {
 		Action:         "create",
 		Entity:         "vpc",
 		requiredParams: []string{"cidr"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deletevpc": TemplateDefinition{
+	"deletevpc": {
 		Action:         "delete",
 		Entity:         "vpc",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createsubnet": TemplateDefinition{
+	"createsubnet": {
 		Action:         "create",
 		Entity:         "subnet",
 		requiredParams: []string{"cidr", "vpc"},
 		extraParams:    []string{"zone"},
 		tagsMapping:    []string{},
 	},
-	"updatesubnet": TemplateDefinition{
+	"updatesubnet": {
 		Action:         "update",
 		Entity:         "subnet",
 		requiredParams: []string{"id"},
 		extraParams:    []string{"public-vms"},
 		tagsMapping:    []string{},
 	},
-	"deletesubnet": TemplateDefinition{
+	"deletesubnet": {
 		Action:         "delete",
 		Entity:         "subnet",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createinstance": TemplateDefinition{
+	"createinstance": {
 		Action:         "create",
 		Entity:         "instance",
 		requiredParams: []string{"image", "type", "count", "count", "subnet"},
 		extraParams:    []string{"lock", "key", "ip", "group", "userdata"},
 		tagsMapping:    []string{"name"},
 	},
-	"updateinstance": TemplateDefinition{
+	"updateinstance": {
 		Action:         "update",
 		Entity:         "instance",
 		requiredParams: []string{"id"},
 		extraParams:    []string{"lock", "group", "type"},
 		tagsMapping:    []string{},
 	},
-	"deleteinstance": TemplateDefinition{
+	"deleteinstance": {
 		Action:         "delete",
 		Entity:         "instance",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"startinstance": TemplateDefinition{
+	"startinstance": {
 		Action:         "start",
 		Entity:         "instance",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"stopinstance": TemplateDefinition{
+	"stopinstance": {
 		Action:         "stop",
 		Entity:         "instance",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"checkinstance": TemplateDefinition{
+	"checkinstance": {
 		Action:         "check",
 		Entity:         "instance",
 		requiredParams: []string{"id", "state", "timeout"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createsecuritygroup": TemplateDefinition{
+	"createsecuritygroup": {
 		Action:         "create",
 		Entity:         "securitygroup",
 		requiredParams: []string{"description", "name", "vpc"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"updatesecuritygroup": TemplateDefinition{
+	"updatesecuritygroup": {
 		Action:         "update",
 		Entity:         "securitygroup",
 		requiredParams: []string{"cidr", "id", "protocol"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deletesecuritygroup": TemplateDefinition{
+	"deletesecuritygroup": {
 		Action:         "delete",
 		Entity:         "securitygroup",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createvolume": TemplateDefinition{
+	"createvolume": {
 		Action:         "create",
 		Entity:         "volume",
 		requiredParams: []string{"zone", "size"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deletevolume": TemplateDefinition{
+	"deletevolume": {
 		Action:         "delete",
 		Entity:         "volume",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"attachvolume": TemplateDefinition{
+	"attachvolume": {
 		Action:         "attach",
 		Entity:         "volume",
 		requiredParams: []string{"device", "instance", "id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createinternetgateway": TemplateDefinition{
+	"createinternetgateway": {
 		Action:         "create",
 		Entity:         "internetgateway",
 		requiredParams: []string{},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deleteinternetgateway": TemplateDefinition{
+	"deleteinternetgateway": {
 		Action:         "delete",
 		Entity:         "internetgateway",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"attachinternetgateway": TemplateDefinition{
+	"attachinternetgateway": {
 		Action:         "attach",
 		Entity:         "internetgateway",
 		requiredParams: []string{"id", "vpc"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"detachinternetgateway": TemplateDefinition{
+	"detachinternetgateway": {
 		Action:         "detach",
 		Entity:         "internetgateway",
 		requiredParams: []string{"id", "vpc"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createroutetable": TemplateDefinition{
+	"createroutetable": {
 		Action:         "create",
 		Entity:         "routetable",
 		requiredParams: []string{"vpc"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deleteroutetable": TemplateDefinition{
+	"deleteroutetable": {
 		Action:         "delete",
 		Entity:         "routetable",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"attachroutetable": TemplateDefinition{
+	"attachroutetable": {
 		Action:         "attach",
 		Entity:         "routetable",
 		requiredParams: []string{"id", "subnet"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"detachroutetable": TemplateDefinition{
+	"detachroutetable": {
 		Action:         "detach",
 		Entity:         "routetable",
 		requiredParams: []string{"association"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createroute": TemplateDefinition{
+	"createroute": {
 		Action:         "create",
 		Entity:         "route",
 		requiredParams: []string{"cidr", "gateway", "table"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deleteroute": TemplateDefinition{
+	"deleteroute": {
 		Action:         "delete",
 		Entity:         "route",
 		requiredParams: []string{"cidr", "table"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createtags": TemplateDefinition{
+	"createtags": {
 		Action:         "create",
 		Entity:         "tags",
 		requiredParams: []string{"resource"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createkeypair": TemplateDefinition{
+	"createkeypair": {
 		Action:         "create",
 		Entity:         "keypair",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deletekeypair": TemplateDefinition{
+	"deletekeypair": {
 		Action:         "delete",
 		Entity:         "keypair",
 		requiredParams: []string{"id"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createuser": TemplateDefinition{
+	"createuser": {
 		Action:         "create",
 		Entity:         "user",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deleteuser": TemplateDefinition{
+	"deleteuser": {
 		Action:         "delete",
 		Entity:         "user",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"creategroup": TemplateDefinition{
+	"creategroup": {
 		Action:         "create",
 		Entity:         "group",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deletegroup": TemplateDefinition{
+	"deletegroup": {
 		Action:         "delete",
 		Entity:         "group",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"attachpolicy": TemplateDefinition{
+	"attachpolicy": {
 		Action:         "attach",
 		Entity:         "policy",
 		requiredParams: []string{"arn", "user"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"detachpolicy": TemplateDefinition{
+	"detachpolicy": {
 		Action:         "detach",
 		Entity:         "policy",
 		requiredParams: []string{"arn", "user"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createbucket": TemplateDefinition{
+	"createbucket": {
 		Action:         "create",
 		Entity:         "bucket",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"deletebucket": TemplateDefinition{
+	"deletebucket": {
 		Action:         "delete",
 		Entity:         "bucket",
 		requiredParams: []string{"name"},
 		extraParams:    []string{},
 		tagsMapping:    []string{},
 	},
-	"createstorageobject": TemplateDefinition{
+	"createstorageobject": {
 		Action:         "create",
 		Entity:         "storageobject",
 		requiredParams: []string{"file", "bucket"},
 		extraParams:    []string{"name"},
 		tagsMapping:    []string{},
 	},
-	"deletestorageobject": TemplateDefinition{
+	"deletestorageobject": {
 		Action:         "delete",
 		Entity:         "storageobject",
 		requiredParams: []string{"bucket", "key"},

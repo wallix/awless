@@ -79,7 +79,7 @@ func (s *Template) GetEntitiesSet() (entities []string) {
 		unique[n.Entity] = true
 	})
 
-	for entity, _ := range unique {
+	for entity := range unique {
 		entities = append(entities, entity)
 	}
 	return
@@ -91,7 +91,7 @@ func (s *Template) GetActionsSet() (actions []string) {
 		unique[n.Action] = true
 	})
 
-	for action, _ := range unique {
+	for action := range unique {
 		actions = append(actions, action)
 	}
 	return

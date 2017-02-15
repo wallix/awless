@@ -412,7 +412,7 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 	var lines []string
 
 	for i := range values {
-		for j, _ := range d.headers {
+		for j := range d.headers {
 			v := values[i][j]
 			if v != nil {
 				val := fmt.Sprint(v)
@@ -489,7 +489,7 @@ func (d *multiResourcesJSONDisplayer) Print(w io.Writer) error {
 	var err error
 
 	all := make(map[string]interface{})
-	for t, _ := range DefaultsColumnDefinitions {
+	for t := range DefaultsColumnDefinitions {
 		resources, err = d.g.GetAllResources(t)
 		if err != nil {
 			return err

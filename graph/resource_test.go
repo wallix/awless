@@ -23,7 +23,7 @@ import (
 )
 
 func TestSortResource(t *testing.T) {
-	resources := []*Resource{&Resource{id: "b"}, &Resource{id: "c"}, &Resource{id: "a"}}
+	resources := []*Resource{{id: "b"}, {id: "c"}, {id: "a"}}
 	sort.Sort(ResourceById(resources))
 
 	if got, want := len(resources), 3; got != want {
