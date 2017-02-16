@@ -97,15 +97,20 @@ func (s *Template) GetActionsSet() (actions []string) {
 	return
 }
 
-func (s *Template) GetHoles() map[string]interface{} {
-	holes := make(map[string]interface{})
+func (s *Template) GetHolesValuesSet() (values []string) {
+	holes := make(map[string]bool)
 	each := func(expr *ast.ExpressionNode) {
-		for k, v := range expr.Holes {
-			holes[k] = v
+		for _, hole := range expr.Holes {
+			holes[hole] = true
 		}
 	}
 	s.visitExpressionNodes(each)
-	return holes
+
+	for k, _ := range holes {
+		values = append(values, k)
+	}
+
+	return
 }
 
 func (s *Template) GetAliases() map[string]string {
@@ -149,10 +154,10 @@ func (s *Template) ResolveTemplate(refs map[string]interface{}) (map[string]inte
 
 func (s *Template) InteractiveResolveTemplate(each func(question string) interface{}) error {
 	fn := func(expr *ast.ExpressionNode) {
+		if expr.Params == nil {
+			expr.Params = make(map[string]interface{})
+		}
 		for key, hole := range expr.Holes {
-			if expr.Params == nil {
-				expr.Params = make(map[string]interface{})
-			}
 			res := each(hole)
 			expr.Params[key] = res
 			delete(expr.Holes, key)

@@ -79,21 +79,25 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	exitOn(err)
 	logger.Infof("used default params: %s (list and set defaults with `awless config`)", sprintProcessedParams(resolved))
 
-	if len(templ.GetHoles()) > 0 {
+	fills := make(map[string]interface{})
+	if holes := templ.GetHolesValuesSet(); len(holes) > 0 {
 		fmt.Println("\nMissing required params (Ctrl+C to quit):")
-		prompt := func(question string) interface{} {
+		for _, hole := range holes {
 			var resp string
-			for {
-				fmt.Printf("%s ? ", question)
+			ask := func() error {
+				fmt.Printf("%s ? ", hole)
 				_, err := fmt.Scanln(&resp)
-				if err == nil {
-					break
-				}
-				logger.Error("invalid value:", err)
+				return err
 			}
-			return resp
+			for err := ask(); err != nil; err = ask() {
+				logger.Errorf("invalid value: %s", err)
+			}
+			fills[hole] = resp
 		}
-		templ.InteractiveResolveTemplate(prompt)
+	}
+
+	if len(fills) > 0 {
+		templ.ResolveTemplate(fills)
 	}
 
 	awsDriver := aws.NewDriver(

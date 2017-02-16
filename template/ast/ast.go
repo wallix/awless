@@ -176,11 +176,11 @@ func (n *ExpressionNode) String() string {
 
 func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
 	processed := make(map[string]interface{})
+	if n.Params == nil {
+		n.Params = make(map[string]interface{})
+	}
 	for key, hole := range n.Holes {
 		if val, ok := fills[hole]; ok {
-			if n.Params == nil {
-				n.Params = make(map[string]interface{})
-			}
 			n.Params[key] = val
 			processed[key] = val
 			delete(n.Holes, key)
@@ -190,11 +190,11 @@ func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) map[string]i
 }
 
 func (n *ExpressionNode) ProcessRefs(fills map[string]interface{}) {
+	if n.Params == nil {
+		n.Params = make(map[string]interface{})
+	}
 	for key, ref := range n.Refs {
 		if val, ok := fills[ref]; ok {
-			if n.Params == nil {
-				n.Params = make(map[string]interface{})
-			}
 			n.Params[key] = val
 			delete(n.Refs, key)
 		}
