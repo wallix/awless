@@ -16,33 +16,27 @@ limitations under the License.
 
 package template
 
-import "github.com/wallix/awless/template/ast"
+import (
+	"fmt"
 
-func Parse(text string) (*Template, error) {
-	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text), Pretty: true}
-	p.Init()
+	"github.com/wallix/awless/template/ast"
+)
 
-	if err := p.Parse(); err != nil {
-		return nil, err
-	}
-	p.Execute()
-
-	return &Template{AST: p.AST}, nil
+type Visitor interface {
+	Visit([]*ast.Statement) error
 }
 
-func MustParse(text string) *Template {
-	t, err := Parse(text)
-	if err != nil {
-		panic(err)
-	}
-	return t
+type CollectDefinitions struct {
+	C []TemplateDefinition
+	L LookupTemplateDefFunc
 }
 
-func ParseStatement(text string) (ast.Node, error) {
-	templ, err := Parse(text)
-	if err != nil {
-		return nil, err
+func (t *CollectDefinitions) Visit(sts []*ast.Statement) error {
+	for _, s := range sts {
+		key := fmt.Sprintf("%s%s", s.Action(), s.Entity())
+		if def, ok := t.L(key); ok {
+			t.C = append(t.C, def)
+		}
 	}
-
-	return templ.Statements[0].Node, nil
+	return nil
 }

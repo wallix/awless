@@ -37,7 +37,7 @@ type AwsDriver struct {
 	logger *logger.Logger
 }
 
-func NewDriver(ec2 interface{}, iam interface{}, s3 interface{}) *AwsDriver {
+func NewDriver(ec2, iam, s3 interface{}) *AwsDriver {
 	return &AwsDriver{
 		ec2:    ec2.(ec2iface.EC2API),
 		iam:    iam.(iamiface.IAMAPI),

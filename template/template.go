@@ -85,16 +85,8 @@ func (s *Template) GetEntitiesSet() (entities []string) {
 	return
 }
 
-func (s *Template) GetActionsSet() (actions []string) {
-	unique := make(map[string]bool)
-	s.visitExpressionNodes(func(n *ast.ExpressionNode) {
-		unique[n.Action] = true
-	})
-
-	for action := range unique {
-		actions = append(actions, action)
-	}
-	return
+func (t *Template) Visit(v Visitor) error {
+	return v.Visit(t.Statements)
 }
 
 func (s *Template) GetHolesValuesSet() (values []string) {
@@ -113,15 +105,34 @@ func (s *Template) GetHolesValuesSet() (values []string) {
 	return
 }
 
-func (s *Template) GetAliases() map[string]string {
+func (s *Template) GetNormalizedAliases() map[string]string {
 	aliases := make(map[string]string)
 	each := func(expr *ast.ExpressionNode) {
 		for k, v := range expr.Aliases {
-			aliases[k] = v
+			if !strings.Contains(k, ".") {
+				aliases[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
+			} else {
+				aliases[k] = v
+			}
 		}
 	}
 	s.visitExpressionNodes(each)
 	return aliases
+}
+
+func (s *Template) GetNormalizedParams() map[string]interface{} {
+	params := make(map[string]interface{})
+	each := func(expr *ast.ExpressionNode) {
+		for k, v := range expr.Params {
+			if !strings.Contains(k, ".") {
+				params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
+			} else {
+				params[k] = v
+			}
+		}
+	}
+	s.visitExpressionNodes(each)
+	return params
 }
 
 func (s *Template) MergeParams(newParams map[string]interface{}) {
@@ -138,10 +149,17 @@ func (s *Template) MergeParams(newParams map[string]interface{}) {
 	s.visitExpressionNodes(each)
 }
 
-func (s *Template) ResolveHoles(refs map[string]interface{}) (map[string]interface{}, error) {
+func (s *Template) ResolveHoles(refs ...map[string]interface{}) (map[string]interface{}, error) {
+	all := make(map[string]interface{})
+	for _, ref := range refs {
+		for k, v := range ref {
+			all[k] = v
+		}
+	}
+
 	resolved := make(map[string]interface{})
 	each := func(expr *ast.ExpressionNode) {
-		processed := expr.ProcessHoles(refs)
+		processed := expr.ProcessHoles(all)
 		for key, v := range processed {
 			resolved[expr.Entity+"."+key] = v
 		}

@@ -378,29 +378,30 @@ func TestRunDriverOnTemplate(t *testing.T) {
 	})
 }
 
-func TestGetAliases(t *testing.T) {
+func TestGetNormalisedAliases(t *testing.T) {
 	tree := &ast.AST{}
 
 	tree.Statements = append(tree.Statements, &ast.Statement{Node: &ast.DeclarationNode{
 		Left: &ast.IdentifierNode{},
 		Right: &ast.ExpressionNode{
-			Aliases: map[string]string{"1": "one"},
+			Aliases: map[string]string{"1.1": "one"},
 		}}}, &ast.Statement{Node: &ast.DeclarationNode{
 		Left: &ast.IdentifierNode{},
 		Right: &ast.ExpressionNode{
-			Aliases: map[string]string{"2": "two", "3": "three"},
+			Entity:  "bear",
+			Aliases: map[string]string{"2": "two", "3.3": "three"},
 		}}}, &ast.Statement{Node: &ast.ExpressionNode{
-		Aliases: map[string]string{"4": "four"},
+		Entity: "shark", Aliases: map[string]string{"4": "four"},
 	}},
 	)
 	s := &Template{AST: tree}
 	expect := map[string]string{
-		"1": "one",
-		"2": "two",
-		"3": "three",
-		"4": "four",
+		"1.1":     "one",
+		"bear.2":  "two",
+		"3.3":     "three",
+		"shark.4": "four",
 	}
-	if got, want := s.GetAliases(), expect; !reflect.DeepEqual(got, want) {
+	if got, want := s.GetNormalizedAliases(), expect; !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)
 	}
 }
@@ -417,22 +418,6 @@ func TestGetEntitiesAsSetFromTemplate(t *testing.T) {
 	}
 
 	if got, want := actual, map[string]bool{"vpc": true, "subnet": true, "instance": true}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("got %v, want %v", got, want)
-	}
-}
-
-func TestGetActionsAsSetFromTemplate(t *testing.T) {
-	temp, err := Parse("create vpc\nupdate subnet\ndelete instance\ncreate vpc")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actual := make(map[string]bool)
-	for _, ent := range temp.GetActionsSet() {
-		actual[ent] = true
-	}
-
-	if got, want := actual, map[string]bool{"create": true, "update": true, "delete": true}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 }

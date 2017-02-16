@@ -33,7 +33,6 @@ import (
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
-	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver/aws"
 )
 
@@ -164,36 +163,27 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			exitOn(errors.New("command unsupported on inline mode"))
 		}
 
-		run := func(def aws.TemplateDefinition) func(cmd *cobra.Command, args []string) error {
+		run := func(def template.TemplateDefinition) func(cmd *cobra.Command, args []string) error {
 			return func(cmd *cobra.Command, args []string) error {
 				text := fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(args, " "))
 
-				node, err := template.ParseStatement(text)
+				cliTpl, err := template.Parse(text)
 				exitOn(err)
 
-				expr, ok := node.(*ast.ExpressionNode)
-				if !ok {
-					return errors.New("Expecting a template expression not a template declaration")
-				}
-
-				templ, err := template.Parse(templDef.String())
+				templ, err := template.Parse(def.String())
 				if err != nil {
-					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", templDef, err))
+					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", def, err))
 				}
-				logger.Verbosef("template definition: %s", templDef)
+				logger.Verbosef("template definition: %s", def)
 
-				for k, v := range expr.Params {
-					if !strings.Contains(k, ".") {
-						expr.Params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-						delete(expr.Params, k)
-					}
-				}
-
-				addAliasesToParams(expr)
-				resolved, err := templ.ResolveHoles(expr.Params)
+				resolved, err := templ.ResolveHoles(
+					cliTpl.GetNormalizedParams(),
+					resolveAlias(cliTpl.GetNormalizedAliases(), def.Entity),
+				)
 				exitOn(err)
+
 				logger.Infof("used provided params: %s.", sprintProcessedParams(resolved))
-				templ.MergeParams(expr.Params)
+				templ.MergeParams(cliTpl.GetNormalizedParams())
 
 				exitOn(runTemplate(templ, getCurrentDefaults()))
 				return nil
@@ -264,20 +254,12 @@ func printReport(t *template.TemplateExecution) {
 	}
 }
 
-func addAliasesToParams(expr *ast.ExpressionNode) error {
-	for k, v := range expr.Aliases {
-		if !strings.Contains(k, ".") {
-			expr.Aliases[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-			delete(expr.Aliases, k)
-		}
-	}
+func resolveAlias(aliases map[string]string, entity string) map[string]interface{} {
+	graphForResource := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[entity])
 
-	graphForResource := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[expr.Entity])
+	resolved := make(map[string]interface{})
 
-	for k, v := range expr.Aliases {
-		if !strings.Contains(k, ".") {
-			return fmt.Errorf("invalid alias key (no '.') %s", k)
-		}
+	for k, v := range aliases {
 		var t string
 		if strings.Split(k, ".")[1] == "id" {
 			t = strings.Split(k, ".")[0]
@@ -287,12 +269,13 @@ func addAliasesToParams(expr *ast.ExpressionNode) error {
 		rT := graph.ResourceType(t)
 		a := graph.Alias(v)
 		if id, ok := a.ResolveToId(graphForResource, rT); ok {
-			expr.Params[k] = id
+			resolved[k] = id
 		} else {
-			logger.Infof("Alias '%s' not found in local snapshot. You might want to perform an `awless sync`\n", a)
+			logger.Infof("alias '%s' not in local snapshot. You might want to perform an `awless sync`\n", a)
 		}
 	}
-	return nil
+
+	return resolved
 }
 
 func sprintProcessedParams(processed map[string]interface{}) string {

@@ -1,8 +1,4 @@
-// DO NOT EDIT
-// This file was automatically generated with go generate
-
-/*
-Copyright 2017 WALLIX
+/* Copyright 2017 WALLIX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// DO NOT EDIT
+// This file was automatically generated with go generate
 package aws
 
 import (

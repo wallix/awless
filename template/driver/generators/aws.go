@@ -50,7 +50,7 @@ func generateTemplateTemplates() {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/template_defs.go", formatted, 0666); err != nil {
+	if err := ioutil.WriteFile("../aws/gen_template_defs.go", formatted, 0666); err != nil {
 		panic(err)
 	}
 }
@@ -74,16 +74,12 @@ func generateDriverFuncs() {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/driver_gen_funcs.go", formatted, 0666); err != nil {
+	if err := ioutil.WriteFile("../aws/gen_driver_funcs.go", formatted, 0666); err != nil {
 		panic(err)
 	}
 }
 
-const templateDefinitions = `// DO NOT EDIT
-// This file was automatically generated with go generate
-
-/*
-Copyright 2017 WALLIX
+const templateDefinitions = `/* Copyright 2017 WALLIX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -98,56 +94,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// DO NOT EDIT
+// This file was automatically generated with go generate
 package aws
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/wallix/awless/template"
 )
 
-type TemplateDefinition struct {
-	Action, Entity string
-	requiredParams, extraParams, tagsMapping []string
-}
-
-func (def TemplateDefinition) String() string {
-	var required []string
-	for _, v := range def.Required() {
-		required = append(required, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
-	}
-	var tags []string
-	for _, v := range def.tagsMapping {
-		tags = append(tags, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
-	}
-	return fmt.Sprintf("%s %s %s %s", def.Action, def.Entity, strings.Join(required, " "), strings.Join(tags, " "))
-}
-
-func (def TemplateDefinition) Required() []string{
-	return def.requiredParams
-}
-
-func (def TemplateDefinition) Extra() []string{
-	return def.extraParams
-}
-
-var AWSTemplatesDefinitions = map[string]TemplateDefinition{
+var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 {{- range $index, $def := . }}
-	"{{ $def.Action }}{{ $def.Entity }}": TemplateDefinition{
+	"{{ $def.Action }}{{ $def.Entity }}": template.TemplateDefinition{
 			Action: "{{ $def.Action }}",
 			Entity: "{{ $def.Entity }}",
-			requiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field }}", {{- end}} },
-			extraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field }}", {{- end}} },
-			tagsMapping: []string{ {{- range $awsField, $field := $def.TagsMapping }}"{{ $field }}", {{- end}} },
+			Api: "{{ $def.Api }}",
+			RequiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field }}", {{- end}} },
+			ExtraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field }}", {{- end}} },
+			TagsMapping: []string{ {{- range $awsField, $field := $def.TagsMapping }}"{{ $field }}", {{- end}} },
 		},
 {{- end }}
 }
 `
 
-const funcsTempl = `// DO NOT EDIT
-// This file was automatically generated with go generate
-
-/*
-Copyright 2017 WALLIX
+const funcsTempl = `/* Copyright 2017 WALLIX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -162,6 +134,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// DO NOT EDIT
+// This file was automatically generated with go generate
 package aws
 
 import (
