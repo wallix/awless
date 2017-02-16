@@ -29,6 +29,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -39,7 +40,6 @@ import (
 
 var (
 	serverUrl          = "https://updates.awless.io"
-	upgradeStd         = os.Stderr
 	expirationDuration = 24 * time.Hour
 )
 
@@ -79,7 +79,7 @@ func SendStats(db *database.DB, localInfra, localAccess *graph.Graph) error {
 		return err
 	}
 
-	err = sendPayloadAndCheckUpgrade(serverUrl, payload)
+	err = sendPayloadAndCheckUpgrade(serverUrl, payload, os.Stderr)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func SendStats(db *database.DB, localInfra, localAccess *graph.Graph) error {
 	return nil
 }
 
-func sendPayloadAndCheckUpgrade(url string, payload []byte) error {
+func sendPayloadAndCheckUpgrade(url string, payload []byte, w io.Writer) error {
 	client := &http.Client{Timeout: 2 * time.Second}
 	resp, err := client.Post(url, "application/json", bytes.NewReader(payload))
 	if err != nil {
@@ -114,7 +114,14 @@ func sendPayloadAndCheckUpgrade(url string, payload []byte) error {
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&latest); err == nil {
 		if config.IsUpgrade(config.Version, latest.Version) {
-			fmt.Fprintf(upgradeStd, "New version of awless %s available at %s\n", latest.Version, latest.URL)
+			var install string
+			switch config.BuildFor {
+			case "brew":
+				install = "Run `brew upgrade awless`"
+			default:
+				install = fmt.Sprintf("Run `wget -O awless-%s.zip https://github.com/wallix/awless/releases/download/%s/awless-%s-%s.zip`", latest.Version, latest.Version, runtime.GOOS, runtime.GOARCH)
+			}
+			fmt.Fprintf(w, "New version %s available. %s\n", latest.Version, install)
 		}
 	}
 

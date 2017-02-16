@@ -114,11 +114,17 @@ func buildAndZip(osname, arch string) error {
 		return err
 	}
 
-	buildInfo := fmt.Sprintf("-X github.com/wallix/awless/config.buildDate=%s -X github.com/wallix/awless/config.buildSha=%s -X github.com/wallix/awless/config.buildOS=%s -X github.com/wallix/awless/config.buildArch=%s",
+	buildFor := "zip"
+	if *brew {
+		buildFor = "brew"
+	}
+
+	buildInfo := fmt.Sprintf("-X github.com/wallix/awless/config.buildDate=%s -X github.com/wallix/awless/config.buildSha=%s -X github.com/wallix/awless/config.buildOS=%s -X github.com/wallix/awless/config.buildArch=%s -X github.com/wallix/awless/config.BuildFor=%s",
 		time.Now().Format(time.RFC3339),
 		strings.TrimSpace(sha),
 		osname,
 		arch,
+		buildFor,
 	)
 
 	ldflags := fmt.Sprintf("-ldflags=-s -w %s", buildInfo)
@@ -127,6 +133,7 @@ func buildAndZip(osname, arch string) error {
 		return err
 	}
 	if *brew { //Disable zipping
+		fmt.Println("DO NOT forget to update the brew bottles and formula (see homebrew-awless Github repo)!")
 		return os.Rename(artefactPath, "awless")
 	} else {
 		zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", strings.Split(binName, ".")[0], osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)

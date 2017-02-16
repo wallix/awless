@@ -30,9 +30,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"testing"
 	"time"
@@ -42,16 +42,20 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
-func ExampleUpgrade() {
+func TestUpgrade(t *testing.T) {
 	tserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"URL":"https://github.com/wallix/awless/releases/latest","Version":"1000.0.0"}`))
 	}))
-	upgradeStd = os.Stdout
-	err := sendPayloadAndCheckUpgrade(tserver.URL, nil)
+	var buff bytes.Buffer
+	err := sendPayloadAndCheckUpgrade(tserver.URL, nil, &buff)
 	if err != nil {
 		panic(err)
 	}
-	// Output: New version of awless 1000.0.0 available at https://github.com/wallix/awless/releases/latest
+
+	exp := fmt.Sprintf("New version 1000.0.0 available. Run `wget -O awless-1000.0.0.zip https://github.com/wallix/awless/releases/download/1000.0.0/awless-%s-%s.zip`\n", runtime.GOOS, runtime.GOARCH)
+	if got, want := buff.String(), exp; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
 }
 
 func TestStats(t *testing.T) {
