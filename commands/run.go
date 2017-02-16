@@ -75,7 +75,7 @@ var runCmd = &cobra.Command{
 }
 
 func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
-	resolved, err := templ.ResolveTemplate(defaults)
+	resolved, err := templ.ResolveHoles(defaults)
 	exitOn(err)
 	logger.Infof("used default params: %s (list and set defaults with `awless config`)", sprintProcessedParams(resolved))
 
@@ -97,7 +97,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	}
 
 	if len(fills) > 0 {
-		templ.ResolveTemplate(fills)
+		templ.ResolveHoles(fills)
 	}
 
 	awsDriver := aws.NewDriver(
@@ -190,7 +190,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				}
 
 				addAliasesToParams(expr)
-				resolved, err := templ.ResolveTemplate(expr.Params)
+				resolved, err := templ.ResolveHoles(expr.Params)
 				exitOn(err)
 				logger.Infof("used provided params: %s.", sprintProcessedParams(resolved))
 				templ.MergeParams(expr.Params)

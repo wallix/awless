@@ -486,92 +486,60 @@ func TestMergeParams(t *testing.T) {
 	}
 }
 
-func TestResolveTemplate(t *testing.T) {
-	t.Run("Holes Resolution", func(t *testing.T) {
-		s := &Template{AST: &ast.AST{}}
+func TestResolveHoles(t *testing.T) {
+	s := &Template{AST: &ast.AST{}}
 
-		expr := &ast.ExpressionNode{
-			Entity: "president",
-			Holes:  map[string]string{"name": "presidentName", "rank": "presidentRank"},
-		}
-		s.Statements = append(s.Statements, &ast.Statement{Node: expr})
+	expr := &ast.ExpressionNode{
+		Entity: "president",
+		Holes:  map[string]string{"name": "presidentName", "rank": "presidentRank"},
+	}
+	s.Statements = append(s.Statements, &ast.Statement{Node: expr})
 
-		decl := &ast.DeclarationNode{
-			Right: &ast.ExpressionNode{
-				Entity: "wife",
-				Holes:  map[string]string{"age": "wifeAge", "name": "wifeName"},
-			},
-		}
-		s.Statements = append(s.Statements, &ast.Statement{Node: decl})
+	decl := &ast.DeclarationNode{
+		Right: &ast.ExpressionNode{
+			Entity: "wife",
+			Holes:  map[string]string{"age": "wifeAge", "name": "wifeName"},
+		},
+	}
+	s.Statements = append(s.Statements, &ast.Statement{Node: decl})
 
-		fills := map[string]interface{}{
-			"presidentName": "trump",
-			"presidentRank": 45,
-			"wifeAge":       40,
-			"wifeName":      "melania",
-		}
+	fills := map[string]interface{}{
+		"presidentName": "trump",
+		"presidentRank": 45,
+		"wifeAge":       40,
+		"wifeName":      "melania",
+	}
 
-		filled, err := s.ResolveTemplate(fills)
-		if err != nil {
-			t.Fatal(err)
-		}
+	filled, err := s.ResolveHoles(fills)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		expected := map[string]interface{}{"name": "trump", "rank": 45}
-		if got, want := expr.Params, expected; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-		if got, want := len(expr.Holes), 0; got != want {
-			t.Fatalf("length of holes: got %d, want %d", got, want)
-		}
+	expected := map[string]interface{}{"name": "trump", "rank": 45}
+	if got, want := expr.Params, expected; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := len(expr.Holes), 0; got != want {
+		t.Fatalf("length of holes: got %d, want %d", got, want)
+	}
 
-		expected = map[string]interface{}{"age": 40, "name": "melania"}
-		if got, want := decl.Right.Params, expected; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-		if got, want := len(decl.Right.Holes), 0; got != want {
-			t.Fatalf("length of holes: got %d, want %d", got, want)
-		}
+	expected = map[string]interface{}{"age": 40, "name": "melania"}
+	if got, want := decl.Right.Params, expected; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := len(decl.Right.Holes), 0; got != want {
+		t.Fatalf("length of holes: got %d, want %d", got, want)
+	}
 
-		expectedFilled := map[string]interface{}{
-			"president.name": "trump",
-			"president.rank": 45,
-			"wife.age":       40,
-			"wife.name":      "melania",
-		}
-		if got, want := filled, expectedFilled; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %+v, want %+v", got, want)
-		}
-	})
-
-	t.Run("Interactive holes resolution", func(t *testing.T) {
-		s := &Template{AST: &ast.AST{}}
-
-		expr := &ast.ExpressionNode{
-			Holes: map[string]string{"age": "age_of_president", "name": "name_of_president"},
-		}
-		s.Statements = append(s.Statements, &ast.Statement{Node: expr})
-
-		each := func(question string) interface{} {
-			if question == "age_of_president" {
-				return 70
-			}
-			if question == "name_of_president" {
-				return "trump"
-			}
-
-			return nil
-		}
-
-		s.InteractiveResolveTemplate(each)
-
-		expected := map[string]interface{}{"age": 70, "name": "trump"}
-		if got, want := expr.Params, expected; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-		if got, want := len(expr.Holes), 0; got != want {
-			t.Fatalf("length of holes: got %d, want %d", got, want)
-		}
-	})
+	expectedFilled := map[string]interface{}{
+		"president.name": "trump",
+		"president.rank": 45,
+		"wife.age":       40,
+		"wife.name":      "melania",
+	}
+	if got, want := filled, expectedFilled; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
 }
 
 type expectation struct {

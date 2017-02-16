@@ -138,7 +138,7 @@ func (s *Template) MergeParams(newParams map[string]interface{}) {
 	s.visitExpressionNodes(each)
 }
 
-func (s *Template) ResolveTemplate(refs map[string]interface{}) (map[string]interface{}, error) {
+func (s *Template) ResolveHoles(refs map[string]interface{}) (map[string]interface{}, error) {
 	resolved := make(map[string]interface{})
 	each := func(expr *ast.ExpressionNode) {
 		processed := expr.ProcessHoles(refs)
@@ -150,23 +150,6 @@ func (s *Template) ResolveTemplate(refs map[string]interface{}) (map[string]inte
 	s.visitExpressionNodes(each)
 
 	return resolved, nil
-}
-
-func (s *Template) InteractiveResolveTemplate(each func(question string) interface{}) error {
-	fn := func(expr *ast.ExpressionNode) {
-		if expr.Params == nil {
-			expr.Params = make(map[string]interface{})
-		}
-		for key, hole := range expr.Holes {
-			res := each(hole)
-			expr.Params[key] = res
-			delete(expr.Holes, key)
-		}
-	}
-
-	s.visitExpressionNodes(fn)
-
-	return nil
 }
 
 func (s *Template) visitExpressionNodes(fn func(n *ast.ExpressionNode)) {
