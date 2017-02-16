@@ -83,28 +83,38 @@ var showCmd = &cobra.Command{
 
 			exitOn(displayer.Print(os.Stderr))
 
+			var parents []*graph.Resource
+			err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
+			exitOn(err)
+
+			fmt.Println("\nRelations:")
+
+			var count int
+			for i := len(parents)-1; i >= 0; i-- {
+				if count == 0 {
+					fmt.Printf("%s\n", parents[i])
+				} else {
+					fmt.Printf("%s↳ %s\n", strings.Repeat("\t", count), parents[i])
+				}
+				count++
+			}
+
 			printWithTabs := func(r *graph.Resource, distance int) error {
 				var tabs bytes.Buffer
+				tabs.WriteString(strings.Repeat("\t", count))
 				for i := 0; i < distance; i++ {
 					tabs.WriteByte('\t')
 				}
+
+				display := r.String()
 				if r.Same(resource) {
-					fmt.Println(renderGreenFn(resource.String()))
-				} else {
-					fmt.Printf("%s↳ %s\n", tabs.String(), r.String())
+					display = renderGreenFn(resource.String())
 				}
+				fmt.Printf("%s↳ %s\n", tabs.String(), display)
+
 				return nil
 			}
-			var parents []*graph.Resource
-			err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents), IncludeFrom: true})
-			exitOn(err)
-			parentsStr := graph.Resources(parents).Map(func(r *graph.Resource) string { return r.String() })
-			parentsStr[0] = renderGreenFn(parentsStr[0])
 
-			fmt.Println("\nRelations:")
-			fmt.Println(strings.Join(parentsStr, " <- "))
-
-			fmt.Println()
 			err = gph.Accept(&graph.ChildrenVisitor{From: resource, Each: printWithTabs, IncludeFrom: true})
 			exitOn(err)
 
