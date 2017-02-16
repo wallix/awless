@@ -18,12 +18,9 @@ package stats
 
 import (
 	"bytes"
-	"compress/gzip"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -44,58 +41,13 @@ var (
 )
 
 func SendStats(db *database.DB, localInfra, localAccess *graph.Graph) error {
-	publicKey, err := loadPublicKey()
-	if err != nil {
-		return err
-	}
-	lastCommandId, err := db.GetIntValue(database.SentIdKey)
+	var payload []byte // We do not send any data until #39 is fixed, but only check for a new version
+
+	err := sendPayloadAndCheckUpgrade(serverUrl, payload, os.Stderr)
 	if err != nil {
 		return err
 	}
 
-	s, lastCommandId, err := BuildStats(db, localInfra, localAccess, lastCommandId)
-	if err != nil {
-		return err
-	}
-
-	var zipped bytes.Buffer
-	zippedW := gzip.NewWriter(&zipped)
-	if err = json.NewEncoder(zippedW).Encode(s); err != nil {
-		return err
-	}
-	zippedW.Close()
-
-	sessionKey, encrypted, err := aesEncrypt(zipped.Bytes())
-	if err != nil {
-		return err
-	}
-	encryptedKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, sessionKey, nil)
-	if err != nil {
-		return err
-	}
-
-	payload, err := json.Marshal(encryptedData{encryptedKey, encrypted})
-	if err != nil {
-		return err
-	}
-
-	err = sendPayloadAndCheckUpgrade(serverUrl, payload, os.Stderr)
-	if err != nil {
-		return err
-	}
-
-	if err := db.SetIntValue(database.SentIdKey, lastCommandId); err != nil {
-		return err
-	}
-	if err := db.SetTimeValue(database.SentTimeKey, time.Now()); err != nil {
-		return err
-	}
-	if err := db.DeleteLogs(); err != nil {
-		return err
-	}
-	if err := db.DeleteHistory(); err != nil {
-		return err
-	}
 	return nil
 }
 

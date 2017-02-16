@@ -59,6 +59,7 @@ func TestUpgrade(t *testing.T) {
 }
 
 func TestStats(t *testing.T) {
+	t.Skip("skipping test until we find a better way to send really anonymous data")
 	db, close := newTestDb()
 	defer close()
 
