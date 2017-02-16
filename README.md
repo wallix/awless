@@ -10,7 +10,7 @@
 `awless` has been created with the idea to:
 
 - run frequent actions easily by using simple commands
-- explore easily your infrastructure and cloud resources inter relations via CLI
+- easily explore your infrastructure and cloud resources inter relations via CLI
 - ensure smart defaults & security best practices
 - manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
 - explore and analyse your infrastructure through time
@@ -69,7 +69,7 @@ Read the wiki page for setting autocompletion for [bash](https://github.com/wall
 
 Awless allows for easy resource creation with your cloud provider; We will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
 
-We also collect a few anonymous data (CLI errors, most frequently used commands and count of resources).
+We also collect a few anonymous datum (CLI errors, most frequently used commands and count of resources).
 
 ## First `awless` commands
 
