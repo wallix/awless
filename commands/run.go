@@ -143,7 +143,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 
 		if err == nil && !executed.HasErrors() {
 			if autoSync, ok := defaults[database.SyncAuto]; ok && autoSync.(bool) {
-				runSync(newTempl.GetEntitiesSet())
+				runSyncFor(newTempl)
 			}
 		}
 	}
@@ -205,19 +205,41 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func runSync(entities []string) {
-	var services []cloud.Service
+func runSyncFor(tpl *template.Template) {
+	lookup := func(key string) (t template.TemplateDefinition, ok bool) {
+		t, ok = aws.AWSTemplatesDefinitions[key]
+		return
+	}
+	collector := &template.CollectDefinitions{L: lookup}
+	tpl.Visit(collector)
 
-	for _, entity := range entities {
-		srv, err := cloud.GetServiceForType(entity)
-		exitOn(err)
-		services = append(services, srv)
+	uniqueNames := make(map[string]bool)
+	for _, def := range collector.C {
+		name, ok := awscloud.ServicePerAPI[def.Api]
+		if ok {
+			uniqueNames[name] = true
+		}
+	}
+
+	var srvNames []string
+	for name, _ := range uniqueNames {
+		srvNames = append(srvNames, name)
+	}
+
+	var services []cloud.Service
+	for _, name := range srvNames {
+		srv, ok := cloud.ServiceRegistry[name]
+		if !ok {
+			logger.Errorf("internal: cannot resolve service name '%s'", name)
+		} else {
+			services = append(services, srv)
+		}
 	}
 
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
-		logger.Errorf("error while synching for %s\n", strings.Join(entities, ", "))
-	} else if verboseFlag {
-		logger.Infof("performed sync for %s", strings.Join(entities, ", "))
+		logger.Errorf("error while synching for %s\n", strings.Join(srvNames, ", "))
+	} else {
+		logger.Verbosef("performed sync for %s", strings.Join(srvNames, ", "))
 	}
 }
 

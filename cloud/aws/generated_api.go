@@ -46,7 +46,7 @@ func init() {
 var ServiceNames = []string{}
 
 var ResourceTypesPerAPI = map[string][]string{
-	"ec2": {
+	"ec2": []string{
 		"instance",
 		"subnet",
 		"vpc",
@@ -56,16 +56,22 @@ var ResourceTypesPerAPI = map[string][]string{
 		"internetgateway",
 		"routetable",
 	},
-	"iam": {
+	"iam": []string{
 		"user",
 		"group",
 		"role",
 		"policy",
 	},
-	"s3": {
+	"s3": []string{
 		"bucket",
 		"storageobject",
 	},
+}
+
+var ServicePerAPI = map[string]string{
+	"ec2": "infra",
+	"iam": "access",
+	"s3":  "storage",
 }
 
 var ServicePerResourceType = map[string]string{

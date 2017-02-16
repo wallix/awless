@@ -406,22 +406,6 @@ func TestGetNormalisedAliases(t *testing.T) {
 	}
 }
 
-func TestGetEntitiesAsSetFromTemplate(t *testing.T) {
-	temp, err := Parse("create vpc\ncreate subnet\ndelete instance\ncreate vpc")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actual := make(map[string]bool)
-	for _, ent := range temp.GetEntitiesSet() {
-		actual[ent] = true
-	}
-
-	if got, want := actual, map[string]bool{"vpc": true, "subnet": true, "instance": true}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("got %v, want %v", got, want)
-	}
-}
-
 func TestMergeParams(t *testing.T) {
 	templ := &Template{AST: &ast.AST{}}
 

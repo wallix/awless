@@ -73,18 +73,6 @@ func (s *Template) Compile(d driver.Driver) (*Template, error) {
 	return s.Run(d)
 }
 
-func (s *Template) GetEntitiesSet() (entities []string) {
-	unique := make(map[string]bool)
-	s.visitExpressionNodes(func(n *ast.ExpressionNode) {
-		unique[n.Entity] = true
-	})
-
-	for entity := range unique {
-		entities = append(entities, entity)
-	}
-	return
-}
-
 func (t *Template) Visit(v Visitor) error {
 	return v.Visit(t.Statements)
 }

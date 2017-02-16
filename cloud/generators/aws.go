@@ -113,6 +113,12 @@ var ResourceTypesPerAPI = map[string][]string {
 {{- end }}
 }
 
+var ServicePerAPI = map[string]string {
+{{- range $index, $service := . }}
+  "{{ $service.Api }}": "{{ $service.Name }}",
+{{- end }}
+}
+
 var ServicePerResourceType = map[string]string {
 {{- range $index, $service := . }}
   {{- range $idx, $fetcher := $service.Fetchers }}
@@ -159,14 +165,14 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
-	
+
 	{{- range $index, $fetcher := $service.Fetchers }}
   var {{ $fetcher.ResourceType }}List []*{{ $service.Api }}.{{ $fetcher.AWSType }}
   {{- end }}
-	
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	
+
 	{{- range $index, $fetcher := $service.Fetchers }}
 	wg.Add(1)
 	go func() {
@@ -181,7 +187,7 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		g.AddGraph(resGraph)
 	}()
   {{- end }}
-	
+
 	go func() {
 		wg.Wait()
 		close(errc)
@@ -219,7 +225,7 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		}
 	}()
   {{- end }}
-	
+
 	go func() {
 		wg.Wait()
 		close(errc)
