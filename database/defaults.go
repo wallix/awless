@@ -29,6 +29,7 @@ const (
 	InstanceTypeKey  = "instance.type"
 	InstanceImageKey = "instance.image"
 	InstanceCountKey = "instance.count"
+	ProfileKey       = "aws.profile"
 )
 
 type defaults map[string]interface{}

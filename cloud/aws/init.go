@@ -31,13 +31,13 @@ var (
 	SecuAPI Security
 )
 
-func InitSession(region string) (*session.Session, error) {
+func InitSession(region, profile string) (*session.Session, error) {
 	session, err := session.NewSession(
 		&awssdk.Config{
 			Region: awssdk.String(region),
 			Credentials: credentials.NewChainCredentials([]credentials.Provider{
 				&credentials.EnvProvider{},
-				&credentials.SharedCredentialsProvider{Filename: "", Profile: ""},
+				&credentials.SharedCredentialsProvider{Filename: "", Profile: profile},
 			})})
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ Installation documentation is at https://github.com/wallix/awless/wiki/Installat
 	return session, nil
 }
 
-func InitServices(region string) error {
-	sess, err := InitSession(region)
+func InitServices(region, profile string) error {
+	sess, err := InitSession(region, profile)
 	if err != nil {
 		return err
 	}

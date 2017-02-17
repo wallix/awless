@@ -50,12 +50,13 @@ func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
 }
 
 func initCloudServicesHook(cmd *cobra.Command, args []string) error {
-	region := os.Getenv("__AWLESS_REGION")
+	region := os.Getenv("__AWLESS_CLOUD_REGION")
 	if region == "" {
 		return errors.New("region should be in env")
 	}
+	profile := os.Getenv("__AWLESS_CLOUD_PROFILE")
 
-	if err := aws.InitServices(region); err != nil {
+	if err := aws.InitServices(region, profile); err != nil {
 		return err
 	}
 

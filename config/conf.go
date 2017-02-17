@@ -51,6 +51,7 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	var region string
+	var profile string
 
 	if AwlessFirstInstall {
 		fmt.Println("First install. Welcome!\n")
@@ -64,10 +65,12 @@ func InitAwlessEnv() error {
 			return fmt.Errorf("init env: database error: %s", err)
 		}
 		defer close()
+		profile, _ = db.GetDefaultString(database.ProfileKey)
 		region = db.MustGetDefaultRegion()
 	}
 
-	os.Setenv("__AWLESS_REGION", region)
+	os.Setenv("__AWLESS_CLOUD_REGION", region)
+	os.Setenv("__AWLESS_CLOUD_PROFILE", profile)
 
 	return nil
 }
@@ -96,6 +99,7 @@ func resolveAndSetDefaults() (string, error) {
 		database.RegionKey:        region,
 		database.InstanceTypeKey:  "t2.micro",
 		database.InstanceCountKey: 1,
+		database.ProfileKey:       "default",
 	}
 
 	if hasAMI {
