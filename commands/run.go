@@ -76,7 +76,7 @@ var runCmd = &cobra.Command{
 func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
 	resolved, err := templ.ResolveHoles(defaults)
 	exitOn(err)
-	logger.Infof("used default params: %s (list and set defaults with `awless config`)", sprintProcessedParams(resolved))
+	logger.Infof("used default params: %s", sprintProcessedParams(resolved))
 
 	fills := make(map[string]interface{})
 	if holes := templ.GetHolesValuesSet(); len(holes) > 0 {
@@ -106,11 +106,11 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	)
 	awsDriver.SetLogger(logger.DefaultLogger)
 
-	for _, st := range templ.Statements {
-		if validators, ok := validation.ValidatorsPerActions[st.Action()]; ok {
-			graph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[st.Entity()])
+	for _, cmd := range templ.CommandNodesIterator() {
+		if validators, ok := validation.ValidatorsPerActions[cmd.Action]; ok {
+			graph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[cmd.Entity])
 			for _, v := range validators {
-				if err := v.Validate(graph, st.Params()); err != nil {
+				if err := v.Validate(graph, cmd.Params); err != nil {
 					return err
 				}
 			}

@@ -196,7 +196,11 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 			}
 			{{- end }}
 			if len(tagsParams) > 1 {
-				d.Create_Tags_DryRun(tagsParams)
+				_, err := d.Create_Tags_DryRun(tagsParams)
+				if err != nil {
+					d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: error: %s", err)
+					return nil, err
+				}
 			}
 			{{- end }}
 			d.logger.Verbose("full dry run: {{ $def.Action }} {{ $def.Entity }} ok")
@@ -246,7 +250,11 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	}
 	{{- end }}
 	if len(tagsParams) > 1 {
-		d.Create_Tags(tagsParams)
+		_, err := d.Create_Tags(tagsParams)
+		if err != nil {
+			d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: error: %s", err)
+			return nil, err
+		}
 	}
 	{{- end }}
 	d.logger.Verbosef("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)

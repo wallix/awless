@@ -49,24 +49,30 @@ func (d *errorDriver) SetDryRun(bool)           {}
 func TestRunDriverReportsInStatement(t *testing.T) {
 	anErr := errors.New("my error message")
 
+	type line struct {
+		expString string
+		expErr    error
+		expResult interface{}
+	}
+
 	tcases := []struct {
 		input  string
 		driver driver.Driver
-		expect []*ast.Statement
+		lines  []line
 	}{
 		{
 			input:  "create vpc cidr=10.0.0.0/25\ndelete subnet id=sub-5f4g3hj",
 			driver: &noopDriver{},
-			expect: []*ast.Statement{
-				{Line: "create vpc cidr=10.0.0.0/25"},
-				{Line: "delete subnet id=sub-5f4g3hj"},
+			lines: []line{
+				{expString: "create vpc cidr=10.0.0.0/25"},
+				{expString: "delete subnet id=sub-5f4g3hj"},
 			},
 		},
 		{
 			input:  "create vpc cidr=10.0.0.0/25",
 			driver: &errorDriver{anErr},
-			expect: []*ast.Statement{
-				{Line: "create vpc cidr=10.0.0.0/25", Err: anErr},
+			lines: []line{
+				{expString: "create vpc cidr=10.0.0.0/25", expErr: anErr},
 			},
 		},
 	}
@@ -78,14 +84,14 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 		}
 		ran, _ := templ.Run(tcase.driver)
 
-		for i, stat := range ran.Statements {
-			if got, want := stat.Line, tcase.expect[i].Line; got != want {
+		for i, cmd := range ran.CommandNodesIterator() {
+			if got, want := cmd.String(), tcase.lines[i].expString; got != want {
 				t.Fatalf("\ninput: '%s'\n\tgot '%q'\n\twant '%q'", tcase.input, got, want)
 			}
-			if got, want := stat.Result, tcase.expect[i].Result; got != want {
+			if got, want := cmd.Result(), tcase.lines[i].expResult; got != want {
 				t.Fatalf("\ninput: '%s'\n\tgot %s\n\twant %s", tcase.input, got, want)
 			}
-			if got, want := stat.Err, tcase.expect[i].Err; got != want {
+			if got, want := cmd.Err(), tcase.lines[i].expErr; got != want {
 				t.Fatalf("\ninput: '%s'\n\tgot %v\n\twant %v", tcase.input, got, want)
 			}
 		}
@@ -102,10 +108,12 @@ func TestNewTemplateExecutionFromTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	temp.Statements[0].Result = "vpc-123"
-	temp.Statements[1].Result = "sub-123"
-	temp.Statements[2].Result = struct{}{}
-	temp.Statements[2].Err = errors.New("cannot delete instance")
+	cmdNodes := temp.CommandNodesIterator()
+
+	cmdNodes[0].CmdResult = "vpc-123"
+	cmdNodes[1].CmdResult = "sub-123"
+	cmdNodes[2].CmdResult = struct{}{}
+	cmdNodes[2].CmdErr = errors.New("cannot delete instance")
 
 	executed := NewTemplateExecution(temp)
 
@@ -188,7 +196,7 @@ func TestRevertTemplateExecution(t *testing.T) {
 	if got, want := len(tpl.Statements), 4; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	expr := tpl.Statements[0].Node.(*ast.ExpressionNode)
+	expr := tpl.Statements[0].Node.(*ast.CommandNode)
 	if got, want := "stop", expr.Action; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
@@ -200,7 +208,7 @@ func TestRevertTemplateExecution(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	expr = tpl.Statements[1].Node.(*ast.ExpressionNode)
+	expr = tpl.Statements[1].Node.(*ast.CommandNode)
 	if got, want := "delete", expr.Action; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
@@ -212,7 +220,7 @@ func TestRevertTemplateExecution(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	expr = tpl.Statements[2].Node.(*ast.ExpressionNode)
+	expr = tpl.Statements[2].Node.(*ast.CommandNode)
 	if got, want := "delete", expr.Action; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
@@ -224,7 +232,7 @@ func TestRevertTemplateExecution(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	expr = tpl.Statements[3].Node.(*ast.ExpressionNode)
+	expr = tpl.Statements[3].Node.(*ast.CommandNode)
 	if got, want := "detach", expr.Action; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
@@ -266,16 +274,16 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		s := &Template{AST: &ast.AST{}}
 
 		s.Statements = append(s.Statements, &ast.Statement{Node: &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "createdvpc"},
-			Right: &ast.ExpressionNode{
+			Ident: "createdvpc",
+			Expr: &ast.CommandNode{
 				Action: "create", Entity: "vpc",
 				Params: map[string]interface{}{"count": 1},
 			}}}, &ast.Statement{Node: &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "createdsubnet"},
-			Right: &ast.ExpressionNode{
+			Ident: "createdsubnet",
+			Expr: &ast.CommandNode{
 				Action: "create", Entity: "subnet",
 				Refs: map[string]string{"vpc": "createdvpc"},
-			}}}, &ast.Statement{Node: &ast.ExpressionNode{
+			}}}, &ast.Statement{Node: &ast.CommandNode{
 			Action: "create", Entity: "instance",
 			Refs: map[string]string{"subnet": "createdsubnet"},
 		}},
@@ -325,7 +333,7 @@ func TestRunDriverOnTemplate(t *testing.T) {
 	t.Run("Driver visit expression nodes", func(t *testing.T) {
 		s := &Template{AST: &ast.AST{}}
 
-		n := &ast.Statement{Node: &ast.ExpressionNode{
+		n := &ast.Statement{Node: &ast.CommandNode{
 			Action: "create", Entity: "vpc",
 			Params: map[string]interface{}{"count": 1},
 		}}
@@ -349,8 +357,8 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		s := &Template{AST: &ast.AST{}}
 
 		decl := &ast.Statement{Node: &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{Ident: "myvar"},
-			Right: &ast.ExpressionNode{
+			Ident: "myvar",
+			Expr: &ast.CommandNode{
 				Action: "create", Entity: "vpc",
 				Params: map[string]interface{}{"count": 1},
 			},
@@ -369,7 +377,7 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		}
 
 		modifiedDecl := executedTemplate.Statements[0].Node.(*ast.DeclarationNode)
-		if got, want := modifiedDecl.Left.Val, "mynewvpc"; got != want {
+		if got, want := modifiedDecl.Expr.Result(), "mynewvpc"; got != want {
 			t.Fatalf("identifier: got %#v, want %#v", got, want)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -382,15 +390,13 @@ func TestGetNormalisedAliases(t *testing.T) {
 	tree := &ast.AST{}
 
 	tree.Statements = append(tree.Statements, &ast.Statement{Node: &ast.DeclarationNode{
-		Left: &ast.IdentifierNode{},
-		Right: &ast.ExpressionNode{
+		Expr: &ast.CommandNode{
 			Aliases: map[string]string{"1.1": "one"},
 		}}}, &ast.Statement{Node: &ast.DeclarationNode{
-		Left: &ast.IdentifierNode{},
-		Right: &ast.ExpressionNode{
+		Expr: &ast.CommandNode{
 			Entity:  "bear",
 			Aliases: map[string]string{"2": "two", "3.3": "three"},
-		}}}, &ast.Statement{Node: &ast.ExpressionNode{
+		}}}, &ast.Statement{Node: &ast.CommandNode{
 		Entity: "shark", Aliases: map[string]string{"4": "four"},
 	}},
 	)
@@ -410,15 +416,13 @@ func TestMergeParams(t *testing.T) {
 	templ := &Template{AST: &ast.AST{}}
 
 	templ.Statements = append(templ.Statements, &ast.Statement{Node: &ast.DeclarationNode{
-		Left: &ast.IdentifierNode{},
-		Right: &ast.ExpressionNode{
+		Expr: &ast.CommandNode{
 			Action: "create", Entity: "vpc",
 			Params: map[string]interface{}{"count": 1},
 		}}}, &ast.Statement{Node: &ast.DeclarationNode{
-		Left: &ast.IdentifierNode{},
-		Right: &ast.ExpressionNode{
+		Expr: &ast.CommandNode{
 			Action: "create", Entity: "subnet",
-		}}}, &ast.Statement{Node: &ast.ExpressionNode{
+		}}}, &ast.Statement{Node: &ast.CommandNode{
 		Action: "create", Entity: "instance",
 		Params: map[string]interface{}{"type": "t1", "image": "image1"},
 	}})
@@ -431,20 +435,18 @@ func TestMergeParams(t *testing.T) {
 
 	expect := []*ast.Statement{
 		{Node: &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{},
-			Right: &ast.ExpressionNode{
+			Expr: &ast.CommandNode{
 				Action: "create", Entity: "vpc",
 				Params: map[string]interface{}{"count": 10},
 			},
 		}},
 		{Node: &ast.DeclarationNode{
-			Left: &ast.IdentifierNode{},
-			Right: &ast.ExpressionNode{
+			Expr: &ast.CommandNode{
 				Action: "create", Entity: "subnet",
 				Params: map[string]interface{}{"cidr": "10.0.0.0/24"},
 			},
 		}},
-		{Node: &ast.ExpressionNode{
+		{Node: &ast.CommandNode{
 			Action: "create", Entity: "instance",
 			Params: map[string]interface{}{"type": "t1", "image": "image2", "subnet": "mysubnet"},
 		}},
@@ -458,14 +460,14 @@ func TestMergeParams(t *testing.T) {
 func TestResolveHoles(t *testing.T) {
 	s := &Template{AST: &ast.AST{}}
 
-	expr := &ast.ExpressionNode{
+	expr := &ast.CommandNode{
 		Entity: "president",
 		Holes:  map[string]string{"name": "presidentName", "rank": "presidentRank"},
 	}
 	s.Statements = append(s.Statements, &ast.Statement{Node: expr})
 
 	decl := &ast.DeclarationNode{
-		Right: &ast.ExpressionNode{
+		Expr: &ast.CommandNode{
 			Entity: "wife",
 			Holes:  map[string]string{"age": "wifeAge", "name": "wifeName"},
 		},
@@ -492,11 +494,12 @@ func TestResolveHoles(t *testing.T) {
 		t.Fatalf("length of holes: got %d, want %d", got, want)
 	}
 
+	cmd := decl.Expr.(*ast.CommandNode)
 	expected = map[string]interface{}{"age": 40, "name": "melania"}
-	if got, want := decl.Right.Params, expected; !reflect.DeepEqual(got, want) {
+	if got, want := cmd.Params, expected; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
-	if got, want := len(decl.Right.Holes), 0; got != want {
+	if got, want := len(cmd.Holes), 0; got != want {
 		t.Fatalf("length of holes: got %d, want %d", got, want)
 	}
 

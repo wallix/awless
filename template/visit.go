@@ -23,7 +23,7 @@ import (
 )
 
 type Visitor interface {
-	Visit([]*ast.Statement) error
+	Visit([]*ast.CommandNode) error
 }
 
 type CollectDefinitions struct {
@@ -31,9 +31,9 @@ type CollectDefinitions struct {
 	L LookupTemplateDefFunc
 }
 
-func (t *CollectDefinitions) Visit(sts []*ast.Statement) error {
-	for _, s := range sts {
-		key := fmt.Sprintf("%s%s", s.Action(), s.Entity())
+func (t *CollectDefinitions) Visit(cmds []*ast.CommandNode) error {
+	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
 		if def, ok := t.L(key); ok {
 			t.C = append(t.C, def)
 		}

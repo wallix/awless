@@ -280,7 +280,11 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 				tagsParams["Name"] = v
 			}
 			if len(tagsParams) > 1 {
-				d.Create_Tags_DryRun(tagsParams)
+				_, err := d.Create_Tags_DryRun(tagsParams)
+				if err != nil {
+					d.logger.Errorf("create instance: adding tags: error: %s", err)
+					return nil, err
+				}
 			}
 			d.logger.Verbose("full dry run: create instance ok")
 			return id, nil
@@ -333,7 +337,11 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 		tagsParams["Name"] = v
 	}
 	if len(tagsParams) > 1 {
-		d.Create_Tags(tagsParams)
+		_, err := d.Create_Tags(tagsParams)
+		if err != nil {
+			d.logger.Errorf("create instance: adding tags: error: %s", err)
+			return nil, err
+		}
 	}
 	d.logger.Verbosef("create instance '%s' done", id)
 	return aws.StringValue(output.Instances[0].InstanceId), nil

@@ -26,60 +26,48 @@ type Node interface {
 	String() string
 }
 
+type AST struct {
+	Statements []*Statement
+
+	// state to build the AST
+	currentStatement *Statement
+	currentKey       string
+}
+
 type Statement struct {
 	Node
-	Result interface{}
-	Line   string
-	Err    error
 }
+
+type DeclarationNode struct {
+	Ident string
+	Expr  ExpressionNode
+}
+
+type ExpressionNode interface {
+	Node
+	Result() interface{}
+	Err() error
+}
+
+type CommandNode struct {
+	CmdResult interface{}
+	CmdErr    error
+
+	Action, Entity string
+	Refs           map[string]string
+	Params         map[string]interface{}
+	Aliases        map[string]string
+	Holes          map[string]string
+}
+
+func (n *CommandNode) Result() interface{} { return n.CmdResult }
+func (n *CommandNode) Err() error          { return n.CmdErr }
 
 func (s *Statement) clone() *Statement {
 	newStat := &Statement{}
 	newStat.Node = s.Node.clone()
-	newStat.Result = s.Result
-	newStat.Err = s.Err
 
 	return newStat
-}
-
-func (s *Statement) Action() string {
-	switch n := s.Node.(type) {
-	case *ExpressionNode:
-		return n.Action
-	case *DeclarationNode:
-		return n.Right.Action
-	default:
-		panic(fmt.Sprintf("unknown type of node %T", s.Node))
-	}
-}
-
-func (s *Statement) Entity() string {
-	switch n := s.Node.(type) {
-	case *ExpressionNode:
-		return n.Entity
-	case *DeclarationNode:
-		return n.Right.Entity
-	default:
-		panic(fmt.Sprintf("unknown type of node %T", s.Node))
-	}
-}
-
-func (s *Statement) Params() map[string]interface{} {
-	switch n := s.Node.(type) {
-	case *ExpressionNode:
-		return n.Params
-	case *DeclarationNode:
-		return n.Right.Params
-	default:
-		panic(fmt.Sprintf("unknown type of node %T", s.Node))
-	}
-}
-
-type AST struct {
-	Statements []*Statement
-
-	currentStatement *Statement
-	currentKey       string
 }
 
 func (a *AST) String() string {
@@ -90,48 +78,19 @@ func (a *AST) String() string {
 	return strings.Join(all, "\n")
 }
 
-type IdentifierNode struct {
-	Ident string
-	Val   interface{}
-}
-
-func (n *IdentifierNode) String() string {
-	return fmt.Sprintf("%s", n.Ident)
-}
-
-func (n *IdentifierNode) clone() Node {
-	return &IdentifierNode{
-		Ident: n.Ident,
-		Val:   n.Val,
-	}
-}
-
-type DeclarationNode struct {
-	Left  *IdentifierNode
-	Right *ExpressionNode
-}
-
 func (n *DeclarationNode) clone() Node {
 	return &DeclarationNode{
-		Left:  n.Left.clone().(*IdentifierNode),
-		Right: n.Right.clone().(*ExpressionNode),
+		Ident: n.Ident,
+		Expr:  n.Expr.clone().(ExpressionNode),
 	}
 }
 
 func (n *DeclarationNode) String() string {
-	return fmt.Sprintf("%s = %s", n.Left, n.Right)
+	return fmt.Sprintf("%s = %s", n.Ident, n.Expr)
 }
 
-type ExpressionNode struct {
-	Action, Entity string
-	Refs           map[string]string
-	Params         map[string]interface{}
-	Aliases        map[string]string
-	Holes          map[string]string
-}
-
-func (n *ExpressionNode) clone() Node {
-	expr := &ExpressionNode{
+func (n *CommandNode) clone() Node {
+	cmd := &CommandNode{
 		Action: n.Action, Entity: n.Entity,
 		Refs:    make(map[string]string),
 		Params:  make(map[string]interface{}),
@@ -140,22 +99,22 @@ func (n *ExpressionNode) clone() Node {
 	}
 
 	for k, v := range n.Refs {
-		expr.Refs[k] = v
+		cmd.Refs[k] = v
 	}
 	for k, v := range n.Params {
-		expr.Params[k] = v
+		cmd.Params[k] = v
 	}
 	for k, v := range n.Aliases {
-		expr.Aliases[k] = v
+		cmd.Aliases[k] = v
 	}
 	for k, v := range n.Holes {
-		expr.Holes[k] = v
+		cmd.Holes[k] = v
 	}
 
-	return expr
+	return cmd
 }
 
-func (n *ExpressionNode) String() string {
+func (n *CommandNode) String() string {
 	var all []string
 	for k, v := range n.Refs {
 		all = append(all, fmt.Sprintf("%s=$%v", k, v))
@@ -172,7 +131,7 @@ func (n *ExpressionNode) String() string {
 	return fmt.Sprintf("%s %s %s", n.Action, n.Entity, strings.Join(all, " "))
 }
 
-func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
+func (n *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
 	processed := make(map[string]interface{})
 	if n.Params == nil {
 		n.Params = make(map[string]interface{})
@@ -187,7 +146,7 @@ func (n *ExpressionNode) ProcessHoles(fills map[string]interface{}) map[string]i
 	return processed
 }
 
-func (n *ExpressionNode) ProcessRefs(fills map[string]interface{}) {
+func (n *CommandNode) ProcessRefs(fills map[string]interface{}) {
 	if n.Params == nil {
 		n.Params = make(map[string]interface{})
 	}

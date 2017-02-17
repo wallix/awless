@@ -38,28 +38,28 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 
 	for _, sts := range current.Statements {
 		switch sts.Node.(type) {
-		case *ast.ExpressionNode:
-			expr := sts.Node.(*ast.ExpressionNode)
-			fn := d.Lookup(expr.Action, expr.Entity)
-			expr.ProcessRefs(vars)
+		case *ast.CommandNode:
+			cmd := sts.Node.(*ast.CommandNode)
+			fn := d.Lookup(cmd.Action, cmd.Entity)
+			cmd.ProcessRefs(vars)
 
-			sts.Line = expr.String()
-			if sts.Result, sts.Err = fn(expr.Params); sts.Err != nil {
-				return current, sts.Err
+			if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
+				return current, cmd.CmdErr
 			}
 		case *ast.DeclarationNode:
-			ident := sts.Node.(*ast.DeclarationNode).Left
-			expr := sts.Node.(*ast.DeclarationNode).Right
-			fn := d.Lookup(expr.Action, expr.Entity)
-			expr.ProcessRefs(vars)
+			ident := sts.Node.(*ast.DeclarationNode).Ident
+			expr := sts.Node.(*ast.DeclarationNode).Expr
+			switch expr.(type) {
+			case *ast.CommandNode:
+				cmd := expr.(*ast.CommandNode)
+				fn := d.Lookup(cmd.Action, cmd.Entity)
+				cmd.ProcessRefs(vars)
 
-			sts.Result, sts.Err = fn(expr.Params)
-			ident.Val = sts.Result
-			sts.Line = expr.String()
-			if sts.Err != nil {
-				return current, sts.Err
+				if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
+					return current, cmd.CmdErr
+				}
+				vars[ident] = cmd.CmdResult
 			}
-			vars[ident.Ident] = ident.Val
 		}
 	}
 
@@ -74,17 +74,17 @@ func (s *Template) Compile(d driver.Driver) (*Template, error) {
 }
 
 func (t *Template) Visit(v Visitor) error {
-	return v.Visit(t.Statements)
+	return v.Visit(t.CommandNodesIterator())
 }
 
 func (s *Template) GetHolesValuesSet() (values []string) {
 	holes := make(map[string]bool)
-	each := func(expr *ast.ExpressionNode) {
+	each := func(expr *ast.CommandNode) {
 		for _, hole := range expr.Holes {
 			holes[hole] = true
 		}
 	}
-	s.visitExpressionNodes(each)
+	s.visitCommandNodes(each)
 
 	for k, _ := range holes {
 		values = append(values, k)
@@ -95,7 +95,7 @@ func (s *Template) GetHolesValuesSet() (values []string) {
 
 func (s *Template) GetNormalizedAliases() map[string]string {
 	aliases := make(map[string]string)
-	each := func(expr *ast.ExpressionNode) {
+	each := func(expr *ast.CommandNode) {
 		for k, v := range expr.Aliases {
 			if !strings.Contains(k, ".") {
 				aliases[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
@@ -104,13 +104,13 @@ func (s *Template) GetNormalizedAliases() map[string]string {
 			}
 		}
 	}
-	s.visitExpressionNodes(each)
+	s.visitCommandNodes(each)
 	return aliases
 }
 
 func (s *Template) GetNormalizedParams() map[string]interface{} {
 	params := make(map[string]interface{})
-	each := func(expr *ast.ExpressionNode) {
+	each := func(expr *ast.CommandNode) {
 		for k, v := range expr.Params {
 			if !strings.Contains(k, ".") {
 				params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
@@ -119,12 +119,12 @@ func (s *Template) GetNormalizedParams() map[string]interface{} {
 			}
 		}
 	}
-	s.visitExpressionNodes(each)
+	s.visitCommandNodes(each)
 	return params
 }
 
 func (s *Template) MergeParams(newParams map[string]interface{}) {
-	each := func(expr *ast.ExpressionNode) {
+	each := func(expr *ast.CommandNode) {
 		for k, v := range newParams {
 			if strings.SplitN(k, ".", 2)[0] == expr.Entity {
 				if expr.Params == nil {
@@ -134,7 +134,7 @@ func (s *Template) MergeParams(newParams map[string]interface{}) {
 			}
 		}
 	}
-	s.visitExpressionNodes(each)
+	s.visitCommandNodes(each)
 }
 
 func (s *Template) ResolveHoles(refs ...map[string]interface{}) (map[string]interface{}, error) {
@@ -146,33 +146,38 @@ func (s *Template) ResolveHoles(refs ...map[string]interface{}) (map[string]inte
 	}
 
 	resolved := make(map[string]interface{})
-	each := func(expr *ast.ExpressionNode) {
+	each := func(expr *ast.CommandNode) {
 		processed := expr.ProcessHoles(all)
 		for key, v := range processed {
 			resolved[expr.Entity+"."+key] = v
 		}
 	}
 
-	s.visitExpressionNodes(each)
+	s.visitCommandNodes(each)
 
 	return resolved, nil
 }
 
-func (s *Template) visitExpressionNodes(fn func(n *ast.ExpressionNode)) {
+func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {
+	for _, cmd := range s.CommandNodesIterator() {
+		fn(cmd)
+	}
+}
+
+func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 	for _, sts := range s.Statements {
-		var expr *ast.ExpressionNode
-
 		switch sts.Node.(type) {
-		case *ast.ExpressionNode:
-			expr = sts.Node.(*ast.ExpressionNode)
+		case *ast.CommandNode:
+			nodes = append(nodes, sts.Node.(*ast.CommandNode))
 		case *ast.DeclarationNode:
-			expr = sts.Node.(*ast.DeclarationNode).Right
-		}
-
-		if expr != nil {
-			fn(expr)
+			expr := sts.Node.(*ast.DeclarationNode).Expr
+			switch expr.(type) {
+			case *ast.CommandNode:
+				nodes = append(nodes, expr.(*ast.CommandNode))
+			}
 		}
 	}
+	return
 }
 
 type TemplateExecution struct {
@@ -204,18 +209,18 @@ func NewTemplateExecution(tpl *Template) *TemplateExecution {
 		ID: ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String(),
 	}
 
-	for _, sts := range tpl.Statements {
+	for _, cmd := range tpl.CommandNodesIterator() {
 		var errMsg string
-		if sts.Err != nil {
-			errMsg = sts.Err.Error()
+		if cmd.CmdErr != nil {
+			errMsg = cmd.CmdErr.Error()
 		}
 		var result string
-		switch sts.Result.(type) {
+		switch cmd.CmdResult.(type) {
 		case string:
-			result = sts.Result.(string)
+			result = cmd.CmdResult.(string)
 		}
 		out.Executed = append(out.Executed,
-			&ExecutedStatement{Line: sts.Line, Result: result, Err: errMsg},
+			&ExecutedStatement{Line: cmd.String(), Result: result, Err: errMsg},
 		)
 	}
 
@@ -259,8 +264,8 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 			}
 
 			switch n.(type) {
-			case *ast.ExpressionNode:
-				node := n.(*ast.ExpressionNode)
+			case *ast.CommandNode:
+				node := n.(*ast.CommandNode)
 				var revertAction string
 				var params []string
 				switch node.Action {

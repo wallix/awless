@@ -26,7 +26,6 @@ import (
 )
 
 func TestTemplateParsing(t *testing.T) {
-
 	t.Run("Parse special characters", func(t *testing.T) {
 		tcases := []struct {
 			input    string
@@ -35,7 +34,7 @@ func TestTemplateParsing(t *testing.T) {
 			{
 				input: "attach policy arn=arn:aws:iam::aws:policy/AmazonS3FullAccess",
 				verifyFn: func(tpl *Template) error {
-					if err := isExpressionNode(tpl.Statements[0].Node); err != nil {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
 					return nil
@@ -66,10 +65,10 @@ func TestTemplateParsing(t *testing.T) {
 					if got, want := len(tpl.Statements), 2; got != want {
 						t.Fatalf("got %d, want %d", got, want)
 					}
-					if err := isExpressionNode(tpl.Statements[0].Node); err != nil {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
-					if err := isExpressionNode(tpl.Statements[1].Node); err != nil {
+					if err := isCommandNode(tpl.Statements[1].Node); err != nil {
 						t.Fatal(err)
 					}
 					return nil
@@ -81,10 +80,10 @@ func TestTemplateParsing(t *testing.T) {
 					if got, want := len(tpl.Statements), 2; got != want {
 						t.Fatalf("got %d, want %d", got, want)
 					}
-					if err := isExpressionNode(tpl.Statements[0].Node); err != nil {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
-					if err := isExpressionNode(tpl.Statements[1].Node); err != nil {
+					if err := isCommandNode(tpl.Statements[1].Node); err != nil {
 						t.Fatal(err)
 					}
 					return nil
@@ -115,7 +114,7 @@ func TestTemplateParsing(t *testing.T) {
 			},
 			{
 				input:    `create vpc`,
-				verifyFn: func(n ast.Node) error { return isExpressionNode(n) },
+				verifyFn: func(n ast.Node) error { return isCommandNode(n) },
 			},
 			{
 				input:    `mysubnet = create subnet`,
@@ -177,6 +176,7 @@ func TestTemplateParsing(t *testing.T) {
 
 		for _, tcase := range tcases {
 			node, err := ParseStatement(tcase.input)
+			fmt.Println(node)
 			if err != nil {
 				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
 			}
@@ -196,7 +196,7 @@ func TestTemplateParsing(t *testing.T) {
 				input: `create vpc
 create subnet`,
 				verifyFn: func(s *Template) error {
-					err := assertExpressionNode(s.Statements[0].Node, "create", "vpc",
+					err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
 						nil,
 						nil,
 						nil,
@@ -236,7 +236,7 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 						return err
 					}
 
-					err = assertExpressionNode(s.Statements[2].Node, "create", "instance",
+					err = assertCommandNode(s.Statements[2].Node, "create", "instance",
 						map[string]string{"subnet": "mysubnet"},
 						map[string]interface{}{"count": 1, "instance.type": "t2.micro", "ip": "127.0.0.1", "image": "ami-9398d3e0"},
 						map[string]string{},
@@ -269,16 +269,8 @@ func assertParams(n ast.Node, expected map[string]interface{}) error {
 		return nil
 	}
 
-	switch n.(type) {
-	case *ast.ExpressionNode:
-		params := n.(*ast.ExpressionNode).Params
-		return compare(params, expected)
-	case *ast.DeclarationNode:
-		params := n.(*ast.DeclarationNode).Right.Params
-		return compare(params, expected)
-	default:
-		return errors.New("unexpected node type")
-	}
+	cmd := extractCommandNode(n)
+	return compare(cmd.Params, expected)
 }
 
 func assertRefs(n ast.Node, expected map[string]string) error {
@@ -289,16 +281,8 @@ func assertRefs(n ast.Node, expected map[string]string) error {
 		return nil
 	}
 
-	switch n.(type) {
-	case *ast.ExpressionNode:
-		params := n.(*ast.ExpressionNode).Refs
-		return compare(params, expected)
-	case *ast.DeclarationNode:
-		params := n.(*ast.DeclarationNode).Right.Refs
-		return compare(params, expected)
-	default:
-		return errors.New("unexpected node type")
-	}
+	cmd := extractCommandNode(n)
+	return compare(cmd.Refs, expected)
 }
 
 func assertAliases(n ast.Node, expected map[string]string) error {
@@ -309,16 +293,8 @@ func assertAliases(n ast.Node, expected map[string]string) error {
 		return nil
 	}
 
-	switch n.(type) {
-	case *ast.ExpressionNode:
-		params := n.(*ast.ExpressionNode).Aliases
-		return compare(params, expected)
-	case *ast.DeclarationNode:
-		params := n.(*ast.DeclarationNode).Right.Aliases
-		return compare(params, expected)
-	default:
-		return errors.New("unexpected node type")
-	}
+	cmd := extractCommandNode(n)
+	return compare(cmd.Aliases, expected)
 }
 
 func assertHoles(n ast.Node, expected map[string]string) error {
@@ -329,16 +305,8 @@ func assertHoles(n ast.Node, expected map[string]string) error {
 		return nil
 	}
 
-	switch n.(type) {
-	case *ast.ExpressionNode:
-		params := n.(*ast.ExpressionNode).Holes
-		return compare(params, expected)
-	case *ast.DeclarationNode:
-		params := n.(*ast.DeclarationNode).Right.Holes
-		return compare(params, expected)
-	default:
-		return errors.New("unexpected node type")
-	}
+	cmd := extractCommandNode(n)
+	return compare(cmd.Holes, expected)
 }
 
 func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
@@ -348,34 +316,23 @@ func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, re
 
 	decl := n.(*ast.DeclarationNode)
 
-	if err := assertIdentifierNode(decl.Left, expIdent); err != nil {
-		return err
-	}
-
-	if err := verifyExpressionNode(decl.Right, expAction, expEntity, refs, params, holes, aliases); err != nil {
+	if err := verifyCommandNode(decl.Expr, expAction, expEntity, refs, params, holes, aliases); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func assertIdentifierNode(n *ast.IdentifierNode, expected string) error {
-	if got, want := n.Ident, expected; got != want {
-		return fmt.Errorf("identifier: got '%s' want '%s'", got, want)
-	}
-	return nil
+func assertCommandNode(n ast.Node, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
+	return verifyCommandNode(n, expAction, expEntity, refs, params, holes, aliases)
 }
 
-func assertExpressionNode(n ast.Node, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
-	return verifyExpressionNode(n, expAction, expEntity, refs, params, holes, aliases)
-}
-
-func verifyExpressionNode(n ast.Node, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
-	if err := isExpressionNode(n); err != nil {
+func verifyCommandNode(n ast.Node, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
+	if err := isCommandNode(n); err != nil {
 		return err
 	}
 
-	expr := n.(*ast.ExpressionNode)
+	expr := n.(*ast.CommandNode)
 
 	if got, want := expr.Action, expAction; got != want {
 		return fmt.Errorf("action: got '%s' want '%s'", got, want)
@@ -403,9 +360,29 @@ func verifyExpressionNode(n ast.Node, expAction, expEntity string, refs map[stri
 	return nil
 }
 
-func isExpressionNode(n ast.Node) error {
+func extractCommandNode(n ast.Node) *ast.CommandNode {
+	msg := func(i interface{}) string {
+		return fmt.Sprintf("extracting node: want CommandNode, got %T", i)
+	}
 	switch n.(type) {
-	case *ast.ExpressionNode:
+	case *ast.CommandNode:
+		return n.(*ast.CommandNode)
+	case *ast.DeclarationNode:
+		expr := n.(*ast.DeclarationNode).Expr
+		switch expr.(type) {
+		case *ast.CommandNode:
+			return expr.(*ast.CommandNode)
+		default:
+			panic(msg(expr))
+		}
+	default:
+		panic(msg(n))
+	}
+}
+
+func isCommandNode(n ast.Node) error {
+	switch n.(type) {
+	case *ast.CommandNode:
 	default:
 		return errors.New("expected expression node")
 	}

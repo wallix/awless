@@ -7,25 +7,27 @@ import (
 )
 
 func (a *AST) addAction(text string) {
-	expr := a.currentExpression()
-	if expr == nil {
-		a.addStatement(&ExpressionNode{Action: text})
+	cmd := &CommandNode{Action: text}
+	decl := a.currentDeclaration()
+	if decl != nil {
+		decl.Expr = cmd
 	} else {
-		expr.Action = text
+		node := a.currentCommand()
+		if node == nil {
+			a.addStatement(cmd)
+		} else {
+			node.Action = text
+		}
 	}
 }
 
 func (a *AST) addEntity(text string) {
-	expr := a.currentExpression()
-	expr.Entity = text
+	node := a.currentCommand()
+	node.Entity = text
 }
 
 func (a *AST) addDeclarationIdentifier(text string) {
-	decl := &DeclarationNode{
-		Left:  &IdentifierNode{Ident: text},
-		Right: &ExpressionNode{},
-	}
-	a.addStatement(decl)
+	a.addStatement(&DeclarationNode{Ident: text})
 }
 
 func (a *AST) LineDone() {
@@ -34,74 +36,93 @@ func (a *AST) LineDone() {
 }
 
 func (a *AST) addParamKey(text string) {
-	expr := a.currentExpression()
-	if expr.Params == nil {
-		expr.Refs = make(map[string]string)
-		expr.Params = make(map[string]interface{})
-		expr.Aliases = make(map[string]string)
-		expr.Holes = make(map[string]string)
+	node := a.currentCommand()
+	if node.Params == nil {
+		node.Refs = make(map[string]string)
+		node.Params = make(map[string]interface{})
+		node.Aliases = make(map[string]string)
+		node.Holes = make(map[string]string)
 	}
 	a.currentKey = text
 }
 
 func (a *AST) addParamValue(text string) {
-	expr := a.currentExpression()
-	expr.Params[a.currentKey] = text
+	node := a.currentCommand()
+	node.Params[a.currentKey] = text
 }
 
 func (a *AST) addParamIntValue(text string) {
-	expr := a.currentExpression()
+	node := a.currentCommand()
 	num, err := strconv.Atoi(text)
 	if err != nil {
 		panic(fmt.Sprintf("cannot convert '%s' to int", text))
 	}
-	expr.Params[a.currentKey] = num
+	node.Params[a.currentKey] = num
 }
 
 func (a *AST) addParamCidrValue(text string) {
-	expr := a.currentExpression()
+	node := a.currentCommand()
 	_, ipnet, err := net.ParseCIDR(text)
 	if err != nil {
 		panic(fmt.Sprintf("cannot convert '%s' to net cidr", text))
 	}
-	expr.Params[a.currentKey] = ipnet.String()
+	node.Params[a.currentKey] = ipnet.String()
 }
 
 func (a *AST) addParamIpValue(text string) {
-	expr := a.currentExpression()
+	node := a.currentCommand()
 	ip := net.ParseIP(text)
 	if ip == nil {
 		panic(fmt.Sprintf("cannot convert '%s' to net ip", text))
 	}
-	expr.Params[a.currentKey] = ip.String()
+	node.Params[a.currentKey] = ip.String()
 }
 
 func (a *AST) addParamRefValue(text string) {
-	expr := a.currentExpression()
-	expr.Refs[a.currentKey] = text
+	node := a.currentCommand()
+	node.Refs[a.currentKey] = text
 }
 
 func (a *AST) addParamAliasValue(text string) {
-	expr := a.currentExpression()
-	expr.Aliases[a.currentKey] = text
+	node := a.currentCommand()
+	node.Aliases[a.currentKey] = text
 }
 
 func (a *AST) addParamHoleValue(text string) {
-	expr := a.currentExpression()
-	expr.Holes[a.currentKey] = text
+	node := a.currentCommand()
+	node.Holes[a.currentKey] = text
 }
 
-func (a *AST) currentExpression() *ExpressionNode {
+func (a *AST) currentDeclaration() *DeclarationNode {
 	st := a.currentStatement
 	if st == nil {
 		return nil
 	}
 
 	switch st.Node.(type) {
-	case *ExpressionNode:
-		return st.Node.(*ExpressionNode)
 	case *DeclarationNode:
-		return st.Node.(*DeclarationNode).Right
+		return st.Node.(*DeclarationNode)
+	}
+
+	return nil
+}
+
+func (a *AST) currentCommand() *CommandNode {
+	st := a.currentStatement
+	if st == nil {
+		return nil
+	}
+
+	switch st.Node.(type) {
+	case *CommandNode:
+		return st.Node.(*CommandNode)
+	case *DeclarationNode:
+		expr := st.Node.(*DeclarationNode).Expr
+		switch expr.(type) {
+		case *CommandNode:
+			return expr.(*CommandNode)
+		}
+		return nil
 	default:
 		panic("last expression: unexpected node type")
 	}
