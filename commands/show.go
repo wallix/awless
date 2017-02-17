@@ -90,7 +90,7 @@ var showCmd = &cobra.Command{
 			fmt.Println("\nRelations:")
 
 			var count int
-			for i := len(parents)-1; i >= 0; i-- {
+			for i := len(parents) - 1; i >= 0; i-- {
 				if count == 0 {
 					fmt.Printf("%s\n", parents[i])
 				} else {

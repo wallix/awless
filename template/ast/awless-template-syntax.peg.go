@@ -311,31 +311,31 @@ func (p *Peg) Execute() {
 			text = string(_buffer[begin:end])
 
 		case ruleAction0:
-			p.AddDeclarationIdentifier(text)
+			p.addDeclarationIdentifier(text)
 		case ruleAction1:
-			p.AddAction(text)
+			p.addAction(text)
 		case ruleAction2:
-			p.AddEntity(text)
+			p.addEntity(text)
 		case ruleAction3:
 			p.LineDone()
 		case ruleAction4:
-			p.AddParamKey(text)
+			p.addParamKey(text)
 		case ruleAction5:
-			p.AddParamHoleValue(text)
+			p.addParamHoleValue(text)
 		case ruleAction6:
-			p.AddParamAliasValue(text)
+			p.addParamAliasValue(text)
 		case ruleAction7:
-			p.AddParamRefValue(text)
+			p.addParamRefValue(text)
 		case ruleAction8:
-			p.AddParamCidrValue(text)
+			p.addParamCidrValue(text)
 		case ruleAction9:
-			p.AddParamIpValue(text)
+			p.addParamIpValue(text)
 		case ruleAction10:
-			p.AddParamValue(text)
+			p.addParamValue(text)
 		case ruleAction11:
-			p.AddParamIntValue(text)
+			p.addParamIntValue(text)
 		case ruleAction12:
-			p.AddParamValue(text)
+			p.addParamValue(text)
 		case ruleAction13:
 			p.LineDone()
 
@@ -2723,31 +2723,31 @@ func (p *Peg) Init() {
 		/* 26 EndOfFile <- <!.> */
 		nil,
 		nil,
-		/* 29 Action0 <- <{ p.AddDeclarationIdentifier(text) }> */
+		/* 29 Action0 <- <{ p.addDeclarationIdentifier(text) }> */
 		nil,
-		/* 30 Action1 <- <{ p.AddAction(text) }> */
+		/* 30 Action1 <- <{ p.addAction(text) }> */
 		nil,
-		/* 31 Action2 <- <{ p.AddEntity(text) }> */
+		/* 31 Action2 <- <{ p.addEntity(text) }> */
 		nil,
 		/* 32 Action3 <- <{ p.LineDone() }> */
 		nil,
-		/* 33 Action4 <- <{ p.AddParamKey(text) }> */
+		/* 33 Action4 <- <{ p.addParamKey(text) }> */
 		nil,
-		/* 34 Action5 <- <{  p.AddParamHoleValue(text) }> */
+		/* 34 Action5 <- <{  p.addParamHoleValue(text) }> */
 		nil,
-		/* 35 Action6 <- <{  p.AddParamAliasValue(text) }> */
+		/* 35 Action6 <- <{  p.addParamAliasValue(text) }> */
 		nil,
-		/* 36 Action7 <- <{  p.AddParamRefValue(text) }> */
+		/* 36 Action7 <- <{  p.addParamRefValue(text) }> */
 		nil,
-		/* 37 Action8 <- <{ p.AddParamCidrValue(text) }> */
+		/* 37 Action8 <- <{ p.addParamCidrValue(text) }> */
 		nil,
-		/* 38 Action9 <- <{ p.AddParamIpValue(text) }> */
+		/* 38 Action9 <- <{ p.addParamIpValue(text) }> */
 		nil,
-		/* 39 Action10 <- <{ p.AddParamValue(text) }> */
+		/* 39 Action10 <- <{ p.addParamValue(text) }> */
 		nil,
-		/* 40 Action11 <- <{ p.AddParamIntValue(text) }> */
+		/* 40 Action11 <- <{ p.addParamIntValue(text) }> */
 		nil,
-		/* 41 Action12 <- <{ p.AddParamValue(text) }> */
+		/* 41 Action12 <- <{ p.addParamValue(text) }> */
 		nil,
 		/* 42 Action13 <- <{ p.LineDone() }> */
 		nil,

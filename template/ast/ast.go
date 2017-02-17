@@ -18,8 +18,6 @@ package ast
 
 import (
 	"fmt"
-	"net"
-	"strconv"
 	"strings"
 )
 
@@ -201,117 +199,10 @@ func (n *ExpressionNode) ProcessRefs(fills map[string]interface{}) {
 	}
 }
 
-func (s *AST) AddAction(text string) {
-	expr := s.currentExpression()
-	if expr == nil {
-		s.addStatement(&ExpressionNode{Action: text})
-	} else {
-		expr.Action = text
-	}
-}
-
-func (s *AST) AddEntity(text string) {
-	expr := s.currentExpression()
-	expr.Entity = text
-}
-
-func (s *AST) AddDeclarationIdentifier(text string) {
-	decl := &DeclarationNode{
-		Left:  &IdentifierNode{Ident: text},
-		Right: &ExpressionNode{},
-	}
-	s.addStatement(decl)
-}
-
-func (s *AST) LineDone() {
-	s.currentStatement = nil
-	s.currentKey = ""
-}
-
-func (s *AST) AddParamKey(text string) {
-	expr := s.currentExpression()
-	if expr.Params == nil {
-		expr.Refs = make(map[string]string)
-		expr.Params = make(map[string]interface{})
-		expr.Aliases = make(map[string]string)
-		expr.Holes = make(map[string]string)
-	}
-	s.currentKey = text
-}
-
-func (s *AST) AddParamValue(text string) {
-	expr := s.currentExpression()
-	expr.Params[s.currentKey] = text
-}
-
-func (s *AST) AddParamIntValue(text string) {
-	expr := s.currentExpression()
-	num, err := strconv.Atoi(text)
-	if err != nil {
-		panic(fmt.Sprintf("cannot convert '%s' to int", text))
-	}
-	expr.Params[s.currentKey] = num
-}
-
-func (s *AST) AddParamCidrValue(text string) {
-	expr := s.currentExpression()
-	_, ipnet, err := net.ParseCIDR(text)
-	if err != nil {
-		panic(fmt.Sprintf("cannot convert '%s' to net cidr", text))
-	}
-	expr.Params[s.currentKey] = ipnet.String()
-}
-
-func (s *AST) AddParamIpValue(text string) {
-	expr := s.currentExpression()
-	ip := net.ParseIP(text)
-	if ip == nil {
-		panic(fmt.Sprintf("cannot convert '%s' to net ip", text))
-	}
-	expr.Params[s.currentKey] = ip.String()
-}
-
-func (s *AST) AddParamRefValue(text string) {
-	expr := s.currentExpression()
-	expr.Refs[s.currentKey] = text
-}
-
-func (s *AST) AddParamAliasValue(text string) {
-	expr := s.currentExpression()
-	expr.Aliases[s.currentKey] = text
-}
-
-func (s *AST) AddParamHoleValue(text string) {
-	expr := s.currentExpression()
-	expr.Holes[s.currentKey] = text
-}
-
-func (s *AST) currentExpression() *ExpressionNode {
-	st := s.currentStatement
-	if st == nil {
-		return nil
-	}
-
-	switch st.Node.(type) {
-	case *ExpressionNode:
-		return st.Node.(*ExpressionNode)
-	case *DeclarationNode:
-		return st.Node.(*DeclarationNode).Right
-	default:
-		panic("last expression: unexpected node type")
-	}
-}
-
 func (a *AST) Clone() *AST {
 	clone := &AST{}
 	for _, stat := range a.Statements {
 		clone.Statements = append(clone.Statements, stat.clone())
 	}
 	return clone
-}
-
-func (s *AST) addStatement(n Node) {
-	stat := &Statement{Node: n}
-	s.currentStatement = stat
-	s.Statements = append(s.Statements, stat)
 }
