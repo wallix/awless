@@ -124,6 +124,7 @@ var ServicePerResourceType = map[string]string {
 
 {{ range $index, $service := . }}
 type {{ Title $service.Name }} struct {
+	once oncer
   region string
   {{ $service.Api }}iface.{{ ToUpper $service.Api }}API
 }

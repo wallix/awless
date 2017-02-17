@@ -92,6 +92,7 @@ var ServicePerResourceType = map[string]string{
 }
 
 type Infra struct {
+	once   oncer
 	region string
 	ec2iface.EC2API
 }
@@ -601,6 +602,7 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, e
 }
 
 type Access struct {
+	once   oncer
 	region string
 	iamiface.IAMAPI
 }
@@ -873,6 +875,7 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 }
 
 type Storage struct {
+	once   oncer
 	region string
 	s3iface.S3API
 }

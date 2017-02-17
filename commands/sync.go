@@ -77,9 +77,7 @@ var syncCmd = &cobra.Command{
 		}
 
 		graphs, err := sync.DefaultSyncer.Sync(services...)
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 
 		if dryRunSyncFlag && config.AwlessFirstSync {
 			exitOn(errors.New("No local data for printing diff. You might want to perfom a full sync first with `awless sync`"))

@@ -26,12 +26,8 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/wallix/awless/graph"
 )
 
 func TestRegionsValid(t *testing.T) {
@@ -249,6 +245,71 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 }
 
+func TestBuildStorageRdfGraph(t *testing.T) {
+	buckets := map[string][]*s3.Bucket{
+		"us-west-1": {
+			{Name: awssdk.String("bucket_us_1")},
+			{Name: awssdk.String("bucket_us_2")},
+			{Name: awssdk.String("bucket_us_3")},
+		},
+		"eu-west-1": {
+			{Name: awssdk.String("bucket_eu_1")},
+			{Name: awssdk.String("bucket_eu_2")},
+		},
+	}
+	objects := map[string][]*s3.Object{
+		"bucket_us_1": {
+			{Key: awssdk.String("obj_1")},
+			{Key: awssdk.String("obj_2")},
+		},
+		"bucket_us_2": {},
+		"bucket_us_3": {
+			{Key: awssdk.String("obj_3")},
+		},
+		"bucket_eu_1": {
+			{Key: awssdk.String("obj_4")},
+		},
+		"bucket_eu_2": {
+			{Key: awssdk.String("obj_5")},
+			{Key: awssdk.String("obj_6")},
+		},
+	}
+	bucketsACL := map[string][]*s3.Grant{
+		"bucket_us_1": {
+			{Permission: awssdk.String("Read"), Grantee: &s3.Grantee{ID: awssdk.String("usr_1")}},
+		},
+		"bucket_us_3": {
+			{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{URI: awssdk.String("usr_2")}},
+		},
+		"bucket_eu_1": {
+			{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{URI: awssdk.String("usr_2")}},
+		},
+		"bucket_eu_2": {
+			{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{URI: awssdk.String("usr_1")}},
+		},
+	}
+
+	mocks3 := &mockS3{bucketsPerRegion: buckets, objectsPerBucket: objects, bucketsACL: bucketsACL}
+	StorageService = mocks3
+	storage := Storage{S3API: mocks3, region: "eu-west-1"}
+
+	g, err := storage.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := g.MustMarshal()
+
+	expectContent, err := ioutil.ReadFile(filepath.Join("testdata", "storage.rdf"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := result, string(expectContent); got != want {
+		t.Fatalf("got\n[%s]\n\nwant\n[%s]", got, want)
+	}
+}
+
 func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	expect := `/region<eu-west-1>	"has_type"@[]	"/region"^^type:text`
 	access := Access{IAMAPI: &mockIam{}, region: "eu-west-1"}
@@ -274,115 +335,6 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	if result != expect {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
-}
-
-type mockEc2 struct {
-	ec2iface.EC2API
-	vpcs             []*ec2.Vpc
-	subnets          []*ec2.Subnet
-	instances        []*ec2.Instance
-	securityGroups   []*ec2.SecurityGroup
-	keyPairs         []*ec2.KeyPairInfo
-	internetGateways []*ec2.InternetGateway
-	routeTables      []*ec2.RouteTable
-}
-
-func (m *mockEc2) DescribeVpcs(input *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
-	return &ec2.DescribeVpcsOutput{Vpcs: m.vpcs}, nil
-}
-
-func (m *mockEc2) DescribeSubnets(input *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
-	return &ec2.DescribeSubnetsOutput{Subnets: m.subnets}, nil
-}
-
-func (m *mockEc2) DescribeInstances(input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	return &ec2.DescribeInstancesOutput{Reservations: []*ec2.Reservation{{Instances: m.instances}}}, nil
-}
-
-func (m *mockEc2) DescribeSecurityGroups(input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
-	return &ec2.DescribeSecurityGroupsOutput{SecurityGroups: m.securityGroups}, nil
-}
-
-func (m *mockEc2) DescribeKeyPairs(input *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
-	return &ec2.DescribeKeyPairsOutput{KeyPairs: m.keyPairs}, nil
-}
-
-func (m *mockEc2) DescribeInternetGateways(input *ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
-	return &ec2.DescribeInternetGatewaysOutput{InternetGateways: m.internetGateways}, nil
-}
-
-func (m *mockEc2) DescribeRouteTables(input *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {
-	return &ec2.DescribeRouteTablesOutput{RouteTables: m.routeTables}, nil
-}
-
-// Not tested
-func (m *mockEc2) DescribeVolumes(input *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
-	return &ec2.DescribeVolumesOutput{}, nil
-}
-
-type mockIam struct {
-	iamiface.IAMAPI
-	groups          []*iam.GroupDetail
-	managedPolicies []*iam.ManagedPolicyDetail
-	roles           []*iam.RoleDetail
-	users           []*iam.User
-	usersDetails    []*iam.UserDetail
-}
-
-func (m *mockIam) ListUsers(input *iam.ListUsersInput) (*iam.ListUsersOutput, error) {
-	return &iam.ListUsersOutput{Users: m.users}, nil
-}
-
-func (m *mockIam) ListPolicies(input *iam.ListPoliciesInput) (*iam.ListPoliciesOutput, error) {
-	var policies []*iam.Policy
-	for _, p := range m.managedPolicies {
-		policy := &iam.Policy{PolicyId: p.PolicyId, PolicyName: p.PolicyName}
-		policies = append(policies, policy)
-	}
-	return &iam.ListPoliciesOutput{Policies: policies}, nil
-}
-
-func (m *mockIam) GetAccountAuthorizationDetails(input *iam.GetAccountAuthorizationDetailsInput) (*iam.GetAccountAuthorizationDetailsOutput, error) {
-	return &iam.GetAccountAuthorizationDetailsOutput{GroupDetailList: m.groups, Policies: m.managedPolicies, RoleDetailList: m.roles, UserDetailList: m.usersDetails}, nil
-}
-
-func stringInSlice(s string, slice []string) bool {
-	for _, v := range slice {
-		if v == s {
-			return true
-		}
-	}
-	return false
-}
-
-type mockS3 struct {
-	s3iface.S3API
-	bucketsACL map[string][]*s3.Grant
-}
-
-func (m *mockS3) GetBucketAcl(input *s3.GetBucketAclInput) (*s3.GetBucketAclOutput, error) {
-	return &s3.GetBucketAclOutput{Grants: m.bucketsACL[awssdk.StringValue(input.Bucket)]}, nil
-}
-func (m *mockS3) Name() string {
-	return ""
-}
-func (m *mockS3) Provider() string {
-	return ""
-}
-func (m *mockS3) ProviderAPI() string {
-	return ""
-}
-func (m *mockS3) ProviderRunnableAPI() interface{} {
-	return m
-}
-func (m *mockS3) ResourceTypes() []string {
-	return []string{}
-}
-func (m *mockS3) FetchResources() (*graph.Graph, error) {
-	return nil, nil
-}
-func (m *mockS3) FetchByType(t string) (*graph.Graph, error) {
-	return nil, nil
 }
 
 func diffText(actual, expected string) error {

@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 	"sync"
@@ -57,6 +58,12 @@ type Security interface {
 	stsiface.STSAPI
 	GetUserId() (string, error)
 	GetAccountId() (string, error)
+}
+
+type oncer struct {
+	sync.Once
+	result interface{}
+	err    error
 }
 
 type security struct {
@@ -149,33 +156,34 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 	return g, userDetails, nil
 }
 
+func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
+	g := graph.NewGraph()
+	var buckets []*s3.Bucket
+	bucketM := &sync.Mutex{}
+
+	err := s.foreach_bucket_parallel(func(b *s3.Bucket) error {
+		bucketM.Lock()
+		buckets = append(buckets, b)
+		bucketM.Unlock()
+		res, err := newResource(b)
+		g.AddResource(res)
+		if err != nil {
+			return fmt.Errorf("build resource for bucket `%s`: %s", awssdk.StringValue(b.Name), err)
+		}
+		return nil
+	})
+	return g, buckets, err
+}
+
 func (s *Storage) fetch_all_storageobject_graph() (*graph.Graph, []*s3.Object, error) {
 	g := graph.NewGraph()
 	var cloudResources []*s3.Object
-	var wg sync.WaitGroup
-	errc := make(chan error)
 
-	s.foreach_bucket(func(b *s3.Bucket) error {
-		wg.Add(1)
-		go func(bucket *s3.Bucket) {
-			defer wg.Done()
-			errc <- s.fetchObjectsForBucket(bucket, g)
-		}(b)
-		return nil
+	err := s.foreach_bucket_parallel(func(b *s3.Bucket) error {
+		return s.fetchObjectsForBucket(b, g)
 	})
 
-	go func() {
-		wg.Wait()
-		close(errc)
-	}()
-
-	for err := range errc {
-		if err != nil {
-			return g, cloudResources, err
-		}
-	}
-
-	return g, cloudResources, nil
+	return g, cloudResources, err
 }
 
 func (s *Storage) fetchObjectsForBucket(bucket *s3.Bucket, g *graph.Graph) error {
@@ -201,50 +209,73 @@ func (s *Storage) fetchObjectsForBucket(bucket *s3.Bucket, g *graph.Graph) error
 	return nil
 }
 
-func (s *Storage) foreach_bucket(f func(b *s3.Bucket) error) error {
-	out, err := s.fetch_all_bucket()
+func (s *Storage) getBucketsPerRegion() ([]*s3.Bucket, error) {
+	var buckets []*s3.Bucket
+	out, err := s.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		return err
+		return buckets, err
 	}
 
-	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
-		err := f(output)
-		if err != nil {
-			return err
+	bucketc := make(chan *s3.Bucket)
+	errc := make(chan error)
+
+	var wg sync.WaitGroup
+
+	for _, bucket := range out.Buckets {
+		wg.Add(1)
+		go func(b *s3.Bucket) {
+			defer wg.Done()
+			loc, err := s.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: b.Name})
+			if err != nil {
+				errc <- err
+				return
+			}
+			if awssdk.StringValue(loc.LocationConstraint) == s.region {
+				bucketc <- b
+			}
+		}(bucket)
+	}
+	go func() {
+		wg.Wait()
+		close(bucketc)
+	}()
+
+	for {
+		select {
+		case err := <-errc:
+			if err != nil {
+				return buckets, err
+			}
+		case b, ok := <-bucketc:
+			if !ok {
+				return buckets, nil
+			}
+			buckets = append(buckets, b)
 		}
 	}
-
-	return nil
 }
 
-func (s *Storage) fetch_all_bucket() (interface{}, error) {
-	return s.ListBuckets(&s3.ListBucketsInput{})
-}
-
-func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
-	g := graph.NewGraph()
-	out, err := s.fetch_all_bucket()
-	if err != nil {
-		return nil, nil, err
+func (s *Storage) foreach_bucket_parallel(f func(b *s3.Bucket) error) error {
+	s.once.Do(func() {
+		s.once.result, s.once.err = s.getBucketsPerRegion()
+	})
+	if s.once.err != nil {
+		return s.once.err
 	}
-	var buckets []*s3.Bucket
+	buckets := s.once.result.([]*s3.Bucket)
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
-	for _, output := range out.(*s3.ListBucketsOutput).Buckets {
-		buckets = append(buckets, output)
+	for _, output := range buckets {
 		wg.Add(1)
 		go func(b *s3.Bucket) {
 			defer wg.Done()
-			res, err := newResource(b)
-			if err != nil {
+			if err := f(b); err != nil {
 				errc <- err
 			}
-			g.AddResource(res)
 		}(output)
 	}
-
 	go func() {
 		wg.Wait()
 		close(errc)
@@ -252,9 +283,9 @@ func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, nil, nil
+			return err
 		}
 	}
 
-	return g, buckets, nil
+	return nil
 }
