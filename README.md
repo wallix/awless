@@ -7,15 +7,15 @@
 
 # Why awless
 
-`awless` has been created with the idea to:
+`awless` will help you
 
-- run frequent actions easily by using simple commands
-- explore easily your infrastructure and cloud resources inter relations via CLI
+- run frequent actions by using simple commands
+- easily explore your infrastructure and cloud resources inter relations via CLI
 - ensure smart defaults & security best practices
 - manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
 - explore and analyse your infrastructure through time
 
-`awless` brings a new approach to manage virtualized infrastructures through CLI.
+`awless` brings a new approach to manage AWS infrastructures through CLI.
 
 # Overview
 
