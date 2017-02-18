@@ -222,7 +222,7 @@ func runSyncFor(tpl *template.Template) {
 	}
 
 	var srvNames []string
-	for name, _ := range uniqueNames {
+	for name := range uniqueNames {
 		srvNames = append(srvNames, name)
 	}
 
