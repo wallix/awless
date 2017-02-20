@@ -1,4 +1,5 @@
 //go:generate go run $GOFILE
+//go:generate gofmt -s -w ../aws/gen_api.go
 /*
 Copyright 2017 WALLIX
 
@@ -19,7 +20,6 @@ package main
 
 import (
 	"bytes"
-	"go/format"
 	"io/ioutil"
 	"strings"
 	"text/template"
@@ -48,12 +48,7 @@ func generateFetcherFuncs() {
 		panic(err)
 	}
 
-	formatted, err := format.Source(buff.Bytes())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile("../aws/generated_api.go", formatted, 0666); err != nil {
+	if err := ioutil.WriteFile("../aws/gen_api.go", buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }

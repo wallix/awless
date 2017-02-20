@@ -1,4 +1,6 @@
 //go:generate go run $GOFILE
+//go:generate gofmt -s -w ../aws/gen_template_defs.go
+//go:generate gofmt -s -w ../aws/gen_driver_funcs.go
 
 /*
 Copyright 2017 WALLIX
@@ -20,7 +22,6 @@ package main
 
 import (
 	"bytes"
-	"go/format"
 	"io/ioutil"
 	"strings"
 	"text/template"
@@ -45,12 +46,7 @@ func generateTemplateTemplates() {
 		panic(err)
 	}
 
-	formatted, err := format.Source(buff.Bytes())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile("../aws/gen_template_defs.go", formatted, 0666); err != nil {
+	if err := ioutil.WriteFile("../aws/gen_template_defs.go", buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -69,12 +65,7 @@ func generateDriverFuncs() {
 		panic(err)
 	}
 
-	formatted, err := format.Source(buff.Bytes())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile("../aws/gen_driver_funcs.go", formatted, 0666); err != nil {
+	if err := ioutil.WriteFile("../aws/gen_driver_funcs.go", buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -99,9 +90,6 @@ limitations under the License.
 package aws
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/wallix/awless/template"
 )
 

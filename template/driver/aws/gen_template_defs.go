@@ -17,10 +17,12 @@ limitations under the License.
 // This file was automatically generated with go generate
 package aws
 
-import "github.com/wallix/awless/template"
+import (
+	"github.com/wallix/awless/template"
+)
 
 var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
-	"createvpc": template.TemplateDefinition{
+	"createvpc": {
 		Action:         "create",
 		Entity:         "vpc",
 		Api:            "ec2",
@@ -28,7 +30,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deletevpc": template.TemplateDefinition{
+	"deletevpc": {
 		Action:         "delete",
 		Entity:         "vpc",
 		Api:            "ec2",
@@ -36,7 +38,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createsubnet": template.TemplateDefinition{
+	"createsubnet": {
 		Action:         "create",
 		Entity:         "subnet",
 		Api:            "ec2",
@@ -44,7 +46,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{"zone"},
 		TagsMapping:    []string{},
 	},
-	"updatesubnet": template.TemplateDefinition{
+	"updatesubnet": {
 		Action:         "update",
 		Entity:         "subnet",
 		Api:            "ec2",
@@ -52,7 +54,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{"public-vms"},
 		TagsMapping:    []string{},
 	},
-	"deletesubnet": template.TemplateDefinition{
+	"deletesubnet": {
 		Action:         "delete",
 		Entity:         "subnet",
 		Api:            "ec2",
@@ -60,7 +62,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createinstance": template.TemplateDefinition{
+	"createinstance": {
 		Action:         "create",
 		Entity:         "instance",
 		Api:            "ec2",
@@ -68,7 +70,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{"lock", "key", "ip", "group", "userdata"},
 		TagsMapping:    []string{"name"},
 	},
-	"updateinstance": template.TemplateDefinition{
+	"updateinstance": {
 		Action:         "update",
 		Entity:         "instance",
 		Api:            "ec2",
@@ -76,7 +78,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{"lock", "group", "type"},
 		TagsMapping:    []string{},
 	},
-	"deleteinstance": template.TemplateDefinition{
+	"deleteinstance": {
 		Action:         "delete",
 		Entity:         "instance",
 		Api:            "ec2",
@@ -84,7 +86,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"startinstance": template.TemplateDefinition{
+	"startinstance": {
 		Action:         "start",
 		Entity:         "instance",
 		Api:            "ec2",
@@ -92,7 +94,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"stopinstance": template.TemplateDefinition{
+	"stopinstance": {
 		Action:         "stop",
 		Entity:         "instance",
 		Api:            "ec2",
@@ -100,7 +102,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"checkinstance": template.TemplateDefinition{
+	"checkinstance": {
 		Action:         "check",
 		Entity:         "instance",
 		Api:            "ec2",
@@ -108,7 +110,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createsecuritygroup": template.TemplateDefinition{
+	"createsecuritygroup": {
 		Action:         "create",
 		Entity:         "securitygroup",
 		Api:            "ec2",
@@ -116,7 +118,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"updatesecuritygroup": template.TemplateDefinition{
+	"updatesecuritygroup": {
 		Action:         "update",
 		Entity:         "securitygroup",
 		Api:            "ec2",
@@ -124,7 +126,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deletesecuritygroup": template.TemplateDefinition{
+	"deletesecuritygroup": {
 		Action:         "delete",
 		Entity:         "securitygroup",
 		Api:            "ec2",
@@ -132,7 +134,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createvolume": template.TemplateDefinition{
+	"createvolume": {
 		Action:         "create",
 		Entity:         "volume",
 		Api:            "ec2",
@@ -140,7 +142,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deletevolume": template.TemplateDefinition{
+	"deletevolume": {
 		Action:         "delete",
 		Entity:         "volume",
 		Api:            "ec2",
@@ -148,7 +150,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"attachvolume": template.TemplateDefinition{
+	"attachvolume": {
 		Action:         "attach",
 		Entity:         "volume",
 		Api:            "ec2",
@@ -156,7 +158,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createinternetgateway": template.TemplateDefinition{
+	"createinternetgateway": {
 		Action:         "create",
 		Entity:         "internetgateway",
 		Api:            "ec2",
@@ -164,7 +166,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deleteinternetgateway": template.TemplateDefinition{
+	"deleteinternetgateway": {
 		Action:         "delete",
 		Entity:         "internetgateway",
 		Api:            "ec2",
@@ -172,7 +174,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"attachinternetgateway": template.TemplateDefinition{
+	"attachinternetgateway": {
 		Action:         "attach",
 		Entity:         "internetgateway",
 		Api:            "ec2",
@@ -180,7 +182,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"detachinternetgateway": template.TemplateDefinition{
+	"detachinternetgateway": {
 		Action:         "detach",
 		Entity:         "internetgateway",
 		Api:            "ec2",
@@ -188,7 +190,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createroutetable": template.TemplateDefinition{
+	"createroutetable": {
 		Action:         "create",
 		Entity:         "routetable",
 		Api:            "ec2",
@@ -196,7 +198,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deleteroutetable": template.TemplateDefinition{
+	"deleteroutetable": {
 		Action:         "delete",
 		Entity:         "routetable",
 		Api:            "ec2",
@@ -204,7 +206,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"attachroutetable": template.TemplateDefinition{
+	"attachroutetable": {
 		Action:         "attach",
 		Entity:         "routetable",
 		Api:            "ec2",
@@ -212,7 +214,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"detachroutetable": template.TemplateDefinition{
+	"detachroutetable": {
 		Action:         "detach",
 		Entity:         "routetable",
 		Api:            "ec2",
@@ -220,7 +222,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createroute": template.TemplateDefinition{
+	"createroute": {
 		Action:         "create",
 		Entity:         "route",
 		Api:            "ec2",
@@ -228,7 +230,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deleteroute": template.TemplateDefinition{
+	"deleteroute": {
 		Action:         "delete",
 		Entity:         "route",
 		Api:            "ec2",
@@ -236,7 +238,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createtags": template.TemplateDefinition{
+	"createtags": {
 		Action:         "create",
 		Entity:         "tags",
 		Api:            "ec2",
@@ -244,7 +246,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createkeypair": template.TemplateDefinition{
+	"createkeypair": {
 		Action:         "create",
 		Entity:         "keypair",
 		Api:            "ec2",
@@ -252,7 +254,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deletekeypair": template.TemplateDefinition{
+	"deletekeypair": {
 		Action:         "delete",
 		Entity:         "keypair",
 		Api:            "ec2",
@@ -260,7 +262,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createuser": template.TemplateDefinition{
+	"createuser": {
 		Action:         "create",
 		Entity:         "user",
 		Api:            "iam",
@@ -268,7 +270,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deleteuser": template.TemplateDefinition{
+	"deleteuser": {
 		Action:         "delete",
 		Entity:         "user",
 		Api:            "iam",
@@ -276,7 +278,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"creategroup": template.TemplateDefinition{
+	"creategroup": {
 		Action:         "create",
 		Entity:         "group",
 		Api:            "iam",
@@ -284,7 +286,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deletegroup": template.TemplateDefinition{
+	"deletegroup": {
 		Action:         "delete",
 		Entity:         "group",
 		Api:            "iam",
@@ -292,7 +294,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"attachpolicy": template.TemplateDefinition{
+	"attachpolicy": {
 		Action:         "attach",
 		Entity:         "policy",
 		Api:            "iam",
@@ -300,7 +302,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"detachpolicy": template.TemplateDefinition{
+	"detachpolicy": {
 		Action:         "detach",
 		Entity:         "policy",
 		Api:            "iam",
@@ -308,7 +310,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createbucket": template.TemplateDefinition{
+	"createbucket": {
 		Action:         "create",
 		Entity:         "bucket",
 		Api:            "s3",
@@ -316,7 +318,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"deletebucket": template.TemplateDefinition{
+	"deletebucket": {
 		Action:         "delete",
 		Entity:         "bucket",
 		Api:            "s3",
@@ -324,7 +326,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createstorageobject": template.TemplateDefinition{
+	"createstorageobject": {
 		Action:         "create",
 		Entity:         "storageobject",
 		Api:            "s3",
@@ -332,7 +334,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{"name"},
 		TagsMapping:    []string{},
 	},
-	"deletestorageobject": template.TemplateDefinition{
+	"deletestorageobject": {
 		Action:         "delete",
 		Entity:         "storageobject",
 		Api:            "s3",
