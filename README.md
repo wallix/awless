@@ -61,7 +61,7 @@ For more options, see [Installation (wiki)](https://github.com/wallix/awless/wik
 
 ## Setup shell autocompletion
 
-Awless has commands, subcommands and flag completion. It becomes really useful for CRUD onliner when managing resources for example.
+Awless has commands, subcommands and flag completion. It becomes really useful for CRUD oneliner when managing resources for example.
 
 Read the wiki page for setting autocompletion for [bash](https://github.com/wallix/awless/wiki/Setup-Autocomplete#bash) or [zsh](https://github.com/wallix/awless/wiki/Setup-Autocomplete#zsh).
 
@@ -108,7 +108,7 @@ Basically `awless show` try to maximize the info nicely on your terminal for a g
 
 `awless` provides a powerful template system to interact with cloud infrastructures.
 
-`awless` templates can be used through onliner shortcut commands:
+`awless` templates can be used through oneliner shortcut commands:
 
 Using the help:
 
@@ -134,7 +134,7 @@ Note that you can get inspired with pre-existing templates from the dedicated gi
 
 ### Log & revert executed template commands
 
-To list a detailled account of the last actions you have run on your cloud:
+To list a detailed account of the last actions you have run on your cloud:
 
     awless log
 
@@ -146,7 +146,7 @@ The CLI guide you through a revert action and you have the chance to confirm or 
 
 ### Cloud history
 
-Using the local auto sync functionnality of the cloud resources `awless history` will display in a digested manner the changes that occured in your infra:
+Using the local auto sync functionality of the cloud resources `awless history` will display in a digested manner the changes that occurred in your infra:
 
      awless history      # show changes at the resources level
      awless history -p   # show changes including changes in the resources properties
@@ -193,7 +193,7 @@ For example, you would run the `bucket_sizer` inspector with:
        fouth-bucket        1000         0.00772 Gb
                                         3.5059 Gb
 
-Note that - as a upcoming feature - using the local infrastructure snaphosts (automatically synced), we will be able to run inspectors through time very fast (i.e: all done locally)! For instance, in this case you would see the evolution of your bucket sizing!
+Note that - as a upcoming feature - using the local infrastructure snapshots (automatically synced), we will be able to run inspectors through time very fast (i.e: all done locally)! For instance, in this case you would see the evolution of your bucket sizing!
 
 # About
 
