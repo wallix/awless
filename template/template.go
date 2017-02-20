@@ -86,7 +86,7 @@ func (s *Template) GetHolesValuesSet() (values []string) {
 	}
 	s.visitCommandNodes(each)
 
-	for k, _ := range holes {
+	for k := range holes {
 		values = append(values, k)
 	}
 
