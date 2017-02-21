@@ -13,7 +13,8 @@
 - easily explore your infrastructure and cloud resources inter relations via CLI
 - ensure smart defaults & security best practices
 - manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
-- explore and analyse your infrastructure through time
+- explore, analyse and query your infrastructure **offline**
+- explore, analyse and query your infrastructure **through time**
 
 `awless` brings a new approach to manage AWS infrastructures through CLI.
 
@@ -31,6 +32,7 @@
 - A local history and versioning of the changes that occurred in your cloud: `awless history`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
+- Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 
 # Design concepts
