@@ -150,10 +150,10 @@ func TestVisitSiblings(t *testing.T) {
 	//     2          3           4
 	// 5   6  7    8  9  10    11  12
 	//                               13
-	one, _ := node.NewNodeFromStrings("/mamal", "1")
+	one, _ := node.NewNodeFromStrings("/mammal", "1")
 	two, _ := node.NewNodeFromStrings("/fish", "2")
 	three, _ := node.NewNodeFromStrings("/fish", "3")
-	four, _ := node.NewNodeFromStrings("/mamal", "4")
+	four, _ := node.NewNodeFromStrings("/mammal", "4")
 	five, _ := node.NewNodeFromStrings("/nemo", "5")
 	six, _ := node.NewNodeFromStrings("/nemo", "6")
 	seven, _ := node.NewNodeFromStrings("/nemo", "7")

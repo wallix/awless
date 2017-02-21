@@ -59,7 +59,7 @@ func intersectTriples(a, b []*triple.Triple) []*triple.Triple {
 	return inter
 }
 
-func substractTriples(a, b []*triple.Triple) []*triple.Triple {
+func subtractTriples(a, b []*triple.Triple) []*triple.Triple {
 	var sub []*triple.Triple
 
 	for i := 0; i < len(a); i++ {

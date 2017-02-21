@@ -46,7 +46,7 @@ func TestIntersectTriples(t *testing.T) {
 	}
 }
 
-func TestSubstractTriples(t *testing.T) {
+func TestSubtractTriples(t *testing.T) {
 	var a, b, expect []*triple.Triple
 
 	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
@@ -60,7 +60,7 @@ func TestSubstractTriples(t *testing.T) {
 	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
 	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
 
-	result := substractTriples(a, b)
+	result := subtractTriples(a, b)
 	expect = append(expect, parseTriple("/a<1>  \"to\"@[] /b<1>"))
 	expect = append(expect, parseTriple("/a<4>  \"to\"@[] /b<4>"))
 
@@ -68,7 +68,7 @@ func TestSubstractTriples(t *testing.T) {
 		t.Fatalf("got %s\nwant%s\n", got, want)
 	}
 
-	result = substractTriples(b, a)
+	result = subtractTriples(b, a)
 	expect = []*triple.Triple{}
 	expect = append(expect, parseTriple("/a<0>  \"to\"@[] /b<0>"))
 	expect = append(expect, parseTriple("/a<5>  \"to\"@[] /b<5>"))
