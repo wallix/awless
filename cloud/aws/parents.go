@@ -36,7 +36,6 @@ type funcBuilder struct {
 	parent              graph.ResourceType
 	fieldName, listName string
 	relation            int
-	must                bool
 }
 
 type addParentFn func(*graph.Graph, interface{}) error
@@ -51,7 +50,7 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: graph.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
 	},
 	graph.SecurityGroup.String(): {
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", must: true}.build(),
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
 	},
 	graph.InternetGateway.String(): {
 		addRegionParent,
@@ -59,7 +58,7 @@ var addParentsFns = map[string][]addParentFn{
 	},
 	graph.RouteTable.String(): {
 		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "Associations"}.build(),
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", must: true}.build(),
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
 	},
 	graph.Vpc.String():     {addRegionParent},
 	graph.Keypair.String(): {addRegionParent},
@@ -69,8 +68,6 @@ var addParentsFns = map[string][]addParentFn{
 	graph.Policy.String():  {addRegionParent},
 	graph.Bucket.String():  {addRegionParent},
 }
-
-var ParentNotFound = errors.New("empty field to add parent")
 
 func (fb funcBuilder) build() addParentFn {
 	if fb.listName != "" {
@@ -98,11 +95,7 @@ func (fb funcBuilder) addRelationWithField() addParentFn {
 		}
 
 		if awssdk.StringValue(str) == "" {
-			if fb.must {
-				return ParentNotFound
-			} else {
-				return nil
-			}
+			return nil
 		}
 
 		parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
