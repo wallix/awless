@@ -29,11 +29,11 @@
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
-- A local history and versioning of the changes that occurred in your cloud: `awless history`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
+- [*IN PROGRESS*] A local history and versioning of the changes that occurred in your cloud: `awless history`
 
 # Design concepts
 
@@ -144,12 +144,14 @@ Each `awless` command that changes the cloud infrastructure is associated with a
 
 The CLI guide you through a revert action and you have the chance to confirm or quit.
 
-### Cloud history
+### Cloud history (in progress)
 
 Using the local auto sync functionality of the cloud resources `awless history` will display in a digested manner the changes that occurred in your infra:
 
      awless history      # show changes at the resources level
      awless history -p   # show changes including changes in the resources properties
+     
+*Note*: As model/relations for resources may evolve, if you have any issues with `awless history` between version upgrades, run `rm -Rf ~/.awless/aws/rdf` to start fresh.
 
 ### SSH
 

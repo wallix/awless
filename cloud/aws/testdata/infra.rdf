@@ -20,6 +20,7 @@
 /instance<inst_4>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
 /instance<inst_5>	"has_type"@[]	"/instance"^^type:text
 /instance<inst_5>	"property"@[]	"{"Key":"Id","Value":"inst_5"}"^^type:text
+/internetgateway<igw_1>	"applies_on"@[]	/vpc<vpc_2>
 /internetgateway<igw_1>	"has_type"@[]	"/internetgateway"^^type:text
 /internetgateway<igw_1>	"property"@[]	"{"Key":"Id","Value":"igw_1"}"^^type:text
 /internetgateway<igw_1>	"property"@[]	"{"Key":"Vpcs","Value":["vpc_2"]}"^^type:text
@@ -32,6 +33,7 @@
 /region<eu-west-1>	"parent_of"@[]	/keypair<my_key_pair>
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_1>
 /region<eu-west-1>	"parent_of"@[]	/vpc<vpc_2>
+/routetable<rt_1>	"applies_on"@[]	/subnet<subnet_1>
 /routetable<rt_1>	"has_type"@[]	"/routetable"^^type:text
 /routetable<rt_1>	"property"@[]	"{"Key":"Id","Value":"rt_1"}"^^type:text
 /routetable<rt_1>	"property"@[]	"{"Key":"Main","Value":false}"^^type:text
@@ -61,7 +63,6 @@
 /subnet<sub_3>	"property"@[]	"{"Key":"VpcId","Value":"vpc_2"}"^^type:text
 /subnet<sub_4>	"has_type"@[]	"/subnet"^^type:text
 /subnet<sub_4>	"property"@[]	"{"Key":"Id","Value":"sub_4"}"^^type:text
-/subnet<subnet_1>	"parent_of"@[]	/routetable<rt_1>
 /vpc<vpc_1>	"has_type"@[]	"/vpc"^^type:text
 /vpc<vpc_1>	"parent_of"@[]	/routetable<rt_1>
 /vpc<vpc_1>	"parent_of"@[]	/securitygroup<secgroup_1>
@@ -70,6 +71,5 @@
 /vpc<vpc_1>	"parent_of"@[]	/subnet<sub_2>
 /vpc<vpc_1>	"property"@[]	"{"Key":"Id","Value":"vpc_1"}"^^type:text
 /vpc<vpc_2>	"has_type"@[]	"/vpc"^^type:text
-/vpc<vpc_2>	"parent_of"@[]	/internetgateway<igw_1>
 /vpc<vpc_2>	"parent_of"@[]	/subnet<sub_3>
 /vpc<vpc_2>	"property"@[]	"{"Key":"Id","Value":"vpc_2"}"^^type:text

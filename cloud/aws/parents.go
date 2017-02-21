@@ -30,6 +30,7 @@ import (
 const (
 	PARENT_OF = iota // default
 	APPLIES_ON
+	DEPENDING_ON
 )
 
 type funcBuilder struct {
@@ -54,10 +55,10 @@ var addParentsFns = map[string][]addParentFn{
 	},
 	graph.InternetGateway.String(): {
 		addRegionParent,
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", listName: "Attachments"}.build(),
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
 	graph.RouteTable.String(): {
-		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "Associations"}.build(),
+		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "Associations", relation: DEPENDING_ON}.build(),
 		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
 	},
 	graph.Vpc.String():     {addRegionParent},
@@ -181,6 +182,8 @@ func addRelation(g *graph.Graph, first, other *graph.Resource, relation int) err
 		g.AddParentRelation(first, other)
 	case APPLIES_ON:
 		g.AddAppliesOnRelation(first, other)
+	case DEPENDING_ON:
+		g.AddAppliesOnRelation(other, first)
 	default:
 		return errors.New("unknown relation type")
 	}

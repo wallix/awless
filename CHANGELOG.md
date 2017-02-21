@@ -1,5 +1,7 @@
 ## 0.0.14 [unreleased]
 
+As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
+
 ### Features
 
 - [#39](https://github.com/wallix/awless/issues/38), [#38](https://github.com/wallix/awless/issues/33): Remove data collection & sending

@@ -240,8 +240,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := result, string(expectContent); got != want {
-		t.Fatalf("got\n[%s]\n\nwant\n[%s]", got, want)
+	if err := diffText(result, string(expectContent)); err != nil {
+		t.Fatal(err)
 	}
 }
 
