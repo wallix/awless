@@ -72,14 +72,25 @@ const (
 	VpcPeeringConnectionTarget
 )
 
+type RouteTarget struct {
+	Type  routeTargetType
+	Ref   string
+	Owner string
+}
+
+func (t *RouteTarget) String() string {
+	return fmt.Sprintf("Type:%+v; Ref:%s", t.Type, t.Ref)
+}
+
 type Route struct {
-	Destination *net.IPNet
-	TargetType  routeTargetType
-	Target      string
+	Destination             *net.IPNet
+	DestinationIPv6         *net.IPNet
+	DestinationPrefixListId string
+	Targets                 []*RouteTarget
 }
 
 func (r *Route) String() string {
-	return fmt.Sprintf("Destination:%+v; TargetType:%v; Target:%s", r.Destination, r.TargetType, r.Target)
+	return fmt.Sprintf("Destination:%+v; DestinationIPv6:%+v; Targets:%+v", r.Destination, r.DestinationIPv6, r.Targets)
 }
 
 type Grant struct {

@@ -201,53 +201,96 @@ func TestTransformFunctions(t *testing.T) {
 				GatewayId:                awssdk.String("test_id_2"),
 			},
 			{
-				DestinationIpv6CidrBlock: awssdk.String("0.0.0.0/0"),
-				InstanceId:               awssdk.String("test_id_3"),
+				DestinationCidrBlock: awssdk.String("0.0.0.0/0"),
+				InstanceId:           awssdk.String("test_id_3"),
 			},
 			{
-				DestinationIpv6CidrBlock: awssdk.String("0.0.0.0/0"),
-				NatGatewayId:             awssdk.String("test_id_4"),
+				DestinationCidrBlock: awssdk.String("0.0.0.0/0"),
+				NatGatewayId:         awssdk.String("test_id_4"),
 			},
 			{
-				DestinationIpv6CidrBlock: awssdk.String("0.0.0.0/0"),
-				NetworkInterfaceId:       awssdk.String("test_id_5"),
+				DestinationCidrBlock: awssdk.String("0.0.0.0/0"),
+				NetworkInterfaceId:   awssdk.String("test_id_5"),
 			},
 			{
-				DestinationIpv6CidrBlock: awssdk.String("0.0.0.0/0"),
-				VpcPeeringConnectionId:   awssdk.String("test_id_6"),
+				DestinationCidrBlock:   awssdk.String("0.0.0.0/0"),
+				VpcPeeringConnectionId: awssdk.String("test_id_6"),
+			},
+			{
+				DestinationCidrBlock:     awssdk.String("10.0.0.0/24"),
+				DestinationIpv6CidrBlock: awssdk.String("fd34:fe56:7891:2f3a::/64"),
+				VpcPeeringConnectionId:   awssdk.String("test_id_7"),
+			},
+			{
+				DestinationPrefixListId: awssdk.String("pl-0123456"),
+				GatewayId:               awssdk.String("test_id_8"),
+			},
+			{
+				DestinationCidrBlock:    awssdk.String("0.0.0.0/0"),
+				DestinationPrefixListId: awssdk.String("pl-0123456"),
+				InstanceId:              awssdk.String("test_id_9"),
+				InstanceOwnerId:         awssdk.String("owner"),
+				NetworkInterfaceId:      awssdk.String("eni-123456"),
 			},
 		}
 
 		expected := []*graph.Route{
 			{
 				Destination: &net.IPNet{IP: net.IPv4(10, 0, 0, 0), Mask: net.CIDRMask(24, 32)},
-				TargetType:  graph.EgressOnlyInternetGatewayTarget,
-				Target:      "test_id_1",
+				Targets: []*graph.RouteTarget{
+					{Type: graph.EgressOnlyInternetGatewayTarget, Ref: "test_id_1"},
+				},
 			},
 			{
-				Destination: &net.IPNet{IP: net.ParseIP("fd34:fe56:7891:2f3a::"), Mask: net.CIDRMask(64, 128)},
-				TargetType:  graph.GatewayTarget,
-				Target:      "test_id_2",
-			},
-			{
-				Destination: &net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)},
-				TargetType:  graph.InstanceTarget,
-				Target:      "test_id_3",
+				DestinationIPv6: &net.IPNet{IP: net.ParseIP("fd34:fe56:7891:2f3a::"), Mask: net.CIDRMask(64, 128)},
+				Targets: []*graph.RouteTarget{
+					{Type: graph.GatewayTarget, Ref: "test_id_2"},
+				},
 			},
 			{
 				Destination: &net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)},
-				TargetType:  graph.NatTarget,
-				Target:      "test_id_4",
+				Targets: []*graph.RouteTarget{
+					{Type: graph.InstanceTarget, Ref: "test_id_3"},
+				},
 			},
 			{
 				Destination: &net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)},
-				TargetType:  graph.NetworkInterfaceTarget,
-				Target:      "test_id_5",
+				Targets: []*graph.RouteTarget{
+					{Type: graph.NatTarget, Ref: "test_id_4"},
+				},
 			},
 			{
 				Destination: &net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)},
-				TargetType:  graph.VpcPeeringConnectionTarget,
-				Target:      "test_id_6",
+				Targets: []*graph.RouteTarget{
+					{Type: graph.NetworkInterfaceTarget, Ref: "test_id_5"},
+				},
+			},
+			{
+				Destination: &net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)},
+				Targets: []*graph.RouteTarget{
+					{Type: graph.VpcPeeringConnectionTarget, Ref: "test_id_6"},
+				},
+			},
+			{
+				Destination:     &net.IPNet{IP: net.IPv4(10, 0, 0, 0), Mask: net.CIDRMask(24, 32)},
+				DestinationIPv6: &net.IPNet{IP: net.ParseIP("fd34:fe56:7891:2f3a::"), Mask: net.CIDRMask(64, 128)},
+				Targets: []*graph.RouteTarget{
+					{Type: graph.VpcPeeringConnectionTarget, Ref: "test_id_7"},
+				},
+			},
+			{
+				DestinationPrefixListId: "pl-0123456",
+				Targets: []*graph.RouteTarget{
+					{Type: graph.GatewayTarget, Ref: "test_id_8"},
+				},
+			},
+			{
+				Destination:             &net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)},
+				DestinationPrefixListId: "pl-0123456",
+				Targets: []*graph.RouteTarget{
+					{Type: graph.InstanceTarget, Ref: "test_id_9", Owner: "owner"},
+					{Type: graph.NetworkInterfaceTarget, Ref: "eni-123456"},
+				},
 			},
 		}
 

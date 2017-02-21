@@ -176,27 +176,43 @@ func (h RoutesColumnDefinition) format(i interface{}) string {
 	var w bytes.Buffer
 
 	for _, r := range ii {
-		w.WriteString(r.Destination.String())
-		w.WriteString("->")
-		switch r.TargetType {
-		case graph.EgressOnlyInternetGatewayTarget:
-			w.WriteString("inbound-internget-gw")
-		case graph.GatewayTarget:
-			w.WriteString("gw")
-		case graph.InstanceTarget:
-			w.WriteString("inst")
-		case graph.NatTarget:
-			w.WriteString("nat")
-		case graph.NetworkInterfaceTarget:
-			w.WriteString("ni")
-		case graph.VpcPeeringConnectionTarget:
-			w.WriteString("vpc")
-		default:
-			w.WriteString("unkown")
+		if r.Destination != nil {
+			w.WriteString(r.Destination.String())
 		}
-		w.WriteString(":")
-		w.WriteString(r.Target)
-		w.WriteString(" ")
+		if r.DestinationIPv6 != nil && r.Destination != nil {
+			w.WriteString("+")
+		}
+		if r.DestinationIPv6 != nil {
+			w.WriteString(r.DestinationIPv6.String())
+		}
+		w.WriteString("->")
+		if len(r.Targets) > 1 {
+			w.WriteString("[")
+		}
+		for _, t := range r.Targets {
+			switch t.Type {
+			case graph.EgressOnlyInternetGatewayTarget:
+				w.WriteString("inbound-internget-gw")
+			case graph.GatewayTarget:
+				w.WriteString("gw")
+			case graph.InstanceTarget:
+				w.WriteString("inst")
+			case graph.NatTarget:
+				w.WriteString("nat")
+			case graph.NetworkInterfaceTarget:
+				w.WriteString("ni")
+			case graph.VpcPeeringConnectionTarget:
+				w.WriteString("vpc")
+			default:
+				w.WriteString("unkown")
+			}
+			w.WriteString(":")
+			w.WriteString(t.Ref)
+			w.WriteString(" ")
+		}
+		if len(r.Targets) > 1 {
+			w.WriteString("] ")
+		}
 	}
 	return w.String()
 }
