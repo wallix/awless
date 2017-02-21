@@ -17,33 +17,23 @@ limitations under the License.
 package commands
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/console"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
 
 var (
-	dryRunSyncFlag        bool
-	diffFlag              bool
-	syncShowPropetiesFlag bool
-	servicesToSyncFlags   map[string]*bool
+	servicesToSyncFlags map[string]*bool
 )
 
 func init() {
 	RootCmd.AddCommand(syncCmd)
-	syncCmd.Flags().BoolVarP(&dryRunSyncFlag, "dry-run", "d", false, "Display the diff between local and remote cloud, but do not write to disk")
-	syncCmd.Flags().BoolVar(&diffFlag, "diff", false, "Display the diff between local and remote cloud, after syncing")
-	syncCmd.Flags().BoolVarP(&syncShowPropetiesFlag, "show-properties", "p", false, "Show diff of properties")
 
 	servicesToSyncFlags = make(map[string]*bool)
 	for _, service := range aws.ServiceNames {
@@ -79,29 +69,12 @@ var syncCmd = &cobra.Command{
 		graphs, err := sync.DefaultSyncer.Sync(services...)
 		exitOn(err)
 
-		if dryRunSyncFlag && config.AwlessFirstSync {
-			exitOn(errors.New("No local data for printing diff. You might want to perfom a full sync first with `awless sync`"))
+		var keys []string
+		for k, _ := range graphs {
+			keys = append(keys, k)
 		}
-		if diffFlag || dryRunSyncFlag {
-			printFormat := "tree"
-			if syncShowPropetiesFlag {
-				printFormat = "table"
-			}
-			region := database.MustGetDefaultRegion()
-			root := graph.InitResource(region, graph.Region)
-			for _, service := range services {
-				diff, err := graph.Differ.Run(root, localGraphs[service.Name()], graphs[service.Name()])
-				exitOn(err)
-				if diff.HasDiff() {
-					fmt.Printf("------%s------\n", strings.ToUpper(service.Name()))
-					displayer := console.BuildOptions(
-						console.WithFormat(printFormat),
-						console.WithRootNode(root),
-					).SetSource(diff).Build()
-					exitOn(displayer.Print(os.Stdout))
-				}
-			}
-		}
+
+		logger.Infof("synced %s", strings.Join(keys, ", "))
 
 		return nil
 	},
