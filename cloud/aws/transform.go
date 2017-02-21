@@ -284,15 +284,13 @@ var extractRoutesSliceFn = func(i interface{}) (interface{}, error) {
 	for _, r := range i.([]*ec2.Route) {
 		route := &graph.Route{}
 		var err error
-		if awssdk.StringValue(r.DestinationCidrBlock) != "" {
-			_, route.Destination, err = net.ParseCIDR(awssdk.StringValue(r.DestinationCidrBlock))
-			if err != nil {
+		if notEmpty(r.DestinationCidrBlock) {
+			if _, route.Destination, err = net.ParseCIDR(awssdk.StringValue(r.DestinationCidrBlock)); err != nil {
 				return nil, err
 			}
 		}
-		if awssdk.StringValue(r.DestinationIpv6CidrBlock) != "" {
-			_, route.DestinationIPv6, err = net.ParseCIDR(awssdk.StringValue(r.DestinationIpv6CidrBlock))
-			if err != nil {
+		if notEmpty(r.DestinationIpv6CidrBlock) {
+			if _, route.DestinationIPv6, err = net.ParseCIDR(awssdk.StringValue(r.DestinationIpv6CidrBlock)); err != nil {
 				return nil, err
 			}
 		}
