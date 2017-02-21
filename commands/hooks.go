@@ -17,7 +17,6 @@ limitations under the License.
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -50,22 +49,24 @@ func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
 }
 
 func initCloudServicesHook(cmd *cobra.Command, args []string) error {
-	region := os.Getenv("__AWLESS_CLOUD_REGION")
-	if region == "" {
-		return errors.New("region should be in env")
+	db, err, dbclose := database.Current()
+	if err != nil {
+		return fmt.Errorf("init cloud service: database error: %s", err)
 	}
-	profile := os.Getenv("__AWLESS_CLOUD_PROFILE")
+	profile, _ := db.GetDefaultString(database.ProfileKey)
+	region := db.MustGetDefaultRegion()
+	dbclose()
 
 	if err := aws.InitServices(region, profile); err != nil {
 		return err
 	}
 
 	if err := database.InitDB(); err != nil {
-		db, e, closing := database.Current()
+		db, e, dbclose := database.Current()
 		if e == nil && db != nil {
 			db.AddLog(fmt.Sprintf("cannot init database: %s", err))
 		}
-		closing()
+		dbclose()
 	}
 
 	return nil
