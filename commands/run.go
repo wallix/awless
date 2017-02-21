@@ -51,7 +51,7 @@ func init() {
 var runCmd = &cobra.Command{
 	Use:                "run",
 	Short:              "Run a template given a filepath",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -193,7 +193,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:                templDef.Entity,
-				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 				PersistentPostRunE: saveHistoryHook,
 				Short:              fmt.Sprintf("%s a %s", strings.Title(action), templDef.Entity),
 				Long:               fmt.Sprintf("%s a %s\n\tRequired params: %s\n\tExtra params: %s", strings.Title(templDef.Action), templDef.Entity, strings.Join(templDef.Required(), ", "), strings.Join(templDef.Extra(), ", ")),

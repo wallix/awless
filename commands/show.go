@@ -39,7 +39,7 @@ func init() {
 var showCmd = &cobra.Command{
 	Use:                "show",
 	Short:              "Show a resource and its interrelations given id or alias (i.e: resource's name)",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {

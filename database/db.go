@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/wallix/awless/cloud/aws"
 )
 
 const (
@@ -70,41 +69,6 @@ func open(path string) (*DB, error) {
 	}
 
 	return &DB{bolt: boltdb}, nil
-}
-
-func InitDB() error {
-	db, err, closing := Current()
-	defer closing()
-	if err != nil {
-		return fmt.Errorf("database init: %s", err)
-	}
-	id, err := db.GetStringValue(AwlessIdKey)
-	if err != nil || id == "" {
-		userID, err := aws.SecuAPI.GetUserId()
-		if err != nil {
-			return err
-		}
-		newID, err := generateAnonymousID(userID)
-		if err != nil {
-			return err
-		}
-		if err = db.SetStringValue(AwlessIdKey, newID); err != nil {
-			return err
-		}
-		accountID, err := aws.SecuAPI.GetAccountId()
-		if err != nil {
-			return err
-		}
-		aID, err := generateAnonymousID(accountID)
-		if err != nil {
-			return err
-		}
-		if err = db.SetStringValue(AwlessAIdKey, aID); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // DeleteBucket deletes a bucket if it exists

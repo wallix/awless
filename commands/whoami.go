@@ -30,7 +30,7 @@ func init() {
 var whoamiCmd = &cobra.Command{
 	Use:                "whoami",
 	Aliases:            []string{"who"},
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 	Short:              "Show your identity",
 

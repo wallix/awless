@@ -37,7 +37,7 @@ func init() {
 var sshCmd = &cobra.Command{
 	Use:                "ssh [user@]instance",
 	Short:              "Launch a SSH (Secure Shell) session connecting to an instance given an id or alias",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {

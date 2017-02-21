@@ -17,17 +17,8 @@ limitations under the License.
 package database
 
 const (
-	awlessBucket = "awless"
-
-	AwlessIdKey  = "awless_id"
-	AwlessAIdKey = "awless_aid"
-
-	SentIdKey   = "sent_id"
-	SentTimeKey = "sent_time"
-
-	logsKey = "logs"
-
+	awlessBucket      = "awless"
+	logsKey           = "logs"
 	historyBucketName = "line"
-
-	defaultsKey = "defaults"
+	defaultsKey       = "defaults"
 )

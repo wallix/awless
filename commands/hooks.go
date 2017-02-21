@@ -26,7 +26,6 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/stats"
 	"github.com/wallix/awless/sync"
 )
 
@@ -61,14 +60,6 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := database.InitDB(); err != nil {
-		db, e, dbclose := database.Current()
-		if e == nil && db != nil {
-			db.AddLog(fmt.Sprintf("cannot init database: %s", err))
-		}
-		dbclose()
-	}
-
 	return nil
 }
 
@@ -100,29 +91,7 @@ func saveHistoryHook(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func checkStatsHook(cmd *cobra.Command, args []string) error {
-	db, err, dbclose := database.Current()
-	if err != nil {
-		return nil
-	}
-	statsToSend := stats.CheckStatsToSend(db)
-	dbclose()
-
-	if statsToSend {
-		go func() {
-			localInfra := sync.LoadCurrentLocalGraph(aws.InfraService.Name())
-			localAccess := sync.LoadCurrentLocalGraph(aws.AccessService.Name())
-
-			db, dberr, dbclose := database.Current()
-			if dberr != nil {
-				return
-			}
-			if err := stats.SendStats(db, localInfra, localAccess); err != nil {
-				db.AddLog(err.Error())
-			}
-			dbclose()
-		}()
-	}
-
+func verifyNewVersionHook(cmd *cobra.Command, args []string) error {
+	config.VerifyNewVersionAvailable("https://updates.awless.io", os.Stderr)
 	return nil
 }

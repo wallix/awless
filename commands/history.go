@@ -42,7 +42,7 @@ func init() {
 var historyCmd = &cobra.Command{
 	Use:                "history",
 	Short:              "(in progress) Show a resource/service/infrastructure history & changes using your locally sync snapshots",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {

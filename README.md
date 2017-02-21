@@ -69,8 +69,6 @@ Read the wiki page for setting autocompletion for [bash](https://github.com/wall
 
 Awless allows for easy resource creation with your cloud provider; We will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
 
-We also collect a few anonymous data (CLI errors, most frequently used commands and count of resources).
-
 ## First `awless` commands
 
 `awless` works by performing commands, which query either the AWS services or a local snapshot of the cloud services.

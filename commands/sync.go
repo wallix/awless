@@ -45,7 +45,7 @@ func init() {
 var syncCmd = &cobra.Command{
 	Use:                "sync",
 	Short:              "Manual sync of your remote resources to your local rdf store. For example when auto sync unset",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, checkStatsHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {

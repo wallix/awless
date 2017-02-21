@@ -21,27 +21,6 @@ import (
 	"time"
 )
 
-func TestOpenDbGeneratesIdForNewDb(t *testing.T) {
-	db, close := newTestDb()
-
-	newID, err := db.GetStringValue(AwlessIdKey)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := len(newID), 64; got != want {
-		t.Fatalf("got %d; want %d", got, want)
-	}
-	close()
-
-	db, close = newTestDb()
-	defer close()
-
-	id, _ := db.GetStringValue(AwlessIdKey)
-	if got, want := id, newID; got != want {
-		t.Fatalf("got %s; want %s", got, want)
-	}
-}
-
 func TestGetSetDatabaseValues(t *testing.T) {
 	db, close := newTestDb()
 	defer close()

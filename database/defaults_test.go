@@ -108,12 +108,7 @@ func TestLoadRegion(t *testing.T) {
 
 	os.Setenv("__AWLESS_HOME", f)
 
-	err := InitDB()
-	if err != nil {
-		panic(err)
-	}
 	db, closing := MustGetCurrent()
-
 	db.SetDefault(RegionKey, "my-region")
 	closing()
 
