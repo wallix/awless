@@ -230,7 +230,12 @@ func (s *Storage) getBucketsPerRegion() ([]*s3.Bucket, error) {
 				errc <- err
 				return
 			}
-			if awssdk.StringValue(loc.LocationConstraint) == s.region {
+			switch awssdk.StringValue(loc.LocationConstraint) {
+			case "":
+				if s.region == "us-east-1" {
+					bucketc <- b
+				}
+			case s.region:
 				bucketc <- b
 			}
 		}(bucket)
