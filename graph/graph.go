@@ -186,22 +186,6 @@ func (g *Graph) Accept(v Visitor) error {
 	return v.Visit(g)
 }
 
-func (g *Graph) CountChildrenOfTypeForNode(res *Resource, childType ResourceType) (int, error) {
-	n, err := node.NewNodeFromStrings(res.Type().ToRDFString(), res.Id())
-	if err != nil {
-		return 0, err
-	}
-	return g.rdfG.CountTriplesForSubjectAndPredicateObjectOfType(n, rdf.ParentOfPredicate, childType.ToRDFString())
-}
-
-func (g *Graph) CountChildrenForNode(res *Resource) (int, error) {
-	n, err := node.NewNodeFromStrings(res.Type().ToRDFString(), res.Id())
-	if err != nil {
-		return 0, err
-	}
-	return g.rdfG.CountTriplesForSubjectAndPredicate(n, rdf.ParentOfPredicate)
-}
-
 func (g *Graph) Unmarshal(data []byte) error {
 	return g.rdfG.Unmarshal(data)
 }
