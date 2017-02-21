@@ -19,6 +19,7 @@ package commands
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
@@ -65,17 +66,36 @@ var syncCmd = &cobra.Command{
 		for _, service := range services {
 			localGraphs[service.Name()] = sync.LoadCurrentLocalGraph(service.Name())
 		}
+		logger.Info("running sync: fetching remote resources for local store")
+		start := time.Now()
 
 		graphs, err := sync.DefaultSyncer.Sync(services...)
 		exitOn(err)
 
-		var keys []string
-		for k, _ := range graphs {
-			keys = append(keys, k)
+		for k, g := range graphs {
+			displaySyncStats(k, g)
 		}
-
-		logger.Infof("synced %s", strings.Join(keys, ", "))
+		logger.Infof("sync took %s", time.Since(start))
 
 		return nil
 	},
+}
+
+func displaySyncStats(serviceName string, g *graph.Graph) {
+	var strs []string
+	for rt, service := range aws.ServicePerResourceType {
+		if service == serviceName {
+			res, err := g.GetAllResources(graph.ResourceType(rt))
+			if err != nil {
+				continue
+			}
+			nbRes := len(res)
+			if nbRes > 1 {
+				strs = append(strs, fmt.Sprintf("%d %s", nbRes, cloud.PluralizeResource(rt)))
+			} else {
+				strs = append(strs, fmt.Sprintf("%d %s", nbRes, rt))
+			}
+		}
+	}
+	logger.Infof("-> %s: %s", serviceName, strings.Join(strs, ", "))
 }
