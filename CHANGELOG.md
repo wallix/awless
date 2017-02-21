@@ -1,4 +1,4 @@
-## 0.0.14 [unreleased]
+## 0.0.14
 
 As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
 
