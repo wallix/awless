@@ -5,6 +5,7 @@
 - [#39](https://github.com/wallix/awless/issues/38), [#38](https://github.com/wallix/awless/issues/33): Remove data collection & sending
 - [#33](https://github.com/wallix/awless/issues/33): Ability to set AWS profile using `aws.profile` config key
 - Better output for `awless sync`
+- `awless ls` now an alias for `awless list`
 
 ### Bugfixes
 

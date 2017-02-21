@@ -55,6 +55,7 @@ func init() {
 
 var listCmd = &cobra.Command{
 	Use:                "list",
+	Aliases:	          []string{"ls"},
 	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 	Short:              "List various type of resources",
