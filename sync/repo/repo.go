@@ -31,6 +31,7 @@ import (
 
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 type Rev struct {
@@ -140,32 +141,31 @@ func (r *gitRepo) LoadRev(version string) (*Rev, error) {
 
 	rev.Date = commit.Committer.When
 
-	f, err := commit.File(config.InfraFilename)
-	if err != nil {
-		return nil, err
-	}
-	contents, err := f.Contents()
-	if err != nil {
-		return nil, err
-	}
+	rev.Infra = graph.NewGraph()
+	rev.Access = graph.NewGraph()
 
-	infraG := graph.NewGraph()
-	infraG.Unmarshal([]byte(contents))
-	rev.Infra = infraG
-
-	f, err = commit.File(config.AccessFilename)
-	if err != nil {
-		return nil, err
+	if err := unmarshalIntoGraph(rev.Infra, commit, config.InfraFilename); err != nil {
+		return rev, err
 	}
-	contents, err = f.Contents()
-	if err != nil {
-		return nil, err
+	if err := unmarshalIntoGraph(rev.Access, commit, config.AccessFilename); err != nil {
+		return rev, err
 	}
-	accessG := graph.NewGraph()
-	accessG.Unmarshal([]byte(contents))
-	rev.Access = accessG
 
 	return rev, nil
+}
+
+func unmarshalIntoGraph(g *graph.Graph, commit *object.Commit, filename string) error {
+	f, err := commit.File(filename)
+	if err != nil && err != object.ErrFileNotFound {
+		return err
+	} else if err == nil {
+		contents, err := f.Contents()
+		if err != nil {
+			return err
+		}
+		g.Unmarshal([]byte(contents))
+	}
+	return nil
 }
 
 func (r *gitRepo) Commit(files ...string) error {
