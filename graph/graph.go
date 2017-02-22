@@ -72,8 +72,8 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 	if err != nil {
 		return resource, err
 	}
-	if err := resource.Properties.unmarshalRDF(propsTriples); err != nil {
-		return resource, err
+	if er := resource.Properties.unmarshalRDF(propsTriples); er != nil {
+		return resource, er
 	}
 
 	metaTriples, err := g.rdfG.TriplesForSubjectPredicate(node, rdf.MetaPredicate)
@@ -151,6 +151,9 @@ func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
 	}
 
 	relations, err := g.rdfG.ListAttachedTo(node, rdf.AppliesOnPredicate)
+	if err != nil {
+		return resources, err
+	}
 	for _, node := range relations {
 		res, err := g.GetResource(newResourceType(node), node.ID().String())
 		if err != nil {
@@ -171,6 +174,9 @@ func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
 	}
 
 	relations, err := g.rdfG.ListAttachedFrom(node, rdf.AppliesOnPredicate)
+	if err != nil {
+		return resources, err
+	}
 	for _, node := range relations {
 		res, err := g.GetResource(newResourceType(node), node.ID().String())
 		if err != nil {

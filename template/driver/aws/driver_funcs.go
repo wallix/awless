@@ -108,9 +108,6 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 			return nil, err
 		}
 	}
-
-	d.logger.Verbose("check instance done")
-	return nil, nil
 }
 
 func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -379,7 +376,7 @@ func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interfa
 		d.logger.Errorf("create storageobject error: %s", err)
 		return nil, err
 	}
-	output = output
+
 	d.logger.Verbose("create storageobject done")
 	return output, nil
 }
