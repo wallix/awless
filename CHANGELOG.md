@@ -1,3 +1,11 @@
+## 0.0.15 [unreleased]
+
+As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
+
+### Bugfixes
+
+- [#57](https://github.com/wallix/awless/issues/57): Properly fetch buckets when they are in the `us-west-1` region.
+
 ## 0.0.14
 
 As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
