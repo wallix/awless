@@ -7,8 +7,8 @@ type Peg Peg {
 
 Script   <- Spacing Statement+ EndOfFile
 Statement <- Spacing (Expr / Declaration / Comment) Spacing EndOfLine*
-Action <- 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' / 'check' / 'detach'
-Entity <- 'vpc' / 'subnet' / 'instance' / 'volume' / 'tags' / 'user' / 'group' / 'role' / 'policy' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' / 'bucket' / 'storageobject'
+Action <- 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' / 'check' / 'detach' / 'subscribe' / 'unsubscribe'
+Entity <- 'vpc' / 'subnet' / 'instance' / 'volume' / 'tags' / 'user' / 'group' / 'role' / 'policy' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' / 'bucket' / 'storageobject' / 'subscription' / 'topic'
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
                Equal
                Expr

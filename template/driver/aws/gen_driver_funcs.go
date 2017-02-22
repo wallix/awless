@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/sns"
 )
 
 // This function was auto generated
@@ -1489,5 +1490,133 @@ func (d *AwsDriver) Delete_Storageobject(params map[string]interface{}) (interfa
 	output = output
 	d.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
 	d.logger.Verbose("delete storageobject done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Topic_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create topic: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create topic ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Topic(params map[string]interface{}) (interface{}, error) {
+	input := &sns.CreateTopicInput{}
+
+	// Required params
+	setField(params["name"], input, "Name")
+
+	start := time.Now()
+	output, err := d.sns.CreateTopic(input)
+	if err != nil {
+		d.logger.Errorf("create topic error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
+	id := aws.StringValue(output.TopicArn)
+	d.logger.Verbosef("create topic '%s' done", id)
+	return aws.StringValue(output.TopicArn), nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Topic_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("delete topic: missing required params 'arn'")
+	}
+
+	d.logger.Verbose("params dry run: delete topic ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Topic(params map[string]interface{}) (interface{}, error) {
+	input := &sns.DeleteTopicInput{}
+
+	// Required params
+	setField(params["arn"], input, "TopicArn")
+
+	start := time.Now()
+	output, err := d.sns.DeleteTopic(input)
+	if err != nil {
+		d.logger.Errorf("delete topic error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.ExtraVerbosef("sns.DeleteTopic call took %s", time.Since(start))
+	d.logger.Verbose("delete topic done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Subscribe_Topic_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["endpoint"]; !ok {
+		return nil, errors.New("subscribe topic: missing required params 'endpoint'")
+	}
+
+	if _, ok := params["protocol"]; !ok {
+		return nil, errors.New("subscribe topic: missing required params 'protocol'")
+	}
+
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("subscribe topic: missing required params 'arn'")
+	}
+
+	d.logger.Verbose("params dry run: subscribe topic ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Subscribe_Topic(params map[string]interface{}) (interface{}, error) {
+	input := &sns.SubscribeInput{}
+
+	// Required params
+	setField(params["endpoint"], input, "Endpoint")
+	setField(params["protocol"], input, "Protocol")
+	setField(params["arn"], input, "TopicArn")
+
+	start := time.Now()
+	output, err := d.sns.Subscribe(input)
+	if err != nil {
+		d.logger.Errorf("subscribe topic error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
+	id := aws.StringValue(output.SubscriptionArn)
+	d.logger.Verbosef("subscribe topic '%s' done", id)
+	return aws.StringValue(output.SubscriptionArn), nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Unsubscribe_Subscription_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("unsubscribe subscription: missing required params 'arn'")
+	}
+
+	d.logger.Verbose("params dry run: unsubscribe subscription ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Unsubscribe_Subscription(params map[string]interface{}) (interface{}, error) {
+	input := &sns.UnsubscribeInput{}
+
+	// Required params
+	setField(params["arn"], input, "SubscriptionArn")
+
+	start := time.Now()
+	output, err := d.sns.Unsubscribe(input)
+	if err != nil {
+		d.logger.Errorf("unsubscribe subscription error: %s", err)
+		return nil, err
+	}
+	output = output
+	d.logger.ExtraVerbosef("sns.Unsubscribe call took %s", time.Since(start))
+	d.logger.Verbose("unsubscribe subscription done")
 	return output, nil
 }

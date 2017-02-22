@@ -355,4 +355,35 @@ var DriverDefinitions = []struct {
 			"Key":    "key",
 		},
 	},
+
+	//// SNS
+
+	// TOPIC
+	{
+		Action: "create", Entity: graph.Topic.String(), Api: "sns", DryRunUnsupported: true, Input: "CreateTopicInput", ApiMethod: "CreateTopic", OutputExtractor: "aws.StringValue(output.TopicArn)",
+		RequiredParams: map[string]string{
+			"Name": "name",
+		},
+	},
+	{
+		Action: "delete", Entity: graph.Topic.String(), Api: "sns", DryRunUnsupported: true, Input: "DeleteTopicInput", ApiMethod: "DeleteTopic",
+		RequiredParams: map[string]string{
+			"TopicArn": "arn",
+		},
+	},
+	{
+		Action: "subscribe", Entity: graph.Topic.String(), Api: "sns", DryRunUnsupported: true, Input: "SubscribeInput", ApiMethod: "Subscribe", OutputExtractor: "aws.StringValue(output.SubscriptionArn)",
+		RequiredParams: map[string]string{
+			"TopicArn": "arn",
+			"Endpoint": "endpoint",
+			"Protocol": "protocol",
+		},
+	},
+	//Subscription
+	{
+		Action: "unsubscribe", Entity: graph.Subscription.String(), Api: "sns", DryRunUnsupported: true, Input: "UnsubscribeInput", ApiMethod: "Unsubscribe",
+		RequiredParams: map[string]string{
+			"SubscriptionArn": "arn",
+		},
+	},
 }

@@ -6,6 +6,7 @@ As model/relations for resources may evolve, if you have any issues with models 
 
 - [#6](https://github.com/wallix/awless/issues/6): Create Linux installer shell script: `curl https://raw.githubusercontent.com/wallix/awless/master/getawless.sh | bash`
 - Better help menus by splitting one-liner template commands from general commands
+- [#32](https://github.com/wallix/awless/issues/32): Basic support of [SNS](https://aws.amazon.com/sns/) (CRUD for topics and subscriptions)
 
 ### Bugfixes
 

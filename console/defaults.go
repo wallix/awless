@@ -134,4 +134,15 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Size"},
 		StringColumnDefinition{Prop: "Class"},
 	},
+	//SNS
+	graph.Subscription: {
+		StringColumnDefinition{Prop: "Endpoint", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Owner"},
+		StringColumnDefinition{Prop: "Protocol"},
+		StringColumnDefinition{Prop: "SubscriptionArn"},
+		StringColumnDefinition{Prop: "TopicArn"},
+	},
+	graph.Topic: {
+		StringColumnDefinition{Prop: "TopicArn", DisableTruncate: true},
+	},
 }

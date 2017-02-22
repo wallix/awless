@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
@@ -41,6 +43,7 @@ func init() {
 	ServiceNames = append(ServiceNames, "infra")
 	ServiceNames = append(ServiceNames, "access")
 	ServiceNames = append(ServiceNames, "storage")
+	ServiceNames = append(ServiceNames, "notification")
 }
 
 var ServiceNames = []string{}
@@ -66,12 +69,17 @@ var ResourceTypesPerAPI = map[string][]string{
 		"bucket",
 		"storageobject",
 	},
+	"sns": {
+		"subscription",
+		"topic",
+	},
 }
 
 var ServicePerAPI = map[string]string{
 	"ec2": "infra",
 	"iam": "access",
 	"s3":  "storage",
+	"sns": "notification",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -89,6 +97,8 @@ var ServicePerResourceType = map[string]string{
 	"policy":          "access",
 	"bucket":          "storage",
 	"storageobject":   "storage",
+	"subscription":    "notification",
+	"topic":           "notification",
 }
 
 type Infra struct {
@@ -1015,4 +1025,194 @@ func (s *Storage) FetchByType(t string) (*graph.Graph, error) {
 	default:
 		return nil, fmt.Errorf("aws storage: unsupported fetch for type %s", t)
 	}
+}
+
+type Notification struct {
+	once   oncer
+	region string
+	snsiface.SNSAPI
+}
+
+func NewNotification(sess *session.Session) *Notification {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Notification{SNSAPI: sns.New(sess), region: region}
+}
+
+func (s *Notification) Name() string {
+	return "notification"
+}
+
+func (s *Notification) Provider() string {
+	return "aws"
+}
+
+func (s *Notification) ProviderAPI() string {
+	return "sns"
+}
+
+func (s *Notification) ProviderRunnableAPI() interface{} {
+	return s.SNSAPI
+}
+
+func (s *Notification) ResourceTypes() (all []string) {
+	all = append(all, "subscription")
+	all = append(all, "topic")
+	return
+}
+
+func (s *Notification) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	var subscriptionList []*sns.Subscription
+	var topicList []*sns.Topic
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, subscriptionList, err = s.fetch_all_subscription_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, topicList, err = s.fetch_all_topic_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case "Access Denied":
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range subscriptionList {
+			for _, fn := range addParentsFns["subscription"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range topicList {
+			for _, fn := range addParentsFns["topic"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Notification) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "subscription":
+		graph, _, err := s.fetch_all_subscription_graph()
+		return graph, err
+	case "topic":
+		graph, _, err := s.fetch_all_topic_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws notification: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Notification) fetch_all_subscription() (interface{}, error) {
+	return s.ListSubscriptions(&sns.ListSubscriptionsInput{})
+}
+func (s *Notification) fetch_all_topic() (interface{}, error) {
+	return s.ListTopics(&sns.ListTopicsInput{})
+}
+
+func (s *Notification) fetch_all_subscription_graph() (*graph.Graph, []*sns.Subscription, error) {
+	g := graph.NewGraph()
+	var cloudResources []*sns.Subscription
+	out, err := s.fetch_all_subscription()
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.(*sns.ListSubscriptionsOutput).Subscriptions {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, cloudResources, nil
+}
+
+func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, error) {
+	g := graph.NewGraph()
+	var cloudResources []*sns.Topic
+	out, err := s.fetch_all_topic()
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.(*sns.ListTopicsOutput).Topics {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, cloudResources, nil
 }

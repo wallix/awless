@@ -195,6 +195,18 @@
 			"revisionTime": "2017-02-03T07:15:09Z"
 		},
 		{
+			"checksumSHA1": "3wN8qn+1be7xe/0zXrOM502s+8M=",
+			"path": "github.com/aws/aws-sdk-go/service/sns",
+			"revision": "3d7773ac930d57ef4a59e0d10c5f65a0cfa5acd6",
+			"revisionTime": "2017-02-21T23:58:58Z"
+		},
+		{
+			"checksumSHA1": "jEZWp4B72mhGIsap/RREfkJ7ToI=",
+			"path": "github.com/aws/aws-sdk-go/service/sns/snsiface",
+			"revision": "3d7773ac930d57ef4a59e0d10c5f65a0cfa5acd6",
+			"revisionTime": "2017-02-21T23:58:58Z"
+		},
+		{
 			"checksumSHA1": "Knj17ZMPWkGYTm2hZxEgnuboMM4=",
 			"path": "github.com/aws/aws-sdk-go/service/sts",
 			"revision": "7524cb911daddd6e5c9195def8e59ae892bef8d9",

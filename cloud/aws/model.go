@@ -138,4 +138,17 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Size":         {name: "Size", transform: extractValueFn},
 		"Class":        {name: "StorageClass", transform: extractValueFn},
 	},
+	//SNS
+	graph.Subscription: {
+		"Id":              {name: "Endpoint", transform: extractValueFn},
+		"Endpoint":        {name: "Endpoint", transform: extractValueFn},
+		"Owner":           {name: "Owner", transform: extractValueFn},
+		"Protocol":        {name: "Protocol", transform: extractValueFn},
+		"SubscriptionArn": {name: "SubscriptionArn", transform: extractValueFn},
+		"TopicArn":        {name: "TopicArn", transform: extractValueFn},
+	},
+	graph.Topic: {
+		"Id":       {name: "TopicArn", transform: extractValueFn},
+		"TopicArn": {name: "TopicArn", transform: extractValueFn},
+	},
 }

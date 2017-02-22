@@ -110,6 +110,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		awscloud.InfraService.ProviderRunnableAPI(),
 		awscloud.AccessService.ProviderRunnableAPI(),
 		awscloud.StorageService.ProviderRunnableAPI(),
+		awscloud.NotificationService.ProviderRunnableAPI(),
 	)
 	awsDriver.SetLogger(logger.DefaultLogger)
 

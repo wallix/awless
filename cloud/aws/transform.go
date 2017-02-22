@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/wallix/awless/graph"
 )
 
@@ -70,6 +71,11 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Bucket)
 	case *s3.Object:
 		res = graph.InitResource(awssdk.StringValue(ss.Key), graph.Object)
+		//SNS
+	case *sns.Subscription:
+		res = graph.InitResource(awssdk.StringValue(ss.Endpoint), graph.Subscription)
+	case *sns.Topic:
+		res = graph.InitResource(awssdk.StringValue(ss.TopicArn), graph.Topic)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}

@@ -61,8 +61,16 @@ var Services = []service{
 		Name: "storage",
 		Api:  "s3",
 		Fetchers: []fetcher{
-			{ResourceType: "bucket", AWSType: "Bucket", ManualFetcher: true},
+			{ResourceType: graph.Bucket.String(), AWSType: "Bucket", ManualFetcher: true},
 			{ResourceType: graph.Object.String(), AWSType: "Object", ManualFetcher: true},
+		},
+	},
+	{
+		Name: "notification",
+		Api:  "sns",
+		Fetchers: []fetcher{
+			{ResourceType: graph.Subscription.String(), AWSType: "Subscription", ApiMethod: "ListSubscriptions", Input: "ListSubscriptionsInput{}", Output: "ListSubscriptionsOutput", OutputsExtractor: "Subscriptions"},
+			{ResourceType: graph.Topic.String(), AWSType: "Topic", ApiMethod: "ListTopics", Input: "ListTopicsInput{}", Output: "ListTopicsOutput", OutputsExtractor: "Topics"},
 		},
 	},
 }

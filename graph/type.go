@@ -44,6 +44,10 @@ const (
 	Bucket ResourceType = "bucket"
 	Object ResourceType = "storageobject"
 	Acl    ResourceType = "storageacl"
+
+	//sns
+	Subscription ResourceType = "subscription"
+	Topic        ResourceType = "topic"
 )
 
 type FirewallRule struct {
