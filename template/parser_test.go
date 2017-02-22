@@ -176,7 +176,6 @@ func TestTemplateParsing(t *testing.T) {
 
 		for _, tcase := range tcases {
 			node, err := ParseStatement(tcase.input)
-			fmt.Println(node)
 			if err != nil {
 				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
 			}

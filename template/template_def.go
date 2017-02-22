@@ -49,5 +49,5 @@ func (def TemplateDefinition) Required() []string {
 }
 
 func (def TemplateDefinition) Extra() []string {
-	return def.ExtraParams
+	return append(def.ExtraParams, def.TagsMapping...)
 }

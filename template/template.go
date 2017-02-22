@@ -73,8 +73,17 @@ func (s *Template) Compile(d driver.Driver) (*Template, error) {
 	return s.Run(d)
 }
 
-func (t *Template) Visit(v Visitor) error {
-	return v.Visit(t.CommandNodesIterator())
+func (s *Template) Validate(rules ...Validator) (all []error) {
+	for _, rule := range rules {
+		errs := rule.Execute(s)
+		all = append(all, errs...)
+	}
+
+	return
+}
+
+func (s *Template) Visit(v Visitor) error {
+	return v.Visit(s.CommandNodesIterator())
 }
 
 func (s *Template) GetHolesValuesSet() (values []string) {

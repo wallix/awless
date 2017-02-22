@@ -21,13 +21,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	awscloud "github.com/wallix/awless/cloud/aws"
-	"github.com/wallix/awless/cloud/aws/validation"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
@@ -74,6 +74,8 @@ var runCmd = &cobra.Command{
 }
 
 func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
+	validateTemplate(templ)
+
 	resolved, err := templ.ResolveHoles(defaults)
 	exitOn(err)
 
@@ -102,23 +104,14 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		templ.ResolveHoles(fills)
 	}
 
+	validateTemplate(templ)
+
 	awsDriver := aws.NewDriver(
 		awscloud.InfraService.ProviderRunnableAPI(),
 		awscloud.AccessService.ProviderRunnableAPI(),
 		awscloud.StorageService.ProviderRunnableAPI(),
 	)
 	awsDriver.SetLogger(logger.DefaultLogger)
-
-	for _, cmd := range templ.CommandNodesIterator() {
-		if validators, ok := validation.ValidatorsPerActions[cmd.Action]; ok {
-			graph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[cmd.Entity])
-			for _, v := range validators {
-				if err := v.Validate(graph, cmd.Params); err != nil {
-					return err
-				}
-			}
-		}
-	}
 
 	_, err = templ.Compile(awsDriver)
 	exitOn(err)
@@ -152,6 +145,27 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	}
 
 	return nil
+}
+
+func validateTemplate(tpl *template.Template) {
+	validDefinitionsRule := &template.DefinitionValidator{func(key string) (t template.TemplateDefinition, ok bool) {
+		t, ok = aws.AWSTemplatesDefinitions[key]
+		return
+	}}
+
+	unicityRule := &template.UniqueNameValidator{func(key string) (*graph.Graph, bool) {
+		g := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[key])
+		return g, true
+	}}
+
+	errs := tpl.Validate(validDefinitionsRule, unicityRule)
+
+	if len(errs) > 0 {
+		for _, err := range errs {
+			logger.Error(err)
+		}
+		os.Exit(1)
+	}
 }
 
 func createDriverCommands(action string, entities []string) *cobra.Command {
