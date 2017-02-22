@@ -44,9 +44,10 @@
 
 Choose one of the following options:
 
-1. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
-2. If you have Golang already installed, build the source with: `go get github.com/wallix/awless`
-3. On macOS, use [homebrew](http://brew.sh):  `brew tap wallix/awless; brew install awless`
+1. On macOS, use [homebrew](http://brew.sh):  `brew tap wallix/awless; brew install awless`
+2. With `curl` (macOS/Linux), run: `curl https://raw.githubusercontent.com/wallix/awless/master/getawless.sh | bash`
+3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
+4. If you have Golang already installed, build the source with: `go get github.com/wallix/awless`
 
 # Getting started
 

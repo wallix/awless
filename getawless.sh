@@ -21,7 +21,7 @@ else
 fi
 
 
-LATEST_VERSION=`curl -s https://updates.awless.io | grep -oE "\d{1,3}.\d{1,3}.\d{1,3}"`
+LATEST_VERSION=`curl -s https://updates.awless.io | grep -oE "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"`
 
 DOWNLOAD_URL="https://github.com/wallix/awless/releases/download/$LATEST_VERSION/awless-$OS-$ARCH.zip"
 
