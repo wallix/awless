@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-// A Log represents a log of an error that occured in awless
+// A Log represents a log of an error that occurred in awless
 type Log struct {
 	Msg  string
 	Hits int

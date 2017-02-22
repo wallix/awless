@@ -140,8 +140,8 @@ func compareChildTriplesOf(onPredicate *predicate.Predicate, root *node.Node, fr
 		return extras, missings, commons, err
 	}
 
-	extras = append(extras, substractTriples(toTriples, fromTriples)...)
-	missings = append(missings, substractTriples(fromTriples, toTriples)...)
+	extras = append(extras, subtractTriples(toTriples, fromTriples)...)
+	missings = append(missings, subtractTriples(fromTriples, toTriples)...)
 	commons = append(commons, intersectTriples(fromTriples, toTriples)...)
 
 	return extras, missings, commons, nil

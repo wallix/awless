@@ -137,7 +137,7 @@ func (res Resources) Map(f func(*Resource) string) (out []string) {
 
 type Properties map[string]interface{}
 
-func (props Properties) Substract(other Properties) Properties {
+func (props Properties) Subtract(other Properties) Properties {
 	sub := make(Properties)
 
 	for propK, propV := range props {

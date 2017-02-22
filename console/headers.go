@@ -204,7 +204,7 @@ func (h RoutesColumnDefinition) format(i interface{}) string {
 			case graph.VpcPeeringConnectionTarget:
 				w.WriteString("vpc")
 			default:
-				w.WriteString("unkown")
+				w.WriteString("unknown")
 			}
 			w.WriteString(":")
 			w.WriteString(t.Ref)

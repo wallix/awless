@@ -564,14 +564,14 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		naming := nameOrID(common)
 
 		if rem, ok := toCommons[common.Id()]; ok {
-			added := rem.Properties.Substract(common.Properties)
+			added := rem.Properties.Subtract(common.Properties)
 			for k, v := range added {
 				values = append(values, []interface{}{
 					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
 				})
 			}
 
-			deleted := common.Properties.Substract(rem.Properties)
+			deleted := common.Properties.Subtract(rem.Properties)
 			for k, v := range deleted {
 				values = append(values, []interface{}{
 					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
