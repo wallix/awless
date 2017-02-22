@@ -76,11 +76,14 @@ var runCmd = &cobra.Command{
 func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
 	resolved, err := templ.ResolveHoles(defaults)
 	exitOn(err)
-	logger.Infof("used default params: %s", sprintProcessedParams(resolved))
+
+	if len(resolved) > 0 {
+		logger.Verbosef("used default params: %s", sprintProcessedParams(resolved))
+	}
 
 	fills := make(map[string]interface{})
 	if holes := templ.GetHolesValuesSet(); len(holes) > 0 {
-		fmt.Println("\nMissing required params (Ctrl+C to quit):")
+		fmt.Println("Please specify (Ctrl+C to quit):")
 		for _, hole := range holes {
 			var resp string
 			ask := func() error {
@@ -123,7 +126,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 	fmt.Println()
 	fmt.Printf("%s\n", renderGreenFn(templ))
 	fmt.Println()
-	fmt.Print("Run verified operations above? (y/n): ")
+	fmt.Print("Confirm? (y/n): ")
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
 
@@ -174,15 +177,14 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				if err != nil {
 					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", def, err))
 				}
-				logger.Verbosef("template definition: %s", def)
+				logger.ExtraVerbosef("template definition: %s", def)
 
-				resolved, err := templ.ResolveHoles(
+				_, err = templ.ResolveHoles(
 					cliTpl.GetNormalizedParams(),
 					resolveAlias(cliTpl.GetNormalizedAliases(), def.Entity),
 				)
 				exitOn(err)
 
-				logger.Infof("used provided params: %s.", sprintProcessedParams(resolved))
 				templ.MergeParams(cliTpl.GetNormalizedParams())
 
 				exitOn(runTemplate(templ, getCurrentDefaults()))
