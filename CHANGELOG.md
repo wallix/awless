@@ -4,7 +4,7 @@ As model/relations for resources may evolve, if you have any issues with models 
 
 ### Bugfixes
 
-- [#57](https://github.com/wallix/awless/issues/57): Properly fetch buckets when they are in the `us-west-1` region.
+- [#57](https://github.com/wallix/awless/issues/57): Properly fetch buckets when they are in the `us-east-1` region.
 
 ## 0.0.14
 
