@@ -36,6 +36,11 @@ func (m *mockEc2) DescribeInstances(input *ec2.DescribeInstancesInput) (*ec2.Des
 	return &ec2.DescribeInstancesOutput{Reservations: []*ec2.Reservation{{Instances: m.instances}}}, nil
 }
 
+func (m *mockEc2) DescribeInstancesPages(input *ec2.DescribeInstancesInput, fn func(p *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&ec2.DescribeInstancesOutput{Reservations: []*ec2.Reservation{{Instances: m.instances}}}, true)
+	return nil
+}
+
 func (m *mockEc2) DescribeSecurityGroups(input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
 	return &ec2.DescribeSecurityGroupsOutput{SecurityGroups: m.securityGroups}, nil
 }
@@ -55,6 +60,10 @@ func (m *mockEc2) DescribeRouteTables(input *ec2.DescribeRouteTablesInput) (*ec2
 // Not tested
 func (m *mockEc2) DescribeVolumes(input *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
 	return &ec2.DescribeVolumesOutput{}, nil
+}
+func (m *mockEc2) DescribeVolumesPages(input *ec2.DescribeVolumesInput, fn func(p *ec2.DescribeVolumesOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&ec2.DescribeVolumesOutput{}, true)
+	return nil
 }
 
 type mockIam struct {

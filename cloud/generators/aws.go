@@ -250,23 +250,50 @@ func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) 
 
 {{ range $index, $fetcher := $service.Fetchers }}
 {{- if not $fetcher.ManualFetcher }}
-func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}() (interface{}, error) {
-  return s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }})
-}
-{{- end }}
-{{- end }}
-
-{{ range $index, $fetcher := $service.Fetchers }}
-{{- if not $fetcher.ManualFetcher }}
 func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, []*{{ $service.Api }}.{{ $fetcher.AWSType }}, error) {
   g := graph.NewGraph()
 	var cloudResources []*{{ $service.Api }}.{{ $fetcher.AWSType }}
-  out, err := s.fetch_all_{{ $fetcher.ResourceType }}()
+	{{- if $fetcher.Multipage }}
+	var badResErr error
+	err := s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }},
+		func(out *{{ $service.Api }}.{{ $fetcher.Output }}, lastPage bool) (shouldContinue bool) {
+			{{- if ne $fetcher.OutputsContainers "" }}
+			for _, all := range out.{{ $fetcher.OutputsContainers }} {
+	      for _, output := range all.{{ $fetcher.OutputsExtractor }} {
+					cloudResources = append(cloudResources, output)
+					var res *graph.Resource
+					res, badResErr = newResource(output)
+					if badResErr != nil {
+						return false
+					}
+	        g.AddResource(res)
+	      }
+	    }
+			{{- else }}
+			for _, output := range out.{{ $fetcher.OutputsExtractor }} {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			{{- end }}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+	{{- else }}
+  out, err := s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }})
   if err != nil {
     return nil, cloudResources, err
   }
-  {{ if ne $fetcher.OutputsContainers "" }}
-    for _, all := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsContainers }} {
+  	{{ if ne $fetcher.OutputsContainers "" }}
+    for _, all := range out.{{ $fetcher.OutputsContainers }} {
       for _, output := range all.{{ $fetcher.OutputsExtractor }} {
 				cloudResources = append(cloudResources, output)
         res, err := newResource(output)
@@ -276,8 +303,8 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
         g.AddResource(res)
       }
     }
-  {{ else }}
-    for _, output := range out.(*{{ $service.Api }}.{{ $fetcher.Output }}).{{ $fetcher.OutputsExtractor }} {
+  	{{ else }}
+    for _, output := range out.{{ $fetcher.OutputsExtractor }} {
 			cloudResources = append(cloudResources, output)
       res, err := newResource(output)
       if err != nil {
@@ -285,8 +312,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
       }
       g.AddResource(res)
     }
-  {{ end }}
+  	{{ end }}
   return g, cloudResources, nil
+	{{ end }}
 }
 {{- end }}
 {{ end }}

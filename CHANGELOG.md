@@ -14,6 +14,7 @@ As model/relations for resources may evolve, if you have any issues with models 
 ### Bugfixes
 
 - [#57](https://github.com/wallix/awless/issues/57): Properly fetch buckets when they are in the `us-east-1` region.
+- [#12](https://github.com/wallix/awless/issues/12): Support AWS pagination when fetching resources in AWS SNS and EC2.
 
 ## 0.0.14
 

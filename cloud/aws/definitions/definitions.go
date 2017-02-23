@@ -30,6 +30,7 @@ type fetcher struct {
 	ApiMethod, Input                            string
 	Output, OutputsContainers, OutputsExtractor string
 	ManualFetcher                               bool
+	Multipage                                   bool
 }
 
 var Services = []service{
@@ -37,12 +38,12 @@ var Services = []service{
 		Name: "infra",
 		Api:  "ec2",
 		Fetchers: []fetcher{
-			{ResourceType: graph.Instance.String(), AWSType: "Instance", ApiMethod: "DescribeInstances", Input: "DescribeInstancesInput{}", Output: "DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations"},
+			{ResourceType: graph.Instance.String(), AWSType: "Instance", ApiMethod: "DescribeInstancesPages", Input: "DescribeInstancesInput{}", Output: "DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true},
 			{ResourceType: graph.Subnet.String(), AWSType: "Subnet", ApiMethod: "DescribeSubnets", Input: "DescribeSubnetsInput{}", Output: "DescribeSubnetsOutput", OutputsExtractor: "Subnets"},
 			{ResourceType: graph.Vpc.String(), AWSType: "Vpc", ApiMethod: "DescribeVpcs", Input: "DescribeVpcsInput{}", Output: "DescribeVpcsOutput", OutputsExtractor: "Vpcs"},
 			{ResourceType: graph.Keypair.String(), AWSType: "KeyPairInfo", ApiMethod: "DescribeKeyPairs", Input: "DescribeKeyPairsInput{}", Output: "DescribeKeyPairsOutput", OutputsExtractor: "KeyPairs"},
 			{ResourceType: graph.SecurityGroup.String(), AWSType: "SecurityGroup", ApiMethod: "DescribeSecurityGroups", Input: "DescribeSecurityGroupsInput{}", Output: "DescribeSecurityGroupsOutput", OutputsExtractor: "SecurityGroups"},
-			{ResourceType: graph.Volume.String(), AWSType: "Volume", ApiMethod: "DescribeVolumes", Input: "DescribeVolumesInput{}", Output: "DescribeVolumesOutput", OutputsExtractor: "Volumes"},
+			{ResourceType: graph.Volume.String(), AWSType: "Volume", ApiMethod: "DescribeVolumesPages", Input: "DescribeVolumesInput{}", Output: "DescribeVolumesOutput", OutputsExtractor: "Volumes", Multipage: true},
 			{ResourceType: graph.InternetGateway.String(), AWSType: "InternetGateway", ApiMethod: "DescribeInternetGateways", Input: "DescribeInternetGatewaysInput{}", Output: "DescribeInternetGatewaysOutput", OutputsExtractor: "InternetGateways"},
 			{ResourceType: graph.RouteTable.String(), AWSType: "RouteTable", ApiMethod: "DescribeRouteTables", Input: "DescribeRouteTablesInput{}", Output: "DescribeRouteTablesOutput", OutputsExtractor: "RouteTables"},
 		},
@@ -69,8 +70,8 @@ var Services = []service{
 		Name: "notification",
 		Api:  "sns",
 		Fetchers: []fetcher{
-			{ResourceType: graph.Subscription.String(), AWSType: "Subscription", ApiMethod: "ListSubscriptions", Input: "ListSubscriptionsInput{}", Output: "ListSubscriptionsOutput", OutputsExtractor: "Subscriptions"},
-			{ResourceType: graph.Topic.String(), AWSType: "Topic", ApiMethod: "ListTopics", Input: "ListTopicsInput{}", Output: "ListTopicsOutput", OutputsExtractor: "Topics"},
+			{ResourceType: graph.Subscription.String(), AWSType: "Subscription", ApiMethod: "ListSubscriptionsPages", Input: "ListSubscriptionsInput{}", Output: "ListSubscriptionsOutput", OutputsExtractor: "Subscriptions", Multipage: true},
+			{ResourceType: graph.Topic.String(), AWSType: "Topic", ApiMethod: "ListTopicsPages", Input: "ListTopicsInput{}", Output: "ListTopicsOutput", OutputsExtractor: "Topics", Multipage: true},
 		},
 	},
 }
