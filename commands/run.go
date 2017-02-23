@@ -170,8 +170,10 @@ func validateTemplate(tpl *template.Template) {
 
 func createDriverCommands(action string, entities []string) *cobra.Command {
 	actionCmd := &cobra.Command{
-		Use:   action,
-		Short: fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
+		Use:         action,
+		Short:       strings.Join(entities, ", "),
+		Long:        fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
+		Annotations: map[string]string{"one-liner": "true"},
 	}
 
 	for _, entity := range entities {

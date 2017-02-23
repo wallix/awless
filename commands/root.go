@@ -33,6 +33,11 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&extraVerboseFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (i.e: debug) for all commands")
 	RootCmd.PersistentFlags().BoolVar(&localFlag, "local", false, "Work offline only with synced/local resources")
 	RootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print awless version")
+
+	cobra.AddTemplateFunc("IsCmdAnnotatedOneliner", IsCmdAnnotatedOneliner)
+	cobra.AddTemplateFunc("HasCmdOnelinerChilds", HasCmdOnelinerChilds)
+
+	RootCmd.SetUsageTemplate(customRootUsage)
 }
 
 var RootCmd = &cobra.Command{
@@ -61,6 +66,53 @@ func ExecuteRoot() error {
 	}
 
 	return err
+}
+
+const customRootUsage = `Usage:{{if .Runnable}}
+  {{if .HasAvailableFlags}}{{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+  {{ .CommandPath}} [command]{{end}}{{if gt .Aliases 0}}
+
+Aliases:
+  {{.NameAndAliases}}
+{{end}}{{if .HasExample}}
+
+Examples:
+{{ .Example }}{{end}}{{ if .HasAvailableSubCommands}}
+
+Commands:{{range .Commands}}{{ if not (IsCmdAnnotatedOneliner .Annotations)}}{{if .IsAvailableCommand }}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{ if HasCmdOnelinerChilds .}}
+
+One-liner Template Commands:{{range .Commands}}{{ if IsCmdAnnotatedOneliner .Annotations}}{{if .IsAvailableCommand }}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{end}}{{end}}{{ if .HasAvailableLocalFlags}}
+
+Flags:
+{{.LocalFlags.FlagUsages | trimRightSpace}}{{end}}{{ if .HasAvailableInheritedFlags}}
+
+Global Flags:
+{{.InheritedFlags.FlagUsages | trimRightSpace}}{{end}}{{if .HasHelpSubCommands}}
+
+Additional help topics:{{range .Commands}}{{if .IsHelpCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{ if .HasAvailableSubCommands }}
+
+Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`
+
+func IsCmdAnnotatedOneliner(annot map[string]string) bool {
+	if annot == nil {
+		return false
+	}
+	_, ok := annot["one-liner"]
+	return ok
+}
+
+func HasCmdOnelinerChilds(cmd *cobra.Command) bool {
+	for _, child := range cmd.Commands() {
+		if IsCmdAnnotatedOneliner(child.Annotations) {
+			return true
+		}
+	}
+
+	return false
 }
 
 const (
