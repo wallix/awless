@@ -242,40 +242,52 @@
 			"revisionTime": "2016-11-03T21:27:02Z"
 		},
 		{
-			"checksumSHA1": "mcGe6jMmd6mr13Q69Pr8dsRrEkI=",
+			"checksumSHA1": "1Ef3VUh/ZCBzuaQpf7Eqw7ahC+Y=",
 			"path": "github.com/google/badwolf/storage",
-			"revision": "8306d1ace12ea7acd764b16bc75ca22689d2adee",
-			"revisionTime": "2016-07-29T18:08:48Z"
+			"revision": "f0cfbb34658f1ec4b9997b59626e73cc8fb7cf8e",
+			"revisionTime": "2017-01-11T15:38:22Z",
+			"version": "v0.7.0",
+			"versionExact": "v0.7.0"
 		},
 		{
-			"checksumSHA1": "+HmLwJdDaewAMrxHaKpiNxwQFLA=",
+			"checksumSHA1": "z0E1Y0XNwjGK7+LmcRYtHFzpGvU=",
 			"path": "github.com/google/badwolf/storage/memory",
-			"revision": "8306d1ace12ea7acd764b16bc75ca22689d2adee",
-			"revisionTime": "2016-07-29T18:08:48Z"
+			"revision": "f0cfbb34658f1ec4b9997b59626e73cc8fb7cf8e",
+			"revisionTime": "2017-01-11T15:38:22Z",
+			"version": "v0.7.0",
+			"versionExact": "v0.7.0"
 		},
 		{
 			"checksumSHA1": "gqNQ0W+nFtiVEiybURwYf72DXWw=",
 			"path": "github.com/google/badwolf/triple",
-			"revision": "8306d1ace12ea7acd764b16bc75ca22689d2adee",
-			"revisionTime": "2016-07-29T18:08:48Z"
+			"revision": "f0cfbb34658f1ec4b9997b59626e73cc8fb7cf8e",
+			"revisionTime": "2017-01-11T15:38:22Z",
+			"version": "v0.7.0",
+			"versionExact": "v0.7.0"
 		},
 		{
 			"checksumSHA1": "b30nDstoPC5sMsJVYKOAn8+qrAs=",
 			"path": "github.com/google/badwolf/triple/literal",
-			"revision": "8306d1ace12ea7acd764b16bc75ca22689d2adee",
-			"revisionTime": "2016-07-29T18:08:48Z"
+			"revision": "f0cfbb34658f1ec4b9997b59626e73cc8fb7cf8e",
+			"revisionTime": "2017-01-11T15:38:22Z",
+			"version": "v0.7.0",
+			"versionExact": "v0.7.0"
 		},
 		{
-			"checksumSHA1": "J5PsH3hylhfL+EVsRC49vjFW0vg=",
+			"checksumSHA1": "qm8Golo4utHtDolPhppDObC+oU0=",
 			"path": "github.com/google/badwolf/triple/node",
-			"revision": "8306d1ace12ea7acd764b16bc75ca22689d2adee",
-			"revisionTime": "2016-07-29T18:08:48Z"
+			"revision": "f0cfbb34658f1ec4b9997b59626e73cc8fb7cf8e",
+			"revisionTime": "2017-01-11T15:38:22Z",
+			"version": "v0.7.0",
+			"versionExact": "v0.7.0"
 		},
 		{
 			"checksumSHA1": "gZTwdPPM1mxq5jvvjZgOjt4Nby0=",
 			"path": "github.com/google/badwolf/triple/predicate",
-			"revision": "8306d1ace12ea7acd764b16bc75ca22689d2adee",
-			"revisionTime": "2016-07-29T18:08:48Z"
+			"revision": "f0cfbb34658f1ec4b9997b59626e73cc8fb7cf8e",
+			"revisionTime": "2017-01-11T15:38:22Z",
+			"version": "v0.7.0",
+			"versionExact": "v0.7.0"
 		},
 		{
 			"checksumSHA1": "5LrCq/ydlbL6pq1cdmuxiw7QV98=",

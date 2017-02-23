@@ -231,7 +231,7 @@ func (g *Graph) allTriples() ([]*triple.Triple, error) {
 
 	go func() {
 		defer close(errc)
-		errc <- g.Triples(context.Background(), triplec)
+		errc <- g.Triples(context.Background(), storage.DefaultLookup, triplec)
 	}()
 
 	for t := range triplec {

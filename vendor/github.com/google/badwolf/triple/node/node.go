@@ -188,7 +188,7 @@ func init() {
 
 	go func() {
 		for {
-			nextVal <- uuid.NewUUID()
+			nextVal <- uuid.NewRandom()
 		}
 	}()
 }
