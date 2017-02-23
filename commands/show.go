@@ -72,7 +72,9 @@ var showCmd = &cobra.Command{
 			exitOn(err)
 			logger.Verbosef("syncing service for %s type", resource.Type())
 			_, err = sync.DefaultSyncer.Sync(srv)
-			logger.Error(err)
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 
 		if resource != nil {

@@ -43,6 +43,8 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 		}
 		if header == nil {
 			header = &StringColumnDefinition{Prop: prop, DisableTruncate: true}
+		} else if strheader, ok := header.(StringColumnDefinition); ok {
+			header = &StringColumnDefinition{Prop: strheader.Prop, Friendly: strheader.Friendly, DisableTruncate: true}
 		}
 
 		if v := values[i]; v == nil {

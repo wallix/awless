@@ -371,17 +371,17 @@ var DriverDefinitions = []struct {
 			"TopicArn": "arn",
 		},
 	},
+	//Subscription
 	{
-		Action: "subscribe", Entity: graph.Topic.String(), Api: "sns", DryRunUnsupported: true, Input: "SubscribeInput", ApiMethod: "Subscribe", OutputExtractor: "aws.StringValue(output.SubscriptionArn)",
+		Action: "create", Entity: graph.Subscription.String(), Api: "sns", DryRunUnsupported: true, Input: "SubscribeInput", ApiMethod: "Subscribe", OutputExtractor: "aws.StringValue(output.SubscriptionArn)",
 		RequiredParams: map[string]string{
-			"TopicArn": "arn",
+			"TopicArn": "topic",
 			"Endpoint": "endpoint",
 			"Protocol": "protocol",
 		},
 	},
-	//Subscription
 	{
-		Action: "unsubscribe", Entity: graph.Subscription.String(), Api: "sns", DryRunUnsupported: true, Input: "UnsubscribeInput", ApiMethod: "Unsubscribe",
+		Action: "delete", Entity: graph.Subscription.String(), Api: "sns", DryRunUnsupported: true, Input: "UnsubscribeInput", ApiMethod: "Unsubscribe",
 		RequiredParams: map[string]string{
 			"SubscriptionArn": "arn",
 		},

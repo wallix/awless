@@ -358,16 +358,16 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"subscribetopic": {
-		Action:         "subscribe",
-		Entity:         "topic",
+	"createsubscription": {
+		Action:         "create",
+		Entity:         "subscription",
 		Api:            "sns",
-		RequiredParams: []string{"endpoint", "protocol", "arn"},
+		RequiredParams: []string{"endpoint", "protocol", "topic"},
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"unsubscribesubscription": {
-		Action:         "unsubscribe",
+	"deletesubscription": {
+		Action:         "delete",
 		Entity:         "subscription",
 		Api:            "sns",
 		RequiredParams: []string{"arn"},
