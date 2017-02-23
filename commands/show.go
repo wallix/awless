@@ -72,7 +72,7 @@ var showCmd = &cobra.Command{
 			exitOn(err)
 			logger.Verbosef("syncing service for %s type", resource.Type())
 			_, err = sync.DefaultSyncer.Sync(srv)
-			exitOn(err)
+			logger.Error(err)
 		}
 
 		if resource != nil {
@@ -145,7 +145,7 @@ func runFullSync() map[string]*graph.Graph {
 	}
 
 	graphs, err := sync.DefaultSyncer.Sync(services...)
-	exitOn(err)
+	logger.Verbose(err)
 
 	return graphs
 }

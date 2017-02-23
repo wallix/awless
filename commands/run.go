@@ -256,7 +256,7 @@ func runSyncFor(tpl *template.Template) {
 	}
 
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
-		logger.Errorf("error while synching for %s\n", strings.Join(srvNames, ", "))
+		logger.Error(err.Error())
 	} else {
 		logger.Verbosef("performed sync for %s", strings.Join(srvNames, ", "))
 	}

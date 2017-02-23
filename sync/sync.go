@@ -17,9 +17,11 @@ limitations under the License.
 package sync
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	gosync "sync"
 	"time"
 
@@ -89,16 +91,14 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 		close(resultc)
 	}()
 
+	var allErrors []error
+
 Loop:
 	for {
 		select {
 		case srvErr, ok := <-errorc:
-			if ok {
-				if srvErr.err == cloud.ErrFetchAccessDenied {
-					logger.Errorf("sync: access denied to service %s", srvErr.name)
-				} else if srvErr.err != nil {
-					return graphs, srvErr.err
-				}
+			if ok && srvErr.err != nil {
+				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", srvErr.name, srvErr.err))
 			}
 		case res, ok := <-resultc:
 			if !ok {
@@ -115,19 +115,33 @@ Loop:
 		filename := fmt.Sprintf("%s.rdf", name)
 		tofile, err := g.Marshal()
 		if err != nil {
-			return graphs, err
+			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
 		}
-		if err = ioutil.WriteFile(filepath.Join(config.RepoDir, filename), tofile, 0600); err != nil {
-			return graphs, err
+		filepath := filepath.Join(config.RepoDir, filename)
+		if err = ioutil.WriteFile(filepath, tofile, 0600); err != nil {
+			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", filepath, err))
 		}
 		filenames = append(filenames, filename)
 	}
 
 	if err := s.Commit(filenames...); err != nil {
-		return graphs, err
+		allErrors = append(allErrors, fmt.Errorf("commit %s: %s", strings.Join(filenames, ", "), err))
 	}
 
-	return graphs, nil
+	return graphs, concatErrors(allErrors)
+}
+
+func concatErrors(errs []error) error {
+	if len(errs) == 0 {
+		return nil
+	}
+
+	var lines []string
+	for _, err := range errs {
+		lines = append(lines, err.Error())
+	}
+
+	return errors.New(strings.Join(lines, "\n"))
 }
 
 func LoadCurrentLocalGraph(serviceName string) *graph.Graph {

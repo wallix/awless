@@ -25,6 +25,7 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/inspect"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
 
@@ -69,7 +70,8 @@ var inspectCmd = &cobra.Command{
 			}
 
 			graphPerService, err := sync.DefaultSyncer.Sync(services...)
-			exitOn(err)
+			logger.Error(err)
+
 			for _, g := range graphPerService {
 				graphs = append(graphs, g)
 			}
