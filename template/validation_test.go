@@ -26,13 +26,13 @@ func TestValidation(t *testing.T) {
 		if got, want := len(errs), 2; got != want {
 			t.Fatalf("got %d, want %d", got, want)
 		}
-		exp := "create instance: unexpected params 'cidr'\n\trequired: image, type, count, count, subnet\n\textra: lock, key, ip, group, userdata, name\n"
+		exp := "create instance: unexpected params 'cidr'\n\trequired: image, count, count, type, subnet\n\textra: key, ip, userdata, group, lock, name\n"
 		if got, want := errs[0].Error(), exp; got != want {
-			t.Fatalf("got %q, want %q", got, want)
+			t.Fatalf("got %v, want %v", got, want)
 		}
 		exp = "stop instance: unexpected params 'ip'\n\trequired: id\n"
 		if got, want := errs[1].Error(), exp; got != want {
-			t.Fatalf("got %q, want %q", got, want)
+			t.Fatalf("got %v, want %v", got, want)
 		}
 	})
 

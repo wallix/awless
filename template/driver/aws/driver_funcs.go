@@ -55,12 +55,15 @@ func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interf
 	}
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err := setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DescribeInstances(input)
+	_, err = d.ec2.DescribeInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("full dry run: check instance ok")
 			return id, nil
@@ -75,7 +78,10 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 	input := &ec2.DescribeInstancesInput{}
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err := setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
 	timeout := time.Duration(params["timeout"].(int)) * time.Second
 	timer := time.NewTimer(timeout)
@@ -126,7 +132,7 @@ func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface
 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			d.logger.Verbose("full dry run: create tags ok")
 			return nil, nil
 		}
@@ -162,16 +168,19 @@ func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 	input := &ec2.ImportKeyPairInput{}
 
 	input.DryRun = aws.Bool(true)
-	setField(params["name"], input, "KeyName")
+	err := setFieldWithType(params["name"], input, "KeyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	if params["name"] == "" {
-		err := fmt.Errorf("empty 'name' parameter")
+		err = fmt.Errorf("empty 'name' parameter")
 		d.logger.Errorf("dry run: saving private key error: %s", err)
 		return nil, err
 	}
 
 	privKeyPath := filepath.Join(config.KeysDir, fmt.Sprint(params["name"])+".pem")
-	_, err := os.Stat(privKeyPath)
+	_, err = os.Stat(privKeyPath)
 	if err == nil {
 		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
 		d.logger.Errorf("dry run: saving private key error: %s", fileExist)
@@ -183,7 +192,10 @@ func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 
 func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
-	setField(params["name"], input, "KeyName")
+	err := setFieldWithType(params["name"], input, "KeyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	d.logger.Info("Generating locally a RSA 4096 bits keypair...")
 	pub, priv, err := console.GenerateSSHKeyPair(4096)
@@ -247,7 +259,10 @@ func (d *AwsDriver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	}
 
 	// Required params
-	setField(params["id"], input, "GroupId")
+	err = setFieldWithType(params["id"], input, "GroupId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	switch ii := input.(type) {
 	case *ec2.AuthorizeSecurityGroupIngressInput:
@@ -261,7 +276,7 @@ func (d *AwsDriver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	}
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			d.logger.Verbose("full dry run: update securitygroup ok")
 			return nil, nil
 		}
@@ -302,7 +317,10 @@ func (d *AwsDriver) Update_Securitygroup(params map[string]interface{}) (interfa
 	}
 
 	// Required params
-	setField(params["id"], input, "GroupId")
+	err = setFieldWithType(params["id"], input, "GroupId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	var output interface{}
 	switch ii := input.(type) {
@@ -369,7 +387,10 @@ func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interfa
 	input.Key = aws.String(fileName)
 
 	// Required params
-	setField(params["bucket"], input, "Bucket")
+	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	output, err := d.s3.PutObject(input)
 	if err != nil {

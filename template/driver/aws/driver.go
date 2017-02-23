@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
 )
@@ -34,17 +35,19 @@ type AwsDriver struct {
 	ec2 ec2iface.EC2API
 	s3  s3iface.S3API
 	sns snsiface.SNSAPI
+	sqs sqsiface.SQSAPI
 
 	dryRun bool
 	logger *logger.Logger
 }
 
-func NewDriver(ec2, iam, s3, sns interface{}) *AwsDriver {
+func NewDriver(ec2, iam, s3, sns, sqs interface{}) *AwsDriver {
 	return &AwsDriver{
 		ec2:    ec2.(ec2iface.EC2API),
 		iam:    iam.(iamiface.IAMAPI),
 		s3:     s3.(s3iface.S3API),
 		sns:    sns.(snsiface.SNSAPI),
+		sqs:    sqs.(sqsiface.SQSAPI),
 		logger: logger.DiscardLogger,
 	}
 }

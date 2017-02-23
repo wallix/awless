@@ -138,7 +138,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Size":         {name: "Size", transform: extractValueFn},
 		"Class":        {name: "StorageClass", transform: extractValueFn},
 	},
-	//SNS
+	//Notification
 	graph.Subscription: {
 		"Id":              {name: "Endpoint", transform: extractValueFn},
 		"Endpoint":        {name: "Endpoint", transform: extractValueFn},
@@ -151,4 +151,6 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Id":       {name: "TopicArn", transform: extractValueFn},
 		"TopicArn": {name: "TopicArn", transform: extractValueFn},
 	},
+	//Queue
+	graph.Queue: {}, //Manually set
 }

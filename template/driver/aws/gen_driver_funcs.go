@@ -28,20 +28,30 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/service/sqs"
+)
+
+const (
+	dryRunOperation = "DryRunOperation"
+	notFound        = "NotFound"
 )
 
 // This function was auto generated
 func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "CidrBlock")
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.CreateVpc(input)
+	_, err = d.ec2.CreateVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("vpc")
 			d.logger.Verbose("full dry run: create vpc ok")
 			return id, nil
@@ -55,17 +65,22 @@ func (d *AwsDriver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 // This function was auto generated
 func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "CidrBlock")
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.CreateVpc(input)
+	var output *ec2.CreateVpcOutput
+	output, err = d.ec2.CreateVpc(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create vpc error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateVpc call took %s", time.Since(start))
 	id := aws.StringValue(output.Vpc.VpcId)
 	d.logger.Verbosef("create vpc '%s' done", id)
@@ -76,14 +91,18 @@ func (d *AwsDriver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVpcInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "VpcId")
+	err = setFieldWithType(params["id"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteVpc(input)
+	_, err = d.ec2.DeleteVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("vpc")
 			d.logger.Verbose("full dry run: delete vpc ok")
 			return id, nil
@@ -97,17 +116,22 @@ func (d *AwsDriver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 // This function was auto generated
 func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVpcInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "VpcId")
+	err = setFieldWithType(params["id"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteVpc(input)
+	var output *ec2.DeleteVpcOutput
+	output, err = d.ec2.DeleteVpc(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete vpc error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteVpc call took %s", time.Since(start))
 	d.logger.Verbose("delete vpc done")
 	return output, nil
@@ -117,20 +141,30 @@ func (d *AwsDriver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "CidrBlock")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
 	if _, ok := params["zone"]; ok {
-		setField(params["zone"], input, "AvailabilityZone")
+		err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	_, err := d.ec2.CreateSubnet(input)
+	_, err = d.ec2.CreateSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("subnet")
 			d.logger.Verbose("full dry run: create subnet ok")
 			return id, nil
@@ -144,23 +178,34 @@ func (d *AwsDriver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Create_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "CidrBlock")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
 	if _, ok := params["zone"]; ok {
-		setField(params["zone"], input, "AvailabilityZone")
+		err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	start := time.Now()
-	output, err := d.ec2.CreateSubnet(input)
+	var output *ec2.CreateSubnetOutput
+	output, err = d.ec2.CreateSubnet(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create subnet error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateSubnet call took %s", time.Since(start))
 	id := aws.StringValue(output.Subnet.SubnetId)
 	d.logger.Verbosef("create subnet '%s' done", id)
@@ -180,22 +225,30 @@ func (d *AwsDriver) Update_Subnet_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifySubnetAttributeInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "SubnetId")
+	err = setFieldWithType(params["id"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
 	if _, ok := params["public-vms"]; ok {
-		setField(params["public-vms"], input, "MapPublicIpOnLaunch")
+		err = setFieldWithType(params["public-vms"], input, "MapPublicIpOnLaunch", awsbool)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	start := time.Now()
-	output, err := d.ec2.ModifySubnetAttribute(input)
+	var output *ec2.ModifySubnetAttributeOutput
+	output, err = d.ec2.ModifySubnetAttribute(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("update subnet error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.ModifySubnetAttribute call took %s", time.Since(start))
 	d.logger.Verbose("update subnet done")
 	return output, nil
@@ -205,14 +258,18 @@ func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSubnetInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "SubnetId")
+	err = setFieldWithType(params["id"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteSubnet(input)
+	_, err = d.ec2.DeleteSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("subnet")
 			d.logger.Verbose("full dry run: delete subnet ok")
 			return id, nil
@@ -226,17 +283,22 @@ func (d *AwsDriver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSubnetInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "SubnetId")
+	err = setFieldWithType(params["id"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteSubnet(input)
+	var output *ec2.DeleteSubnetOutput
+	output, err = d.ec2.DeleteSubnet(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete subnet error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteSubnet call took %s", time.Since(start))
 	d.logger.Verbose("delete subnet done")
 	return output, nil
@@ -246,42 +308,73 @@ func (d *AwsDriver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["image"], input, "ImageId")
-	setField(params["type"], input, "InstanceType")
-	setField(params["count"], input, "MaxCount")
-	setField(params["count"], input, "MinCount")
-	setField(params["subnet"], input, "SubnetId")
+	err = setFieldWithType(params["image"], input, "ImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["count"], input, "MaxCount", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["count"], input, "MinCount", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
-	if _, ok := params["lock"]; ok {
-		setField(params["lock"], input, "DisableApiTermination")
-	}
 	if _, ok := params["key"]; ok {
-		setField(params["key"], input, "KeyName")
+		err = setFieldWithType(params["key"], input, "KeyName", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := params["ip"]; ok {
-		setField(params["ip"], input, "PrivateIpAddress")
-	}
-	if _, ok := params["group"]; ok {
-		setField(params["group"], input, "SecurityGroupIds")
+		err = setFieldWithType(params["ip"], input, "PrivateIpAddress", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := params["userdata"]; ok {
-		setField(params["userdata"], input, "UserData")
+		err = setFieldWithType(params["userdata"], input, "UserData", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["group"]; ok {
+		err = setFieldWithType(params["group"], input, "SecurityGroupIds", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["lock"]; ok {
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	_, err := d.ec2.RunInstances(input)
+	_, err = d.ec2.RunInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
 			tagsParams := map[string]interface{}{"resource": id}
 			if v, ok := params["name"]; ok {
 				tagsParams["Name"] = v
 			}
 			if len(tagsParams) > 1 {
-				_, err := d.Create_Tags_DryRun(tagsParams)
+				_, err = d.Create_Tags_DryRun(tagsParams)
 				if err != nil {
 					d.logger.Errorf("create instance: adding tags: error: %s", err)
 					return nil, err
@@ -299,38 +392,70 @@ func (d *AwsDriver) Create_Instance_DryRun(params map[string]interface{}) (inter
 // This function was auto generated
 func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{}
+	var err error
 
 	// Required params
-	setField(params["image"], input, "ImageId")
-	setField(params["type"], input, "InstanceType")
-	setField(params["count"], input, "MaxCount")
-	setField(params["count"], input, "MinCount")
-	setField(params["subnet"], input, "SubnetId")
+	err = setFieldWithType(params["image"], input, "ImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["count"], input, "MaxCount", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["count"], input, "MinCount", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
-	if _, ok := params["lock"]; ok {
-		setField(params["lock"], input, "DisableApiTermination")
-	}
 	if _, ok := params["key"]; ok {
-		setField(params["key"], input, "KeyName")
+		err = setFieldWithType(params["key"], input, "KeyName", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := params["ip"]; ok {
-		setField(params["ip"], input, "PrivateIpAddress")
-	}
-	if _, ok := params["group"]; ok {
-		setField(params["group"], input, "SecurityGroupIds")
+		err = setFieldWithType(params["ip"], input, "PrivateIpAddress", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := params["userdata"]; ok {
-		setField(params["userdata"], input, "UserData")
+		err = setFieldWithType(params["userdata"], input, "UserData", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["group"]; ok {
+		err = setFieldWithType(params["group"], input, "SecurityGroupIds", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["lock"]; ok {
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	start := time.Now()
-	output, err := d.ec2.RunInstances(input)
+	var output *ec2.Reservation
+	output, err = d.ec2.RunInstances(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create instance error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.Instances[0].InstanceId)
 	tagsParams := map[string]interface{}{"resource": id}
@@ -352,25 +477,38 @@ func (d *AwsDriver) Create_Instance(params map[string]interface{}) (interface{},
 func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifyInstanceAttributeInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceId")
+	err = setFieldWithType(params["id"], input, "InstanceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
-	if _, ok := params["lock"]; ok {
-		setField(params["lock"], input, "DisableApiTermination")
+	if _, ok := params["type"]; ok {
+		err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := params["group"]; ok {
-		setField(params["group"], input, "Groups")
+		err = setFieldWithType(params["group"], input, "Groups", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
 	}
-	if _, ok := params["type"]; ok {
-		setField(params["type"], input, "InstanceType")
+	if _, ok := params["lock"]; ok {
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	_, err := d.ec2.ModifyInstanceAttribute(input)
+	_, err = d.ec2.ModifyInstanceAttribute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("full dry run: update instance ok")
 			return id, nil
@@ -384,28 +522,42 @@ func (d *AwsDriver) Update_Instance_DryRun(params map[string]interface{}) (inter
 // This function was auto generated
 func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifyInstanceAttributeInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceId")
+	err = setFieldWithType(params["id"], input, "InstanceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	// Extra params
-	if _, ok := params["lock"]; ok {
-		setField(params["lock"], input, "DisableApiTermination")
+	if _, ok := params["type"]; ok {
+		err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if _, ok := params["group"]; ok {
-		setField(params["group"], input, "Groups")
+		err = setFieldWithType(params["group"], input, "Groups", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
 	}
-	if _, ok := params["type"]; ok {
-		setField(params["type"], input, "InstanceType")
+	if _, ok := params["lock"]; ok {
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	start := time.Now()
-	output, err := d.ec2.ModifyInstanceAttribute(input)
+	var output *ec2.ModifyInstanceAttributeOutput
+	output, err = d.ec2.ModifyInstanceAttribute(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("update instance error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.ModifyInstanceAttribute call took %s", time.Since(start))
 	d.logger.Verbose("update instance done")
 	return output, nil
@@ -415,14 +567,18 @@ func (d *AwsDriver) Update_Instance(params map[string]interface{}) (interface{},
 func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.TerminateInstances(input)
+	_, err = d.ec2.TerminateInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("full dry run: delete instance ok")
 			return id, nil
@@ -436,17 +592,22 @@ func (d *AwsDriver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 // This function was auto generated
 func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.TerminateInstances(input)
+	var output *ec2.TerminateInstancesOutput
+	output, err = d.ec2.TerminateInstances(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete instance error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.TerminateInstances call took %s", time.Since(start))
 	d.logger.Verbose("delete instance done")
 	return output, nil
@@ -456,14 +617,18 @@ func (d *AwsDriver) Delete_Instance(params map[string]interface{}) (interface{},
 func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StartInstancesInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.StartInstances(input)
+	_, err = d.ec2.StartInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("full dry run: start instance ok")
 			return id, nil
@@ -477,17 +642,22 @@ func (d *AwsDriver) Start_Instance_DryRun(params map[string]interface{}) (interf
 // This function was auto generated
 func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StartInstancesInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.StartInstances(input)
+	var output *ec2.StartInstancesOutput
+	output, err = d.ec2.StartInstances(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("start instance error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StartingInstances[0].InstanceId)
 	d.logger.Verbosef("start instance '%s' done", id)
@@ -498,14 +668,18 @@ func (d *AwsDriver) Start_Instance(params map[string]interface{}) (interface{}, 
 func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StopInstancesInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.StopInstances(input)
+	_, err = d.ec2.StopInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("full dry run: stop instance ok")
 			return id, nil
@@ -519,17 +693,22 @@ func (d *AwsDriver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StopInstancesInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InstanceIds")
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.StopInstances(input)
+	var output *ec2.StopInstancesOutput
+	output, err = d.ec2.StopInstances(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("stop instance error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
 	d.logger.Verbosef("stop instance '%s' done", id)
@@ -540,16 +719,26 @@ func (d *AwsDriver) Stop_Instance(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Create_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["description"], input, "Description")
-	setField(params["name"], input, "GroupName")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["description"], input, "Description", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.CreateSecurityGroup(input)
+	_, err = d.ec2.CreateSecurityGroup(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("securitygroup")
 			d.logger.Verbose("full dry run: create securitygroup ok")
 			return id, nil
@@ -563,19 +752,30 @@ func (d *AwsDriver) Create_Securitygroup_DryRun(params map[string]interface{}) (
 // This function was auto generated
 func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
+	var err error
 
 	// Required params
-	setField(params["description"], input, "Description")
-	setField(params["name"], input, "GroupName")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["description"], input, "Description", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.CreateSecurityGroup(input)
+	var output *ec2.CreateSecurityGroupOutput
+	output, err = d.ec2.CreateSecurityGroup(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create securitygroup error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.GroupId)
 	d.logger.Verbosef("create securitygroup '%s' done", id)
@@ -586,14 +786,18 @@ func (d *AwsDriver) Create_Securitygroup(params map[string]interface{}) (interfa
 func (d *AwsDriver) Delete_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "GroupId")
+	err = setFieldWithType(params["id"], input, "GroupId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteSecurityGroup(input)
+	_, err = d.ec2.DeleteSecurityGroup(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("securitygroup")
 			d.logger.Verbose("full dry run: delete securitygroup ok")
 			return id, nil
@@ -607,17 +811,22 @@ func (d *AwsDriver) Delete_Securitygroup_DryRun(params map[string]interface{}) (
 // This function was auto generated
 func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "GroupId")
+	err = setFieldWithType(params["id"], input, "GroupId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteSecurityGroup(input)
+	var output *ec2.DeleteSecurityGroupOutput
+	output, err = d.ec2.DeleteSecurityGroup(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete securitygroup error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
 	d.logger.Verbose("delete securitygroup done")
 	return output, nil
@@ -627,15 +836,22 @@ func (d *AwsDriver) Delete_Securitygroup(params map[string]interface{}) (interfa
 func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["zone"], input, "AvailabilityZone")
-	setField(params["size"], input, "Size")
+	err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["size"], input, "Size", awsint64)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.CreateVolume(input)
+	_, err = d.ec2.CreateVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("full dry run: create volume ok")
 			return id, nil
@@ -649,18 +865,26 @@ func (d *AwsDriver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
+	var err error
 
 	// Required params
-	setField(params["zone"], input, "AvailabilityZone")
-	setField(params["size"], input, "Size")
+	err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["size"], input, "Size", awsint64)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.CreateVolume(input)
+	var output *ec2.Volume
+	output, err = d.ec2.CreateVolume(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create volume error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 	d.logger.Verbosef("create volume '%s' done", id)
@@ -671,14 +895,18 @@ func (d *AwsDriver) Create_Volume(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Delete_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVolumeInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "VolumeId")
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteVolume(input)
+	_, err = d.ec2.DeleteVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("full dry run: delete volume ok")
 			return id, nil
@@ -692,17 +920,22 @@ func (d *AwsDriver) Delete_Volume_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVolumeInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "VolumeId")
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteVolume(input)
+	var output *ec2.DeleteVolumeOutput
+	output, err = d.ec2.DeleteVolume(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete volume error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteVolume call took %s", time.Since(start))
 	d.logger.Verbose("delete volume done")
 	return output, nil
@@ -712,16 +945,26 @@ func (d *AwsDriver) Delete_Volume(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Attach_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachVolumeInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["device"], input, "Device")
-	setField(params["instance"], input, "InstanceId")
-	setField(params["id"], input, "VolumeId")
+	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.AttachVolume(input)
+	_, err = d.ec2.AttachVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("full dry run: attach volume ok")
 			return id, nil
@@ -735,19 +978,30 @@ func (d *AwsDriver) Attach_Volume_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachVolumeInput{}
+	var err error
 
 	// Required params
-	setField(params["device"], input, "Device")
-	setField(params["instance"], input, "InstanceId")
-	setField(params["id"], input, "VolumeId")
+	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.AttachVolume(input)
+	var output *ec2.VolumeAttachment
+	output, err = d.ec2.AttachVolume(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("attach volume error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 	d.logger.Verbosef("attach volume '%s' done", id)
@@ -758,11 +1012,12 @@ func (d *AwsDriver) Attach_Volume(params map[string]interface{}) (interface{}, e
 func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
-	_, err := d.ec2.CreateInternetGateway(input)
+	_, err = d.ec2.CreateInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("full dry run: create internetgateway ok")
 			return id, nil
@@ -776,14 +1031,16 @@ func (d *AwsDriver) Create_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
+	var err error
 
 	start := time.Now()
-	output, err := d.ec2.CreateInternetGateway(input)
+	var output *ec2.CreateInternetGatewayOutput
+	output, err = d.ec2.CreateInternetGateway(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create internetgateway error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
 	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
 	d.logger.Verbosef("create internetgateway '%s' done", id)
@@ -794,14 +1051,18 @@ func (d *AwsDriver) Create_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Delete_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InternetGatewayId")
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteInternetGateway(input)
+	_, err = d.ec2.DeleteInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("full dry run: delete internetgateway ok")
 			return id, nil
@@ -815,17 +1076,22 @@ func (d *AwsDriver) Delete_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteInternetGatewayInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InternetGatewayId")
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteInternetGateway(input)
+	var output *ec2.DeleteInternetGatewayOutput
+	output, err = d.ec2.DeleteInternetGateway(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete internetgateway error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteInternetGateway call took %s", time.Since(start))
 	d.logger.Verbose("delete internetgateway done")
 	return output, nil
@@ -835,15 +1101,22 @@ func (d *AwsDriver) Delete_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Attach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InternetGatewayId")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.AttachInternetGateway(input)
+	_, err = d.ec2.AttachInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("full dry run: attach internetgateway ok")
 			return id, nil
@@ -857,18 +1130,26 @@ func (d *AwsDriver) Attach_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachInternetGatewayInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InternetGatewayId")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.AttachInternetGateway(input)
+	var output *ec2.AttachInternetGatewayOutput
+	output, err = d.ec2.AttachInternetGateway(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("attach internetgateway error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.AttachInternetGateway call took %s", time.Since(start))
 	d.logger.Verbose("attach internetgateway done")
 	return output, nil
@@ -878,15 +1159,22 @@ func (d *AwsDriver) Attach_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Detach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InternetGatewayId")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DetachInternetGateway(input)
+	_, err = d.ec2.DetachInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("full dry run: detach internetgateway ok")
 			return id, nil
@@ -900,18 +1188,26 @@ func (d *AwsDriver) Detach_Internetgateway_DryRun(params map[string]interface{})
 // This function was auto generated
 func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachInternetGatewayInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "InternetGatewayId")
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DetachInternetGateway(input)
+	var output *ec2.DetachInternetGatewayOutput
+	output, err = d.ec2.DetachInternetGateway(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("detach internetgateway error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DetachInternetGateway call took %s", time.Since(start))
 	d.logger.Verbose("detach internetgateway done")
 	return output, nil
@@ -921,14 +1217,18 @@ func (d *AwsDriver) Detach_Internetgateway(params map[string]interface{}) (inter
 func (d *AwsDriver) Create_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.CreateRouteTable(input)
+	_, err = d.ec2.CreateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("full dry run: create routetable ok")
 			return id, nil
@@ -942,17 +1242,22 @@ func (d *AwsDriver) Create_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
+	var err error
 
 	// Required params
-	setField(params["vpc"], input, "VpcId")
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.CreateRouteTable(input)
+	var output *ec2.CreateRouteTableOutput
+	output, err = d.ec2.CreateRouteTable(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create routetable error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.RouteTable.RouteTableId)
 	d.logger.Verbosef("create routetable '%s' done", id)
@@ -963,14 +1268,18 @@ func (d *AwsDriver) Create_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Delete_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteTableInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "RouteTableId")
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteRouteTable(input)
+	_, err = d.ec2.DeleteRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("full dry run: delete routetable ok")
 			return id, nil
@@ -984,17 +1293,22 @@ func (d *AwsDriver) Delete_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteTableInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "RouteTableId")
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteRouteTable(input)
+	var output *ec2.DeleteRouteTableOutput
+	output, err = d.ec2.DeleteRouteTable(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete routetable error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteRouteTable call took %s", time.Since(start))
 	d.logger.Verbose("delete routetable done")
 	return output, nil
@@ -1004,15 +1318,22 @@ func (d *AwsDriver) Delete_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Attach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "RouteTableId")
-	setField(params["subnet"], input, "SubnetId")
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.AssociateRouteTable(input)
+	_, err = d.ec2.AssociateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("full dry run: attach routetable ok")
 			return id, nil
@@ -1026,18 +1347,26 @@ func (d *AwsDriver) Attach_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateRouteTableInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "RouteTableId")
-	setField(params["subnet"], input, "SubnetId")
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.AssociateRouteTable(input)
+	var output *ec2.AssociateRouteTableOutput
+	output, err = d.ec2.AssociateRouteTable(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("attach routetable error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.AssociationId)
 	d.logger.Verbosef("attach routetable '%s' done", id)
@@ -1048,14 +1377,18 @@ func (d *AwsDriver) Attach_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Detach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["association"], input, "AssociationId")
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DisassociateRouteTable(input)
+	_, err = d.ec2.DisassociateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("full dry run: detach routetable ok")
 			return id, nil
@@ -1069,17 +1402,22 @@ func (d *AwsDriver) Detach_Routetable_DryRun(params map[string]interface{}) (int
 // This function was auto generated
 func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateRouteTableInput{}
+	var err error
 
 	// Required params
-	setField(params["association"], input, "AssociationId")
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DisassociateRouteTable(input)
+	var output *ec2.DisassociateRouteTableOutput
+	output, err = d.ec2.DisassociateRouteTable(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("detach routetable error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DisassociateRouteTable call took %s", time.Since(start))
 	d.logger.Verbose("detach routetable done")
 	return output, nil
@@ -1089,16 +1427,26 @@ func (d *AwsDriver) Detach_Routetable(params map[string]interface{}) (interface{
 func (d *AwsDriver) Create_Route_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "DestinationCidrBlock")
-	setField(params["gateway"], input, "GatewayId")
-	setField(params["table"], input, "RouteTableId")
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["gateway"], input, "GatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.CreateRoute(input)
+	_, err = d.ec2.CreateRoute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("route")
 			d.logger.Verbose("full dry run: create route ok")
 			return id, nil
@@ -1112,19 +1460,30 @@ func (d *AwsDriver) Create_Route_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "DestinationCidrBlock")
-	setField(params["gateway"], input, "GatewayId")
-	setField(params["table"], input, "RouteTableId")
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["gateway"], input, "GatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.CreateRoute(input)
+	var output *ec2.CreateRouteOutput
+	output, err = d.ec2.CreateRoute(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create route error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.CreateRoute call took %s", time.Since(start))
 	d.logger.Verbose("create route done")
 	return output, nil
@@ -1134,15 +1493,22 @@ func (d *AwsDriver) Create_Route(params map[string]interface{}) (interface{}, er
 func (d *AwsDriver) Delete_Route_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "DestinationCidrBlock")
-	setField(params["table"], input, "RouteTableId")
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteRoute(input)
+	_, err = d.ec2.DeleteRoute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("route")
 			d.logger.Verbose("full dry run: delete route ok")
 			return id, nil
@@ -1156,18 +1522,26 @@ func (d *AwsDriver) Delete_Route_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteInput{}
+	var err error
 
 	// Required params
-	setField(params["cidr"], input, "DestinationCidrBlock")
-	setField(params["table"], input, "RouteTableId")
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteRoute(input)
+	var output *ec2.DeleteRouteOutput
+	output, err = d.ec2.DeleteRoute(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete route error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteRoute call took %s", time.Since(start))
 	d.logger.Verbose("delete route done")
 	return output, nil
@@ -1177,14 +1551,18 @@ func (d *AwsDriver) Delete_Route(params map[string]interface{}) (interface{}, er
 func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	input.DryRun = aws.Bool(true)
+	var err error
 
 	// Required params
-	setField(params["id"], input, "KeyName")
+	err = setFieldWithType(params["id"], input, "KeyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := d.ec2.DeleteKeyPair(input)
+	_, err = d.ec2.DeleteKeyPair(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("keypair")
 			d.logger.Verbose("full dry run: delete keypair ok")
 			return id, nil
@@ -1198,17 +1576,22 @@ func (d *AwsDriver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 // This function was auto generated
 func (d *AwsDriver) Delete_Keypair(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
+	var err error
 
 	// Required params
-	setField(params["id"], input, "KeyName")
+	err = setFieldWithType(params["id"], input, "KeyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.ec2.DeleteKeyPair(input)
+	var output *ec2.DeleteKeyPairOutput
+	output, err = d.ec2.DeleteKeyPair(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete keypair error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
 	d.logger.Verbose("delete keypair done")
 	return output, nil
@@ -1227,17 +1610,22 @@ func (d *AwsDriver) Create_User_DryRun(params map[string]interface{}) (interface
 // This function was auto generated
 func (d *AwsDriver) Create_User(params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateUserInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "UserName")
+	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.iam.CreateUser(input)
+	var output *iam.CreateUserOutput
+	output, err = d.iam.CreateUser(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create user error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
 	id := aws.StringValue(output.User.UserId)
 	d.logger.Verbosef("create user '%s' done", id)
@@ -1257,17 +1645,22 @@ func (d *AwsDriver) Delete_User_DryRun(params map[string]interface{}) (interface
 // This function was auto generated
 func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteUserInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "UserName")
+	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.iam.DeleteUser(input)
+	var output *iam.DeleteUserOutput
+	output, err = d.iam.DeleteUser(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete user error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("iam.DeleteUser call took %s", time.Since(start))
 	d.logger.Verbose("delete user done")
 	return output, nil
@@ -1286,17 +1679,22 @@ func (d *AwsDriver) Create_Group_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Create_Group(params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateGroupInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "GroupName")
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.iam.CreateGroup(input)
+	var output *iam.CreateGroupOutput
+	output, err = d.iam.CreateGroup(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create group error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.Group.GroupId)
 	d.logger.Verbosef("create group '%s' done", id)
@@ -1316,17 +1714,22 @@ func (d *AwsDriver) Delete_Group_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Delete_Group(params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteGroupInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "GroupName")
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.iam.DeleteGroup(input)
+	var output *iam.DeleteGroupOutput
+	output, err = d.iam.DeleteGroup(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete group error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("iam.DeleteGroup call took %s", time.Since(start))
 	d.logger.Verbose("delete group done")
 	return output, nil
@@ -1349,18 +1752,26 @@ func (d *AwsDriver) Attach_Policy_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
 	input := &iam.AttachUserPolicyInput{}
+	var err error
 
 	// Required params
-	setField(params["arn"], input, "PolicyArn")
-	setField(params["user"], input, "UserName")
+	err = setFieldWithType(params["arn"], input, "PolicyArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["user"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.iam.AttachUserPolicy(input)
+	var output *iam.AttachUserPolicyOutput
+	output, err = d.iam.AttachUserPolicy(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("attach policy error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("iam.AttachUserPolicy call took %s", time.Since(start))
 	d.logger.Verbose("attach policy done")
 	return output, nil
@@ -1383,18 +1794,26 @@ func (d *AwsDriver) Detach_Policy_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
 	input := &iam.DetachUserPolicyInput{}
+	var err error
 
 	// Required params
-	setField(params["arn"], input, "PolicyArn")
-	setField(params["user"], input, "UserName")
+	err = setFieldWithType(params["arn"], input, "PolicyArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["user"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.iam.DetachUserPolicy(input)
+	var output *iam.DetachUserPolicyOutput
+	output, err = d.iam.DetachUserPolicy(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("detach policy error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("iam.DetachUserPolicy call took %s", time.Since(start))
 	d.logger.Verbose("detach policy done")
 	return output, nil
@@ -1413,17 +1832,22 @@ func (d *AwsDriver) Create_Bucket_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Create_Bucket(params map[string]interface{}) (interface{}, error) {
 	input := &s3.CreateBucketInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "Bucket")
+	err = setFieldWithType(params["name"], input, "Bucket", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.s3.CreateBucket(input)
+	var output *s3.CreateBucketOutput
+	output, err = d.s3.CreateBucket(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create bucket error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
 	id := params["name"]
 	d.logger.Verbosef("create bucket '%s' done", id)
@@ -1443,17 +1867,22 @@ func (d *AwsDriver) Delete_Bucket_DryRun(params map[string]interface{}) (interfa
 // This function was auto generated
 func (d *AwsDriver) Delete_Bucket(params map[string]interface{}) (interface{}, error) {
 	input := &s3.DeleteBucketInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "Bucket")
+	err = setFieldWithType(params["name"], input, "Bucket", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.s3.DeleteBucket(input)
+	var output *s3.DeleteBucketOutput
+	output, err = d.s3.DeleteBucket(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete bucket error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
 	d.logger.Verbose("delete bucket done")
 	return output, nil
@@ -1476,18 +1905,26 @@ func (d *AwsDriver) Delete_Storageobject_DryRun(params map[string]interface{}) (
 // This function was auto generated
 func (d *AwsDriver) Delete_Storageobject(params map[string]interface{}) (interface{}, error) {
 	input := &s3.DeleteObjectInput{}
+	var err error
 
 	// Required params
-	setField(params["bucket"], input, "Bucket")
-	setField(params["key"], input, "Key")
+	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["key"], input, "Key", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.s3.DeleteObject(input)
+	var output *s3.DeleteObjectOutput
+	output, err = d.s3.DeleteObject(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete storageobject error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
 	d.logger.Verbose("delete storageobject done")
 	return output, nil
@@ -1506,17 +1943,22 @@ func (d *AwsDriver) Create_Topic_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Create_Topic(params map[string]interface{}) (interface{}, error) {
 	input := &sns.CreateTopicInput{}
+	var err error
 
 	// Required params
-	setField(params["name"], input, "Name")
+	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.sns.CreateTopic(input)
+	var output *sns.CreateTopicOutput
+	output, err = d.sns.CreateTopic(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create topic error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
 	id := aws.StringValue(output.TopicArn)
 	d.logger.Verbosef("create topic '%s' done", id)
@@ -1536,17 +1978,22 @@ func (d *AwsDriver) Delete_Topic_DryRun(params map[string]interface{}) (interfac
 // This function was auto generated
 func (d *AwsDriver) Delete_Topic(params map[string]interface{}) (interface{}, error) {
 	input := &sns.DeleteTopicInput{}
+	var err error
 
 	// Required params
-	setField(params["arn"], input, "TopicArn")
+	err = setFieldWithType(params["arn"], input, "TopicArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.sns.DeleteTopic(input)
+	var output *sns.DeleteTopicOutput
+	output, err = d.sns.DeleteTopic(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete topic error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("sns.DeleteTopic call took %s", time.Since(start))
 	d.logger.Verbose("delete topic done")
 	return output, nil
@@ -1554,16 +2001,16 @@ func (d *AwsDriver) Delete_Topic(params map[string]interface{}) (interface{}, er
 
 // This function was auto generated
 func (d *AwsDriver) Create_Subscription_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["topic"]; !ok {
+		return nil, errors.New("create subscription: missing required params 'topic'")
+	}
+
 	if _, ok := params["endpoint"]; !ok {
 		return nil, errors.New("create subscription: missing required params 'endpoint'")
 	}
 
 	if _, ok := params["protocol"]; !ok {
 		return nil, errors.New("create subscription: missing required params 'protocol'")
-	}
-
-	if _, ok := params["topic"]; !ok {
-		return nil, errors.New("create subscription: missing required params 'topic'")
 	}
 
 	d.logger.Verbose("params dry run: create subscription ok")
@@ -1573,19 +2020,30 @@ func (d *AwsDriver) Create_Subscription_DryRun(params map[string]interface{}) (i
 // This function was auto generated
 func (d *AwsDriver) Create_Subscription(params map[string]interface{}) (interface{}, error) {
 	input := &sns.SubscribeInput{}
+	var err error
 
 	// Required params
-	setField(params["endpoint"], input, "Endpoint")
-	setField(params["protocol"], input, "Protocol")
-	setField(params["topic"], input, "TopicArn")
+	err = setFieldWithType(params["topic"], input, "TopicArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["endpoint"], input, "Endpoint", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.sns.Subscribe(input)
+	var output *sns.SubscribeOutput
+	output, err = d.sns.Subscribe(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("create subscription error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
 	id := aws.StringValue(output.SubscriptionArn)
 	d.logger.Verbosef("create subscription '%s' done", id)
@@ -1605,18 +2063,148 @@ func (d *AwsDriver) Delete_Subscription_DryRun(params map[string]interface{}) (i
 // This function was auto generated
 func (d *AwsDriver) Delete_Subscription(params map[string]interface{}) (interface{}, error) {
 	input := &sns.UnsubscribeInput{}
+	var err error
 
 	// Required params
-	setField(params["arn"], input, "SubscriptionArn")
+	err = setFieldWithType(params["arn"], input, "SubscriptionArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
-	output, err := d.sns.Unsubscribe(input)
+	var output *sns.UnsubscribeOutput
+	output, err = d.sns.Unsubscribe(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("delete subscription error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("sns.Unsubscribe call took %s", time.Since(start))
 	d.logger.Verbose("delete subscription done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Queue_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create queue: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create queue ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Create_Queue(params map[string]interface{}) (interface{}, error) {
+	input := &sqs.CreateQueueInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "QueueName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["delay"]; ok {
+		err = setFieldWithType(params["delay"], input, "Attributes[DelaySeconds]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["maxMsgSize"]; ok {
+		err = setFieldWithType(params["maxMsgSize"], input, "Attributes[MaximumMessageSize]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["retentionPeriod"]; ok {
+		err = setFieldWithType(params["retentionPeriod"], input, "Attributes[MessageRetentionPeriod]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["policy"]; ok {
+		err = setFieldWithType(params["policy"], input, "Attributes[Policy]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["msgWait"]; ok {
+		err = setFieldWithType(params["msgWait"], input, "Attributes[ReceiveMessageWaitTimeSeconds]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["redrivePolicy"]; ok {
+		err = setFieldWithType(params["redrivePolicy"], input, "Attributes[RedrivePolicy]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["visibilityTimeout"]; ok {
+		err = setFieldWithType(params["visibilityTimeout"], input, "Attributes[VisibilityTimeout]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["fifo"]; ok {
+		err = setFieldWithType(params["fifo"], input, "Attributes[FifoQueue]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["dedup"]; ok {
+		err = setFieldWithType(params["dedup"], input, "Attributes[ContentBasedDeduplication]", awsstringpointermap)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *sqs.CreateQueueOutput
+	output, err = d.sqs.CreateQueue(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("create queue error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("sqs.CreateQueue call took %s", time.Since(start))
+	id := aws.StringValue(output.QueueUrl)
+	d.logger.Verbosef("create queue '%s' done", id)
+	return aws.StringValue(output.QueueUrl), nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Queue_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["url"]; !ok {
+		return nil, errors.New("delete queue: missing required params 'url'")
+	}
+
+	d.logger.Verbose("params dry run: delete queue ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Delete_Queue(params map[string]interface{}) (interface{}, error) {
+	input := &sqs.DeleteQueueInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["url"], input, "QueueUrl", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *sqs.DeleteQueueOutput
+	output, err = d.sqs.DeleteQueue(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("delete queue error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("sqs.DeleteQueue call took %s", time.Since(start))
+	d.logger.Verbose("delete queue done")
 	return output, nil
 }

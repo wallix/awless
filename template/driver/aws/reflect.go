@@ -19,92 +19,128 @@ package aws
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-func setField(s, i interface{}, fieldName string) {
-	sval := reflect.ValueOf(s)
-	ival := reflect.ValueOf(i)
+const (
+	awsstr = iota
+	awsint
+	awsint64
+	awsbool
+	awsboolattribute
+	awsstringattribute
+	awsint64slice
+	awsstringslice
+	awsstringpointermap
+)
 
-	if !ival.IsValid() || !sval.IsValid() {
-		return
+var (
+	mapAttributeRegex = regexp.MustCompile(`(.+)\[(.+)\].*`)
+)
+
+func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
+	if v == nil || i == nil {
+		return nil
 	}
-
-	if ival.Kind() != reflect.Ptr && ival.Kind() != reflect.Struct {
-		panic("only support setting field on ptr to struct\n")
-	}
-
-	fieldVal := ival.Elem().FieldByName(fieldName)
-
-	if fieldVal.Type() == sval.Type() {
-		fieldVal.Set(sval)
-		return
-	}
-
-	var stringptr *string
-	var int64ptr *int64
-	var boolptr *bool
-	var boolval *ec2.AttributeBooleanValue
-	var stringval *ec2.AttributeValue
-
-	if fieldVal.Kind() == reflect.Ptr {
-		switch fieldVal.Type() {
-		case reflect.TypeOf(stringptr):
-			fieldVal.Set(reflect.ValueOf(aws.String(s.(string))))
-		case reflect.TypeOf(boolval), reflect.TypeOf(boolptr):
-			var b bool
-			var err error
-			switch ss := s.(type) {
-			case string:
-				b, err = strconv.ParseBool(ss)
-				if err != nil {
-					panic(err)
-				}
-			case bool:
-				b = ss
-			}
-			if fieldVal.Type() == reflect.TypeOf(boolval) {
-				boolval = &ec2.AttributeBooleanValue{Value: aws.Bool(b)}
-				fieldVal.Set(reflect.ValueOf(boolval))
-			}
-			if fieldVal.Type() == reflect.TypeOf(boolptr) {
-				fieldVal.Set(reflect.ValueOf(aws.Bool(b)))
-			}
-		case reflect.TypeOf(stringval):
-			stringval = &ec2.AttributeValue{Value: aws.String(fmt.Sprint(s))}
-			fieldVal.Set(reflect.ValueOf(stringval))
-		case reflect.TypeOf(int64ptr):
-			var r int64
-			var err error
-			switch s.(type) {
-			case string:
-				r, err = strconv.ParseInt(s.(string), 10, 64)
-				if err != nil {
-					panic(err)
-				}
-			case int:
-				r = int64(s.(int))
-			case int64:
-				r = s.(int64)
-			}
-			fieldVal.Set(reflect.ValueOf(aws.Int64(int64(r))))
+	var err error
+	switch destType {
+	case awsstr:
+		v = fmt.Sprint(v)
+	case awsint64:
+		v, err = castInt64(v)
+		if err != nil {
+			return err
 		}
-	}
-
-	if fieldVal.Kind() == reflect.Slice {
-		switch s.(type) {
-		case string:
-			slice := []*string{aws.String(s.(string))}
-			fieldVal.Set(reflect.ValueOf(slice))
-		case int64:
-			slice := []*int64{aws.Int64(s.(int64))}
-			fieldVal.Set(reflect.ValueOf(slice))
-		case int:
-			slice := []*int64{aws.Int64(int64(s.(int)))}
-			fieldVal.Set(reflect.ValueOf(slice))
+	case awsint:
+		v, err = castInt(v)
+		if err != nil {
+			return err
 		}
+	case awsbool:
+		v, err = castBool(v)
+		if err != nil {
+			return err
+		}
+	case awsstringslice:
+		str := fmt.Sprint(v)
+		v = []*string{&str}
+	case awsint64slice:
+		awsint, err := castInt64(v)
+		if err != nil {
+			return err
+		}
+		v = []*int64{&awsint}
+	case awsboolattribute:
+		b, err := castBool(v)
+		if err != nil {
+			return err
+		}
+		v = &ec2.AttributeBooleanValue{Value: &b}
+	case awsstringattribute:
+		str := fmt.Sprint(v)
+		v = &ec2.AttributeValue{Value: &str}
+	case awsstringpointermap:
+		matches := mapAttributeRegex.FindStringSubmatch(fieldPath)
+		if len(matches) < 2 {
+			return fmt.Errorf("set field awsstringmap: path %s does not start with mymap[key]", fieldPath)
+		}
+		strcr := reflect.Indirect(reflect.ValueOf(i))
+		if strcr.Kind() != reflect.Struct {
+			return fmt.Errorf("set field awsstringmap: %T is not a struct, but a %s", i, strcr.Kind())
+		}
+		field := strcr.FieldByName(matches[1])
+		if field.Kind() != reflect.Map {
+			return fmt.Errorf("set field awsstringmap: field %s is not a map, but a %s", matches[0], field.Kind())
+		}
+		if field.IsNil() {
+			field.Set(reflect.MakeMap(field.Type()))
+		}
+		str := fmt.Sprint(v)
+		field.SetMapIndex(reflect.ValueOf(matches[2]), reflect.ValueOf(&str))
+		return nil
+	}
+	awsutil.SetValueAtPath(i, fieldPath, v)
+	return nil
+}
+
+func castInt(v interface{}) (int, error) {
+	switch vv := v.(type) {
+	case string:
+		return strconv.Atoi(vv)
+	case int:
+		return vv, nil
+	case int64:
+		return int(vv), nil
+	default:
+		return 0, fmt.Errorf("cannot cast %T to int", v)
+	}
+}
+
+func castBool(v interface{}) (bool, error) {
+	switch vv := v.(type) {
+	case string:
+		return strconv.ParseBool(vv)
+	case bool:
+		return vv, nil
+	default:
+		return false, fmt.Errorf("cannot cast %T to bool", v)
+	}
+}
+
+func castInt64(v interface{}) (int64, error) {
+	switch vv := v.(type) {
+	case string:
+		in, err := strconv.Atoi(vv)
+		return int64(in), err
+	case int:
+		return int64(vv), nil
+	case int64:
+		return vv, nil
+	default:
+		return int64(0), fmt.Errorf("cannot cast %T to int64", v)
 	}
 }

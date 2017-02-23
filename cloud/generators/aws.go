@@ -163,7 +163,7 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	g.AddResource(regionN)
 
 	{{- range $index, $fetcher := $service.Fetchers }}
-  var {{ $fetcher.ResourceType }}List []*{{ $service.Api }}.{{ $fetcher.AWSType }}
+  var {{ $fetcher.ResourceType }}List []*{{ $fetcher.AWSType }}
   {{- end }}
 
 	errc := make(chan error)
@@ -250,9 +250,9 @@ func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) 
 
 {{ range $index, $fetcher := $service.Fetchers }}
 {{- if not $fetcher.ManualFetcher }}
-func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, []*{{ $service.Api }}.{{ $fetcher.AWSType }}, error) {
+func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, []*{{ $fetcher.AWSType }}, error) {
   g := graph.NewGraph()
-	var cloudResources []*{{ $service.Api }}.{{ $fetcher.AWSType }}
+	var cloudResources []*{{ $fetcher.AWSType }}
 	{{- if $fetcher.Multipage }}
 	var badResErr error
 	err := s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }},

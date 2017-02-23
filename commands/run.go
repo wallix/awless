@@ -34,6 +34,7 @@ import (
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/driver/aws"
+	awsdefinitions "github.com/wallix/awless/template/driver/aws/definitions"
 )
 
 var renderGreenFn = color.New(color.FgGreen).SprintFunc()
@@ -41,7 +42,7 @@ var renderRedFn = color.New(color.FgRed).SprintFunc()
 
 func init() {
 	RootCmd.AddCommand(runCmd)
-	for action, entities := range aws.DriverSupportedActions() {
+	for action, entities := range awsdefinitions.DriverSupportedActions() {
 		RootCmd.AddCommand(
 			createDriverCommands(action, entities),
 		)
@@ -111,6 +112,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		awscloud.AccessService.ProviderRunnableAPI(),
 		awscloud.StorageService.ProviderRunnableAPI(),
 		awscloud.NotificationService.ProviderRunnableAPI(),
+		awscloud.QueueService.ProviderRunnableAPI(),
 	)
 	awsDriver.SetLogger(logger.DefaultLogger)
 

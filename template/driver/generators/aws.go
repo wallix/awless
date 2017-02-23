@@ -26,7 +26,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/wallix/awless/template/driver/aws"
+	"github.com/wallix/awless/template/driver/aws/definitions"
 )
 
 func main() {
@@ -41,7 +41,7 @@ func generateTemplateTemplates() {
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, aws.DriverDefinitions)
+	err = templ.Execute(&buff, definitions.Driver)
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +60,7 @@ func generateDriverFuncs() {
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, aws.DriverDefinitions)
+	err = templ.Execute(&buff, definitions.Driver)
 	if err != nil {
 		panic(err)
 	}
@@ -99,8 +99,8 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 			Action: "{{ $def.Action }}",
 			Entity: "{{ $def.Entity }}",
 			Api: "{{ $def.Api }}",
-			RequiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field }}", {{- end}} },
-			ExtraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field }}", {{- end}} },
+			RequiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field.TemplateName }}", {{- end}} },
+			ExtraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field.TemplateName }}", {{- end}} },
 			TagsMapping: []string{ {{- range $awsField, $field := $def.TagsMapping }}"{{ $field }}", {{- end}} },
 		},
 {{- end }}
@@ -137,7 +137,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/service/sqs"
 )
+
+const (
+	dryRunOperation = "DryRunOperation"
+	notFound = "NotFound"
+)
+
 {{ range $index, $def := . }}
 {{- if not $def.ManualFuncDefinition }}
 
@@ -145,8 +152,8 @@ import (
 // This function was auto generated
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
 	{{- range $awsField, $field := $def.RequiredParams }}
-	if _, ok := params["{{ $field }}"]; !ok {
-		return nil, errors.New("{{ $def.Action }} {{ $def.Entity }}: missing required params '{{ $field }}'")
+	if _, ok := params["{{ $field.TemplateName }}"]; !ok {
+		return nil, errors.New("{{ $def.Action }} {{ $def.Entity }}: missing required params '{{ $field.TemplateName }}'")
 	}
 	{{ end }}
 	d.logger.Verbose("params dry run: {{ $def.Action }} {{ $def.Entity }} ok")
@@ -157,25 +164,32 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &{{ $def.Api }}.{{ $def.Input }}{}
 	input.DryRun = aws.Bool(true)
+	var err error
 	{{if gt (len $def.RequiredParams) 0 }}
 	// Required params
-	{{- range $awsField, $field := $def.RequiredParams }}
-	setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	{{- range $i, $field := $def.RequiredParams }}
+	err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+	if err != nil {
+		return nil, err
+	}
 	{{- end }}
 	{{- end }}
 	{{if gt (len $def.ExtraParams) 0 }}
 	// Extra params
 	{{- range $awsField, $field := $def.ExtraParams }}
-	if _, ok := params["{{ $field }}"]; ok {
-		setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	if _, ok := params["{{ $field.TemplateName }}"]; ok {
+		err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+		if err != nil {
+			return nil, err
+		}
 	}
 	{{- end }}
 	{{- end }}
 
-	_, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
+	_, err = d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == "DryRunOperation", strings.HasSuffix(code, "NotFound"):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("{{ $def.Entity }}")
 			{{- if gt (len $def.TagsMapping) 0 }}
 			tagsParams := map[string]interface{}{"resource": id}
@@ -185,7 +199,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 			}
 			{{- end }}
 			if len(tagsParams) > 1 {
-				_, err := d.Create_Tags_DryRun(tagsParams)
+				_, err = d.Create_Tags_DryRun(tagsParams)
 				if err != nil {
 					d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: error: %s", err)
 					return nil, err
@@ -204,28 +218,36 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 // This function was auto generated
 func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
 	input := &{{ $def.Api }}.{{ $def.Input }}{}
+	var err error
 	{{if gt (len $def.RequiredParams) 0 }}
 	// Required params
-	{{- range $awsField, $field := $def.RequiredParams }}
-	setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	{{- range $i, $field := $def.RequiredParams }}
+	err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+	if err != nil {
+		return nil, err
+	}
 	{{- end }}
 	{{- end }}
 	{{if gt (len $def.ExtraParams) 0 }}
 	// Extra params
 	{{- range $awsField, $field := $def.ExtraParams }}
-	if _, ok := params["{{ $field }}"]; ok {
-		setField(params["{{ $field }}"], input, "{{ $awsField }}")
+	if _, ok := params["{{ $field.TemplateName }}"]; ok {
+		err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+		if err != nil {
+			return nil, err
+		}
 	}
 	{{- end }}
 	{{- end }}
 
 	start := time.Now()
-	output, err := d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
+	var output *{{ $def.Api }}.{{ $def.Output }}
+	output, err = d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
+	output = output
 	if err != nil {
 		d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err
 	}
-	output = output
 	d.logger.ExtraVerbosef("{{ $def.Api }}.{{ $def.ApiMethod }} call took %s", time.Since(start))
 
 

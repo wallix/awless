@@ -70,7 +70,9 @@ var inspectCmd = &cobra.Command{
 			}
 
 			graphPerService, err := sync.DefaultSyncer.Sync(services...)
-			logger.Error(err)
+			if err != nil {
+				logger.Error(err)
+			}
 
 			for _, g := range graphPerService {
 				graphs = append(graphs, g)

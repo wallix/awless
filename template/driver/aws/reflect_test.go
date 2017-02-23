@@ -26,10 +26,22 @@ import (
 func TestSetFieldsOnAwsStruct(t *testing.T) {
 	awsparams := &ec2.RunInstancesInput{}
 
-	setField("ami", awsparams, "ImageId")
-	setField("t2.micro", awsparams, "InstanceType")
-	setField("5", awsparams, "MaxCount")
-	setField(3, awsparams, "MinCount")
+	err := setFieldWithType("ami", awsparams, "ImageId", awsstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = setFieldWithType("t2.micro", awsparams, "InstanceType", awsstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = setFieldWithType("5", awsparams, "MaxCount", awsint64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = setFieldWithType(3, awsparams, "MinCount", awsint64)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if got, want := aws.StringValue(awsparams.ImageId), "ami"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
@@ -55,29 +67,47 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		Int64ArrayField   []*int64
 		BooleanValueField *ec2.AttributeBooleanValue
 		StringValueField  *ec2.AttributeValue
-	}{Field: "initial"}
+		StructAttribute   struct{ Str *string }
+		MapAttribute      map[string]*string
+		EmptyMapAttribute map[string]*string
+	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
-	setField("expected", &any, "Field")
+	err := setFieldWithType("expected", &any, "Field", awsstr)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := any.Field, "expected"; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField(5, &any, "IntField")
+	err = setFieldWithType(5, &any, "IntField", awsint)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := any.IntField, 5; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField("5", &any, "IntField")
+	err = setFieldWithType("5", &any, "IntField", awsint)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := any.IntField, 5; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField(nil, &any, "IntField")
+	err = setFieldWithType(nil, &any, "IntField", awsint)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := any.IntField, 5; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField("first", &any, "StringArrayField")
+	err = setFieldWithType("first", &any, "StringArrayField", awsstringslice)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := len(any.StringArrayField), 1; got != want {
 		t.Fatalf("len: got %d, want %d", got, want)
 	}
@@ -85,7 +115,10 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField(int64(321), &any, "Int64ArrayField")
+	err = setFieldWithType(int64(321), &any, "Int64ArrayField", awsint64slice)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := len(any.Int64ArrayField), 1; got != want {
 		t.Fatalf("len: got %d, want %d", got, want)
 	}
@@ -93,7 +126,10 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField(567, &any, "Int64ArrayField")
+	err = setFieldWithType(567, &any, "Int64ArrayField", awsint64slice)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := len(any.Int64ArrayField), 1; got != want {
 		t.Fatalf("len: got %d, want %d", got, want)
 	}
@@ -101,55 +137,108 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField("any", nil, "IntField")
+	err = setFieldWithType("any", nil, "IntField", awsint)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	setField("true", &any, "BooleanValueField")
+	err = setFieldWithType("true", &any, "BooleanValueField", awsboolattribute)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := aws.BoolValue(any.BooleanValueField.Value), true; got != want {
 		t.Fatalf("len: got %t, want %t", got, want)
 	}
-	setField(nil, &any, "BooleanValueField")
+	err = setFieldWithType(nil, &any, "BooleanValueField", awsboolattribute)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := aws.BoolValue(any.BooleanValueField.Value), true; got != want {
 		t.Fatalf("len: got %t, want %t", got, want)
 	}
-	setField(false, &any, "BooleanValueField")
+	err = setFieldWithType(false, &any, "BooleanValueField", awsboolattribute)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := aws.BoolValue(any.BooleanValueField.Value), false; got != want {
 		t.Fatalf("len: got %t, want %t", got, want)
 	}
 
-	setField("abcd", &any, "StringValueField")
+	err = setFieldWithType("abcd", &any, "StringValueField", awsstringattribute)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := aws.StringValue(any.StringValueField.Value), "abcd"; got != want {
 		t.Fatalf("len: got %s, want %s", got, want)
 	}
-	setField(nil, &any, "StringValueField")
+	err = setFieldWithType(nil, &any, "StringValueField", awsstringattribute)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := aws.StringValue(any.StringValueField.Value), "abcd"; got != want {
 		t.Fatalf("len: got %s, want %s", got, want)
 	}
 
-	setField(true, &any, "BoolField")
+	err = setFieldWithType(true, &any, "BoolField", awsbool)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := any.BoolField, true; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
-	setField(false, &any, "BoolField")
+	err = setFieldWithType(false, &any, "BoolField", awsbool)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := any.BoolField, false; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
-	setField("true", &any, "BoolPointerField")
+	err = setFieldWithType("true", &any, "BoolPointerField", awsbool)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := *any.BoolPointerField, true; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
-	setField(false, &any, "BoolPointerField")
+	err = setFieldWithType(false, &any, "BoolPointerField", awsbool)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, want := *any.BoolPointerField, false; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
-}
 
-func TestCanOnlySetFieldOnStructPtr(t *testing.T) {
-	defer func() {
-		if panicked := recover(); panicked == nil {
-			t.Fatal("expected panic to occur")
-		}
-	}()
+	err = setFieldWithType("fieldValue", &any, "StructAttribute.Str", awsstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.StructAttribute.Str, "fieldValue"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
 
-	setField("", struct{}{}, "")
+	err = setFieldWithType("abc", &any, "MapAttribute[Field1]", awsstringpointermap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.MapAttribute["Field1"], "abc"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	err = setFieldWithType("def", &any, "MapAttribute[Field2]", awsstringpointermap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.MapAttribute["Field1"], "abc"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := *any.MapAttribute["Field2"], "def"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	err = setFieldWithType("abcd", &any, "EmptyMapAttribute[Field1]", awsstringpointermap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.EmptyMapAttribute["Field1"], "abcd"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
 }

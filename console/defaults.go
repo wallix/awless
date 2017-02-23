@@ -134,7 +134,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Size"},
 		StringColumnDefinition{Prop: "Class"},
 	},
-	//SNS
+	//Notification
 	graph.Subscription: {
 		StringColumnDefinition{Prop: "SubscriptionArn"},
 		StringColumnDefinition{Prop: "TopicArn"},
@@ -144,5 +144,13 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 	},
 	graph.Topic: {
 		StringColumnDefinition{Prop: "TopicArn", DisableTruncate: true},
+	},
+	//Queue
+	graph.Queue: {
+		StringColumnDefinition{Prop: "Id", Friendly: "URL", DisableTruncate: true},
+		StringColumnDefinition{Prop: "ApproximateNumberOfMessages", Friendly: "~NbMsg"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreatedTimestamp", Friendly: "Created"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LastModifiedTimestamp", Friendly: "LastModif"}},
+		StringColumnDefinition{Prop: "DelaySeconds", Friendly: "Delay(s)"},
 	},
 }

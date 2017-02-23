@@ -70,7 +70,9 @@ var syncCmd = &cobra.Command{
 		start := time.Now()
 
 		graphs, err := sync.DefaultSyncer.Sync(services...)
-		logger.Error(err)
+		if err != nil {
+			logger.Error(err)
+		}
 
 		for k, g := range graphs {
 			displaySyncStats(k, g)

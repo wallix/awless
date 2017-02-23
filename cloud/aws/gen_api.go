@@ -35,6 +35,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
@@ -44,6 +46,7 @@ func init() {
 	ServiceNames = append(ServiceNames, "access")
 	ServiceNames = append(ServiceNames, "storage")
 	ServiceNames = append(ServiceNames, "notification")
+	ServiceNames = append(ServiceNames, "queue")
 }
 
 var ServiceNames = []string{}
@@ -73,6 +76,9 @@ var ResourceTypesPerAPI = map[string][]string{
 		"subscription",
 		"topic",
 	},
+	"sqs": {
+		"queue",
+	},
 }
 
 var ServicePerAPI = map[string]string{
@@ -80,6 +86,7 @@ var ServicePerAPI = map[string]string{
 	"iam": "access",
 	"s3":  "storage",
 	"sns": "notification",
+	"sqs": "queue",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -99,6 +106,7 @@ var ServicePerResourceType = map[string]string{
 	"storageobject":   "storage",
 	"subscription":    "notification",
 	"topic":           "notification",
+	"queue":           "queue",
 }
 
 type Infra struct {
@@ -1198,4 +1206,117 @@ func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, erro
 	}
 
 	return g, cloudResources, badResErr
+}
+
+type Queue struct {
+	once   oncer
+	region string
+	sqsiface.SQSAPI
+}
+
+func NewQueue(sess *session.Session) *Queue {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Queue{SQSAPI: sqs.New(sess), region: region}
+}
+
+func (s *Queue) Name() string {
+	return "queue"
+}
+
+func (s *Queue) Provider() string {
+	return "aws"
+}
+
+func (s *Queue) ProviderAPI() string {
+	return "sqs"
+}
+
+func (s *Queue) ProviderRunnableAPI() interface{} {
+	return s.SQSAPI
+}
+
+func (s *Queue) ResourceTypes() (all []string) {
+	all = append(all, "queue")
+	return
+}
+
+func (s *Queue) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	var queueList []*string
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, queueList, err = s.fetch_all_queue_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case "Access Denied":
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range queueList {
+			for _, fn := range addParentsFns["queue"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Queue) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "queue":
+		graph, _, err := s.fetch_all_queue_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws queue: unsupported fetch for type %s", t)
+	}
 }

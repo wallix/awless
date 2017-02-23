@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -203,6 +204,11 @@ func (prop *Property) unmarshalRDF(t *triple.Triple) error {
 		t, err := time.Parse(time.RFC3339, fmt.Sprint(prop.Value))
 		if err == nil {
 			prop.Value = t
+		}
+	case strings.HasSuffix(strings.ToLower(prop.Key), "timestamp"):
+		tmstp, err := strconv.Atoi(fmt.Sprint(prop.Value))
+		if err == nil {
+			prop.Value = time.Unix(int64(tmstp), 0)
 		}
 	case strings.HasSuffix(strings.ToLower(prop.Key), "rules"):
 		var propRules struct {

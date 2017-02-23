@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 )
 
 func TestHumanizeString(t *testing.T) {
@@ -47,7 +48,7 @@ func TestHumanizeString(t *testing.T) {
 
 func TestDriver(t *testing.T) {
 	awsMock := &mockEc2{}
-	driv := NewDriver(awsMock, &mockIam{}, &mockS3{}, &mockSNS{})
+	driv := NewDriver(awsMock, &mockIam{}, &mockS3{}, &mockSNS{}, &mockSQS{})
 
 	t.Run("Create vpc", func(t *testing.T) {
 		cidr := "10.0.0.0/16"
@@ -236,6 +237,10 @@ type mockS3 struct {
 
 type mockSNS struct {
 	snsiface.SNSAPI
+}
+
+type mockSQS struct {
+	sqsiface.SQSAPI
 }
 
 type mockEc2 struct {

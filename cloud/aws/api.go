@@ -23,10 +23,12 @@ import (
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 	"github.com/wallix/awless/graph"
@@ -154,6 +156,8 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 
 	return g, userDetails, nil
 }
+
+// STORAGE
 
 func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
 	g := graph.NewGraph()
@@ -292,4 +296,54 @@ func (s *Storage) foreach_bucket_parallel(f func(b *s3.Bucket) error) error {
 	}
 
 	return nil
+}
+
+// QUEUE
+
+func (s *Queue) fetch_all_queue_graph() (*graph.Graph, []*string, error) {
+	g := graph.NewGraph()
+	var cloudResources []*string
+	out, err := s.ListQueues(&sqs.ListQueuesInput{})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	for _, output := range out.QueueUrls {
+		cloudResources = append(cloudResources, output)
+		wg.Add(1)
+		go func(url *string) {
+			defer wg.Done()
+			res := graph.InitResource(awssdk.StringValue(url), graph.Queue)
+			res.Properties["Id"] = awssdk.StringValue(url)
+			attrs, err := s.GetQueueAttributes(&sqs.GetQueueAttributesInput{AttributeNames: []*string{awssdk.String("All")}, QueueUrl: url})
+			if e, ok := err.(awserr.RequestFailure); ok && (e.Code() == sqs.ErrCodeQueueDoesNotExist || e.Code() == sqs.ErrCodeQueueDeletedRecently) {
+				return
+			}
+			if err != nil {
+				errc <- err
+				return
+			}
+			for k, v := range attrs.Attributes {
+				res.Properties[k] = awssdk.StringValue(v)
+			}
+			g.AddResource(res)
+		}(output)
+
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, cloudResources, err
+		}
+	}
+
+	return g, cloudResources, nil
+
 }

@@ -207,6 +207,18 @@
 			"revisionTime": "2017-02-21T23:58:58Z"
 		},
 		{
+			"checksumSHA1": "pMyhp8ffTMnHDoF+Wu0rcvhVoNE=",
+			"path": "github.com/aws/aws-sdk-go/service/sqs",
+			"revision": "08762661fb8f2c081b434de78a363daf6e8615a0",
+			"revisionTime": "2017-02-23T06:53:06Z"
+		},
+		{
+			"checksumSHA1": "Kp5piT1erAZT+KNfrxFKyRrlU8g=",
+			"path": "github.com/aws/aws-sdk-go/service/sqs/sqsiface",
+			"revision": "08762661fb8f2c081b434de78a363daf6e8615a0",
+			"revisionTime": "2017-02-23T06:53:06Z"
+		},
+		{
 			"checksumSHA1": "Knj17ZMPWkGYTm2hZxEgnuboMM4=",
 			"path": "github.com/aws/aws-sdk-go/service/sts",
 			"revision": "7524cb911daddd6e5c9195def8e59ae892bef8d9",

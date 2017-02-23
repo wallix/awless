@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	AccessService, InfraService, StorageService, NotificationService cloud.Service
+	AccessService, InfraService, StorageService, NotificationService, QueueService cloud.Service
 
 	SecuAPI Security
 )
@@ -62,11 +62,13 @@ func InitServices(region, profile string) error {
 	StorageService = NewStorage(sess)
 	SecuAPI = NewSecu(sess)
 	NotificationService = NewNotification(sess)
+	QueueService = NewQueue(sess)
 
 	cloud.ServiceRegistry[InfraService.Name()] = InfraService
 	cloud.ServiceRegistry[AccessService.Name()] = AccessService
 	cloud.ServiceRegistry[StorageService.Name()] = StorageService
 	cloud.ServiceRegistry[NotificationService.Name()] = NotificationService
+	cloud.ServiceRegistry[QueueService.Name()] = QueueService
 
 	return nil
 }

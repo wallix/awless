@@ -40,14 +40,17 @@ const (
 	Group  ResourceType = "group"
 	Policy ResourceType = "policy"
 
-	//s3
+	//storage
 	Bucket ResourceType = "bucket"
 	Object ResourceType = "storageobject"
 	Acl    ResourceType = "storageacl"
 
-	//sns
+	//notification
 	Subscription ResourceType = "subscription"
 	Topic        ResourceType = "topic"
+
+	//queue
+	Queue ResourceType = "queue"
 )
 
 type FirewallRule struct {
