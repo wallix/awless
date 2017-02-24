@@ -126,19 +126,18 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 	go func() {
 		defer wg.Done()
 
-		out, err := s.ListUsers(&iam.ListUsersInput{})
+		err := s.ListUsersPages(&iam.ListUsersInput{}, func(page *iam.ListUsersOutput, lastPage bool) bool {
+			for _, user := range page.Users {
+				res, badResErr := newResource(user)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return true
+		})
 		if err != nil {
 			errc <- err
-			return
-		}
-
-		for _, output := range out.Users {
-			res, err := newResource(output)
-			if err != nil {
-				errc <- err
-				return
-			}
-			g.AddResource(res)
 		}
 	}()
 

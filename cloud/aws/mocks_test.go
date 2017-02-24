@@ -79,6 +79,11 @@ func (m *mockIam) ListUsers(input *iam.ListUsersInput) (*iam.ListUsersOutput, er
 	return &iam.ListUsersOutput{Users: m.users}, nil
 }
 
+func (m *mockIam) ListUsersPages(input *iam.ListUsersInput, fn func(p *iam.ListUsersOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&iam.ListUsersOutput{Users: m.users}, true)
+	return nil
+}
+
 func (m *mockIam) ListPolicies(input *iam.ListPoliciesInput) (*iam.ListPoliciesOutput, error) {
 	var policies []*iam.Policy
 	for _, p := range m.managedPolicies {
