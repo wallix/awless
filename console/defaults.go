@@ -97,6 +97,12 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
 		StringColumnDefinition{Prop: "AvailabilityZone"},
 	},
+	graph.AvailabilityZone: {
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "State"},
+		StringColumnDefinition{Prop: "Region"},
+		StringColumnDefinition{Prop: "Messages"},
+	},
 	//IAM
 	graph.User: {
 		StringColumnDefinition{Prop: "Id"},

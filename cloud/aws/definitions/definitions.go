@@ -46,6 +46,7 @@ var Services = []service{
 			{ResourceType: graph.Volume.String(), AWSType: "ec2.Volume", ApiMethod: "DescribeVolumesPages", Input: "DescribeVolumesInput{}", Output: "DescribeVolumesOutput", OutputsExtractor: "Volumes", Multipage: true},
 			{ResourceType: graph.InternetGateway.String(), AWSType: "ec2.InternetGateway", ApiMethod: "DescribeInternetGateways", Input: "DescribeInternetGatewaysInput{}", Output: "DescribeInternetGatewaysOutput", OutputsExtractor: "InternetGateways"},
 			{ResourceType: graph.RouteTable.String(), AWSType: "ec2.RouteTable", ApiMethod: "DescribeRouteTables", Input: "DescribeRouteTablesInput{}", Output: "DescribeRouteTablesOutput", OutputsExtractor: "RouteTables"},
+			{ResourceType: graph.AvailabilityZone.String(), AWSType: "ec2.AvailabilityZone", ApiMethod: "DescribeAvailabilityZones", Input: "DescribeAvailabilityZonesInput{}", Output: "DescribeAvailabilityZonesOutput", OutputsExtractor: "AvailabilityZones"},
 		},
 	},
 	{

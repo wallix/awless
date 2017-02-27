@@ -23,6 +23,7 @@ import (
 	"reflect"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/graph"
 )
@@ -42,6 +43,7 @@ type funcBuilder struct {
 type addParentFn func(*graph.Graph, interface{}) error
 
 var addParentsFns = map[string][]addParentFn{
+	// Infra
 	graph.Subnet.String(): {
 		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
 	},
@@ -61,13 +63,18 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "Associations", relation: DEPENDING_ON}.build(),
 		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
 	},
-	graph.Vpc.String():     {addRegionParent},
-	graph.Keypair.String(): {addRegionParent},
-	graph.User.String():    {addRegionParent, userAddGroupsRelations, addManagedPoliciesRelations},
-	graph.Role.String():    {addRegionParent, addManagedPoliciesRelations},
-	graph.Group.String():   {addRegionParent, addManagedPoliciesRelations},
-	graph.Policy.String():  {addRegionParent},
-	graph.Bucket.String():  {addRegionParent},
+	graph.Volume.String(): {
+		funcBuilder{parent: graph.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
+		volumeAddInstancesRelations,
+	},
+	graph.Vpc.String():              {addRegionParent},
+	graph.AvailabilityZone.String(): {addRegionParent},
+	graph.Keypair.String():          {addRegionParent},
+	graph.User.String():             {addRegionParent, userAddGroupsRelations, addManagedPoliciesRelations},
+	graph.Role.String():             {addRegionParent, addManagedPoliciesRelations},
+	graph.Group.String():            {addRegionParent, addManagedPoliciesRelations},
+	graph.Policy.String():           {addRegionParent},
+	graph.Bucket.String():           {addRegionParent},
 }
 
 func (fb funcBuilder) build() addParentFn {
@@ -258,6 +265,25 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 
 	for _, group := range user.GroupList {
 		parent, err := g.GetResource(graph.Group, awssdk.StringValue(group))
+		if err != nil {
+			return err
+		}
+		g.AddAppliesOnRelation(parent, n)
+	}
+	return nil
+}
+
+func volumeAddInstancesRelations(g *graph.Graph, i interface{}) error {
+	volume, ok := i.(*ec2.Volume)
+	if !ok {
+		return fmt.Errorf("aws fetch: not a volume, but a %T", i)
+	}
+	parent, err := initResource(i)
+	if err != nil {
+		return err
+	}
+	for _, att := range volume.Attachments {
+		n, err := g.GetResource(graph.Instance, awssdk.StringValue(att.InstanceId))
 		if err != nil {
 			return err
 		}

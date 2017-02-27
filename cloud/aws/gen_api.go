@@ -61,6 +61,7 @@ var ResourceTypesPerAPI = map[string][]string{
 		"volume",
 		"internetgateway",
 		"routetable",
+		"availabilityzone",
 	},
 	"iam": {
 		"user",
@@ -90,23 +91,24 @@ var ServicePerAPI = map[string]string{
 }
 
 var ServicePerResourceType = map[string]string{
-	"instance":        "infra",
-	"subnet":          "infra",
-	"vpc":             "infra",
-	"keypair":         "infra",
-	"securitygroup":   "infra",
-	"volume":          "infra",
-	"internetgateway": "infra",
-	"routetable":      "infra",
-	"user":            "access",
-	"group":           "access",
-	"role":            "access",
-	"policy":          "access",
-	"bucket":          "storage",
-	"storageobject":   "storage",
-	"subscription":    "notification",
-	"topic":           "notification",
-	"queue":           "queue",
+	"instance":         "infra",
+	"subnet":           "infra",
+	"vpc":              "infra",
+	"keypair":          "infra",
+	"securitygroup":    "infra",
+	"volume":           "infra",
+	"internetgateway":  "infra",
+	"routetable":       "infra",
+	"availabilityzone": "infra",
+	"user":             "access",
+	"group":            "access",
+	"role":             "access",
+	"policy":           "access",
+	"bucket":           "storage",
+	"storageobject":    "storage",
+	"subscription":     "notification",
+	"topic":            "notification",
+	"queue":            "queue",
 }
 
 type Infra struct {
@@ -145,6 +147,7 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "volume")
 	all = append(all, "internetgateway")
 	all = append(all, "routetable")
+	all = append(all, "availabilityzone")
 	return
 }
 
@@ -160,6 +163,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var volumeList []*ec2.Volume
 	var internetgatewayList []*ec2.InternetGateway
 	var routetableList []*ec2.RouteTable
+	var availabilityzoneList []*ec2.AvailabilityZone
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -253,6 +257,18 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		var resGraph *graph.Graph
 		var err error
 		resGraph, routetableList, err = s.fetch_all_routetable_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, availabilityzoneList, err = s.fetch_all_availabilityzone_graph()
 		if err != nil {
 			errc <- err
 			return
@@ -386,6 +402,19 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}
 	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range availabilityzoneList {
+			for _, fn := range addParentsFns["availabilityzone"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
 
 	go func() {
 		wg.Wait()
@@ -426,6 +455,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "routetable":
 		graph, _, err := s.fetch_all_routetable_graph()
+		return graph, err
+	case "availabilityzone":
+		graph, _, err := s.fetch_all_availabilityzone_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -596,6 +628,27 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, e
 	}
 
 	for _, output := range out.RouteTables {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, cloudResources, nil
+
+}
+
+func (s *Infra) fetch_all_availabilityzone_graph() (*graph.Graph, []*ec2.AvailabilityZone, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ec2.AvailabilityZone
+	out, err := s.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.AvailabilityZones {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

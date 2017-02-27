@@ -65,6 +65,9 @@ func (m *mockEc2) DescribeVolumesPages(input *ec2.DescribeVolumesInput, fn func(
 	fn(&ec2.DescribeVolumesOutput{}, true)
 	return nil
 }
+func (m *mockEc2) DescribeAvailabilityZones(input *ec2.DescribeAvailabilityZonesInput) (*ec2.DescribeAvailabilityZonesOutput, error) {
+	return &ec2.DescribeAvailabilityZonesOutput{}, nil
+}
 
 type mockIam struct {
 	iamiface.IAMAPI

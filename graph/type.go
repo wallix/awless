@@ -24,15 +24,16 @@ import (
 const (
 	Region ResourceType = "region"
 	//infra
-	Vpc             ResourceType = "vpc"
-	Subnet          ResourceType = "subnet"
-	Image           ResourceType = "image"
-	SecurityGroup   ResourceType = "securitygroup"
-	Keypair         ResourceType = "keypair"
-	Volume          ResourceType = "volume"
-	Instance        ResourceType = "instance"
-	InternetGateway ResourceType = "internetgateway"
-	RouteTable      ResourceType = "routetable"
+	Vpc              ResourceType = "vpc"
+	Subnet           ResourceType = "subnet"
+	Image            ResourceType = "image"
+	SecurityGroup    ResourceType = "securitygroup"
+	AvailabilityZone ResourceType = "availabilityzone"
+	Keypair          ResourceType = "keypair"
+	Volume           ResourceType = "volume"
+	Instance         ResourceType = "instance"
+	InternetGateway  ResourceType = "internetgateway"
+	RouteTable       ResourceType = "routetable"
 
 	//access
 	User   ResourceType = "user"

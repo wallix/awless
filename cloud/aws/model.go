@@ -87,6 +87,13 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Routes": {name: "Routes", transform: extractRoutesSliceFn},
 		"Main":   {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
 	},
+	graph.AvailabilityZone: {
+		"Id":       {name: "ZoneName", transform: extractValueFn},
+		"Name":     {name: "ZoneName", transform: extractValueFn},
+		"State":    {name: "State", transform: extractValueFn},
+		"Region":   {name: "RegionName", transform: extractValueFn},
+		"Messages": {name: "Messages", transform: extractSliceValues("Message")},
+	},
 	//IAM
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
