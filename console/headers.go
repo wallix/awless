@@ -44,6 +44,26 @@ type ColumnDefinition interface {
 	format(i interface{}) string
 }
 
+type ColumnDefinitions []ColumnDefinition
+
+func (d ColumnDefinitions) resolveKey(name string) string {
+	low := strings.ToLower(name)
+	for _, def := range d {
+		if low == strings.ToLower(def.propKey()) {
+			return def.propKey()
+		}
+		switch def.(type) {
+		case StringColumnDefinition:
+			sdef := def.(StringColumnDefinition)
+			if low == strings.ToLower(sdef.Friendly) {
+				return def.propKey()
+			}
+		}
+	}
+
+	return ""
+}
+
 type StringColumnDefinition struct {
 	Prop, Friendly  string
 	DisableTruncate bool

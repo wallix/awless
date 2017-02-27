@@ -80,17 +80,31 @@ Awless allows for easy resource creation with your cloud provider; We will not b
 
 You can list various resources:
 
-    $ awless list buckets
-    $ awless list instances --sort launchtime
-    $ awless list users --format csv
-    $ awless list roles --sort name,id
-    $ awless list vpcs --format=json
+    awless list buckets
+    awless list instances --sort launchtime
+
+    # ls is an alias for list
+    awless ls users --format csv             
+    awless ls roles --sort name,id
+    awless ls vpcs --format=json
 
 Listing resources by default performs queries directly to AWS. If you want, you can also query the local snapshot:
 
-    $ awless list subnets --local
+    awless list subnets --local
 
 Use `awless list`, `awless list -h` or `awless help list` to see all resources that can be listed.
+
+When dealing with long lists of resources you can filter with the `--filter` flag as such:
+
+    awless list volumes --filter state=in-use --filter volumetype=gp2
+
+    # or with a csv notation
+    awless list instances --filter state=running,type=t2.micro 
+
+    # when dealing with name with spaces use
+    awless list instances --filter "access key"=my-key
+
+*Note that as for now there is now regex support in filters*
 
 ### Showing resources
 
@@ -98,10 +112,16 @@ Use `awless list`, `awless list -h` or `awless help list` to see all resources t
 
 You can either provide the resource _id_, or simpler the resource's _name_. `awless` resolves the id behind the scene (this is the concept of _aliasing_)
 
-    $ awless show i-34vgbh23jn        # show instance info, relations to subnets, vpcs, region, ...
-    $ awless show @my-bucket          # show bucket info, objects it contains, siblings, etc...
-    $ awless show admin-user --local  # show user, policy applying to this user, etc...
-                                        snappy! will not refetch but work with the local graph
+    # show instance info: relations to subnets, vpcs, region, ...
+    awless show i-34vgbh23jn        
+
+    # show bucket info via its alias: objects it contains, siblings, etc...
+    awless show @my-bucket          
+
+    # show user using local data: policy applying to this user, etc...
+    # snappy! will not refetch but work with the local graph
+    awless show admin-user --local  
+    
 
 Basically `awless show` try to maximize the info nicely on your terminal for a given resource
 
@@ -158,8 +178,8 @@ Using the local auto sync functionality of the cloud resources `awless history` 
 
 You can directly ssh to an instance with:
 
-        awless ssh i-abcd1234
-        awless ssh ubuntu@i-abcd1234
+     awless ssh i-abcd1234
+     awless ssh ubuntu@i-abcd1234
 
 In the first case, note that `awless` can work out the default ssh user to use given a cloud (ex: `ec2` for AWS)
 

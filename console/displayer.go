@@ -45,6 +45,7 @@ type sorter interface {
 }
 
 type Builder struct {
+	filters    []string
 	headers    []ColumnDefinition
 	format     string
 	rdfType    graph.ResourceType
@@ -59,53 +60,72 @@ func (b *Builder) SetSource(i interface{}) *Builder {
 	return b
 }
 
+func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn) {
+	for _, f := range b.filters {
+		splits := strings.SplitN(f, "=", 2)
+		if len(splits) == 2 {
+			name, val := strings.TrimSpace(strings.Title(splits[0])), strings.TrimSpace(splits[1])
+			key := ColumnDefinitions(b.headers).resolveKey(name)
+
+			if key != "" {
+				funcs = append(funcs, graph.BuildPropertyFilterFunc(key, val))
+			}
+		}
+
+	}
+	return
+}
+
 func (b *Builder) Build() Displayer {
 	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
 
 	switch b.dataSource.(type) {
 	case *graph.Graph:
+		gph := b.dataSource.(*graph.Graph)
+		filteredGraph, _ := gph.Filter(b.rdfType, b.buildGraphFilters()...)
+
 		if b.rdfType == "" {
 			switch b.format {
 			case "table":
 				dis := &multiResourcesTableDisplayer{base}
-				dis.setGraph(b.dataSource.(*graph.Graph))
+				dis.setGraph(gph)
 				return dis
 			case "json":
 				dis := &multiResourcesJSONDisplayer{base}
-				dis.setGraph(b.dataSource.(*graph.Graph))
+				dis.setGraph(gph)
 				return dis
 			case "porcelain":
 				dis := &porcelainDisplayer{base}
-				dis.setGraph(b.dataSource.(*graph.Graph))
+				dis.setGraph(gph)
 				return dis
 			default:
 				fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
 				dis := &multiResourcesTableDisplayer{base}
-				dis.setGraph(b.dataSource.(*graph.Graph))
+				dis.setGraph(gph)
 				return dis
 			}
 		}
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}
-			dis.setGraph(b.dataSource.(*graph.Graph))
+			dis.setGraph(filteredGraph)
 			return dis
 		case "json":
 			dis := &jsonDisplayer{base}
-			dis.setGraph(b.dataSource.(*graph.Graph))
+			dis.setGraph(filteredGraph)
 			return dis
 		case "porcelain":
 			dis := &porcelainDisplayer{base}
-			dis.setGraph(b.dataSource.(*graph.Graph))
+			dis.setGraph(filteredGraph)
 			return dis
 		case "table":
 			dis := &tableDisplayer{base}
-			dis.setGraph(b.dataSource.(*graph.Graph))
+			dis.setGraph(filteredGraph)
 			return dis
 		default:
 			fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
 			dis := &tableDisplayer{base}
-			dis.setGraph(b.dataSource.(*graph.Graph))
+			dis.setGraph(filteredGraph)
 			return dis
 		}
 	case *graph.Resource:
@@ -163,6 +183,13 @@ func WithFormat(format string) optsFn {
 func WithHeaders(h []ColumnDefinition) optsFn {
 	return func(b *Builder) *Builder {
 		b.headers = h
+		return b
+	}
+}
+
+func WithFilters(fs []string) optsFn {
+	return func(b *Builder) *Builder {
+		b.filters = fs
 		return b
 	}
 }

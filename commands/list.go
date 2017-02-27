@@ -29,10 +29,10 @@ import (
 )
 
 var (
-	listingFormat string
-
-	listOnlyIDs bool
-	sortBy      []string
+	listingFormat      string
+	listingFiltersFlag []string
+	listOnlyIDs        bool
+	sortBy             []string
 )
 
 func init() {
@@ -49,6 +49,7 @@ func init() {
 	}
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Format for the display of resources: table or csv")
+	listCmd.PersistentFlags().StringSliceVar(&listingFiltersFlag, "filter", []string{}, "Filter resources given key/values fields. Ex: --filter type=t2.micro")
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort", []string{"Id"}, "Sort tables by column(s) name(s)")
 }
@@ -104,6 +105,7 @@ func printResources(g *graph.Graph, resType graph.ResourceType) {
 	displayer := console.BuildOptions(
 		console.WithRdfType(resType),
 		console.WithHeaders(console.DefaultsColumnDefinitions[resType]),
+		console.WithFilters(listingFiltersFlag),
 		console.WithMaxWidth(console.GetTerminalWidth()),
 		console.WithFormat(listingFormat),
 		console.WithIDsOnly(listOnlyIDs),
