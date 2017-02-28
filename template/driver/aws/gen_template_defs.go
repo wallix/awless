@@ -51,7 +51,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Entity:         "subnet",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
-		ExtraParams:    []string{"public-vms"},
+		ExtraParams:    []string{"public"},
 		TagsMapping:    []string{},
 	},
 	"deletesubnet": {
@@ -379,7 +379,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Entity:         "queue",
 		Api:            "sqs",
 		RequiredParams: []string{"name"},
-		ExtraParams:    []string{"delay", "maxMsgSize", "retentionPeriod", "policy", "msgWait", "redrivePolicy", "visibilityTimeout", "fifo", "dedup"},
+		ExtraParams:    []string{"delay", "maxMsgSize", "retentionPeriod", "policy", "msgWait", "redrivePolicy", "visibilityTimeout"},
 		TagsMapping:    []string{},
 	},
 	"deletequeue": {

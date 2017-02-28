@@ -75,7 +75,7 @@ var Driver = []struct {
 			{AwsField: "SubnetId", TemplateName: "id", AwsType: "awsstr"},
 		},
 		ExtraParams: []param{
-			{AwsField: "MapPublicIpOnLaunch", TemplateName: "public-vms", AwsType: "awsbool"},
+			{AwsField: "MapPublicIpOnLaunch", TemplateName: "public", AwsType: "awsbool"},
 		},
 	},
 	{

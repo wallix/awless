@@ -234,8 +234,8 @@ func (d *AwsDriver) Update_Subnet(params map[string]interface{}) (interface{}, e
 	}
 
 	// Extra params
-	if _, ok := params["public-vms"]; ok {
-		err = setFieldWithType(params["public-vms"], input, "MapPublicIpOnLaunch", awsbool)
+	if _, ok := params["public"]; ok {
+		err = setFieldWithType(params["public"], input, "MapPublicIpOnLaunch", awsbool)
 		if err != nil {
 			return nil, err
 		}
@@ -2144,18 +2144,6 @@ func (d *AwsDriver) Create_Queue(params map[string]interface{}) (interface{}, er
 	}
 	if _, ok := params["visibilityTimeout"]; ok {
 		err = setFieldWithType(params["visibilityTimeout"], input, "Attributes[VisibilityTimeout]", awsstringpointermap)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if _, ok := params["fifo"]; ok {
-		err = setFieldWithType(params["fifo"], input, "Attributes[FifoQueue]", awsstringpointermap)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if _, ok := params["dedup"]; ok {
-		err = setFieldWithType(params["dedup"], input, "Attributes[ContentBasedDeduplication]", awsstringpointermap)
 		if err != nil {
 			return nil, err
 		}
