@@ -299,7 +299,11 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("id=%s", exec.Result))
 				}
 
-				lines = append(lines, fmt.Sprintf("%s %s %s\n", revertAction, node.Entity, strings.Join(params, " ")))
+				lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, node.Entity, strings.Join(params, " ")))
+
+				if node.Action == "create" && node.Entity == "instance" {
+					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=30", exec.Result))
+				}
 			default:
 				return nil, fmt.Errorf("cannot parse [%s] as expression node", exec.Line)
 			}
@@ -310,9 +314,10 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 		return nil, fmt.Errorf("revert: found nothing to revert from:\n%s\n(note: no revert provided for statement in error)", strings.Join(te.lines(), "\n"))
 	}
 
-	tpl, err := Parse(strings.Join(lines, "\n"))
+	text := strings.Join(lines, "\n")
+	tpl, err := Parse(text)
 	if err != nil {
-		return nil, fmt.Errorf("revert: \n%s\n%s", strings.Join(lines, "\n"), err)
+		return nil, fmt.Errorf("revert: \n%s\n%s",text, err)
 	}
 
 	return tpl, nil

@@ -100,7 +100,8 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 					for _, inst := range instances {
 						if aws.StringValue(inst.InstanceId) == params["id"] {
 							if aws.StringValue(inst.State.Name) == params["state"] {
-								d.logger.Verbose("check instance status '%s' done", params["state"])
+								d.logger.Verbosef("check instance status '%s' done", params["state"])
+								timer.Stop()
 								return nil, nil
 							}
 						}

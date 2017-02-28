@@ -51,7 +51,8 @@ var logCmd = &cobra.Command{
 		exitOn(err)
 
 		if deleteLogsFlag {
-			return db.DeleteTemplateExecutions()
+			db.DeleteTemplateExecutions()
+			return nil
 		}
 
 		all, err := db.ListTemplateExecutions()
