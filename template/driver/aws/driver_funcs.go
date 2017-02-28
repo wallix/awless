@@ -165,6 +165,55 @@ func (d *AwsDriver) Create_Tags(params map[string]interface{}) (interface{}, err
 	return nil, nil
 }
 
+func (d *AwsDriver) Create_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateTagsInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["resource"], input, "Resources", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+	input.Tags = []*ec2.Tag{{Key: aws.String(fmt.Sprint(params["key"])), Value: aws.String(fmt.Sprint(params["value"]))}}
+
+	_, err = d.ec2.CreateTags(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+			id := fakeDryRunId("tag")
+			d.logger.Verbose("full dry run: create tag ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Errorf("dry run: create tag error: %s", err)
+	return nil, err
+}
+
+func (d *AwsDriver) Create_Tag(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateTagsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["resource"], input, "Resources", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+	input.Tags = []*ec2.Tag{{Key: aws.String(fmt.Sprint(params["key"])), Value: aws.String(fmt.Sprint(params["value"]))}}
+
+	start := time.Now()
+	var output *ec2.CreateTagsOutput
+	output, err = d.ec2.CreateTags(input)
+	if err != nil {
+		d.logger.Errorf("create tag error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("ec2.CreateTags call took %s", time.Since(start))
+	d.logger.Verbose("create tag done")
+	return output, nil
+}
+
 func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 

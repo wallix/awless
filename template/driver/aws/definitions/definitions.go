@@ -262,11 +262,12 @@ var Driver = []struct {
 	},
 	// TAG
 	{
-		Action: "create", Entity: "tags", Api: "ec2", ManualFuncDefinition: true,
+		Action: "create", Entity: "tag", Api: "ec2", ManualFuncDefinition: true,
 		RequiredParams: []param{
 			{TemplateName: "resource"},
+			{TemplateName: "key"},
+			{TemplateName: "value"},
 		},
-		//extra: key=value tags
 	},
 
 	// Keypair

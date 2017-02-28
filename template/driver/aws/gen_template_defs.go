@@ -238,11 +238,11 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
-	"createtags": {
+	"createtag": {
 		Action:         "create",
-		Entity:         "tags",
+		Entity:         "tag",
 		Api:            "ec2",
-		RequiredParams: []string{"resource"},
+		RequiredParams: []string{"resource", "key", "value"},
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
