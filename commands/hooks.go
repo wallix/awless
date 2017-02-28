@@ -63,6 +63,10 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func initConfigStruct(cmd *cobra.Command, args []string) error {
+	return config.LoadConfig()
+}
+
 func initSyncerHook(cmd *cobra.Command, args []string) error {
 	sync.DefaultSyncer = sync.NewSyncer()
 	sync.DefaultSyncer.SetLogger(logger.DefaultLogger)

@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	awscloud "github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
@@ -52,7 +53,7 @@ func init() {
 var runCmd = &cobra.Command{
 	Use:                "run",
 	Short:              "Run a template given a filepath",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initConfigStruct, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -68,16 +69,16 @@ var runCmd = &cobra.Command{
 		templ, err := template.Parse(string(content))
 		exitOn(err)
 
-		exitOn(runTemplate(templ, getCurrentDefaults()))
+		exitOn(runTemplate(templ))
 
 		return nil
 	},
 }
 
-func runTemplate(templ *template.Template, defaults map[string]interface{}) error {
+func runTemplate(templ *template.Template) error {
 	validateTemplate(templ)
 
-	resolved, err := templ.ResolveHoles(defaults)
+	resolved, err := templ.ResolveHoles(config.Config.Defaults)
 	exitOn(err)
 
 	if len(resolved) > 0 {
@@ -141,7 +142,7 @@ func runTemplate(templ *template.Template, defaults map[string]interface{}) erro
 		db.AddTemplateExecution(executed)
 
 		if err == nil && !executed.HasErrors() {
-			if autoSync, ok := defaults[database.SyncAuto]; ok && autoSync.(bool) {
+			if autoSync, ok := config.Config.Defaults[database.SyncAuto]; ok && autoSync.(bool) {
 				runSyncFor(newTempl)
 			}
 		}
@@ -206,7 +207,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 				templ.MergeParams(cliTpl.GetNormalizedParams())
 
-				exitOn(runTemplate(templ, getCurrentDefaults()))
+				exitOn(runTemplate(templ))
 				return nil
 			}
 		}
@@ -214,7 +215,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:                templDef.Entity,
-				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
+				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initConfigStruct, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 				PersistentPostRunE: saveHistoryHook,
 				Short:              fmt.Sprintf("%s a %s", strings.Title(action), templDef.Entity),
 				Long:               fmt.Sprintf("%s a %s\n\tRequired params: %s\n\tExtra params: %s", strings.Title(templDef.Action), templDef.Entity, strings.Join(templDef.Required(), ", "), strings.Join(templDef.Extra(), ", ")),
@@ -262,15 +263,6 @@ func runSyncFor(tpl *template.Template) {
 	} else {
 		logger.Verbosef("performed sync for %s", strings.Join(srvNames, ", "))
 	}
-}
-
-func getCurrentDefaults() map[string]interface{} {
-	db, err, dbclose := database.Current()
-	exitOn(err)
-	defaults, err := db.GetDefaults()
-	exitOn(err)
-	dbclose()
-	return defaults
 }
 
 func printReport(t *template.TemplateExecution) {
