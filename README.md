@@ -104,7 +104,7 @@ When dealing with long lists of resources you can filter with the `--filter` fla
     # when dealing with name with spaces use
     awless list instances --filter "access key"=my-key
 
-*Note that as for now there is now regex support in filters*
+(*Note that as for now there is no regex support in filters*)
 
 For instance, you could list all storage objects in a given bucket using only local data with:
 
