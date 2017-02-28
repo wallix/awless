@@ -317,7 +317,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 	text := strings.Join(lines, "\n")
 	tpl, err := Parse(text)
 	if err != nil {
-		return nil, fmt.Errorf("revert: \n%s\n%s",text, err)
+		return nil, fmt.Errorf("revert: \n%s\n%s", text, err)
 	}
 
 	return tpl, nil

@@ -1,4 +1,4 @@
-## 0.0.15 [unreleased]
+## 0.0.15 [2017-02-28]
 
 As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
 
@@ -19,7 +19,7 @@ As model/relations for resources may evolve, if you have any issues with models 
 - [#57](https://github.com/wallix/awless/issues/57): Properly fetch buckets when they are in the `us-east-1` region.
 - [#12](https://github.com/wallix/awless/issues/12): Support AWS pagination when fetching resources in AWS SNS and EC2.
 
-## 0.0.14
+## 0.0.14 [2017-02-21]
 
 As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
 
