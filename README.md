@@ -106,6 +106,10 @@ When dealing with long lists of resources you can filter with the `--filter` fla
 
 *Note that as for now there is now regex support in filters*
 
+For instance, you could list all storage objects in a given bucket using only local data with:
+
+    awless --local ls storageobjects --filter bucketname=pdf-bucket 
+
 ### Showing resources
 
 `awless show` is quite useful to get a good overview on a resource and to show where its stands in your cloud.
