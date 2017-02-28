@@ -21,11 +21,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"runtime"
+	"strings"
 	"testing"
 )
 
 func TestUpgradeMessaging(t *testing.T) {
 	tserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if ua := r.Header.Get("User-Agent"); !strings.HasPrefix(ua, "awless-client-"+Version) {
+			t.Fatalf("unexpected user-agent: %s", ua)
+		}
 		w.Write([]byte(`{"URL":"https://github.com/wallix/awless/releases/latest","Version":"1000.0.0"}`))
 	}))
 	var buff bytes.Buffer
