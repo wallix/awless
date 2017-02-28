@@ -18,9 +18,11 @@ package aws
 
 import (
 	"errors"
+	"net/http"
+	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/cloud"
 )
@@ -32,22 +34,20 @@ var (
 )
 
 func InitSession(region, profile string) (*session.Session, error) {
-	session, err := session.NewSession(
-		&awssdk.Config{
-			Region: awssdk.String(region),
-			Credentials: credentials.NewChainCredentials([]credentials.Provider{
-				&credentials.EnvProvider{},
-				&credentials.SharedCredentialsProvider{Filename: "", Profile: profile},
-			})})
+	session, err := session.NewSessionWithOptions(session.Options{
+		Config:                  awssdk.Config{Region: awssdk.String(region), HTTPClient: &http.Client{Timeout: 1 * time.Second}},
+		SharedConfigState:       session.SharedConfigEnable,
+		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+		Profile:                 profile,
+	})
 	if err != nil {
 		return nil, err
 	}
-	if _, err = session.Config.Credentials.Get(); err != nil {
-		return nil, errors.New(`Your AWS credentials seem undefined!
-AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY need to be exported in your CLI environment
 
-Installation documentation is at https://github.com/wallix/awless/wiki/Installation`)
+	if _, err = session.Config.Credentials.Get(); err != nil {
+		return nil, errors.New("Your AWS credentials seem undefined! AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY need to be exported in your CLI environment\nInstallation documentation is at https://github.com/wallix/awless/wiki/Installation")
 	}
+	session.Config.Credentials.Get()
 
 	return session, nil
 }

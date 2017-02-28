@@ -5,10 +5,11 @@ As model/relations for resources may evolve, if you have any issues with models 
 ### Features
 
 - [#6](https://github.com/wallix/awless/issues/6): Create Linux installer shell script: `curl https://raw.githubusercontent.com/wallix/awless/master/getawless.sh | bash`
-- Better help menus by splitting one-liner template commands from general commands
+- [#42](https://github.com/wallix/awless/issues/42), [#60](https://github.com/wallix/awless/issues/60), [#66](https://github.com/wallix/awless/issues/66): Better load AWS credentials (support profile credentials, MFA and crossaccount profile access)
 - [#32](https://github.com/wallix/awless/issues/32): Basic support of [SNS](https://aws.amazon.com/sns/) (CRUD for topics and subscriptions)
 - [#32](https://github.com/wallix/awless/issues/32): Basic support of [SQS](https://aws.amazon.com/sqs/) (CRUD for queues)
-- [#53](https://github.com/wallix/awless/issues/53): Filter results in listings. Ex: `awless ls instances --filter state=running,"Access Key"=my-key` or the equivalent `awless ls instances --filter state=running --filter "Access Key"=my-key`
+- [#53](https://github.com/wallix/awless/issues/53): Filter results in listings. Ex: `awless ls instances --filter state=running,"Access Key"=my-key` or the equivalent `awless list instances --filter state=running --filter "Access Key"=my-key`
+- Better help menus by splitting one-liner template commands from general commands
 - Run template: better dialog and remove noisy info
 - Template validation: notify on unexpected params; check names unicity against local graph
 - Log contextual error instead of hard failure when user has no rights to sync a service

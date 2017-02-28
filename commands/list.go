@@ -70,15 +70,18 @@ var listSpecificResourceCmd = func(apiName string, resType string) *cobra.Comman
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *graph.Graph
 
-			srv, err := cloud.GetServiceForType(resType)
-			exitOn(err)
-
 			if localFlag {
-				g = sync.LoadCurrentLocalGraph(srv.Name())
+				if srvName, ok := aws.ServicePerResourceType[resType]; ok {
+					g = sync.LoadCurrentLocalGraph(srvName)
+				} else {
+					exitOn(fmt.Errorf("cannot find service for resource type %s", resType))
+				}
 			} else {
+				srv, err := cloud.GetServiceForType(resType)
+				exitOn(err)
 				g, err = srv.FetchByType(resType)
+				exitOn(err)
 			}
-			exitOn(err)
 
 			printResources(g, graph.ResourceType(resType))
 		},

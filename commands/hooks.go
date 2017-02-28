@@ -33,8 +33,7 @@ func applyHooks(funcs ...func(*cobra.Command, []string) error) func(*cobra.Comma
 	return func(cmd *cobra.Command, args []string) {
 		for _, fn := range funcs {
 			if err := fn(cmd, args); err != nil {
-				fmt.Fprintf(os.Stderr, "command hook failed: %s\n", err)
-				os.Exit(1)
+				exitOn(err)
 			}
 		}
 	}
@@ -48,6 +47,9 @@ func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
 }
 
 func initCloudServicesHook(cmd *cobra.Command, args []string) error {
+	if localFlag {
+		return nil
+	}
 	db, err, dbclose := database.Current()
 	if err != nil {
 		return fmt.Errorf("init cloud service: database error: %s", err)
