@@ -1,3 +1,9 @@
+## 0.0.16 [unreleased]
+
+### Bugfixes
+
+- Fix regression: timeout too low for HTTP requests with AWS.
+
 ## 0.0.15 [2017-02-28]
 
 As model/relations for resources may evolve, if you have any issues with models related commands, you can run `rm -Rf ~/.awless/aws/rdf` to start a fresh RDF model.
