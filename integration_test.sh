@@ -13,7 +13,7 @@ INSTANCE_NAME=awless-integration-test-`date +%s`
 /bin/cat > $TMP_FILE <<EOF
 testvpc = create vpc cidr=10.0.0.0/24
 testsubnet = create subnet cidr=10.0.0.0/25 vpc=\$testvpc
-create instance subnet=\$testsubnet image={instance.image} type={instance.type} count={instance.count} name=$INSTANCE_NAME
+create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} name=$INSTANCE_NAME
 EOF
 
 cat $TMP_FILE

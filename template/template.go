@@ -219,8 +219,9 @@ func NewTemplateExecution(tpl *Template) *TemplateExecution {
 	}
 
 	for _, cmd := range tpl.CommandNodesIterator() {
+		hasError := cmd.CmdErr != nil
 		var errMsg string
-		if cmd.CmdErr != nil {
+		if hasError {
 			errMsg = cmd.CmdErr.Error()
 		}
 		var result string
@@ -231,6 +232,9 @@ func NewTemplateExecution(tpl *Template) *TemplateExecution {
 		out.Executed = append(out.Executed,
 			&ExecutedStatement{Line: cmd.String(), Result: result, Err: errMsg},
 		)
+		if hasError {
+			break
+		}
 	}
 
 	return out
@@ -302,7 +306,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 				lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, node.Entity, strings.Join(params, " ")))
 
 				if node.Action == "create" && node.Entity == "instance" {
-					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=30", exec.Result))
+					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=180", exec.Result))
 				}
 			default:
 				return nil, fmt.Errorf("cannot parse [%s] as expression node", exec.Line)

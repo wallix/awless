@@ -3,6 +3,7 @@
 ### Features
 
 - Allow simple fuzzy search for listing filters. Ex: `awless list instances --filter state=run`
+- Revert: waiting instance termination when deleting a vpc/subnet/instance hierarchy.
 
 ### Bugfixes
 

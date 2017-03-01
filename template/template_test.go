@@ -99,7 +99,7 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 }
 
 func TestNewTemplateExecutionFromTemplate(t *testing.T) {
-	temp, err := Parse("create vpc name=any\ncreate subnet ip=10.0.0.0\ndelete instance id=i-5d678")
+	temp, err := Parse("create vpc name=any\ncreate subnet ip=10.0.0.0\ndelete instance id=i-5d678\nstop instance id=i-5d678")
 	if err != nil {
 		t.Fatal(err)
 	}

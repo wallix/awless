@@ -85,10 +85,10 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 
 	timeout := time.Duration(params["timeout"].(int)) * time.Second
 	timer := time.NewTimer(timeout)
-
+	retry := 5 * time.Second
 	for {
 		select {
-		case <-time.After(1 * time.Second):
+		case <-time.After(retry):
 			output, err := d.ec2.DescribeInstances(input)
 			if err != nil {
 				d.logger.Errorf("check instance error: %s", err)
@@ -99,11 +99,13 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 				if instances := output.Reservations[0].Instances; len(instances) > 0 {
 					for _, inst := range instances {
 						if aws.StringValue(inst.InstanceId) == params["id"] {
-							if aws.StringValue(inst.State.Name) == params["state"] {
+							currentStatus := aws.StringValue(inst.State.Name)
+							if currentStatus == params["state"] {
 								d.logger.Verbosef("check instance status '%s' done", params["state"])
 								timer.Stop()
 								return nil, nil
 							}
+							d.logger.Infof("instance status '%s', expect '%s', retry in %s (timeout %s).", currentStatus, params["state"], retry, timeout)
 						}
 					}
 				}
