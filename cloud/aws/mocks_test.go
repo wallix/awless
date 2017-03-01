@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/template/driver"
+	awsdriver "github.com/wallix/awless/template/driver/aws"
 )
 
 type mockEc2 struct {
@@ -139,8 +141,8 @@ func (m *mockS3) Provider() string {
 func (m *mockS3) ProviderAPI() string {
 	return ""
 }
-func (m *mockS3) ProviderRunnableAPI() interface{} {
-	return m
+func (m *mockS3) Drivers() []driver.Driver {
+	return []driver.Driver{awsdriver.NewS3Driver(m)}
 }
 func (m *mockS3) ResourceTypes() []string {
 	return []string{}

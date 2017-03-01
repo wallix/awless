@@ -262,6 +262,14 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
+	"deleteloadbalancer": {
+		Action:         "delete",
+		Entity:         "loadbalancer",
+		Api:            "elbv2",
+		RequiredParams: []string{"arn"},
+		ExtraParams:    []string{},
+		TagsMapping:    []string{},
+	},
 	"createuser": {
 		Action:         "create",
 		Entity:         "user",

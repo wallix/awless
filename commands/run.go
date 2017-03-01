@@ -34,6 +34,7 @@ import (
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
+	"github.com/wallix/awless/template/driver"
 	"github.com/wallix/awless/template/driver/aws"
 	awsdefinitions "github.com/wallix/awless/template/driver/aws/definitions"
 )
@@ -108,13 +109,12 @@ func runTemplate(templ *template.Template) error {
 
 	validateTemplate(templ)
 
-	awsDriver := aws.NewDriver(
-		awscloud.InfraService.ProviderRunnableAPI().(*awscloud.Infra).EC2API,
-		awscloud.AccessService.ProviderRunnableAPI(),
-		awscloud.StorageService.ProviderRunnableAPI(),
-		awscloud.NotificationService.ProviderRunnableAPI(),
-		awscloud.QueueService.ProviderRunnableAPI(),
-	)
+	var drivers []driver.Driver
+	for _, s := range cloud.ServiceRegistry {
+		drivers = append(drivers, s.Drivers()...)
+	}
+	awsDriver := driver.NewMultiDriver(drivers...)
+
 	awsDriver.SetLogger(logger.DefaultLogger)
 
 	_, err = templ.Compile(awsDriver)

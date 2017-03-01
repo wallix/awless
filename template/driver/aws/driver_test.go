@@ -29,26 +29,40 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/wallix/awless/template/driver"
 )
 
-func TestHumanizeString(t *testing.T) {
-	if got, want := humanize(""), ""; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := humanize("s"), "S"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := humanize("STUFF"), "Stuff"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := humanize("stuff"), "Stuff"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
+func TestLookupFn(t *testing.T) {
+	driv := NewEc2Driver(&mockEc2{})
+
+	t.Run("Known function", func(t *testing.T) {
+		driverFn, err := driv.Lookup("create", "vpc")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := reflect.ValueOf(driverFn).Pointer(), reflect.ValueOf(driv.(*Ec2Driver).Create_Vpc).Pointer(); got != want {
+			t.Fatalf("got %v, want %v", got, want)
+		}
+		driv.SetDryRun(true)
+		driverFn, err = driv.Lookup("create", "vpc")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := reflect.ValueOf(driverFn).Pointer(), reflect.ValueOf(driv.(*Ec2Driver).Create_Vpc_DryRun).Pointer(); got != want {
+			t.Fatalf("got %v, want %v", got, want)
+		}
+	})
+	t.Run("unKnown function", func(t *testing.T) {
+		_, err := driv.Lookup("unknown", "function")
+		if got, want := err, driver.ErrDriverFnNotFound; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+	})
 }
 
 func TestDriver(t *testing.T) {
 	awsMock := &mockEc2{}
-	driv := NewDriver(awsMock, &mockIam{}, &mockS3{}, &mockSNS{}, &mockSQS{})
+	driv := NewEc2Driver(awsMock).(*Ec2Driver)
 
 	t.Run("Create vpc", func(t *testing.T) {
 		cidr := "10.0.0.0/16"

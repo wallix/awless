@@ -367,7 +367,7 @@ var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("aws type unknown: %T", i)
 	}
 
-	acls, err := StorageService.ProviderRunnableAPI().(s3iface.S3API).GetBucketAcl(&s3.GetBucketAclInput{Bucket: b.Name})
+	acls, err := StorageService.(s3iface.S3API).GetBucketAcl(&s3.GetBucketAclInput{Bucket: b.Name})
 	if err != nil {
 		return nil, err
 	}

@@ -41,6 +41,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/template/driver"
+	awsdriver "github.com/wallix/awless/template/driver/aws"
 )
 
 func init() {
@@ -126,12 +128,11 @@ func (s *Infra) Name() string {
 	return "infra"
 }
 
-func (s *Infra) Provider() string {
-	return "aws"
-}
-
-func (s *Infra) ProviderRunnableAPI() interface{} {
-	return s
+func (s *Infra) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewEc2Driver(s.EC2API),
+		awsdriver.NewElbv2Driver(s.ELBV2API),
+	}
 }
 
 func (s *Infra) ResourceTypes() (all []string) {
@@ -729,12 +730,10 @@ func (s *Access) Name() string {
 	return "access"
 }
 
-func (s *Access) Provider() string {
-	return "aws"
-}
-
-func (s *Access) ProviderRunnableAPI() interface{} {
-	return s
+func (s *Access) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewIamDriver(s.IAMAPI),
+	}
 }
 
 func (s *Access) ResourceTypes() (all []string) {
@@ -994,12 +993,10 @@ func (s *Storage) Name() string {
 	return "storage"
 }
 
-func (s *Storage) Provider() string {
-	return "aws"
-}
-
-func (s *Storage) ProviderRunnableAPI() interface{} {
-	return s
+func (s *Storage) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewS3Driver(s.S3API),
+	}
 }
 
 func (s *Storage) ResourceTypes() (all []string) {
@@ -1136,12 +1133,10 @@ func (s *Notification) Name() string {
 	return "notification"
 }
 
-func (s *Notification) Provider() string {
-	return "aws"
-}
-
-func (s *Notification) ProviderRunnableAPI() interface{} {
-	return s
+func (s *Notification) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewSnsDriver(s.SNSAPI),
+	}
 }
 
 func (s *Notification) ResourceTypes() (all []string) {
@@ -1326,12 +1321,10 @@ func (s *Queue) Name() string {
 	return "queue"
 }
 
-func (s *Queue) Provider() string {
-	return "aws"
-}
-
-func (s *Queue) ProviderRunnableAPI() interface{} {
-	return s
+func (s *Queue) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewSqsDriver(s.SQSAPI),
+	}
 }
 
 func (s *Queue) ResourceTypes() (all []string) {

@@ -22,14 +22,14 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/template/driver"
 )
 
 var ErrFetchAccessDenied = errors.New("access denied to cloud resource")
 
 type Service interface {
 	Name() string
-	Provider() string
-	ProviderRunnableAPI() interface{}
+	Drivers() []driver.Driver
 	ResourceTypes() []string
 	FetchResources() (*graph.Graph, error)
 	FetchByType(t string) (*graph.Graph, error)

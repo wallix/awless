@@ -33,12 +33,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 )
 
-func (d *AwsDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("attach policy: missing required params 'arn'")
 	}
@@ -54,18 +53,18 @@ func (d *AwsDriver) Attach_Policy_DryRun(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
 	user, hasUser := params["user"]
 	group, hasGroup := params["group"]
 
 	switch {
 	case hasUser:
-		return performCall(d, "attach user", &iam.AttachUserPolicyInput{}, d.iam.AttachUserPolicy, []setter{
+		return performCall(d, "attach user", &iam.AttachUserPolicyInput{}, d.AttachUserPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: user, fieldPath: "UserName", fieldType: awsstr},
 		}...)
 	case hasGroup:
-		return performCall(d, "attach user", &iam.AttachGroupPolicyInput{}, d.iam.AttachGroupPolicy, []setter{
+		return performCall(d, "attach user", &iam.AttachGroupPolicyInput{}, d.AttachGroupPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: group, fieldPath: "GroupName", fieldType: awsstr},
 		}...)
@@ -74,7 +73,7 @@ func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 	return nil, errors.New("missing one of 'user, group' param")
 }
 
-func (d *AwsDriver) Detach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("detach policy: missing required params 'arn'")
 	}
@@ -90,18 +89,18 @@ func (d *AwsDriver) Detach_Policy_DryRun(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *AwsDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
 	user, hasUser := params["user"]
 	group, hasGroup := params["group"]
 
 	switch {
 	case hasUser:
-		return performCall(d, "detach user", &iam.DetachUserPolicyInput{}, d.iam.DetachUserPolicy, []setter{
+		return performCall(d, "detach user", &iam.DetachUserPolicyInput{}, d.DetachUserPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: user, fieldPath: "UserName", fieldType: awsstr},
 		}...)
 	case hasGroup:
-		return performCall(d, "detach user", &iam.DetachGroupPolicyInput{}, d.iam.DetachGroupPolicy, []setter{
+		return performCall(d, "detach user", &iam.DetachGroupPolicyInput{}, d.DetachGroupPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: group, fieldPath: "GroupName", fieldType: awsstr},
 		}...)
@@ -116,7 +115,7 @@ type setter struct {
 	fieldType int
 }
 
-func performCall(d *AwsDriver, desc string, input interface{}, fn interface{}, setters ...setter) (output interface{}, err error) {
+func performCall(d *IamDriver, desc string, input interface{}, fn interface{}, setters ...setter) (output interface{}, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			output = nil
@@ -149,7 +148,7 @@ func performCall(d *AwsDriver, desc string, input interface{}, fn interface{}, s
 	return
 }
 
-func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeInstancesInput{}
 	input.DryRun = aws.Bool(true)
 
@@ -173,7 +172,7 @@ func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interf
 		return nil, err
 	}
 
-	_, err = d.ec2.DescribeInstances(input)
+	_, err = d.DescribeInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
@@ -187,7 +186,7 @@ func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interf
 	return nil, err
 }
 
-func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeInstancesInput{}
 
 	// Required params
@@ -202,7 +201,7 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 	for {
 		select {
 		case <-time.After(retry):
-			output, err := d.ec2.DescribeInstances(input)
+			output, err := d.DescribeInstances(input)
 			if err != nil {
 				d.logger.Errorf("check instance error: %s", err)
 				return nil, err
@@ -232,7 +231,7 @@ func (d *AwsDriver) Check_Instance(params map[string]interface{}) (interface{}, 
 	}
 }
 
-func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Tags_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 
 	input.DryRun = aws.Bool(true)
@@ -244,7 +243,7 @@ func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface
 		}
 		input.Tags = append(input.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(fmt.Sprint(v))})
 	}
-	_, err := d.ec2.CreateTags(input)
+	_, err := d.CreateTags(input)
 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
@@ -258,7 +257,7 @@ func (d *AwsDriver) Create_Tags_DryRun(params map[string]interface{}) (interface
 	return nil, err
 }
 
-func (d *AwsDriver) Create_Tags(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Tags(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 
 	input.Resources = append(input.Resources, aws.String(fmt.Sprint(params["resource"])))
@@ -269,7 +268,7 @@ func (d *AwsDriver) Create_Tags(params map[string]interface{}) (interface{}, err
 		}
 		input.Tags = append(input.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(fmt.Sprint(v))})
 	}
-	_, err := d.ec2.CreateTags(input)
+	_, err := d.CreateTags(input)
 
 	if err != nil {
 		d.logger.Errorf("create tags error: %s", err)
@@ -280,7 +279,7 @@ func (d *AwsDriver) Create_Tags(params map[string]interface{}) (interface{}, err
 	return nil, nil
 }
 
-func (d *AwsDriver) Create_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -292,7 +291,7 @@ func (d *AwsDriver) Create_Tag_DryRun(params map[string]interface{}) (interface{
 	}
 	input.Tags = []*ec2.Tag{{Key: aws.String(fmt.Sprint(params["key"])), Value: aws.String(fmt.Sprint(params["value"]))}}
 
-	_, err = d.ec2.CreateTags(input)
+	_, err = d.CreateTags(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
@@ -306,7 +305,7 @@ func (d *AwsDriver) Create_Tag_DryRun(params map[string]interface{}) (interface{
 	return nil, err
 }
 
-func (d *AwsDriver) Create_Tag(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 	var err error
 
@@ -319,7 +318,7 @@ func (d *AwsDriver) Create_Tag(params map[string]interface{}) (interface{}, erro
 
 	start := time.Now()
 	var output *ec2.CreateTagsOutput
-	output, err = d.ec2.CreateTags(input)
+	output, err = d.CreateTags(input)
 	if err != nil {
 		d.logger.Errorf("create tag error: %s", err)
 		return nil, err
@@ -329,7 +328,7 @@ func (d *AwsDriver) Create_Tag(params map[string]interface{}) (interface{}, erro
 	return output, nil
 }
 
-func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 
 	input.DryRun = aws.Bool(true)
@@ -344,7 +343,15 @@ func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 		return nil, err
 	}
 
-	privKeyPath := filepath.Join(config.KeysDir, fmt.Sprint(params["name"])+".pem")
+	const keyDirEnv = "__AWLESS_KEYS_DIR"
+	keyDir := os.Getenv(keyDirEnv)
+	if keyDir == "" {
+		err = fmt.Errorf("empty env var '%s'", keyDirEnv)
+		d.logger.Errorf("dry run: saving private key error: %s", err)
+		return nil, err
+	}
+
+	privKeyPath := filepath.Join(keyDir, fmt.Sprint(params["name"])+".pem")
 	_, err = os.Stat(privKeyPath)
 	if err == nil {
 		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
@@ -355,7 +362,7 @@ func (d *AwsDriver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 	return nil, nil
 }
 
-func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 	err := setFieldWithType(params["name"], input, "KeyName", awsstr)
 	if err != nil {
@@ -368,7 +375,7 @@ func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, 
 		d.logger.Errorf("generating keypair error: %s", err)
 		return nil, err
 	}
-	privKeyPath := filepath.Join(config.KeysDir, fmt.Sprint(params["name"])+".pem")
+	privKeyPath := filepath.Join(os.Getenv("__AWLESS_KEYS_DIR"), fmt.Sprint(params["name"])+".pem")
 	_, err = os.Stat(privKeyPath)
 	if err == nil {
 		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
@@ -383,7 +390,7 @@ func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	fmt.Printf("4096 RSA keypair generated locally and stored in '%s'\n", privKeyPath)
 	input.PublicKeyMaterial = pub
 
-	output, err := d.ec2.ImportKeyPair(input)
+	output, err := d.ImportKeyPair(input)
 	if err != nil {
 		d.logger.Errorf("create keypair error: %s", err)
 		return nil, err
@@ -393,7 +400,7 @@ func (d *AwsDriver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	return aws.StringValue(output.KeyName), nil
 }
 
-func (d *AwsDriver) Update_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	ipPerms, err := buildIpPermissionsFromParams(params)
 	if err != nil {
 		return nil, err
@@ -431,13 +438,13 @@ func (d *AwsDriver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 
 	switch ii := input.(type) {
 	case *ec2.AuthorizeSecurityGroupIngressInput:
-		_, err = d.ec2.AuthorizeSecurityGroupIngress(ii)
+		_, err = d.AuthorizeSecurityGroupIngress(ii)
 	case *ec2.RevokeSecurityGroupIngressInput:
-		_, err = d.ec2.RevokeSecurityGroupIngress(ii)
+		_, err = d.RevokeSecurityGroupIngress(ii)
 	case *ec2.AuthorizeSecurityGroupEgressInput:
-		_, err = d.ec2.AuthorizeSecurityGroupEgress(ii)
+		_, err = d.AuthorizeSecurityGroupEgress(ii)
 	case *ec2.RevokeSecurityGroupEgressInput:
-		_, err = d.ec2.RevokeSecurityGroupEgress(ii)
+		_, err = d.RevokeSecurityGroupEgress(ii)
 	}
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
@@ -451,7 +458,7 @@ func (d *AwsDriver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	return nil, err
 }
 
-func (d *AwsDriver) Update_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	ipPerms, err := buildIpPermissionsFromParams(params)
 	if err != nil {
 		return nil, err
@@ -490,13 +497,13 @@ func (d *AwsDriver) Update_Securitygroup(params map[string]interface{}) (interfa
 	var output interface{}
 	switch ii := input.(type) {
 	case *ec2.AuthorizeSecurityGroupIngressInput:
-		output, err = d.ec2.AuthorizeSecurityGroupIngress(ii)
+		output, err = d.AuthorizeSecurityGroupIngress(ii)
 	case *ec2.RevokeSecurityGroupIngressInput:
-		output, err = d.ec2.RevokeSecurityGroupIngress(ii)
+		output, err = d.RevokeSecurityGroupIngress(ii)
 	case *ec2.AuthorizeSecurityGroupEgressInput:
-		output, err = d.ec2.AuthorizeSecurityGroupEgress(ii)
+		output, err = d.AuthorizeSecurityGroupEgress(ii)
 	case *ec2.RevokeSecurityGroupEgressInput:
-		output, err = d.ec2.RevokeSecurityGroupEgress(ii)
+		output, err = d.RevokeSecurityGroupEgress(ii)
 	}
 	if err != nil {
 		d.logger.Errorf("update securitygroup error: %s", err)
@@ -508,7 +515,7 @@ func (d *AwsDriver) Update_Securitygroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *AwsDriver) Create_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
 		return nil, errors.New("create storageobject: missing required params 'bucket'")
 	}
@@ -533,7 +540,7 @@ func (d *AwsDriver) Create_Storageobject_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
 	f, err := os.Open(params["file"].(string))
@@ -557,7 +564,7 @@ func (d *AwsDriver) Create_Storageobject(params map[string]interface{}) (interfa
 		return nil, err
 	}
 
-	output, err := d.s3.PutObject(input)
+	output, err := d.PutObject(input)
 	if err != nil {
 		d.logger.Errorf("create storageobject error: %s", err)
 		return nil, err

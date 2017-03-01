@@ -90,6 +90,8 @@ import (
   {{- end }}
 	"github.com/wallix/awless/cloud"
   "github.com/wallix/awless/graph"
+	"github.com/wallix/awless/template/driver"
+	awsdriver "github.com/wallix/awless/template/driver/aws"
 )
 
 func init() {
@@ -147,12 +149,12 @@ func (s *{{ Title $service.Name }}) Name() string {
   return "{{ $service.Name }}"
 }
 
-func (s *{{ Title $service.Name }}) Provider() string {
-  return "aws"
-}
-
-func (s *{{ Title $service.Name }}) ProviderRunnableAPI() interface{} {
-  return s
+func (s *{{ Title $service.Name }}) Drivers() []driver.Driver {
+  return []driver.Driver{ 
+		{{- range $, $api := $service.Api }}
+		awsdriver.New{{ Title $api }}Driver(s.{{ ToUpper $api }}API),
+		{{- end }}
+	}
 }
 
 func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {

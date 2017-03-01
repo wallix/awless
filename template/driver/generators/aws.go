@@ -32,6 +32,7 @@ import (
 func main() {
 	generateDriverFuncs()
 	generateTemplateTemplates()
+	generateDriverTypes()
 }
 
 func generateTemplateTemplates() {
@@ -41,7 +42,7 @@ func generateTemplateTemplates() {
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, definitions.Driver)
+	err = templ.Execute(&buff, definitions.Services)
 	if err != nil {
 		panic(err)
 	}
@@ -53,19 +54,39 @@ func generateTemplateTemplates() {
 
 func generateDriverFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
-		"capitalize": capitalize,
+		"Title": strings.Title,
 	}).Parse(funcsTempl)
 	if err != nil {
 		panic(err)
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, definitions.Driver)
+	err = templ.Execute(&buff, definitions.Services)
 	if err != nil {
 		panic(err)
 	}
 
 	if err := ioutil.WriteFile("../aws/gen_driver_funcs.go", buff.Bytes(), 0666); err != nil {
+		panic(err)
+	}
+}
+
+func generateDriverTypes() {
+	templ, err := template.New("types").Funcs(template.FuncMap{
+		"Title":   strings.Title,
+		"ToUpper": strings.ToUpper,
+	}).Parse(typesTempl)
+	if err != nil {
+		panic(err)
+	}
+
+	var buff bytes.Buffer
+	err = templ.Execute(&buff, definitions.Services)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := ioutil.WriteFile("../aws/gen_drivers.go", buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -94,15 +115,17 @@ import (
 )
 
 var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
-{{- range $index, $def := . }}
+{{- range $, $service := . }}
+{{- range $index, $def := $service.Drivers }}
 	"{{ $def.Action }}{{ $def.Entity }}": template.TemplateDefinition{
 			Action: "{{ $def.Action }}",
 			Entity: "{{ $def.Entity }}",
-			Api: "{{ $def.Api }}",
+			Api: "{{ $service.Api }}",
 			RequiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field.TemplateName }}", {{- end}} },
 			ExtraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field.TemplateName }}", {{- end}} },
 			TagsMapping: []string{ {{- range $awsField, $field := $def.TagsMapping }}"{{ $field }}", {{- end}} },
 		},
+{{- end }}
 {{- end }}
 }
 `
@@ -133,24 +156,22 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/aws/aws-sdk-go/service/sqs"
+	{{- range $index, $service := . }}
+	"github.com/aws/aws-sdk-go/service/{{ $service.Api }}"
+	{{- end }}
 )
 
 const (
 	dryRunOperation = "DryRunOperation"
 	notFound = "NotFound"
 )
-
-{{ range $index, $def := . }}
+{{- range $, $service := . }}
+{{ range $index, $def := $service.Drivers }}
 {{- if not $def.ManualFuncDefinition }}
 
 {{- if $def.DryRunUnsupported }}
 // This function was auto generated
-func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
 	{{- range $awsField, $field := $def.RequiredParams }}
 	if _, ok := params["{{ $field.TemplateName }}"]; !ok {
 		return nil, errors.New("{{ $def.Action }} {{ $def.Entity }}: missing required params '{{ $field.TemplateName }}'")
@@ -161,8 +182,8 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 }
 {{ else }}
 // This function was auto generated
-func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
-	input := &{{ $def.Api }}.{{ $def.Input }}{}
+func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &{{ $service.Api }}.{{ $def.Input }}{}
 	input.DryRun = aws.Bool(true)
 	var err error
 	{{if gt (len $def.RequiredParams) 0 }}
@@ -186,7 +207,7 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 	{{- end }}
 	{{- end }}
 
-	_, err = d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
+	_, err = d.{{ $def.ApiMethod }}(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
@@ -216,8 +237,8 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}_Dr
 }
 {{ end }}
 // This function was auto generated
-func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(params map[string]interface{}) (interface{}, error) {
-	input := &{{ $def.Api }}.{{ $def.Input }}{}
+func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}(params map[string]interface{}) (interface{}, error) {
+	input := &{{ $service.Api }}.{{ $def.Input }}{}
 	var err error
 	{{if gt (len $def.RequiredParams) 0 }}
 	// Required params
@@ -241,14 +262,14 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	{{- end }}
 
 	start := time.Now()
-	var output *{{ $def.Api }}.{{ $def.Output }}
-	output, err = d.{{ $def.Api }}.{{ $def.ApiMethod }}(input)
+	var output *{{ $service.Api }}.{{ $def.Output }}
+	output, err = d.{{ $def.ApiMethod }}(input)
 	output = output
 	if err != nil {
 		d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
 		return nil, err
 	}
-	d.logger.ExtraVerbosef("{{ $def.Api }}.{{ $def.ApiMethod }} call took %s", time.Since(start))
+	d.logger.ExtraVerbosef("{{ $service.Api }}.{{ $def.ApiMethod }} call took %s", time.Since(start))
 
 
 	{{- if ne $def.OutputExtractor "" }}
@@ -276,12 +297,63 @@ func (d *AwsDriver) {{ capitalize $def.Action }}_{{ capitalize $def.Entity }}(pa
 	{{- end }}
 }
 {{ end }}
+{{- end }}
 {{- end }}`
 
-func capitalize(s string) string {
-	if len(s) > 1 {
-		return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
-	}
+const typesTempl = `/* Copyright 2017 WALLIX
 
-	return strings.ToUpper(s)
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// DO NOT EDIT
+// This file was automatically generated with go generate
+package aws
+
+import (
+	"strings"
+	"github.com/wallix/awless/template/driver"
+	"github.com/wallix/awless/logger"
+	{{- range $index, $service := . }}
+  "github.com/aws/aws-sdk-go/service/{{ $service.Api }}/{{ $service.Api }}iface"
+	{{- end }}
+)
+
+{{ range $, $service := . }}
+type {{ Title $service.Api }}Driver struct {
+	dryRun bool
+	logger *logger.Logger
+	{{ $service.Api }}iface.{{ ToUpper $service.Api }}API
 }
+
+func (d *{{ Title $service.Api }}Driver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *{{ Title $service.Api }}Driver) SetLogger(l *logger.Logger) { d.logger = l }
+
+func New{{ Title $service.Api }}Driver(api {{ $service.Api }}iface.{{ ToUpper $service.Api }}API) driver.Driver{
+	return &{{ Title $service.Api }}Driver{false, logger.DiscardLogger, api}
+}
+
+func (d *{{ Title $service.Api }}Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
+	{{ range $, $def := $service.Drivers }}
+case "{{ $def.Action}}{{ $def.Entity}}":
+		if d.dryRun {
+			return d.{{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun, nil
+		}
+		return d.{{ Title $def.Action }}_{{ Title $def.Entity }}, nil
+	{{ end }}
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+{{ end }}`

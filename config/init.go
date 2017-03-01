@@ -40,6 +40,7 @@ var (
 
 func InitAwlessEnv() error {
 	os.Setenv("__AWLESS_HOME", AwlessHome)
+	os.Setenv("__AWLESS_KEYS_DIR", KeysDir)
 	_, err := os.Stat(AwlessHome)
 	_, ierr := os.Stat(filepath.Join(RepoDir, InfraFilename))
 	_, aerr := os.Stat(filepath.Join(RepoDir, AccessFilename))
