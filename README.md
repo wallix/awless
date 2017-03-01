@@ -103,12 +103,15 @@ When dealing with long lists of resources you can filter with the `--filter` fla
 
     # when dealing with name with spaces use
     awless list instances --filter "access key"=my-key
-
-(*Note that as for now there is no regex support in filters*)
-
+    
 For instance, you could list all storage objects in a given bucket using only local data with:
 
     awless --local ls storageobjects --filter bucketname=pdf-bucket 
+
+Note that filters:
+
+1. ignore case when matching
+2. will match when result string contains the search string (ex: `--filter state=Run` will match instances with state `running`)
 
 ### Showing resources
 

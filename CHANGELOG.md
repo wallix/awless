@@ -1,5 +1,9 @@
 ## 0.0.16 [unreleased]
 
+### Features
+
+- Allow simple fuzzy search for listing filters. Ex: `awless list instances --filter state=run`
+
 ### Bugfixes
 
 - Fix regression: timeout too low for HTTP requests with AWS.

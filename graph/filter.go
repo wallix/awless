@@ -1,5 +1,10 @@
 package graph
 
+import (
+	"fmt"
+	"strings"
+)
+
 type FilterFn func(*Resource) bool
 
 func (g *Graph) Filter(entity ResourceType, filters ...FilterFn) (*Graph, error) {
@@ -21,10 +26,7 @@ func (g *Graph) Filter(entity ResourceType, filters ...FilterFn) (*Graph, error)
 
 func BuildPropertyFilterFunc(key, val string) FilterFn {
 	return func(r *Resource) bool {
-		if r.Properties[key] == val {
-			return true
-		}
-		return false
+		return strings.Contains(strings.ToLower(fmt.Sprint(r.Properties[key])), strings.ToLower(val))
 	}
 }
 

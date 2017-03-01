@@ -73,8 +73,8 @@ func TestFilterGraph(t *testing.T) {
 	}
 
 	filtered, _ = g.Filter(Instance,
-		BuildPropertyFilterFunc("Id", "inst_2"),
-		BuildPropertyFilterFunc("Name", "redis"),
+		BuildPropertyFilterFunc("Id", "inst"),
+		BuildPropertyFilterFunc("Name", "Redis"),
 	)
 	instances, _ = filtered.GetAllResources(Instance)
 	if got, want := len(instances), 1; got != want {
