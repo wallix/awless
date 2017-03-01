@@ -278,6 +278,22 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
+	"attachuser": {
+		Action:         "attach",
+		Entity:         "user",
+		Api:            "iam",
+		RequiredParams: []string{"group", "name"},
+		ExtraParams:    []string{},
+		TagsMapping:    []string{},
+	},
+	"detachuser": {
+		Action:         "detach",
+		Entity:         "user",
+		Api:            "iam",
+		RequiredParams: []string{"group", "name"},
+		ExtraParams:    []string{},
+		TagsMapping:    []string{},
+	},
 	"creategroup": {
 		Action:         "create",
 		Entity:         "group",

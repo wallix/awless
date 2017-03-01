@@ -299,6 +299,21 @@ var Driver = []struct {
 			{AwsField: "UserName", TemplateName: "name", AwsType: "awsstr"},
 		},
 	},
+	{
+		Action: "attach", Entity: graph.User.String(), Api: "iam", DryRunUnsupported: true, Input: "AddUserToGroupInput", Output: "AddUserToGroupOutput", ApiMethod: "AddUserToGroup",
+		RequiredParams: []param{
+			{AwsField: "GroupName", TemplateName: "group", AwsType: "awsstr"},
+			{AwsField: "UserName", TemplateName: "name", AwsType: "awsstr"},
+		},
+	},
+	{
+		Action: "detach", Entity: graph.User.String(), Api: "iam", DryRunUnsupported: true, Input: "RemoveUserFromGroupInput", Output: "RemoveUserFromGroupOutput", ApiMethod: "RemoveUserFromGroup",
+		RequiredParams: []param{
+			{AwsField: "GroupName", TemplateName: "group", AwsType: "awsstr"},
+			{AwsField: "UserName", TemplateName: "name", AwsType: "awsstr"},
+		},
+	},
+
 
 	// GROUP
 	{
@@ -316,7 +331,7 @@ var Driver = []struct {
 
 	// POLICY
 	{
-		Action: "attach", Entity: "policy", Api: "iam", ManualFuncDefinition: true,
+		Action: "attach", Entity: graph.Policy.String(), Api: "iam", ManualFuncDefinition: true,
 		RequiredParams: []param{
 			{TemplateName: "arn"},
 		},
@@ -326,7 +341,7 @@ var Driver = []struct {
 		},
 	},
 	{
-		Action: "detach", Entity: "policy", Api: "iam", ManualFuncDefinition: true,
+		Action: "detach", Entity: graph.Policy.String(), Api: "iam", ManualFuncDefinition: true,
 		RequiredParams: []param{
 			{TemplateName: "arn"},
 		},

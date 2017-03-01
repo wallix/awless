@@ -1667,6 +1667,90 @@ func (d *AwsDriver) Delete_User(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
+func (d *AwsDriver) Attach_User_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["group"]; !ok {
+		return nil, errors.New("attach user: missing required params 'group'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("attach user: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: attach user ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Attach_User(params map[string]interface{}) (interface{}, error) {
+	input := &iam.AddUserToGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["group"], input, "GroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.AddUserToGroupOutput
+	output, err = d.iam.AddUserToGroup(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("attach user error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("iam.AddUserToGroup call took %s", time.Since(start))
+	d.logger.Verbose("attach user done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Detach_User_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["group"]; !ok {
+		return nil, errors.New("detach user: missing required params 'group'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("detach user: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: detach user ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AwsDriver) Detach_User(params map[string]interface{}) (interface{}, error) {
+	input := &iam.RemoveUserFromGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["group"], input, "GroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.RemoveUserFromGroupOutput
+	output, err = d.iam.RemoveUserFromGroup(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("detach user error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("iam.RemoveUserFromGroup call took %s", time.Since(start))
+	d.logger.Verbose("detach user done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *AwsDriver) Create_Group_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create group: missing required params 'name'")

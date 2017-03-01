@@ -1,3 +1,12 @@
+## 0.0.17 [unreleased]
+
+### Features
+
+- Attach/detach policy to user/group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
+- Attach/detach user to group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
+
+### Bugfixes
+
 ## 0.0.16 [2017-03-01]
 
 ### Features
