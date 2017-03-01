@@ -226,7 +226,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
-	infra := Infra{EC2API: mock, region: "eu-west-1"}
+	infra := Infra{EC2API: mock, ELBV2API: &mockELB{}, region: "eu-west-1"}
 
 	g, err := infra.FetchResources()
 	if err != nil {
@@ -324,7 +324,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expect)
 	}
 
-	infra := Infra{EC2API: &mockEc2{}, region: "eu-west-1"}
+	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockELB{}, region: "eu-west-1"}
 
 	g, err = infra.FetchResources()
 	if err != nil {

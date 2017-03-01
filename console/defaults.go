@@ -103,6 +103,15 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Region"},
 		StringColumnDefinition{Prop: "Messages"},
 	},
+	// Loadbalancer
+	graph.LoadBalancer: {
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "VpcId"},
+		StringColumnDefinition{Prop: "State"},
+		StringColumnDefinition{Prop: "DNSName"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
+		StringColumnDefinition{Prop: "Scheme"},
+	},
 	//IAM
 	graph.User: {
 		StringColumnDefinition{Prop: "Id"},

@@ -26,6 +26,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -55,6 +56,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.RouteTableId), graph.RouteTable)
 	case *ec2.AvailabilityZone:
 		res = graph.InitResource(awssdk.StringValue(ss.ZoneName), graph.AvailabilityZone)
+	// Loadbalancer
+	case *elbv2.LoadBalancer:
+		res = graph.InitResource(awssdk.StringValue(ss.LoadBalancerArn), graph.LoadBalancer)
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
@@ -73,7 +77,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Bucket)
 	case *s3.Object:
 		res = graph.InitResource(awssdk.StringValue(ss.Key), graph.Object)
-		//SNS
+	//SNS
 	case *sns.Subscription:
 		res = graph.InitResource(awssdk.StringValue(ss.Endpoint), graph.Subscription)
 	case *sns.Topic:

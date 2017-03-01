@@ -35,6 +35,9 @@ const (
 	InternetGateway  ResourceType = "internetgateway"
 	RouteTable       ResourceType = "routetable"
 
+	//loadbalancer
+	LoadBalancer ResourceType = "loadbalancer"
+
 	//access
 	User   ResourceType = "user"
 	Role   ResourceType = "role"

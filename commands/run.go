@@ -109,7 +109,7 @@ func runTemplate(templ *template.Template) error {
 	validateTemplate(templ)
 
 	awsDriver := aws.NewDriver(
-		awscloud.InfraService.ProviderRunnableAPI(),
+		awscloud.InfraService.ProviderRunnableAPI().(*awscloud.Infra).EC2API,
 		awscloud.AccessService.ProviderRunnableAPI(),
 		awscloud.StorageService.ProviderRunnableAPI(),
 		awscloud.NotificationService.ProviderRunnableAPI(),

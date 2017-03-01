@@ -83,8 +83,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/aws/aws-sdk-go/aws/session"
   {{- range $index, $service := . }}
-  "github.com/aws/aws-sdk-go/service/{{ $service.Api }}"
-  "github.com/aws/aws-sdk-go/service/{{ $service.Api }}/{{ $service.Api }}iface"
+  {{- range $, $api := $service.Api }}
+  "github.com/aws/aws-sdk-go/service/{{ $api }}"
+  "github.com/aws/aws-sdk-go/service/{{ $api }}/{{ $api }}iface"
+  {{- end }}
   {{- end }}
 	"github.com/wallix/awless/cloud"
   "github.com/wallix/awless/graph"
@@ -98,19 +100,19 @@ func init() {
 
 var ServiceNames = []string{}
 
-var ResourceTypesPerAPI = map[string][]string {
+var ResourceTypes = []string {
 {{- range $index, $service := . }}
-  "{{ $service.Api }}": []string{
     {{- range $idx, $fetcher := $service.Fetchers }}
       "{{ $fetcher.ResourceType }}",
     {{- end }}
-  },
 {{- end }}
 }
 
 var ServicePerAPI = map[string]string {
 {{- range $index, $service := . }}
-  "{{ $service.Api }}": "{{ $service.Name }}",
+{{- range $, $api := $service.Api }}
+  "{{ $api }}": "{{ $service.Name }}",
+{{- end }}
 {{- end }}
 }
 
@@ -126,12 +128,19 @@ var ServicePerResourceType = map[string]string {
 type {{ Title $service.Name }} struct {
 	once oncer
   region string
-  {{ $service.Api }}iface.{{ ToUpper $service.Api }}API
+	{{- range $, $api := $service.Api }}
+  {{ $api }}iface.{{ ToUpper $api }}API
+	{{- end }}
 }
 
 func New{{ Title $service.Name }}(sess *session.Session) *{{ Title $service.Name }} {
   region := awssdk.StringValue(sess.Config.Region)
-	return &{{ Title $service.Name }}{ {{ ToUpper $service.Api }}API: {{ $service.Api }}.New(sess), region: region }
+	return &{{ Title $service.Name }}{ 
+	{{- range $, $api := $service.Api }}
+	{{ ToUpper $api }}API: {{ $api }}.New(sess),
+	{{- end }}
+	 region: region,
+  }
 }
 
 func (s *{{ Title $service.Name }}) Name() string {
@@ -142,12 +151,8 @@ func (s *{{ Title $service.Name }}) Provider() string {
   return "aws"
 }
 
-func (s *{{ Title $service.Name }}) ProviderAPI() string {
-  return "{{ $service.Api }}"
-}
-
 func (s *{{ Title $service.Name }}) ProviderRunnableAPI() interface{} {
-  return s.{{ ToUpper $service.Api }}API
+  return s
 }
 
 func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {
@@ -255,8 +260,8 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 	var cloudResources []*{{ $fetcher.AWSType }}
 	{{- if $fetcher.Multipage }}
 	var badResErr error
-	err := s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }},
-		func(out *{{ $service.Api }}.{{ $fetcher.Output }}, lastPage bool) (shouldContinue bool) {
+	err := s.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }},
+		func(out *{{ $fetcher.Output }}, lastPage bool) (shouldContinue bool) {
 			{{- if ne $fetcher.OutputsContainers "" }}
 			for _, all := range out.{{ $fetcher.OutputsContainers }} {
 	      for _, output := range all.{{ $fetcher.OutputsExtractor }} {
@@ -280,7 +285,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 				g.AddResource(res)
 			}
 			{{- end }}
-			return out.NextToken != nil
+			return out.{{ $fetcher.NextPageMarker }} != nil
 		})
 	if err != nil {
 		return g, cloudResources, err
@@ -288,7 +293,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 
 	return g, cloudResources, badResErr
 	{{- else }}
-  out, err := s.{{ $fetcher.ApiMethod }}(&{{ $service.Api }}.{{ $fetcher.Input }})
+  out, err := s.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }})
   if err != nil {
     return nil, cloudResources, err
   }

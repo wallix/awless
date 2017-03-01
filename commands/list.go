@@ -42,10 +42,8 @@ func init() {
 		listCmd.AddCommand(listAllResourceInServiceCmd(srvName))
 	}
 
-	for apiName, types := range aws.ResourceTypesPerAPI {
-		for _, resType := range types {
-			listCmd.AddCommand(listSpecificResourceCmd(apiName, resType))
-		}
+	for _, resType := range aws.ResourceTypes {
+		listCmd.AddCommand(listSpecificResourceCmd(resType))
 	}
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Format for the display of resources: table or csv")
@@ -62,10 +60,10 @@ var listCmd = &cobra.Command{
 	Short:              "List various type of resources",
 }
 
-var listSpecificResourceCmd = func(apiName string, resType string) *cobra.Command {
+var listSpecificResourceCmd = func(resType string) *cobra.Command {
 	return &cobra.Command{
 		Use:   cloud.PluralizeResource(resType),
-		Short: fmt.Sprintf("List AWS %s %s", apiName, cloud.PluralizeResource(resType)),
+		Short: fmt.Sprintf("List AWS %s", cloud.PluralizeResource(resType)),
 
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *graph.Graph

@@ -29,7 +29,6 @@ var ErrFetchAccessDenied = errors.New("access denied to cloud resource")
 type Service interface {
 	Name() string
 	Provider() string
-	ProviderAPI() string
 	ProviderRunnableAPI() interface{}
 	ResourceTypes() []string
 	FetchResources() (*graph.Graph, error)

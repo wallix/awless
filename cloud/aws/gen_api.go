@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -51,43 +53,35 @@ func init() {
 
 var ServiceNames = []string{}
 
-var ResourceTypesPerAPI = map[string][]string{
-	"ec2": {
-		"instance",
-		"subnet",
-		"vpc",
-		"keypair",
-		"securitygroup",
-		"volume",
-		"internetgateway",
-		"routetable",
-		"availabilityzone",
-	},
-	"iam": {
-		"user",
-		"group",
-		"role",
-		"policy",
-	},
-	"s3": {
-		"bucket",
-		"storageobject",
-	},
-	"sns": {
-		"subscription",
-		"topic",
-	},
-	"sqs": {
-		"queue",
-	},
+var ResourceTypes = []string{
+	"instance",
+	"subnet",
+	"vpc",
+	"keypair",
+	"securitygroup",
+	"volume",
+	"internetgateway",
+	"routetable",
+	"availabilityzone",
+	"loadbalancer",
+	"user",
+	"group",
+	"role",
+	"policy",
+	"bucket",
+	"storageobject",
+	"subscription",
+	"topic",
+	"queue",
 }
 
 var ServicePerAPI = map[string]string{
-	"ec2": "infra",
-	"iam": "access",
-	"s3":  "storage",
-	"sns": "notification",
-	"sqs": "queue",
+	"ec2":   "infra",
+	"elbv2": "infra",
+	"iam":   "access",
+	"s3":    "storage",
+	"sns":   "notification",
+	"sqs":   "queue",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -100,6 +94,7 @@ var ServicePerResourceType = map[string]string{
 	"internetgateway":  "infra",
 	"routetable":       "infra",
 	"availabilityzone": "infra",
+	"loadbalancer":     "infra",
 	"user":             "access",
 	"group":            "access",
 	"role":             "access",
@@ -115,11 +110,16 @@ type Infra struct {
 	once   oncer
 	region string
 	ec2iface.EC2API
+	elbv2iface.ELBV2API
 }
 
 func NewInfra(sess *session.Session) *Infra {
 	region := awssdk.StringValue(sess.Config.Region)
-	return &Infra{EC2API: ec2.New(sess), region: region}
+	return &Infra{
+		EC2API:   ec2.New(sess),
+		ELBV2API: elbv2.New(sess),
+		region:   region,
+	}
 }
 
 func (s *Infra) Name() string {
@@ -130,12 +130,8 @@ func (s *Infra) Provider() string {
 	return "aws"
 }
 
-func (s *Infra) ProviderAPI() string {
-	return "ec2"
-}
-
 func (s *Infra) ProviderRunnableAPI() interface{} {
-	return s.EC2API
+	return s
 }
 
 func (s *Infra) ResourceTypes() (all []string) {
@@ -148,6 +144,7 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "internetgateway")
 	all = append(all, "routetable")
 	all = append(all, "availabilityzone")
+	all = append(all, "loadbalancer")
 	return
 }
 
@@ -164,6 +161,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var internetgatewayList []*ec2.InternetGateway
 	var routetableList []*ec2.RouteTable
 	var availabilityzoneList []*ec2.AvailabilityZone
+	var loadbalancerList []*elbv2.LoadBalancer
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -269,6 +267,18 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		var resGraph *graph.Graph
 		var err error
 		resGraph, availabilityzoneList, err = s.fetch_all_availabilityzone_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, loadbalancerList, err = s.fetch_all_loadbalancer_graph()
 		if err != nil {
 			errc <- err
 			return
@@ -415,6 +425,19 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}
 	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range loadbalancerList {
+			for _, fn := range addParentsFns["loadbalancer"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
 
 	go func() {
 		wg.Wait()
@@ -458,6 +481,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "availabilityzone":
 		graph, _, err := s.fetch_all_availabilityzone_graph()
+		return graph, err
+	case "loadbalancer":
+		graph, _, err := s.fetch_all_loadbalancer_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -661,6 +687,30 @@ func (s *Infra) fetch_all_availabilityzone_graph() (*graph.Graph, []*ec2.Availab
 
 }
 
+func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalancer, error) {
+	g := graph.NewGraph()
+	var cloudResources []*elbv2.LoadBalancer
+	var badResErr error
+	err := s.DescribeLoadBalancersPages(&elbv2.DescribeLoadBalancersInput{},
+		func(out *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.LoadBalancers {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.NextMarker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
 type Access struct {
 	once   oncer
 	region string
@@ -669,7 +719,10 @@ type Access struct {
 
 func NewAccess(sess *session.Session) *Access {
 	region := awssdk.StringValue(sess.Config.Region)
-	return &Access{IAMAPI: iam.New(sess), region: region}
+	return &Access{
+		IAMAPI: iam.New(sess),
+		region: region,
+	}
 }
 
 func (s *Access) Name() string {
@@ -680,12 +733,8 @@ func (s *Access) Provider() string {
 	return "aws"
 }
 
-func (s *Access) ProviderAPI() string {
-	return "iam"
-}
-
 func (s *Access) ProviderRunnableAPI() interface{} {
-	return s.IAMAPI
+	return s
 }
 
 func (s *Access) ResourceTypes() (all []string) {
@@ -935,7 +984,10 @@ type Storage struct {
 
 func NewStorage(sess *session.Session) *Storage {
 	region := awssdk.StringValue(sess.Config.Region)
-	return &Storage{S3API: s3.New(sess), region: region}
+	return &Storage{
+		S3API:  s3.New(sess),
+		region: region,
+	}
 }
 
 func (s *Storage) Name() string {
@@ -946,12 +998,8 @@ func (s *Storage) Provider() string {
 	return "aws"
 }
 
-func (s *Storage) ProviderAPI() string {
-	return "s3"
-}
-
 func (s *Storage) ProviderRunnableAPI() interface{} {
-	return s.S3API
+	return s
 }
 
 func (s *Storage) ResourceTypes() (all []string) {
@@ -1078,7 +1126,10 @@ type Notification struct {
 
 func NewNotification(sess *session.Session) *Notification {
 	region := awssdk.StringValue(sess.Config.Region)
-	return &Notification{SNSAPI: sns.New(sess), region: region}
+	return &Notification{
+		SNSAPI: sns.New(sess),
+		region: region,
+	}
 }
 
 func (s *Notification) Name() string {
@@ -1089,12 +1140,8 @@ func (s *Notification) Provider() string {
 	return "aws"
 }
 
-func (s *Notification) ProviderAPI() string {
-	return "sns"
-}
-
 func (s *Notification) ProviderRunnableAPI() interface{} {
-	return s.SNSAPI
+	return s
 }
 
 func (s *Notification) ResourceTypes() (all []string) {
@@ -1269,7 +1316,10 @@ type Queue struct {
 
 func NewQueue(sess *session.Session) *Queue {
 	region := awssdk.StringValue(sess.Config.Region)
-	return &Queue{SQSAPI: sqs.New(sess), region: region}
+	return &Queue{
+		SQSAPI: sqs.New(sess),
+		region: region,
+	}
 }
 
 func (s *Queue) Name() string {
@@ -1280,12 +1330,8 @@ func (s *Queue) Provider() string {
 	return "aws"
 }
 
-func (s *Queue) ProviderAPI() string {
-	return "sqs"
-}
-
 func (s *Queue) ProviderRunnableAPI() interface{} {
-	return s.SQSAPI
+	return s
 }
 
 func (s *Queue) ResourceTypes() (all []string) {

@@ -94,6 +94,21 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Region":   {name: "RegionName", transform: extractValueFn},
 		"Messages": {name: "Messages", transform: extractSliceValues("Message")},
 	},
+	// LoadBalancer
+	graph.LoadBalancer: {
+		"Id":                    {name: "LoadBalancerArn", transform: extractValueFn},
+		"Name":                  {name: "LoadBalancerName", transform: extractValueFn},
+		"AvailabilityZones":     {name: "AvailabilityZones", transform: extractSliceValues("ZoneName")},
+		"Subnets":               {name: "AvailabilityZones", transform: extractSliceValues("SubnetId")},
+		"CanonicalHostedZoneId": {name: "CanonicalHostedZoneId", transform: extractValueFn},
+		"CreateTime":            {name: "CreatedTime", transform: extractTimeFn},
+		"DNSName":               {name: "DNSName", transform: extractValueFn},
+		"IpAddressType":         {name: "IpAddressType", transform: extractValueFn},
+		"Scheme":                {name: "Scheme", transform: extractValueFn},
+		"State":                 {name: "State", transform: extractFieldFn("Code")},
+		"Type":                  {name: "Type", transform: extractValueFn},
+		"VpcId":                 {name: "VpcId", transform: extractValueFn},
+	},
 	//IAM
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},

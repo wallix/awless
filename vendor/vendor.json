@@ -233,6 +233,18 @@
 			"versionExact": "v1.7.3"
 		},
 		{
+			"checksumSHA1": "42TACCjZnJKGuF4ijfLpKUpw4/I=",
+			"path": "github.com/aws/aws-sdk-go/service/elbv2",
+			"revision": "78568b07950e5e7948496878fe99b9436add41d4",
+			"revisionTime": "2017-02-28T03:07:27Z"
+		},
+		{
+			"checksumSHA1": "gEwVXBSoB0iXny6eXAD29eh2ohQ=",
+			"path": "github.com/aws/aws-sdk-go/service/elbv2/elbv2iface",
+			"revision": "78568b07950e5e7948496878fe99b9436add41d4",
+			"revisionTime": "2017-02-28T03:07:27Z"
+		},
+		{
 			"checksumSHA1": "7JybKGBdRMLcnHP+126VLsnVghM=",
 			"path": "github.com/aws/aws-sdk-go/service/iam",
 			"revision": "6669bce73b4e3bc922ff5ea3a3983ede26e02b39",

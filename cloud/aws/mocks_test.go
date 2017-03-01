@@ -6,6 +6,8 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -67,6 +69,15 @@ func (m *mockEc2) DescribeVolumesPages(input *ec2.DescribeVolumesInput, fn func(
 }
 func (m *mockEc2) DescribeAvailabilityZones(input *ec2.DescribeAvailabilityZonesInput) (*ec2.DescribeAvailabilityZonesOutput, error) {
 	return &ec2.DescribeAvailabilityZonesOutput{}, nil
+}
+
+type mockELB struct {
+	elbv2iface.ELBV2API
+}
+
+func (m *mockELB) DescribeLoadBalancersPages(input *elbv2.DescribeLoadBalancersInput, fn func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&elbv2.DescribeLoadBalancersOutput{}, true)
+	return nil
 }
 
 type mockIam struct {
