@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 TMP_FILE=./tmp-integration-test.awless
+BIN=./awless
+
+echo "building awless"
+go build
 
 echo "flushing awless logs..."
-awless log --delete
+$BIN log --delete
 
 INSTANCE_NAME=awless-integration-test-`date +%s`
 
@@ -14,10 +18,11 @@ EOF
 
 cat $TMP_FILE
 
-awless run ./$TMP_FILE
+$BIN run ./$TMP_FILE
 
-REVERT_ID=`awless log --porcelain | head -1 | cut -f2`
+REVERT_ID=`$BIN log --porcelain | head -1 | cut -f2`
 
-awless revert $REVERT_ID -v
+$BIN revert $REVERT_ID -v
 
 rm $TMP_FILE
+rm $BIN
