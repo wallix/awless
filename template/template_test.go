@@ -30,8 +30,8 @@ import (
 
 type noopDriver struct{}
 
-func (d *noopDriver) Lookup(lookups ...string) driver.DriverFn {
-	return func(map[string]interface{}) (interface{}, error) { return nil, nil }
+func (d *noopDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
+	return func(map[string]interface{}) (interface{}, error) { return nil, nil }, nil
 }
 func (d *noopDriver) SetLogger(*logger.Logger) {}
 func (d *noopDriver) SetDryRun(bool)           {}
@@ -40,8 +40,8 @@ type errorDriver struct {
 	err error
 }
 
-func (d *errorDriver) Lookup(lookups ...string) driver.DriverFn {
-	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }
+func (d *errorDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
+	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }, nil
 }
 func (d *errorDriver) SetLogger(*logger.Logger) {}
 func (d *errorDriver) SetDryRun(bool)           {}
@@ -535,7 +535,7 @@ func (r *mockDriver) lookupsCalled() error {
 	return nil
 }
 
-func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
+func (r *mockDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
 	for _, expect := range r.expects {
 		if lookups[0] == expect.action && lookups[1] == expect.entity {
 			expect.lookupDone = true
@@ -545,13 +545,13 @@ func (r *mockDriver) Lookup(lookups ...string) driver.DriverFn {
 					return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", expect.action, expect.entity, got, want)
 				}
 				return r.prefix + expect.entity, nil
-			}
+			}, nil
 		}
 	}
 
 	return func(params map[string]interface{}) (interface{}, error) {
 		return nil, errors.New("Unexpected lookup fallthrough")
-	}
+	}, nil
 }
 
 func (r *mockDriver) SetLogger(*logger.Logger) {}

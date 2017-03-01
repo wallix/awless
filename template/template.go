@@ -40,7 +40,10 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 		switch sts.Node.(type) {
 		case *ast.CommandNode:
 			cmd := sts.Node.(*ast.CommandNode)
-			fn := d.Lookup(cmd.Action, cmd.Entity)
+			fn, err := d.Lookup(cmd.Action, cmd.Entity)
+			if err != nil {
+				return current, err
+			}
 			cmd.ProcessRefs(vars)
 
 			if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
@@ -52,7 +55,10 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			switch expr.(type) {
 			case *ast.CommandNode:
 				cmd := expr.(*ast.CommandNode)
-				fn := d.Lookup(cmd.Action, cmd.Entity)
+				fn, err := d.Lookup(cmd.Action, cmd.Entity)
+				if err != nil {
+					return current, err
+				}
 				cmd.ProcessRefs(vars)
 
 				if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {

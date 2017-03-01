@@ -23,6 +23,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -30,11 +31,123 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 )
+
+func (d *AwsDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("attach policy: missing required params 'arn'")
+	}
+
+	_, hasUser := params["user"]
+	_, hasGroup := params["group"]
+
+	if !hasUser && !hasGroup {
+		return nil, errors.New("attach policy: missing one of 'user, group' param")
+	}
+
+	d.logger.Verbose("params dry run: attach policy ok")
+	return nil, nil
+}
+
+func (d *AwsDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
+	user, hasUser := params["user"]
+	group, hasGroup := params["group"]
+
+	switch {
+	case hasUser:
+		return performCall(d, "attach user", &iam.AttachUserPolicyInput{}, d.iam.AttachUserPolicy, []setter{
+			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: user, fieldPath: "UserName", fieldType: awsstr},
+		}...)
+	case hasGroup:
+		return performCall(d, "attach user", &iam.AttachGroupPolicyInput{}, d.iam.AttachGroupPolicy, []setter{
+			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: group, fieldPath: "GroupName", fieldType: awsstr},
+		}...)
+	}
+
+	return nil, errors.New("missing one of 'user, group' param")
+}
+
+func (d *AwsDriver) Detach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("detach policy: missing required params 'arn'")
+	}
+
+	_, hasUser := params["user"]
+	_, hasGroup := params["group"]
+
+	if !hasUser && !hasGroup {
+		return nil, errors.New("detach policy: missing one of 'user, group' param")
+	}
+
+	d.logger.Verbose("params dry run: detach policy ok")
+	return nil, nil
+}
+
+func (d *AwsDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
+	user, hasUser := params["user"]
+	group, hasGroup := params["group"]
+
+	switch {
+	case hasUser:
+		return performCall(d, "detach user", &iam.DetachUserPolicyInput{}, d.iam.DetachUserPolicy, []setter{
+			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: user, fieldPath: "UserName", fieldType: awsstr},
+		}...)
+	case hasGroup:
+		return performCall(d, "detach user", &iam.DetachGroupPolicyInput{}, d.iam.DetachGroupPolicy, []setter{
+			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: group, fieldPath: "GroupName", fieldType: awsstr},
+		}...)
+	}
+
+	return nil, errors.New("missing one of 'user, group' param")
+}
+
+type setter struct {
+	val       interface{}
+	fieldPath string
+	fieldType int
+}
+
+func performCall(d *AwsDriver, desc string, input interface{}, fn interface{}, setters ...setter) (output interface{}, err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			output = nil
+			err = fmt.Errorf("%s", e)
+		}
+	}()
+
+	for _, set := range setters {
+		if err = setFieldWithType(set.val, input, set.fieldPath, set.fieldType); err != nil {
+			return nil, err
+		}
+	}
+
+	fnVal := reflect.ValueOf(fn)
+	values := []reflect.Value{reflect.ValueOf(input)}
+
+	start := time.Now()
+	results := fnVal.Call(values)
+
+	if err, ok := results[1].Interface().(error); ok && err != nil {
+		d.logger.Errorf("%s error: %s", desc, err)
+		return nil, err
+	}
+
+	d.logger.ExtraVerbosef("%s call took %s", desc, time.Since(start))
+	d.logger.Verbosef("%s done", desc)
+
+	output = results[0].Interface()
+
+	return
+}
 
 func (d *AwsDriver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeInstancesInput{}

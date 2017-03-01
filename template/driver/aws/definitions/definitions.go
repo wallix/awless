@@ -316,17 +316,23 @@ var Driver = []struct {
 
 	// POLICY
 	{
-		Action: "attach", Entity: graph.Policy.String(), Api: "iam", DryRunUnsupported: true, Input: "AttachUserPolicyInput", Output: "AttachUserPolicyOutput", ApiMethod: "AttachUserPolicy",
+		Action: "attach", Entity: "policy", Api: "iam", ManualFuncDefinition: true,
 		RequiredParams: []param{
-			{AwsField: "PolicyArn", TemplateName: "arn", AwsType: "awsstr"},
-			{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
+			{TemplateName: "arn"},
+		},
+		ExtraParams: []param{
+			{TemplateName: "user"},
+			{TemplateName: "group"},
 		},
 	},
 	{
-		Action: "detach", Entity: "policy", Api: "iam", DryRunUnsupported: true, Input: "DetachUserPolicyInput", Output: "DetachUserPolicyOutput", ApiMethod: "DetachUserPolicy",
+		Action: "detach", Entity: "policy", Api: "iam", ManualFuncDefinition: true,
 		RequiredParams: []param{
-			{AwsField: "PolicyArn", TemplateName: "arn", AwsType: "awsstr"},
-			{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
+			{TemplateName: "arn"},
+		},
+		ExtraParams: []param{
+			{TemplateName: "user"},
+			{TemplateName: "group"},
 		},
 	},
 

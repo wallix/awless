@@ -55,9 +55,17 @@ func NewDriver(ec2, iam, s3, sns, sqs interface{}) *AwsDriver {
 func (d *AwsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *AwsDriver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func (d *AwsDriver) Lookup(lookups ...string) driver.DriverFn {
+func (d *AwsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			driverFn = nil
+			err = fmt.Errorf("lookup %v (dryrun=%t): %s", lookups, d.dryRun, e)
+		}
+	}()
+
 	if len(lookups) < 2 {
-		panic("need at least 2 string to lookup driver method")
+		err = fmt.Errorf("need 2 string to lookup driver method: got %v (dryrun=%t)", lookups, d.dryRun)
+		return
 	}
 
 	var format string
@@ -70,12 +78,14 @@ func (d *AwsDriver) Lookup(lookups ...string) driver.DriverFn {
 	fnName := fmt.Sprintf(format, humanize(lookups[0]), humanize(lookups[1]))
 	method := reflect.ValueOf(d).MethodByName(fnName).Interface()
 
-	driverFn, converted := method.(func(map[string]interface{}) (interface{}, error))
+	var converted bool
+	driverFn, converted = method.(func(map[string]interface{}) (interface{}, error))
 	if !converted {
-		panic(fmt.Sprintf("method '%s' found on '%T' is not a driver function", fnName, d))
+		err = fmt.Errorf(fmt.Sprintf("method '%s' found on '%T' is not a driver function", fnName, d))
+		return
 	}
 
-	return driverFn
+	return
 }
 
 func humanize(s string) string {

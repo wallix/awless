@@ -19,7 +19,7 @@ package driver
 import "github.com/wallix/awless/logger"
 
 type Driver interface {
-	Lookup(...string) DriverFn
+	Lookup(...string) (DriverFn, error)
 	SetDryRun(bool)
 	SetLogger(*logger.Logger)
 }
