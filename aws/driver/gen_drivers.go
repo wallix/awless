@@ -18,6 +18,8 @@ limitations under the License.
 package aws
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -26,7 +28,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
-	"strings"
 )
 
 type Ec2Driver struct {

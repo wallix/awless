@@ -12,9 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	awsdriver "github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template/driver"
-	awsdriver "github.com/wallix/awless/template/driver/aws"
 )
 
 type mockEc2 struct {

@@ -19,8 +19,8 @@ package template_test
 import (
 	"testing"
 
+	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/template"
-	"github.com/wallix/awless/template/driver/aws"
 )
 
 func TestCollectTemplateDefinitions(t *testing.T) {

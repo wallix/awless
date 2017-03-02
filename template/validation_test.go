@@ -3,9 +3,9 @@ package template_test
 import (
 	"testing"
 
+	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template"
-	"github.com/wallix/awless/template/driver/aws"
 )
 
 func TestValidation(t *testing.T) {

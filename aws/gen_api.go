@@ -39,10 +39,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	awsdriver "github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template/driver"
-	awsdriver "github.com/wallix/awless/template/driver/aws"
 )
 
 func init() {

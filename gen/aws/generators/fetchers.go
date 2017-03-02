@@ -86,7 +86,7 @@ import (
 	"github.com/wallix/awless/cloud"
   "github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template/driver"
-	awsdriver "github.com/wallix/awless/template/driver/aws"
+	awsdriver "github.com/wallix/awless/aws/driver"
 )
 
 func init() {

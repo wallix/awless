@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/database"
 )
 

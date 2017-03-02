@@ -21,8 +21,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"

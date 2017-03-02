@@ -24,7 +24,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/wallix/awless/cloud/aws"
+	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/database"
 )
 

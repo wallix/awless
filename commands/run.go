@@ -26,8 +26,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	awscloud "github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
-	awscloud "github.com/wallix/awless/cloud/aws"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
@@ -35,7 +36,6 @@ import (
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/driver"
-	"github.com/wallix/awless/template/driver/aws"
 )
 
 var renderGreenFn = color.New(color.FgGreen).SprintFunc()
