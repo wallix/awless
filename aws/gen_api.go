@@ -1010,22 +1010,25 @@ func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error)
 func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 	g := graph.NewGraph()
 	var cloudResources []*iam.Policy
-	out, err := s.ListPolicies(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)})
+	var badResErr error
+	err := s.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
+		func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Policies {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.Marker != nil
+		})
 	if err != nil {
-		return nil, cloudResources, err
+		return g, cloudResources, err
 	}
 
-	for _, output := range out.Policies {
-		cloudResources = append(cloudResources, output)
-		res, err := newResource(output)
-		if err != nil {
-			return g, cloudResources, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, cloudResources, nil
-
+	return g, cloudResources, badResErr
 }
 
 type Storage struct {

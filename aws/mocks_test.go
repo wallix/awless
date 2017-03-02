@@ -112,6 +112,16 @@ func (m *mockIam) ListPolicies(input *iam.ListPoliciesInput) (*iam.ListPoliciesO
 	return &iam.ListPoliciesOutput{Policies: policies}, nil
 }
 
+func (m *mockIam) ListPoliciesPages(input *iam.ListPoliciesInput, fn func(p *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool)) error {
+	var policies []*iam.Policy
+	for _, p := range m.managedPolicies {
+		policy := &iam.Policy{PolicyId: p.PolicyId, PolicyName: p.PolicyName}
+		policies = append(policies, policy)
+	}
+	fn(&iam.ListPoliciesOutput{Policies: policies}, true)
+	return nil
+}
+
 func (m *mockIam) GetAccountAuthorizationDetails(input *iam.GetAccountAuthorizationDetailsInput) (*iam.GetAccountAuthorizationDetailsOutput, error) {
 	return &iam.GetAccountAuthorizationDetailsOutput{GroupDetailList: m.groups, Policies: m.managedPolicies, RoleDetailList: m.roles, UserDetailList: m.usersDetails}, nil
 }
