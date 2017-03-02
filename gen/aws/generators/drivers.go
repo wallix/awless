@@ -1,7 +1,3 @@
-//go:generate go run $GOFILE
-//go:generate gofmt -s -w ../aws/gen_template_defs.go
-//go:generate gofmt -s -w ../aws/gen_driver_funcs.go
-
 /*
 Copyright 2017 WALLIX
 
@@ -23,17 +19,12 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"text/template"
 
-	"github.com/wallix/awless/template/driver/aws/definitions"
+	"github.com/wallix/awless/gen/aws"
 )
-
-func main() {
-	generateDriverFuncs()
-	generateTemplateTemplates()
-	generateDriverTypes()
-}
 
 func generateTemplateTemplates() {
 	templ, err := template.New("templates_definitions").Parse(templateDefinitions)
@@ -42,12 +33,12 @@ func generateTemplateTemplates() {
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, definitions.Services)
+	err = templ.Execute(&buff, aws.DriversDefs)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/gen_template_defs.go", buff.Bytes(), 0666); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(DRIVERS_DIR, "gen_template_defs.go"), buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -55,18 +46,18 @@ func generateTemplateTemplates() {
 func generateDriverFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
 		"Title": strings.Title,
-	}).Parse(funcsTempl)
+	}).Parse(driversTempl)
 	if err != nil {
 		panic(err)
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, definitions.Services)
+	err = templ.Execute(&buff, aws.DriversDefs)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/gen_driver_funcs.go", buff.Bytes(), 0666); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(DRIVERS_DIR, "gen_driver_funcs.go"), buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -81,12 +72,12 @@ func generateDriverTypes() {
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, definitions.Services)
+	err = templ.Execute(&buff, aws.DriversDefs)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/gen_drivers.go", buff.Bytes(), 0666); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(DRIVERS_DIR, "gen_drivers.go"), buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -128,9 +119,19 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 {{- end }}
 {{- end }}
 }
+
+func DriverSupportedActions() map[string][]string { 
+	supported := make(map[string][]string)
+{{- range $, $service := . }}
+{{- range $index, $def := $service.Drivers }}
+	supported["{{ $def.Action }}"] = append(supported["{{ $def.Action }}"], "{{ $def.Entity }}")
+{{- end }}
+{{- end }}
+	return supported
+}
 `
 
-const funcsTempl = `/* Copyright 2017 WALLIX
+const driversTempl = `/* Copyright 2017 WALLIX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

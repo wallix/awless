@@ -14,19 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package definitions
+package aws
 
 import "github.com/wallix/awless/graph"
-
-func DriverSupportedActions() map[string][]string {
-	supported := make(map[string][]string)
-	for _, s := range Services {
-		for _, def := range s.Drivers {
-			supported[def.Action] = append(supported[def.Action], def.Entity)
-		}
-	}
-	return supported
-}
 
 type param struct {
 	AwsField, AwsType string
@@ -43,12 +33,12 @@ type driver struct {
 	ManualFuncDefinition                      bool
 }
 
-type service struct {
+type driversDef struct {
 	Api     string
 	Drivers []driver
 }
 
-var Services = []service{
+var DriversDefs = []driversDef{
 	{
 		Api: "ec2",
 		Drivers: []driver{

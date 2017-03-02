@@ -19,16 +19,16 @@ package aws
 
 import (
 	"strings"
-	"github.com/wallix/awless/template/driver"
-	"github.com/wallix/awless/logger"
-  "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-  "github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
-  "github.com/aws/aws-sdk-go/service/iam/iamiface"
-  "github.com/aws/aws-sdk-go/service/s3/s3iface"
-  "github.com/aws/aws-sdk-go/service/sns/snsiface"
-  "github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-)
 
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/driver"
+)
 
 type Ec2Driver struct {
 	dryRun bool
@@ -39,198 +39,197 @@ type Ec2Driver struct {
 func (d *Ec2Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *Ec2Driver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func NewEc2Driver(api ec2iface.EC2API) driver.Driver{
+func NewEc2Driver(api ec2iface.EC2API) driver.Driver {
 	return &Ec2Driver{false, logger.DiscardLogger, api}
 }
 
 func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
-	
-case "createvpc":
+
+	case "createvpc":
 		if d.dryRun {
 			return d.Create_Vpc_DryRun, nil
 		}
 		return d.Create_Vpc, nil
-	
-case "deletevpc":
+
+	case "deletevpc":
 		if d.dryRun {
 			return d.Delete_Vpc_DryRun, nil
 		}
 		return d.Delete_Vpc, nil
-	
-case "createsubnet":
+
+	case "createsubnet":
 		if d.dryRun {
 			return d.Create_Subnet_DryRun, nil
 		}
 		return d.Create_Subnet, nil
-	
-case "updatesubnet":
+
+	case "updatesubnet":
 		if d.dryRun {
 			return d.Update_Subnet_DryRun, nil
 		}
 		return d.Update_Subnet, nil
-	
-case "deletesubnet":
+
+	case "deletesubnet":
 		if d.dryRun {
 			return d.Delete_Subnet_DryRun, nil
 		}
 		return d.Delete_Subnet, nil
-	
-case "createinstance":
+
+	case "createinstance":
 		if d.dryRun {
 			return d.Create_Instance_DryRun, nil
 		}
 		return d.Create_Instance, nil
-	
-case "updateinstance":
+
+	case "updateinstance":
 		if d.dryRun {
 			return d.Update_Instance_DryRun, nil
 		}
 		return d.Update_Instance, nil
-	
-case "deleteinstance":
+
+	case "deleteinstance":
 		if d.dryRun {
 			return d.Delete_Instance_DryRun, nil
 		}
 		return d.Delete_Instance, nil
-	
-case "startinstance":
+
+	case "startinstance":
 		if d.dryRun {
 			return d.Start_Instance_DryRun, nil
 		}
 		return d.Start_Instance, nil
-	
-case "stopinstance":
+
+	case "stopinstance":
 		if d.dryRun {
 			return d.Stop_Instance_DryRun, nil
 		}
 		return d.Stop_Instance, nil
-	
-case "checkinstance":
+
+	case "checkinstance":
 		if d.dryRun {
 			return d.Check_Instance_DryRun, nil
 		}
 		return d.Check_Instance, nil
-	
-case "createsecuritygroup":
+
+	case "createsecuritygroup":
 		if d.dryRun {
 			return d.Create_Securitygroup_DryRun, nil
 		}
 		return d.Create_Securitygroup, nil
-	
-case "updatesecuritygroup":
+
+	case "updatesecuritygroup":
 		if d.dryRun {
 			return d.Update_Securitygroup_DryRun, nil
 		}
 		return d.Update_Securitygroup, nil
-	
-case "deletesecuritygroup":
+
+	case "deletesecuritygroup":
 		if d.dryRun {
 			return d.Delete_Securitygroup_DryRun, nil
 		}
 		return d.Delete_Securitygroup, nil
-	
-case "createvolume":
+
+	case "createvolume":
 		if d.dryRun {
 			return d.Create_Volume_DryRun, nil
 		}
 		return d.Create_Volume, nil
-	
-case "deletevolume":
+
+	case "deletevolume":
 		if d.dryRun {
 			return d.Delete_Volume_DryRun, nil
 		}
 		return d.Delete_Volume, nil
-	
-case "attachvolume":
+
+	case "attachvolume":
 		if d.dryRun {
 			return d.Attach_Volume_DryRun, nil
 		}
 		return d.Attach_Volume, nil
-	
-case "createinternetgateway":
+
+	case "createinternetgateway":
 		if d.dryRun {
 			return d.Create_Internetgateway_DryRun, nil
 		}
 		return d.Create_Internetgateway, nil
-	
-case "deleteinternetgateway":
+
+	case "deleteinternetgateway":
 		if d.dryRun {
 			return d.Delete_Internetgateway_DryRun, nil
 		}
 		return d.Delete_Internetgateway, nil
-	
-case "attachinternetgateway":
+
+	case "attachinternetgateway":
 		if d.dryRun {
 			return d.Attach_Internetgateway_DryRun, nil
 		}
 		return d.Attach_Internetgateway, nil
-	
-case "detachinternetgateway":
+
+	case "detachinternetgateway":
 		if d.dryRun {
 			return d.Detach_Internetgateway_DryRun, nil
 		}
 		return d.Detach_Internetgateway, nil
-	
-case "createroutetable":
+
+	case "createroutetable":
 		if d.dryRun {
 			return d.Create_Routetable_DryRun, nil
 		}
 		return d.Create_Routetable, nil
-	
-case "deleteroutetable":
+
+	case "deleteroutetable":
 		if d.dryRun {
 			return d.Delete_Routetable_DryRun, nil
 		}
 		return d.Delete_Routetable, nil
-	
-case "attachroutetable":
+
+	case "attachroutetable":
 		if d.dryRun {
 			return d.Attach_Routetable_DryRun, nil
 		}
 		return d.Attach_Routetable, nil
-	
-case "detachroutetable":
+
+	case "detachroutetable":
 		if d.dryRun {
 			return d.Detach_Routetable_DryRun, nil
 		}
 		return d.Detach_Routetable, nil
-	
-case "createroute":
+
+	case "createroute":
 		if d.dryRun {
 			return d.Create_Route_DryRun, nil
 		}
 		return d.Create_Route, nil
-	
-case "deleteroute":
+
+	case "deleteroute":
 		if d.dryRun {
 			return d.Delete_Route_DryRun, nil
 		}
 		return d.Delete_Route, nil
-	
-case "createtag":
+
+	case "createtag":
 		if d.dryRun {
 			return d.Create_Tag_DryRun, nil
 		}
 		return d.Create_Tag, nil
-	
-case "createkeypair":
+
+	case "createkeypair":
 		if d.dryRun {
 			return d.Create_Keypair_DryRun, nil
 		}
 		return d.Create_Keypair, nil
-	
-case "deletekeypair":
+
+	case "deletekeypair":
 		if d.dryRun {
 			return d.Delete_Keypair_DryRun, nil
 		}
 		return d.Delete_Keypair, nil
-	
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
 }
-
 
 type Elbv2Driver struct {
 	dryRun bool
@@ -241,24 +240,23 @@ type Elbv2Driver struct {
 func (d *Elbv2Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *Elbv2Driver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func NewElbv2Driver(api elbv2iface.ELBV2API) driver.Driver{
+func NewElbv2Driver(api elbv2iface.ELBV2API) driver.Driver {
 	return &Elbv2Driver{false, logger.DiscardLogger, api}
 }
 
 func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
-	
-case "deleteloadbalancer":
+
+	case "deleteloadbalancer":
 		if d.dryRun {
 			return d.Delete_Loadbalancer_DryRun, nil
 		}
 		return d.Delete_Loadbalancer, nil
-	
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
 }
-
 
 type IamDriver struct {
 	dryRun bool
@@ -269,66 +267,65 @@ type IamDriver struct {
 func (d *IamDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *IamDriver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func NewIamDriver(api iamiface.IAMAPI) driver.Driver{
+func NewIamDriver(api iamiface.IAMAPI) driver.Driver {
 	return &IamDriver{false, logger.DiscardLogger, api}
 }
 
 func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
-	
-case "createuser":
+
+	case "createuser":
 		if d.dryRun {
 			return d.Create_User_DryRun, nil
 		}
 		return d.Create_User, nil
-	
-case "deleteuser":
+
+	case "deleteuser":
 		if d.dryRun {
 			return d.Delete_User_DryRun, nil
 		}
 		return d.Delete_User, nil
-	
-case "attachuser":
+
+	case "attachuser":
 		if d.dryRun {
 			return d.Attach_User_DryRun, nil
 		}
 		return d.Attach_User, nil
-	
-case "detachuser":
+
+	case "detachuser":
 		if d.dryRun {
 			return d.Detach_User_DryRun, nil
 		}
 		return d.Detach_User, nil
-	
-case "creategroup":
+
+	case "creategroup":
 		if d.dryRun {
 			return d.Create_Group_DryRun, nil
 		}
 		return d.Create_Group, nil
-	
-case "deletegroup":
+
+	case "deletegroup":
 		if d.dryRun {
 			return d.Delete_Group_DryRun, nil
 		}
 		return d.Delete_Group, nil
-	
-case "attachpolicy":
+
+	case "attachpolicy":
 		if d.dryRun {
 			return d.Attach_Policy_DryRun, nil
 		}
 		return d.Attach_Policy, nil
-	
-case "detachpolicy":
+
+	case "detachpolicy":
 		if d.dryRun {
 			return d.Detach_Policy_DryRun, nil
 		}
 		return d.Detach_Policy, nil
-	
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
 }
-
 
 type S3Driver struct {
 	dryRun bool
@@ -339,42 +336,41 @@ type S3Driver struct {
 func (d *S3Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *S3Driver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func NewS3Driver(api s3iface.S3API) driver.Driver{
+func NewS3Driver(api s3iface.S3API) driver.Driver {
 	return &S3Driver{false, logger.DiscardLogger, api}
 }
 
 func (d *S3Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
-	
-case "createbucket":
+
+	case "createbucket":
 		if d.dryRun {
 			return d.Create_Bucket_DryRun, nil
 		}
 		return d.Create_Bucket, nil
-	
-case "deletebucket":
+
+	case "deletebucket":
 		if d.dryRun {
 			return d.Delete_Bucket_DryRun, nil
 		}
 		return d.Delete_Bucket, nil
-	
-case "createstorageobject":
+
+	case "createstorageobject":
 		if d.dryRun {
 			return d.Create_Storageobject_DryRun, nil
 		}
 		return d.Create_Storageobject, nil
-	
-case "deletestorageobject":
+
+	case "deletestorageobject":
 		if d.dryRun {
 			return d.Delete_Storageobject_DryRun, nil
 		}
 		return d.Delete_Storageobject, nil
-	
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
 }
-
 
 type SnsDriver struct {
 	dryRun bool
@@ -385,42 +381,41 @@ type SnsDriver struct {
 func (d *SnsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *SnsDriver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func NewSnsDriver(api snsiface.SNSAPI) driver.Driver{
+func NewSnsDriver(api snsiface.SNSAPI) driver.Driver {
 	return &SnsDriver{false, logger.DiscardLogger, api}
 }
 
 func (d *SnsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
-	
-case "createtopic":
+
+	case "createtopic":
 		if d.dryRun {
 			return d.Create_Topic_DryRun, nil
 		}
 		return d.Create_Topic, nil
-	
-case "deletetopic":
+
+	case "deletetopic":
 		if d.dryRun {
 			return d.Delete_Topic_DryRun, nil
 		}
 		return d.Delete_Topic, nil
-	
-case "createsubscription":
+
+	case "createsubscription":
 		if d.dryRun {
 			return d.Create_Subscription_DryRun, nil
 		}
 		return d.Create_Subscription, nil
-	
-case "deletesubscription":
+
+	case "deletesubscription":
 		if d.dryRun {
 			return d.Delete_Subscription_DryRun, nil
 		}
 		return d.Delete_Subscription, nil
-	
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
 }
-
 
 type SqsDriver struct {
 	dryRun bool
@@ -431,27 +426,26 @@ type SqsDriver struct {
 func (d *SqsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *SqsDriver) SetLogger(l *logger.Logger) { d.logger = l }
 
-func NewSqsDriver(api sqsiface.SQSAPI) driver.Driver{
+func NewSqsDriver(api sqsiface.SQSAPI) driver.Driver {
 	return &SqsDriver{false, logger.DiscardLogger, api}
 }
 
 func (d *SqsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
-	
-case "createqueue":
+
+	case "createqueue":
 		if d.dryRun {
 			return d.Create_Queue_DryRun, nil
 		}
 		return d.Create_Queue, nil
-	
-case "deletequeue":
+
+	case "deletequeue":
 		if d.dryRun {
 			return d.Delete_Queue_DryRun, nil
 		}
 		return d.Delete_Queue, nil
-	
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
 }
-

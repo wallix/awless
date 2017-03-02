@@ -1,5 +1,3 @@
-//go:generate go run $GOFILE
-//go:generate gofmt -s -w ../aws/gen_api.go
 /*
 Copyright 2017 WALLIX
 
@@ -21,39 +19,36 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"text/template"
 
-	"github.com/wallix/awless/cloud/aws/definitions"
+	"github.com/wallix/awless/gen/aws"
 )
-
-func main() {
-	generateFetcherFuncs()
-}
 
 func generateFetcherFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
 		"Title":   strings.Title,
 		"ToUpper": strings.ToUpper,
 		"Join":    strings.Join,
-	}).Parse(funcsTempl)
+	}).Parse(fetchersTempl)
 
 	if err != nil {
 		panic(err)
 	}
 
 	var buff bytes.Buffer
-	err = templ.Execute(&buff, definitions.Services)
+	err = templ.Execute(&buff, aws.FetchersDefs)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile("../aws/gen_api.go", buff.Bytes(), 0666); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(FETCHERS_DIR, "gen_api.go"), buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
 
-const funcsTempl = `// Auto generated implementation for the AWS cloud service
+const fetchersTempl = `// Auto generated implementation for the AWS cloud service
 
 /*
 Copyright 2017 WALLIX

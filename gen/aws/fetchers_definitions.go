@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package definitions
+package aws
 
 import "github.com/wallix/awless/graph"
 
-type service struct {
+type fetchersDef struct {
 	Name     string
 	Api      []string
 	Fetchers []fetcher
@@ -34,7 +34,7 @@ type fetcher struct {
 	NextPageMarker                              string
 }
 
-var Services = []service{
+var FetchersDefs = []fetchersDef{
 	{
 		Name: "infra",
 		Api:  []string{"ec2", "elbv2"},
