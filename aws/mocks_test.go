@@ -126,6 +126,11 @@ func (m *mockIam) GetAccountAuthorizationDetails(input *iam.GetAccountAuthorizat
 	return &iam.GetAccountAuthorizationDetailsOutput{GroupDetailList: m.groups, Policies: m.managedPolicies, RoleDetailList: m.roles, UserDetailList: m.usersDetails}, nil
 }
 
+func (m *mockIam) GetAccountAuthorizationDetailsPages(input *iam.GetAccountAuthorizationDetailsInput, fn func(p *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&iam.GetAccountAuthorizationDetailsOutput{GroupDetailList: m.groups, Policies: m.managedPolicies, RoleDetailList: m.roles, UserDetailList: m.usersDetails}, true)
+	return nil
+}
+
 func stringInSlice(s string, slice []string) bool {
 	for _, v := range slice {
 		if v == s {

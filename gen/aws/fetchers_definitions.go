@@ -57,8 +57,8 @@ var FetchersDefs = []fetchersDef{
 		Api:  []string{"iam"},
 		Fetchers: []fetcher{
 			{ResourceType: graph.User.String(), AWSType: "iam.UserDetail", ManualFetcher: true},
-			{ResourceType: graph.Group.String(), AWSType: "iam.GroupDetail", ApiMethod: "GetAccountAuthorizationDetails", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "GroupDetailList"},
-			{ResourceType: graph.Role.String(), AWSType: "iam.RoleDetail", ApiMethod: "GetAccountAuthorizationDetails", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "RoleDetailList"},
+			{ResourceType: graph.Group.String(), AWSType: "iam.GroupDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "GroupDetailList", Multipage: true, NextPageMarker: "Marker"},
+			{ResourceType: graph.Role.String(), AWSType: "iam.RoleDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "RoleDetailList", Multipage: true, NextPageMarker: "Marker"},
 			{ResourceType: graph.Policy.String(), AWSType: "iam.Policy", ApiMethod: "ListPoliciesPages", Input: "iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)}", Output: "iam.ListPoliciesOutput", OutputsExtractor: "Policies", Multipage: true, NextPageMarker: "Marker"},
 		},
 	},

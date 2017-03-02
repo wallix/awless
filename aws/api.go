@@ -102,25 +102,31 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
-		out, err := s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{
+		var badResErr error
+		err := s.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{
 			Filter: []*string{
 				awssdk.String(iam.EntityTypeUser),
 			},
-		})
+		},
+			func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
+				for _, output := range out.UserDetailList {
+					userDetails = append(userDetails, output)
+					var res *graph.Resource
+					res, badResErr = newResource(output)
+					if badResErr != nil {
+						return false
+					}
+					g.AddResource(res)
+				}
+				return out.Marker != nil
+			})
 		if err != nil {
 			errc <- err
 			return
 		}
-
-		for _, output := range out.UserDetailList {
-			userDetails = append(userDetails, output)
-			res, err := newResource(output)
-			if err != nil {
-				errc <- err
-				return
-			}
-			g.AddResource(res)
+		if badResErr != nil {
+			errc <- err
+			return
 		}
 	}()
 
@@ -136,7 +142,7 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 				}
 				g.AddResource(res)
 			}
-			return true
+			return page.Marker != nil
 		})
 		if err != nil {
 			errc <- err

@@ -968,43 +968,49 @@ func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.GroupDetail, error) {
 	g := graph.NewGraph()
 	var cloudResources []*iam.GroupDetail
-	out, err := s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}})
+	var badResErr error
+	err := s.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}},
+		func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.GroupDetailList {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.Marker != nil
+		})
 	if err != nil {
-		return nil, cloudResources, err
+		return g, cloudResources, err
 	}
 
-	for _, output := range out.GroupDetailList {
-		cloudResources = append(cloudResources, output)
-		res, err := newResource(output)
-		if err != nil {
-			return g, cloudResources, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, cloudResources, nil
-
+	return g, cloudResources, badResErr
 }
 
 func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error) {
 	g := graph.NewGraph()
 	var cloudResources []*iam.RoleDetail
-	out, err := s.GetAccountAuthorizationDetails(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}})
+	var badResErr error
+	err := s.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}},
+		func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.RoleDetailList {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.Marker != nil
+		})
 	if err != nil {
-		return nil, cloudResources, err
+		return g, cloudResources, err
 	}
 
-	for _, output := range out.RoleDetailList {
-		cloudResources = append(cloudResources, output)
-		res, err := newResource(output)
-		if err != nil {
-			return g, cloudResources, err
-		}
-		g.AddResource(res)
-	}
-
-	return g, cloudResources, nil
-
+	return g, cloudResources, badResErr
 }
 
 func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
