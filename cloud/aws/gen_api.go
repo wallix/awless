@@ -66,6 +66,7 @@ var ResourceTypes = []string{
 	"routetable",
 	"availabilityzone",
 	"loadbalancer",
+	"targetgroup",
 	"user",
 	"group",
 	"role",
@@ -97,6 +98,7 @@ var ServicePerResourceType = map[string]string{
 	"routetable":       "infra",
 	"availabilityzone": "infra",
 	"loadbalancer":     "infra",
+	"targetgroup":      "infra",
 	"user":             "access",
 	"group":            "access",
 	"role":             "access",
@@ -146,6 +148,7 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "routetable")
 	all = append(all, "availabilityzone")
 	all = append(all, "loadbalancer")
+	all = append(all, "targetgroup")
 	return
 }
 
@@ -163,6 +166,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var routetableList []*ec2.RouteTable
 	var availabilityzoneList []*ec2.AvailabilityZone
 	var loadbalancerList []*elbv2.LoadBalancer
+	var targetgroupList []*elbv2.TargetGroup
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -280,6 +284,18 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		var resGraph *graph.Graph
 		var err error
 		resGraph, loadbalancerList, err = s.fetch_all_loadbalancer_graph()
+		if err != nil {
+			errc <- err
+			return
+		}
+		g.AddGraph(resGraph)
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var resGraph *graph.Graph
+		var err error
+		resGraph, targetgroupList, err = s.fetch_all_targetgroup_graph()
 		if err != nil {
 			errc <- err
 			return
@@ -439,6 +455,19 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}
 	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, r := range targetgroupList {
+			for _, fn := range addParentsFns["targetgroup"] {
+				err := fn(g, r)
+				if err != nil {
+					errc <- err
+					return
+				}
+			}
+		}
+	}()
 
 	go func() {
 		wg.Wait()
@@ -485,6 +514,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "loadbalancer":
 		graph, _, err := s.fetch_all_loadbalancer_graph()
+		return graph, err
+	case "targetgroup":
+		graph, _, err := s.fetch_all_targetgroup_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -710,6 +742,27 @@ func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalan
 	}
 
 	return g, cloudResources, badResErr
+}
+
+func (s *Infra) fetch_all_targetgroup_graph() (*graph.Graph, []*elbv2.TargetGroup, error) {
+	g := graph.NewGraph()
+	var cloudResources []*elbv2.TargetGroup
+	out, err := s.DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.TargetGroups {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		g.AddResource(res)
+	}
+
+	return g, cloudResources, nil
+
 }
 
 type Access struct {

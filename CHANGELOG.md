@@ -4,7 +4,7 @@
 
 - Attach/detach policy to user/group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
 - Attach/detach user to group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
-- List AWS load balancers with `awless list loadbalancers`
+- List AWS load balancers and target groups with `awless list loadbalancers/targetgroups`
 
 ### Bugfixes
 

@@ -1,4 +1,5 @@
 /*
+/*
 Copyright 2017 WALLIX
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,6 +109,21 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"State":                 {name: "State", transform: extractFieldFn("Code")},
 		"Type":                  {name: "Type", transform: extractValueFn},
 		"VpcId":                 {name: "VpcId", transform: extractValueFn},
+	},
+	graph.TargetGroup: {
+		"Id":   {name: "TargetGroupArn", transform: extractValueFn},
+		"Name": {name: "TargetGroupName", transform: extractValueFn},
+		"HealthCheckIntervalSeconds": {name: "HealthCheckIntervalSeconds", transform: extractValueFn},
+		"HealthCheckPath":            {name: "HealthCheckPath", transform: extractValueFn},
+		"HealthCheckPort":            {name: "HealthCheckPort", transform: extractValueFn},
+		"HealthCheckProtocol":        {name: "HealthCheckProtocol", transform: extractValueFn},
+		"HealthCheckTimeoutSeconds":  {name: "HealthCheckTimeoutSeconds", transform: extractValueFn},
+		"HealthyThresholdCount":      {name: "HealthyThresholdCount", transform: extractValueFn},
+		"Matcher":                    {name: "Matcher", transform: extractFieldFn("HttpCode")},
+		"Port":                       {name: "Port", transform: extractValueFn},
+		"Protocol":                   {name: "Protocol", transform: extractValueFn},
+		"UnhealthyThresholdCount":    {name: "UnhealthyThresholdCount", transform: extractValueFn},
+		"VpcId":                      {name: "VpcId", transform: extractValueFn},
 	},
 	//IAM
 	graph.User: {

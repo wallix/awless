@@ -112,6 +112,17 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
 		StringColumnDefinition{Prop: "Scheme"},
 	},
+	graph.TargetGroup: {
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "VpcId"},
+		StringColumnDefinition{Prop: "Matcher"},
+		StringColumnDefinition{Prop: "Port"},
+		StringColumnDefinition{Prop: "Protocol"},
+		StringColumnDefinition{Prop: "HealthCheckIntervalSeconds", Friendly: "HCInterval"},
+		StringColumnDefinition{Prop: "HealthCheckPath", Friendly: "HCPath"},
+		StringColumnDefinition{Prop: "HealthCheckPort", Friendly: "HCPort"},
+		StringColumnDefinition{Prop: "HealthCheckProtocol", Friendly: "HCProtocol"},
+	},
 	//IAM
 	graph.User: {
 		StringColumnDefinition{Prop: "Id"},

@@ -81,6 +81,9 @@ func (m *mockELB) DescribeLoadBalancersPages(input *elbv2.DescribeLoadBalancersI
 	fn(&elbv2.DescribeLoadBalancersOutput{}, true)
 	return nil
 }
+func (m *mockELB) DescribeTargetGroups(input *elbv2.DescribeTargetGroupsInput) (*elbv2.DescribeTargetGroupsOutput, error) {
+	return &elbv2.DescribeTargetGroupsOutput{}, nil
+}
 
 type mockIam struct {
 	iamiface.IAMAPI
