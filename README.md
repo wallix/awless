@@ -24,7 +24,7 @@
 
 - Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Multiple output formats either human (table, trees, ...) or machine readable (csv, json, ...): `--format`
-- Explore a resource given only an *id* or name (properties, relations, dependencies, ...): `awless show`
+- Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
@@ -117,13 +117,13 @@ Note that filters:
 
 `awless show` is quite useful to get a good overview on a resource and to show where its stands in your cloud.
 
-You can either provide the resource _id_, or simpler the resource's _name_. `awless` resolves the id behind the scene (this is the concept of _aliasing_)
+The show command needs only one arg: a resource _id_, resource's _name_ or even an arn. Just copy/paste it and `awless` resolves the actual id of the resource behind the scene
 
-    # show instance info: relations to subnets, vpcs, region, ...
+    # show instance info via its id: relations to subnets, vpcs, region, ...
     awless show i-34vgbh23jn        
 
-    # show bucket info via its alias: objects it contains, siblings, etc...
-    awless show @my-bucket          
+    # show bucket info via its name: objects it contains, siblings, etc...
+    awless show my-bucket          
 
     # show user using local data: policy applying to this user, etc...
     # snappy! will not refetch but work with the local graph

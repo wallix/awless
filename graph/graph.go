@@ -17,6 +17,8 @@ limitations under the License.
 package graph
 
 import (
+	"fmt"
+
 	"github.com/google/badwolf/triple"
 	"github.com/google/badwolf/triple/node"
 	"github.com/google/badwolf/triple/predicate"
@@ -48,8 +50,8 @@ func (g *Graph) AddResource(resources ...*Resource) error {
 	return nil
 }
 
-func (g *Graph) AddGraph(graph *Graph) {
-	g.rdfG.AddGraph(graph.rdfG)
+func (g *Graph) AddGraph(gph *Graph) {
+	g.rdfG.AddGraph(gph.rdfG)
 }
 
 func (g *Graph) AddParentRelation(parent, child *Resource) error {
@@ -88,52 +90,114 @@ func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
 }
 
 func (g *Graph) FindResource(id string) (*Resource, error) {
-	triples, err := g.rdfG.TriplesForGivenPredicate(rdf.HasTypePredicate)
+	byId := &ById{id}
+	resources, err := byId.Resolve(g)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, triple := range triples {
-		sub := triple.Subject()
-		if sub.ID().String() == id {
-			return g.GetResource(newResourceType(sub), sub.ID().String())
-		}
+	if len(resources) == 1 {
+		return resources[0], nil
+	} else if len(resources) > 1 {
+		return nil, fmt.Errorf("multiple resources with id '%s' found", id)
 	}
 
 	return nil, nil
 }
 
 func (g *Graph) FindResourcesByProperty(key string, value interface{}) ([]*Resource, error) {
-	var res []*Resource
-	prop := Property{Key: key, Value: value}
+	byProperty := ByProperty{key, value}
+	return byProperty.Resolve(g)
+}
+
+func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
+	byType := &ByType{t}
+	return byType.Resolve(g)
+}
+
+func (g *Graph) ResolveResources(resolvers ...Resolver) ([]*Resource, error) {
+	var resources []*Resource
+	for _, resolv := range resolvers {
+		rs, err := resolv.Resolve(g)
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, rs...)
+	}
+
+	return resources, nil
+}
+
+type Resolver interface {
+	Resolve(g *Graph) ([]*Resource, error)
+}
+
+type ById struct {
+	id string
+}
+
+func (r *ById) Resolve(g *Graph) ([]*Resource, error) {
+	var resources []*Resource
+
+	triples, err := g.rdfG.TriplesForGivenPredicate(rdf.HasTypePredicate)
+	if err != nil {
+		return resources, err
+	}
+
+	for _, triple := range triples {
+		sub := triple.Subject()
+		if sub.ID().String() == r.id {
+			res, err := g.GetResource(newResourceType(sub), sub.ID().String())
+			if err != nil {
+				return resources, nil
+			}
+			resources = append(resources, res)
+		}
+	}
+
+	return resources, nil
+}
+
+type ByProperty struct {
+	Name string
+	Val  interface{}
+}
+
+func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
+	var resources []*Resource
+
+	prop := Property{Key: r.Name, Value: r.Val}
 	propL, err := prop.marshalRDF()
 	if err != nil {
-		return res, err
+		return resources, err
 	}
 	triples, err := g.rdfG.TriplesForPredicateObject(rdf.PropertyPredicate, propL)
 	if err != nil {
-		return res, err
+		return resources, err
 	}
 	for _, t := range triples {
 		s := t.Subject()
 		r, err := g.GetResource(newResourceType(s), s.ID().String())
 		if err != nil {
-			return res, err
+			return resources, err
 		}
-		res = append(res, r)
+		resources = append(resources, r)
 	}
-	return res, nil
+	return resources, nil
 }
 
-func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
+type ByType struct {
+	typ ResourceType
+}
+
+func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
 	var res []*Resource
-	nodes, err := g.rdfG.NodesForType(t.ToRDFString())
+	nodes, err := g.rdfG.NodesForType(r.typ.ToRDFString())
 	if err != nil {
 		return res, err
 	}
 
 	for _, node := range nodes {
-		r, err := g.GetResource(t, node.ID().String())
+		r, err := g.GetResource(r.typ, node.ID().String())
 		if err != nil {
 			return res, err
 		}
