@@ -37,14 +37,17 @@ func init() {
 }
 
 var showCmd = &cobra.Command{
-	Use:                "show",
-	Short:              "Show a resource and its interrelations given id or alias (i.e: resource's name)",
+	Use:   "show REFERENCE",
+	Short: "Show a resource and its interrelations given a REFERENCE: id or name",
+	Example: `  awless show i-8d43b21b            # show an instance via its id
+  awless show AIDAJ3Z24GOKHTZO4OIX6 # show a user via its id
+  awless show jsmith                # show a user via its name`,
 	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("id required")
+			return errors.New("REFERENCE required. See examples.")
 		}
 
 		id := args[0]
