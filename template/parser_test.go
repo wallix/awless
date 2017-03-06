@@ -40,6 +40,24 @@ func TestTemplateParsing(t *testing.T) {
 					return nil
 				},
 			},
+			{
+				input: "attach policy arn=@arn:aws:iam::aws:policy/AmazonS3FullAccess",
+				verifyFn: func(tpl *Template) error {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return nil
+				},
+			},
+			{
+				input: "vpc_1 = create vpc",
+				verifyFn: func(tpl *Template) error {
+					if err := isDeclarationNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return nil
+				},
+			},
 		}
 
 		for _, tcase := range tcases {

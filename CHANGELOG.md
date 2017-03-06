@@ -9,6 +9,7 @@
 ### Bugfixes
 
 - [#12](https://github.com/wallix/awless/issues/12): Support AWS pagination when fetching resources in AWS IAM.
+- Template parsing: allow digits in refs; allow regular chars in alias declaration
 
 ## 0.0.16 [2017-03-01]
 
