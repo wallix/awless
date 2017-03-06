@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"strconv"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -75,14 +76,29 @@ func (m *mockEc2) DescribeAvailabilityZones(input *ec2.DescribeAvailabilityZones
 
 type mockELB struct {
 	elbv2iface.ELBV2API
+	loadBalancerPages [][]*elbv2.LoadBalancer
+	targetGroups      []*elbv2.TargetGroup
+	listeners         map[string][]*elbv2.Listener
+	targetHealths     map[string][]*elbv2.TargetHealthDescription
 }
 
 func (m *mockELB) DescribeLoadBalancersPages(input *elbv2.DescribeLoadBalancersInput, fn func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
-	fn(&elbv2.DescribeLoadBalancersOutput{}, true)
+	for i, page := range m.loadBalancerPages {
+		fn(&elbv2.DescribeLoadBalancersOutput{LoadBalancers: page, NextMarker: awssdk.String(strconv.Itoa(i + 1))},
+			i < len(m.loadBalancerPages),
+		)
+	}
 	return nil
 }
 func (m *mockELB) DescribeTargetGroups(input *elbv2.DescribeTargetGroupsInput) (*elbv2.DescribeTargetGroupsOutput, error) {
-	return &elbv2.DescribeTargetGroupsOutput{}, nil
+	return &elbv2.DescribeTargetGroupsOutput{TargetGroups: m.targetGroups}, nil
+}
+func (m *mockELB) DescribeListenersPages(input *elbv2.DescribeListenersInput, fn func(p *elbv2.DescribeListenersOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&elbv2.DescribeListenersOutput{Listeners: m.listeners[awssdk.StringValue(input.LoadBalancerArn)]}, true)
+	return nil
+}
+func (m *mockELB) DescribeTargetHealth(input *elbv2.DescribeTargetHealthInput) (*elbv2.DescribeTargetHealthOutput, error) {
+	return &elbv2.DescribeTargetHealthOutput{TargetHealthDescriptions: m.targetHealths[awssdk.StringValue(input.TargetGroupArn)]}, nil
 }
 
 type mockIam struct {

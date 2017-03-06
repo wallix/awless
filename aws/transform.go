@@ -61,6 +61,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.LoadBalancerArn), graph.LoadBalancer)
 	case *elbv2.TargetGroup:
 		res = graph.InitResource(awssdk.StringValue(ss.TargetGroupArn), graph.TargetGroup)
+	case *elbv2.Listener:
+		res = graph.InitResource(awssdk.StringValue(ss.ListenerArn), graph.Listener)
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)

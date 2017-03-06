@@ -26,6 +26,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -225,8 +226,29 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{RouteTableId: awssdk.String("rt_1"), VpcId: awssdk.String("vpc_1"), Associations: []*ec2.RouteTableAssociation{{RouteTableId: awssdk.String("rt_1"), SubnetId: awssdk.String("subnet_1")}}},
 	}
 
+	//ELB
+	lbPages := [][]*elbv2.LoadBalancer{
+		{{LoadBalancerArn: awssdk.String("lb_1"), LoadBalancerName: awssdk.String("my_loadbalancer"), VpcId: awssdk.String("vpc_1")}, {LoadBalancerArn: awssdk.String("lb_2"), VpcId: awssdk.String("vpc_2")}},
+		{{LoadBalancerArn: awssdk.String("lb_3"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*string{awssdk.String("secgroup_1"), awssdk.String("secgroup_2")}}},
+	}
+	targetGroups := []*elbv2.TargetGroup{
+		{TargetGroupArn: awssdk.String("tg_1"), VpcId: awssdk.String("vpc_1"), LoadBalancerArns: []*string{awssdk.String("lb_1"), awssdk.String("lb_3")}},
+		{TargetGroupArn: awssdk.String("tg_2"), VpcId: awssdk.String("vpc_2"), LoadBalancerArns: []*string{awssdk.String("lb_2")}},
+	}
+	listeners := map[string][]*elbv2.Listener{
+		"lb_1": {{ListenerArn: awssdk.String("list_1"), LoadBalancerArn: awssdk.String("lb_1")}, {ListenerArn: awssdk.String("list_1.2"), LoadBalancerArn: awssdk.String("lb_1")}},
+		"lb_2": {{ListenerArn: awssdk.String("list_2"), LoadBalancerArn: awssdk.String("lb_2")}},
+		"lb_3": {{ListenerArn: awssdk.String("list_3"), LoadBalancerArn: awssdk.String("lb_3")}},
+	}
+	targetHealths := map[string][]*elbv2.TargetHealthDescription{
+		"tg_1": {{HealthCheckPort: awssdk.String("80"), Target: &elbv2.TargetDescription{Id: awssdk.String("inst_1"), Port: awssdk.Int64(443)}}},
+		"tg_2": {{Target: &elbv2.TargetDescription{Id: awssdk.String("inst_2"), Port: awssdk.Int64(80)}}, {Target: &elbv2.TargetDescription{Id: awssdk.String("inst_3"), Port: awssdk.Int64(80)}}},
+	}
+
 	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
-	infra := Infra{EC2API: mock, ELBV2API: &mockELB{}, region: "eu-west-1"}
+	mockLb := &mockELB{loadBalancerPages: lbPages, targetGroups: targetGroups, listeners: listeners, targetHealths: targetHealths}
+	infra := Infra{EC2API: mock, ELBV2API: mockLb, region: "eu-west-1"}
+	InfraService = &infra
 
 	g, err := infra.FetchResources()
 	if err != nil {
@@ -342,7 +364,7 @@ func diffText(actual, expected string) error {
 	expecteds := strings.Split(expected, "\n")
 
 	if len(actuals) != len(expecteds) {
-		return fmt.Errorf("text diff: not same number of lines: got %d, want %d", len(actuals), len(expecteds))
+		return fmt.Errorf("text diff: not same number of lines:\ngot \n%s\n\nwant\n%s\n", actual, expected)
 	}
 
 	for i := 0; i < len(actuals); i++ {

@@ -23,6 +23,7 @@ import (
 	"reflect"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/graph"
 )
@@ -34,9 +35,9 @@ const (
 )
 
 type funcBuilder struct {
-	parent              graph.ResourceType
-	fieldName, listName string
-	relation            int
+	parent                              graph.ResourceType
+	fieldName, listName, stringListName string
+	relation                            int
 }
 
 type addParentFn func(*graph.Graph, interface{}) error
@@ -66,6 +67,20 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: graph.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
 		funcBuilder{parent: graph.Instance, fieldName: "InstanceId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
+	graph.LoadBalancer.String(): {
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
+		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: graph.AvailabilityZone, fieldName: "ZoneName", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: graph.SecurityGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
+	},
+	graph.Listener.String(): {
+		funcBuilder{parent: graph.LoadBalancer, fieldName: "LoadBalancerArn"}.build(),
+	},
+	graph.TargetGroup.String(): {
+		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
+		funcBuilder{parent: graph.LoadBalancer, stringListName: "LoadBalancerArns", relation: APPLIES_ON}.build(),
+		fetchTargetsAndAddRelations,
+	},
 	graph.Vpc.String():              {addRegionParent},
 	graph.AvailabilityZone.String(): {addRegionParent},
 	graph.Keypair.String():          {addRegionParent},
@@ -77,11 +92,14 @@ var addParentsFns = map[string][]addParentFn{
 }
 
 func (fb funcBuilder) build() addParentFn {
-	if fb.listName != "" {
+	switch {
+	case fb.listName != "":
 		return fb.addRelationListWithField()
+	case fb.stringListName != "":
+		return fb.addRelationListWithStringField()
+	default:
+		return fb.addRelationWithField()
 	}
-
-	return fb.addRelationWithField()
 }
 
 func (fb funcBuilder) addRelationWithField() addParentFn {
@@ -111,6 +129,44 @@ func (fb funcBuilder) addRelationWithField() addParentFn {
 		}
 
 		return addRelation(g, parent, res, fb.relation)
+	}
+}
+
+func (fb funcBuilder) addRelationListWithStringField() addParentFn {
+	return func(g *graph.Graph, i interface{}) error {
+		structField, err := verifyValidStructField(i, fb.stringListName)
+		if err != nil {
+			return err
+		}
+
+		res, err := initResource(i)
+		if err != nil {
+			return err
+		}
+
+		if !structField.IsValid() || structField.Kind() != reflect.Slice {
+			return fmt.Errorf("add parent to %s: field not a slice: %T", res.Id(), structField.Kind())
+		}
+
+		for i := 0; i < structField.Len(); i++ {
+			str, ok := structField.Index(i).Interface().(*string)
+			if !ok {
+				return fmt.Errorf("add parent to %s: not a string pointer: %T", res.Id(), str)
+			}
+
+			if awssdk.StringValue(str) == "" {
+				continue
+			}
+			parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
+			if err != nil {
+				return err
+			}
+
+			if err = addRelation(g, parent, res, fb.relation); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 }
 
@@ -257,13 +313,38 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 	if !ok {
 		return fmt.Errorf("aws fetch: not a user, but a %T", i)
 	}
-	n, err := g.GetResource(graph.User, awssdk.StringValue(user.UserId))
+	n, err := initResource(user)
 	if err != nil {
 		return err
 	}
 
 	for _, group := range user.GroupList {
 		parent, err := g.GetResource(graph.Group, awssdk.StringValue(group))
+		if err != nil {
+			return err
+		}
+		g.AddAppliesOnRelation(parent, n)
+	}
+	return nil
+}
+
+func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
+	group, ok := i.(*elbv2.TargetGroup)
+	if !ok {
+		return fmt.Errorf("add targets relation: not a target group, but a %T", i)
+	}
+	parent, err := initResource(group)
+	if err != nil {
+		return err
+	}
+
+	targets, err := InfraService.(*Infra).DescribeTargetHealth(&elbv2.DescribeTargetHealthInput{TargetGroupArn: group.TargetGroupArn})
+	if err != nil {
+		return err
+	}
+
+	for _, t := range targets.TargetHealthDescriptions {
+		n, err := g.GetResource(graph.Instance, awssdk.StringValue(t.Target.Id))
 		if err != nil {
 			return err
 		}

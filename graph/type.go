@@ -38,6 +38,7 @@ const (
 	//loadbalancer
 	LoadBalancer ResourceType = "loadbalancer"
 	TargetGroup  ResourceType = "targetgroup"
+	Listener     ResourceType = "listener"
 
 	//access
 	User   ResourceType = "user"

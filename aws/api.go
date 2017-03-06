@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -352,4 +353,60 @@ func (s *Queue) fetch_all_queue_graph() (*graph.Graph, []*string, error) {
 
 	return g, cloudResources, nil
 
+}
+
+func (s *Infra) fetch_all_listener_graph() (*graph.Graph, []*elbv2.Listener, error) {
+	g := graph.NewGraph()
+	errc := make(chan error)
+	resultc := make(chan *elbv2.Listener)
+	var wg sync.WaitGroup
+	var cloudResources []*elbv2.Listener
+
+	err := s.DescribeLoadBalancersPages(&elbv2.DescribeLoadBalancersInput{},
+		func(out *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for _, lb := range out.LoadBalancers {
+					err := s.DescribeListenersPages(&elbv2.DescribeListenersInput{LoadBalancerArn: lb.LoadBalancerArn},
+						func(out *elbv2.DescribeListenersOutput, lastPage bool) (shouldContinue bool) {
+							for _, listen := range out.Listeners {
+								resultc <- listen
+							}
+							return out.NextMarker != nil
+						})
+					if err != nil {
+						errc <- err
+					}
+				}
+			}()
+			return out.NextMarker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultc)
+	}()
+
+	for {
+		select {
+		case err := <-errc:
+			if err != nil {
+				return g, cloudResources, err
+			}
+		case listener, ok := <-resultc:
+			if !ok {
+				return g, cloudResources, nil
+			}
+			cloudResources = append(cloudResources, listener)
+			res, err := newResource(listener)
+			if err != nil {
+				return g, cloudResources, err
+			}
+			g.AddResource(res)
+		}
+	}
 }

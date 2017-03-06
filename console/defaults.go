@@ -123,6 +123,14 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "HealthCheckPort", Friendly: "HCPort"},
 		StringColumnDefinition{Prop: "HealthCheckProtocol", Friendly: "HCProtocol"},
 	},
+	graph.Listener: {
+		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "Actions"},
+		StringColumnDefinition{Prop: "LoadBalancer"},
+		StringColumnDefinition{Prop: "Port"},
+		StringColumnDefinition{Prop: "Protocol"},
+		StringColumnDefinition{Prop: "SslPolicy"},
+	},
 	//IAM
 	graph.User: {
 		StringColumnDefinition{Prop: "Id"},

@@ -125,6 +125,15 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"UnhealthyThresholdCount":    {name: "UnhealthyThresholdCount", transform: extractValueFn},
 		"VpcId":                      {name: "VpcId", transform: extractValueFn},
 	},
+	graph.Listener: {
+		"Id":           {name: "ListenerArn", transform: extractValueFn},
+		"Certificates": {name: "Certificates", transform: extractSliceValues("CertificateArn")},
+		"Actions":      {name: "DefaultActions", transform: extractSliceValues("Type")},
+		"LoadBalancer": {name: "LoadBalancerArn", transform: extractValueFn},
+		"Port":         {name: "Port", transform: extractValueFn},
+		"Protocol":     {name: "Protocol", transform: extractValueFn},
+		"SslPolicy":    {name: "SslPolicy", transform: extractValueFn},
+	},
 	//IAM
 	graph.User: {
 		"Id":                   {name: "UserId", transform: extractValueFn},
