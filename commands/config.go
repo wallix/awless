@@ -40,6 +40,7 @@ func init() {
 var configCmd = &cobra.Command{
 	Use:                "config",
 	Short:              "get, set, unset or list configuration values",
+	Example:            "  awless config set region eu-west-1\n  awless config unset instance.count",
 	PersistentPreRunE:  initAwlessEnvHook,
 	PersistentPostRunE: saveHistoryHook,
 }

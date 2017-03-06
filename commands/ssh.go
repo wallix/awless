@@ -35,8 +35,9 @@ func init() {
 }
 
 var sshCmd = &cobra.Command{
-	Use:                "ssh [user@]instance",
-	Short:              "Launch a SSH (Secure Shell) session connecting to an instance given an id or alias",
+	Use:                "ssh [USER@]INSTANCE",
+	Short:              "Launch a SSH (Secure Shell) session to an instance given an id or alias",
+	Example:            "  awless ssh i-8d43b21b   # using the instance id\n  awless ssh @redis-prod  # using the instance name",
 	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 

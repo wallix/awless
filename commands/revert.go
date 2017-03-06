@@ -29,14 +29,15 @@ func init() {
 }
 
 var revertCmd = &cobra.Command{
-	Use:                "revert",
+	Use:                "revert REVERTID",
 	Short:              "Revert a template execution given a revert ID (see `awless log` to list revert ids)",
+	Example:            "  awless revert 01BA7RV6ES86PZYCM3H28WM6KZ",
 	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initConfigStruct, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(c *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("revert id required (see `awless log` to list revert ids)")
+			return errors.New("REVERTID required (see `awless log` to list revert ids)")
 		}
 
 		revertId := args[0]

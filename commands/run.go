@@ -51,8 +51,9 @@ func init() {
 }
 
 var runCmd = &cobra.Command{
-	Use:                "run",
+	Use:                "run FILEPATH",
 	Short:              "Run a template given a filepath",
+	Example:            "  awless run ~/templates/my-infra.txt",
 	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initConfigStruct, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
