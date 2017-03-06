@@ -175,7 +175,7 @@ func validateTemplate(tpl *template.Template) {
 func createDriverCommands(action string, entities []string) *cobra.Command {
 	actionCmd := &cobra.Command{
 		Use:         action,
-		Short:       strings.Join(entities, ", "),
+		Short:       oneLinerShortDesc(action, entities),
 		Long:        fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
 		Annotations: map[string]string{"one-liner": "true"},
 	}
@@ -322,4 +322,13 @@ func sprintProcessedParams(processed map[string]interface{}) string {
 		str = append(str, fmt.Sprintf("%s=%v", k, v))
 	}
 	return strings.Join(str, ", ")
+}
+
+func oneLinerShortDesc(action string, entities []string) string {
+	if len(entities) > 5 {
+		return fmt.Sprintf("%s, \u2026 (see `awless %s -h` for more)", strings.Join(entities[0:5], ", "), action)
+	} else {
+		return strings.Join(entities, ", ")
+	}
+
 }

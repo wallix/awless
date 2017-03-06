@@ -42,8 +42,8 @@ func init() {
 
 var RootCmd = &cobra.Command{
 	Use:   "awless",
-	Short: "Manage your cloud",
-	Long:  "Awless is a powerful command line tool to inspect, sync and manage your infrastructure",
+	Short: "Manage  and explore your cloud",
+	Long:  "awless is a powerful CLI to explore, sync and manage your infrastructure",
 	BashCompletionFunction: bash_completion_func,
 	RunE: func(c *cobra.Command, args []string) error {
 		if versionFlag {
