@@ -70,41 +70,45 @@ var runCmd = &cobra.Command{
 		templ, err := template.Parse(string(content))
 		exitOn(err)
 
-		exitOn(runTemplate(templ))
+		env := template.NewEnv()
+		env.AddFillers(config.Defaults)
+		env.MissingHolesFunc = missingHolesStdinFunc()
+
+		exitOn(runTemplate(templ, env))
 
 		return nil
 	},
 }
 
-func runTemplate(templ *template.Template) error {
+func missingHolesStdinFunc() func(string) interface{} {
+	var count int
+	return func(hole string) interface{} {
+		if count < 1 {
+			fmt.Println("Please specify (Ctrl+C to quit):")
+		}
+		var resp string
+		ask := func() error {
+			fmt.Printf("%s ? ", hole)
+			_, err := fmt.Scanln(&resp)
+			return err
+		}
+		for err := ask(); err != nil; err = ask() {
+			logger.Errorf("invalid value: %s", err)
+		}
+		count++
+		return resp
+	}
+}
+
+func runTemplate(templ *template.Template, env *template.Env) error {
 	validateTemplate(templ)
 
-	resolved, err := templ.ResolveHoles(config.Defaults)
+	var err error
+	templ, env, err = template.Compile(templ, env)
 	exitOn(err)
 
-	if len(resolved) > 0 {
-		logger.Verbosef("used default params: %s", sprintProcessedParams(resolved))
-	}
-
-	fills := make(map[string]interface{})
-	if holes := templ.GetHolesValuesSet(); len(holes) > 0 {
-		fmt.Println("Please specify (Ctrl+C to quit):")
-		for _, hole := range holes {
-			var resp string
-			ask := func() error {
-				fmt.Printf("%s ? ", hole)
-				_, err := fmt.Scanln(&resp)
-				return err
-			}
-			for err := ask(); err != nil; err = ask() {
-				logger.Errorf("invalid value: %s", err)
-			}
-			fills[hole] = resp
-		}
-	}
-
-	if len(fills) > 0 {
-		templ.ResolveHoles(fills)
+	if len(env.Resolved) > 0 {
+		logger.Verbosef("used default/given params: %s", sprintProcessedParams(env.Resolved))
 	}
 
 	validateTemplate(templ)
@@ -194,20 +198,17 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				exitOn(err)
 
 				templ, err := def.GetTemplate()
-				if err != nil {
-					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", def, err))
-				}
-				logger.ExtraVerbosef("template definition: %s", def)
-
-				_, err = templ.ResolveHoles(
-					cliTpl.GetNormalizedParams(),
-					resolveAlias(cliTpl.GetNormalizedAliases(), def.Entity),
-				)
 				exitOn(err)
 
-				templ.MergeParams(cliTpl.GetNormalizedParams())
+				logger.ExtraVerbosef("template definition: %s", def)
 
-				exitOn(runTemplate(templ))
+				env := template.NewEnv()
+				env.AddExternalParams(cliTpl.GetParams())
+				env.AddFillers(config.Defaults)
+				env.AliasFunc = resolveAliasFunc(def.Entity)
+				env.MissingHolesFunc = missingHolesStdinFunc()
+
+				exitOn(runTemplate(templ, env))
 				return nil
 			}
 		}
@@ -289,28 +290,25 @@ func printReport(t *template.TemplateExecution) {
 	}
 }
 
-func resolveAlias(aliases map[string]string, entity string) map[string]interface{} {
-	graphForResource := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[entity])
+func resolveAliasFunc(entity string) func(k, v string) string {
+	gph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[entity])
 
-	resolved := make(map[string]interface{})
-
-	for k, v := range aliases {
-		var t string
-		if strings.Split(k, ".")[1] == "id" {
-			t = strings.Split(k, ".")[0]
-		} else {
-			t = strings.Split(k, ".")[1]
+	return func(key, alias string) string {
+		t := key
+		if strings.Contains(t, ".") {
+			if strings.Split(key, ".")[1] == "id" {
+				t = strings.Split(key, ".")[0]
+			} else {
+				t = strings.Split(key, ".")[1]
+			}
 		}
-		rT := graph.ResourceType(t)
-		a := graph.Alias(v)
-		if id, ok := a.ResolveToId(graphForResource, rT); ok {
-			resolved[k] = id
-		} else {
-			logger.Infof("alias '%s' not in local snapshot. You might want to perform an `awless sync`\n", a)
+		a := graph.Alias(alias)
+		if id, ok := a.ResolveToId(gph, graph.ResourceType(t)); ok {
+			return id
 		}
+		return ""
 	}
 
-	return resolved
 }
 
 func sprintProcessedParams(processed map[string]interface{}) string {

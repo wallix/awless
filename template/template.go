@@ -92,85 +92,15 @@ func (s *Template) Visit(v Visitor) error {
 	return v.Visit(s.CommandNodesIterator())
 }
 
-func (s *Template) GetHolesValuesSet() (values []string) {
-	holes := make(map[string]bool)
-	each := func(expr *ast.CommandNode) {
-		for _, hole := range expr.Holes {
-			holes[hole] = true
-		}
-	}
-	s.visitCommandNodes(each)
-
-	for k := range holes {
-		values = append(values, k)
-	}
-
-	return
-}
-
-func (s *Template) GetNormalizedAliases() map[string]string {
-	aliases := make(map[string]string)
-	each := func(expr *ast.CommandNode) {
-		for k, v := range expr.Aliases {
-			if !strings.Contains(k, ".") {
-				aliases[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-			} else {
-				aliases[k] = v
-			}
-		}
-	}
-	s.visitCommandNodes(each)
-	return aliases
-}
-
-func (s *Template) GetNormalizedParams() map[string]interface{} {
+func (s *Template) GetParams() map[string]interface{} {
 	params := make(map[string]interface{})
 	each := func(expr *ast.CommandNode) {
 		for k, v := range expr.Params {
-			if !strings.Contains(k, ".") {
-				params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-			} else {
-				params[k] = v
-			}
+			params[k] = v
 		}
 	}
 	s.visitCommandNodes(each)
 	return params
-}
-
-func (s *Template) MergeParams(newParams map[string]interface{}) {
-	each := func(expr *ast.CommandNode) {
-		for k, v := range newParams {
-			if strings.SplitN(k, ".", 2)[0] == expr.Entity {
-				if expr.Params == nil {
-					expr.Params = make(map[string]interface{})
-				}
-				expr.Params[strings.SplitN(k, ".", 2)[1]] = v
-			}
-		}
-	}
-	s.visitCommandNodes(each)
-}
-
-func (s *Template) ResolveHoles(refs ...map[string]interface{}) (map[string]interface{}, error) {
-	all := make(map[string]interface{})
-	for _, ref := range refs {
-		for k, v := range ref {
-			all[k] = v
-		}
-	}
-
-	resolved := make(map[string]interface{})
-	each := func(expr *ast.CommandNode) {
-		processed := expr.ProcessHoles(all)
-		for key, v := range processed {
-			resolved[expr.Entity+"."+key] = v
-		}
-	}
-
-	s.visitCommandNodes(each)
-
-	return resolved, nil
 }
 
 func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {

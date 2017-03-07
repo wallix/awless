@@ -22,6 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/template"
 )
 
 func init() {
@@ -53,7 +54,7 @@ var revertCmd = &cobra.Command{
 
 		fmt.Printf("%s\n", reverted)
 
-		exitOn(runTemplate(reverted))
+		exitOn(runTemplate(reverted, template.NewEnv()))
 
 		return nil
 	},

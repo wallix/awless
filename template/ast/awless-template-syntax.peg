@@ -25,7 +25,7 @@ Param <- <Identifier> { p.addParamKey(text) }
 Identifier <- [a-zA-Z0-9-_.]+
 
 Value <- HoleValue {  p.addParamHoleValue(text) }
-        / AliasValue {  p.addParamAliasValue(text) }
+        / AliasValue {  p.addParamValue(text) }
         / RefValue {  p.addParamRefValue(text) }
         / <CidrValue> { p.addParamCidrValue(text) }
         / <IpValue> { p.addParamIpValue(text) }
@@ -42,7 +42,7 @@ IntValue <- [0-9]+
 IntRangeValue <- [0-9]+'-'[0-9]+
 
 RefValue <- '$'<Identifier>
-AliasValue <- '@'<StringValue>
+AliasValue <- <'@'StringValue>
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
 
 Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)* { p.LineDone() }

@@ -153,7 +153,7 @@ func TestTemplateParsing(t *testing.T) {
 			{
 				input: `create instance subnet=@my-subnet`,
 				verifyFn: func(n ast.Node) error {
-					return assertAliases(n, map[string]string{"subnet": "my-subnet"})
+					return assertParams(n, map[string]interface{}{"subnet": "@my-subnet"})
 				},
 			},
 			{
@@ -174,10 +174,7 @@ func TestTemplateParsing(t *testing.T) {
 			{
 				input: `myinstance = create instance type={instance.type} cidr=10.0.0.0/25 subnet=@default-subnet vpc=$myvpc`,
 				verifyFn: func(n ast.Node) error {
-					if err := assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/25"}); err != nil {
-						return err
-					}
-					if err := assertAliases(n, map[string]string{"subnet": "default-subnet"}); err != nil {
+					if err := assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/25", "subnet": "@default-subnet"}); err != nil {
 						return err
 					}
 					if err := assertHoles(n, map[string]string{"type": "instance.type"}); err != nil {
@@ -302,18 +299,6 @@ func assertRefs(n ast.Node, expected map[string]string) error {
 	return compare(cmd.Refs, expected)
 }
 
-func assertAliases(n ast.Node, expected map[string]string) error {
-	compare := func(got, want map[string]string) error {
-		if !reflect.DeepEqual(got, want) {
-			return fmt.Errorf("aliases: got %#v, want %#v", got, want)
-		}
-		return nil
-	}
-
-	cmd := extractCommandNode(n)
-	return compare(cmd.Aliases, expected)
-}
-
 func assertHoles(n ast.Node, expected map[string]string) error {
 	compare := func(got, want map[string]string) error {
 		if !reflect.DeepEqual(got, want) {
@@ -368,10 +353,6 @@ func verifyCommandNode(n ast.Node, expAction, expEntity string, refs map[string]
 
 	if got, want := expr.Holes, holes; !reflect.DeepEqual(got, want) {
 		return fmt.Errorf("holes: got %#v, want %#v", got, want)
-	}
-
-	if got, want := expr.Aliases, aliases; !reflect.DeepEqual(got, want) {
-		return fmt.Errorf("aliases: got %#v, want %#v", got, want)
 	}
 
 	return nil

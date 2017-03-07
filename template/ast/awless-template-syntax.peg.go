@@ -323,7 +323,7 @@ func (p *Peg) Execute() {
 		case ruleAction5:
 			p.addParamHoleValue(text)
 		case ruleAction6:
-			p.addParamAliasValue(text)
+			p.addParamValue(text)
 		case ruleAction7:
 			p.addParamRefValue(text)
 		case ruleAction8:
@@ -1835,12 +1835,12 @@ func (p *Peg) Init() {
 										case '@':
 											{
 												position125 := position
-												if buffer[position] != rune('@') {
-													goto l71
-												}
-												position++
 												{
 													position126 := position
+													if buffer[position] != rune('@') {
+														goto l71
+													}
+													position++
 													if !_rules[ruleStringValue]() {
 														goto l71
 													}
@@ -2215,12 +2215,12 @@ func (p *Peg) Init() {
 											case '@':
 												{
 													position182 := position
-													if buffer[position] != rune('@') {
-														goto l75
-													}
-													position++
 													{
 														position183 := position
+														if buffer[position] != rune('@') {
+															goto l75
+														}
+														position++
 														if !_rules[ruleStringValue]() {
 															goto l75
 														}
@@ -2549,7 +2549,7 @@ func (p *Peg) Init() {
 		nil,
 		/* 15 RefValue <- <('$' <Identifier>)> */
 		nil,
-		/* 16 AliasValue <- <('@' <StringValue>)> */
+		/* 16 AliasValue <- <<('@' StringValue)>> */
 		nil,
 		/* 17 HoleValue <- <('{' WhiteSpacing <Identifier> WhiteSpacing '}')> */
 		nil,
@@ -2734,7 +2734,7 @@ func (p *Peg) Init() {
 		nil,
 		/* 34 Action5 <- <{  p.addParamHoleValue(text) }> */
 		nil,
-		/* 35 Action6 <- <{  p.addParamAliasValue(text) }> */
+		/* 35 Action6 <- <{  p.addParamValue(text) }> */
 		nil,
 		/* 36 Action7 <- <{  p.addParamRefValue(text) }> */
 		nil,

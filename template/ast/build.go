@@ -40,7 +40,6 @@ func (a *AST) addParamKey(text string) {
 	if node.Params == nil {
 		node.Refs = make(map[string]string)
 		node.Params = make(map[string]interface{})
-		node.Aliases = make(map[string]string)
 		node.Holes = make(map[string]string)
 	}
 	a.currentKey = text
@@ -81,11 +80,6 @@ func (a *AST) addParamIpValue(text string) {
 func (a *AST) addParamRefValue(text string) {
 	node := a.currentCommand()
 	node.Refs[a.currentKey] = text
-}
-
-func (a *AST) addParamAliasValue(text string) {
-	node := a.currentCommand()
-	node.Aliases[a.currentKey] = text
 }
 
 func (a *AST) addParamHoleValue(text string) {

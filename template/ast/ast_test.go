@@ -28,24 +28,21 @@ func TestCloneAST(t *testing.T) {
 		Ident: "myvar",
 		Expr: &CommandNode{
 			Action: "create", Entity: "vpc",
-			Refs:    map[string]string{"myname": "name"},
-			Params:  map[string]interface{}{"count": 1},
-			Aliases: map[string]string{"subnet": "my-subnet"},
-			Holes:   make(map[string]string),
+			Refs:   map[string]string{"myname": "name"},
+			Params: map[string]interface{}{"count": 1},
+			Holes:  make(map[string]string),
 		}}}, &Statement{Node: &DeclarationNode{
 		Ident: "myothervar",
 		Expr: &CommandNode{
 			Action: "create", Entity: "subnet",
-			Refs:    make(map[string]string),
-			Params:  make(map[string]interface{}),
-			Aliases: make(map[string]string),
-			Holes:   map[string]string{"vpc": "myvar"},
+			Refs:   make(map[string]string),
+			Params: make(map[string]interface{}),
+			Holes:  map[string]string{"vpc": "myvar"},
 		}}}, &Statement{Node: &CommandNode{
 		Action: "create", Entity: "instance",
-		Refs:    make(map[string]string),
-		Params:  make(map[string]interface{}),
-		Aliases: make(map[string]string),
-		Holes:   map[string]string{"subnet": "myothervar"},
+		Refs:   make(map[string]string),
+		Params: make(map[string]interface{}),
+		Holes:  map[string]string{"subnet": "myothervar"},
 	}},
 	)
 

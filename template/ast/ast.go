@@ -57,7 +57,6 @@ type CommandNode struct {
 	Action, Entity string
 	Refs           map[string]string
 	Params         map[string]interface{}
-	Aliases        map[string]string
 	Holes          map[string]string
 }
 
@@ -93,10 +92,9 @@ func (n *DeclarationNode) String() string {
 func (n *CommandNode) clone() Node {
 	cmd := &CommandNode{
 		Action: n.Action, Entity: n.Entity,
-		Refs:    make(map[string]string),
-		Params:  make(map[string]interface{}),
-		Aliases: make(map[string]string),
-		Holes:   make(map[string]string),
+		Refs:   make(map[string]string),
+		Params: make(map[string]interface{}),
+		Holes:  make(map[string]string),
 	}
 
 	for k, v := range n.Refs {
@@ -104,9 +102,6 @@ func (n *CommandNode) clone() Node {
 	}
 	for k, v := range n.Params {
 		cmd.Params[k] = v
-	}
-	for k, v := range n.Aliases {
-		cmd.Aliases[k] = v
 	}
 	for k, v := range n.Holes {
 		cmd.Holes[k] = v
@@ -122,9 +117,6 @@ func (n *CommandNode) String() string {
 	}
 	for k, v := range n.Params {
 		all = append(all, fmt.Sprintf("%s=%v", k, v))
-	}
-	for k, v := range n.Aliases {
-		all = append(all, fmt.Sprintf("%s=@%s", k, v))
 	}
 	for k, v := range n.Holes {
 		all = append(all, fmt.Sprintf("%s={%s}", k, v))
