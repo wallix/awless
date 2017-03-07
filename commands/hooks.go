@@ -43,30 +43,35 @@ func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
 	if err := config.InitAwlessEnv(); err != nil {
 		return fmt.Errorf("cannot init awless environment: %s", err)
 	}
+	if awsRegionGlobalFlag != "" {
+		if err := config.SetVolatile(config.RegionConfigKey, awsRegionGlobalFlag); err != nil {
+			return err
+		}
+	} else if envRegion := os.Getenv("AWS_DEFAULT_REGION"); envRegion != "" {
+		if err := config.SetVolatile(config.RegionConfigKey, envRegion); err != nil {
+			return err
+		}
+	}
+	if awsProfileGlobalFlag != "" {
+		if err := config.SetVolatile(config.ProfileConfigKey, awsProfileGlobalFlag); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func initCloudServicesHook(cmd *cobra.Command, args []string) error {
-	if localFlag {
+	if localGlobalFlag {
 		return nil
 	}
-	db, err, dbclose := database.Current()
-	if err != nil {
-		return fmt.Errorf("init cloud service: database error: %s", err)
-	}
-	profile, _ := db.GetDefaultString(database.ProfileKey)
-	region := db.MustGetDefaultRegion()
-	dbclose()
-
+	profile := config.GetAWSProfile()
+	region := config.GetAWSRegion()
+	logger.Verbosef("loading AWS session with profile '%s' and region '%s'", profile, region)
 	if err := aws.InitServices(region, profile); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func initConfigStruct(cmd *cobra.Command, args []string) error {
-	return config.LoadConfig()
 }
 
 func initSyncerHook(cmd *cobra.Command, args []string) error {
@@ -77,10 +82,10 @@ func initSyncerHook(cmd *cobra.Command, args []string) error {
 
 func initLoggerHook(cmd *cobra.Command, args []string) error {
 	var flag int
-	if verboseFlag {
+	if verboseGlobalFlag {
 		flag = logger.VerboseF
 	}
-	if extraVerboseFlag {
+	if extraVerboseGlobalFlag {
 		flag = flag | logger.ExtraVerboseF
 	}
 

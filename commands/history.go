@@ -22,8 +22,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/sync/repo"
@@ -51,7 +51,7 @@ var historyCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		region := database.MustGetDefaultRegion()
+		region := config.GetAWSRegion()
 
 		root := graph.InitResource(region, graph.Region)
 
@@ -74,8 +74,8 @@ var historyCmd = &cobra.Command{
 		}
 
 		for _, diff := range diffs {
-			displayRevisionDiff(diff, aws.AccessService.Name(), root, verboseFlag)
-			displayRevisionDiff(diff, aws.InfraService.Name(), root, verboseFlag)
+			displayRevisionDiff(diff, aws.AccessService.Name(), root, verboseGlobalFlag)
+			displayRevisionDiff(diff, aws.InfraService.Name(), root, verboseGlobalFlag)
 		}
 
 		return nil

@@ -18,12 +18,10 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
-	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/config"
 )
 
 var keysOnly bool
@@ -40,7 +38,7 @@ func init() {
 var configCmd = &cobra.Command{
 	Use:                "config",
 	Short:              "get, set, unset or list configuration values",
-	Example:            "  awless config set region eu-west-1\n  awless config unset instance.count",
+	Example:            "  awless config set aws.region eu-west-1\n  awless config unset instance.count",
 	PersistentPreRunE:  initAwlessEnvHook,
 	PersistentPostRunE: saveHistoryHook,
 }
@@ -50,33 +48,29 @@ var configListCmd = &cobra.Command{
 	Short: "List all configuration values",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err, close := database.Current()
-		exitOn(err)
-		defer close()
-		d, err := db.GetDefaults()
-		exitOn(err)
-		for k, v := range d {
-			if keysOnly {
+		if keysOnly {
+			for k := range config.Config {
 				fmt.Println(k)
-			} else {
-				fmt.Printf("%s: %v\t(%[2]T)\n", k, v)
 			}
+			for k := range config.Defaults {
+				fmt.Println(k)
+			}
+		} else {
+			fmt.Println(config.Display())
 		}
 	},
 }
 
 var configGetCmd = &cobra.Command{
-	Use:   "get {key}",
+	Use:   "get KEY",
 	Short: "Get a configuration value",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("not enough parameters")
 		}
-		db, err, close := database.Current()
-		exitOn(err)
-		defer close()
-		d, ok := db.GetDefault(args[0])
+
+		d, ok := config.Get(args[0])
 		if !ok {
 			fmt.Println("this parameter has not been set")
 		} else {
@@ -87,89 +81,41 @@ var configGetCmd = &cobra.Command{
 }
 
 var configSetCmd = &cobra.Command{
-	Use:   "set {key} {value}",
+	Use:   "set KEY [VALUE]",
 	Short: "Set or update a configuration value",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return fmt.Errorf("not enough parameters")
 		}
-		key := strings.TrimSpace(args[0])
-		var value string
-		if len(args) == 1 {
-			switch key {
-			case "region":
-				value = askRegion()
-			default:
-				fmt.Print("Value ? > ")
-				fmt.Scan(&value)
-			}
-		} else {
-			value = args[1]
-			switch key {
-			case "region":
-				if !aws.IsValidRegion(value) {
-					fmt.Println("Invalid region!")
-					value = askRegion()
-				}
-			}
+		switch len(args) {
+		case 0:
+			return fmt.Errorf("not enough parameters")
+		case 1:
+			exitOn(config.InteractiveSet(strings.TrimSpace(args[0])))
+		default:
+			exitOn(config.Set(strings.TrimSpace(args[0]), strings.TrimSpace(args[1])))
 		}
-		if value == "" {
-			return fmt.Errorf("invalid empty value")
-		}
-
-		var i interface{}
-
-		if num, nerr := strconv.Atoi(value); nerr == nil {
-			i = num
-		} else if b, berr := strconv.ParseBool(value); berr == nil {
-			i = b
-		} else {
-			i = value
-		}
-
-		db, err, close := database.Current()
-		exitOn(err)
-		defer close()
-		exitOn(db.SetDefault(key, i))
 
 		return nil
 	},
 }
 
 var configUnsetCmd = &cobra.Command{
-	Use:   "unset {key}",
+	Use:   "unset KEY",
 	Short: "Unset a configuration value",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("not enough parameters")
 		}
-		db, err, close := database.Current()
-		exitOn(err)
-		defer close()
-		_, ok := db.GetDefault(args[0])
+		_, ok := config.Get(args[0])
 		if !ok {
 			fmt.Println("this parameter has not been set")
 		} else {
-			db.UnsetDefault(args[0])
+
+			exitOn(config.Unset(args[0]))
 		}
 		return nil
 	},
-}
-
-func askRegion() string {
-	var region string
-	fmt.Println("Please choose one region:")
-
-	fmt.Println(strings.Join(aws.AllRegions(), ", "))
-	fmt.Println()
-	fmt.Print("Value ? > ")
-	fmt.Scan(&region)
-	for !aws.IsValidRegion(region) {
-		fmt.Println("Invalid!")
-		fmt.Print("Value ? > ")
-		fmt.Scan(&region)
-	}
-	return region
 }

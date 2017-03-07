@@ -53,6 +53,9 @@ func InitSession(region, profile string) (*session.Session, error) {
 }
 
 func InitServices(region, profile string) error {
+	if region == "" {
+		return errors.New("empty AWS region. Set it with `awless config set aws.region`")
+	}
 	sess, err := InitSession(region, profile)
 	if err != nil {
 		return err

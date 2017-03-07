@@ -31,29 +31,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func TestRegionsValid(t *testing.T) {
-	if got, want := stringInSlice("eu-west-1", AllRegions()), true; got != want {
-		t.Errorf("got %t, want %t", got, want)
-	}
-	if got, want := stringInSlice("us-east-1", AllRegions()), true; got != want {
-		t.Errorf("got %t, want %t", got, want)
-	}
-	if got, want := stringInSlice("us-west-1", AllRegions()), true; got != want {
-		t.Errorf("got %t, want %t", got, want)
-	}
-	if got, want := stringInSlice("eu-test-1", AllRegions()), false; got != want {
-		t.Errorf("got %t, want %t", got, want)
-	}
-	for _, k := range AllRegions() {
-		if got, want := IsValidRegion(k), true; got != want {
-			t.Errorf("got %t, want %t", got, want)
-		}
-	}
-	if got, want := IsValidRegion("aa-test-10"), false; got != want {
-		t.Errorf("got %t, want %t", got, want)
-	}
-}
-
 func TestBuildAccessRdfGraph(t *testing.T) {
 	managedPolicies := []*iam.ManagedPolicyDetail{
 		{PolicyId: awssdk.String("managed_policy_1"), PolicyName: awssdk.String("nmanaged_policy_1")},

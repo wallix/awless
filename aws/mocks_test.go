@@ -147,15 +147,6 @@ func (m *mockIam) GetAccountAuthorizationDetailsPages(input *iam.GetAccountAutho
 	return nil
 }
 
-func stringInSlice(s string, slice []string) bool {
-	for _, v := range slice {
-		if v == s {
-			return true
-		}
-	}
-	return false
-}
-
 type mockS3 struct {
 	s3iface.S3API
 	bucketsACL       map[string][]*s3.Grant

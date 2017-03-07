@@ -1,12 +1,18 @@
 ## 0.0.17 [unreleased]
 
+If you have any data or config issues, you can run `rm -Rf ~/.awless/` to start with a fresh install.
+
 ### Features
 
 - Attach/detach policy to user/group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
 - Attach/detach user to group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
 - List AWS load balancers, target groups and listeners with `awless list loadbalancers/targetgroups/listeners`. Show their relations with, e.g. `awless show LOAD_BALANCER`.
 - `awless show` resolves automatically on id, name or arn without any prefixing (previously it was '@')
-- global default menu with clearer one-liner display
+- Global default menu with clearer one-liner display
+- [#55](https://github.com/wallix/awless/issues/55): Dynamically change AWS region/profile with global flags `--aws-region us-west-1` or `--aws-profile myprofile`.
+- [#73](https://github.com/wallix/awless/issues/73): `AWS_DEFAULT_REGION` env variable now loaded in `awless`. It takes precedence over `aws.region`.
+- Better output of `awless config list` (doc per variable, etc.).
+- Config setters now provide dialogs (ex: `awless config set instance.type` or `awless config set aws.region`).
 
 ### Bugfixes
 

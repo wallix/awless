@@ -55,7 +55,7 @@ func init() {
 var listCmd = &cobra.Command{
 	Use:                "list",
 	Aliases:            []string{"ls"},
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 	Short:              "List various type of resources",
 }
@@ -68,7 +68,7 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *graph.Graph
 
-			if localFlag {
+			if localGlobalFlag {
 				if srvName, ok := aws.ServicePerResourceType[resType]; ok {
 					g = sync.LoadCurrentLocalGraph(srvName)
 				} else {

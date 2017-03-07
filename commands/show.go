@@ -58,7 +58,7 @@ var showCmd = &cobra.Command{
 
 		resource, gph = findResourceInLocalGraphs(id)
 
-		if resource == nil && localFlag {
+		if resource == nil && localGlobalFlag {
 			logger.Info(notFound)
 			return nil
 		} else if resource == nil {
@@ -70,7 +70,7 @@ var showCmd = &cobra.Command{
 			}
 		}
 
-		if !localFlag {
+		if !localGlobalFlag {
 			srv, err := cloud.GetServiceForType(resource.Type().String())
 			exitOn(err)
 			logger.Verbosef("syncing service for %s type", resource.Type())

@@ -55,7 +55,7 @@ var inspectCmd = &cobra.Command{
 		}
 
 		var graphs []*graph.Graph
-		if localFlag {
+		if localGlobalFlag {
 			for _, name := range inspector.Services() {
 				graphs = append(graphs, sync.LoadCurrentLocalGraph(name))
 			}

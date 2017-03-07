@@ -25,6 +25,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
+	awsconfig "github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
@@ -69,7 +70,7 @@ var sshCmd = &cobra.Command{
 			cred.User = user
 			client, err = console.NewSSHClient(config.KeysDir, cred)
 			exitOn(err)
-			if verboseFlag {
+			if verboseGlobalFlag {
 				log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
 			}
 			if err = console.InteractiveTerminal(client); err != nil {
@@ -77,7 +78,7 @@ var sshCmd = &cobra.Command{
 			}
 			return nil
 		}
-		for _, user := range aws.DefaultAMIUsers {
+		for _, user := range awsconfig.DefaultAMIUsers {
 			cred.User = user
 			client, err = console.NewSSHClient(config.KeysDir, cred)
 			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {

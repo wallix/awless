@@ -20,12 +20,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/wallix/awless/aws"
-	"github.com/wallix/awless/database"
+	awsconfig "github.com/wallix/awless/aws/config"
 )
 
 var (
@@ -52,96 +50,58 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
-		fmt.Println("First install. Welcome!\n")
-		_, err = resolveAndSetDefaults()
-		if err != nil {
+		fmt.Println("First install. Welcome!")
+		fmt.Println()
+		if err = InitConfigAndDefaults(); err != nil {
 			return err
 		}
+
+		if _, err = overwriteDefaults(); err != nil {
+			return err
+		}
+	}
+
+	if err = LoadAll(); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func resolveAndSetDefaults() (string, error) {
+func overwriteDefaults() (string, error) {
 	var region, ami string
 
 	if sess, err := session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}); err == nil {
 		region = awssdk.StringValue(sess.Config.Region)
 	}
 
-	if aws.IsValidRegion(region) {
+	if awsconfig.IsValidRegion(region) {
 		fmt.Printf("Found existing AWS region '%s'. Setting it as your default region.\n", region)
 	} else {
 		fmt.Println("Could not find any AWS region in your environment. Please choose one region:")
-		region = askRegion()
+		region = awsconfig.StdinRegionSelector()
 	}
 
 	var hasAMI bool
-	if ami, hasAMI = amiPerRegion[region]; !hasAMI {
+	if ami, hasAMI = awsconfig.AmiPerRegion[region]; !hasAMI {
 		fmt.Printf("Could not find a default ami for your region %s\n. Set it manually with `awless config set instance.image ...`", region)
 	}
 
-	defaults := map[string]interface{}{
-		database.SyncAuto:         true,
-		database.RegionKey:        region,
-		database.InstanceTypeKey:  "t2.micro",
-		database.InstanceCountKey: 1,
-		database.ProfileKey:       "default",
+	if err := Set(RegionConfigKey, region); err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
 	}
-
 	if hasAMI {
-		defaults[database.InstanceImageKey] = ami
-	}
-
-	db, err, close := database.Current()
-	if err != nil {
-		return region, fmt.Errorf("database error: %s", err)
-	}
-	defer close()
-	for k, v := range defaults {
-		err := db.SetDefault(k, v)
-		if err != nil {
-			return region, err
+		if err := Set(instanceImageDefaultsKey, ami); err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
 		}
 	}
 
-	fmt.Println("\nThose defaults have been set in your config:")
-	for k, v := range defaults {
-		fmt.Printf("\t%s = %v\n", k, v)
-	}
-	fmt.Println("\nShow and update config with `awless config`. Ex: `awless config set region`")
-	fmt.Println("\nAll done. Enjoy!\n")
+	fmt.Println("\nThose parameters have been set in your config:")
+	fmt.Println(Display())
+
+	fmt.Println("\nShow and update config with `awless config`. Ex: `awless config set aws.region`")
+	fmt.Println("\nAll done. Enjoy!")
+	fmt.Println()
 
 	return region, nil
-}
-
-func askRegion() string {
-	var region string
-
-	fmt.Println(strings.Join(aws.AllRegions(), ", "))
-	fmt.Println()
-	fmt.Print("Copy/paste one region > ")
-	fmt.Scan(&region)
-	for !aws.IsValidRegion(region) {
-		fmt.Print("Invalid! Copy/paste one valid region > ")
-		fmt.Scan(&region)
-	}
-	return region
-}
-
-var amiPerRegion = map[string]string{
-	"us-east-1":      "ami-0b33d91d",
-	"us-east-2":      "ami-c55673a0",
-	"us-west-1":      "ami-165a0876",
-	"us-west-2":      "ami-f173cc91",
-	"ca-central-1":   "ami-ebed508f",
-	"eu-west-1":      "ami-70edb016",
-	"eu-west-2":      "ami-f1949e95",
-	"eu-central-1":   "ami-af0fc0c0",
-	"ap-southeast-1": "ami-dc9339bf",
-	"ap-southeast-2": "ami-1c47407f",
-	"ap-northeast-1": "ami-56d4ad31",
-	"ap-northeast-2": "ami-dac312b4",
-	"ap-south-1":     "ami-f9daac96",
-	"sa-east-1":      "ami-80086dec",
 }

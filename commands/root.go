@@ -22,17 +22,21 @@ import (
 )
 
 var (
-	verboseFlag      bool
-	extraVerboseFlag bool
-	localFlag        bool
-	versionFlag      bool
+	verboseGlobalFlag      bool
+	extraVerboseGlobalFlag bool
+	localGlobalFlag        bool
+	versionGlobalFlag      bool
+	awsRegionGlobalFlag    string
+	awsProfileGlobalFlag   string
 )
 
 func init() {
-	RootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
-	RootCmd.PersistentFlags().BoolVarP(&extraVerboseFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (i.e: debug) for all commands")
-	RootCmd.PersistentFlags().BoolVar(&localFlag, "local", false, "Work offline only with synced/local resources")
-	RootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print awless version")
+	RootCmd.PersistentFlags().BoolVarP(&verboseGlobalFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
+	RootCmd.PersistentFlags().BoolVarP(&extraVerboseGlobalFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (i.e: debug) for all commands")
+	RootCmd.PersistentFlags().BoolVar(&localGlobalFlag, "local", false, "Work offline only with synced/local resources")
+	RootCmd.PersistentFlags().StringVar(&awsRegionGlobalFlag, "aws-region", "", "Overwrite AWS region")
+	RootCmd.PersistentFlags().StringVar(&awsProfileGlobalFlag, "aws-profile", "", "Overwrite AWS profile")
+	RootCmd.Flags().BoolVar(&versionGlobalFlag, "version", false, "Print awless version")
 
 	cobra.AddTemplateFunc("IsCmdAnnotatedOneliner", IsCmdAnnotatedOneliner)
 	cobra.AddTemplateFunc("HasCmdOnelinerChilds", HasCmdOnelinerChilds)
@@ -46,7 +50,7 @@ var RootCmd = &cobra.Command{
 	Long:  "awless is a powerful CLI to explore, sync and manage your infrastructure",
 	BashCompletionFunction: bash_completion_func,
 	RunE: func(c *cobra.Command, args []string) error {
-		if versionFlag {
+		if versionGlobalFlag {
 			printVersion(c, args)
 			return nil
 		}
