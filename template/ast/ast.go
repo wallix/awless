@@ -17,6 +17,7 @@ limitations under the License.
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 )
@@ -128,7 +129,17 @@ func (n *CommandNode) String() string {
 	for k, v := range n.Holes {
 		all = append(all, fmt.Sprintf("%s={%s}", k, v))
 	}
-	return fmt.Sprintf("%s %s %s", n.Action, n.Entity, strings.Join(all, " "))
+
+	var buff bytes.Buffer
+
+	fmt.Fprintf(&buff, "%s %s", n.Action, n.Entity)
+
+	if len(all) > 0 {
+		fmt.Fprintf(&buff, " %s", strings.Join(all, " "))
+	}
+
+	return buff.String()
+
 }
 
 func (n *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {

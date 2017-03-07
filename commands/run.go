@@ -193,7 +193,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				cliTpl, err := template.Parse(text)
 				exitOn(err)
 
-				templ, err := template.Parse(def.String())
+				templ, err := def.GetTemplate()
 				if err != nil {
 					exitOn(fmt.Errorf("internal error parsing template definition\n`%s`\n%s", def, err))
 				}

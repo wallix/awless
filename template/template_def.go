@@ -44,6 +44,10 @@ func (def TemplateDefinition) String() string {
 	return fmt.Sprintf("%s %s %s %s", def.Action, def.Entity, strings.Join(required, " "), strings.Join(tags, " "))
 }
 
+func (def TemplateDefinition) GetTemplate() (*Template, error) {
+	return Parse(def.String())
+}
+
 func (def TemplateDefinition) Required() []string {
 	return def.RequiredParams
 }
