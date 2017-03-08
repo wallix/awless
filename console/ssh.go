@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -31,17 +30,17 @@ import (
 type Credentials struct {
 	IP      string
 	User    string
-	KeyName string
+	KeyPath string
 }
 
-func NewSSHClient(keyDirectory string, cred *Credentials) (*ssh.Client, error) {
-	keyPath := filepath.Join(keyDirectory, cred.KeyName)
-	privateKey, err := ioutil.ReadFile(keyPath)
+func NewSSHClient(cred *Credentials) (*ssh.Client, error) {
+	privateKey, err := ioutil.ReadFile(cred.KeyPath)
 	if os.IsNotExist(err) {
-		privateKey, err = ioutil.ReadFile(keyPath + ".pem")
+		privateKey, err = ioutil.ReadFile(cred.KeyPath + ".pem")
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("You don't have the '%s' key in your awless key folder '%s'.", cred.KeyName, keyDirectory)
+			return nil, fmt.Errorf("Could not find a SSH key at path '%s'.", cred.KeyPath)
 		}
+		cred.KeyPath = cred.KeyPath + ".pem"
 	}
 	if err != nil {
 		return nil, err

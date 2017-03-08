@@ -29,27 +29,47 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cred, err := instanceCredentialsFromGraph(g, "inst_1")
+	cred, err := instanceCredentialsFromGraph(g, "inst_1", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got, want := cred.IP, "1.2.3.4"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := cred.KeyName, "my-key-name"; got != want {
+	if got, want := filepath.Base(cred.KeyPath), "my-key-name"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	if got, want := cred.User, ""; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	_, err = instanceCredentialsFromGraph(g, "inst_12")
+	cred, err = instanceCredentialsFromGraph(g, "inst_1", "/path/toward/myinst.key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := cred.IP, "1.2.3.4"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := cred.KeyPath, "/path/toward/myinst.key"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	cred, err = instanceCredentialsFromGraph(g, "inst_2", "/path/toward/inst2.key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := cred.IP, "2.3.4.5"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := cred.KeyPath, "/path/toward/inst2.key"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	_, err = instanceCredentialsFromGraph(g, "inst_12", "")
 	if err == nil {
 		t.Fatal("expected error got none")
 	}
-	if _, err := instanceCredentialsFromGraph(g, "inst_3"); err == nil {
+	if _, err := instanceCredentialsFromGraph(g, "inst_3", ""); err == nil {
 		t.Fatal("expected error got none")
 	}
-	if _, err := instanceCredentialsFromGraph(g, "inst_2"); err == nil {
+	if _, err := instanceCredentialsFromGraph(g, "inst_2", ""); err == nil {
 		t.Fatal("expected error got none")
 	}
 }

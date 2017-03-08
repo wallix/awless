@@ -35,14 +35,19 @@ import (
 	"github.com/wallix/awless/logger"
 )
 
+var keyPathFlag string
+
 func init() {
 	RootCmd.AddCommand(sshCmd)
+	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path toward the identity (key file) to use to connect through SSH")
 }
 
 var sshCmd = &cobra.Command{
-	Use:                "ssh [USER@]INSTANCE",
-	Short:              "Launch a SSH (Secure Shell) session to an instance given an id or alias",
-	Example:            "  awless ssh i-8d43b21b   # using the instance id\n  awless ssh @redis-prod  # using the instance name",
+	Use:   "ssh [USER@]INSTANCE",
+	Short: "Launch a SSH (Secure Shell) session to an instance given an id or alias",
+	Example: `  awless ssh i-8d43b21b                       # using the instance id
+  awless ssh ec2-user@redis-prod              # using the instance name and specify a user
+  awless ssh @redis-prod -i ./path/toward/key # with a keyfile`,
 	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
@@ -67,31 +72,32 @@ var sshCmd = &cobra.Command{
 			instanceID = id
 		}
 
-		cred, err := instanceCredentialsFromGraph(instancesGraph, instanceID)
+		cred, err := instanceCredentialsFromGraph(instancesGraph, instanceID, keyPathFlag)
 		exitOn(err)
+
 		var client *ssh.Client
 		if user != "" {
 			cred.User = user
-			client, err = console.NewSSHClient(config.KeysDir, cred)
+			client, err = console.NewSSHClient(cred)
 			exitOn(err)
-			exitOn(sshConnect(client, path.Join(config.KeysDir, cred.KeyName+".pem"), user, cred.IP))
+			exitOn(sshConnect(client, cred))
 			return nil
 		}
 		for _, user := range awsconfig.DefaultAMIUsers {
 			cred.User = user
-			client, err = console.NewSSHClient(config.KeysDir, cred)
+			client, err = console.NewSSHClient(cred)
 			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
 				continue
 			}
 			exitOn(err)
-			exitOn(sshConnect(client, path.Join(config.KeysDir, cred.KeyName+".pem"), user, cred.IP))
+			exitOn(sshConnect(client, cred))
 			return nil
 		}
 		return err
 	},
 }
 
-func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*console.Credentials, error) {
+func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string) (*console.Credentials, error) {
 	inst, err := g.GetResource(graph.Instance, instanceID)
 	if err != nil {
 		return nil, err
@@ -101,22 +107,27 @@ func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*console.C
 	if !ok {
 		return nil, fmt.Errorf("no public IP address for instance %s", instanceID)
 	}
-
-	key, ok := inst.Properties["KeyName"]
-	if !ok {
-		return nil, fmt.Errorf("no access key set for instance %s", instanceID)
+	var keyPath string
+	if keyPathFlag != "" {
+		keyPath = keyPathFlag
+	} else {
+		key, ok := inst.Properties["KeyName"]
+		if !ok {
+			return nil, fmt.Errorf("no access key set for instance %s", instanceID)
+		}
+		keyPath = path.Join(config.KeysDir, fmt.Sprint(key))
 	}
-	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
+	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyPath: keyPath}, nil
 }
 
-func sshConnect(sshClient *ssh.Client, keyPath, user, IP string) error {
+func sshConnect(sshClient *ssh.Client, cred *console.Credentials) error {
 	sshPath, sshErr := exec.LookPath("ssh")
 	if sshErr == nil {
-		logger.Infof("Login as '%s' on '%s', using key '%s' with ssh client at '%s'", user, IP, keyPath, sshPath)
-		args := []string{"ssh", "-i", keyPath, fmt.Sprintf("%s@%s", user, IP)}
+		logger.Infof("Login as '%s' on '%s', using key '%s' with ssh client at '%s'", cred.User, cred.IP, cred.KeyPath, sshPath)
+		args := []string{"ssh", "-i", cred.KeyPath, fmt.Sprintf("%s@%s", cred.User, cred.IP)}
 		return syscall.Exec(sshPath, args, os.Environ())
 	} else { // Fallback SSH
-		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using key '%s'", user, IP, keyPath)
+		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using key '%s'", cred.User, cred.IP, cred.KeyPath)
 		return console.InteractiveTerminal(sshClient)
 	}
 }
