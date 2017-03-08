@@ -56,6 +56,10 @@ func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
 		if err := config.SetVolatile(config.ProfileConfigKey, awsProfileGlobalFlag); err != nil {
 			return err
 		}
+	} else if envProfile := os.Getenv("AWS_DEFAULT_PROFILE"); envProfile != "" {
+		if err := config.SetVolatile(config.ProfileConfigKey, envProfile); err != nil {
+			return err
+		}
 	}
 	return nil
 }

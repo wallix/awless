@@ -62,6 +62,16 @@ Then, you can download and store them to `~/.aws/credentials` (Unix) or `%UserPr
 
 For more options, see [Installation (wiki)](https://github.com/wallix/awless/wiki/Installation#setup-your-aws-account-with-awless).
 
+## Changing AWS region or profile
+
+There is 3 ways to customize the AWS region/profile used in `awless`:
+
+1. `awless` config: `aws.region`/`aws.profile`. Ex: `awless config set aws.region eu-west-1`
+2. AWS env variables: `AWS_DEFAULT_REGION`/`AWS_DEFAULT_PROFILE`
+3. Global flags: `--aws-region`/`--aws-profile`. Ex: `awless list subnets -v --aws-region eu-west-1` (Note: `-v` verbose flag shows region and profile)
+
+At runtime, *the latests overwrite the previous ones*. For example, the `AWS_DEFAULT_REGION` env variable takes precedence over `awless` config key. Similarly, the `--aws-region` flag takes precedence over `AWS_DEFAULT_REGION` and `awless` config key.
+
 ## Setup shell autocompletion
 
 Awless has commands, subcommands and flag completion. It becomes really useful for CRUD oneliner when managing resources for example.

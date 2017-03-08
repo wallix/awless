@@ -11,6 +11,7 @@ If you have any data or config issues, you can run `rm -Rf ~/.awless/` to start 
 - Global default menu with clearer one-liner display
 - [#55](https://github.com/wallix/awless/issues/55): Dynamically change AWS region/profile with global flags `--aws-region us-west-1` or `--aws-profile myprofile`.
 - [#73](https://github.com/wallix/awless/issues/73): `AWS_DEFAULT_REGION` env variable now loaded in `awless`. It takes precedence over `aws.region`.
+- [#73](https://github.com/wallix/awless/issues/73): `AWS_DEFAULT_PROFILE` env variable now loaded in `awless`. It takes precedence over `aws.profile`.
 - Better output of `awless config list` (doc per variable, etc.).
 - Config setters now provide dialogs (ex: `awless config set instance.type` or `awless config set aws.region`).
 
