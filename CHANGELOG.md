@@ -4,6 +4,7 @@ If you have any data or config issues, you can run `rm -Rf ~/.awless/` to start 
 
 ### Features
 
+- [#65](https://github.com/wallix/awless/issues/65): `awless ssh`: use existing SSH client if available, otherwise fallback on builtin SSH.
 - Attach/detach policy to user/group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
 - Attach/detach user to group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
 - List AWS load balancers, target groups and listeners with `awless list loadbalancers/targetgroups/listeners`. Show their relations with, e.g. `awless show LOAD_BALANCER`.

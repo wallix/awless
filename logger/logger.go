@@ -40,10 +40,10 @@ type Logger struct {
 }
 
 var (
-	infoPrefix         = color.GreenString("[info]")
-	errorPrefix        = color.RedString("[error]")
-	verbosePrefix      = color.YellowString("[verbo]")
-	extraVerbosePrefix = color.MagentaString("[extra]")
+	infoPrefix         = color.GreenString("[info]   ")
+	errorPrefix        = color.RedString("[error]  ")
+	verbosePrefix      = color.YellowString("[verbose]")
+	extraVerbosePrefix = color.MagentaString("[extra]  ")
 )
 
 func New(prefix string, flag int) *Logger {

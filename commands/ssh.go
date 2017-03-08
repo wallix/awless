@@ -18,8 +18,11 @@ package commands
 
 import (
 	"fmt"
-	"log"
+	"os"
+	"os/exec"
+	"path"
 	"strings"
+	"syscall"
 
 	"golang.org/x/crypto/ssh"
 
@@ -29,6 +32,7 @@ import (
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 )
 
 func init() {
@@ -39,7 +43,7 @@ var sshCmd = &cobra.Command{
 	Use:                "ssh [USER@]INSTANCE",
 	Short:              "Launch a SSH (Secure Shell) session to an instance given an id or alias",
 	Example:            "  awless ssh i-8d43b21b   # using the instance id\n  awless ssh @redis-prod  # using the instance name",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
+	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -70,12 +74,7 @@ var sshCmd = &cobra.Command{
 			cred.User = user
 			client, err = console.NewSSHClient(config.KeysDir, cred)
 			exitOn(err)
-			if verboseGlobalFlag {
-				log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
-			}
-			if err = console.InteractiveTerminal(client); err != nil {
-				exitOn(err)
-			}
+			exitOn(sshConnect(client, path.Join(config.KeysDir, cred.KeyName+".pem"), user, cred.IP))
 			return nil
 		}
 		for _, user := range awsconfig.DefaultAMIUsers {
@@ -85,10 +84,7 @@ var sshCmd = &cobra.Command{
 				continue
 			}
 			exitOn(err)
-			log.Printf("Login as '%s' on '%s', using key '%s'", user, cred.IP, cred.KeyName)
-			if err = console.InteractiveTerminal(client); err != nil {
-				exitOn(err)
-			}
+			exitOn(sshConnect(client, path.Join(config.KeysDir, cred.KeyName+".pem"), user, cred.IP))
 			return nil
 		}
 		return err
@@ -111,4 +107,16 @@ func instanceCredentialsFromGraph(g *graph.Graph, instanceID string) (*console.C
 		return nil, fmt.Errorf("no access key set for instance %s", instanceID)
 	}
 	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyName: fmt.Sprint(key)}, nil
+}
+
+func sshConnect(sshClient *ssh.Client, keyPath, user, IP string) error {
+	sshPath, sshErr := exec.LookPath("ssh")
+	if sshErr == nil {
+		logger.Infof("Login as '%s' on '%s', using key '%s' with ssh client at '%s'", user, IP, keyPath, sshPath)
+		args := []string{"ssh", "-i", keyPath, fmt.Sprintf("%s@%s", user, IP)}
+		return syscall.Exec(sshPath, args, os.Environ())
+	} else { // Fallback SSH
+		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using key '%s'", user, IP, keyPath)
+		return console.InteractiveTerminal(sshClient)
+	}
 }
