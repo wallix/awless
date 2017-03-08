@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"text/tabwriter"
+	"time"
 
 	awsconfig "github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/database"
@@ -21,9 +22,10 @@ const (
 	defaultsDatabaseKey = "defaults"
 
 	//Config
-	autosyncConfigKey = "autosync"
-	RegionConfigKey   = "aws.region"
-	ProfileConfigKey  = "aws.profile"
+	autosyncConfigKey              = "autosync"
+	checkUpgradeFrequencyConfigKey = "upgrade.checkfrequency"
+	RegionConfigKey                = "aws.region"
+	ProfileConfigKey               = "aws.profile"
 
 	//Defaults
 	instanceTypeDefaultsKey  = "instance.type"
@@ -32,9 +34,10 @@ const (
 )
 
 var configDefinitions = map[string]*Definition{
-	autosyncConfigKey: {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
-	RegionConfigKey:   {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFn: awsconfig.WarningChangeRegion},
-	ProfileConfigKey:  {help: "AWS profile", defaultValue: "default"},
+	autosyncConfigKey:              {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
+	RegionConfigKey:                {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFn: awsconfig.WarningChangeRegion},
+	ProfileConfigKey:               {help: "AWS profile", defaultValue: "default"},
+	checkUpgradeFrequencyConfigKey: {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
 }
 
 var defaultsDefinitions = map[string]*Definition{
@@ -77,13 +80,20 @@ func GetAWSProfile() string {
 }
 
 func GetAutosync() bool {
-	if autoSync, ok := Config[autosyncConfigKey]; ok && autoSync.(bool) {
-		return autoSync.(bool)
+	if autoSync, ok := Config[autosyncConfigKey].(bool); ok {
+		return autoSync
 	}
-	if autoSync, ok := Defaults["sync.auto"]; ok && autoSync.(bool) { //Compatibility with old key
-		return autoSync.(bool)
+	if autoSync, ok := Defaults["sync.auto"].(bool); ok { //Compatibility with old key
+		return autoSync
 	}
 	return true
+}
+
+func getCheckUpgradeFrequency() time.Duration {
+	if frequency, ok := Config[checkUpgradeFrequencyConfigKey].(int); ok {
+		return time.Duration(frequency) * time.Hour
+	}
+	return 8 * time.Hour
 }
 
 func LoadAll() error {
@@ -282,6 +292,16 @@ func displayConfig() string {
 			fmt.Fprintf(t, "\t# %s\n", def.help)
 		} else {
 			fmt.Fprintln(t)
+		}
+	}
+	for k := range configDefinitions {
+		if _, ok := Config[k]; !ok {
+			fmt.Fprintf(t, "\t%s:\t\t", k)
+			if def, ok := configDefinitions[k]; ok && def.help != "" {
+				fmt.Fprintf(t, "\t# %s\n", def.help)
+			} else {
+				fmt.Fprintln(t)
+			}
 		}
 	}
 	t.Flush()

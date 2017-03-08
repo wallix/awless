@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	checkUpgradeFrequency = 8 * time.Hour
 	lastUpgradeCheckDbKey = "upgrade.lastcheck"
 )
 
@@ -44,8 +43,12 @@ func VerifyNewVersionAvailable(url string, messaging io.Writer) error {
 	if err != nil {
 		return err
 	}
+	upgradeFreq := getCheckUpgradeFrequency()
+	if upgradeFreq < 0 {
+		return nil
+	}
 
-	if time.Since(last) > checkUpgradeFrequency {
+	if time.Since(last) > upgradeFreq {
 		notifyIfUpgrade(url, messaging)
 	}
 
