@@ -132,7 +132,7 @@ type Resolver interface {
 }
 
 type ById struct {
-	id string
+	Id string
 }
 
 func (r *ById) Resolve(g *Graph) ([]*Resource, error) {
@@ -145,7 +145,7 @@ func (r *ById) Resolve(g *Graph) ([]*Resource, error) {
 
 	for _, triple := range triples {
 		sub := triple.Subject()
-		if sub.ID().String() == r.id {
+		if sub.ID().String() == r.Id {
 			res, err := g.GetResource(newResourceType(sub), sub.ID().String())
 			if err != nil {
 				return resources, nil

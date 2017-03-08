@@ -127,15 +127,15 @@ Note that filters:
 
 `awless show` is quite useful to get a good overview on a resource and to show where its stands in your cloud.
 
-The show command needs only one arg: a resource _id_, resource's _name_ or even an arn. Just copy/paste it and `awless` resolves the actual id of the resource behind the scene
+The show command needs only one arg which is a reference to a resource. It first searches the resource by **id**. If found it stops. Otherwise it looks up by **name** and then **arn**. To force a lookup by **name** prefix the reference with a '@'.
 
-    # show instance info via its id: relations to subnets, vpcs, region, ...
+    # show instance via its id: relations to subnets, vpcs, region, ...
     awless show i-34vgbh23jn        
 
-    # show bucket info via its name: objects it contains, siblings, etc...
-    awless show my-bucket          
+    # show bucket forcing search by name: objects, siblings, ...
+    awless show @my-bucket          
 
-    # show user using local data: policy applying to this user, etc...
+    # show user using local data: user's policies, ...
     # snappy! will not refetch but work with the local graph
     awless show admin-user --local  
     

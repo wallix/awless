@@ -50,13 +50,13 @@ var showCmd = &cobra.Command{
 			return errors.New("REFERENCE required. See examples.")
 		}
 
-		id := strings.TrimPrefix(args[0], "@") // in case users still use @ or its captured in copy/paste
-		notFound := fmt.Sprintf("resource with id %s not found", id)
+		ref := args[0]
+		notFound := fmt.Sprintf("resource with reference %s not found", ref)
 
 		var resource *graph.Resource
 		var gph *graph.Graph
 
-		resource, gph = findResourceInLocalGraphs(id)
+		resource, gph = findResourceInLocalGraphs(ref)
 
 		if resource == nil && localGlobalFlag {
 			logger.Info(notFound)
@@ -64,7 +64,7 @@ var showCmd = &cobra.Command{
 		} else if resource == nil {
 			runFullSync()
 
-			if resource, gph = findResourceInLocalGraphs(id); resource == nil {
+			if resource, gph = findResourceInLocalGraphs(ref); resource == nil {
 				logger.Info(notFound)
 				return nil
 			}
@@ -171,8 +171,12 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 		for _, res := range resources {
 			all = append(all, fmt.Sprintf("%s[%s]", res.Id(), res.Type()))
 		}
-		logger.Infof("%d resources found with the name '%s': %s", len(resources), ref, strings.Join(all, ", "))
-		logger.Info("Show them using their id")
+		logger.Infof("%d resources found with name '%s': %s", len(resources), deprefix(ref), strings.Join(all, ", "))
+		logger.Info("Show them using the id:")
+		for _, res := range resources {
+			logger.Infof("\t`awless show %s` for the %s", res.Id(), res.Type())
+		}
+
 		os.Exit(0)
 	}
 
@@ -180,27 +184,41 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 }
 
 func resolveResourceFromRef(ref string) []*graph.Resource {
+	name := deprefix(ref)
+
 	g := graph.NewGraph()
 	for _, s := range aws.ServiceNames {
 		g.AddGraph(sync.LoadCurrentLocalGraph(s))
 	}
 
-	byId, err := g.FindResource(ref)
-	exitOn(err)
+	byName := &graph.ByProperty{"Name", name}
 
-	var resources []*graph.Resource
-	if byId != nil {
-		resources = append(resources, byId)
-	} else {
-		rs, err := g.ResolveResources(
-			&graph.ByProperty{"Name", ref},
-			&graph.ByProperty{"Arn", ref},
-		)
+	if strings.HasPrefix(ref, "@") {
+		logger.Verbosef("prefixed with @: forcing research by name '%s'", name)
+		rs, err := g.ResolveResources(byName)
 		exitOn(err)
-		resources = append(resources, rs...)
-	}
+		return rs
+	} else {
 
-	return resources
+		rs, err := g.ResolveResources(&graph.ById{name})
+		exitOn(err)
+
+		if len(rs) > 0 {
+			return rs
+		} else {
+			rs, err := g.ResolveResources(
+				byName,
+				&graph.ByProperty{"Arn", name},
+			)
+			exitOn(err)
+
+			return rs
+		}
+	}
+}
+
+func deprefix(s string) string {
+	return strings.TrimPrefix(s, "@")
 }
 
 func printResourceList(title string, list []*graph.Resource) {
