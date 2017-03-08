@@ -21,6 +21,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"time"
 
@@ -112,5 +113,21 @@ func InteractiveTerminal(client *ssh.Client) error {
 		return err
 	}
 
+	signalc := make(chan os.Signal)
+	defer func() {
+		signal.Reset()
+		close(signalc)
+	}()
+	go propagateSignals(signalc, session, stdin)
+	signal.Notify(signalc, os.Interrupt, os.Kill)
 	return session.Wait()
+}
+
+func propagateSignals(signalc chan os.Signal, session *ssh.Session, stdin io.WriteCloser) {
+	for s := range signalc {
+		switch s {
+		case os.Interrupt:
+			fmt.Fprint(stdin, "\x03")
+		}
+	}
 }
