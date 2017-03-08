@@ -15,6 +15,7 @@ If you have any data or config issues, you can run `rm -Rf ~/.awless/` to start 
 - Simplification of the templating engine using decoupled compile passes
 - Better output of `awless config list` (doc per variable, etc.).
 - Config setters now provide dialogs (ex: `awless config set instance.type` or `awless config set aws.region`).
+- [#64](https://github.com/wallix/awless/issues/64): `awless ssh`: columns and lines automatically adapt to terminal with/height.
 
 ### Bugfixes
 

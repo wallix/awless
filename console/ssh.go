@@ -95,7 +95,15 @@ func InteractiveTerminal(client *ssh.Client) error {
 	}
 
 	// Request pseudo terminal
-	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+	width := GetTerminalWidth()
+	if width == 0 {
+		width = 100
+	}
+	height := GetTerminalHeight()
+	if height == 0 {
+		height = 100
+	}
+	if err := session.RequestPty("xterm", height, width, modes); err != nil {
 		return err
 	}
 
