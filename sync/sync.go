@@ -40,7 +40,6 @@ var DefaultSyncer Syncer
 type Syncer interface {
 	repo.Repo
 	Sync(...cloud.Service) (map[string]*graph.Graph, error)
-	SetLogger(*logger.Logger)
 }
 
 type syncer struct {
@@ -48,16 +47,18 @@ type syncer struct {
 	logger *logger.Logger
 }
 
-func NewSyncer() Syncer {
+func NewSyncer(l *logger.Logger) Syncer {
 	repo, err := repo.New()
 	if err != nil {
 		panic(err)
 	}
 
-	return &syncer{Repo: repo, logger: logger.DiscardLogger}
-}
+	if l == nil {
+		l = logger.DiscardLogger
+	}
 
-func (s *syncer) SetLogger(l *logger.Logger) { s.logger = l }
+	return &syncer{Repo: repo, logger: l}
+}
 
 func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
 	graphs := make(map[string]*graph.Graph)
