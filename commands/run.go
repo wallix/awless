@@ -58,8 +58,8 @@ var runCmd = &cobra.Command{
 	PersistentPostRunE: saveHistoryHook,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("missing awless template file path")
+		if len(args) < 1 {
+			return errors.New("missing FILEPATH arg")
 		}
 
 		content, err := ioutil.ReadFile(args[0])
@@ -70,8 +70,11 @@ var runCmd = &cobra.Command{
 		templ, err := template.Parse(string(content))
 		exitOn(err)
 
+		extraParams, err := template.ParseParams(strings.Join(args[1:], " "))
+		exitOn(err)
+
 		env := template.NewEnv()
-		env.AddFillers(config.Defaults)
+		env.AddFillers(config.Defaults, extraParams)
 		env.MissingHolesFunc = missingHolesStdinFunc()
 
 		exitOn(runTemplate(templ, env))

@@ -16,7 +16,11 @@ limitations under the License.
 
 package template
 
-import "github.com/wallix/awless/template/ast"
+import (
+	"fmt"
+
+	"github.com/wallix/awless/template/ast"
+)
 
 func Parse(text string) (*Template, error) {
 	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text), Pretty: true}
@@ -38,7 +42,22 @@ func MustParse(text string) *Template {
 	return t
 }
 
-func ParseStatement(text string) (ast.Node, error) {
+func ParseParams(text string) (map[string]interface{}, error) {
+	full := fmt.Sprintf("none none %s", text)
+	n, err := parseStatement(full)
+	if err != nil {
+		return nil, fmt.Errorf("parse params: %s", err)
+	}
+
+	switch n.(type) {
+	case *ast.CommandNode:
+		return (n.(*ast.CommandNode)).Params, nil
+	default:
+		return nil, fmt.Errorf("parse params: expected a command node")
+	}
+}
+
+func parseStatement(text string) (ast.Node, error) {
 	templ, err := Parse(text)
 	if err != nil {
 		return nil, err

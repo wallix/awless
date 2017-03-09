@@ -18,13 +18,13 @@ $BIN config set instance.image $AMI
 INSTANCE_NAME=awless-integration-test-`date +%s`
 
 /bin/cat > $TMP_FILE <<EOF
-testvpc = create vpc cidr=10.0.0.0/24
-testsubnet = create subnet cidr=10.0.0.0/25 vpc=\$testvpc
+testvpc = create vpc cidr={vpc-cidr}
+testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc
 testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count}
 create tag resource=\$testinstance key=Name value=$INSTANCE_NAME
 EOF
 
-$BIN -v run ./$TMP_FILE
+$BIN -v run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25
 REVERT_ID=`$BIN log --porcelain | head -1 | cut -f2`
 
 $BIN ls instances

@@ -211,7 +211,7 @@ func (te *TemplateExecution) Revert() (*Template, error) {
 
 	for i := len(te.Executed) - 1; i >= 0; i-- {
 		if exec := te.Executed[i]; exec.IsRevertible() {
-			n, err := ParseStatement(exec.Line)
+			n, err := parseStatement(exec.Line)
 			if err != nil {
 				return nil, err
 			}

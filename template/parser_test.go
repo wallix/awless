@@ -25,6 +25,18 @@ import (
 	"github.com/wallix/awless/template/ast"
 )
 
+func TestParamsOnlyParsing(t *testing.T) {
+	params, err := ParseParams("type=t2.micro subnet=@my-subnet count=4")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	exp := map[string]interface{}{"type": "t2.micro", "subnet": "@my-subnet", "count": 4}
+	if got, want := params, exp; !reflect.DeepEqual(got, want) {
+		t.Fatalf("\ngot\n%v\n\nwant\n%v\n", got, want)
+	}
+}
+
 func TestTemplateParsing(t *testing.T) {
 	t.Run("Parse special characters", func(t *testing.T) {
 		tcases := []struct {
@@ -190,7 +202,7 @@ func TestTemplateParsing(t *testing.T) {
 		}
 
 		for _, tcase := range tcases {
-			node, err := ParseStatement(tcase.input)
+			node, err := parseStatement(tcase.input)
 			if err != nil {
 				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
 			}
