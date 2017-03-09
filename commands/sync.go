@@ -50,6 +50,8 @@ var syncCmd = &cobra.Command{
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logger.DefaultLogger.SetVerbose(logger.VerboseF)
+		
 		var services []cloud.Service
 		displayAllServices := true
 		for _, srv := range cloud.ServiceRegistry {
