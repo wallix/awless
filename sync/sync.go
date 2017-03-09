@@ -79,6 +79,10 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 	errorc := make(chan *srvErr, len(services))
 
 	for _, service := range services {
+		if service.IsSyncDisabled() {
+			s.logger.Verbosef("sync: *disabled* for service %s", service.Name())
+			continue
+		}
 		workers.Add(1)
 		go func(srv cloud.Service) {
 			defer workers.Done()

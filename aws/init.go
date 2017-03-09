@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/logger"
 )
 
 var (
@@ -52,20 +53,23 @@ func InitSession(region, profile string) (*session.Session, error) {
 	return session, nil
 }
 
-func InitServices(region, profile string) error {
+func InitServices(conf map[string]interface{}, log *logger.Logger) error {
+	awsconf := config(conf)
+	region := awsconf.region()
 	if region == "" {
 		return errors.New("empty AWS region. Set it with `awless config set aws.region`")
 	}
-	sess, err := InitSession(region, profile)
+
+	sess, err := InitSession(region, awsconf.profile())
 	if err != nil {
 		return err
 	}
-	AccessService = NewAccess(sess)
-	InfraService = NewInfra(sess)
-	StorageService = NewStorage(sess)
+	AccessService = NewAccess(sess, awsconf, log)
+	InfraService = NewInfra(sess, awsconf, log)
+	StorageService = NewStorage(sess, awsconf, log)
 	SecuAPI = NewSecu(sess)
-	NotificationService = NewNotification(sess)
-	QueueService = NewQueue(sess)
+	NotificationService = NewNotification(sess, awsconf, log)
+	QueueService = NewQueue(sess, awsconf, log)
 
 	cloud.ServiceRegistry[InfraService.Name()] = InfraService
 	cloud.ServiceRegistry[AccessService.Name()] = AccessService

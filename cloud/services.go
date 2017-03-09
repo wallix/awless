@@ -32,6 +32,7 @@ type Service interface {
 	Drivers() []driver.Driver
 	ResourceTypes() []string
 	FetchResources() (*graph.Graph, error)
+	IsSyncDisabled() bool
 	FetchByType(t string) (*graph.Graph, error)
 }
 

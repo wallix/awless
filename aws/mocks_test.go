@@ -175,6 +175,9 @@ func (m *mockS3) ResourceTypes() []string {
 func (m *mockS3) FetchResources() (*graph.Graph, error) {
 	return nil, nil
 }
+func (m *mockS3) IsSyncDisabled() bool {
+	return false
+}
 func (m *mockS3) FetchByType(t string) (*graph.Graph, error) {
 	return nil, nil
 }

@@ -42,8 +42,11 @@ import (
 	awsdriver "github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
 )
+
+const accessDenied = "Access Denied"
 
 func init() {
 	ServiceNames = append(ServiceNames, "infra")
@@ -115,16 +118,20 @@ var ServicePerResourceType = map[string]string{
 type Infra struct {
 	once   oncer
 	region string
+	config config
+	log    *logger.Logger
 	ec2iface.EC2API
 	elbv2iface.ELBV2API
 }
 
-func NewInfra(sess *session.Session) *Infra {
+func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Infra{
 		EC2API:   ec2.New(sess),
 		ELBV2API: elbv2.New(sess),
+		config:   awsconf,
 		region:   region,
+		log:      log,
 	}
 }
 
@@ -157,6 +164,10 @@ func (s *Infra) ResourceTypes() (all []string) {
 
 func (s *Infra) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var instanceList []*ec2.Instance
@@ -174,150 +185,199 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, instanceList, err = s.fetch_all_instance_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, subnetList, err = s.fetch_all_subnet_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, vpcList, err = s.fetch_all_vpc_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, keypairList, err = s.fetch_all_keypair_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, securitygroupList, err = s.fetch_all_securitygroup_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, volumeList, err = s.fetch_all_volume_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, internetgatewayList, err = s.fetch_all_internetgateway_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, routetableList, err = s.fetch_all_routetable_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, availabilityzoneList, err = s.fetch_all_availabilityzone_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, loadbalancerList, err = s.fetch_all_loadbalancer_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, targetgroupList, err = s.fetch_all_targetgroup_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, listenerList, err = s.fetch_all_listener_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
+
+	if s.config.getBool("aws.infra.instance.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, instanceList, err = s.fetch_all_instance_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[instance]")
+	}
+	if s.config.getBool("aws.infra.subnet.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, subnetList, err = s.fetch_all_subnet_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[subnet]")
+	}
+	if s.config.getBool("aws.infra.vpc.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, vpcList, err = s.fetch_all_vpc_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[vpc]")
+	}
+	if s.config.getBool("aws.infra.keypair.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, keypairList, err = s.fetch_all_keypair_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[keypair]")
+	}
+	if s.config.getBool("aws.infra.securitygroup.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, securitygroupList, err = s.fetch_all_securitygroup_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[securitygroup]")
+	}
+	if s.config.getBool("aws.infra.volume.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, volumeList, err = s.fetch_all_volume_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[volume]")
+	}
+	if s.config.getBool("aws.infra.internetgateway.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, internetgatewayList, err = s.fetch_all_internetgateway_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[internetgateway]")
+	}
+	if s.config.getBool("aws.infra.routetable.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, routetableList, err = s.fetch_all_routetable_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[routetable]")
+	}
+	if s.config.getBool("aws.infra.availabilityzone.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, availabilityzoneList, err = s.fetch_all_availabilityzone_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[availabilityzone]")
+	}
+	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, loadbalancerList, err = s.fetch_all_loadbalancer_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[loadbalancer]")
+	}
+	if s.config.getBool("aws.infra.targetgroup.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, targetgroupList, err = s.fetch_all_targetgroup_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[targetgroup]")
+	}
+	if s.config.getBool("aws.infra.listener.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, listenerList, err = s.fetch_all_listener_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[listener]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -328,7 +388,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		switch ee := err.(type) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
-			case "Access Denied":
+			case accessDenied:
 				return g, cloud.ErrFetchAccessDenied
 			default:
 				return g, ee
@@ -341,162 +401,186 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	}
 
 	errc = make(chan error)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range instanceList {
-			for _, fn := range addParentsFns["instance"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+	if s.config.getBool("aws.infra.instance.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range instanceList {
+				for _, fn := range addParentsFns["instance"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range subnetList {
-			for _, fn := range addParentsFns["subnet"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.subnet.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range subnetList {
+				for _, fn := range addParentsFns["subnet"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range vpcList {
-			for _, fn := range addParentsFns["vpc"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.vpc.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range vpcList {
+				for _, fn := range addParentsFns["vpc"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range keypairList {
-			for _, fn := range addParentsFns["keypair"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.keypair.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range keypairList {
+				for _, fn := range addParentsFns["keypair"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range securitygroupList {
-			for _, fn := range addParentsFns["securitygroup"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.securitygroup.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range securitygroupList {
+				for _, fn := range addParentsFns["securitygroup"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range volumeList {
-			for _, fn := range addParentsFns["volume"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.volume.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range volumeList {
+				for _, fn := range addParentsFns["volume"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range internetgatewayList {
-			for _, fn := range addParentsFns["internetgateway"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.internetgateway.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range internetgatewayList {
+				for _, fn := range addParentsFns["internetgateway"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range routetableList {
-			for _, fn := range addParentsFns["routetable"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.routetable.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range routetableList {
+				for _, fn := range addParentsFns["routetable"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range availabilityzoneList {
-			for _, fn := range addParentsFns["availabilityzone"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.availabilityzone.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range availabilityzoneList {
+				for _, fn := range addParentsFns["availabilityzone"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range loadbalancerList {
-			for _, fn := range addParentsFns["loadbalancer"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range loadbalancerList {
+				for _, fn := range addParentsFns["loadbalancer"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range targetgroupList {
-			for _, fn := range addParentsFns["targetgroup"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.targetgroup.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range targetgroupList {
+				for _, fn := range addParentsFns["targetgroup"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range listenerList {
-			for _, fn := range addParentsFns["listener"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.infra.listener.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range listenerList {
+				for _, fn := range addParentsFns["listener"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -797,17 +881,25 @@ func (s *Infra) fetch_all_targetgroup_graph() (*graph.Graph, []*elbv2.TargetGrou
 
 }
 
+func (s *Infra) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.infra.sync", true)
+}
+
 type Access struct {
 	once   oncer
 	region string
+	config config
+	log    *logger.Logger
 	iamiface.IAMAPI
 }
 
-func NewAccess(sess *session.Session) *Access {
+func NewAccess(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Access{
 		IAMAPI: iam.New(sess),
+		config: awsconf,
 		region: region,
+		log:    log,
 	}
 }
 
@@ -831,6 +923,10 @@ func (s *Access) ResourceTypes() (all []string) {
 
 func (s *Access) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var userList []*iam.UserDetail
@@ -840,54 +936,71 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, userList, err = s.fetch_all_user_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, groupList, err = s.fetch_all_group_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, roleList, err = s.fetch_all_role_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, policyList, err = s.fetch_all_policy_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
+
+	if s.config.getBool("aws.access.user.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, userList, err = s.fetch_all_user_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource access[user]")
+	}
+	if s.config.getBool("aws.access.group.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, groupList, err = s.fetch_all_group_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource access[group]")
+	}
+	if s.config.getBool("aws.access.role.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, roleList, err = s.fetch_all_role_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource access[role]")
+	}
+	if s.config.getBool("aws.access.policy.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, policyList, err = s.fetch_all_policy_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource access[policy]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -898,7 +1011,7 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		switch ee := err.(type) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
-			case "Access Denied":
+			case accessDenied:
 				return g, cloud.ErrFetchAccessDenied
 			default:
 				return g, ee
@@ -911,58 +1024,66 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 	}
 
 	errc = make(chan error)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range userList {
-			for _, fn := range addParentsFns["user"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+	if s.config.getBool("aws.access.user.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range userList {
+				for _, fn := range addParentsFns["user"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range groupList {
-			for _, fn := range addParentsFns["group"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.access.group.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range groupList {
+				for _, fn := range addParentsFns["group"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range roleList {
-			for _, fn := range addParentsFns["role"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.access.role.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range roleList {
+				for _, fn := range addParentsFns["role"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range policyList {
-			for _, fn := range addParentsFns["policy"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.access.policy.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range policyList {
+				for _, fn := range addParentsFns["policy"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1069,17 +1190,25 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 	return g, cloudResources, badResErr
 }
 
+func (s *Access) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.access.sync", true)
+}
+
 type Storage struct {
 	once   oncer
 	region string
+	config config
+	log    *logger.Logger
 	s3iface.S3API
 }
 
-func NewStorage(sess *session.Session) *Storage {
+func NewStorage(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Storage{
 		S3API:  s3.New(sess),
+		config: awsconf,
 		region: region,
+		log:    log,
 	}
 }
 
@@ -1101,6 +1230,10 @@ func (s *Storage) ResourceTypes() (all []string) {
 
 func (s *Storage) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var bucketList []*s3.Bucket
@@ -1108,30 +1241,39 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, bucketList, err = s.fetch_all_bucket_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, storageobjectList, err = s.fetch_all_storageobject_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
+
+	if s.config.getBool("aws.storage.bucket.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, bucketList, err = s.fetch_all_bucket_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource storage[bucket]")
+	}
+	if s.config.getBool("aws.storage.storageobject.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, storageobjectList, err = s.fetch_all_storageobject_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource storage[storageobject]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -1142,7 +1284,7 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		switch ee := err.(type) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
-			case "Access Denied":
+			case accessDenied:
 				return g, cloud.ErrFetchAccessDenied
 			default:
 				return g, ee
@@ -1155,32 +1297,36 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	}
 
 	errc = make(chan error)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range bucketList {
-			for _, fn := range addParentsFns["bucket"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+	if s.config.getBool("aws.storage.bucket.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range bucketList {
+				for _, fn := range addParentsFns["bucket"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range storageobjectList {
-			for _, fn := range addParentsFns["storageobject"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.storage.storageobject.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range storageobjectList {
+				for _, fn := range addParentsFns["storageobject"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1209,17 +1355,25 @@ func (s *Storage) FetchByType(t string) (*graph.Graph, error) {
 	}
 }
 
+func (s *Storage) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.storage.sync", true)
+}
+
 type Notification struct {
 	once   oncer
 	region string
+	config config
+	log    *logger.Logger
 	snsiface.SNSAPI
 }
 
-func NewNotification(sess *session.Session) *Notification {
+func NewNotification(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Notification{
 		SNSAPI: sns.New(sess),
+		config: awsconf,
 		region: region,
+		log:    log,
 	}
 }
 
@@ -1241,6 +1395,10 @@ func (s *Notification) ResourceTypes() (all []string) {
 
 func (s *Notification) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var subscriptionList []*sns.Subscription
@@ -1248,30 +1406,39 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, subscriptionList, err = s.fetch_all_subscription_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, topicList, err = s.fetch_all_topic_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
+
+	if s.config.getBool("aws.notification.subscription.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, subscriptionList, err = s.fetch_all_subscription_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource notification[subscription]")
+	}
+	if s.config.getBool("aws.notification.topic.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, topicList, err = s.fetch_all_topic_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource notification[topic]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -1282,7 +1449,7 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 		switch ee := err.(type) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
-			case "Access Denied":
+			case accessDenied:
 				return g, cloud.ErrFetchAccessDenied
 			default:
 				return g, ee
@@ -1295,32 +1462,36 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 	}
 
 	errc = make(chan error)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range subscriptionList {
-			for _, fn := range addParentsFns["subscription"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+	if s.config.getBool("aws.notification.subscription.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range subscriptionList {
+				for _, fn := range addParentsFns["subscription"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range topicList {
-			for _, fn := range addParentsFns["topic"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+		}()
+	}
+	if s.config.getBool("aws.notification.topic.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range topicList {
+				for _, fn := range addParentsFns["topic"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1397,17 +1568,25 @@ func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, erro
 	return g, cloudResources, badResErr
 }
 
+func (s *Notification) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.notification.sync", true)
+}
+
 type Queue struct {
 	once   oncer
 	region string
+	config config
+	log    *logger.Logger
 	sqsiface.SQSAPI
 }
 
-func NewQueue(sess *session.Session) *Queue {
+func NewQueue(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Queue{
 		SQSAPI: sqs.New(sess),
+		config: awsconf,
 		region: region,
+		log:    log,
 	}
 }
 
@@ -1428,24 +1607,33 @@ func (s *Queue) ResourceTypes() (all []string) {
 
 func (s *Queue) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var queueList []*string
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, queueList, err = s.fetch_all_queue_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
+
+	if s.config.getBool("aws.queue.queue.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, queueList, err = s.fetch_all_queue_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource queue[queue]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -1456,7 +1644,7 @@ func (s *Queue) FetchResources() (*graph.Graph, error) {
 		switch ee := err.(type) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
-			case "Access Denied":
+			case accessDenied:
 				return g, cloud.ErrFetchAccessDenied
 			default:
 				return g, ee
@@ -1469,19 +1657,21 @@ func (s *Queue) FetchResources() (*graph.Graph, error) {
 	}
 
 	errc = make(chan error)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range queueList {
-			for _, fn := range addParentsFns["queue"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+	if s.config.getBool("aws.queue.queue.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range queueList {
+				for _, fn := range addParentsFns["queue"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1505,4 +1695,8 @@ func (s *Queue) FetchByType(t string) (*graph.Graph, error) {
 	default:
 		return nil, fmt.Errorf("aws queue: unsupported fetch for type %s", t)
 	}
+}
+
+func (s *Queue) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.queue.sync", true)
 }

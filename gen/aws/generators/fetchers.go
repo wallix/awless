@@ -84,10 +84,14 @@ import (
   {{- end }}
   {{- end }}
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/config"
   "github.com/wallix/awless/graph"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
 	awsdriver "github.com/wallix/awless/aws/driver"
 )
+
+const accessDenied = "Access Denied"
 
 func init() {
   {{- range $index, $service := . }}
@@ -125,18 +129,22 @@ var ServicePerResourceType = map[string]string {
 type {{ Title $service.Name }} struct {
 	once oncer
   region string
+	config config
+	log *logger.Logger
 	{{- range $, $api := $service.Api }}
   {{ $api }}iface.{{ ToUpper $api }}API
 	{{- end }}
 }
 
-func New{{ Title $service.Name }}(sess *session.Session) *{{ Title $service.Name }} {
+func New{{ Title $service.Name }}(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
   region := awssdk.StringValue(sess.Config.Region)
 	return &{{ Title $service.Name }}{ 
 	{{- range $, $api := $service.Api }}
-	{{ ToUpper $api }}API: {{ $api }}.New(sess),
+		{{ ToUpper $api }}API: {{ $api }}.New(sess),
 	{{- end }}
-	 region: region,
+		config: awsconf,
+		region: region,
+		log: log,
   }
 }
 
@@ -161,6 +169,10 @@ func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {
 
 func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+		
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 
@@ -171,19 +183,23 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
-	{{- range $index, $fetcher := $service.Fetchers }}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var resGraph *graph.Graph
-		var err error
-		resGraph, {{ $fetcher.ResourceType }}List, err = s.fetch_all_{{ $fetcher.ResourceType }}_graph()
-		if err != nil {
-			errc <- err
-			return
-		}
-		g.AddGraph(resGraph)
-	}()
+	{{ range $index, $fetcher := $service.Fetchers }}
+	if s.config.getBool("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, {{ $fetcher.ResourceType }}List, err = s.fetch_all_{{ $fetcher.ResourceType }}_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource {{ $service.Name }}[{{ $fetcher.ResourceType }}]")
+	}
   {{- end }}
 
 	go func() {
@@ -195,7 +211,7 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		switch ee := err.(type) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
-			case "Access Denied":
+			case accessDenied:
 				return g, cloud.ErrFetchAccessDenied
 			default:
 				return g, ee
@@ -209,19 +225,21 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	{{- range $index, $fetcher := $service.Fetchers }}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, r := range {{ $fetcher.ResourceType }}List {
-			for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
-				err := fn(g, r)
-				if err != nil {
-					errc <- err
-					return
+	if s.config.getBool("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range {{ $fetcher.ResourceType }}List {
+				for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
 				}
 			}
-		}
-	}()
+		}()
+	}
   {{- end }}
 
 	go func() {
@@ -320,5 +338,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 }
 {{- end }}
 {{ end }}
+
+func (s *{{ Title $service.Name }}) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.{{ $service.Name }}.sync", true)
+}
 
 {{ end }}`

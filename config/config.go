@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"text/tabwriter"
-	"time"
 
 	awsconfig "github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/database"
@@ -27,6 +27,9 @@ const (
 	RegionConfigKey                = "aws.region"
 	ProfileConfigKey               = "aws.profile"
 
+	//Config prefix
+	awsCloudPrefix = "aws."
+
 	//Defaults
 	instanceTypeDefaultsKey  = "instance.type"
 	instanceImageDefaultsKey = "instance.image"
@@ -34,10 +37,16 @@ const (
 )
 
 var configDefinitions = map[string]*Definition{
-	autosyncConfigKey:              {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
-	RegionConfigKey:                {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFn: awsconfig.WarningChangeRegion},
-	ProfileConfigKey:               {help: "AWS profile", defaultValue: "default"},
-	checkUpgradeFrequencyConfigKey: {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
+	autosyncConfigKey:                {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
+	RegionConfigKey:                  {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFn: awsconfig.WarningChangeRegion},
+	ProfileConfigKey:                 {help: "AWS profile", defaultValue: "default"},
+	"aws.infra.sync":                 {help: "Sync AWS EC2/ELBv2 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.access.sync":                {help: "Sync AWS IAM service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.storage.sync":               {help: "Sync AWS S3 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.storage.storageobject.sync": {help: "Sync AWS S3/storageobject (when empty: true)", defaultValue: "false", parseParamFn: parseBool},
+	"aws.notification.sync":          {help: "Sync AWS SNS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.queue.sync":                 {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	checkUpgradeFrequencyConfigKey:   {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
 }
 
 var defaultsDefinitions = map[string]*Definition{
@@ -57,43 +66,6 @@ type Definition struct {
 	stdinParamProviderFn func() string
 	onUpdateFn           func(interface{})
 	defaultValue         string
-}
-
-func GetAWSRegion() string {
-	if reg, ok := Config[RegionConfigKey]; ok && reg != "" {
-		return fmt.Sprint(reg)
-	}
-	if reg, ok := Defaults["region"]; ok && reg != "" { // Compatibility with old key
-		return fmt.Sprint(reg)
-	}
-	return ""
-}
-
-func GetAWSProfile() string {
-	if profile, ok := Config[ProfileConfigKey]; ok && profile != "" {
-		return fmt.Sprint(profile)
-	}
-	if profile, ok := Defaults[ProfileConfigKey]; ok && profile != "" { // Compatibility with old key
-		return fmt.Sprint(profile)
-	}
-	return ""
-}
-
-func GetAutosync() bool {
-	if autoSync, ok := Config[autosyncConfigKey].(bool); ok {
-		return autoSync
-	}
-	if autoSync, ok := Defaults["sync.auto"].(bool); ok { //Compatibility with old key
-		return autoSync
-	}
-	return true
-}
-
-func getCheckUpgradeFrequency() time.Duration {
-	if frequency, ok := Config[checkUpgradeFrequencyConfigKey].(int); ok {
-		return time.Duration(frequency) * time.Hour
-	}
-	return 8 * time.Hour
 }
 
 func LoadAll() error {
@@ -257,6 +229,10 @@ func setVolatile(key, value string) (interface{}, *Definition, bool, error) {
 		def = confDef
 	case defOk:
 		def = defDef
+	default:
+		if strings.Contains(key, awsCloudPrefix) {
+			isConf = true
+		}
 	}
 	var v interface{}
 	var err error

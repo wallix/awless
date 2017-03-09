@@ -68,10 +68,9 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	if localGlobalFlag {
 		return nil
 	}
-	profile := config.GetAWSProfile()
-	region := config.GetAWSRegion()
-	logger.Verbosef("loading AWS session with profile '%s' and region '%s'", profile, region)
-	if err := aws.InitServices(region, profile); err != nil {
+	awsConf := config.GetConfigWithPrefix("aws.")
+	logger.Verbosef("loading AWS session with profile '%s' and region '%s'", awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
+	if err := aws.InitServices(awsConf, logger.DefaultLogger); err != nil {
 		return err
 	}
 

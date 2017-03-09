@@ -5,19 +5,21 @@ If you have any data or config issues, you can run `rm -Rf ~/.awless/` to start 
 ### Features
 
 - [#65](https://github.com/wallix/awless/issues/65): `awless ssh`: use existing SSH client if available, otherwise fallback on builtin SSH.
-- Attach/detach policy to user/group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
-- Attach/detach user to group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
-- List AWS load balancers, target groups and listeners with `awless list loadbalancers/targetgroups/listeners`. Show their relations with, e.g. `awless show LOAD_BALANCER`.
 - `awless show` resolves automatically on id, name or arn without any prefixing (previously it was '@')
-- Global default menu with clearer one-liner display
+- [#47](https://github.com/wallix/awless/issues/47): Enable/disable sync per services or resources through config. Ex: `awless config set aws.notification.sync false`, `awless config set  aws.storage.storageobject.sync true`.
 - [#55](https://github.com/wallix/awless/issues/55): Dynamically change AWS region/profile with global flags `--aws-region us-west-1` or `--aws-profile myprofile`.
 - [#73](https://github.com/wallix/awless/issues/73): `AWS_DEFAULT_REGION` env variable now loaded in `awless`. It takes precedence over `aws.region`.
 - [#73](https://github.com/wallix/awless/issues/73): `AWS_DEFAULT_PROFILE` env variable now loaded in `awless`. It takes precedence over `aws.profile`.
-- Simplification of the templating engine using decoupled compile passes
 - Better output of `awless config list` (doc per variable, etc.).
+- Global default menu with clearer one-liner display.
+- Simplification of the templating engine using decoupled compile passes.
 - Config setters now provide dialogs (ex: `awless config set instance.type` or `awless config set aws.region`).
 - [#54](https://github.com/wallix/awless/issues/54): `awless ssh`: specify the keyfile to use with `-i /path/toward/key` flag.
 - [#64](https://github.com/wallix/awless/issues/64): `awless ssh`: columns and lines automatically adapt to terminal with/height.
+
+- Attach/detach policy to user/group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
+- Attach/detach user to group (see [wiki examples](https://github.com/wallix/awless/wiki/Examples))
+- List AWS load balancers, target groups and listeners with `awless list loadbalancers/targetgroups/listeners`. Show their relations with, e.g. `awless show LOAD_BALANCER`.
 
 ### Bugfixes
 
