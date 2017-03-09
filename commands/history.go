@@ -40,10 +40,10 @@ func init() {
 }
 
 var historyCmd = &cobra.Command{
-	Use:                "history",
-	Short:              "(in progress) Show a resource/service/infrastructure history & changes using your locally sync snapshots",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
-	PersistentPostRunE: saveHistoryHook,
+	Use:               "history",
+	Short:             "(in progress) Show a resource/service/infrastructure history & changes using your locally sync snapshots",
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !repo.IsGitInstalled() {

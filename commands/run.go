@@ -51,11 +51,11 @@ func init() {
 }
 
 var runCmd = &cobra.Command{
-	Use:                "run FILEPATH",
-	Short:              "Run a template given a filepath",
-	Example:            "  awless run ~/templates/my-infra.txt",
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
-	PersistentPostRunE: saveHistoryHook,
+	Use:               "run FILEPATH",
+	Short:             "Run a template given a filepath",
+	Example:           "  awless run ~/templates/my-infra.txt",
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -218,12 +218,12 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 		actionCmd.AddCommand(
 			&cobra.Command{
-				Use:                templDef.Entity,
-				PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
-				PersistentPostRunE: saveHistoryHook,
-				Short:              fmt.Sprintf("%s a %s", strings.Title(action), templDef.Entity),
-				Long:               fmt.Sprintf("%s a %s\n\tRequired params: %s\n\tExtra params: %s", strings.Title(templDef.Action), templDef.Entity, strings.Join(templDef.Required(), ", "), strings.Join(templDef.Extra(), ", ")),
-				RunE:               run(templDef),
+				Use:               templDef.Entity,
+				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+				PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
+				Short:             fmt.Sprintf("%s a %s", strings.Title(action), templDef.Entity),
+				Long:              fmt.Sprintf("%s a %s\n\tRequired params: %s\n\tExtra params: %s", strings.Title(templDef.Action), templDef.Entity, strings.Join(templDef.Required(), ", "), strings.Join(templDef.Extra(), ", ")),
+				RunE:              run(templDef),
 			},
 		)
 	}

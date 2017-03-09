@@ -28,11 +28,11 @@ func init() {
 }
 
 var whoamiCmd = &cobra.Command{
-	Use:                "whoami",
-	Aliases:            []string{"who"},
-	PersistentPreRun:   applyHooks(initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
-	PersistentPostRunE: saveHistoryHook,
-	Short:              "Show your identity",
+	Use:               "whoami",
+	Aliases:           []string{"who"},
+	PersistentPreRun:  applyHooks(initAwlessEnvHook, initCloudServicesHook),
+	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
+	Short:             "Show your identity",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := aws.SecuAPI.GetCallerIdentity(nil)

@@ -41,10 +41,10 @@ func init() {
 }
 
 var logCmd = &cobra.Command{
-	Use:                "log",
-	Short:              "Logs all executions done against your cloud",
-	PersistentPreRun:   applyHooks(initAwlessEnvHook),
-	PersistentPostRunE: saveHistoryHook,
+	Use:               "log",
+	Short:             "Logs all executions done against your cloud",
+	PersistentPreRun:  applyHooks(initAwlessEnvHook),
+	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(c *cobra.Command, args []string) error {
 		db, err, dbclose := database.Current()

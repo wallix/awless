@@ -48,8 +48,8 @@ var sshCmd = &cobra.Command{
 	Example: `  awless ssh i-8d43b21b                       # using the instance id
   awless ssh ec2-user@redis-prod              # using the instance name and specify a user
   awless ssh @redis-prod -i ./path/toward/key # with a keyfile`,
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, verifyNewVersionHook),
-	PersistentPostRunE: saveHistoryHook,
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
+	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

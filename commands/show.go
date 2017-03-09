@@ -42,8 +42,8 @@ var showCmd = &cobra.Command{
 	Example: `  awless show i-8d43b21b            # show an instance via its id
   awless show AIDAJ3Z24GOKHTZO4OIX6 # show a user via its id
   awless show jsmith                # show a user via its name`,
-	PersistentPreRun:   applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, verifyNewVersionHook),
-	PersistentPostRunE: saveHistoryHook,
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
