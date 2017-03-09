@@ -87,7 +87,7 @@ func (p *Pricer) Inspect(graphs ...*graph.Graph) error {
 			defer wg.Done()
 			price, err := fetchPrice(t, region)
 			if err != nil {
-				fmt.Printf("cannot convert fetched price for '%s': %s", t, err)
+				fmt.Printf("fetching price for '%s': %s", t, err)
 				return
 			}
 
@@ -132,7 +132,7 @@ func fetchPrice(instType, region string) (float64, error) {
 		url.Values{"instance_type": {instType}, "location": {region}},
 	)
 	if err != nil {
-		fmt.Println(err)
+		return 0.0, err
 	}
 	defer resp.Body.Close()
 
