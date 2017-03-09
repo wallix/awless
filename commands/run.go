@@ -103,13 +103,13 @@ func missingHolesStdinFunc() func(string) interface{} {
 func runTemplate(templ *template.Template, env *template.Env) error {
 	validateTemplate(templ)
 
+	if len(env.Fillers) > 0 {
+		logger.Verbosef("used default/given params: %s", sprintProcessedParams(env.Fillers))
+	}
+
 	var err error
 	templ, env, err = template.Compile(templ, env)
 	exitOn(err)
-
-	if len(env.Resolved) > 0 {
-		logger.Verbosef("used default/given params: %s", sprintProcessedParams(env.Resolved))
-	}
 
 	validateTemplate(templ)
 
@@ -203,8 +203,8 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				logger.ExtraVerbosef("template definition: %s", def)
 
 				env := template.NewEnv()
-				env.AddExternalParams(cliTpl.GetParams())
-				env.AddFillers(config.Defaults)
+				env.Log = logger.DefaultLogger
+				env.AddFillers(config.Defaults, cliTpl.GetNormalizedParams())
 				env.AliasFunc = resolveAliasFunc(def.Entity)
 				env.MissingHolesFunc = missingHolesStdinFunc()
 
@@ -294,16 +294,12 @@ func resolveAliasFunc(entity string) func(k, v string) string {
 	gph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[entity])
 
 	return func(key, alias string) string {
-		t := key
-		if strings.Contains(t, ".") {
-			if strings.Split(key, ".")[1] == "id" {
-				t = strings.Split(key, ".")[0]
-			} else {
-				t = strings.Split(key, ".")[1]
-			}
+		resType := key
+		if strings.Contains(key, "id") {
+			resType = entity
 		}
 		a := graph.Alias(alias)
-		if id, ok := a.ResolveToId(gph, graph.ResourceType(t)); ok {
+		if id, ok := a.ResolveToId(gph, graph.ResourceType(resType)); ok {
 			return id
 		}
 		return ""

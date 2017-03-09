@@ -9,8 +9,8 @@ func TestMergeExternalParamsPass(t *testing.T) {
 	extTpl := MustParse(`create instance subnet=@my-subnet count=4`)
 	tpl := MustParse(`create instance ami=r45ty3`)
 
-	env := &Env{}
-	env.AddExternalParams(extTpl.GetParams())
+	env := NewEnv()
+	env.AddExternalParams(extTpl.GetNormalizedParams())
 
 	tpl, _, err := mergeExternalParamsPass(tpl, env)
 	if err != nil {
@@ -18,9 +18,9 @@ func TestMergeExternalParamsPass(t *testing.T) {
 	}
 
 	assertAllParams(t, tpl, map[string]interface{}{
-		"subnet": "@my-subnet",
-		"ami":    "r45ty3",
-		"count":  4,
+		"instance.subnet": "@my-subnet",
+		"ami":             "r45ty3",
+		"instance.count":  4,
 	})
 }
 
@@ -30,18 +30,17 @@ func TestResolveMissingHolesPass(t *testing.T) {
 	create instance name={redis.prod} count=3`)
 
 	var count int
-	env := &Env{
-		MissingHolesFunc: func(in string) interface{} {
-			count++
-			switch in {
-			case "instance.subnet":
-				return "sub-98765"
-			case "redis.prod":
-				return "redis-124.32.34.54"
-			default:
-				return ""
-			}
-		},
+	env := NewEnv()
+	env.MissingHolesFunc = func(in string) interface{} {
+		count++
+		switch in {
+		case "instance.subnet":
+			return "sub-98765"
+		case "redis.prod":
+			return "redis-124.32.34.54"
+		default:
+			return ""
+		}
 	}
 	env.AddFillers(map[string]interface{}{"instance.type": "t2.micro"})
 
@@ -66,14 +65,13 @@ func TestResolveMissingHolesPass(t *testing.T) {
 func TestResolveAliasPass(t *testing.T) {
 	tpl := MustParse("create instance subnet=@my-subnet ami={instance.ami} count=3")
 
-	env := &Env{
-		AliasFunc: func(k, v string) string {
-			vals := map[string]string{
-				"my-ami":    "ami-12345",
-				"my-subnet": "sub-12345",
-			}
-			return vals[v]
-		},
+	env := NewEnv()
+	env.AliasFunc = func(k, v string) string {
+		vals := map[string]string{
+			"my-ami":    "ami-12345",
+			"my-subnet": "sub-12345",
+		}
+		return vals[v]
 	}
 	env.AddFillers(map[string]interface{}{"instance.ami": "@my-ami"})
 
@@ -94,7 +92,7 @@ func TestResolveAliasPass(t *testing.T) {
 func TestResolveHolesPass(t *testing.T) {
 	tpl := MustParse("create instance count={instance.count} type={instance.type}")
 
-	env := &Env{}
+	env := NewEnv()
 	env.AddFillers(map[string]interface{}{
 		"instance.count": 3,
 		"instance.type":  "t2.micro",

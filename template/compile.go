@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/ast"
 )
 
 type Env struct {
-	fillers        map[string]interface{}
+	Fillers        map[string]interface{}
 	externalParams map[string]interface{}
 
 	Resolved         map[string]interface{}
 	AliasFunc        func(key, alias string) string
 	MissingHolesFunc func(string) interface{}
+
+	Log *logger.Logger
 }
 
 func NewEnv() *Env {
@@ -21,17 +24,18 @@ func NewEnv() *Env {
 		Resolved:         make(map[string]interface{}),
 		AliasFunc:        func(k, v string) string { return v },
 		MissingHolesFunc: func(s string) interface{} { return s },
+		Log:              logger.DiscardLogger,
 	}
 }
 
 func (e *Env) AddFillers(fills ...map[string]interface{}) {
-	if e.fillers == nil {
-		e.fillers = make(map[string]interface{})
+	if e.Fillers == nil {
+		e.Fillers = make(map[string]interface{})
 	}
 
 	for _, f := range fills {
 		for k, v := range f {
-			e.fillers[k] = v
+			e.Fillers[k] = v
 		}
 	}
 }
@@ -86,7 +90,7 @@ func resolveHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	}
 
 	each := func(expr *ast.CommandNode) {
-		processed := expr.ProcessHoles(env.fillers)
+		processed := expr.ProcessHoles(env.Fillers)
 		for key, v := range processed {
 			env.Resolved[expr.Entity+"."+key] = v
 		}
@@ -127,8 +131,9 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 					alias := strings.TrimPrefix(s, "@")
 					actual := env.AliasFunc(k, alias)
 					if actual == "" {
-						unresolved = append(unresolved, actual)
+						unresolved = append(unresolved, alias)
 					} else {
+						env.Log.ExtraVerbosef("alias '%s' resolved to '%s'", alias, actual)
 						cmd.Params[k] = actual
 						delete(cmd.Holes, k)
 					}
@@ -140,7 +145,7 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	tpl.visitCommandNodes(each)
 
 	if len(unresolved) > 0 {
-		return tpl, env, fmt.Errorf("cannot resolve aliases: %v", unresolved)
+		return tpl, env, fmt.Errorf("cannot resolve aliases: %q", unresolved)
 	}
 
 	return tpl, env, nil
