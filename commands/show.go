@@ -51,7 +51,7 @@ var showCmd = &cobra.Command{
 		}
 
 		ref := args[0]
-		notFound := fmt.Sprintf("resource with reference %s not found", ref)
+		notFound := fmt.Sprintf("resource with reference %s not found", deprefix(ref))
 
 		var resource *graph.Resource
 		var gph *graph.Graph
@@ -184,13 +184,10 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 }
 
 func resolveResourceFromRef(ref string) []*graph.Resource {
+	g, err := sync.LoadAllGraphs()
+	exitOn(err)
+
 	name := deprefix(ref)
-
-	g := graph.NewGraph()
-	for _, s := range aws.ServiceNames {
-		g.AddGraph(sync.LoadCurrentLocalGraph(s))
-	}
-
 	byName := &graph.ByProperty{"Name", name}
 
 	if strings.HasPrefix(ref, "@") {

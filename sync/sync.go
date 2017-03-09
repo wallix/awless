@@ -17,9 +17,12 @@ limitations under the License.
 package sync
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	gosync "sync"
@@ -151,4 +154,24 @@ func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
 		return graph.NewGraph()
 	}
 	return g
+}
+
+func LoadAllGraphs() (*graph.Graph, error) {
+	path := filepath.Join(config.RepoDir, "*.rdf")
+	files, _ := filepath.Glob(path)
+
+	g := graph.NewGraph()
+
+	var buff bytes.Buffer
+	for _, f := range files {
+		reader, err := os.Open(f)
+		if err != nil {
+			return g, fmt.Errorf("loading '%s': %s", f, err)
+		}
+		io.Copy(&buff, reader)
+		buff.WriteByte('\n')
+	}
+
+	g.Unmarshal(buff.Bytes())
+	return g, nil
 }
