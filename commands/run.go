@@ -59,7 +59,7 @@ var runCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("missing FILEPATH arg")
+			return errors.New("missingHolesStdinFunc FILEPATH arg")
 		}
 
 		content, err := ioutil.ReadFile(args[0])
@@ -149,9 +149,7 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 		db.AddTemplateExecution(executed)
 
 		if err == nil && !executed.HasErrors() {
-			if config.GetAutosync() {
-				runSyncFor(newTempl)
-			}
+			runSyncFor(newTempl)
 		}
 	}
 
@@ -232,6 +230,10 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 }
 
 func runSyncFor(tpl *template.Template) {
+	if !config.GetAutosync() {
+		return
+	}
+
 	lookup := func(key string) (t template.TemplateDefinition, ok bool) {
 		t, ok = aws.AWSTemplatesDefinitions[key]
 		return

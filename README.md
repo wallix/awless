@@ -193,6 +193,35 @@ Using the local auto sync functionality of the cloud resources `awless history` 
      
 *Note*: As model/relations for resources may evolve, if you have any issues with `awless history` between version upgrades, run `rm -Rf ~/.awless/aws/rdf` to start fresh.
 
+### Sync
+
+`awless` syncs automatically (_autosync_) the remote cloud resources locally as RDF graphs.
+
+Basically the autosync runs after resources creation, deletion and before you want to explore resources (`awless show`)
+
+More precisely, the sync automically runs:
+
+- **post** the `awless run` command
+- **post** the template one-liners `awless create`, `awless delete`, etc. 
+- **pre** the `awless show` command
+
+You can disable the autosync with `awless config set autosync false`
+
+You can also manually run a sync with `awless sync`. The command output will show in details what has been done.
+
+Note that you can configure the sync per services and per resources. For example:
+
+     # disable sync for queue service (sqs) entirely
+     awless config set aws.queue.sync false 
+
+     # enable sync for storageobject resources in the storage service (s3)
+     awless config set aws.storage.storageobject.sync true 
+
+     # disable sync for load balancing resources (elbv2) in the infra service
+     awless config set aws.infra.loadbalancer.sync false 
+     awless config set aws.infra.targetgroup.sync false 
+     awless config set aws.infra.listener.sync false 
+
 ### SSH
 
 You can directly ssh to an instance with:

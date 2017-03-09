@@ -51,7 +51,7 @@ var syncCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logger.DefaultLogger.SetVerbose(logger.VerboseF)
-		
+
 		var services []cloud.Service
 		displayAllServices := true
 		for _, srv := range cloud.ServiceRegistry {

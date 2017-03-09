@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
@@ -70,7 +71,7 @@ var showCmd = &cobra.Command{
 			}
 		}
 
-		if !localGlobalFlag {
+		if !localGlobalFlag && config.GetAutosync() {
 			srv, err := cloud.GetServiceForType(resource.Type().String())
 			exitOn(err)
 			logger.Verbosef("syncing service for %s type", resource.Type())
@@ -144,7 +145,12 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	printResourceList("Depending on", dependingOn)
 }
 
-func runFullSync() map[string]*graph.Graph {
+func runFullSync() {
+	if !config.GetAutosync() {
+		logger.Info("autosync disabled")
+		return
+	}
+
 	logger.Info("cannot resolve resource - running full sync")
 
 	var services []cloud.Service
@@ -152,10 +158,9 @@ func runFullSync() map[string]*graph.Graph {
 		services = append(services, srv)
 	}
 
-	graphs, err := sync.DefaultSyncer.Sync(services...)
-	logger.Verbose(err)
-
-	return graphs
+	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
+		logger.Verbose(err)
+	}
 }
 
 func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
