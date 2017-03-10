@@ -259,6 +259,30 @@ func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err e
 		}
 		return d.Delete_Loadbalancer, nil
 
+	case "createlistener":
+		if d.dryRun {
+			return d.Create_Listener_DryRun, nil
+		}
+		return d.Create_Listener, nil
+
+	case "deletelistener":
+		if d.dryRun {
+			return d.Delete_Listener_DryRun, nil
+		}
+		return d.Delete_Listener, nil
+
+	case "createtargetgroup":
+		if d.dryRun {
+			return d.Create_Targetgroup_DryRun, nil
+		}
+		return d.Create_Targetgroup, nil
+
+	case "deletetargetgroup":
+		if d.dryRun {
+			return d.Delete_Targetgroup_DryRun, nil
+		}
+		return d.Delete_Targetgroup, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

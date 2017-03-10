@@ -2,7 +2,8 @@
 
 ### Features
 
-- infra: support the creation of loadbalancers: `awless create loadbalancer`
+- infra: support the creation of loadbalancers and listeners: `awless create loadbalancer/listener/targetgroup`
+- infra: add tag `Name` to subnets.
 
 ## 0.0.17 [2017-03-09]
 

@@ -99,6 +99,10 @@ func missingHolesStdinFunc() func(string) interface{} {
 			if err != nil {
 				return err
 			}
+			line = strings.TrimSpace(line)
+			if line == "" {
+				return errors.New("empty")
+			}
 			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
 			if err != nil {
 				return err

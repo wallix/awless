@@ -66,6 +66,9 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{AwsField: "AvailabilityZone", TemplateName: "zone", AwsType: "awsstr"},
 				},
+				TagsMapping: map[string]string{
+					"Name": "name",
+				},
 			},
 			{
 				Action: "update", Entity: graph.Subnet.String(), Input: "ModifySubnetAttributeInput", Output: "ModifySubnetAttributeOutput", ApiMethod: "ModifySubnetAttribute", DryRunUnsupported: true,
@@ -286,6 +289,7 @@ var DriversDefs = []driversDef{
 	{
 		Api: "elbv2",
 		Drivers: []driver{
+			// LoadBalancer
 			{
 				Action: "create", Entity: graph.LoadBalancer.String(), Input: "CreateLoadBalancerInput", Output: "CreateLoadBalancerOutput", ApiMethod: "CreateLoadBalancer", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.LoadBalancers[0].LoadBalancerArn)",
 				RequiredParams: []param{
@@ -302,6 +306,53 @@ var DriversDefs = []driversDef{
 				Action: "delete", Entity: graph.LoadBalancer.String(), Input: "DeleteLoadBalancerInput", Output: "DeleteLoadBalancerOutput", ApiMethod: "DeleteLoadBalancer", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "LoadBalancerArn", TemplateName: "arn", AwsType: "awsstr"},
+				},
+			},
+			// Listener
+			{
+				Action: "create", Entity: graph.Listener.String(), Input: "CreateListenerInput", Output: "CreateListenerOutput", ApiMethod: "CreateListener", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Listeners[0].ListenerArn)",
+				RequiredParams: []param{
+					{AwsField: "DefaultActions[0]Type", TemplateName: "actiontype", AwsType: "awsslicestruct"}, //always forward
+					{AwsField: "DefaultActions[0]TargetGroupArn", TemplateName: "target", AwsType: "awsslicestruct"},
+					{AwsField: "LoadBalancerArn", TemplateName: "loadbalancer", AwsType: "awsstr"},
+					{AwsField: "Port", TemplateName: "port", AwsType: "awsint64"},
+					{AwsField: "Protocol", TemplateName: "protocol", AwsType: "awsstr"}, // TCP, HTTP, HTTPS
+				},
+				ExtraParams: []param{
+					{AwsField: "Certificates[0]CertificateArn", TemplateName: "certificate", AwsType: "awsslicestruct"},
+					{AwsField: "SslPolicy", TemplateName: "sslpolicy", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: graph.Listener.String(), Input: "DeleteListenerInput", Output: "DeleteListenerOutput", ApiMethod: "DeleteListener", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "ListenerArn", TemplateName: "arn", AwsType: "awsstr"},
+				},
+			},
+			// Target group
+			{
+				Action: "create", Entity: graph.TargetGroup.String(), Input: "CreateTargetGroupInput", Output: "CreateTargetGroupOutput", ApiMethod: "CreateTargetGroup", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.TargetGroups[0].TargetGroupArn)",
+				RequiredParams: []param{
+					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "Port", TemplateName: "port", AwsType: "awsint64"},
+					{AwsField: "Protocol", TemplateName: "protocol", AwsType: "awsstr"},
+					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "HealthCheckIntervalSeconds", TemplateName: "healthcheckinterval", AwsType: "awsint64"},
+					{AwsField: "HealthCheckPath", TemplateName: "healthcheckpath", AwsType: "awsstr"},
+					{AwsField: "HealthCheckPort", TemplateName: "healthcheckport", AwsType: "awsstr"},
+					{AwsField: "HealthCheckProtocol", TemplateName: "healthcheckprotocol", AwsType: "awsstr"},
+					{AwsField: "HealthCheckTimeoutSeconds", TemplateName: "healthchecktimeout", AwsType: "awsint64"},
+					{AwsField: "HealthyThresholdCount", TemplateName: "healthythreshold", AwsType: "awsint64"},
+					{AwsField: "UnhealthyThresholdCount", TemplateName: "unhealthythreshold", AwsType: "awsint64"},
+					{AwsField: "Matcher.HttpCode", TemplateName: "matcher", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: graph.TargetGroup.String(), Input: "DeleteTargetGroupInput", Output: "DeleteTargetGroupOutput", ApiMethod: "DeleteTargetGroup", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "TargetGroupArn", TemplateName: "arn", AwsType: "awsstr"},
 				},
 			},
 		},

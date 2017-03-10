@@ -37,10 +37,12 @@ const (
 	awsint64slice
 	awsstringslice
 	awsstringpointermap
+	awsslicestruct
 )
 
 var (
 	mapAttributeRegex = regexp.MustCompile(`(.+)\[(.+)\].*`)
+	sliceStructRegex  = regexp.MustCompile(`(.+)\[0\](.*)`)
 )
 
 func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
@@ -113,6 +115,32 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
 		}
 		str := fmt.Sprint(v)
 		field.SetMapIndex(reflect.ValueOf(matches[2]), reflect.ValueOf(&str))
+		return nil
+	case awsslicestruct:
+		matches := sliceStructRegex.FindStringSubmatch(fieldPath)
+		if len(matches) < 2 {
+			return fmt.Errorf("set field awsslicestruct: path %s does not start with slice[0]", fieldPath)
+		}
+		strcr := reflect.Indirect(reflect.ValueOf(i))
+		if strcr.Kind() != reflect.Struct {
+			return fmt.Errorf("set field awsslicestruct: %T is not a struct, but a %s", i, strcr.Kind())
+		}
+		sliceField := strcr.FieldByName(matches[1])
+		if sliceField.Kind() != reflect.Slice {
+			return fmt.Errorf("set field awsslicestruct: field %s is not a slice, but a %s", matches[0], sliceField.Kind())
+		}
+		var elemToSet reflect.Value
+		if sliceField.Len() > 0 {
+			elemToSet = sliceField.Index(0)
+		} else {
+			elemToSet = reflect.New(sliceField.Type().Elem().Elem())
+			sliceField.Set(reflect.Append(sliceField, elemToSet))
+		}
+		if sliceField.Type().Elem().Kind() != reflect.Ptr {
+			return fmt.Errorf("set field awsslicestruct: field %s is not a slice of struct pointer, but a %s", matches[0], sliceField.Kind())
+		}
+		awsutil.SetValueAtPath(elemToSet.Interface(), matches[2], v)
+
 		return nil
 	}
 	awsutil.SetValueAtPath(i, fieldPath, v)

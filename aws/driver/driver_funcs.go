@@ -633,6 +633,8 @@ func fakeDryRunId(entity string) string {
 	switch entity {
 	case "instance":
 		return fmt.Sprintf("i-%d", suffix)
+	case "subnet":
+		return fmt.Sprintf("subnet-%d", suffix)
 	case "volume":
 		return fmt.Sprintf("vol-%d", suffix)
 	case "securitygroup":

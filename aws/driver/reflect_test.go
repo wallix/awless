@@ -59,17 +59,18 @@ func TestSetFieldsOnAwsStruct(t *testing.T) {
 
 func TestSetFieldWithMultiType(t *testing.T) {
 	any := struct {
-		Field             string
-		IntField          int
-		BoolPointerField  *bool
-		BoolField         bool
-		StringArrayField  []*string
-		Int64ArrayField   []*int64
-		BooleanValueField *ec2.AttributeBooleanValue
-		StringValueField  *ec2.AttributeValue
-		StructAttribute   struct{ Str *string }
-		MapAttribute      map[string]*string
-		EmptyMapAttribute map[string]*string
+		Field                       string
+		IntField                    int
+		BoolPointerField            *bool
+		BoolField                   bool
+		StringArrayField            []*string
+		Int64ArrayField             []*int64
+		BooleanValueField           *ec2.AttributeBooleanValue
+		StringValueField            *ec2.AttributeValue
+		StructAttribute             struct{ Str *string }
+		SliceStructPointerAttribute []*struct{ Str1, Str2 *string }
+		MapAttribute                map[string]*string
+		EmptyMapAttribute           map[string]*string
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -238,12 +239,18 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if got, want := len(any.MapAttribute), 1+1; got != want { //First "test" key + Field1
+		t.Fatalf("got %d, want %d", got, want)
+	}
 	if got, want := *any.MapAttribute["Field1"], "abc"; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 	err = setFieldWithType("def", &any, "MapAttribute[Field2]", awsstringpointermap)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if got, want := len(any.MapAttribute), 1+2; got != want { //First "test" key + Field1 and Field2
+		t.Fatalf("got %d, want %d", got, want)
 	}
 	if got, want := *any.MapAttribute["Field1"], "abc"; got != want {
 		t.Fatalf("got %v, want %v", got, want)
@@ -255,7 +262,30 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if got, want := len(any.EmptyMapAttribute), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
 	if got, want := *any.EmptyMapAttribute["Field1"], "abcd"; got != want {
 		t.Fatalf("got %v, want %v", got, want)
+	}
+	err = setFieldWithType("tata", &any, "SliceStructPointerAttribute[0]Str1", awsslicestruct)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.SliceStructPointerAttribute), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.SliceStructPointerAttribute[0].Str1, "tata"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType("toto", &any, "SliceStructPointerAttribute[0]Str2", awsslicestruct)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.SliceStructPointerAttribute), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.SliceStructPointerAttribute[0].Str2, "toto"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
 	}
 }

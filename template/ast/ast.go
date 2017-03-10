@@ -127,6 +127,8 @@ func (n *CommandNode) String() string {
 	}
 	for k, v := range n.Params {
 		switch vv := v.(type) {
+		case nil:
+			continue
 		case []string:
 			all = append(all, fmt.Sprintf("%s=%s", k, strings.Join(vv, ",")))
 		default:
