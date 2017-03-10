@@ -124,7 +124,6 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 	}
 
 	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		fmt.Println("visit", cmd.Action, cmd.Entity, cmd.Params, cmd.Holes)
 		if cmd.Holes == nil {
 			cmd.Holes = make(map[string]string)
 		}
