@@ -102,17 +102,17 @@ func resolveHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 }
 
 func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
-	uniqueHoles := make(map[string]string)
+	uniqueHoles := make(map[string]struct{})
 	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		for k, v := range cmd.Holes {
-			uniqueHoles[k] = v
+		for _, v := range cmd.Holes {
+			uniqueHoles[v] = struct{}{}
 		}
 	})
 
 	fillers := make(map[string]interface{})
-	for _, v := range uniqueHoles {
-		actual := env.MissingHolesFunc(v)
-		fillers[v] = actual
+	for k := range uniqueHoles {
+		actual := env.MissingHolesFunc(k)
+		fillers[k] = actual
 	}
 
 	tpl.visitCommandNodes(func(expr *ast.CommandNode) {

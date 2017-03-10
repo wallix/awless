@@ -3,7 +3,39 @@ package template
 import (
 	"reflect"
 	"testing"
+
+	"github.com/wallix/awless/logger"
 )
+
+func TestCompile(t *testing.T) {
+	tpl := MustParse(`create keypair name={keypair}
+	create instance name={instance.name}`)
+
+	env := NewEnv()
+	logger.DefaultLogger.SetVerbose(logger.ExtraVerboseF)
+	env.Log = logger.DefaultLogger
+
+	env.MissingHolesFunc = func(in string) interface{} {
+		switch in {
+		case "keypair":
+			return "ewofh2o424"
+		case "instance.name":
+			return "redis"
+		default:
+			return ""
+		}
+	}
+
+	tpl, _, err := Compile(tpl, env)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertAllParams(t, tpl,
+		map[string]interface{}{"name": "ewofh2o424"},
+		map[string]interface{}{"name": "redis"},
+	)
+}
 
 func TestMergeExternalParamsPass(t *testing.T) {
 	extTpl := MustParse(`create instance subnet=@my-subnet count=4`)
@@ -17,17 +49,14 @@ func TestMergeExternalParamsPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assertAllParams(t, tpl, map[string]interface{}{
-		"instance.subnet": "@my-subnet",
-		"ami":             "r45ty3",
-		"instance.count":  4,
-	})
+	assertAllParams(t, tpl, map[string]interface{}{"instance.subnet": "@my-subnet", "ami": "r45ty3", "instance.count": 4})
 }
 
 func TestResolveMissingHolesPass(t *testing.T) {
 	tpl := MustParse(`
 	create instance subnet={instance.subnet} type={instance.type} name={redis.prod}
-	create instance name={redis.prod} count=3`)
+	create vpc cidr={vpc.cidr}
+	create instance name={redis.prod} id={redis.prod} count=3`)
 
 	var count int
 	env := NewEnv()
@@ -38,6 +67,8 @@ func TestResolveMissingHolesPass(t *testing.T) {
 			return "sub-98765"
 		case "redis.prod":
 			return "redis-124.32.34.54"
+		case "vpc.cidr":
+			return "10.0.0.0/24"
 		default:
 			return ""
 		}
@@ -51,15 +82,14 @@ func TestResolveMissingHolesPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := count, 2; got != want {
+	if got, want := count, 3; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	assertAllParams(t, tpl, map[string]interface{}{
-		"type":   "t2.micro",
-		"name":   "redis-124.32.34.54",
-		"subnet": "sub-98765",
-		"count":  3,
-	})
+	assertAllParams(t, tpl,
+		map[string]interface{}{"type": "t2.micro", "name": "redis-124.32.34.54", "subnet": "sub-98765"},
+		map[string]interface{}{"cidr": "10.0.0.0/24"},
+		map[string]interface{}{"id": "redis-124.32.34.54", "name": "redis-124.32.34.54", "count": 3},
+	)
 }
 
 func TestResolveAliasPass(t *testing.T) {
@@ -82,11 +112,7 @@ func TestResolveAliasPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assertAllParams(t, tpl, map[string]interface{}{
-		"subnet": "sub-12345",
-		"ami":    "ami-12345",
-		"count":  3,
-	})
+	assertAllParams(t, tpl, map[string]interface{}{"subnet": "sub-12345", "ami": "ami-12345", "count": 3})
 }
 
 func TestResolveHolesPass(t *testing.T) {
@@ -103,20 +129,16 @@ func TestResolveHolesPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assertAllParams(t, tpl, map[string]interface{}{
-		"type":  "t2.micro",
-		"count": 3,
-	})
+	assertAllParams(t, tpl, map[string]interface{}{"type": "t2.micro", "count": 3})
 }
 
-func assertAllParams(t *testing.T, tpl *Template, exp map[string]interface{}) {
-	all := make(map[string]interface{})
-	for _, cmd := range tpl.CommandNodesIterator() {
-		for k, v := range cmd.Params {
-			all[k] = v
+type params map[string]interface{}
+type paramsPerCommand []params
+
+func assertAllParams(t *testing.T, tpl *Template, exp ...params) {
+	for i, cmd := range tpl.CommandNodesIterator() {
+		if got, want := params(cmd.Params), exp[i]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
-	}
-	if got, want := all, exp; !reflect.DeepEqual(got, want) {
-		t.Fatalf("\ngot\n%v\n\nwant\n%v\n", got, want)
 	}
 }
