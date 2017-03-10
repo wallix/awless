@@ -22,6 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template"
 )
 
@@ -54,7 +55,11 @@ var revertCmd = &cobra.Command{
 
 		fmt.Printf("%s\n", reverted)
 
-		exitOn(runTemplate(reverted, template.NewEnv()))
+		env := template.NewEnv()
+		env.Log = logger.DefaultLogger
+		env.DefLookupFunc = lookupTemplateDefinitionsFunc()
+
+		exitOn(runTemplate(reverted, env))
 
 		return nil
 	},

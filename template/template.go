@@ -127,11 +127,32 @@ func (s *Template) GetNormalizedParams() map[string]interface{} {
 	s.visitCommandNodes(each)
 	return params
 }
+func (s *Template) GetParams() map[string]interface{} {
+	params := make(map[string]interface{})
+	each := func(expr *ast.CommandNode) {
+		for k, v := range expr.Params {
+			params[k] = v
+		}
+	}
+	s.visitCommandNodes(each)
+	return params
+}
 
 func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {
 	for _, cmd := range s.CommandNodesIterator() {
 		fn(cmd)
 	}
+}
+
+func (s *Template) visitCommandNodesE(fn func(n *ast.CommandNode) error) error {
+	for _, cmd := range s.CommandNodesIterator() {
+		err := fn(cmd)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {

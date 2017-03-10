@@ -2,39 +2,71 @@ package template
 
 import (
 	"reflect"
+	"strings"
 	"testing"
-
-	"github.com/wallix/awless/logger"
 )
 
-func TestCompile(t *testing.T) {
-	tpl := MustParse(`create keypair name={keypair}
-	create instance name={instance.name}`)
+var defs = map[string]TemplateDefinition{
+	"createinstance": {
+		Action:         "create",
+		Entity:         "instance",
+		Api:            "ec2",
+		RequiredParams: []string{"image", "count", "count", "type", "subnet"},
+		ExtraParams:    []string{"key", "ip", "userdata", "group", "lock"},
+		TagsMapping:    []string{"name"},
+	},
+	"createkeypair": {
+		Action:         "create",
+		Entity:         "keypair",
+		Api:            "ec2",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{},
+		TagsMapping:    []string{},
+	},
+}
 
+func TestResolveAgainstDefinitionsPass(t *testing.T) {
 	env := NewEnv()
-	logger.DefaultLogger.SetVerbose(logger.ExtraVerboseF)
-	env.Log = logger.DefaultLogger
+	env.DefLookupFunc = func(in string) (TemplateDefinition, bool) {
+		t, ok := defs[in]
+		return t, ok
+	}
 
-	env.MissingHolesFunc = func(in string) interface{} {
-		switch in {
-		case "keypair":
-			return "ewofh2o424"
-		case "instance.name":
-			return "redis"
-		default:
-			return ""
+	t.Run("Put definition required param in holes", func(t *testing.T) {
+		tpl := MustParse(`create instance type=@custom_type count=$inst_num`)
+
+		resolveAgainstDefinitions(tpl, env)
+
+		assertCmdHoles(t, tpl, map[string]string{
+			"subnet": "instance.subnet",
+			"image":  "instance.image",
+		})
+		assertCmdParams(t, tpl, map[string]interface{}{
+			"type": "@custom_type",
+		})
+		assertCmdRefs(t, tpl, map[string]string{
+			"count": "inst_num",
+		})
+	})
+
+	t.Run("Err on unexisting templ def", func(t *testing.T) {
+		tpl := MustParse(`create subnet type=t2.micro`)
+
+		_, _, err := resolveAgainstDefinitions(tpl, env)
+		if err == nil || !strings.Contains(err.Error(), "createsubnet") {
+			t.Fatalf("expected err with message containing 'createsubnet'")
 		}
-	}
+	})
 
-	tpl, _, err := Compile(tpl, env)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Run("Err on unexpected param", func(t *testing.T) {
+		tpl := MustParse(`create instance type=t2.micro
+	create keypair name={keypair.name} type=wrong`)
 
-	assertAllParams(t, tpl,
-		map[string]interface{}{"name": "ewofh2o424"},
-		map[string]interface{}{"name": "redis"},
-	)
+		_, _, err := resolveAgainstDefinitions(tpl, env)
+		if err == nil || !strings.Contains(err.Error(), "type") {
+			t.Fatalf("expected err with message containing 'type'")
+		}
+	})
 }
 
 func TestMergeExternalParamsPass(t *testing.T) {
@@ -42,14 +74,18 @@ func TestMergeExternalParamsPass(t *testing.T) {
 	tpl := MustParse(`create instance ami=r45ty3`)
 
 	env := NewEnv()
-	env.AddExternalParams(extTpl.GetNormalizedParams())
+	env.AddExternalParams(extTpl.GetParams())
 
 	tpl, _, err := mergeExternalParamsPass(tpl, env)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assertAllParams(t, tpl, map[string]interface{}{"instance.subnet": "@my-subnet", "ami": "r45ty3", "instance.count": 4})
+	assertCmdParams(t, tpl, map[string]interface{}{
+		"subnet": "@my-subnet",
+		"ami":    "r45ty3",
+		"count":  4,
+	})
 }
 
 func TestResolveMissingHolesPass(t *testing.T) {
@@ -85,7 +121,7 @@ func TestResolveMissingHolesPass(t *testing.T) {
 	if got, want := count, 3; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	assertAllParams(t, tpl,
+	assertCmdParams(t, tpl,
 		map[string]interface{}{"type": "t2.micro", "name": "redis-124.32.34.54", "subnet": "sub-98765"},
 		map[string]interface{}{"cidr": "10.0.0.0/24"},
 		map[string]interface{}{"id": "redis-124.32.34.54", "name": "redis-124.32.34.54", "count": 3},
@@ -112,7 +148,7 @@ func TestResolveAliasPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assertAllParams(t, tpl, map[string]interface{}{"subnet": "sub-12345", "ami": "ami-12345", "count": 3})
+	assertCmdParams(t, tpl, map[string]interface{}{"subnet": "sub-12345", "ami": "ami-12345", "count": 3})
 }
 
 func TestResolveHolesPass(t *testing.T) {
@@ -129,16 +165,39 @@ func TestResolveHolesPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assertAllParams(t, tpl, map[string]interface{}{"type": "t2.micro", "count": 3})
+	assertCmdHoles(t, tpl, map[string]string{})
+	assertCmdParams(t, tpl, map[string]interface{}{"type": "t2.micro", "count": 3})
 }
 
 type params map[string]interface{}
 type paramsPerCommand []params
 
-func assertAllParams(t *testing.T, tpl *Template, exp ...params) {
+type holes map[string]string
+type holesPerCommand []holes
+
+type refs map[string]string
+type refsPerCommand []refs
+
+func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
 	for i, cmd := range tpl.CommandNodesIterator() {
 		if got, want := params(cmd.Params), exp[i]; !reflect.DeepEqual(got, want) {
-			t.Fatalf("cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
+			t.Fatalf("params: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
+		}
+	}
+}
+
+func assertCmdHoles(t *testing.T, tpl *Template, exp ...holes) {
+	for i, cmd := range tpl.CommandNodesIterator() {
+		if got, want := holes(cmd.Holes), exp[i]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("holes: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
+		}
+	}
+}
+
+func assertCmdRefs(t *testing.T, tpl *Template, exp ...refs) {
+	for i, cmd := range tpl.CommandNodesIterator() {
+		if got, want := refs(cmd.Refs), exp[i]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("refs: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}
 }

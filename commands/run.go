@@ -60,7 +60,7 @@ var runCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("missingHolesStdinFunc FILEPATH arg")
+			return errors.New("missing FILEPATH arg")
 		}
 
 		content, err := ioutil.ReadFile(args[0])
@@ -75,8 +75,10 @@ var runCmd = &cobra.Command{
 		exitOn(err)
 
 		env := template.NewEnv()
+		env.Log = logger.DefaultLogger
 		env.AddFillers(config.Defaults, extraParams)
 		env.MissingHolesFunc = missingHolesStdinFunc()
+		env.DefLookupFunc = lookupTemplateDefinitionsFunc()
 
 		exitOn(runTemplate(templ, env))
 
@@ -113,10 +115,8 @@ func missingHolesStdinFunc() func(string) interface{} {
 }
 
 func runTemplate(templ *template.Template, env *template.Env) error {
-	validateTemplate(templ)
-
 	if len(env.Fillers) > 0 {
-		logger.Verbosef("used default/given params: %s", sprintProcessedParams(env.Fillers))
+		logger.Verbosef("default/given holes fillers: %s", sprintProcessedParams(env.Fillers))
 	}
 
 	var err error
@@ -166,17 +166,12 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 }
 
 func validateTemplate(tpl *template.Template) {
-	validDefinitionsRule := &template.DefinitionValidator{func(key string) (t template.TemplateDefinition, ok bool) {
-		t, ok = aws.AWSTemplatesDefinitions[key]
-		return
-	}}
-
 	unicityRule := &template.UniqueNameValidator{func(key string) (*graph.Graph, bool) {
 		g := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[key])
 		return g, true
 	}}
 
-	errs := tpl.Validate(validDefinitionsRule, unicityRule)
+	errs := tpl.Validate(unicityRule)
 
 	if len(errs) > 0 {
 		for _, err := range errs {
@@ -195,26 +190,21 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	for _, entity := range entities {
-		templDef, ok := aws.AWSTemplatesDefinitions[fmt.Sprintf("%s%s", action, entity)]
+		templDef, ok := lookupTemplateDefinitionsFunc()(fmt.Sprintf("%s%s", action, entity))
 		if !ok {
 			exitOn(errors.New("command unsupported on inline mode"))
 		}
-
 		run := func(def template.TemplateDefinition) func(cmd *cobra.Command, args []string) error {
 			return func(cmd *cobra.Command, args []string) error {
 				text := fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(args, " "))
 
-				cliTpl, err := template.Parse(text)
+				templ, err := template.Parse(text)
 				exitOn(err)
-
-				templ, err := def.GetTemplate()
-				exitOn(err)
-
-				logger.ExtraVerbosef("template definition: %s", def)
 
 				env := template.NewEnv()
 				env.Log = logger.DefaultLogger
-				env.AddFillers(config.Defaults, cliTpl.GetNormalizedParams())
+				env.AddFillers(config.Defaults)
+				env.DefLookupFunc = lookupTemplateDefinitionsFunc()
 				env.AliasFunc = resolveAliasFunc(def.Entity)
 				env.MissingHolesFunc = missingHolesStdinFunc()
 
@@ -238,16 +228,19 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
+func lookupTemplateDefinitionsFunc() template.LookupTemplateDefFunc {
+	return func(key string) (t template.TemplateDefinition, ok bool) {
+		t, ok = aws.AWSTemplatesDefinitions[key]
+		return
+	}
+}
+
 func runSyncFor(tpl *template.Template) {
 	if !config.GetAutosync() {
 		return
 	}
 
-	lookup := func(key string) (t template.TemplateDefinition, ok bool) {
-		t, ok = aws.AWSTemplatesDefinitions[key]
-		return
-	}
-	collector := &template.CollectDefinitions{L: lookup}
+	collector := &template.CollectDefinitions{L: lookupTemplateDefinitionsFunc()}
 	tpl.Visit(collector)
 
 	uniqueNames := make(map[string]bool)
