@@ -287,6 +287,18 @@ var DriversDefs = []driversDef{
 		Api: "elbv2",
 		Drivers: []driver{
 			{
+				Action: "create", Entity: graph.LoadBalancer.String(), Input: "CreateLoadBalancerInput", Output: "CreateLoadBalancerOutput", ApiMethod: "CreateLoadBalancer", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.LoadBalancers[0].LoadBalancerArn)",
+				RequiredParams: []param{
+					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "Subnets", TemplateName: "subnets", AwsType: "awsstringslice"},
+				},
+				ExtraParams: []param{
+					{AwsField: "IpAddressType", TemplateName: "iptype", AwsType: "awsstr"},
+					{AwsField: "Scheme", TemplateName: "scheme", AwsType: "awsstr"},
+					{AwsField: "SecurityGroups", TemplateName: "groups", AwsType: "awsstringslice"},
+				},
+			},
+			{
 				Action: "delete", Entity: graph.LoadBalancer.String(), Input: "DeleteLoadBalancerInput", Output: "DeleteLoadBalancerOutput", ApiMethod: "DeleteLoadBalancer", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "LoadBalancerArn", TemplateName: "arn", AwsType: "awsstr"},

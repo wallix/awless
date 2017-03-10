@@ -1599,6 +1599,68 @@ func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 }
 
 // This function was auto generated
+func (d *Elbv2Driver) Create_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create loadbalancer: missing required params 'name'")
+	}
+
+	if _, ok := params["subnets"]; !ok {
+		return nil, errors.New("create loadbalancer: missing required params 'subnets'")
+	}
+
+	d.logger.Verbose("params dry run: create loadbalancer ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interface{}, error) {
+	input := &elbv2.CreateLoadBalancerInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnets"], input, "Subnets", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["iptype"]; ok {
+		err = setFieldWithType(params["iptype"], input, "IpAddressType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["scheme"]; ok {
+		err = setFieldWithType(params["scheme"], input, "Scheme", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["groups"]; ok {
+		err = setFieldWithType(params["groups"], input, "SecurityGroups", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *elbv2.CreateLoadBalancerOutput
+	output, err = d.CreateLoadBalancer(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("create loadbalancer error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("elbv2.CreateLoadBalancer call took %s", time.Since(start))
+	d.logger.Verbose("create loadbalancer done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *Elbv2Driver) Delete_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("delete loadbalancer: missing required params 'arn'")

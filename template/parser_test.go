@@ -184,6 +184,12 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
+				input: `create vpc array=test1,test2, 20 , my-array-elem4 ip=127.0.0.1`,
+				verifyFn: func(n ast.Node) error {
+					return assertParams(n, map[string]interface{}{"array": []string{"test1", "test2", "20", "my-array-elem4"}, "ip": "127.0.0.1"})
+				},
+			},
+			{
 				input: `myinstance = create instance type={instance.type} cidr=10.0.0.0/25 subnet=@default-subnet vpc=$myvpc`,
 				verifyFn: func(n ast.Node) error {
 					if err := assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/25", "subnet": "@default-subnet"}); err != nil {

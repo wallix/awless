@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -89,11 +90,19 @@ func missingHolesStdinFunc() func(string) interface{} {
 		if count < 1 {
 			fmt.Println("Please specify (Ctrl+C to quit):")
 		}
-		var resp string
+		var resp interface{}
 		ask := func() error {
 			fmt.Printf("%s ? ", hole)
-			_, err := fmt.Scanln(&resp)
-			return err
+			line, err := bufio.NewReader(os.Stdin).ReadString('\n')
+			if err != nil {
+				return err
+			}
+			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
+			if err != nil {
+				return err
+			}
+			resp = params[hole]
+			return nil
 		}
 		for err := ask(); err != nil; err = ask() {
 			logger.Errorf("invalid value: %s", err)

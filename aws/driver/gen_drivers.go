@@ -247,6 +247,12 @@ func NewElbv2Driver(api elbv2iface.ELBV2API) driver.Driver {
 func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createloadbalancer":
+		if d.dryRun {
+			return d.Create_Loadbalancer_DryRun, nil
+		}
+		return d.Create_Loadbalancer, nil
+
 	case "deleteloadbalancer":
 		if d.dryRun {
 			return d.Delete_Loadbalancer_DryRun, nil

@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -66,8 +67,19 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
 			return err
 		}
 	case awsstringslice:
-		str := fmt.Sprint(v)
-		v = []*string{&str}
+		switch vv := v.(type) {
+		case string:
+			v = []*string{&vv}
+		case *string:
+			v = []*string{vv}
+		case []*string:
+			v = vv
+		case []string:
+			v = aws.StringSlice(vv)
+		default:
+			str := fmt.Sprint(v)
+			v = []*string{&str}
+		}
 	case awsint64slice:
 		awsint, err := castInt64(v)
 		if err != nil {

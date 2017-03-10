@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 func (a *AST) addAction(text string) {
@@ -48,6 +49,15 @@ func (a *AST) addParamKey(text string) {
 func (a *AST) addParamValue(text string) {
 	node := a.currentCommand()
 	node.Params[a.currentKey] = text
+}
+
+func (a *AST) addCsvValue(text string) {
+	var csv []string
+	for _, val := range strings.Split(text, ",") {
+		csv = append(csv, strings.TrimSpace(val))
+	}
+	node := a.currentCommand()
+	node.Params[a.currentKey] = csv
 }
 
 func (a *AST) addParamIntValue(text string) {

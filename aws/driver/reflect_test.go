@@ -115,6 +115,23 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
+	err = setFieldWithType([]string{"one", "two", "three"}, &any, "StringArrayField", awsstringslice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.StringArrayField), 3; got != want {
+		t.Fatalf("len: got %d, want %d", got, want)
+	}
+	if got, want := aws.StringValue(any.StringArrayField[0]), "one"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := aws.StringValue(any.StringArrayField[1]), "two"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := aws.StringValue(any.StringArrayField[2]), "three"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
 	err = setFieldWithType(int64(321), &any, "Int64ArrayField", awsint64slice)
 	if err != nil {
 		t.Fatal(err)

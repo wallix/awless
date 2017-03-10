@@ -58,3 +58,57 @@ func TestCloneAST(t *testing.T) {
 		t.Fatalf("\ngot %s\n\nwant %s", got, want)
 	}
 }
+
+func TestNodesEqual(t *testing.T) {
+	tcases := []struct {
+		n1, n2 Node
+		expect bool
+	}{
+		{
+			n1: &CommandNode{Action: "create", Entity: "vpc",
+				Refs:   map[string]string{"myname": "name"},
+				Params: map[string]interface{}{"count": 1},
+				Holes:  make(map[string]string)},
+			n2: &CommandNode{Action: "create", Entity: "vpc",
+				Refs:   map[string]string{"myname": "name"},
+				Params: map[string]interface{}{"count": 1},
+				Holes:  make(map[string]string)},
+			expect: true,
+		},
+		{
+			n1:     &CommandNode{Action: "create", Entity: "subnet"},
+			n2:     &CommandNode{Action: "create", Entity: "vpc"},
+			expect: false,
+		},
+		{
+			n1:     &CommandNode{Refs: map[string]string{"myname": "name"}},
+			n2:     &CommandNode{Refs: map[string]string{"myname": "name", "other": "test"}},
+			expect: false,
+		},
+		{
+			n1:     &CommandNode{Params: map[string]interface{}{"count": 1}},
+			n2:     &CommandNode{Params: map[string]interface{}{"count": "1"}},
+			expect: false,
+		},
+		{
+			n1:     &DeclarationNode{Ident: "ident", Expr: &CommandNode{Action: "create", Entity: "subnet"}},
+			n2:     &DeclarationNode{Ident: "ident", Expr: &CommandNode{Action: "create", Entity: "subnet"}},
+			expect: true,
+		},
+		{
+			n1:     &CommandNode{Action: "create", Entity: "subnet"},
+			n2:     &DeclarationNode{Expr: &CommandNode{Action: "create", Entity: "subnet"}},
+			expect: false,
+		},
+		{
+			n1:     &DeclarationNode{Ident: "ident1"},
+			n2:     &DeclarationNode{Ident: "ident2"},
+			expect: false,
+		},
+	}
+	for i, tcase := range tcases {
+		if got, want := tcase.n1.Equal(tcase.n2), tcase.expect; got != want {
+			t.Fatalf("%d: got %t, want %t", i, got, want)
+		}
+	}
+}

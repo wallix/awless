@@ -1,3 +1,9 @@
+## 0.0.18 [unreleased]
+
+### Features
+
+- infra: support the creation of loadbalancers: `awless create loadbalancer`
+
 ## 0.0.17 [2017-03-09]
 
 If you have any data or config issues, you can run `rm -Rf ~/.awless/` to start with a fresh install.

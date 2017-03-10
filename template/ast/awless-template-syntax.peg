@@ -8,7 +8,7 @@ type Peg Peg {
 Script   <- Spacing Statement+ EndOfFile
 Statement <- Spacing (Expr / Declaration / Comment) Spacing EndOfLine*
 Action <- 'none' / 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' / 'check' / 'detach'
-Entity <- 'none' / 'vpc' / 'subnet' / 'instance' / 'volume' / 'tag' / 'user' / 'group' / 'role' / 'policy' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' / 'bucket' / 'storageobject' / 'subscription' / 'topic' / 'queue'
+Entity <- 'none' / 'vpc' / 'subnet' / 'instance' / 'volume' / 'tag' / 'user' / 'group' / 'role' / 'policy' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' / 'bucket' / 'storageobject' / 'subscription' / 'topic' / 'queue' / 'loadbalancer'
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
                Equal
                Expr
@@ -29,6 +29,7 @@ Value <- HoleValue {  p.addParamHoleValue(text) }
         / RefValue {  p.addParamRefValue(text) }
         / <CidrValue> { p.addParamCidrValue(text) }
         / <IpValue> { p.addParamIpValue(text) }
+        / <CSVValue> {p.addCsvValue(text)}
         / <IntRangeValue> { p.addParamValue(text) }
         / <IntValue> { p.addParamIntValue(text) }
         / <StringValue> { p.addParamValue(text) }
@@ -36,6 +37,7 @@ Value <- HoleValue {  p.addParamHoleValue(text) }
 
 StringValue <- [a-zA-Z0-9-._:/]+
 
+CSVValue <- (StringValue WhiteSpacing ',' WhiteSpacing)+ StringValue
 CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
 IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
 IntValue <- [0-9]+

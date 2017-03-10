@@ -19,12 +19,14 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
 type Node interface {
 	clone() Node
 	String() string
+	Equal(Node) bool
 }
 
 type AST struct {
@@ -42,6 +44,10 @@ type Statement struct {
 type DeclarationNode struct {
 	Ident string
 	Expr  ExpressionNode
+}
+
+func (n *DeclarationNode) Equal(n2 Node) bool {
+	return reflect.DeepEqual(n, n2)
 }
 
 type ExpressionNode interface {
@@ -62,6 +68,10 @@ type CommandNode struct {
 
 func (n *CommandNode) Result() interface{} { return n.CmdResult }
 func (n *CommandNode) Err() error          { return n.CmdErr }
+
+func (n *CommandNode) Equal(n2 Node) bool {
+	return reflect.DeepEqual(n, n2)
+}
 
 func (s *Statement) clone() *Statement {
 	newStat := &Statement{}
@@ -113,10 +123,16 @@ func (n *CommandNode) clone() Node {
 func (n *CommandNode) String() string {
 	var all []string
 	for k, v := range n.Refs {
-		all = append(all, fmt.Sprintf("%s=$%v", k, v))
+		all = append(all, fmt.Sprintf("%s=$%s", k, v))
 	}
 	for k, v := range n.Params {
-		all = append(all, fmt.Sprintf("%s=%v", k, v))
+		switch vv := v.(type) {
+		case []string:
+			all = append(all, fmt.Sprintf("%s=%s", k, strings.Join(vv, ",")))
+		default:
+			all = append(all, fmt.Sprintf("%s=%v", k, v))
+		}
+
 	}
 	for k, v := range n.Holes {
 		all = append(all, fmt.Sprintf("%s={%s}", k, v))
