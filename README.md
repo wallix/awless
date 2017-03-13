@@ -4,7 +4,6 @@
 `awless` is a fast, powerful and easy-to-use command line interface (CLI) to manage Amazon Web Services.
 
 [Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki)
-
 # Why awless
 
 `awless` will help you
@@ -17,6 +16,25 @@
 - explore, analyse and query your infrastructure **through time**
 
 `awless` brings a new approach to manage AWS infrastructures through CLI.
+
+# Table of Contents
+* [Overview](#overview)
+* [Design Concepts](#design-concepts)
+* [Install](#install)
+* [Getting Started](#getting-started)
+  * [Setup your AWS account with awless](#setup-your-aws-account-with-awless)
+  * [Setup shell autocompletion](#setup-shell-autocompletion)
+  * [Disclaimer](#disclaimer)
+  * [First awless commands](#first-awless-commands)
+  * [Listing resources](#listing-resources)
+  * [Showing resources](#showing-resources)
+  * [Creating, Updating and Deleting resources](#creating-updating-and-deleting-resources)
+* [Log & revert executed template commands](#log-revert-executed-template-commands)
+* [Cloud history (in progress)](#cloud-history-in-progress)
+* [SSH](#ssh)
+* [Aliasing](#aliasing)
+* [Inspectors](#inspectors)
+* [About](#about)
 
 # Overview
 
