@@ -26,6 +26,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"text/tabwriter"
 	"time"
 	"unicode/utf8"
 
@@ -108,6 +109,10 @@ func (b *Builder) Build() Displayer {
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}
+			dis.setGraph(filteredGraph)
+			return dis
+		case "tsv":
+			dis := &tsvDisplayer{base}
 			dis.setGraph(filteredGraph)
 			return dis
 		case "json":
@@ -301,6 +306,54 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 
 	_, err = w.Write([]byte(strings.Join(lines, "\n")))
 	return err
+}
+
+type tsvDisplayer struct {
+	fromGraphDisplayer
+}
+
+func (d *tsvDisplayer) Print(w io.Writer) error {
+	color.NoColor = true // as default tabwriter does not play nice with the color library
+
+	resources, err := d.g.GetAllResources(d.rdfType)
+	if err != nil {
+		return err
+	}
+
+	if len(d.headers) == 0 {
+		return nil
+	}
+
+	values := make(table, len(resources))
+	for i, res := range resources {
+		if v := values[i]; v == nil {
+			values[i] = make([]interface{}, len(d.headers))
+		}
+		for j, h := range d.headers {
+			values[i][j] = res.Properties[h.propKey()]
+		}
+	}
+
+	d.sorter.sort(values)
+
+	var head []string
+	for _, h := range d.headers {
+		head = append(head, h.title(false))
+	}
+
+	tabw := tabwriter.NewWriter(w, 8, 8, 0, '\t', 0)
+
+	fmt.Fprintln(tabw, strings.Join(head, "\t"))
+
+	for i := range values {
+		var props []string
+		for j, h := range d.headers {
+			props = append(props, h.format(values[i][j]))
+		}
+		fmt.Fprintln(tabw, strings.Join(props, "\t"))
+	}
+
+	return tabw.Flush()
 }
 
 type jsonDisplayer struct {
