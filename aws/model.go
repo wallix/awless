@@ -207,6 +207,21 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"CallerReference":        {name: "CallerReference", transform: extractValueFn},
 		"ResourceRecordSetCount": {name: "ResourceRecordSetCount", transform: extractValueFn},
 	},
+	graph.Record: {
+		"Id":            {name: "Name", transform: extractValueFn},
+		"Name":          {name: "Name", transform: extractValueFn},
+		"Failover":      {name: "Failover", transform: extractValueFn},
+		"Continent":     {name: "GeoLocation", transform: extractFieldFn("ContinentCode")},
+		"Country":       {name: "GeoLocation", transform: extractFieldFn("CountryCode")},
+		"HealthCheckId": {name: "HealthCheckId", transform: extractValueFn},
+		"Region":        {name: "Region", transform: extractValueFn},
+		"Records":       {name: "ResourceRecords", transform: extractSliceValues("Value")},
+		"SetIdentifier": {name: "SetIdentifier", transform: extractValueFn},
+		"TTL":           {name: "TTL", transform: extractValueFn},
+		"TrafficPolicyInstanceId": {name: "TrafficPolicyInstanceId", transform: extractValueFn},
+		"Type":   {name: "Type", transform: extractValueFn},
+		"Weight": {name: "Weight", transform: extractValueFn},
+	},
 	//Queue
 	graph.Queue: {}, //Manually set
 }

@@ -94,6 +94,7 @@ var FetchersDefs = []fetchersDef{
 		ApiInterfaces: map[string]string{"route53": "Route53API"},
 		Fetchers: []fetcher{
 			{Api: "route53", ResourceType: graph.Zone.String(), AWSType: "route53.HostedZone", ApiMethod: "ListHostedZonesPages", Input: "route53.ListHostedZonesInput{}", Output: "route53.ListHostedZonesOutput", OutputsExtractor: "HostedZones", Multipage: true, NextPageMarker: "NextMarker"},
+			{Api: "route53", ResourceType: graph.Record.String(), AWSType: "route53.ResourceRecordSet", ManualFetcher: true},
 		},
 	},
 }

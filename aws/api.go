@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -382,6 +383,79 @@ func (s *Infra) fetch_all_listener_graph() (*graph.Graph, []*elbv2.Listener, err
 				return g, cloudResources, err
 			}
 			g.AddResource(res)
+		}
+	}
+}
+
+func (s *Dns) fetch_all_record_graph() (*graph.Graph, []*route53.ResourceRecordSet, error) {
+	g := graph.NewGraph()
+	var cloudResources []*route53.ResourceRecordSet
+	zonec := make(chan *route53.HostedZone)
+	errc := make(chan error)
+
+	go func() {
+		err := s.ListHostedZonesPages(&route53.ListHostedZonesInput{},
+			func(out *route53.ListHostedZonesOutput, lastPage bool) (shouldContinue bool) {
+				for _, output := range out.HostedZones {
+					zonec <- output
+				}
+				return out.NextMarker != nil
+			})
+		if err != nil {
+			errc <- err
+		}
+		close(zonec)
+	}()
+
+	resultc := make(chan *route53.ResourceRecordSet)
+
+	go func() {
+		var wg sync.WaitGroup
+
+		for zone := range zonec {
+			wg.Add(1)
+			go func(z *route53.HostedZone) {
+				defer wg.Done()
+				err := s.ListResourceRecordSetsPages(&route53.ListResourceRecordSetsInput{HostedZoneId: z.Id},
+					func(out *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
+						for _, output := range out.ResourceRecordSets {
+							resultc <- output
+							res, err := newResource(output)
+							if err != nil {
+								errc <- err
+							}
+							g.AddResource(res)
+							parent, err := initResource(z)
+							if err != nil {
+								errc <- err
+							}
+							g.AddParentRelation(parent, res)
+						}
+						return out.NextRecordName != nil
+					})
+				if err != nil {
+					errc <- err
+				}
+			}(zone)
+		}
+
+		go func() {
+			wg.Wait()
+			close(resultc)
+		}()
+	}()
+
+	for {
+		select {
+		case err := <-errc:
+			if err != nil {
+				return g, cloudResources, err
+			}
+		case record, ok := <-resultc:
+			if !ok {
+				return g, cloudResources, nil
+			}
+			cloudResources = append(cloudResources, record)
 		}
 	}
 }

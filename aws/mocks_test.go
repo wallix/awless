@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	awsdriver "github.com/wallix/awless/aws/driver"
@@ -99,6 +101,31 @@ func (m *mockELB) DescribeListenersPages(input *elbv2.DescribeListenersInput, fn
 }
 func (m *mockELB) DescribeTargetHealth(input *elbv2.DescribeTargetHealthInput) (*elbv2.DescribeTargetHealthOutput, error) {
 	return &elbv2.DescribeTargetHealthOutput{TargetHealthDescriptions: m.targetHealths[awssdk.StringValue(input.TargetGroupArn)]}, nil
+}
+
+type mockRoute53 struct {
+	route53iface.Route53API
+	zonePages   [][]*route53.HostedZone
+	recordPages map[string][][]*route53.ResourceRecordSet
+}
+
+func (m *mockRoute53) ListHostedZonesPages(input *route53.ListHostedZonesInput, fn func(p *route53.ListHostedZonesOutput, lastPage bool) (shouldContinue bool)) error {
+	for i, page := range m.zonePages {
+		fn(&route53.ListHostedZonesOutput{HostedZones: page, NextMarker: awssdk.String(strconv.Itoa(i + 1))},
+			i < len(m.zonePages),
+		)
+	}
+	return nil
+}
+
+func (m *mockRoute53) ListResourceRecordSetsPages(input *route53.ListResourceRecordSetsInput, fn func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool)) error {
+	records := m.recordPages[awssdk.StringValue(input.HostedZoneId)]
+	for i, page := range records {
+		fn(&route53.ListResourceRecordSetsOutput{ResourceRecordSets: page, NextRecordName: awssdk.String(strconv.Itoa(i + 1))},
+			i < len(records),
+		)
+	}
+	return nil
 }
 
 type mockIam struct {

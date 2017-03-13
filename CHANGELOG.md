@@ -1,3 +1,9 @@
+## 0.0.19 [unreleased]
+
+### Features
+
+- DNS: listing Route53 zones and records `awless list zones/records`
+
 ## 0.0.18 [2017-03-13]
 
 ### Features

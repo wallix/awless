@@ -19,6 +19,7 @@ package console
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -112,6 +113,23 @@ func (h ColoredValueColumnDefinition) format(i interface{}) string {
 		return color.New(col).SprintFunc()(str)
 	}
 	return str
+}
+
+type SliceColumnDefinition struct {
+	StringColumnDefinition
+}
+
+func (h SliceColumnDefinition) format(i interface{}) string {
+	value := reflect.ValueOf(i)
+	if value.Kind() != reflect.Slice {
+		return "invalid slice"
+	}
+	var buf bytes.Buffer
+	for i := 0; i < value.Len(); i++ {
+		buf.WriteString(fmt.Sprint(value.Index(i).Interface()))
+		buf.WriteRune('\n')
+	}
+	return buf.String()
 }
 
 type TimeColumnDefinition struct {

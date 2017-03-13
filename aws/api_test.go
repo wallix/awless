@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
@@ -306,6 +307,52 @@ func TestBuildStorageRdfGraph(t *testing.T) {
 
 	if got, want := result, string(expectContent); got != want {
 		t.Fatalf("got\n[%s]\n\nwant\n[%s]", got, want)
+	}
+}
+
+func TestBuildDnsRdfGraph(t *testing.T) {
+	zonePages := [][]*route53.HostedZone{
+		{
+			{Id: awssdk.String("/hostedzone/12345"), Name: awssdk.String("my.first.domain")},
+			{Id: awssdk.String("/hostedzone/23456"), Name: awssdk.String("my.second.domain")},
+		},
+		{{Id: awssdk.String("/hostedzone/34567"), Name: awssdk.String("my.third.domain")}},
+	}
+	recordPages := map[string][][]*route53.ResourceRecordSet{
+		"/hostedzone/12345": {
+			{
+				{Type: awssdk.String("A"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain1.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("1.2.3.4")}, {Value: awssdk.String("2.3.4.5")}}},
+				{Type: awssdk.String("A"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain2.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("3.4.5.6")}}},
+			},
+			{
+				{Type: awssdk.String("CNAME"), TTL: awssdk.Int64(60), Name: awssdk.String("subdomain3.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("4.5.6.7")}}},
+			},
+		},
+		"/hostedzone/23456": {
+			{
+				{Type: awssdk.String("A"), TTL: awssdk.Int64(30), Name: awssdk.String("subdomain1.my.second.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("5.6.7.8")}}},
+				{Type: awssdk.String("CNAME"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain3.my.second.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("6.7.8.9")}}},
+			},
+		},
+	}
+	mockRoute53 := &mockRoute53{zonePages: zonePages, recordPages: recordPages}
+
+	dns := Dns{Route53API: mockRoute53, region: "eu-west-1"}
+
+	g, err := dns.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := g.MustMarshal()
+
+	expectContent, err := ioutil.ReadFile(filepath.Join("testdata", "dns.rdf"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := diffText(result, string(expectContent)); err != nil {
+		t.Fatal(err)
 	}
 }
 

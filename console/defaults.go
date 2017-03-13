@@ -196,4 +196,10 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "ResourceRecordSetCount"},
 		StringColumnDefinition{Prop: "CallerReference", DisableTruncate: true},
 	},
+	graph.Record: {
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		SliceColumnDefinition{StringColumnDefinition{Prop: "Records"}},
+		StringColumnDefinition{Prop: "Type"},
+		StringColumnDefinition{Prop: "TTL"},
+	},
 }

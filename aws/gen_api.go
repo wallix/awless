@@ -84,6 +84,7 @@ var ResourceTypes = []string{
 	"topic",
 	"queue",
 	"zone",
+	"record",
 }
 
 var ServicePerAPI = map[string]string{
@@ -119,6 +120,7 @@ var ServicePerResourceType = map[string]string{
 	"topic":            "notification",
 	"queue":            "queue",
 	"zone":             "dns",
+	"record":           "dns",
 }
 
 type Infra struct {
@@ -1737,6 +1739,7 @@ func (s *Dns) Drivers() []driver.Driver {
 
 func (s *Dns) ResourceTypes() (all []string) {
 	all = append(all, "zone")
+	all = append(all, "record")
 	return
 }
 
@@ -1749,6 +1752,7 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 	regionN := graph.InitResource(s.region, graph.Region)
 	g.AddResource(regionN)
 	var zoneList []*route53.HostedZone
+	var recordList []*route53.ResourceRecordSet
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -1768,6 +1772,22 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource dns[zone]")
+	}
+	if s.config.getBool("aws.dns.record.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, recordList, err = s.fetch_all_record_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource dns[record]")
 	}
 
 	go func() {
@@ -1807,6 +1827,21 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.dns.record.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range recordList {
+				for _, fn := range addParentsFns["record"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1826,6 +1861,9 @@ func (s *Dns) FetchByType(t string) (*graph.Graph, error) {
 	switch t {
 	case "zone":
 		graph, _, err := s.fetch_all_zone_graph()
+		return graph, err
+	case "record":
+		graph, _, err := s.fetch_all_record_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws dns: unsupported fetch for type %s", t)

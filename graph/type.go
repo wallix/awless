@@ -59,7 +59,8 @@ const (
 	Queue ResourceType = "queue"
 
 	//dns
-	Zone ResourceType = "zone"
+	Zone   ResourceType = "zone"
+	Record ResourceType = "record"
 )
 
 type FirewallRule struct {

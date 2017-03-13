@@ -90,6 +90,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		// DNS
 	case *route53.HostedZone:
 		res = graph.InitResource(awssdk.StringValue(ss.Id), graph.Zone)
+	case *route53.ResourceRecordSet:
+		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Record)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -164,7 +166,6 @@ func newResource(source interface{}) (*graph.Resource, error) {
 }
 
 var ErrTagNotFound = errors.New("aws tag key not found")
-var ErrFieldNotFound = errors.New("aws struct field not found")
 
 type propertyTransform struct {
 	name      string
@@ -257,7 +258,7 @@ var extractFieldFn = func(field string) transformFn {
 		structField := struc.FieldByName(field)
 
 		if !structField.IsValid() {
-			return nil, ErrFieldNotFound
+			return nil, fmt.Errorf("extract field: field not found: %s", field)
 		}
 
 		return extractValueFn(structField.Interface())
