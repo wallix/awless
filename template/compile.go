@@ -9,8 +9,7 @@ import (
 )
 
 type Env struct {
-	Fillers        map[string]interface{}
-	externalParams map[string]interface{}
+	Fillers map[string]interface{}
 
 	Resolved         map[string]interface{}
 	DefLookupFunc    LookupTemplateDefFunc
@@ -41,21 +40,9 @@ func (e *Env) AddFillers(fills ...map[string]interface{}) {
 	}
 }
 
-func (e *Env) AddExternalParams(exts ...map[string]interface{}) {
-	if e.externalParams == nil {
-		e.externalParams = make(map[string]interface{})
-	}
-
-	for _, f := range exts {
-		for k, v := range f {
-			e.externalParams[k] = v
-		}
-	}
-}
 func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
 	pass := newMultiPass(
 		resolveAgainstDefinitions,
-		mergeExternalParamsPass,
 		resolveHolesPass,
 		resolveAliasPass,
 		resolveMissingHolesPass,
@@ -67,6 +54,7 @@ func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
 
 type compileFunc func(*Template, *Env) (*Template, *Env, error)
 
+// Leeloo Dallas
 type multiPass struct {
 	passes []compileFunc
 }
@@ -225,22 +213,6 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	if len(unresolved) > 0 {
 		return tpl, env, fmt.Errorf("cannot resolve aliases: %q", unresolved)
 	}
-
-	return tpl, env, nil
-}
-
-func mergeExternalParamsPass(tpl *Template, env *Env) (*Template, *Env, error) {
-	each := func(cmd *ast.CommandNode) {
-		for k, v := range env.externalParams {
-			cmd.Params[k] = v
-		}
-		if len(env.externalParams) > 0 {
-			env.externalParams = make(map[string]interface{})
-		}
-
-	}
-
-	tpl.visitCommandNodes(each)
 
 	return tpl, env, nil
 }

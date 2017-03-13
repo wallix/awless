@@ -113,31 +113,6 @@ func (s *Template) Visit(v Visitor) error {
 	return v.Visit(s.CommandNodesIterator())
 }
 
-func (s *Template) GetNormalizedParams() map[string]interface{} {
-	params := make(map[string]interface{})
-	each := func(expr *ast.CommandNode) {
-		for k, v := range expr.Params {
-			if !strings.Contains(k, ".") {
-				params[fmt.Sprintf("%s.%s", expr.Entity, k)] = v
-			} else {
-				params[k] = v
-			}
-		}
-	}
-	s.visitCommandNodes(each)
-	return params
-}
-func (s *Template) GetParams() map[string]interface{} {
-	params := make(map[string]interface{})
-	each := func(expr *ast.CommandNode) {
-		for k, v := range expr.Params {
-			params[k] = v
-		}
-	}
-	s.visitCommandNodes(each)
-	return params
-}
-
 func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {
 	for _, cmd := range s.CommandNodesIterator() {
 		fn(cmd)

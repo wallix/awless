@@ -69,25 +69,6 @@ func TestResolveAgainstDefinitionsPass(t *testing.T) {
 	})
 }
 
-func TestMergeExternalParamsPass(t *testing.T) {
-	extTpl := MustParse(`create instance subnet=@my-subnet count=4`)
-	tpl := MustParse(`create instance ami=r45ty3`)
-
-	env := NewEnv()
-	env.AddExternalParams(extTpl.GetParams())
-
-	tpl, _, err := mergeExternalParamsPass(tpl, env)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assertCmdParams(t, tpl, map[string]interface{}{
-		"subnet": "@my-subnet",
-		"ami":    "r45ty3",
-		"count":  4,
-	})
-}
-
 func TestResolveMissingHolesPass(t *testing.T) {
 	tpl := MustParse(`
 	create instance subnet={instance.subnet} type={instance.type} name={redis.prod}
