@@ -496,6 +496,18 @@ func NewRoute53Driver(api route53iface.Route53API) driver.Driver {
 func (d *Route53Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createzone":
+		if d.dryRun {
+			return d.Create_Zone_DryRun, nil
+		}
+		return d.Create_Zone, nil
+
+	case "deletezone":
+		if d.dryRun {
+			return d.Delete_Zone_DryRun, nil
+		}
+		return d.Delete_Zone, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

@@ -60,15 +60,18 @@ func TestSetFieldsOnAwsStruct(t *testing.T) {
 
 func TestSetFieldWithMultiType(t *testing.T) {
 	any := struct {
-		Field                       string
-		IntField                    int
-		BoolPointerField            *bool
-		BoolField                   bool
-		StringArrayField            []*string
-		Int64ArrayField             []*int64
-		BooleanValueField           *ec2.AttributeBooleanValue
-		StringValueField            *ec2.AttributeValue
-		StructAttribute             struct{ Str *string }
+		Field             string
+		IntField          int
+		BoolPointerField  *bool
+		BoolField         bool
+		StringArrayField  []*string
+		Int64ArrayField   []*int64
+		BooleanValueField *ec2.AttributeBooleanValue
+		StringValueField  *ec2.AttributeValue
+		StructAttribute   struct {
+			Str  *string
+			Bool *bool
+		}
 		SliceStructPointerAttribute []*struct{ Str1, Str2 *string }
 		MapAttribute                map[string]*string
 		EmptyMapAttribute           map[string]*string
@@ -241,6 +244,13 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, want := *any.StructAttribute.Str, "fieldValue"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	err = setFieldWithType("true", &any, "StructAttribute.Bool", awsbool)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.StructAttribute.Bool, true; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 

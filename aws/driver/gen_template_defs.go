@@ -462,6 +462,22 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
+	"createzone": {
+		Action:         "create",
+		Entity:         "zone",
+		Api:            "route53",
+		RequiredParams: []string{"callerreference", "name"},
+		ExtraParams:    []string{"delegationsetid", "comment", "isprivate", "vpcid", "vpcregion"},
+		TagsMapping:    []string{},
+	},
+	"deletezone": {
+		Action:         "delete",
+		Entity:         "zone",
+		Api:            "route53",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+		TagsMapping:    []string{},
+	},
 }
 
 func DriverSupportedActions() map[string][]string {
@@ -521,5 +537,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "subscription")
 	supported["create"] = append(supported["create"], "queue")
 	supported["delete"] = append(supported["delete"], "queue")
+	supported["create"] = append(supported["create"], "zone")
+	supported["delete"] = append(supported["delete"], "zone")
 	return supported
 }

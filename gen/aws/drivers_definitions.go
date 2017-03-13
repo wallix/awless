@@ -537,6 +537,27 @@ var DriversDefs = []driversDef{
 	{
 		Api:          "route53",
 		ApiInterface: "Route53API",
-		Drivers:      []driver{},
+		Drivers: []driver{
+			{
+				Action: "create", Entity: graph.Zone.String(), DryRunUnsupported: true, Input: "CreateHostedZoneInput", Output: "CreateHostedZoneOutput", ApiMethod: "CreateHostedZone", OutputExtractor: "aws.StringValue(output.HostedZone.Id)",
+				RequiredParams: []param{
+					{AwsField: "CallerReference", TemplateName: "callerreference", AwsType: "awsstr"}, // unique string (random/date/timestamp)
+					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "DelegationSetId", TemplateName: "delegationsetid", AwsType: "awsstr"},
+					{AwsField: "HostedZoneConfig.Comment", TemplateName: "comment", AwsType: "awsstr"},
+					{AwsField: "HostedZoneConfig.PrivateZone", TemplateName: "isprivate", AwsType: "awsbool"},
+					{AwsField: "VPC.VPCId", TemplateName: "vpcid", AwsType: "awsstr"},
+					{AwsField: "VPC.VPCRegion", TemplateName: "vpcregion", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: graph.Zone.String(), DryRunUnsupported: true, Input: "DeleteHostedZoneInput", Output: "DeleteHostedZoneOutput", ApiMethod: "DeleteHostedZone",
+				RequiredParams: []param{
+					{AwsField: "Id", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+		},
 	},
 }

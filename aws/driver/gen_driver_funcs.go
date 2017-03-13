@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -2655,5 +2656,114 @@ func (d *SqsDriver) Delete_Queue(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.ExtraVerbosef("sqs.DeleteQueue call took %s", time.Since(start))
 	d.logger.Verbose("delete queue done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *Route53Driver) Create_Zone_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["callerreference"]; !ok {
+		return nil, errors.New("create zone: missing required params 'callerreference'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create zone: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create zone ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *Route53Driver) Create_Zone(params map[string]interface{}) (interface{}, error) {
+	input := &route53.CreateHostedZoneInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["callerreference"], input, "CallerReference", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["delegationsetid"]; ok {
+		err = setFieldWithType(params["delegationsetid"], input, "DelegationSetId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["comment"]; ok {
+		err = setFieldWithType(params["comment"], input, "HostedZoneConfig.Comment", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["isprivate"]; ok {
+		err = setFieldWithType(params["isprivate"], input, "HostedZoneConfig.PrivateZone", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["vpcid"]; ok {
+		err = setFieldWithType(params["vpcid"], input, "VPC.VPCId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["vpcregion"]; ok {
+		err = setFieldWithType(params["vpcregion"], input, "VPC.VPCRegion", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *route53.CreateHostedZoneOutput
+	output, err = d.CreateHostedZone(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("create zone error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("route53.CreateHostedZone call took %s", time.Since(start))
+	id := aws.StringValue(output.HostedZone.Id)
+	d.logger.Verbosef("create zone '%s' done", id)
+	return aws.StringValue(output.HostedZone.Id), nil
+}
+
+// This function was auto generated
+func (d *Route53Driver) Delete_Zone_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete zone: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete zone ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *Route53Driver) Delete_Zone(params map[string]interface{}) (interface{}, error) {
+	input := &route53.DeleteHostedZoneInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "Id", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *route53.DeleteHostedZoneOutput
+	output, err = d.DeleteHostedZone(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("delete zone error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("route53.DeleteHostedZone call took %s", time.Since(start))
+	d.logger.Verbose("delete zone done")
 	return output, nil
 }
