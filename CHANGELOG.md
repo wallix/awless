@@ -4,6 +4,12 @@
 
 - infra: support the creation/deletion of ELBv2 loadbalancers, listeners and target groups: `awless create loadbalancer/listener/targetgroup`
 - infra: add tag `Name` to subnets.
+- Format `tsv` supported when listing: `awless list subnets --format tsv`
+- Pricer inspector now resolves prices for any regions: `awless inspect -i pricer`
+
+### Bugfixes
+
+- Fix alias, required and extra params parsing in template runs
 
 ## 0.0.17 [2017-03-09]
 
