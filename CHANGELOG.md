@@ -2,7 +2,7 @@
 
 ### Features
 
-- infra: support the creation of loadbalancers and listeners: `awless create loadbalancer/listener/targetgroup`
+- infra: support the creation/deletion of ELBv2 loadbalancers, listeners and target groups: `awless create loadbalancer/listener/targetgroup`
 - infra: add tag `Name` to subnets.
 
 ## 0.0.17 [2017-03-09]
