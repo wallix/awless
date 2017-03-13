@@ -333,13 +333,21 @@ import (
 type {{ Title $service.Api }}Driver struct {
 	dryRun bool
 	logger *logger.Logger
+	{{- if $service.ApiInterface }}
+	{{ $service.Api }}iface.{{ $service.ApiInterface }}
+	{{- else }}
 	{{ $service.Api }}iface.{{ ToUpper $service.Api }}API
+	{{- end }}
 }
 
 func (d *{{ Title $service.Api }}Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *{{ Title $service.Api }}Driver) SetLogger(l *logger.Logger) { d.logger = l }
 
+{{- if $service.ApiInterface }}
+func New{{ Title $service.Api }}Driver(api {{ $service.Api }}iface.{{ $service.ApiInterface }}) driver.Driver{
+{{- else }}
 func New{{ Title $service.Api }}Driver(api {{ $service.Api }}iface.{{ ToUpper $service.Api }}API) driver.Driver{
+{{- end }}
 	return &{{ Title $service.Api }}Driver{false, logger.DiscardLogger, api}
 }
 

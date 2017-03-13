@@ -34,8 +34,9 @@ type driver struct {
 }
 
 type driversDef struct {
-	Api     string
-	Drivers []driver
+	Api          string
+	ApiInterface string
+	Drivers      []driver
 }
 
 var DriversDefs = []driversDef{
@@ -521,5 +522,10 @@ var DriversDefs = []driversDef{
 				},
 			},
 		},
+	},
+	{
+		Api:          "route53",
+		ApiInterface: "Route53API",
+		Drivers:      []driver{},
 	},
 }

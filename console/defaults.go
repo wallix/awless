@@ -187,4 +187,13 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LastModifiedTimestamp", Friendly: "LastModif"}},
 		StringColumnDefinition{Prop: "DelaySeconds", Friendly: "Delay(s)"},
 	},
+	// DNS
+	graph.Zone: {
+		StringColumnDefinition{Prop: "Id", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Comment"},
+		StringColumnDefinition{Prop: "IsPrivateZone"},
+		StringColumnDefinition{Prop: "ResourceRecordSetCount"},
+		StringColumnDefinition{Prop: "CallerReference", DisableTruncate: true},
+	},
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
@@ -38,7 +39,6 @@ type Ec2Driver struct {
 
 func (d *Ec2Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *Ec2Driver) SetLogger(l *logger.Logger) { d.logger = l }
-
 func NewEc2Driver(api ec2iface.EC2API) driver.Driver {
 	return &Ec2Driver{false, logger.DiscardLogger, api}
 }
@@ -239,7 +239,6 @@ type Elbv2Driver struct {
 
 func (d *Elbv2Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *Elbv2Driver) SetLogger(l *logger.Logger) { d.logger = l }
-
 func NewElbv2Driver(api elbv2iface.ELBV2API) driver.Driver {
 	return &Elbv2Driver{false, logger.DiscardLogger, api}
 }
@@ -296,7 +295,6 @@ type IamDriver struct {
 
 func (d *IamDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *IamDriver) SetLogger(l *logger.Logger) { d.logger = l }
-
 func NewIamDriver(api iamiface.IAMAPI) driver.Driver {
 	return &IamDriver{false, logger.DiscardLogger, api}
 }
@@ -365,7 +363,6 @@ type S3Driver struct {
 
 func (d *S3Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *S3Driver) SetLogger(l *logger.Logger) { d.logger = l }
-
 func NewS3Driver(api s3iface.S3API) driver.Driver {
 	return &S3Driver{false, logger.DiscardLogger, api}
 }
@@ -410,7 +407,6 @@ type SnsDriver struct {
 
 func (d *SnsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *SnsDriver) SetLogger(l *logger.Logger) { d.logger = l }
-
 func NewSnsDriver(api snsiface.SNSAPI) driver.Driver {
 	return &SnsDriver{false, logger.DiscardLogger, api}
 }
@@ -455,7 +451,6 @@ type SqsDriver struct {
 
 func (d *SqsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *SqsDriver) SetLogger(l *logger.Logger) { d.logger = l }
-
 func NewSqsDriver(api sqsiface.SQSAPI) driver.Driver {
 	return &SqsDriver{false, logger.DiscardLogger, api}
 }
@@ -474,6 +469,26 @@ func (d *SqsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 			return d.Delete_Queue_DryRun, nil
 		}
 		return d.Delete_Queue, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type Route53Driver struct {
+	dryRun bool
+	logger *logger.Logger
+	route53iface.Route53API
+}
+
+func (d *Route53Driver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *Route53Driver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewRoute53Driver(api route53iface.Route53API) driver.Driver {
+	return &Route53Driver{false, logger.DiscardLogger, api}
+}
+
+func (d *Route53Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

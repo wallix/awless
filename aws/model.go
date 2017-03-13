@@ -198,6 +198,15 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Id":       {name: "TopicArn", transform: extractValueFn},
 		"TopicArn": {name: "TopicArn", transform: extractValueFn},
 	},
+	// DNS
+	graph.Zone: {
+		"Id":                     {name: "Id", transform: extractValueFn},
+		"Name":                   {name: "Name", transform: extractValueFn},
+		"Comment":                {name: "Config", transform: extractFieldFn("Comment")},
+		"IsPrivateZone":          {name: "Config", transform: extractFieldFn("PrivateZone")},
+		"CallerReference":        {name: "CallerReference", transform: extractValueFn},
+		"ResourceRecordSetCount": {name: "ResourceRecordSetCount", transform: extractValueFn},
+	},
 	//Queue
 	graph.Queue: {}, //Manually set
 }

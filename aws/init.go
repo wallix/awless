@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	AccessService, InfraService, StorageService, NotificationService, QueueService cloud.Service
+	AccessService, InfraService, StorageService, NotificationService, QueueService, DnsService cloud.Service
 
 	SecuAPI Security
 )
@@ -70,12 +70,14 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	SecuAPI = NewSecu(sess)
 	NotificationService = NewNotification(sess, awsconf, log)
 	QueueService = NewQueue(sess, awsconf, log)
+	DnsService = NewDns(sess, awsconf, log)
 
 	cloud.ServiceRegistry[InfraService.Name()] = InfraService
 	cloud.ServiceRegistry[AccessService.Name()] = AccessService
 	cloud.ServiceRegistry[StorageService.Name()] = StorageService
 	cloud.ServiceRegistry[NotificationService.Name()] = NotificationService
 	cloud.ServiceRegistry[QueueService.Name()] = QueueService
+	cloud.ServiceRegistry[DnsService.Name()] = DnsService
 
 	return nil
 }

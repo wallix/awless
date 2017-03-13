@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
@@ -54,6 +56,7 @@ func init() {
 	ServiceNames = append(ServiceNames, "storage")
 	ServiceNames = append(ServiceNames, "notification")
 	ServiceNames = append(ServiceNames, "queue")
+	ServiceNames = append(ServiceNames, "dns")
 }
 
 var ServiceNames = []string{}
@@ -80,15 +83,17 @@ var ResourceTypes = []string{
 	"subscription",
 	"topic",
 	"queue",
+	"zone",
 }
 
 var ServicePerAPI = map[string]string{
-	"ec2":   "infra",
-	"elbv2": "infra",
-	"iam":   "access",
-	"s3":    "storage",
-	"sns":   "notification",
-	"sqs":   "queue",
+	"ec2":     "infra",
+	"elbv2":   "infra",
+	"iam":     "access",
+	"s3":      "storage",
+	"sns":     "notification",
+	"sqs":     "queue",
+	"route53": "dns",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -113,6 +118,7 @@ var ServicePerResourceType = map[string]string{
 	"subscription":     "notification",
 	"topic":            "notification",
 	"queue":            "queue",
+	"zone":             "dns",
 }
 
 type Infra struct {
@@ -1699,4 +1705,157 @@ func (s *Queue) FetchByType(t string) (*graph.Graph, error) {
 
 func (s *Queue) IsSyncDisabled() bool {
 	return !s.config.getBool("aws.queue.sync", true)
+}
+
+type Dns struct {
+	once   oncer
+	region string
+	config config
+	log    *logger.Logger
+	route53iface.Route53API
+}
+
+func NewDns(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Dns{
+		Route53API: route53.New(sess),
+		config:     awsconf,
+		region:     region,
+		log:        log,
+	}
+}
+
+func (s *Dns) Name() string {
+	return "dns"
+}
+
+func (s *Dns) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewRoute53Driver(s.Route53API),
+	}
+}
+
+func (s *Dns) ResourceTypes() (all []string) {
+	all = append(all, "zone")
+	return
+}
+
+func (s *Dns) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
+	regionN := graph.InitResource(s.region, graph.Region)
+	g.AddResource(regionN)
+	var zoneList []*route53.HostedZone
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	if s.config.getBool("aws.dns.zone.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, zoneList, err = s.fetch_all_zone_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource dns[zone]")
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case accessDenied:
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	if s.config.getBool("aws.dns.zone.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range zoneList {
+				for _, fn := range addParentsFns["zone"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Dns) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "zone":
+		graph, _, err := s.fetch_all_zone_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws dns: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Dns) fetch_all_zone_graph() (*graph.Graph, []*route53.HostedZone, error) {
+	g := graph.NewGraph()
+	var cloudResources []*route53.HostedZone
+	var badResErr error
+	err := s.ListHostedZonesPages(&route53.ListHostedZonesInput{},
+		func(out *route53.ListHostedZonesOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.HostedZones {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.NextMarker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Dns) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.dns.sync", true)
 }

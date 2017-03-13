@@ -19,9 +19,10 @@ package aws
 import "github.com/wallix/awless/graph"
 
 type fetchersDef struct {
-	Name     string
-	Api      []string
-	Fetchers []fetcher
+	Name          string
+	Api           []string
+	ApiInterfaces map[string]string
+	Fetchers      []fetcher
 }
 
 type fetcher struct {
@@ -85,6 +86,14 @@ var FetchersDefs = []fetchersDef{
 		Api:  []string{"sqs"},
 		Fetchers: []fetcher{
 			{Api: "sqs", ResourceType: graph.Queue.String(), AWSType: "string", ManualFetcher: true},
+		},
+	},
+	{
+		Name:          "dns",
+		Api:           []string{"route53"},
+		ApiInterfaces: map[string]string{"route53": "Route53API"},
+		Fetchers: []fetcher{
+			{Api: "route53", ResourceType: graph.Zone.String(), AWSType: "route53.HostedZone", ApiMethod: "ListHostedZonesPages", Input: "route53.ListHostedZonesInput{}", Output: "route53.ListHostedZonesOutput", OutputsExtractor: "HostedZones", Multipage: true, NextPageMarker: "NextMarker"},
 		},
 	},
 }

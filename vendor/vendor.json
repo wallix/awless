@@ -261,6 +261,18 @@
 			"versionExact": "v1.7.3"
 		},
 		{
+			"checksumSHA1": "VWVMEqjfDDgB14lgsv0Zq3dQclU=",
+			"path": "github.com/aws/aws-sdk-go/service/route53",
+			"revision": "963d664c4279debae251c0f336e247571dc614db",
+			"revisionTime": "2017-03-10T22:22:31Z"
+		},
+		{
+			"checksumSHA1": "Z+hSla6wANGyFiwdkn642qssSlA=",
+			"path": "github.com/aws/aws-sdk-go/service/route53/route53iface",
+			"revision": "963d664c4279debae251c0f336e247571dc614db",
+			"revisionTime": "2017-03-10T22:22:31Z"
+		},
+		{
 			"checksumSHA1": "eEWM4wKzVbRqAwIy3MdMCDUGs2s=",
 			"path": "github.com/aws/aws-sdk-go/service/s3",
 			"revision": "6669bce73b4e3bc922ff5ea3a3983ede26e02b39",

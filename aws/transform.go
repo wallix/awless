@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
@@ -86,6 +87,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.Endpoint), graph.Subscription)
 	case *sns.Topic:
 		res = graph.InitResource(awssdk.StringValue(ss.TopicArn), graph.Topic)
+		// DNS
+	case *route53.HostedZone:
+		res = graph.InitResource(awssdk.StringValue(ss.Id), graph.Zone)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -173,24 +177,27 @@ type fetchFn func(i interface{}) (interface{}, error)
 
 var extractValueFn = func(i interface{}) (interface{}, error) {
 	iv := reflect.ValueOf(i)
-	if iv.Kind() == reflect.Ptr && !iv.IsNil() {
+	if iv.Kind() == reflect.Ptr {
+		if iv.IsNil() {
+			return nil, nil
+		}
 		return iv.Elem().Interface(), nil
 	}
-	return nil, fmt.Errorf("aws type unknown: %T", i)
+	return nil, fmt.Errorf("extract value: not a pointer but a %T", i)
 }
 
 // Extract time forcing timezone to UTC (friendlier when running test in different timezones i.e. travis)
 var extractTimeFn = func(i interface{}) (interface{}, error) {
 	t, ok := i.(*time.Time)
 	if !ok {
-		return nil, fmt.Errorf("expected time pointer, got: %T", i)
+		return nil, fmt.Errorf("extract time: expected time pointer, got: %T", i)
 	}
 	return t.UTC(), nil
 }
 
 var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {
 	if _, ok := i.([]*ec2.IpPermission); !ok {
-		return nil, fmt.Errorf("aws type unknown: %T", i)
+		return nil, fmt.Errorf("extract ip permission: not a permission slice but a %T", i)
 	}
 	var rules []*graph.FirewallRule
 	for _, ipPerm := range i.([]*ec2.IpPermission) {
@@ -240,11 +247,11 @@ var extractFieldFn = func(field string) transformFn {
 	return func(i interface{}) (interface{}, error) {
 		value := reflect.ValueOf(i)
 		if value.Kind() != reflect.Ptr {
-			return nil, fmt.Errorf("aws type unknown: %T", i)
+			return nil, fmt.Errorf("extract field: not a pointer but a %T", i)
 		}
 		struc := value.Elem()
 		if struc.Kind() != reflect.Struct {
-			return nil, fmt.Errorf("aws type unknown: %T", i)
+			return nil, fmt.Errorf("extract field: not a struct pointer but a %T", i)
 		}
 
 		structField := struc.FieldByName(field)
@@ -261,7 +268,7 @@ var extractTagFn = func(key string) transformFn {
 	return func(i interface{}) (interface{}, error) {
 		tags, ok := i.([]*ec2.Tag)
 		if !ok {
-			return nil, fmt.Errorf("aws model: unexpected type %T", i)
+			return nil, fmt.Errorf("extract tag: not a tag slice, but a %T", i)
 		}
 		for _, t := range tags {
 			if key == awssdk.StringValue(t.Key) {
@@ -278,7 +285,7 @@ var extractSliceValues = func(key string) transformFn {
 		var res []interface{}
 		value := reflect.ValueOf(i)
 		if value.Kind() != reflect.Slice {
-			return nil, fmt.Errorf("aws type invalid: %T", i)
+			return nil, fmt.Errorf("extract slice: not a slice but a %T", i)
 		}
 		for i := 0; i < value.Len(); i++ {
 			e, err := extractFieldFn(key)(value.Index(i).Interface())
@@ -294,7 +301,7 @@ var extractSliceValues = func(key string) transformFn {
 
 var extractRoutesSliceFn = func(i interface{}) (interface{}, error) {
 	if _, ok := i.([]*ec2.Route); !ok {
-		return nil, fmt.Errorf("aws type unknown: %T", i)
+		return nil, fmt.Errorf("extract route: not a route slice but a %T", i)
 	}
 	var routes []*graph.Route
 	for _, r := range i.([]*ec2.Route) {
@@ -345,16 +352,19 @@ var extractHasATrueBoolInStructSliceFn = func(key string) transformFn {
 		var res bool
 		value := reflect.ValueOf(i)
 		if value.Kind() != reflect.Slice {
-			return nil, fmt.Errorf("aws type invalid: %T", i)
+			return nil, fmt.Errorf("extract true bool: not a slice but a %T", i)
 		}
 		for i := 0; i < value.Len(); i++ {
 			e, err := extractFieldFn(key)(value.Index(i).Interface())
 			if err != nil {
-				continue //Empty field, we do not need to throw the error
+				return res, err
+			}
+			if e == nil {
+				continue //Empty field
 			}
 			b, ok := e.(bool)
 			if !ok {
-				return nil, fmt.Errorf("the field %s is not a boolean, but has type: %T", key, e)
+				return nil, fmt.Errorf("extract true bool: the field %s is not a boolean, but has type: %T", key, e)
 			}
 			if b {
 				res = true
@@ -368,7 +378,7 @@ var extractHasATrueBoolInStructSliceFn = func(key string) transformFn {
 var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
 	b, ok := i.(*s3.Bucket)
 	if !ok {
-		return nil, fmt.Errorf("aws type unknown: %T", i)
+		return nil, fmt.Errorf("fetch grants: not a bucket but a %T", i)
 	}
 
 	acls, err := StorageService.(s3iface.S3API).GetBucketAcl(&s3.GetBucketAclInput{Bucket: b.Name})
