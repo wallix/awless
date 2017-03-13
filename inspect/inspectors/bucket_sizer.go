@@ -80,7 +80,7 @@ func (i *BucketSizer) Print(w io.Writer) {
 	fmt.Fprintln(tabw, "--------\t----------\t-----------------\t")
 
 	for name, bucket := range i.buckets {
-		fmt.Fprintf(tabw, "%s\t%d\t%.5f Gb\t\n", name, bucket.objects, bucket.size/1e9)
+		fmt.Fprintf(tabw, "%s\t%d\t%.4f Gb\t\n", name, bucket.objects, bucket.size/1e9)
 	}
 
 	fmt.Fprintf(tabw, "%s\t%s\t%.4f Gb\t\n", "", "", i.total/1e9)
