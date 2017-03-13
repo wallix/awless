@@ -90,33 +90,41 @@ Awless allows for easy resource creation with your cloud provider; We will not b
 
 You can list various resources:
 
-    awless list buckets
-    awless list instances --sort launchtime
+```sh
+awless list buckets
+awless list instances --sort launchtime
 
-    # ls is an alias for list
-    awless ls users --format csv             
-    awless ls roles --sort name,id
-    awless ls vpcs --format=json
+# ls is an alias for list
+awless ls users --format csv             
+awless ls roles --sort name,id
+awless ls vpcs --format=json
+```
 
 Listing resources by default performs queries directly to AWS. If you want, you can also query the local snapshot:
 
-    awless list subnets --local
+```sh
+awless list subnets --local
+```
 
 Use `awless list`, `awless list -h` or `awless help list` to see all resources that can be listed.
 
 When dealing with long lists of resources you can filter with the `--filter` flag as such:
 
-    awless list volumes --filter state=in-use --filter volumetype=gp2
+```sh
+awless list volumes --filter state=in-use --filter volumetype=gp2
 
-    # or with a csv notation
-    awless list instances --filter state=running,type=t2.micro 
+# or with a csv notation
+awless list instances --filter state=running,type=t2.micro 
 
-    # when dealing with name with spaces use
-    awless list instances --filter "access key"=my-key
+# when dealing with name with spaces use
+awless list instances --filter "access key"=my-key
+```
     
 For instance, you could list all storage objects in a given bucket using only local data with:
 
-    awless --local ls storageobjects --filter bucketname=pdf-bucket 
+```sh
+awless --local ls storageobjects --filter bucketname=pdf-bucket 
+```
 
 Note that filters:
 
@@ -129,16 +137,17 @@ Note that filters:
 
 The show command needs only one arg which is a reference to a resource. It first searches the resource by **id**. If found it stops. Otherwise it looks up by **name** and then **arn**. To force a lookup by **name** prefix the reference with a '@'.
 
-    # show instance via its id: relations to subnets, vpcs, region, ...
-    awless show i-34vgbh23jn        
+```sh
+# show instance via its id: relations to subnets, vpcs, region, ...
+awless show i-34vgbh23jn        
 
-    # show bucket forcing search by name: objects, siblings, ...
-    awless show @my-bucket          
+# show bucket forcing search by name: objects, siblings, ...
+awless show @my-bucket          
 
-    # show user using local data: user's policies, ...
-    # snappy! will not refetch but work with the local graph
-    awless show admin-user --local  
-    
+# show user using local data: user's policies, ...
+# snappy! will not refetch but work with the local graph
+awless show admin-user --local  
+```
 
 Basically `awless show` try to maximize the info nicely on your terminal for a given resource
 
@@ -150,21 +159,27 @@ Basically `awless show` try to maximize the info nicely on your terminal for a g
 
 Using the help:
 
-    awless create                # show what resource can be created
-    awless delete -h             # same as above
-    awless create instance -h    # show required & extra params for instance creation
+```sh
+awless create                # show what resource can be created
+awless delete -h             # same as above
+awless create instance -h    # show required & extra params for instance creation
+```
 
 Then:
 
-    awless create instance       # will start a prompt for any missing params
-    awless delete subnet id=subnet-12345678
-    awless attach volume id=vol-12345678 instance=i-12345678
+```sh
+awless create instance       # will start a prompt for any missing params
+awless delete subnet id=subnet-12345678
+awless attach volume id=vol-12345678 instance=i-12345678
+```
 
 See [Templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more.
 
 You can also run an `awless` template from a predefined template file with:
 
-    awless run awless-templates/create_instance_ssh.awless
+```sh
+awless run awless-templates/create_instance_ssh.awless
+```
 
 In each case, the CLI guide you through any running of a template (file template or one-liner) so you always have the chance to confirm or quit.
 
@@ -176,11 +191,15 @@ Note that you can get inspired with our **in progress** [repo of pre-existing te
 
 To list a detailed account of the last actions you have run on your cloud:
 
-    awless log
+```sh
+awless log
+```
 
 Each `awless` command that changes the cloud infrastructure is associated with an unique *id* referencing the (un)successful actions. Using this id you can revert a executed template with:
 
-    awless revert 01B89ZY529E5D7WKDTQHFC0RPA
+```sh
+awless revert 01B89ZY529E5D7WKDTQHFC0RPA
+```
 
 The CLI guide you through a revert action and you have the chance to confirm or quit.
 
@@ -188,9 +207,11 @@ The CLI guide you through a revert action and you have the chance to confirm or 
 
 Using the local auto sync functionality of the cloud resources `awless history` will display in a digested manner the changes that occurred in your infra:
 
-     awless history      # show changes at the resources level
-     awless history -p   # show changes including changes in the resources properties
-     
+```sh
+awless history      # show changes at the resources level
+awless history -p   # show changes including changes in the resources properties
+```
+
 *Note*: As model/relations for resources may evolve, if you have any issues with `awless history` between version upgrades, run `rm -Rf ~/.awless/aws/rdf` to start fresh.
 
 ### Sync
@@ -211,23 +232,27 @@ You can also manually run a sync with `awless sync`. The command output will sho
 
 Note that you can configure the sync per services and per resources. For example:
 
-     # disable sync for queue service (sqs) entirely
-     awless config set aws.queue.sync false 
+```sh
+# disable sync for queue service (sqs) entirely
+awless config set aws.queue.sync false 
 
-     # enable sync for storageobject resources in the storage service (s3)
-     awless config set aws.storage.storageobject.sync true 
+# enable sync for storageobject resources in the storage service (s3)
+awless config set aws.storage.storageobject.sync true 
 
-     # disable sync for load balancing resources (elbv2) in the infra service
-     awless config set aws.infra.loadbalancer.sync false 
-     awless config set aws.infra.targetgroup.sync false 
-     awless config set aws.infra.listener.sync false 
+# disable sync for load balancing resources (elbv2) in the infra service
+awless config set aws.infra.loadbalancer.sync false 
+awless config set aws.infra.targetgroup.sync false 
+awless config set aws.infra.listener.sync false 
+```
 
 ### SSH
 
 You can directly ssh to an instance with:
 
-     awless ssh i-abcd1234
-     awless ssh ubuntu@i-abcd1234
+```sh
+awless ssh i-abcd1234
+awless ssh ubuntu@i-abcd1234
+```
 
 In the first case, note that `awless` can work out the default ssh user to use given a cloud (ex: `ec2` for AWS)
 
@@ -235,8 +260,10 @@ In the first case, note that `awless` can work out the default ssh user to use g
 
 When it makes sense we provide the concept of *alias*. Cloud resources ids can be a bit cryptic. An alias is just an already existing name of a resource. Given a alias we resolve the proper resource id. For instance:
 
-        awless ssh my-instance         # ssh to the instance by name. awless resolves its id
-        awless delete id=@my-instance  # delete an instance using its name
+```sh
+awless ssh my-instance         # ssh to the instance by name. awless resolves its id
+awless delete id=@my-instance  # delete an instance using its name
+```
 
 ### Inspectors
 
@@ -255,14 +282,16 @@ Using `awless` cloud resources local synchronisation functionality, you can anal
 
 For example, you would run the `bucket_sizer` inspector with:
 
-       $ awless inspect -i bucket_sizer --local
-       Bucket           Object count    S3 total storage
-       --------         ----------      -----------------
-       my-first-bucket     4            0.00358 Gb
-       my-other-bucket     1            3.49460 Gb
-       third-bucket        422          0.00003 Gb
-       fouth-bucket        1000         0.00772 Gb
-                                        3.5059 Gb
+```sh
+$ awless inspect -i bucket_sizer --local
+Bucket           Object count    S3 total storage
+--------         ----------      -----------------
+my-first-bucket     4            0.0035 Gb
+my-other-bucket     1            3.4946 Gb
+third-bucket        422          0.0000 Gb
+fouth-bucket        1000         0.0077 Gb
+                                 3.5059 Gb
+```
 
 Note that - as a upcoming feature - using the local infrastructure snapshots (automatically synced), we will be able to run inspectors through time very fast (i.e: all done locally)! For instance, in this case you would see the evolution of your bucket sizing!
 
