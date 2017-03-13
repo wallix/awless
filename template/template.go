@@ -18,8 +18,6 @@ package template
 
 import (
 	"crypto/rand"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -28,6 +26,7 @@ import (
 )
 
 type Template struct {
+	ID string
 	*ast.AST
 }
 
@@ -35,6 +34,7 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	vars := map[string]interface{}{}
 
 	current := &Template{AST: s.Clone()}
+	current.ID = ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String()
 
 	for _, sts := range current.Statements {
 		switch sts.Node.(type) {
@@ -72,27 +72,6 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	return current, nil
 }
 
-func (s *Template) IsSameAs(t2 *Template) bool {
-	if s == t2 {
-		return true
-	}
-	if s == nil || t2 == nil {
-		return false
-	}
-	if len(s.Statements) != len(t2.Statements) {
-		return false
-	}
-	for i := 0; i < len(s.Statements); i++ {
-		s1 := s.Statements[i]
-		s2 := t2.Statements[i]
-		if !s1.Node.Equal(s2.Node) {
-			return false
-		}
-	}
-
-	return true
-}
-
 func (s *Template) Compile(d driver.Driver) (*Template, error) {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
@@ -107,6 +86,15 @@ func (s *Template) Validate(rules ...Validator) (all []error) {
 	}
 
 	return
+}
+
+func (t *Template) HasErrors() bool {
+	for _, cmd := range t.CommandNodesIterator() {
+		if cmd.CmdErr != nil {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Template) Visit(v Visitor) error {
@@ -146,140 +134,40 @@ func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 	return
 }
 
-type TemplateExecution struct {
-	ID       string
-	Executed []*ExecutedStatement
+func (s *Template) CmdNodesReverseIterator() (nodes []*ast.CommandNode) {
+	for i := len(s.Statements) - 1; i >= 0; i-- {
+		sts := s.Statements[i]
+		switch sts.Node.(type) {
+		case *ast.CommandNode:
+			nodes = append(nodes, sts.Node.(*ast.CommandNode))
+		case *ast.DeclarationNode:
+			expr := sts.Node.(*ast.DeclarationNode).Expr
+			switch expr.(type) {
+			case *ast.CommandNode:
+				nodes = append(nodes, expr.(*ast.CommandNode))
+			}
+		}
+	}
+	return
 }
 
-type ExecutedStatement struct {
-	Line, Err, Result string
-}
-
-func (ex *ExecutedStatement) IsRevertible() bool {
-	if ex.Err != "" {
+func (s *Template) IsSameAs(t2 *Template) bool {
+	if s == t2 {
+		return true
+	}
+	if s == nil || t2 == nil {
 		return false
 	}
-	if ex.Result != "" {
-		if strings.Contains(ex.Line, "create") || strings.Contains(ex.Line, "start") || strings.Contains(ex.Line, "stop") {
-			return true
-		}
-	} else {
-		return strings.Contains(ex.Line, "attach") || strings.Contains(ex.Line, "detach")
+	if len(s.Statements) != len(t2.Statements) {
+		return false
 	}
-
-	return false
-}
-
-func NewTemplateExecution(tpl *Template) *TemplateExecution {
-	out := &TemplateExecution{
-		ID: ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String(),
-	}
-
-	for _, cmd := range tpl.CommandNodesIterator() {
-		hasError := cmd.CmdErr != nil
-		var errMsg string
-		if hasError {
-			errMsg = cmd.CmdErr.Error()
-		}
-		var result string
-		switch cmd.CmdResult.(type) {
-		case string:
-			result = cmd.CmdResult.(string)
-		}
-		out.Executed = append(out.Executed,
-			&ExecutedStatement{Line: cmd.String(), Result: result, Err: errMsg},
-		)
-		if hasError {
-			break
+	for i := 0; i < len(s.Statements); i++ {
+		s1 := s.Statements[i]
+		s2 := t2.Statements[i]
+		if !s1.Node.Equal(s2.Node) {
+			return false
 		}
 	}
 
-	return out
-}
-
-func (te *TemplateExecution) HasErrors() (inError bool) {
-	for _, ex := range te.Executed {
-		if ex.Err != "" {
-			inError = true
-		}
-	}
-	return
-}
-
-func (te *TemplateExecution) IsRevertible() bool {
-	for _, ex := range te.Executed {
-		if ex.IsRevertible() {
-			return true
-		}
-	}
-	return false
-}
-
-func (te *TemplateExecution) lines() (lines []string) {
-	for _, ex := range te.Executed {
-		lines = append(lines, ex.Line)
-	}
-
-	return
-}
-
-func (te *TemplateExecution) Revert() (*Template, error) {
-	var lines []string
-
-	for i := len(te.Executed) - 1; i >= 0; i-- {
-		if exec := te.Executed[i]; exec.IsRevertible() {
-			n, err := parseStatement(exec.Line)
-			if err != nil {
-				return nil, err
-			}
-
-			switch n.(type) {
-			case *ast.CommandNode:
-				node := n.(*ast.CommandNode)
-				var revertAction string
-				var params []string
-				switch node.Action {
-				case "create":
-					revertAction = "delete"
-				case "start":
-					revertAction = "stop"
-				case "stop":
-					revertAction = "start"
-				case "detach":
-					revertAction = "attach"
-				case "attach":
-					revertAction = "detach"
-				}
-
-				switch node.Action {
-				case "start", "stop", "attach", "detach":
-					for k, v := range node.Params {
-						params = append(params, fmt.Sprintf("%s=%s", k, v))
-					}
-				case "create":
-					params = append(params, fmt.Sprintf("id=%s", exec.Result))
-				}
-
-				lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, node.Entity, strings.Join(params, " ")))
-
-				if node.Action == "create" && node.Entity == "instance" {
-					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=180", exec.Result))
-				}
-			default:
-				return nil, fmt.Errorf("cannot parse [%s] as expression node", exec.Line)
-			}
-		}
-	}
-
-	if len(lines) == 0 {
-		return nil, fmt.Errorf("revert: found nothing to revert from:\n%s\n(note: no revert provided for statement in error)", strings.Join(te.lines(), "\n"))
-	}
-
-	text := strings.Join(lines, "\n")
-	tpl, err := Parse(text)
-	if err != nil {
-		return nil, fmt.Errorf("revert: \n%s\n%s", text, err)
-	}
-
-	return tpl, nil
+	return true
 }

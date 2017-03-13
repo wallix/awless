@@ -150,18 +150,23 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 	if strings.TrimSpace(yesorno) == "y" {
 		newTempl, err := templ.Run(awsDriver)
 
-		executed := template.NewTemplateExecution(newTempl)
-
 		fmt.Println()
-		printReport(executed)
+		fmt.Println("Report:")
+		printer := template.NewPrinter()
+		printer.RenderKO = renderRedFn
+		printer.RenderOK = renderGreenFn
+		fmt.Println(printer.PrintReport(newTempl))
 
 		db, err, close := database.Current()
 		exitOn(err)
 		defer close()
 
-		db.AddTemplateExecution(executed)
+		db.AddTemplate(newTempl)
+		if template.IsRevertible(newTempl) {
+			logger.Infof("Revert this template with `awless revert %s`", newTempl.ID)
+		}
 
-		if err == nil && !executed.HasErrors() {
+		if err == nil && !newTempl.HasErrors() {
 			runSyncFor(newTempl)
 		}
 	}
@@ -277,26 +282,26 @@ func runSyncFor(tpl *template.Template) {
 	}
 }
 
-func printReport(t *template.TemplateExecution) {
-	for _, done := range t.Executed {
+func printReport(t *template.Template) {
+	for _, done := range t.CommandNodesIterator() {
 		var line bytes.Buffer
-		if done.Result != "" {
-			line.WriteString(fmt.Sprintf("%s %s ", done.Result, renderGreenFn("<-")))
+		if done.CmdResult != "" {
+			line.WriteString(fmt.Sprintf("%s %s ", done.CmdResult, renderGreenFn("<-")))
 		}
-		line.WriteString(fmt.Sprintf("%s", done.Line))
+		line.WriteString(fmt.Sprintf("%s", done.String()))
 
-		if done.Err != "" {
-			line.WriteString(fmt.Sprintf("\n\terror: %s", done.Err))
+		if done.CmdErr != nil {
+			line.WriteString(fmt.Sprintf("\n\terror: %s", done.CmdErr))
 		}
 
-		if done.Err == "" {
+		if done.CmdErr == nil {
 			logger.Info(line.String())
 		} else {
 			logger.Error(line.String())
 		}
 	}
 
-	if t.IsRevertible() {
+	if template.IsRevertible(t) {
 		logger.Infof("revert this template with `awless revert %s`", t.ID)
 	}
 }

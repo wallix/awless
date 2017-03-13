@@ -27,7 +27,7 @@ create tag resource=\$testinstance key=Name value=$INSTANCE_NAME
 EOF
 
 $BIN -v run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e
-REVERT_ID=`$BIN log --porcelain | head -1 | cut -f2`
+REVERT_ID=`$BIN log | grep RevertID | cut -d , -f2 | cut -d : -f2`
 
 $BIN ls instances
 

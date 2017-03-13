@@ -46,11 +46,11 @@ var revertCmd = &cobra.Command{
 
 		db, err, dbclose := database.Current()
 		exitOn(err)
-		tplExec, err := db.GetTemplateExecution(revertId)
+		tpl, err := db.GetTemplate(revertId)
 		dbclose()
 		exitOn(err)
 
-		reverted, err := tplExec.Revert()
+		reverted, err := tpl.Revert()
 		exitOn(err)
 
 		fmt.Printf("%s\n", reverted)

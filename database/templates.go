@@ -17,7 +17,6 @@ limitations under the License.
 package database
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -26,16 +25,20 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-const EXECUTIONS_BUCKET = "executions"
+const TEMPLATES_BUCKET = "templates"
 
-func (db *DB) AddTemplateExecution(templ *template.TemplateExecution) error {
+func (db *DB) AddTemplate(templ *template.Template) error {
 	return db.bolt.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(EXECUTIONS_BUCKET))
-		if err != nil {
-			return fmt.Errorf("create bucket %s: %s", EXECUTIONS_BUCKET, err)
+		if templ.ID == "" {
+			return errors.New("cannot persist template with empty ID")
 		}
 
-		b, err := json.Marshal(templ)
+		bucket, err := tx.CreateBucketIfNotExists([]byte(TEMPLATES_BUCKET))
+		if err != nil {
+			return fmt.Errorf("create bucket %s: %s", TEMPLATES_BUCKET, err)
+		}
+
+		b, err := templ.MarshalJSON()
 		if err != nil {
 			return err
 		}
@@ -44,22 +47,22 @@ func (db *DB) AddTemplateExecution(templ *template.TemplateExecution) error {
 	})
 }
 
-func (db *DB) DeleteTemplateExecutions() error {
+func (db *DB) DeleteTemplates() error {
 	return db.bolt.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket([]byte(EXECUTIONS_BUCKET))
+		return tx.DeleteBucket([]byte(TEMPLATES_BUCKET))
 	})
 }
 
-func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, error) {
-	tpl := &template.TemplateExecution{}
+func (db *DB) GetTemplate(id string) (*template.Template, error) {
+	tpl := &template.Template{}
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
+		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
 		if b == nil {
-			return errors.New("no template executions stored yet")
+			return errors.New("no templates stored yet")
 		}
 		if content := b.Get([]byte(id)); content != nil {
-			return json.Unmarshal(b.Get([]byte(id)), tpl)
+			return tpl.UnmarshalJSON(content)
 		} else {
 			return fmt.Errorf("no content for id '%s'", id)
 		}
@@ -68,11 +71,11 @@ func (db *DB) GetTemplateExecution(id string) (*template.TemplateExecution, erro
 	return tpl, err
 }
 
-func (db *DB) ListTemplateExecutions() ([]*template.TemplateExecution, error) {
-	var result []*template.TemplateExecution
+func (db *DB) ListTemplates() ([]*template.Template, error) {
+	var result []*template.Template
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(EXECUTIONS_BUCKET))
+		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
 		if b == nil {
 			return nil
 		}
@@ -80,8 +83,8 @@ func (db *DB) ListTemplateExecutions() ([]*template.TemplateExecution, error) {
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			t := &template.TemplateExecution{}
-			if err := json.Unmarshal(v, t); err != nil {
+			t := &template.Template{}
+			if err := t.UnmarshalJSON(v); err != nil {
 				return err
 			}
 			result = append(result, t)

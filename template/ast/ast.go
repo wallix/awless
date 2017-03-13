@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -139,6 +140,8 @@ func (n *CommandNode) String() string {
 	for k, v := range n.Holes {
 		all = append(all, fmt.Sprintf("%s={%s}", k, v))
 	}
+
+	sort.Strings(all)
 
 	var buff bytes.Buffer
 
