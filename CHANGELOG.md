@@ -3,6 +3,7 @@
 ### Features
 
 - DNS: listing Route53 zones and records `awless list zones/records`
+- Infra: detach EBS volumes `awless detach volume`
 
 ## 0.0.18 [2017-03-13]
 

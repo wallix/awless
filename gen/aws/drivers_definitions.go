@@ -197,6 +197,17 @@ var DriversDefs = []driversDef{
 					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "detach", Entity: graph.Volume.String(), Input: "DetachVolumeInput", Output: "VolumeAttachment", ApiMethod: "DetachVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
+				RequiredParams: []param{
+					{AwsField: "Device", TemplateName: "device", AwsType: "awsstr"},
+					{AwsField: "VolumeId", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Force", TemplateName: "force", AwsType: "awsbool"},
+				},
+			},
 			// INTERNET GATEWAYS
 			{
 				Action: "create", Entity: graph.InternetGateway.String(), Input: "CreateInternetGatewayInput", Output: "CreateInternetGatewayOutput", ApiMethod: "CreateInternetGateway", OutputExtractor: "aws.StringValue(output.InternetGateway.InternetGatewayId)",

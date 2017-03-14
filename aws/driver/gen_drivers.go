@@ -148,6 +148,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Attach_Volume, nil
 
+	case "detachvolume":
+		if d.dryRun {
+			return d.Detach_Volume_DryRun, nil
+		}
+		return d.Detach_Volume, nil
+
 	case "createinternetgateway":
 		if d.dryRun {
 			return d.Create_Internetgateway_DryRun, nil

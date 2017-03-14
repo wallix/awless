@@ -158,6 +158,14 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
+	"detachvolume": {
+		Action:         "detach",
+		Entity:         "volume",
+		Api:            "ec2",
+		RequiredParams: []string{"device", "id", "instance"},
+		ExtraParams:    []string{"force"},
+		TagsMapping:    []string{},
+	},
 	"createinternetgateway": {
 		Action:         "create",
 		Entity:         "internetgateway",
@@ -475,6 +483,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["create"] = append(supported["create"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")
+	supported["detach"] = append(supported["detach"], "volume")
 	supported["create"] = append(supported["create"], "internetgateway")
 	supported["delete"] = append(supported["delete"], "internetgateway")
 	supported["attach"] = append(supported["attach"], "internetgateway")

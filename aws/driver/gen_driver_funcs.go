@@ -1032,6 +1032,89 @@ func (d *Ec2Driver) Attach_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Detach_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DetachVolumeInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["force"]; ok {
+		err = setFieldWithType(params["force"], input, "Force", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.DetachVolume(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+			id := fakeDryRunId("volume")
+			d.logger.Verbose("full dry run: detach volume ok")
+			return id, nil
+		}
+	}
+
+	d.logger.Errorf("dry run: detach volume error: %s", err)
+	return nil, err
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Detach_Volume(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DetachVolumeInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["force"]; ok {
+		err = setFieldWithType(params["force"], input, "Force", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.VolumeAttachment
+	output, err = d.DetachVolume(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("detach volume error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("ec2.DetachVolume call took %s", time.Since(start))
+	id := aws.StringValue(output.VolumeId)
+	d.logger.Verbosef("detach volume '%s' done", id)
+	return aws.StringValue(output.VolumeId), nil
+}
+
+// This function was auto generated
 func (d *Ec2Driver) Create_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
