@@ -45,28 +45,32 @@ var (
 	sliceStructRegex  = regexp.MustCompile(`(.+)\[0\](.*)`)
 )
 
-func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
+func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			err = fmt.Errorf("set field %s for %T object: %s", fieldPath, i, e)
+		}
+	}()
 	if v == nil || i == nil {
 		return nil
 	}
-	var err error
 	switch destType {
 	case awsstr:
 		v = fmt.Sprint(v)
 	case awsint64:
 		v, err = castInt64(v)
 		if err != nil {
-			return err
+			return
 		}
 	case awsint:
 		v, err = castInt(v)
 		if err != nil {
-			return err
+			return
 		}
 	case awsbool:
 		v, err = castBool(v)
 		if err != nil {
-			return err
+			return
 		}
 	case awsstringslice:
 		switch vv := v.(type) {
@@ -83,15 +87,17 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
 			v = []*string{&str}
 		}
 	case awsint64slice:
-		awsint, err := castInt64(v)
+		var awsint int64
+		awsint, err = castInt64(v)
 		if err != nil {
-			return err
+			return
 		}
 		v = []*int64{&awsint}
 	case awsboolattribute:
-		b, err := castBool(v)
+		var b bool
+		b, err = castBool(v)
 		if err != nil {
-			return err
+			return
 		}
 		v = &ec2.AttributeBooleanValue{Value: &b}
 	case awsstringattribute:
@@ -100,15 +106,18 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
 	case awsstringpointermap:
 		matches := mapAttributeRegex.FindStringSubmatch(fieldPath)
 		if len(matches) < 2 {
-			return fmt.Errorf("set field awsstringmap: path %s does not start with mymap[key]", fieldPath)
+			err = fmt.Errorf("set field awsstringmap: path %s does not start with mymap[key]", fieldPath)
+			return
 		}
 		strcr := reflect.Indirect(reflect.ValueOf(i))
 		if strcr.Kind() != reflect.Struct {
-			return fmt.Errorf("set field awsstringmap: %T is not a struct, but a %s", i, strcr.Kind())
+			err = fmt.Errorf("set field awsstringmap: %T is not a struct, but a %s", i, strcr.Kind())
+			return
 		}
 		field := strcr.FieldByName(matches[1])
 		if field.Kind() != reflect.Map {
-			return fmt.Errorf("set field awsstringmap: field %s is not a map, but a %s", matches[0], field.Kind())
+			err = fmt.Errorf("set field awsstringmap: field %s is not a map, but a %s", matches[0], field.Kind())
+			return
 		}
 		if field.IsNil() {
 			field.Set(reflect.MakeMap(field.Type()))
@@ -119,15 +128,18 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
 	case awsslicestruct:
 		matches := sliceStructRegex.FindStringSubmatch(fieldPath)
 		if len(matches) < 2 {
-			return fmt.Errorf("set field awsslicestruct: path %s does not start with slice[0]", fieldPath)
+			err = fmt.Errorf("set field awsslicestruct: path %s does not start with slice[0]", fieldPath)
+			return
 		}
 		strcr := reflect.Indirect(reflect.ValueOf(i))
 		if strcr.Kind() != reflect.Struct {
-			return fmt.Errorf("set field awsslicestruct: %T is not a struct, but a %s", i, strcr.Kind())
+			err = fmt.Errorf("set field awsslicestruct: %T is not a struct, but a %s", i, strcr.Kind())
+			return
 		}
 		sliceField := strcr.FieldByName(matches[1])
 		if sliceField.Kind() != reflect.Slice {
-			return fmt.Errorf("set field awsslicestruct: field %s is not a slice, but a %s", matches[0], sliceField.Kind())
+			err = fmt.Errorf("set field awsslicestruct: field %s is not a slice, but a %s", matches[0], sliceField.Kind())
+			return
 		}
 		var elemToSet reflect.Value
 		if sliceField.Len() > 0 {
@@ -137,7 +149,8 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) error {
 			sliceField.Set(reflect.Append(sliceField, elemToSet))
 		}
 		if sliceField.Type().Elem().Kind() != reflect.Ptr {
-			return fmt.Errorf("set field awsslicestruct: field %s is not a slice of struct pointer, but a %s", matches[0], sliceField.Kind())
+			err = fmt.Errorf("set field awsslicestruct: field %s is not a slice of struct pointer, but a %s", matches[0], sliceField.Kind())
+			return
 		}
 		awsutil.SetValueAtPath(elemToSet.Interface(), matches[2], v)
 

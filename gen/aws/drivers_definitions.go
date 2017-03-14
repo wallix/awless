@@ -77,7 +77,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "SubnetId", TemplateName: "id", AwsType: "awsstr"},
 				},
 				ExtraParams: []param{
-					{AwsField: "MapPublicIpOnLaunch", TemplateName: "public", AwsType: "awsbool"},
+					{AwsField: "MapPublicIpOnLaunch", TemplateName: "public", AwsType: "awsboolattribute"},
 				},
 			},
 			{

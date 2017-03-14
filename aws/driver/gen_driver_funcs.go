@@ -258,7 +258,7 @@ func (d *Ec2Driver) Update_Subnet(params map[string]interface{}) (interface{}, e
 
 	// Extra params
 	if _, ok := params["public"]; ok {
-		err = setFieldWithType(params["public"], input, "MapPublicIpOnLaunch", awsbool)
+		err = setFieldWithType(params["public"], input, "MapPublicIpOnLaunch", awsboolattribute)
 		if err != nil {
 			return nil, err
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -180,6 +181,14 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	}
 	if got, want := aws.BoolValue(any.BooleanValueField.Value), false; got != want {
 		t.Fatalf("len: got %t, want %t", got, want)
+	}
+
+	err = setFieldWithType("true", &any, "BooleanValueField", awsbool)
+	if err == nil {
+		t.Fatalf("expected error got nil")
+	}
+	if got, want := err.Error(), "reflect.Set: value of type bool is not assignable to type ec2.AttributeBooleanValue"; !strings.HasSuffix(got, want) {
+		t.Fatalf("got %s, want %s", got, want)
 	}
 
 	err = setFieldWithType("abcd", &any, "StringValueField", awsstringattribute)

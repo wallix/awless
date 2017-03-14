@@ -387,7 +387,7 @@ func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, 
 		d.logger.Errorf("saving private key error: %s", err)
 		return nil, err
 	}
-	fmt.Printf("4096 RSA keypair generated locally and stored in '%s'\n", privKeyPath)
+	d.logger.Infof("4096 RSA keypair generated locally and stored in '%s'", privKeyPath)
 	input.PublicKeyMaterial = pub
 
 	output, err := d.ImportKeyPair(input)
