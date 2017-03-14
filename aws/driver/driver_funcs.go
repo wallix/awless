@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
@@ -514,7 +515,6 @@ func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interfa
 	return output, nil
 }
 
-// This function was auto generated
 func (d *S3Driver) Create_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
 		return nil, errors.New("create storageobject: missing required params 'bucket'")
@@ -539,7 +539,6 @@ func (d *S3Driver) Create_Storageobject_DryRun(params map[string]interface{}) (i
 	return nil, nil
 }
 
-// This function was auto generated
 func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
@@ -571,6 +570,154 @@ func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("create storageobject done")
+	return output, nil
+}
+
+func (d *Route53Driver) Create_Record_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["zone"]; !ok {
+		return nil, errors.New("create record: missing required params 'zone'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create record: missing required params 'name'")
+	}
+
+	if _, ok := params["type"]; !ok {
+		return nil, errors.New("create record: missing required params 'type'")
+	}
+
+	if _, ok := params["value"]; !ok {
+		return nil, errors.New("create record: missing required params 'value'")
+	}
+
+	if _, ok := params["ttl"]; !ok {
+		return nil, errors.New("create record: missing required params 'ttl'")
+	}
+
+	d.logger.Verbose("params dry run: create record ok")
+	return nil, nil
+}
+
+func (d *Route53Driver) Create_Record(params map[string]interface{}) (interface{}, error) {
+	input := &route53.ChangeResourceRecordSetsInput{}
+	var err error
+	// Required params
+	err = setFieldWithType(params["zone"], input, "HostedZoneId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	resourceRecord := &route53.ResourceRecord{}
+	change := &route53.Change{ResourceRecordSet: &route53.ResourceRecordSet{ResourceRecords: []*route53.ResourceRecord{resourceRecord}}}
+	input.ChangeBatch = &route53.ChangeBatch{Changes: []*route53.Change{change}}
+	err = setFieldWithType("CREATE", change, "Action", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], change, "ResourceRecordSet.Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["type"], change, "ResourceRecordSet.Type", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["ttl"], change, "ResourceRecordSet.TTL", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["value"], resourceRecord, "Value", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["comment"]; ok {
+		err = setFieldWithType(params["comment"], input, "ChangeBatch.Comment", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *route53.ChangeResourceRecordSetsOutput
+	output, err = d.ChangeResourceRecordSets(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("create record error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
+	d.logger.Verbose("create record done")
+	return output, nil
+}
+
+func (d *Route53Driver) Delete_Record_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["zone"]; !ok {
+		return nil, errors.New("delete record: missing required params 'zone'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete record: missing required params 'name'")
+	}
+
+	if _, ok := params["type"]; !ok {
+		return nil, errors.New("delete record: missing required params 'type'")
+	}
+
+	if _, ok := params["value"]; !ok {
+		return nil, errors.New("delete record: missing required params 'value'")
+	}
+
+	if _, ok := params["ttl"]; !ok {
+		return nil, errors.New("delete record: missing required params 'value'")
+	}
+
+	d.logger.Verbose("params dry run: delete record ok")
+	return nil, nil
+}
+
+func (d *Route53Driver) Delete_Record(params map[string]interface{}) (interface{}, error) {
+	input := &route53.ChangeResourceRecordSetsInput{}
+	var err error
+	// Required params
+	err = setFieldWithType(params["zone"], input, "HostedZoneId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	resourceRecord := &route53.ResourceRecord{}
+	change := &route53.Change{ResourceRecordSet: &route53.ResourceRecordSet{ResourceRecords: []*route53.ResourceRecord{resourceRecord}}}
+	input.ChangeBatch = &route53.ChangeBatch{Changes: []*route53.Change{change}}
+	err = setFieldWithType("DELETE", change, "Action", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], change, "ResourceRecordSet.Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["type"], change, "ResourceRecordSet.Type", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["ttl"], change, "ResourceRecordSet.TTL", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["value"], resourceRecord, "Value", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *route53.ChangeResourceRecordSetsOutput
+	output, err = d.ChangeResourceRecordSets(input)
+	output = output
+	if err != nil {
+		d.logger.Errorf("delete record error: %s", err)
+		return nil, err
+	}
+	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
+	d.logger.Verbose("delete record done")
 	return output, nil
 }
 

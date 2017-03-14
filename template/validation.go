@@ -1,55 +1,13 @@
 package template
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/wallix/awless/graph"
 )
 
 type Validator interface {
 	Execute(t *Template) []error
-}
-
-type DefinitionValidator struct {
-	LookupDef LookupTemplateDefFunc
-}
-
-func (v *DefinitionValidator) Execute(t *Template) (errs []error) {
-	for _, cmd := range t.CommandNodesIterator() {
-		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
-		def, ok := v.LookupDef(key)
-		if !ok {
-			continue
-		}
-
-		var unexpected []string
-		for p := range cmd.Params {
-			if !sliceContains(p, def.Required(), def.Extra()) {
-				unexpected = append(unexpected, fmt.Sprintf("'%s'", p))
-			}
-		}
-
-		if len(unexpected) > 0 {
-			var w bytes.Buffer
-			w.WriteString(fmt.Sprintf("%s %s: unexpected params %s", cmd.Action, cmd.Entity, strings.Join(unexpected, ", ")))
-
-			if len(def.Required()) > 0 {
-				w.WriteString(fmt.Sprintf("\n\trequired: %s", strings.Join(def.Required(), ", ")))
-			}
-			if len(def.Extra()) > 0 {
-				w.WriteString(fmt.Sprintf("\n\textra: %s", strings.Join(def.Extra(), ", ")))
-			}
-
-			w.WriteByte('\n')
-
-			errs = append(errs, errors.New(w.String()))
-		}
-	}
-
-	return
 }
 
 type LookupGraphFunc func(key string) (*graph.Graph, bool)

@@ -3,39 +3,11 @@ package template_test
 import (
 	"testing"
 
-	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template"
 )
 
 func TestValidation(t *testing.T) {
-	t.Run("Validate definitions", func(t *testing.T) {
-		text := `create instance name=nemo cidr=10.0.0.0
-    delete subnet id=5678
-    stop instance ip=10.0.0.0`
-
-		tpl := template.MustParse(text)
-
-		lookup := func(key string) (t template.TemplateDefinition, ok bool) {
-			t, ok = aws.AWSTemplatesDefinitions[key]
-			return
-		}
-		rule := &template.DefinitionValidator{lookup}
-
-		errs := tpl.Validate(rule)
-		if got, want := len(errs), 2; got != want {
-			t.Fatalf("got %d, want %d", got, want)
-		}
-		exp := "create instance: unexpected params 'cidr'\n\trequired: image, count, count, type, subnet\n\textra: key, ip, userdata, group, lock, name\n"
-		if got, want := errs[0].Error(), exp; got != want {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-		exp = "stop instance: unexpected params 'ip'\n\trequired: id\n"
-		if got, want := errs[1].Error(), exp; got != want {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-	})
-
 	t.Run("Validate name unique", func(t *testing.T) {
 		text := "create instance name=instance1_name"
 

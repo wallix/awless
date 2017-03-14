@@ -41,6 +41,7 @@ func InitSession(region, profile string) (*session.Session, error) {
 		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
 		Profile:                 profile,
 	})
+	//session.Config = session.Config.WithLogLevel(awssdk.LogDebugWithHTTPBody)
 	if err != nil {
 		return nil, err
 	}

@@ -558,6 +558,29 @@ var DriversDefs = []driversDef{
 					{AwsField: "Id", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "create", Entity: graph.Record.String(), DryRunUnsupported: true, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "zone"},
+					{TemplateName: "name"},
+					{TemplateName: "type"},
+					{TemplateName: "value"},
+					{TemplateName: "ttl"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "comment"},
+				},
+			},
+			{
+				Action: "delete", Entity: graph.Record.String(), DryRunUnsupported: true, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "zone"},
+					{TemplateName: "name"},
+					{TemplateName: "type"},
+					{TemplateName: "value"},
+					{TemplateName: "ttl"},
+				},
+			},
 		},
 	},
 }

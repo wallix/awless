@@ -508,6 +508,18 @@ func (d *Route53Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err
 		}
 		return d.Delete_Zone, nil
 
+	case "createrecord":
+		if d.dryRun {
+			return d.Create_Record_DryRun, nil
+		}
+		return d.Create_Record, nil
+
+	case "deleterecord":
+		if d.dryRun {
+			return d.Delete_Record_DryRun, nil
+		}
+		return d.Delete_Record, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

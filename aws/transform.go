@@ -17,8 +17,11 @@ limitations under the License.
 package aws
 
 import (
+	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"hash/adler32"
 	"net"
 	"reflect"
 	"sync"
@@ -91,7 +94,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *route53.HostedZone:
 		res = graph.InitResource(awssdk.StringValue(ss.Id), graph.Zone)
 	case *route53.ResourceRecordSet:
-		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Record)
+		id := hashFields(awssdk.StringValue(ss.Name), awssdk.StringValue(ss.Type))
+		res = graph.InitResource(id, graph.Record)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -113,6 +117,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 	resultc := make(chan graph.Property)
 	errc := make(chan error)
 	var wg sync.WaitGroup
+	res.Properties["Id"] = res.Id()
 
 	for prop, trans := range awsResourcesDef[res.Type()] {
 		wg.Add(1)
@@ -407,4 +412,14 @@ var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
 
 func notEmpty(str *string) bool {
 	return awssdk.StringValue(str) != ""
+}
+
+func hashFields(fields ...interface{}) string {
+	var buf bytes.Buffer
+	for _, field := range fields {
+		buf.WriteString(fmt.Sprint(field))
+	}
+	h := adler32.New()
+	buf.WriteTo(h)
+	return "awls-" + hex.EncodeToString(h.Sum(nil))
 }

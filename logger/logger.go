@@ -42,7 +42,8 @@ type Logger struct {
 var (
 	infoPrefix         = color.GreenString("[info]   ")
 	errorPrefix        = color.RedString("[error]  ")
-	verbosePrefix      = color.YellowString("[verbose]")
+	warningPrefix      = color.YellowString("[warning]")
+	verbosePrefix      = color.CyanString("[verbose]")
 	extraVerbosePrefix = color.MagentaString("[extra]  ")
 )
 
@@ -90,6 +91,14 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.out.Println(prepend(errorPrefix, fmt.Sprintf(format, v...))...)
 }
 
+func (l *Logger) Warning(v ...interface{}) {
+	l.out.Println(prepend(warningPrefix, v...)...)
+}
+
+func (l *Logger) Warningf(format string, v ...interface{}) {
+	l.out.Println(prepend(warningPrefix, fmt.Sprintf(format, v...))...)
+}
+
 func (l *Logger) SetVerbose(level int) {
 	atomic.StoreUint32(&l.verbose, uint32(level))
 }
@@ -128,6 +137,14 @@ func Error(v ...interface{}) {
 
 func Errorf(format string, v ...interface{}) {
 	DefaultLogger.Errorf(format, v...)
+}
+
+func Warning(v ...interface{}) {
+	DefaultLogger.Warning(v...)
+}
+
+func Warningf(format string, v ...interface{}) {
+	DefaultLogger.Warningf(format, v...)
 }
 
 func prepend(s interface{}, v ...interface{}) []interface{} {

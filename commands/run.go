@@ -176,7 +176,7 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 }
 
 func validateTemplate(tpl *template.Template) {
-	unicityRule := &template.UniqueNameValidator{func(key string) (*graph.Graph, bool) {
+	unicityRule := &template.UniqueNameValidator{LookupGraph: func(key string) (*graph.Graph, bool) {
 		g := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[key])
 		return g, true
 	}}
@@ -185,9 +185,8 @@ func validateTemplate(tpl *template.Template) {
 
 	if len(errs) > 0 {
 		for _, err := range errs {
-			logger.Error(err)
+			logger.Warning(err)
 		}
-		os.Exit(1)
 	}
 }
 
