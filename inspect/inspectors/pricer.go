@@ -41,17 +41,7 @@ func (p *Pricer) Name() string {
 	return "pricer"
 }
 
-func (p *Pricer) Services() []string {
-	return []string{"infra"}
-}
-
-func (p *Pricer) Inspect(graphs ...*graph.Graph) error {
-	if len(graphs) < 0 {
-		return errors.New("no graph provided for")
-	}
-
-	g := graphs[0]
-
+func (p *Pricer) Inspect(g *graph.Graph) error {
 	region, err := getRegion(g)
 	if err != nil {
 		return err
@@ -87,7 +77,7 @@ func (p *Pricer) Inspect(graphs ...*graph.Graph) error {
 			defer wg.Done()
 			price, err := fetchPrice(t, region)
 			if err != nil {
-				fmt.Printf("fetching price for '%s': %s", t, err)
+				fmt.Printf("fetching price for '%s': %s\n", t, err)
 				return
 			}
 
@@ -150,8 +140,8 @@ func getRegion(g *graph.Graph) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if len(all) != 1 {
-		return "", nil
+	if len(all) < 1 {
+		return "", errors.New("cannot resolve region from graph")
 	}
 
 	return all[0].Id(), nil

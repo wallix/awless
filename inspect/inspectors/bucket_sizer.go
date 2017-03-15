@@ -17,7 +17,6 @@ limitations under the License.
 package inspectors
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"text/tabwriter"
@@ -39,17 +38,7 @@ func (*BucketSizer) Name() string {
 	return "bucket_sizer"
 }
 
-func (p *BucketSizer) Services() []string {
-	return []string{"storage"}
-}
-
-func (i *BucketSizer) Inspect(graphs ...*graph.Graph) error {
-	if len(graphs) < 0 {
-		return errors.New("no graph provided for")
-	}
-
-	g := graphs[0]
-
+func (i *BucketSizer) Inspect(g *graph.Graph) error {
 	i.buckets = make(map[string]*bucket)
 
 	objects, err := g.GetAllResources(graph.Object)

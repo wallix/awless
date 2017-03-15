@@ -271,10 +271,9 @@ Inspectors are small CLI utilities that leverage `awless` graph modeling of clou
 
 ```go
 type Inspector interface {
-    Inspect(...*graph.Graph) error
+    Inspect(*graph.Graph) error
     Print(io.Writer)
     Name() string            # name of the inspector
-    Services() []string      # name of the services (ec2, iam, s3, ...) the inspector operates on
 }
 ```
 

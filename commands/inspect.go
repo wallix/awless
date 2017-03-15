@@ -23,7 +23,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/inspect"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
@@ -54,33 +53,22 @@ var inspectCmd = &cobra.Command{
 			return fmt.Errorf("command needs a valid inspector: %s", allInspectors())
 		}
 
-		var graphs []*graph.Graph
-		if localGlobalFlag {
-			for _, name := range inspector.Services() {
-				graphs = append(graphs, sync.LoadCurrentLocalGraph(name))
-			}
-		} else {
-			var err error
-			services := []cloud.Service{}
-			for _, name := range inspector.Services() {
-				srv, ok := cloud.ServiceRegistry[name]
-				if !ok {
-					return fmt.Errorf("unknown service %s for inspector %s", name, inspector.Name())
-				}
+		if !localGlobalFlag {
+			logger.Info("Running full sync before inspection (disable it with --local flag)\n")
+			var services []cloud.Service
+			for _, srv := range cloud.ServiceRegistry {
 				services = append(services, srv)
 			}
 
-			graphPerService, err := sync.DefaultSyncer.Sync(services...)
-			if err != nil {
-				logger.Error(err)
-			}
-
-			for _, g := range graphPerService {
-				graphs = append(graphs, g)
+			if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
+				logger.Verbose(err)
 			}
 		}
 
-		err := inspector.Inspect(graphs...)
+		g, err := sync.LoadAllGraphs()
+		exitOn(err)
+
+		err = inspector.Inspect(g)
 		exitOn(err)
 
 		inspector.Print(os.Stdout)

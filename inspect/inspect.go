@@ -38,8 +38,7 @@ func init() {
 }
 
 type Inspector interface {
-	Inspect(...*graph.Graph) error
-	Print(io.Writer)
 	Name() string
-	Services() []string
+	Inspect(*graph.Graph) error
+	Print(io.Writer)
 }
