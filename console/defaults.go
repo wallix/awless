@@ -51,17 +51,17 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "CidrBlock"},
 		StringColumnDefinition{Prop: "AvailabilityZone", Friendly: "Zone"},
+		ColoredValueColumnDefinition{
+			StringColumnDefinition: StringColumnDefinition{Prop: "DefaultForAz", Friendly: "Default"},
+			ColoredValues:          map[string]color.Attribute{"true": color.FgGreen},
+		},
 		StringColumnDefinition{Prop: "VpcId"},
 		ColoredValueColumnDefinition{
-			StringColumnDefinition: StringColumnDefinition{Prop: "MapPublicIpOnLaunch", Friendly: "Public VMs"},
+			StringColumnDefinition: StringColumnDefinition{Prop: "MapPublicIpOnLaunch", Friendly: "Public"},
 			ColoredValues:          map[string]color.Attribute{"true": color.FgYellow}},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
-		ColoredValueColumnDefinition{
-			StringColumnDefinition: StringColumnDefinition{Prop: "DefaultForAz", Friendly: "ZoneDefault"},
-			ColoredValues:          map[string]color.Attribute{"true": color.FgGreen},
-		},
 	},
 	cloud.SecurityGroup: {
 		StringColumnDefinition{Prop: "Id"},
