@@ -34,7 +34,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "KeyName", Friendly: "Access Key"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime", Friendly: "Up Since"}},
 	},
 	cloud.Vpc: {
 		StringColumnDefinition{Prop: "Id"},

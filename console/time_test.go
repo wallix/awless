@@ -28,16 +28,16 @@ func TestHumanizeTime(t *testing.T) {
 		expect string
 	}{
 		{stamp: now, expect: "now"},
-		{stamp: now.Add(-5 * time.Second), expect: "5 seconds ago"},
-		{stamp: now.Add(-1 * time.Minute), expect: "60 seconds ago"},
-		{stamp: now.Add(-3 * time.Minute), expect: "3 minutes ago"},
-		{stamp: now.Add(-90 * time.Minute), expect: "90 minutes ago"},
-		{stamp: now.Add(-3 * time.Hour), expect: "3 hours ago"},
-		{stamp: now.Add(-24 * time.Hour), expect: "24 hours ago"},
-		{stamp: now.Add(-3 * 24 * time.Hour), expect: "3 days ago"},
-		{stamp: now.Add(-3 * 7 * 24 * time.Hour), expect: "3 weeks ago"},
-		{stamp: now.Add(-3 * 30 * 24 * time.Hour), expect: "3 months ago"},
-		{stamp: now.Add(-3 * 365 * 24 * time.Hour), expect: "3 years ago"},
+		{stamp: now.Add(-5 * time.Second), expect: "5 seconds"},
+		{stamp: now.Add(-1 * time.Minute), expect: "60 seconds"},
+		{stamp: now.Add(-3 * time.Minute), expect: "3 minutes"},
+		{stamp: now.Add(-90 * time.Minute), expect: "90 minutes"},
+		{stamp: now.Add(-3 * time.Hour), expect: "3 hours"},
+		{stamp: now.Add(-24 * time.Hour), expect: "24 hours"},
+		{stamp: now.Add(-3 * 24 * time.Hour), expect: "3 days"},
+		{stamp: now.Add(-3 * 7 * 24 * time.Hour), expect: "3 weeks"},
+		{stamp: now.Add(-3 * 30 * 24 * time.Hour), expect: "3 months"},
+		{stamp: now.Add(-3 * 365 * 24 * time.Hour), expect: "3 years"},
 	}
 
 	for _, tcase := range tcases {
