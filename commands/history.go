@@ -22,6 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
@@ -53,7 +54,7 @@ var historyCmd = &cobra.Command{
 
 		region := config.GetAWSRegion()
 
-		root := graph.InitResource(region, graph.Region)
+		root := graph.InitResource(region, cloud.Region)
 
 		var diffs []*sync.Diff
 

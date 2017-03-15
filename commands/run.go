@@ -315,7 +315,7 @@ func resolveAliasFunc(entity string) func(k, v string) string {
 			resType = entity
 		}
 		a := graph.Alias(alias)
-		if id, ok := a.ResolveToId(gph, graph.ResourceType(resType)); ok {
+		if id, ok := a.ResolveToId(gph, resType); ok {
 			return id
 		}
 		return ""

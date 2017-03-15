@@ -17,11 +17,11 @@ limitations under the License.
 
 package aws
 
-import "github.com/wallix/awless/graph"
+import "github.com/wallix/awless/cloud"
 
-var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
+var awsResourcesDef = map[string]map[string]*propertyTransform{
 	//EC2
-	graph.Instance: {
+	cloud.Instance: {
 		"Name":           {name: "Tags", transform: extractTagFn("Name")},
 		"Type":           {name: "InstanceType", transform: extractValueFn},
 		"SubnetId":       {name: "SubnetId", transform: extractValueFn},
@@ -34,13 +34,13 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"KeyName":        {name: "KeyName", transform: extractValueFn},
 		"SecurityGroups": {name: "SecurityGroups", transform: extractSliceValues("GroupId")},
 	},
-	graph.Vpc: {
+	cloud.Vpc: {
 		"Name":      {name: "Tags", transform: extractTagFn("Name")},
 		"IsDefault": {name: "IsDefault", transform: extractValueFn},
 		"State":     {name: "State", transform: extractValueFn},
 		"CidrBlock": {name: "CidrBlock", transform: extractValueFn},
 	},
-	graph.Subnet: {
+	cloud.Subnet: {
 		"Name":                {name: "Tags", transform: extractTagFn("Name")},
 		"VpcId":               {name: "VpcId", transform: extractValueFn},
 		"MapPublicIpOnLaunch": {name: "MapPublicIpOnLaunch", transform: extractValueFn},
@@ -49,7 +49,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"AvailabilityZone":    {name: "AvailabilityZone", transform: extractValueFn},
 		"DefaultForAz":        {name: "DefaultForAz", transform: extractValueFn},
 	},
-	graph.SecurityGroup: {
+	cloud.SecurityGroup: {
 		"Name":          {name: "GroupName", transform: extractValueFn},
 		"Description":   {name: "Description", transform: extractValueFn},
 		"InboundRules":  {name: "IpPermissions", transform: extractIpPermissionSliceFn},
@@ -57,11 +57,11 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"OwnerId":       {name: "OwnerId", transform: extractValueFn},
 		"VpcId":         {name: "VpcId", transform: extractValueFn},
 	},
-	graph.Keypair: {
+	cloud.Keypair: {
 		"Name":           {name: "KeyName", transform: extractValueFn},
 		"KeyFingerprint": {name: "KeyFingerprint", transform: extractValueFn},
 	},
-	graph.Volume: {
+	cloud.Volume: {
 		"Name":             {name: "Tags", transform: extractTagFn("Name")},
 		"VolumeType":       {name: "VolumeType", transform: extractValueFn},
 		"State":            {name: "State", transform: extractValueFn},
@@ -70,24 +70,24 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"CreateTime":       {name: "CreateTime", transform: extractTimeFn},
 		"AvailabilityZone": {name: "AvailabilityZone", transform: extractValueFn},
 	},
-	graph.InternetGateway: {
+	cloud.InternetGateway: {
 		"Name": {name: "Tags", transform: extractTagFn("Name")},
 		"Vpcs": {name: "Attachments", transform: extractSliceValues("VpcId")},
 	},
-	graph.RouteTable: {
+	cloud.RouteTable: {
 		"Name":   {name: "Tags", transform: extractTagFn("Name")},
 		"VpcId":  {name: "VpcId", transform: extractValueFn},
 		"Routes": {name: "Routes", transform: extractRoutesSliceFn},
 		"Main":   {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
 	},
-	graph.AvailabilityZone: {
+	cloud.AvailabilityZone: {
 		"Name":     {name: "ZoneName", transform: extractValueFn},
 		"State":    {name: "State", transform: extractValueFn},
 		"Region":   {name: "RegionName", transform: extractValueFn},
 		"Messages": {name: "Messages", transform: extractSliceValues("Message")},
 	},
 	// LoadBalancer
-	graph.LoadBalancer: {
+	cloud.LoadBalancer: {
 		"Name":                  {name: "LoadBalancerName", transform: extractValueFn},
 		"AvailabilityZones":     {name: "AvailabilityZones", transform: extractSliceValues("ZoneName")},
 		"Subnets":               {name: "AvailabilityZones", transform: extractSliceValues("SubnetId")},
@@ -100,7 +100,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Type":                  {name: "Type", transform: extractValueFn},
 		"VpcId":                 {name: "VpcId", transform: extractValueFn},
 	},
-	graph.TargetGroup: {
+	cloud.TargetGroup: {
 		"Name": {name: "TargetGroupName", transform: extractValueFn},
 		"HealthCheckIntervalSeconds": {name: "HealthCheckIntervalSeconds", transform: extractValueFn},
 		"HealthCheckPath":            {name: "HealthCheckPath", transform: extractValueFn},
@@ -114,7 +114,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"UnhealthyThresholdCount":    {name: "UnhealthyThresholdCount", transform: extractValueFn},
 		"VpcId":                      {name: "VpcId", transform: extractValueFn},
 	},
-	graph.Listener: {
+	cloud.Listener: {
 		"Certificates": {name: "Certificates", transform: extractSliceValues("CertificateArn")},
 		"Actions":      {name: "DefaultActions", transform: extractSliceValues("Type")},
 		"LoadBalancer": {name: "LoadBalancerArn", transform: extractValueFn},
@@ -123,7 +123,7 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"SslPolicy":    {name: "SslPolicy", transform: extractValueFn},
 	},
 	//IAM
-	graph.User: {
+	cloud.User: {
 		"Name":                 {name: "UserName", transform: extractValueFn},
 		"Arn":                  {name: "Arn", transform: extractValueFn},
 		"Path":                 {name: "Path", transform: extractValueFn},
@@ -131,21 +131,21 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"PasswordLastUsedDate": {name: "PasswordLastUsed", transform: extractTimeFn},
 		"InlinePolicies":       {name: "UserPolicyList", transform: extractSliceValues("PolicyName")},
 	},
-	graph.Role: {
+	cloud.Role: {
 		"Name":           {name: "RoleName", transform: extractValueFn},
 		"Arn":            {name: "Arn", transform: extractValueFn},
 		"CreateDate":     {name: "CreateDate", transform: extractTimeFn},
 		"Path":           {name: "Path", transform: extractValueFn},
 		"InlinePolicies": {name: "RolePolicyList", transform: extractSliceValues("PolicyName")},
 	},
-	graph.Group: {
+	cloud.Group: {
 		"Name":           {name: "GroupName", transform: extractValueFn},
 		"Arn":            {name: "Arn", transform: extractValueFn},
 		"CreateDate":     {name: "CreateDate", transform: extractTimeFn},
 		"Path":           {name: "Path", transform: extractValueFn},
 		"InlinePolicies": {name: "GroupPolicyList", transform: extractSliceValues("PolicyName")},
 	},
-	graph.Policy: {
+	cloud.Policy: {
 		"Name":         {name: "PolicyName", transform: extractValueFn},
 		"Arn":          {name: "Arn", transform: extractValueFn},
 		"CreateDate":   {name: "CreateDate", transform: extractTimeFn},
@@ -155,12 +155,12 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Path":         {name: "Path", transform: extractValueFn},
 	},
 	//S3
-	graph.Bucket: {
+	cloud.Bucket: {
 		"Name":       {name: "Name", transform: extractValueFn},
 		"CreateDate": {name: "CreationDate", transform: extractTimeFn},
 		"Grants":     {fetch: fetchAndExtractGrantsFn},
 	},
-	graph.Object: {
+	cloud.Object: {
 		"Key":          {name: "Key", transform: extractValueFn},
 		"ModifiedDate": {name: "LastModified", transform: extractTimeFn},
 		"OwnerId":      {name: "Owner", transform: extractFieldFn("ID")},
@@ -168,25 +168,25 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Class":        {name: "StorageClass", transform: extractValueFn},
 	},
 	//Notification
-	graph.Subscription: {
+	cloud.Subscription: {
 		"Endpoint":        {name: "Endpoint", transform: extractValueFn},
 		"Owner":           {name: "Owner", transform: extractValueFn},
 		"Protocol":        {name: "Protocol", transform: extractValueFn},
 		"SubscriptionArn": {name: "SubscriptionArn", transform: extractValueFn},
 		"TopicArn":        {name: "TopicArn", transform: extractValueFn},
 	},
-	graph.Topic: {
+	cloud.Topic: {
 		"TopicArn": {name: "TopicArn", transform: extractValueFn},
 	},
 	// DNS
-	graph.Zone: {
+	cloud.Zone: {
 		"Name":                   {name: "Name", transform: extractValueFn},
 		"Comment":                {name: "Config", transform: extractFieldFn("Comment")},
 		"IsPrivateZone":          {name: "Config", transform: extractFieldFn("PrivateZone")},
 		"CallerReference":        {name: "CallerReference", transform: extractValueFn},
 		"ResourceRecordSetCount": {name: "ResourceRecordSetCount", transform: extractValueFn},
 	},
-	graph.Record: {
+	cloud.Record: {
 		"Name":          {name: "Name", transform: extractValueFn},
 		"Failover":      {name: "Failover", transform: extractValueFn},
 		"Continent":     {name: "GeoLocation", transform: extractFieldFn("ContinentCode")},
@@ -201,5 +201,5 @@ var awsResourcesDef = map[graph.ResourceType]map[string]*propertyTransform{
 		"Weight": {name: "Weight", transform: extractValueFn},
 	},
 	//Queue
-	graph.Queue: {}, //Manually set
+	cloud.Queue: {}, //Manually set
 }

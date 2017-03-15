@@ -81,7 +81,7 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 				exitOn(err)
 			}
 
-			printResources(g, graph.ResourceType(resType))
+			printResources(g, resType)
 		},
 	}
 }
@@ -102,7 +102,7 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 	}
 }
 
-func printResources(g *graph.Graph, resType graph.ResourceType) {
+func printResources(g *graph.Graph, resType string) {
 	displayer := console.BuildOptions(
 		console.WithRdfType(resType),
 		console.WithHeaders(console.DefaultsColumnDefinitions[resType]),

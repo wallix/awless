@@ -7,7 +7,7 @@ import (
 
 type FilterFn func(*Resource) bool
 
-func (g *Graph) Filter(entity ResourceType, filters ...FilterFn) (*Graph, error) {
+func (g *Graph) Filter(entity string, filters ...FilterFn) (*Graph, error) {
 	filtered := NewGraph()
 
 	all, err := g.GetAllResources(entity)

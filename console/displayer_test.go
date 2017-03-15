@@ -35,7 +35,7 @@ func TestJSONDisplays(t *testing.T) {
 
 	t.Run("Single resource", func(t *testing.T) {
 		displayer := BuildOptions(
-			WithRdfType(graph.Instance),
+			WithRdfType("instance"),
 			WithFormat("json"),
 		).SetSource(g).Build()
 
@@ -88,7 +88,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -106,7 +106,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("csv"),
 		WithSortBy("Name"),
 	).SetSource(g).Build()
@@ -137,7 +137,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 	).SetSource(g).Build()
 
 	expected = `+--------+--------+---------+-----------+-----------+
@@ -158,7 +158,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("state", "id"),
 	).SetSource(g).Build()
 
@@ -180,7 +180,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -207,7 +207,7 @@ func TestTabularDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("porcelain"),
 	).SetSource(g).Build()
 
@@ -303,7 +303,7 @@ my_vpc_2`
 }
 
 func TestDiffDisplay(t *testing.T) {
-	rootNode := graph.InitResource("eu-west-1", graph.Region)
+	rootNode := graph.InitResource("eu-west-1", "region")
 	diff, err := createDiff(rootNode)
 	if err != nil {
 		t.Fatal(err)
@@ -386,7 +386,7 @@ func TestDateLists(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.User),
+		WithRdfType("user"),
 	).SetSource(g).Build()
 
 	expected := `+-------+---------------+----------------------+
@@ -407,7 +407,7 @@ func TestDateLists(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.User),
+		WithRdfType("user"),
 		WithSortBy("passwordlastuseddate"),
 	).SetSource(g).Build()
 
@@ -440,7 +440,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -470,7 +470,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -500,7 +500,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("s", "n"),
 	).SetSource(g).Build()
 
@@ -522,7 +522,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("s", "n"),
 		WithMaxWidth(50),
 	).SetSource(g).Build()
@@ -537,7 +537,7 @@ func TestMaxWidth(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithSortBy("s", "n"),
 		WithMaxWidth(21),
 	).SetSource(g).Build()
@@ -616,7 +616,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	displayer := BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -631,7 +631,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("table"),
 	).SetSource(g).Build()
 
@@ -646,11 +646,11 @@ func TestEmotyDisplays(t *testing.T) {
 
 	g = createInfraGraph()
 	headers = []ColumnDefinition{}
-	DefaultsColumnDefinitions = make(map[graph.ResourceType][]ColumnDefinition)
+	DefaultsColumnDefinitions = make(map[string][]ColumnDefinition)
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -665,7 +665,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 	displayer = BuildOptions(
 		WithHeaders(headers),
-		WithRdfType(graph.Instance),
+		WithRdfType("instance"),
 		WithFormat("table"),
 	).SetSource(g).Build()
 

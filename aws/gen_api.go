@@ -176,7 +176,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 	var instanceList []*ec2.Instance
 	var subnetList []*ec2.Subnet
@@ -935,7 +935,7 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 	var userList []*iam.UserDetail
 	var groupList []*iam.GroupDetail
@@ -1242,7 +1242,7 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 	var bucketList []*s3.Bucket
 	var storageobjectList []*s3.Object
@@ -1407,7 +1407,7 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 	var subscriptionList []*sns.Subscription
 	var topicList []*sns.Topic
@@ -1619,7 +1619,7 @@ func (s *Queue) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 	var queueList []*string
 
@@ -1749,7 +1749,7 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 	var zoneList []*route53.HostedZone
 	var recordList []*route53.ResourceRecordSet

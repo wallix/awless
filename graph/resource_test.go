@@ -41,12 +41,12 @@ func TestSortResource(t *testing.T) {
 }
 
 func TestEqualResources(t *testing.T) {
-	i1 := &Resource{id: "inst_1", kind: Instance}
-	i2 := &Resource{id: "inst_2", kind: Instance}
-	i3 := &Resource{id: "toto", kind: Instance}
-	s1 := &Resource{id: "subnet_1", kind: Subnet}
-	s2 := &Resource{id: "subnet_1", kind: Subnet}
-	s3 := &Resource{id: "toto", kind: Subnet}
+	i1 := &Resource{id: "inst_1", kind: "instance"}
+	i2 := &Resource{id: "inst_2", kind: "instance"}
+	i3 := &Resource{id: "toto", kind: "instance"}
+	s1 := &Resource{id: "subnet_1", kind: "subnet"}
+	s2 := &Resource{id: "subnet_1", kind: "subnet"}
+	s3 := &Resource{id: "toto", kind: "subnet"}
 	empty := &Resource{}
 	tcases := []struct {
 		from, to *Resource
@@ -80,11 +80,11 @@ func TestPrintResource(t *testing.T) {
 		res *Resource
 		exp string
 	}{
-		{res: &Resource{id: "inst_1", kind: Instance}, exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: Instance, Properties: Properties{"Id": "notthis"}}, exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: Instance, Properties: Properties{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
-		{res: &Resource{id: "inst_1", kind: Instance, Properties: Properties{"Name": ""}}, exp: "inst_1[instance]"},
-		{res: &Resource{kind: Instance, Properties: Properties{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance"}, exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: Properties{"Id": "notthis"}}, exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: Properties{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: Properties{"Name": ""}}, exp: "inst_1[instance]"},
+		{res: &Resource{kind: "instance", Properties: Properties{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
 		{res: &Resource{}, exp: "[none]"},
 		{res: nil, exp: "[none]"},
 	}

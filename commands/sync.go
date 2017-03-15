@@ -93,7 +93,7 @@ func displaySyncStats(serviceName string, g *graph.Graph) {
 	var strs []string
 	for rt, service := range aws.ServicePerResourceType {
 		if service == serviceName {
-			res, err := g.GetAllResources(graph.ResourceType(rt))
+			res, err := g.GetAllResources(rt)
 			if err != nil {
 				continue
 			}

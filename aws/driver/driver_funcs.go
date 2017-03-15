@@ -34,8 +34,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
-	"github.com/wallix/awless/graph"
 )
 
 func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -778,15 +778,15 @@ func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermi
 func fakeDryRunId(entity string) string {
 	suffix := rand.Intn(1e6)
 	switch entity {
-	case "instance":
+	case cloud.Instance:
 		return fmt.Sprintf("i-%d", suffix)
-	case "subnet":
+	case cloud.Subnet:
 		return fmt.Sprintf("subnet-%d", suffix)
-	case "volume":
+	case cloud.Volume:
 		return fmt.Sprintf("vol-%d", suffix)
-	case "securitygroup":
+	case cloud.SecurityGroup:
 		return fmt.Sprintf("sg-%d", suffix)
-	case graph.InternetGateway.String():
+	case cloud.InternetGateway:
 		return fmt.Sprintf("igw-%d", suffix)
 	default:
 		return fmt.Sprintf("dryrunid-%d", suffix)

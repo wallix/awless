@@ -18,12 +18,12 @@ package console
 
 import (
 	"github.com/fatih/color"
-	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/cloud"
 )
 
-var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
+var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	//EC2
-	graph.Instance: {
+	cloud.Instance: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "SubnetId"},
 		StringColumnDefinition{Prop: "Name"},
@@ -36,7 +36,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime"}},
 	},
-	graph.Vpc: {
+	cloud.Vpc: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
@@ -46,7 +46,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "CidrBlock"},
 	},
-	graph.Subnet: {
+	cloud.Subnet: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "CidrBlock"},
@@ -63,7 +63,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 			ColoredValues:          map[string]color.Attribute{"true": color.FgGreen},
 		},
 	},
-	graph.SecurityGroup: {
+	cloud.SecurityGroup: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "VpcId"},
 		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "InboundRules", Friendly: "Inbound"}},
@@ -71,23 +71,23 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Description", DisableTruncate: true},
 	},
-	graph.InternetGateway: {
+	cloud.InternetGateway: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Vpcs", DisableTruncate: true},
 	},
-	graph.RouteTable: {
+	cloud.RouteTable: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Main"},
 		RoutesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Routes"}},
 	},
-	graph.Keypair: {
+	cloud.Keypair: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "KeyFingerprint", DisableTruncate: true},
 	},
-	graph.Volume: {
+	cloud.Volume: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "VolumeType"},
@@ -97,14 +97,14 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
 		StringColumnDefinition{Prop: "AvailabilityZone"},
 	},
-	graph.AvailabilityZone: {
+	cloud.AvailabilityZone: {
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "Region"},
 		StringColumnDefinition{Prop: "Messages"},
 	},
 	// Loadbalancer
-	graph.LoadBalancer: {
+	cloud.LoadBalancer: {
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "State"},
@@ -112,7 +112,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
 		StringColumnDefinition{Prop: "Scheme"},
 	},
-	graph.TargetGroup: {
+	cloud.TargetGroup: {
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "Matcher"},
@@ -123,7 +123,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "HealthCheckPort", Friendly: "HCPort"},
 		StringColumnDefinition{Prop: "HealthCheckProtocol", Friendly: "HCProtocol"},
 	},
-	graph.Listener: {
+	cloud.Listener: {
 		StringColumnDefinition{Prop: "Id", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Actions"},
 		StringColumnDefinition{Prop: "LoadBalancer"},
@@ -132,35 +132,35 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "SslPolicy"},
 	},
 	//IAM
-	graph.User: {
+	cloud.User: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate", Friendly: "PasswordLastUsed"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
-	graph.Role: {
+	cloud.Role: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
-	graph.Policy: {
+	cloud.Policy: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "UpdateDate"}},
 	},
-	graph.Group: {
+	cloud.Group: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
 	// S3
-	graph.Bucket: {
+	cloud.Bucket: {
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Grants"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
-	graph.Object: {
+	cloud.Object: {
 		StringColumnDefinition{Prop: "Key", TruncateRight: true},
 		StringColumnDefinition{Prop: "BucketName"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "ModifiedDate"}},
@@ -169,18 +169,18 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Class"},
 	},
 	//Notification
-	graph.Subscription: {
+	cloud.Subscription: {
 		StringColumnDefinition{Prop: "SubscriptionArn"},
 		StringColumnDefinition{Prop: "TopicArn"},
 		StringColumnDefinition{Prop: "Endpoint", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Protocol"},
 		StringColumnDefinition{Prop: "Owner"},
 	},
-	graph.Topic: {
+	cloud.Topic: {
 		StringColumnDefinition{Prop: "TopicArn", DisableTruncate: true},
 	},
 	//Queue
-	graph.Queue: {
+	cloud.Queue: {
 		StringColumnDefinition{Prop: "Id", Friendly: "URL", DisableTruncate: true},
 		StringColumnDefinition{Prop: "ApproximateNumberOfMessages", Friendly: "~NbMsg"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreatedTimestamp", Friendly: "Created"}},
@@ -188,7 +188,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "DelaySeconds", Friendly: "Delay(s)"},
 	},
 	// DNS
-	graph.Zone: {
+	cloud.Zone: {
 		StringColumnDefinition{Prop: "Id", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Comment"},
@@ -196,7 +196,7 @@ var DefaultsColumnDefinitions = map[graph.ResourceType][]ColumnDefinition{
 		StringColumnDefinition{Prop: "ResourceRecordSetCount"},
 		StringColumnDefinition{Prop: "CallerReference", DisableTruncate: true},
 	},
-	graph.Record: {
+	cloud.Record: {
 		StringColumnDefinition{Prop: "Id", Friendly: "AwlessId", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},

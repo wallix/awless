@@ -22,7 +22,7 @@ import (
 
 type Alias string
 
-func (a Alias) ResolveToId(g *Graph, resT ResourceType) (string, bool) {
+func (a Alias) ResolveToId(g *Graph, resT string) (string, bool) {
 	prop := Property{Key: "Name", Value: a}
 	propL, err := prop.marshalRDF()
 	if err != nil {
@@ -34,7 +34,7 @@ func (a Alias) ResolveToId(g *Graph, resT ResourceType) (string, bool) {
 	}
 	for _, t := range triples {
 		s := t.Subject()
-		if s.Type().String() == resT.ToRDFString() {
+		if s.Type().String() == "/"+resT {
 			return s.ID().String(), true
 		}
 	}

@@ -62,7 +62,7 @@ func (g *Graph) AddAppliesOnRelation(parent, child *Resource) error {
 	return g.addRelation(parent, child, rdf.AppliesOnPredicate)
 }
 
-func (g *Graph) GetResource(t ResourceType, id string) (*Resource, error) {
+func (g *Graph) GetResource(t string, id string) (*Resource, error) {
 	resource := InitResource(id, t)
 
 	node, err := resource.toRDFNode()
@@ -109,7 +109,7 @@ func (g *Graph) FindResourcesByProperty(key string, value interface{}) ([]*Resou
 	return byProperty.Resolve(g)
 }
 
-func (g *Graph) GetAllResources(t ResourceType) ([]*Resource, error) {
+func (g *Graph) GetAllResources(t string) ([]*Resource, error) {
 	byType := &ByType{t}
 	return byType.Resolve(g)
 }
@@ -186,12 +186,12 @@ func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 }
 
 type ByType struct {
-	typ ResourceType
+	typ string
 }
 
 func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
 	var res []*Resource
-	nodes, err := g.rdfG.NodesForType(r.typ.ToRDFString())
+	nodes, err := g.rdfG.NodesForType("/" + r.typ)
 	if err != nil {
 		return res, err
 	}
@@ -274,7 +274,7 @@ func (g *Graph) addRelation(one, other *Resource, pred *predicate.Predicate) err
 		return err
 	}
 
-	oneN, err := node.NewNodeFromStrings(one.Type().ToRDFString(), one.Id())
+	oneN, err := node.NewNodeFromStrings("/"+one.Type(), one.Id())
 	if err != nil {
 		return err
 	}

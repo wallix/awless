@@ -186,7 +186,7 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 		
-	regionN := graph.InitResource(s.region, graph.Region)
+	regionN := graph.InitResource(s.region, cloud.Region)
 	g.AddResource(regionN)
 
 	{{- range $index, $fetcher := $service.Fetchers }}

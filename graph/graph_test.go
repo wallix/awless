@@ -30,11 +30,11 @@ func TestAddGraphRelation(t *testing.T) {
 		g := NewGraph()
 		g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text`))
 
-		res, err := g.GetResource(Instance, "inst_1")
+		res, err := g.GetResource("instance", "inst_1")
 		if err != nil {
 			t.Fatal(err)
 		}
-		g.AddParentRelation(InitResource("subnet_1", Subnet), res)
+		g.AddParentRelation(InitResource("subnet_1", "subnet"), res)
 
 		exp := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
 /subnet<subnet_1>	"parent_of"@[]	/instance<inst_1>`
@@ -48,11 +48,11 @@ func TestAddGraphRelation(t *testing.T) {
 		g := NewGraph()
 		g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text`))
 
-		res, err := g.GetResource(Instance, "inst_1")
+		res, err := g.GetResource("instance", "inst_1")
 		if err != nil {
 			t.Fatal(err)
 		}
-		g.AddAppliesOnRelation(InitResource("subnet_1", Subnet), res)
+		g.AddAppliesOnRelation(InitResource("subnet_1", "subnet"), res)
 
 		exp := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
 /subnet<subnet_1>	"applies_on"@[]	/instance<inst_1>`
@@ -73,7 +73,7 @@ func TestGetResource(t *testing.T) {
   /instance<inst_1>  "property"@[] "{"Key":"PublicIp","Value":"1.2.3.4"}"^^type:text
   /instance<inst_1>  "property"@[] "{"Key":"State","Value":{"Code": 16,"Name":"running"}}"^^type:text`))
 
-	res, err := g.GetResource(Instance, "inst_1")
+	res, err := g.GetResource("instance", "inst_1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func TestFindResources(t *testing.T) {
 		if res, err = g.FindResource("sub_1"); err != nil {
 			t.Fatal(err)
 		}
-		if got, want := res.Type().String(), "subnet"; got != want {
+		if got, want := res.Type(), "subnet"; got != want {
 			t.Fatalf("got %s want %s", got, want)
 		}
 	})
@@ -133,7 +133,7 @@ func TestFindResources(t *testing.T) {
 			t.Fatal(err)
 		}
 		expected := []*Resource{
-			{id: "inst_1", kind: Instance, Properties: map[string]interface{}{"Id": interface{}("inst_1"), "Name": interface{}("redis")}, Meta: make(Properties)},
+			{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Id": interface{}("inst_1"), "Name": interface{}("redis")}, Meta: make(Properties)},
 		}
 		if got, want := len(res), len(expected); got != want {
 			t.Fatalf("got %d want %d", got, want)
@@ -146,8 +146,8 @@ func TestFindResources(t *testing.T) {
 			t.Fatal(err)
 		}
 		expected = []*Resource{
-			{id: "inst_1", kind: Instance, Properties: map[string]interface{}{"Id": "inst_1", "Name": "redis"}, Meta: make(Properties)},
-			{id: "sub_1", kind: Subnet, Properties: map[string]interface{}{"Name": "redis"}, Meta: make(Properties)},
+			{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Id": "inst_1", "Name": "redis"}, Meta: make(Properties)},
+			{id: "sub_1", kind: "subnet", Properties: map[string]interface{}{"Name": "redis"}, Meta: make(Properties)},
 		}
 		if got, want := len(res), len(expected); got != want {
 			t.Fatalf("got %d want %d", got, want)
@@ -189,11 +189,11 @@ func TestGetAllResources(t *testing.T) {
 	time, _ := time.Parse(time.RFC3339, "2017-01-10T16:47:18Z")
 
 	expected := []*Resource{
-		{kind: Instance, id: "inst_1", Properties: Properties{"Id": "inst_1", "Name": "redis"}},
-		{kind: Instance, id: "inst_2", Properties: Properties{"Id": "inst_2", "Name": "redis2"}},
-		{kind: Instance, id: "inst_3", Properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
+		{kind: "instance", id: "inst_1", Properties: Properties{"Id": "inst_1", "Name": "redis"}},
+		{kind: "instance", id: "inst_2", Properties: Properties{"Id": "inst_2", "Name": "redis2"}},
+		{kind: "instance", id: "inst_3", Properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
 	}
-	res, err := g.GetAllResources(Instance)
+	res, err := g.GetAllResources("instance")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -220,7 +220,7 @@ func TestLoadIpPermissions(t *testing.T) {
 /securitygroup<sg-1234>	"property"@[]	"{"Key":"InboundRules","Value":[{"PortRange":{"FromPort":22,"ToPort":22,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"10.10.0.0","Mask":"//8AAA=="}]},{"PortRange":{"FromPort":443,"ToPort":443,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text
 /securitygroup<sg-1234>	"property"@[]	"{"Key":"OutboundRules","Value":[{"PortRange":{"FromPort":0,"ToPort":0,"Any":true},"Protocol":"any","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text`))
 	expected := []*Resource{
-		{kind: SecurityGroup, id: "sg-1234", Properties: Properties{
+		{kind: "securitygroup", id: "sg-1234", Properties: Properties{
 			"Id": "sg-1234",
 			"InboundRules": []*FirewallRule{
 				{
@@ -244,7 +244,7 @@ func TestLoadIpPermissions(t *testing.T) {
 		},
 		},
 	}
-	res, err := g.GetAllResources(SecurityGroup)
+	res, err := g.GetAllResources("securitygroup")
 	if err != nil {
 		t.Fatal(err)
 	}

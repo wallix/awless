@@ -21,6 +21,7 @@ import (
 	"io"
 	"text/tabwriter"
 
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
 
@@ -41,7 +42,7 @@ func (*BucketSizer) Name() string {
 func (i *BucketSizer) Inspect(g *graph.Graph) error {
 	i.buckets = make(map[string]*bucket)
 
-	objects, err := g.GetAllResources(graph.Object)
+	objects, err := g.GetAllResources(cloud.Object)
 	if err != nil {
 		return err
 	}

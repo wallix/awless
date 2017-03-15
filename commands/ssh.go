@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	awsconfig "github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
@@ -64,11 +65,11 @@ var sshCmd = &cobra.Command{
 			instanceID = args[0]
 		}
 
-		instancesGraph, err := aws.InfraService.FetchByType(graph.Instance.String())
+		instancesGraph, err := aws.InfraService.FetchByType(cloud.Instance)
 		exitOn(err)
 
 		a := graph.Alias(instanceID)
-		if id, ok := a.ResolveToId(instancesGraph, graph.Instance); ok {
+		if id, ok := a.ResolveToId(instancesGraph, cloud.Instance); ok {
 			instanceID = id
 		}
 
@@ -98,7 +99,7 @@ var sshCmd = &cobra.Command{
 }
 
 func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string) (*console.Credentials, error) {
-	inst, err := g.GetResource(graph.Instance, instanceID)
+	inst, err := g.GetResource(cloud.Instance, instanceID)
 	if err != nil {
 		return nil, err
 	}

@@ -21,48 +21,6 @@ import (
 	"net"
 )
 
-const (
-	Region ResourceType = "region"
-	//infra
-	Vpc              ResourceType = "vpc"
-	Subnet           ResourceType = "subnet"
-	Image            ResourceType = "image"
-	SecurityGroup    ResourceType = "securitygroup"
-	AvailabilityZone ResourceType = "availabilityzone"
-	Keypair          ResourceType = "keypair"
-	Volume           ResourceType = "volume"
-	Instance         ResourceType = "instance"
-	InternetGateway  ResourceType = "internetgateway"
-	RouteTable       ResourceType = "routetable"
-
-	//loadbalancer
-	LoadBalancer ResourceType = "loadbalancer"
-	TargetGroup  ResourceType = "targetgroup"
-	Listener     ResourceType = "listener"
-
-	//access
-	User   ResourceType = "user"
-	Role   ResourceType = "role"
-	Group  ResourceType = "group"
-	Policy ResourceType = "policy"
-
-	//storage
-	Bucket ResourceType = "bucket"
-	Object ResourceType = "storageobject"
-	Acl    ResourceType = "storageacl"
-
-	//notification
-	Subscription ResourceType = "subscription"
-	Topic        ResourceType = "topic"
-
-	//queue
-	Queue ResourceType = "queue"
-
-	//dns
-	Zone   ResourceType = "zone"
-	Record ResourceType = "record"
-)
-
 type FirewallRule struct {
 	PortRange PortRange
 	Protocol  string
@@ -125,8 +83,4 @@ type ResourceType string
 
 func (r ResourceType) String() string {
 	return string(r)
-}
-
-func (r ResourceType) ToRDFString() string {
-	return "/" + r.String()
 }

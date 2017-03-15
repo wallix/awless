@@ -72,7 +72,7 @@ var showCmd = &cobra.Command{
 		}
 
 		if !localGlobalFlag && config.GetAutosync() {
-			srv, err := cloud.GetServiceForType(resource.Type().String())
+			srv, err := cloud.GetServiceForType(resource.Type())
 			exitOn(err)
 			logger.Verbosef("syncing service for %s type", resource.Type())
 			if _, err = sync.DefaultSyncer.Sync(srv); err != nil {
@@ -170,7 +170,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 		return nil, nil
 	case 1:
 		res := resources[0]
-		return res, sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[res.Type().String()])
+		return res, sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[res.Type()])
 	default:
 		var all []string
 		for _, res := range resources {

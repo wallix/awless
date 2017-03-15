@@ -25,6 +25,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
 
@@ -35,7 +36,7 @@ const (
 )
 
 type funcBuilder struct {
-	parent                              graph.ResourceType
+	parent                              string
 	fieldName, listName, stringListName string
 	relation                            int
 }
@@ -44,51 +45,51 @@ type addParentFn func(*graph.Graph, interface{}) error
 
 var addParentsFns = map[string][]addParentFn{
 	// Infra
-	graph.Subnet.String(): {
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
+	cloud.Subnet: {
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 	},
-	graph.Instance.String(): {
-		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId"}.build(),
-		funcBuilder{parent: graph.SecurityGroup, fieldName: "GroupId", listName: "SecurityGroups", relation: APPLIES_ON}.build(),
-		funcBuilder{parent: graph.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
+	cloud.Instance: {
+		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId"}.build(),
+		funcBuilder{parent: cloud.SecurityGroup, fieldName: "GroupId", listName: "SecurityGroups", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
 	},
-	graph.SecurityGroup.String(): {
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
+	cloud.SecurityGroup: {
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 	},
-	graph.InternetGateway.String(): {
+	cloud.InternetGateway: {
 		addRegionParent,
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId", listName: "Attachments", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
-	graph.RouteTable.String(): {
-		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "Associations", relation: DEPENDING_ON}.build(),
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
+	cloud.RouteTable: {
+		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", listName: "Associations", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 	},
-	graph.Volume.String(): {
-		funcBuilder{parent: graph.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
-		funcBuilder{parent: graph.Instance, fieldName: "InstanceId", listName: "Attachments", relation: DEPENDING_ON}.build(),
+	cloud.Volume: {
+		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
+		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
-	graph.LoadBalancer.String(): {
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
-		funcBuilder{parent: graph.Subnet, fieldName: "SubnetId", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
-		funcBuilder{parent: graph.AvailabilityZone, fieldName: "ZoneName", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
-		funcBuilder{parent: graph.SecurityGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
+	cloud.LoadBalancer: {
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
+		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "ZoneName", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.SecurityGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
 	},
-	graph.Listener.String(): {
-		funcBuilder{parent: graph.LoadBalancer, fieldName: "LoadBalancerArn"}.build(),
+	cloud.Listener: {
+		funcBuilder{parent: cloud.LoadBalancer, fieldName: "LoadBalancerArn"}.build(),
 	},
-	graph.TargetGroup.String(): {
-		funcBuilder{parent: graph.Vpc, fieldName: "VpcId"}.build(),
-		funcBuilder{parent: graph.LoadBalancer, stringListName: "LoadBalancerArns", relation: APPLIES_ON}.build(),
+	cloud.TargetGroup: {
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
+		funcBuilder{parent: cloud.LoadBalancer, stringListName: "LoadBalancerArns", relation: APPLIES_ON}.build(),
 		fetchTargetsAndAddRelations,
 	},
-	graph.Vpc.String():              {addRegionParent},
-	graph.AvailabilityZone.String(): {addRegionParent},
-	graph.Keypair.String():          {addRegionParent},
-	graph.User.String():             {addRegionParent, userAddGroupsRelations, addManagedPoliciesRelations},
-	graph.Role.String():             {addRegionParent, addManagedPoliciesRelations},
-	graph.Group.String():            {addRegionParent, addManagedPoliciesRelations},
-	graph.Policy.String():           {addRegionParent},
-	graph.Bucket.String():           {addRegionParent},
+	cloud.Vpc:              {addRegionParent},
+	cloud.AvailabilityZone: {addRegionParent},
+	cloud.Keypair:          {addRegionParent},
+	cloud.User:             {addRegionParent, userAddGroupsRelations, addManagedPoliciesRelations},
+	cloud.Role:             {addRegionParent, addManagedPoliciesRelations},
+	cloud.Group:            {addRegionParent, addManagedPoliciesRelations},
+	cloud.Policy:           {addRegionParent},
+	cloud.Bucket:           {addRegionParent},
 }
 
 func (fb funcBuilder) build() addParentFn {
@@ -253,12 +254,12 @@ func addRelation(g *graph.Graph, first, other *graph.Resource, relation int) err
 }
 
 func addRegionParent(g *graph.Graph, i interface{}) error {
-	resources, err := g.GetAllResources(graph.Region)
+	resources, err := g.GetAllResources(cloud.Region)
 	if err != nil {
 		return err
 	}
 	if len(resources) != 1 {
-		return fmt.Errorf("aws fetch: expect exactly one region in graph, but got %d", len(resources))
+		return fmt.Errorf("aws fetch: expect exactly one region in cloud. but got %d", len(resources))
 	}
 	regionN := resources[0]
 	res, err := initResource(i)
@@ -294,12 +295,12 @@ func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
 
 	for _, policy := range policies {
 		a := graph.Alias(awssdk.StringValue(policy.PolicyName))
-		pid, ok := a.ResolveToId(g, graph.Policy)
+		pid, ok := a.ResolveToId(g, cloud.Policy)
 		if !ok {
 			fmt.Fprintf(os.Stderr, "add parent to '%s/%s': unknown policy named '%s'. Ignoring it.\n", res.Type(), res.Id(), awssdk.StringValue(policy.PolicyName))
 			return nil
 		}
-		parent, err := g.GetResource(graph.Policy, pid)
+		parent, err := g.GetResource(cloud.Policy, pid)
 		if err != nil {
 			return err
 		}
@@ -319,7 +320,7 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 	}
 
 	for _, group := range user.GroupList {
-		parent, err := g.GetResource(graph.Group, awssdk.StringValue(group))
+		parent, err := g.GetResource(cloud.Group, awssdk.StringValue(group))
 		if err != nil {
 			return err
 		}
@@ -344,7 +345,7 @@ func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
 	}
 
 	for _, t := range targets.TargetHealthDescriptions {
-		n, err := g.GetResource(graph.Instance, awssdk.StringValue(t.Target.Id))
+		n, err := g.GetResource(cloud.Instance, awssdk.StringValue(t.Target.Id))
 		if err != nil {
 			return err
 		}

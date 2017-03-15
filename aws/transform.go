@@ -35,6 +35,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
 
@@ -43,59 +44,59 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	switch ss := source.(type) {
 	// EC2
 	case *ec2.Instance:
-		res = graph.InitResource(awssdk.StringValue(ss.InstanceId), graph.Instance)
+		res = graph.InitResource(awssdk.StringValue(ss.InstanceId), cloud.Instance)
 	case *ec2.Vpc:
-		res = graph.InitResource(awssdk.StringValue(ss.VpcId), graph.Vpc)
+		res = graph.InitResource(awssdk.StringValue(ss.VpcId), cloud.Vpc)
 	case *ec2.Subnet:
-		res = graph.InitResource(awssdk.StringValue(ss.SubnetId), graph.Subnet)
+		res = graph.InitResource(awssdk.StringValue(ss.SubnetId), cloud.Subnet)
 	case *ec2.SecurityGroup:
-		res = graph.InitResource(awssdk.StringValue(ss.GroupId), graph.SecurityGroup)
+		res = graph.InitResource(awssdk.StringValue(ss.GroupId), cloud.SecurityGroup)
 	case *ec2.KeyPairInfo:
-		res = graph.InitResource(awssdk.StringValue(ss.KeyName), graph.Keypair)
+		res = graph.InitResource(awssdk.StringValue(ss.KeyName), cloud.Keypair)
 	case *ec2.Volume:
-		res = graph.InitResource(awssdk.StringValue(ss.VolumeId), graph.Volume)
+		res = graph.InitResource(awssdk.StringValue(ss.VolumeId), cloud.Volume)
 	case *ec2.InternetGateway:
-		res = graph.InitResource(awssdk.StringValue(ss.InternetGatewayId), graph.InternetGateway)
+		res = graph.InitResource(awssdk.StringValue(ss.InternetGatewayId), cloud.InternetGateway)
 	case *ec2.RouteTable:
-		res = graph.InitResource(awssdk.StringValue(ss.RouteTableId), graph.RouteTable)
+		res = graph.InitResource(awssdk.StringValue(ss.RouteTableId), cloud.RouteTable)
 	case *ec2.AvailabilityZone:
-		res = graph.InitResource(awssdk.StringValue(ss.ZoneName), graph.AvailabilityZone)
+		res = graph.InitResource(awssdk.StringValue(ss.ZoneName), cloud.AvailabilityZone)
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
-		res = graph.InitResource(awssdk.StringValue(ss.LoadBalancerArn), graph.LoadBalancer)
+		res = graph.InitResource(awssdk.StringValue(ss.LoadBalancerArn), cloud.LoadBalancer)
 	case *elbv2.TargetGroup:
-		res = graph.InitResource(awssdk.StringValue(ss.TargetGroupArn), graph.TargetGroup)
+		res = graph.InitResource(awssdk.StringValue(ss.TargetGroupArn), cloud.TargetGroup)
 	case *elbv2.Listener:
-		res = graph.InitResource(awssdk.StringValue(ss.ListenerArn), graph.Listener)
+		res = graph.InitResource(awssdk.StringValue(ss.ListenerArn), cloud.Listener)
 	// IAM
 	case *iam.User:
-		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
+		res = graph.InitResource(awssdk.StringValue(ss.UserId), cloud.User)
 	case *iam.UserDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.UserId), graph.User)
+		res = graph.InitResource(awssdk.StringValue(ss.UserId), cloud.User)
 	case *iam.RoleDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.RoleId), graph.Role)
+		res = graph.InitResource(awssdk.StringValue(ss.RoleId), cloud.Role)
 	case *iam.GroupDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.GroupId), graph.Group)
+		res = graph.InitResource(awssdk.StringValue(ss.GroupId), cloud.Group)
 	case *iam.Policy:
-		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), graph.Policy)
+		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), cloud.Policy)
 	case *iam.ManagedPolicyDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), graph.Policy)
+		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), cloud.Policy)
 	// S3
 	case *s3.Bucket:
-		res = graph.InitResource(awssdk.StringValue(ss.Name), graph.Bucket)
+		res = graph.InitResource(awssdk.StringValue(ss.Name), cloud.Bucket)
 	case *s3.Object:
-		res = graph.InitResource(awssdk.StringValue(ss.Key), graph.Object)
+		res = graph.InitResource(awssdk.StringValue(ss.Key), cloud.Object)
 	//SNS
 	case *sns.Subscription:
-		res = graph.InitResource(awssdk.StringValue(ss.Endpoint), graph.Subscription)
+		res = graph.InitResource(awssdk.StringValue(ss.Endpoint), cloud.Subscription)
 	case *sns.Topic:
-		res = graph.InitResource(awssdk.StringValue(ss.TopicArn), graph.Topic)
+		res = graph.InitResource(awssdk.StringValue(ss.TopicArn), cloud.Topic)
 		// DNS
 	case *route53.HostedZone:
-		res = graph.InitResource(awssdk.StringValue(ss.Id), graph.Zone)
+		res = graph.InitResource(awssdk.StringValue(ss.Id), cloud.Zone)
 	case *route53.ResourceRecordSet:
 		id := hashFields(awssdk.StringValue(ss.Name), awssdk.StringValue(ss.Type))
-		res = graph.InitResource(id, graph.Record)
+		res = graph.InitResource(id, cloud.Record)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}

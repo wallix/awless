@@ -49,7 +49,7 @@ type Builder struct {
 	filters    []string
 	headers    []ColumnDefinition
 	format     string
-	rdfType    graph.ResourceType
+	rdfType    string
 	sort       []int
 	maxwidth   int
 	dataSource interface{}
@@ -233,7 +233,7 @@ func WithMaxWidth(maxwidth int) optsFn {
 	}
 }
 
-func WithRdfType(rdfType graph.ResourceType) optsFn {
+func WithRdfType(rdfType string) optsFn {
 	return func(b *Builder) *Builder {
 		b.rdfType = rdfType
 		return b
@@ -252,7 +252,7 @@ type table [][]interface{}
 type fromGraphDisplayer struct {
 	sorter
 	g        *graph.Graph
-	rdfType  graph.ResourceType
+	rdfType  string
 	headers  []ColumnDefinition
 	maxwidth int
 }
@@ -462,7 +462,8 @@ type porcelainDisplayer struct {
 }
 
 func (d *porcelainDisplayer) Print(w io.Writer) error {
-	var types []graph.ResourceType
+	var types []string
+
 	if d.rdfType == "" {
 		for t := range DefaultsColumnDefinitions {
 			types = append(types, t)
@@ -532,7 +533,7 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 					header = &StringColumnDefinition{Prop: prop}
 				}
 				var row [4]interface{}
-				row[0] = t.String()
+				row[0] = t
 				row[1] = nameOrID(res)
 				row[2] = header.title(false)
 				row[3] = header.format(val)
@@ -579,7 +580,7 @@ func (d *multiResourcesJSONDisplayer) Print(w io.Writer) error {
 			props = append(props, res.Properties)
 		}
 		if len(resources) > 0 {
-			all[cloud.PluralizeResource(t.String())] = props
+			all[cloud.PluralizeResource(t)] = props
 		}
 	}
 
@@ -611,7 +612,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
-				res.Type().String(), color.New(color.FgRed).SprintFunc()("- " + nameOrID(res)), "", "",
+				res.Type(), color.New(color.FgRed).SprintFunc()("- " + nameOrID(res)), "", "",
 			})
 		default:
 			fromCommons[res.Id()] = res
@@ -627,7 +628,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		switch res.Meta["diff"] {
 		case "extra":
 			values = append(values, []interface{}{
-				res.Type().String(), color.New(color.FgGreen).SprintFunc()("+ " + nameOrID(res)), "", "",
+				res.Type(), color.New(color.FgGreen).SprintFunc()("+ " + nameOrID(res)), "", "",
 			})
 		default:
 			toCommons[res.Id()] = res
@@ -640,7 +641,7 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 	}
 
 	for _, common := range fromCommons {
-		resType := common.Type().String()
+		resType := common.Type()
 		naming := nameOrID(common)
 
 		if rem, ok := toCommons[common.Id()]; ok {

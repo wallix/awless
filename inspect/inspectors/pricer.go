@@ -27,6 +27,7 @@ import (
 	"sync"
 	"text/tabwriter"
 
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
 
@@ -47,7 +48,7 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 		return err
 	}
 
-	instances, err := g.GetAllResources(graph.Instance)
+	instances, err := g.GetAllResources(cloud.Instance)
 	if err != nil {
 		return err
 	}
@@ -136,7 +137,7 @@ func fetchPrice(instType, region string) (float64, error) {
 }
 
 func getRegion(g *graph.Graph) (string, error) {
-	all, err := g.GetAllResources(graph.ResourceType("region"))
+	all, err := g.GetAllResources("region")
 	if err != nil {
 		return "", err
 	}

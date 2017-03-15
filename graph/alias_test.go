@@ -38,14 +38,14 @@ func TestResourceNameToId(t *testing.T) {
 
 	tcases := []struct {
 		name         string
-		resourceType ResourceType
+		resourceType string
 		expectID     string
 		ok           bool
 	}{
-		{name: "redis", resourceType: Instance, expectID: "inst_1", ok: true},
-		{name: "redis2", resourceType: Instance, expectID: "inst_2", ok: true},
-		{name: "mongo", resourceType: Instance, expectID: "inst_3", ok: true},
-		{name: "mongo", resourceType: Subnet, expectID: "subnet_1", ok: true},
+		{name: "redis", resourceType: "instance", expectID: "inst_1", ok: true},
+		{name: "redis2", resourceType: "instance", expectID: "inst_2", ok: true},
+		{name: "mongo", resourceType: "instance", expectID: "inst_3", ok: true},
+		{name: "mongo", resourceType: "subnet", expectID: "subnet_1", ok: true},
 		{name: "nothere", expectID: "", ok: false},
 	}
 	for _, tcase := range tcases {

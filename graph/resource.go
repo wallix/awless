@@ -31,19 +31,18 @@ import (
 )
 
 type Resource struct {
-	kind       ResourceType
-	id         string
+	kind, id string
+
 	Properties Properties
 	Meta       Properties
 }
 
-func InitResource(id string, kind ResourceType) *Resource {
+func InitResource(id string, kind string) *Resource {
 	return &Resource{id: id, kind: kind, Properties: make(Properties), Meta: make(Properties)}
 }
 
-func newResourceType(n *node.Node) ResourceType {
-	typ := strings.TrimPrefix(n.Type().String(), "/")
-	return ResourceType(typ)
+func newResourceType(n *node.Node) string {
+	return strings.TrimPrefix(n.Type().String(), "/")
 }
 
 func (res *Resource) String() string {
@@ -59,7 +58,7 @@ func (res *Resource) String() string {
 	return fmt.Sprintf("%s[%s]", identifier, res.Type())
 }
 
-func (res *Resource) Type() ResourceType {
+func (res *Resource) Type() string {
 	return res.kind
 }
 
@@ -79,7 +78,7 @@ func (res *Resource) Same(other *Resource) bool {
 }
 
 func (res *Resource) toRDFNode() (*node.Node, error) {
-	return node.NewNodeFromStrings(res.kind.ToRDFString(), res.id)
+	return node.NewNodeFromStrings("/"+res.kind, res.id)
 }
 
 func (res *Resource) marshalRDF() ([]*triple.Triple, error) {
@@ -89,7 +88,7 @@ func (res *Resource) marshalRDF() ([]*triple.Triple, error) {
 		return triples, err
 	}
 	var lit *literal.Literal
-	if lit, err = literal.DefaultBuilder().Build(literal.Text, res.kind.ToRDFString()); err != nil {
+	if lit, err = literal.DefaultBuilder().Build(literal.Text, "/"+res.kind); err != nil {
 		return triples, err
 	}
 	t, err := triple.New(n, rdf.HasTypePredicate, triple.NewLiteralObject(lit))
