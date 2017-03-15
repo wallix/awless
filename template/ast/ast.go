@@ -74,7 +74,7 @@ func (n *CommandNode) Equal(n2 Node) bool {
 	return reflect.DeepEqual(n, n2)
 }
 
-func (s *Statement) clone() *Statement {
+func (s *Statement) Clone() *Statement {
 	newStat := &Statement{}
 	newStat.Node = s.Node.clone()
 
@@ -185,7 +185,7 @@ func (n *CommandNode) ProcessRefs(fills map[string]interface{}) {
 func (a *AST) Clone() *AST {
 	clone := &AST{}
 	for _, stat := range a.Statements {
-		clone.Statements = append(clone.Statements, stat.clone())
+		clone.Statements = append(clone.Statements, stat.Clone())
 	}
 	return clone
 }

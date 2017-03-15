@@ -33,13 +33,15 @@ type Template struct {
 func (s *Template) Run(d driver.Driver) (*Template, error) {
 	vars := map[string]interface{}{}
 
-	current := &Template{AST: s.Clone()}
+	current := &Template{AST: &ast.AST{}}
 	current.ID = ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String()
 
-	for _, sts := range current.Statements {
-		switch sts.Node.(type) {
+	for _, sts := range s.Statements {
+		clone := sts.Clone()
+		current.Statements = append(current.Statements, clone)
+		switch clone.Node.(type) {
 		case *ast.CommandNode:
-			cmd := sts.Node.(*ast.CommandNode)
+			cmd := clone.Node.(*ast.CommandNode)
 			fn, err := d.Lookup(cmd.Action, cmd.Entity)
 			if err != nil {
 				return current, err
@@ -50,8 +52,8 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 				return current, cmd.CmdErr
 			}
 		case *ast.DeclarationNode:
-			ident := sts.Node.(*ast.DeclarationNode).Ident
-			expr := sts.Node.(*ast.DeclarationNode).Expr
+			ident := clone.Node.(*ast.DeclarationNode).Ident
+			expr := clone.Node.(*ast.DeclarationNode).Expr
 			switch expr.(type) {
 			case *ast.CommandNode:
 				cmd := expr.(*ast.CommandNode)

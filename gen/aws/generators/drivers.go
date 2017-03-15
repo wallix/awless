@@ -154,6 +154,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -223,8 +224,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 			if len(tagsParams) > 1 {
 				_, err = d.Create_Tags_DryRun(tagsParams)
 				if err != nil {
-					d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: error: %s", err)
-					return nil, err
+					return nil, fmt.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: %s",err)
 				}
 			}
 			{{- end }}
@@ -233,8 +233,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 		}
 	}
 
-	d.logger.Errorf("dry run: {{ $def.Action }} {{ $def.Entity }} error: %s", err)
-	return nil, err
+	return nil, fmt.Errorf("dry run: {{ $def.Action }} {{ $def.Entity }}: %s", err)
 }
 {{ end }}
 // This function was auto generated
@@ -267,8 +266,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 	output, err = d.{{ $def.ApiMethod }}(input)
 	output = output
 	if err != nil {
-		d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }} error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("{{ $def.Action }} {{ $def.Entity }}: %s", err)
 	}
 	d.logger.ExtraVerbosef("{{ $service.Api }}.{{ $def.ApiMethod }} call took %s", time.Since(start))
 
@@ -285,8 +283,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 	if len(tagsParams) > 1 {
 		_, err := d.Create_Tags(tagsParams)
 		if err != nil {
-			d.logger.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: error: %s", err)
-			return nil, err
+			return nil, fmt.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: %s", err)
 		}
 	}
 	{{- end }}

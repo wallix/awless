@@ -137,8 +137,7 @@ func performCall(d *IamDriver, desc string, input interface{}, fn interface{}, s
 	results := fnVal.Call(values)
 
 	if err, ok := results[1].Interface().(error); ok && err != nil {
-		d.logger.Errorf("%s error: %s", desc, err)
-		return nil, err
+		return nil, fmt.Errorf("%s: %s", desc, err)
 	}
 
 	d.logger.ExtraVerbosef("%s call took %s", desc, time.Since(start))
@@ -155,16 +154,12 @@ func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interf
 
 	for _, val := range []string{"state", "id", "timeout"} {
 		if _, ok := params[val]; !ok {
-			err := fmt.Errorf("check instance error: missing required param '%s'", val)
-			d.logger.Errorf("%s", err)
-			return nil, err
+			return nil, fmt.Errorf("check instance: missing required param '%s'", val)
 		}
 	}
 
 	if _, ok := params["timeout"].(int); !ok {
-		err := errors.New("check instance error: timeout param is not int")
-		d.logger.Errorf("%s", err)
-		return nil, err
+		return nil, errors.New("check instance: timeout param is not int")
 	}
 
 	// Required params
@@ -182,9 +177,7 @@ func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interf
 			return id, nil
 		}
 	}
-
-	d.logger.Errorf("dry run: check instance error: %s", err)
-	return nil, err
+	return nil, fmt.Errorf("dry run: check instance: %s", err)
 }
 
 func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, error) {
@@ -204,8 +197,7 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 		case <-time.After(retry):
 			output, err := d.DescribeInstances(input)
 			if err != nil {
-				d.logger.Errorf("check instance error: %s", err)
-				return nil, err
+				return nil, fmt.Errorf("check instance: %s", err)
 			}
 
 			if res := output.Reservations; len(res) > 0 {
@@ -225,9 +217,7 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 			}
 
 		case <-timer.C:
-			err := fmt.Errorf("timeout of %s expired", timeout)
-			d.logger.Errorf("%s", err)
-			return nil, err
+			return nil, fmt.Errorf("timeout of %s expired", timeout)
 		}
 	}
 }
@@ -254,8 +244,7 @@ func (d *Ec2Driver) Create_Tags_DryRun(params map[string]interface{}) (interface
 		}
 	}
 
-	d.logger.Errorf("dry run: create tags error: %s", err)
-	return nil, err
+	return nil, fmt.Errorf("dry run: create tags: %s", err)
 }
 
 func (d *Ec2Driver) Create_Tags(params map[string]interface{}) (interface{}, error) {
@@ -272,8 +261,7 @@ func (d *Ec2Driver) Create_Tags(params map[string]interface{}) (interface{}, err
 	_, err := d.CreateTags(input)
 
 	if err != nil {
-		d.logger.Errorf("create tags error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("create tags: %s", err)
 	}
 	d.logger.Verbose("create tags done")
 
@@ -302,8 +290,7 @@ func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{
 		}
 	}
 
-	d.logger.Errorf("dry run: create tag error: %s", err)
-	return nil, err
+	return nil, fmt.Errorf("dry run: create tag: %s", err)
 }
 
 func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, error) {
@@ -321,8 +308,7 @@ func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, erro
 	var output *ec2.CreateTagsOutput
 	output, err = d.CreateTags(input)
 	if err != nil {
-		d.logger.Errorf("create tag error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("create tag: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.CreateTags call took %s", time.Since(start))
 	d.logger.Verbose("create tag done")
@@ -339,25 +325,19 @@ func (d *Ec2Driver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 	}
 
 	if params["name"] == "" {
-		err = fmt.Errorf("empty 'name' parameter")
-		d.logger.Errorf("dry run: saving private key error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("dry run: saving private key: empty 'name' parameter")
 	}
 
 	const keyDirEnv = "__AWLESS_KEYS_DIR"
 	keyDir := os.Getenv(keyDirEnv)
 	if keyDir == "" {
-		err = fmt.Errorf("empty env var '%s'", keyDirEnv)
-		d.logger.Errorf("dry run: saving private key error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("dry run: saving private key: empty env var '%s'", keyDirEnv)
 	}
 
 	privKeyPath := filepath.Join(keyDir, fmt.Sprint(params["name"])+".pem")
 	_, err = os.Stat(privKeyPath)
 	if err == nil {
-		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
-		d.logger.Errorf("dry run: saving private key error: %s", fileExist)
-		return nil, fileExist
+		return nil, fmt.Errorf("dry run: saving private key: file already exists at path: %s", privKeyPath)
 	}
 
 	return nil, nil
@@ -373,28 +353,23 @@ func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	d.logger.Info("Generating locally a RSA 4096 bits keypair...")
 	pub, priv, err := console.GenerateSSHKeyPair(4096)
 	if err != nil {
-		d.logger.Errorf("generating keypair error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("generating keypair: %s", err)
 	}
 	privKeyPath := filepath.Join(os.Getenv("__AWLESS_KEYS_DIR"), fmt.Sprint(params["name"])+".pem")
 	_, err = os.Stat(privKeyPath)
 	if err == nil {
-		fileExist := fmt.Errorf("file already exists at path: %s", privKeyPath)
-		d.logger.Errorf("saving private key error: %s", fileExist)
-		return nil, fileExist
+		return nil, fmt.Errorf("saving private key: file already exists at path: %s", privKeyPath)
 	}
 	err = ioutil.WriteFile(privKeyPath, priv, 0400)
 	if err != nil {
-		d.logger.Errorf("saving private key error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("saving private key: %s", err)
 	}
 	d.logger.Infof("4096 RSA keypair generated locally and stored in '%s'", privKeyPath)
 	input.PublicKeyMaterial = pub
 
 	output, err := d.ImportKeyPair(input)
 	if err != nil {
-		d.logger.Errorf("create keypair error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("create keypair: %s", err)
 	}
 	id := aws.StringValue(output.KeyName)
 	d.logger.Infof("create keypair '%s' done", id)
@@ -454,9 +429,7 @@ func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 			return nil, nil
 		}
 	}
-
-	d.logger.Errorf("dry run: update securitygroup error: %s", err)
-	return nil, err
+	return nil, fmt.Errorf("dry run: update securitygroup: %s", err)
 }
 
 func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interface{}, error) {
@@ -507,8 +480,7 @@ func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interfa
 		output, err = d.RevokeSecurityGroupEgress(ii)
 	}
 	if err != nil {
-		d.logger.Errorf("update securitygroup error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("update securitygroup: %s", err)
 	}
 
 	d.logger.Verbose("update securitygroup done")
@@ -565,8 +537,7 @@ func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interfac
 
 	output, err := d.PutObject(input)
 	if err != nil {
-		d.logger.Errorf("create storageobject error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("create storageobject: %s", err)
 	}
 
 	d.logger.Verbose("create storageobject done")
@@ -643,8 +614,7 @@ func (d *Route53Driver) Create_Record(params map[string]interface{}) (interface{
 	output, err = d.ChangeResourceRecordSets(input)
 	output = output
 	if err != nil {
-		d.logger.Errorf("create record error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("create record: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
 	d.logger.Verbose("create record done")
@@ -713,8 +683,7 @@ func (d *Route53Driver) Delete_Record(params map[string]interface{}) (interface{
 	output, err = d.ChangeResourceRecordSets(input)
 	output = output
 	if err != nil {
-		d.logger.Errorf("delete record error: %s", err)
-		return nil, err
+		return nil, fmt.Errorf("delete record: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
 	d.logger.Verbose("delete record done")
