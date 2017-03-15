@@ -151,11 +151,11 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 		newTempl, err := templ.Run(awsDriver)
 
 		fmt.Println()
-		fmt.Println("Report:")
-		printer := template.NewPrinter()
+		fmt.Println("Executed:")
+		printer := template.NewPrinter(os.Stdout)
 		printer.RenderKO = renderRedFn
 		printer.RenderOK = renderGreenFn
-		fmt.Println(printer.PrintReport(newTempl))
+		printer.Print(newTempl)
 
 		db, err, close := database.Current()
 		exitOn(err)
@@ -163,6 +163,7 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 
 		db.AddTemplate(newTempl)
 		if template.IsRevertible(newTempl) {
+			fmt.Println()
 			logger.Infof("Revert this template with `awless revert %s`", newTempl.ID)
 		}
 

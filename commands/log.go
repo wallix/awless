@@ -18,6 +18,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
@@ -54,12 +55,13 @@ var logCmd = &cobra.Command{
 		exitOn(err)
 
 		for _, templ := range all {
-			printer := template.NewPrinter()
+			printer := template.NewPrinter(os.Stdout)
 			printer.IncludeMeta = true
 			printer.RenderKO = renderRedFn
 			printer.RenderOK = renderGreenFn
 
-			fmt.Println(printer.PrintReport(templ))
+			printer.Print(templ)
+			fmt.Println()
 		}
 
 		return nil

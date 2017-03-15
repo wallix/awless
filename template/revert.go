@@ -73,6 +73,10 @@ func isRevertible(cmd *ast.CommandNode) bool {
 		return false
 	}
 
+	if cmd.Action == "check" {
+		return false
+	}
+
 	if v, ok := cmd.CmdResult.(string); ok && v != "" {
 		if cmd.Action == "create" || cmd.Action == "start" || cmd.Action == "stop" {
 			return true

@@ -18,7 +18,6 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
@@ -52,8 +51,6 @@ var revertCmd = &cobra.Command{
 
 		reverted, err := tpl.Revert()
 		exitOn(err)
-
-		fmt.Printf("%s\n", reverted)
 
 		env := template.NewEnv()
 		env.Log = logger.DefaultLogger

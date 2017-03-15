@@ -1,8 +1,9 @@
 package template
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
+	"io"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -15,20 +16,23 @@ type renderFunc func(...interface{}) string
 func renderNoop(s ...interface{}) string { return fmt.Sprint(s) }
 
 type Printer struct {
+	w io.Writer
+
 	IncludeMeta bool
 	RenderOK    renderFunc
 	RenderKO    renderFunc
 }
 
-func NewPrinter() *Printer {
+func NewPrinter(w io.Writer) *Printer {
 	return &Printer{
+		w:        w,
 		RenderOK: renderNoop,
 		RenderKO: renderNoop,
 	}
 }
 
-func (p *Printer) PrintReport(t *Template) string {
-	var buff bytes.Buffer
+func (p *Printer) Print(t *Template) {
+	buff := bufio.NewWriter(p.w)
 
 	if p.IncludeMeta {
 		buff.WriteString(fmt.Sprintf("Date: %s", parseULIDDate(t.ID)))
@@ -41,7 +45,7 @@ func (p *Printer) PrintReport(t *Template) string {
 		buff.WriteString("\n")
 	}
 
-	w := tabwriter.NewWriter(&buff, 0, 8, 0, '\t', 0)
+	tabw := tabwriter.NewWriter(buff, 0, 8, 0, '\t', 0)
 	for _, cmd := range t.CommandNodesIterator() {
 		var result, status string
 
@@ -64,18 +68,17 @@ func (p *Printer) PrintReport(t *Template) string {
 			line = fmt.Sprintf("    %s\t%s\t%s\t", p.RenderOK(status), exec, result)
 		}
 
-		fmt.Fprintln(w, line)
+		fmt.Fprintln(tabw, line)
 		if cmd.CmdErr != nil {
 			for _, err := range formatMultiLineErrMsg(cmd.CmdErr.Error()) {
-				fmt.Fprintf(w, "%s\t%s\n", "", err)
+				fmt.Fprintf(tabw, "%s\t%s\n", "", err)
 			}
 		}
 
 	}
 
-	w.Flush()
-
-	return buff.String()
+	tabw.Flush()
+	buff.Flush()
 }
 
 func formatMultiLineErrMsg(msg string) []string {
