@@ -58,6 +58,7 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	sort.Sort(byCols{table: values, sortBy: []int{0}})
 
 	table := tablewriter.NewWriter(w)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"Property" + ascSymbol, "Value"})
 
 	for i := range values {

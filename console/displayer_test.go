@@ -140,13 +140,11 @@ func TestTabularDisplays(t *testing.T) {
 		WithRdfType("instance"),
 	).SetSource(g).Build()
 
-	expected = `+--------+--------+---------+-----------+-----------+
-|  ID ▲  |  NAME  |  STATE  |   TYPE    | PUBLIC IP |
-+--------+--------+---------+-----------+-----------+
+	expected = `|  ID ▲  |  NAME  |  STATE  |   TYPE    | PUBLIC IP |
+|--------|--------|---------|-----------|-----------|
 | inst_1 | redis  | running | t2.micro  | 1.2.3.4   |
 | inst_2 | django | stopped | t2.medium |           |
 | inst_3 | apache | running | t2.xlarge |           |
-+--------+--------+---------+-----------+-----------+
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -162,13 +160,11 @@ func TestTabularDisplays(t *testing.T) {
 		WithSortBy("state", "id"),
 	).SetSource(g).Build()
 
-	expected = `+--------+--------+---------+-----------+-----------+
-|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
-+--------+--------+---------+-----------+-----------+
+	expected = `|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
+|--------|--------|---------|-----------|-----------|
 | inst_1 | redis  | running | t2.micro  | 1.2.3.4   |
 | inst_3 | apache | running | t2.xlarge |           |
 | inst_2 | django | stopped | t2.medium |           |
-+--------+--------+---------+-----------+-----------+
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -184,13 +180,11 @@ func TestTabularDisplays(t *testing.T) {
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
-	expected = `+--------+--------+---------+-----------+-----------+
-|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
-+--------+--------+---------+-----------+-----------+
+	expected = `|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
+|--------|--------|---------|-----------|-----------|
 | inst_3 | apache | running | t2.xlarge |           |
 | inst_1 | redis  | running | t2.micro  | 1.2.3.4   |
 | inst_2 | django | stopped | t2.medium |           |
-+--------+--------+---------+-----------+-----------+
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -234,9 +228,8 @@ func TestMultiResourcesDisplays(t *testing.T) {
 		WithFormat("table"),
 	).SetSource(g).Build()
 
-	expected := `+----------+-----------+-----------+-----------+
-|  TYPE ▲  |  NAME/ID  | PROPERTY  |   VALUE   |
-+----------+-----------+-----------+-----------+
+	expected := `|  TYPE ▲  |  NAME/ID  | PROPERTY  |   VALUE   |
+|----------|-----------|-----------|-----------|
 | instance | apache    | Id        | inst_3    |
 |          |           | Name      | apache    |
 |          |           | State     | running   |
@@ -259,7 +252,6 @@ func TestMultiResourcesDisplays(t *testing.T) {
 |          |           | Name      | my_vpc_2  |
 |          | vpc_1     | Id        | vpc_1     |
 |          |           | NewProp   | my_value  |
-+----------+-----------+-----------+-----------+
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -314,9 +306,8 @@ func TestDiffDisplay(t *testing.T) {
 		WithRootNode(rootNode),
 	).SetSource(diff).Build()
 
-	expected := `+----------+--------------+----------+------------+
-|  TYPE ▲  |   NAME/ID    | PROPERTY |   VALUE    |
-+----------+--------------+----------+------------+
+	expected := `|  TYPE ▲  |   NAME/ID    | PROPERTY |   VALUE    |
+|----------|--------------|----------|------------|
 | instance | + inst_4     |          |            |
 |          | + inst_5     |          |            |
 |          | + inst_6     |          |            |
@@ -325,7 +316,6 @@ func TestDiffDisplay(t *testing.T) {
 |          |              |          | - inst_1   |
 | subnet   | + new_subnet |          |            |
 | vpc      | vpc_1        | NewProp  | - my_value |
-+----------+--------------+----------+------------+
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -389,13 +379,11 @@ func TestDateLists(t *testing.T) {
 		WithRdfType("user"),
 	).SetSource(g).Build()
 
-	expected := `+-------+---------------+----------------------+
-| ID ▲  |     NAME      | PASSWORDLASTUSEDDATE |
-+-------+---------------+----------------------+
+	expected := `| ID ▲  |     NAME      | PASSWORDLASTUSEDDATE |
+|-------|---------------|----------------------|
 | user1 | my_username_1 |                      |
 | user2 | my_username_2 | 12/22/16 11:13       |
 | user3 | my_username_3 | 12/10/16 08:35       |
-+-------+---------------+----------------------+
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -411,13 +399,11 @@ func TestDateLists(t *testing.T) {
 		WithSortBy("passwordlastuseddate"),
 	).SetSource(g).Build()
 
-	expected = `+-------+---------------+------------------------+
-|  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
-+-------+---------------+------------------------+
+	expected = `|  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
+|-------|---------------|------------------------|
 | user1 | my_username_1 |                        |
 | user3 | my_username_3 | 12/10/16 08:35         |
 | user2 | my_username_2 | 12/22/16 11:13         |
-+-------+---------------+------------------------+
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -444,13 +430,11 @@ func TestMaxWidth(t *testing.T) {
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
-	expected := `+--------+--------+---------+-----------+-----------+
-|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
-+--------+--------+---------+-----------+-----------+
+	expected := `|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
+|--------|--------|---------|-----------|-----------|
 | inst_3 | apache | running | t2.xlarge |           |
 | inst_1 | redis  | running | t2.micro  | 1.2.3.4   |
 | inst_2 | django | stopped | t2.medium |           |
-+--------+--------+---------+-----------+-----------+
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -474,13 +458,11 @@ func TestMaxWidth(t *testing.T) {
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
-	expected = `+------+--------+---------+--------+-----------+
-|  ID  |  NAME  | STATE ▲ |  TYPE  | PUBLIC IP |
-+------+--------+---------+--------+-----------+
+	expected = `|  ID  |  NAME  | STATE ▲ |  TYPE  | PUBLIC IP |
+|------|--------|---------|--------|-----------|
 | i... | apache | running | ...rge |           |
 | i... | redis  | running | ...cro | 1.2.3.4   |
 | i... | django | stopped | ...ium |           |
-+------+--------+---------+--------+-----------+
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -504,13 +486,11 @@ func TestMaxWidth(t *testing.T) {
 		WithSortBy("s", "n"),
 	).SetSource(g).Build()
 
-	expected = `+-------+-------+-------+-------+-------+
-|   I   |   N   |  S ▲  |   T   |   P   |
-+-------+-------+-------+-------+-------+
+	expected = `|   I   |   N   |  S ▲  |   T   |   P   |
+|-------|-------|-------|-------|-------|
 | ..._3 | ...he | ...ng | ...ge |       |
 | ..._1 | redis | ...ng | ...ro | ....4 |
 | ..._2 | ...go | ...ed | ...um |       |
-+-------+-------+-------+-------+-------+
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -542,13 +522,11 @@ func TestMaxWidth(t *testing.T) {
 		WithMaxWidth(21),
 	).SetSource(g).Build()
 
-	expected = `+-------+-------+-------+
-|   I   |   N   |  S ▲  |
-+-------+-------+-------+
+	expected = `|   I   |   N   |  S ▲  |
+|-------|-------|-------|
 | ..._3 | ...he | ...ng |
 | ..._1 | redis | ...ng |
 | ..._2 | ...go | ...ed |
-+-------+-------+-------+
 Columns truncated to fit terminal: 'T', 'P'
 `
 	w.Reset()

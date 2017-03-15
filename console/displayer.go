@@ -428,6 +428,9 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	}
 
 	table := tablewriter.NewWriter(w)
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	var displayHeaders []string
 	for i, h := range columnsToDisplay {
 		displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
@@ -546,6 +549,8 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 	table := tablewriter.NewWriter(w)
 	table.SetAutoMergeCells(true)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
 	table.SetHeader([]string{"Type" + ascSymbol, "Name/Id", "Property", "Value"})
 
 	for i := range values {
@@ -665,6 +670,8 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 	table := tablewriter.NewWriter(w)
 	table.SetAutoMergeCells(true)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
 	table.SetHeader([]string{"Type" + ascSymbol, "Name/Id", "Property", "Value"})
 
 	for i := range values {

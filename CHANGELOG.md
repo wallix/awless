@@ -6,6 +6,7 @@
 - DNS: basic creation/deletion of Route53 zones and records `awless create/delete zone/record`
 - Infra: detach EBS volumes `awless detach volume`
 - Config: enable/disable the syncing of Route53 service `awless config set aws.dns.sync`
+- All listing with default format are now Markdown table compatible. 
 
 ## 0.0.18 [2017-03-13]
 
