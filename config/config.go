@@ -46,6 +46,7 @@ var configDefinitions = map[string]*Definition{
 	"aws.storage.storageobject.sync": {help: "Sync AWS S3/storageobject (when empty: true)", defaultValue: "false", parseParamFn: parseBool},
 	"aws.notification.sync":          {help: "Sync AWS SNS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.queue.sync":                 {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.dns.sync":                   {help: "Sync Route53 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	checkUpgradeFrequencyConfigKey:   {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
 }
 
