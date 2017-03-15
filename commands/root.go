@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
 )
@@ -28,6 +29,10 @@ var (
 	versionGlobalFlag      bool
 	awsRegionGlobalFlag    string
 	awsProfileGlobalFlag   string
+
+	renderGreenFn    = color.New(color.FgGreen).SprintFunc()
+	renderRedFn      = color.New(color.FgRed).SprintFunc()
+	renderCyanBoldFn = color.New(color.FgCyan, color.Bold).SprintFunc()
 )
 
 func init() {

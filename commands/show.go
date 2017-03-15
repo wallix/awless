@@ -33,8 +33,13 @@ import (
 	"github.com/wallix/awless/sync"
 )
 
+var (
+	listAllSiblingsFlag bool
+)
+
 func init() {
 	RootCmd.AddCommand(showCmd)
+	showCmd.Flags().BoolVar(&listAllSiblingsFlag, "siblings", false, "List all the resource's siblings")
 }
 
 var showCmd = &cobra.Command{
@@ -100,7 +105,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
 	exitOn(err)
 
-	fmt.Println("\nRelations:")
+	fmt.Println(renderCyanBoldFn("\nRelations:"))
 
 	var count int
 	for i := len(parents) - 1; i >= 0; i-- {
@@ -134,15 +139,15 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	var siblings []*graph.Resource
 	err = gph.Accept(&graph.SiblingsVisitor{From: resource, Each: graph.VisitorCollectFunc(&siblings)})
 	exitOn(err)
-	printResourceList("Siblings", siblings)
+	printResourceList(renderCyanBoldFn("Siblings"), siblings, "display all with flag --siblings")
 
 	appliedOn, err := gph.ListResourcesAppliedOn(resource)
 	exitOn(err)
-	printResourceList("Applied on", appliedOn)
+	printResourceList(renderCyanBoldFn("Applied on"), appliedOn)
 
 	dependingOn, err := gph.ListResourcesDependingOn(resource)
 	exitOn(err)
-	printResourceList("Depending on", dependingOn)
+	printResourceList(renderCyanBoldFn("Depending on"), dependingOn)
 }
 
 func runFullSync() {
@@ -223,9 +228,17 @@ func deprefix(s string) string {
 	return strings.TrimPrefix(s, "@")
 }
 
-func printResourceList(title string, list []*graph.Resource) {
+func printResourceList(title string, list []*graph.Resource, shortenListMsg ...string) {
 	all := graph.Resources(list).Map(func(r *graph.Resource) string { return r.String() })
 	if len(all) > 0 {
-		fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
+		if !listAllSiblingsFlag && len(shortenListMsg) > 0 {
+			max := 5
+			if max > len(all) {
+				max = len(all)
+			}
+			fmt.Printf("\n%s: %s, ... (%s)\n", title, strings.Join(all[0:max], ", "), shortenListMsg[0])
+		} else {
+			fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
+		}
 	}
 }

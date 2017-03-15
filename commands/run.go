@@ -25,7 +25,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	awscloud "github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/driver"
@@ -38,9 +37,6 @@ import (
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/driver"
 )
-
-var renderGreenFn = color.New(color.FgGreen).SprintFunc()
-var renderRedFn = color.New(color.FgRed).SprintFunc()
 
 func init() {
 	RootCmd.AddCommand(runCmd)
