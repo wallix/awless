@@ -59,10 +59,10 @@ func (te *Template) Revert() (*Template, error) {
 }
 
 func IsRevertible(t *Template) bool {
-	revertible := true
+	revertible := false
 	t.visitCommandNodes(func(cmd *ast.CommandNode) {
-		if !isRevertible(cmd) {
-			revertible = false
+		if isRevertible(cmd) {
+			revertible = true
 		}
 	})
 	return revertible
