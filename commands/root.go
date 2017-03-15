@@ -32,7 +32,7 @@ var (
 
 func init() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseGlobalFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
-	RootCmd.PersistentFlags().BoolVarP(&extraVerboseGlobalFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (i.e: debug) for all commands")
+	RootCmd.PersistentFlags().BoolVarP(&extraVerboseGlobalFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (including regular verbose) for all commands")
 	RootCmd.PersistentFlags().BoolVar(&localGlobalFlag, "local", false, "Work offline only with synced/local resources")
 	RootCmd.PersistentFlags().StringVar(&awsRegionGlobalFlag, "aws-region", "", "Overwrite AWS region")
 	RootCmd.PersistentFlags().StringVar(&awsProfileGlobalFlag, "aws-profile", "", "Overwrite AWS profile")
@@ -45,7 +45,7 @@ func init() {
 }
 
 var RootCmd = &cobra.Command{
-	Use:   "awless",
+	Use:   "awless COMMAND",
 	Short: "Manage  and explore your cloud",
 	Long:  "awless is a powerful CLI to explore, sync and manage your infrastructure",
 	BashCompletionFunction: bash_completion_func,
@@ -73,8 +73,7 @@ func ExecuteRoot() error {
 }
 
 const customRootUsage = `Usage:{{if .Runnable}}
-  {{if .HasAvailableFlags}}{{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
-  {{ .CommandPath}} [command]{{end}}{{if gt .Aliases 0}}
+  {{if .HasAvailableFlags}}{{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{if gt .Aliases 0}}
 
 Aliases:
   {{.NameAndAliases}}
