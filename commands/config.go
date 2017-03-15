@@ -28,8 +28,7 @@ var keysOnly bool
 
 func init() {
 	RootCmd.AddCommand(configCmd)
-	configCmd.AddCommand(configListCmd)
-	configListCmd.Flags().BoolVar(&keysOnly, "keys", false, "list only config keys")
+	configCmd.Flags().BoolVar(&keysOnly, "keys", false, "list only config keys")
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configUnsetCmd)
@@ -37,15 +36,10 @@ func init() {
 
 var configCmd = &cobra.Command{
 	Use:                "config",
-	Short:              "get, set, unset or list configuration values",
-	Example:            "  awless config set aws.region eu-west-1\n  awless config unset instance.count",
+	Short:              "get, set, unset configuration values",
+	Example:            "  awless config        # list all your config\n  awless config set aws.region eu-west-1\n  awless config unset instance.count",
 	PersistentPreRunE:  initAwlessEnvHook,
 	PersistentPostRunE: saveHistoryHook,
-}
-
-var configListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all configuration values",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if keysOnly {
