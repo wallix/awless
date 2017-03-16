@@ -15,15 +15,17 @@ echo "Setting region $REGION, ami $AMI"
 $BIN config set aws.region $REGION
 $BIN config set instance.image $AMI
 
-INSTANCE_NAME=awless-integration-test-`date +%s`
-KEY_NAME=awless-inttest-key
+SUFFIX=integ-test-`date +%s`
+INSTANCE_NAME=inst-$SUFFIX
+VPC_NAME=vpc-$SUFFIX
+KEY_NAME=awless-integ-test-key
 
 /bin/cat > $TMP_FILE <<EOF
-testvpc = create vpc cidr={vpc-cidr}
+testvpc = create vpc cidr={vpc-cidr} name=$VPC_NAME
 testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc
 testkeypair = create keypair name=$KEY_NAME
-testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} key=\$testkeypair
-create tag resource=\$testinstance key=Name value=$INSTANCE_NAME
+testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} key=\$testkeypair name=$INSTANCE_NAME
+create tag resource=\$testinstance key=Env value=Testing
 EOF
 
 $BIN -v run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e

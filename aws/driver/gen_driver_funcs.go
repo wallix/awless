@@ -51,12 +51,21 @@ func (d *Ec2Driver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 		return nil, err
 	}
 
+	// Extra params
+
 	_, err = d.CreateVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("vpc")
-			d.logger.Verbose("full dry run: create vpc ok")
+			// Extra param as tag
+			if v, ok := params["name"]; ok {
+				_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": v, "resource": id})
+				if err != nil {
+					return nil, fmt.Errorf("dry run: create vpc: adding tags: %s", err)
+				}
+			}
+			d.logger.Verbose("dry run: create vpc ok")
 			return id, nil
 		}
 	}
@@ -75,6 +84,8 @@ func (d *Ec2Driver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 		return nil, err
 	}
 
+	// Extra params
+
 	start := time.Now()
 	var output *ec2.CreateVpcOutput
 	output, err = d.CreateVpc(input)
@@ -84,8 +95,16 @@ func (d *Ec2Driver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 	}
 	d.logger.ExtraVerbosef("ec2.CreateVpc call took %s", time.Since(start))
 	id := aws.StringValue(output.Vpc.VpcId)
+	// Extra param as tag
+	if v, ok := params["name"]; ok {
+		_, err = d.Create_Tag(map[string]interface{}{"key": "Name", "value": v, "resource": id})
+		if err != nil {
+			return nil, fmt.Errorf("create vpc: adding tags: %s", err)
+		}
+	}
+
 	d.logger.Verbosef("create vpc '%s' done", id)
-	return aws.StringValue(output.Vpc.VpcId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -105,7 +124,7 @@ func (d *Ec2Driver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("vpc")
-			d.logger.Verbose("full dry run: delete vpc ok")
+			d.logger.Verbose("dry run: delete vpc ok")
 			return id, nil
 		}
 	}
@@ -165,17 +184,14 @@ func (d *Ec2Driver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("subnet")
-			tagsParams := map[string]interface{}{"resource": id}
+			// Extra param as tag
 			if v, ok := params["name"]; ok {
-				tagsParams["Name"] = v
-			}
-			if len(tagsParams) > 1 {
-				_, err = d.Create_Tags_DryRun(tagsParams)
+				_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": v, "resource": id})
 				if err != nil {
-					return nil, fmt.Errorf("create subnet: adding tags: %s", err)
+					return nil, fmt.Errorf("dry run: create subnet: adding tags: %s", err)
 				}
 			}
-			d.logger.Verbose("full dry run: create subnet ok")
+			d.logger.Verbose("dry run: create subnet ok")
 			return id, nil
 		}
 	}
@@ -215,18 +231,16 @@ func (d *Ec2Driver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	}
 	d.logger.ExtraVerbosef("ec2.CreateSubnet call took %s", time.Since(start))
 	id := aws.StringValue(output.Subnet.SubnetId)
-	tagsParams := map[string]interface{}{"resource": id}
+	// Extra param as tag
 	if v, ok := params["name"]; ok {
-		tagsParams["Name"] = v
-	}
-	if len(tagsParams) > 1 {
-		_, err := d.Create_Tags(tagsParams)
+		_, err = d.Create_Tag(map[string]interface{}{"key": "Name", "value": v, "resource": id})
 		if err != nil {
 			return nil, fmt.Errorf("create subnet: adding tags: %s", err)
 		}
 	}
+
 	d.logger.Verbosef("create subnet '%s' done", id)
-	return aws.StringValue(output.Subnet.SubnetId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -287,7 +301,7 @@ func (d *Ec2Driver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("subnet")
-			d.logger.Verbose("full dry run: delete subnet ok")
+			d.logger.Verbose("dry run: delete subnet ok")
 			return id, nil
 		}
 	}
@@ -383,17 +397,12 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
-			tagsParams := map[string]interface{}{"resource": id}
-			if v, ok := params["name"]; ok {
-				tagsParams["Name"] = v
+			// Required param as tag
+			_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
+			if err != nil {
+				return nil, fmt.Errorf("dry run: create instance: adding tags: %s", err)
 			}
-			if len(tagsParams) > 1 {
-				_, err = d.Create_Tags_DryRun(tagsParams)
-				if err != nil {
-					return nil, fmt.Errorf("create instance: adding tags: %s", err)
-				}
-			}
-			d.logger.Verbose("full dry run: create instance ok")
+			d.logger.Verbose("dry run: create instance ok")
 			return id, nil
 		}
 	}
@@ -469,18 +478,14 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 	}
 	d.logger.ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.Instances[0].InstanceId)
-	tagsParams := map[string]interface{}{"resource": id}
-	if v, ok := params["name"]; ok {
-		tagsParams["Name"] = v
+	// Required param as tag
+	_, err = d.Create_Tag(map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
+	if err != nil {
+		return nil, fmt.Errorf("create instance: adding tags: %s", err)
 	}
-	if len(tagsParams) > 1 {
-		_, err := d.Create_Tags(tagsParams)
-		if err != nil {
-			return nil, fmt.Errorf("create instance: adding tags: %s", err)
-		}
-	}
+
 	d.logger.Verbosef("create instance '%s' done", id)
-	return aws.StringValue(output.Instances[0].InstanceId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -520,7 +525,7 @@ func (d *Ec2Driver) Update_Instance_DryRun(params map[string]interface{}) (inter
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
-			d.logger.Verbose("full dry run: update instance ok")
+			d.logger.Verbose("dry run: update instance ok")
 			return id, nil
 		}
 	}
@@ -588,7 +593,7 @@ func (d *Ec2Driver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
-			d.logger.Verbose("full dry run: delete instance ok")
+			d.logger.Verbose("dry run: delete instance ok")
 			return id, nil
 		}
 	}
@@ -636,7 +641,7 @@ func (d *Ec2Driver) Start_Instance_DryRun(params map[string]interface{}) (interf
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
-			d.logger.Verbose("full dry run: start instance ok")
+			d.logger.Verbose("dry run: start instance ok")
 			return id, nil
 		}
 	}
@@ -664,8 +669,9 @@ func (d *Ec2Driver) Start_Instance(params map[string]interface{}) (interface{}, 
 	}
 	d.logger.ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StartingInstances[0].InstanceId)
+
 	d.logger.Verbosef("start instance '%s' done", id)
-	return aws.StringValue(output.StartingInstances[0].InstanceId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -685,7 +691,7 @@ func (d *Ec2Driver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
-			d.logger.Verbose("full dry run: stop instance ok")
+			d.logger.Verbose("dry run: stop instance ok")
 			return id, nil
 		}
 	}
@@ -713,8 +719,9 @@ func (d *Ec2Driver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	}
 	d.logger.ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
+
 	d.logger.Verbosef("stop instance '%s' done", id)
-	return aws.StringValue(output.StoppingInstances[0].InstanceId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -742,7 +749,7 @@ func (d *Ec2Driver) Create_Securitygroup_DryRun(params map[string]interface{}) (
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("securitygroup")
-			d.logger.Verbose("full dry run: create securitygroup ok")
+			d.logger.Verbose("dry run: create securitygroup ok")
 			return id, nil
 		}
 	}
@@ -778,8 +785,9 @@ func (d *Ec2Driver) Create_Securitygroup(params map[string]interface{}) (interfa
 	}
 	d.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.GroupId)
+
 	d.logger.Verbosef("create securitygroup '%s' done", id)
-	return aws.StringValue(output.GroupId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -799,7 +807,7 @@ func (d *Ec2Driver) Delete_Securitygroup_DryRun(params map[string]interface{}) (
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("securitygroup")
-			d.logger.Verbose("full dry run: delete securitygroup ok")
+			d.logger.Verbose("dry run: delete securitygroup ok")
 			return id, nil
 		}
 	}
@@ -851,7 +859,7 @@ func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
-			d.logger.Verbose("full dry run: create volume ok")
+			d.logger.Verbose("dry run: create volume ok")
 			return id, nil
 		}
 	}
@@ -883,8 +891,9 @@ func (d *Ec2Driver) Create_Volume(params map[string]interface{}) (interface{}, e
 	}
 	d.logger.ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
+
 	d.logger.Verbosef("create volume '%s' done", id)
-	return aws.StringValue(output.VolumeId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -904,7 +913,7 @@ func (d *Ec2Driver) Delete_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
-			d.logger.Verbose("full dry run: delete volume ok")
+			d.logger.Verbose("dry run: delete volume ok")
 			return id, nil
 		}
 	}
@@ -960,7 +969,7 @@ func (d *Ec2Driver) Attach_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
-			d.logger.Verbose("full dry run: attach volume ok")
+			d.logger.Verbose("dry run: attach volume ok")
 			return id, nil
 		}
 	}
@@ -996,8 +1005,9 @@ func (d *Ec2Driver) Attach_Volume(params map[string]interface{}) (interface{}, e
 	}
 	d.logger.ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
+
 	d.logger.Verbosef("attach volume '%s' done", id)
-	return aws.StringValue(output.VolumeId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1033,7 +1043,7 @@ func (d *Ec2Driver) Detach_Volume_DryRun(params map[string]interface{}) (interfa
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("volume")
-			d.logger.Verbose("full dry run: detach volume ok")
+			d.logger.Verbose("dry run: detach volume ok")
 			return id, nil
 		}
 	}
@@ -1077,8 +1087,9 @@ func (d *Ec2Driver) Detach_Volume(params map[string]interface{}) (interface{}, e
 	}
 	d.logger.ExtraVerbosef("ec2.DetachVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
+
 	d.logger.Verbosef("detach volume '%s' done", id)
-	return aws.StringValue(output.VolumeId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1092,7 +1103,7 @@ func (d *Ec2Driver) Create_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Verbose("full dry run: create internetgateway ok")
+			d.logger.Verbose("dry run: create internetgateway ok")
 			return id, nil
 		}
 	}
@@ -1114,8 +1125,9 @@ func (d *Ec2Driver) Create_Internetgateway(params map[string]interface{}) (inter
 	}
 	d.logger.ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
 	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
+
 	d.logger.Verbosef("create internetgateway '%s' done", id)
-	return aws.StringValue(output.InternetGateway.InternetGatewayId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1135,7 +1147,7 @@ func (d *Ec2Driver) Delete_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Verbose("full dry run: delete internetgateway ok")
+			d.logger.Verbose("dry run: delete internetgateway ok")
 			return id, nil
 		}
 	}
@@ -1187,7 +1199,7 @@ func (d *Ec2Driver) Attach_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Verbose("full dry run: attach internetgateway ok")
+			d.logger.Verbose("dry run: attach internetgateway ok")
 			return id, nil
 		}
 	}
@@ -1243,7 +1255,7 @@ func (d *Ec2Driver) Detach_Internetgateway_DryRun(params map[string]interface{})
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("internetgateway")
-			d.logger.Verbose("full dry run: detach internetgateway ok")
+			d.logger.Verbose("dry run: detach internetgateway ok")
 			return id, nil
 		}
 	}
@@ -1295,7 +1307,7 @@ func (d *Ec2Driver) Create_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
-			d.logger.Verbose("full dry run: create routetable ok")
+			d.logger.Verbose("dry run: create routetable ok")
 			return id, nil
 		}
 	}
@@ -1323,8 +1335,9 @@ func (d *Ec2Driver) Create_Routetable(params map[string]interface{}) (interface{
 	}
 	d.logger.ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.RouteTable.RouteTableId)
+
 	d.logger.Verbosef("create routetable '%s' done", id)
-	return aws.StringValue(output.RouteTable.RouteTableId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1344,7 +1357,7 @@ func (d *Ec2Driver) Delete_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
-			d.logger.Verbose("full dry run: delete routetable ok")
+			d.logger.Verbose("dry run: delete routetable ok")
 			return id, nil
 		}
 	}
@@ -1396,7 +1409,7 @@ func (d *Ec2Driver) Attach_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
-			d.logger.Verbose("full dry run: attach routetable ok")
+			d.logger.Verbose("dry run: attach routetable ok")
 			return id, nil
 		}
 	}
@@ -1428,8 +1441,9 @@ func (d *Ec2Driver) Attach_Routetable(params map[string]interface{}) (interface{
 	}
 	d.logger.ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.AssociationId)
+
 	d.logger.Verbosef("attach routetable '%s' done", id)
-	return aws.StringValue(output.AssociationId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1449,7 +1463,7 @@ func (d *Ec2Driver) Detach_Routetable_DryRun(params map[string]interface{}) (int
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("routetable")
-			d.logger.Verbose("full dry run: detach routetable ok")
+			d.logger.Verbose("dry run: detach routetable ok")
 			return id, nil
 		}
 	}
@@ -1505,7 +1519,7 @@ func (d *Ec2Driver) Create_Route_DryRun(params map[string]interface{}) (interfac
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("route")
-			d.logger.Verbose("full dry run: create route ok")
+			d.logger.Verbose("dry run: create route ok")
 			return id, nil
 		}
 	}
@@ -1565,7 +1579,7 @@ func (d *Ec2Driver) Delete_Route_DryRun(params map[string]interface{}) (interfac
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("route")
-			d.logger.Verbose("full dry run: delete route ok")
+			d.logger.Verbose("dry run: delete route ok")
 			return id, nil
 		}
 	}
@@ -1617,7 +1631,7 @@ func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("keypair")
-			d.logger.Verbose("full dry run: delete keypair ok")
+			d.logger.Verbose("dry run: delete keypair ok")
 			return id, nil
 		}
 	}
@@ -1706,8 +1720,9 @@ func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interf
 	}
 	d.logger.ExtraVerbosef("elbv2.CreateLoadBalancer call took %s", time.Since(start))
 	id := aws.StringValue(output.LoadBalancers[0].LoadBalancerArn)
+
 	d.logger.Verbosef("create loadbalancer '%s' done", id)
-	return aws.StringValue(output.LoadBalancers[0].LoadBalancerArn), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1819,8 +1834,9 @@ func (d *Elbv2Driver) Create_Listener(params map[string]interface{}) (interface{
 	}
 	d.logger.ExtraVerbosef("elbv2.CreateListener call took %s", time.Since(start))
 	id := aws.StringValue(output.Listeners[0].ListenerArn)
+
 	d.logger.Verbosef("create listener '%s' done", id)
-	return aws.StringValue(output.Listeners[0].ListenerArn), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -1960,8 +1976,9 @@ func (d *Elbv2Driver) Create_Targetgroup(params map[string]interface{}) (interfa
 	}
 	d.logger.ExtraVerbosef("elbv2.CreateTargetGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.TargetGroups[0].TargetGroupArn)
+
 	d.logger.Verbosef("create targetgroup '%s' done", id)
-	return aws.StringValue(output.TargetGroups[0].TargetGroupArn), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2027,8 +2044,9 @@ func (d *IamDriver) Create_User(params map[string]interface{}) (interface{}, err
 	}
 	d.logger.ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
 	id := aws.StringValue(output.User.UserId)
+
 	d.logger.Verbosef("create user '%s' done", id)
-	return aws.StringValue(output.User.UserId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2176,8 +2194,9 @@ func (d *IamDriver) Create_Group(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.Group.GroupId)
+
 	d.logger.Verbosef("create group '%s' done", id)
-	return aws.StringValue(output.Group.GroupId), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2243,8 +2262,9 @@ func (d *S3Driver) Create_Bucket(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
 	id := params["name"]
+
 	d.logger.Verbosef("create bucket '%s' done", id)
-	return params["name"], nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2351,8 +2371,9 @@ func (d *SnsDriver) Create_Topic(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
 	id := aws.StringValue(output.TopicArn)
+
 	d.logger.Verbosef("create topic '%s' done", id)
-	return aws.StringValue(output.TopicArn), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2434,8 +2455,9 @@ func (d *SnsDriver) Create_Subscription(params map[string]interface{}) (interfac
 	}
 	d.logger.ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
 	id := aws.StringValue(output.SubscriptionArn)
+
 	d.logger.Verbosef("create subscription '%s' done", id)
-	return aws.StringValue(output.SubscriptionArn), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2545,8 +2567,9 @@ func (d *SqsDriver) Create_Queue(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.ExtraVerbosef("sqs.CreateQueue call took %s", time.Since(start))
 	id := aws.StringValue(output.QueueUrl)
+
 	d.logger.Verbosef("create queue '%s' done", id)
-	return aws.StringValue(output.QueueUrl), nil
+	return id, nil
 }
 
 // This function was auto generated
@@ -2652,8 +2675,9 @@ func (d *Route53Driver) Create_Zone(params map[string]interface{}) (interface{},
 	}
 	d.logger.ExtraVerbosef("route53.CreateHostedZone call took %s", time.Since(start))
 	id := aws.StringValue(output.HostedZone.Id)
+
 	d.logger.Verbosef("create zone '%s' done", id)
-	return aws.StringValue(output.HostedZone.Id), nil
+	return id, nil
 }
 
 // This function was auto generated

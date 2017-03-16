@@ -173,7 +173,7 @@ func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interf
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("instance")
-			d.logger.Verbose("full dry run: check instance ok")
+			d.logger.Verbose("dry run: check instance ok")
 			return id, nil
 		}
 	}
@@ -222,52 +222,6 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 	}
 }
 
-func (d *Ec2Driver) Create_Tags_DryRun(params map[string]interface{}) (interface{}, error) {
-	input := &ec2.CreateTagsInput{}
-
-	input.DryRun = aws.Bool(true)
-	input.Resources = append(input.Resources, aws.String(fmt.Sprint(params["resource"])))
-
-	for k, v := range params {
-		if k == "resource" {
-			continue
-		}
-		input.Tags = append(input.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(fmt.Sprint(v))})
-	}
-	_, err := d.CreateTags(input)
-
-	if awsErr, ok := err.(awserr.Error); ok {
-		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			d.logger.Verbose("full dry run: create tags ok")
-			return nil, nil
-		}
-	}
-
-	return nil, fmt.Errorf("dry run: create tags: %s", err)
-}
-
-func (d *Ec2Driver) Create_Tags(params map[string]interface{}) (interface{}, error) {
-	input := &ec2.CreateTagsInput{}
-
-	input.Resources = append(input.Resources, aws.String(fmt.Sprint(params["resource"])))
-
-	for k, v := range params {
-		if k == "resource" {
-			continue
-		}
-		input.Tags = append(input.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(fmt.Sprint(v))})
-	}
-	_, err := d.CreateTags(input)
-
-	if err != nil {
-		return nil, fmt.Errorf("create tags: %s", err)
-	}
-	d.logger.Verbose("create tags done")
-
-	return nil, nil
-}
-
 func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 	input.DryRun = aws.Bool(true)
@@ -285,7 +239,7 @@ func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
 			id := fakeDryRunId("tag")
-			d.logger.Verbose("full dry run: create tag ok")
+			d.logger.Verbosef("dry run: create tag '%s=%s' ok", params["key"], params["value"])
 			return id, nil
 		}
 	}
@@ -311,7 +265,7 @@ func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, erro
 		return nil, fmt.Errorf("create tag: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.CreateTags call took %s", time.Since(start))
-	d.logger.Verbose("create tag done")
+	d.logger.Verbosef("create tag '%s=%s' on '%s' done", params["key"], params["value"], params["resource"])
 	return output, nil
 }
 
@@ -425,7 +379,7 @@ func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			d.logger.Verbose("full dry run: update securitygroup ok")
+			d.logger.Verbose("dry run: update securitygroup ok")
 			return nil, nil
 		}
 	}
@@ -751,6 +705,8 @@ func fakeDryRunId(entity string) string {
 		return fmt.Sprintf("i-%d", suffix)
 	case cloud.Subnet:
 		return fmt.Sprintf("subnet-%d", suffix)
+	case cloud.Vpc:
+		return fmt.Sprintf("vpc-%d", suffix)
 	case cloud.Volume:
 		return fmt.Sprintf("vol-%d", suffix)
 	case cloud.SecurityGroup:

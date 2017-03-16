@@ -21,12 +21,12 @@ import "github.com/wallix/awless/cloud"
 type param struct {
 	AwsField, AwsType string
 	TemplateName      string
+	AsAwsTag          bool
 }
 
 type driver struct {
 	RequiredParams                            []param
 	ExtraParams                               []param
-	TagsMapping                               map[string]string
 	Action, Entity                            string
 	Input, Output, ApiMethod, OutputExtractor string
 	DryRunUnsupported                         bool
@@ -49,6 +49,9 @@ var DriversDefs = []driversDef{
 				RequiredParams: []param{
 					{AwsField: "CidrBlock", TemplateName: "cidr", AwsType: "awsstr"},
 				},
+				ExtraParams: []param{
+					{AwsField: "Name", TemplateName: "name", AsAwsTag: true},
+				},
 			},
 			{
 				Action: "delete", Entity: cloud.Vpc, Input: "DeleteVpcInput", Output: "DeleteVpcOutput", ApiMethod: "DeleteVpc",
@@ -66,9 +69,7 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "AvailabilityZone", TemplateName: "zone", AwsType: "awsstr"},
-				},
-				TagsMapping: map[string]string{
-					"Name": "name",
+					{AwsField: "Name", TemplateName: "name", AsAwsTag: true},
 				},
 			},
 			{
@@ -96,6 +97,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "MinCount", TemplateName: "count", AwsType: "awsint64"},
 					{AwsField: "InstanceType", TemplateName: "type", AwsType: "awsstr"},
 					{AwsField: "SubnetId", TemplateName: "subnet", AwsType: "awsstr"},
+					{AwsField: "Name", TemplateName: "name", AsAwsTag: true},
 				},
 				ExtraParams: []param{
 					{AwsField: "KeyName", TemplateName: "key", AwsType: "awsstr"},
@@ -103,9 +105,6 @@ var DriversDefs = []driversDef{
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsstr"},
 					{AwsField: "SecurityGroupIds", TemplateName: "group", AwsType: "awsstringslice"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
-				},
-				TagsMapping: map[string]string{
-					"Name": "name",
 				},
 			},
 			{

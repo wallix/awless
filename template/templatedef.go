@@ -24,8 +24,8 @@ import (
 type LookupTemplateDefFunc func(key string) (TemplateDefinition, bool)
 
 type TemplateDefinition struct {
-	Action, Entity, Api                      string
-	RequiredParams, ExtraParams, TagsMapping []string
+	Action, Entity, Api         string
+	RequiredParams, ExtraParams []string
 }
 
 func (def TemplateDefinition) Name() string {
@@ -37,11 +37,7 @@ func (def TemplateDefinition) String() string {
 	for _, v := range def.Required() {
 		required = append(required, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
 	}
-	var tags []string
-	for _, v := range def.TagsMapping {
-		tags = append(tags, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
-	}
-	return fmt.Sprintf("%s %s %s %s", def.Action, def.Entity, strings.Join(required, " "), strings.Join(tags, " "))
+	return fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(required, " "))
 }
 
 func (def TemplateDefinition) GetTemplate() (*Template, error) {
@@ -53,5 +49,5 @@ func (def TemplateDefinition) Required() []string {
 }
 
 func (def TemplateDefinition) Extra() []string {
-	return append(def.ExtraParams, def.TagsMapping...)
+	return def.ExtraParams
 }

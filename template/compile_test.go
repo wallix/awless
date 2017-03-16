@@ -13,7 +13,6 @@ var defs = map[string]TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"image", "count", "count", "type", "subnet"},
 		ExtraParams:    []string{"key", "ip", "userdata", "group", "lock"},
-		TagsMapping:    []string{"name"},
 	},
 	"createkeypair": {
 		Action:         "create",
@@ -21,7 +20,6 @@ var defs = map[string]TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createtag": {
 		Action:         "create",
@@ -29,7 +27,6 @@ var defs = map[string]TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"resource", "key", "value"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 }
 

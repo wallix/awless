@@ -27,8 +27,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Entity:         "vpc",
 		Api:            "ec2",
 		RequiredParams: []string{"cidr"},
-		ExtraParams:    []string{},
-		TagsMapping:    []string{},
+		ExtraParams:    []string{"name"},
 	},
 	"deletevpc": {
 		Action:         "delete",
@@ -36,15 +35,13 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createsubnet": {
 		Action:         "create",
 		Entity:         "subnet",
 		Api:            "ec2",
 		RequiredParams: []string{"cidr", "vpc"},
-		ExtraParams:    []string{"zone"},
-		TagsMapping:    []string{"name"},
+		ExtraParams:    []string{"zone", "name"},
 	},
 	"updatesubnet": {
 		Action:         "update",
@@ -52,7 +49,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"public"},
-		TagsMapping:    []string{},
 	},
 	"deletesubnet": {
 		Action:         "delete",
@@ -60,15 +56,13 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createinstance": {
 		Action:         "create",
 		Entity:         "instance",
 		Api:            "ec2",
-		RequiredParams: []string{"image", "count", "count", "type", "subnet"},
+		RequiredParams: []string{"image", "count", "count", "type", "subnet", "name"},
 		ExtraParams:    []string{"key", "ip", "userdata", "group", "lock"},
-		TagsMapping:    []string{"name"},
 	},
 	"updateinstance": {
 		Action:         "update",
@@ -76,7 +70,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"type", "group", "lock"},
-		TagsMapping:    []string{},
 	},
 	"deleteinstance": {
 		Action:         "delete",
@@ -84,7 +77,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"startinstance": {
 		Action:         "start",
@@ -92,7 +84,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"stopinstance": {
 		Action:         "stop",
@@ -100,7 +91,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"checkinstance": {
 		Action:         "check",
@@ -108,7 +98,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createsecuritygroup": {
 		Action:         "create",
@@ -116,7 +105,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"name", "vpc", "description"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"updatesecuritygroup": {
 		Action:         "update",
@@ -124,7 +112,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id", "cidr", "protocol"},
 		ExtraParams:    []string{"inbound", "outbound", "portrange"},
-		TagsMapping:    []string{},
 	},
 	"deletesecuritygroup": {
 		Action:         "delete",
@@ -132,7 +119,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createvolume": {
 		Action:         "create",
@@ -140,7 +126,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"zone", "size"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deletevolume": {
 		Action:         "delete",
@@ -148,7 +133,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"attachvolume": {
 		Action:         "attach",
@@ -156,7 +140,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"device", "id", "instance"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"detachvolume": {
 		Action:         "detach",
@@ -164,7 +147,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"device", "id", "instance"},
 		ExtraParams:    []string{"force"},
-		TagsMapping:    []string{},
 	},
 	"createinternetgateway": {
 		Action:         "create",
@@ -172,7 +154,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deleteinternetgateway": {
 		Action:         "delete",
@@ -180,7 +161,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"attachinternetgateway": {
 		Action:         "attach",
@@ -188,7 +168,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id", "vpc"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"detachinternetgateway": {
 		Action:         "detach",
@@ -196,7 +175,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id", "vpc"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createroutetable": {
 		Action:         "create",
@@ -204,7 +182,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"vpc"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deleteroutetable": {
 		Action:         "delete",
@@ -212,7 +189,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"attachroutetable": {
 		Action:         "attach",
@@ -220,7 +196,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id", "subnet"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"detachroutetable": {
 		Action:         "detach",
@@ -228,7 +203,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"association"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createroute": {
 		Action:         "create",
@@ -236,7 +210,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"table", "cidr", "gateway"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deleteroute": {
 		Action:         "delete",
@@ -244,7 +217,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"table", "cidr"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createtag": {
 		Action:         "create",
@@ -252,7 +224,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"resource", "key", "value"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createkeypair": {
 		Action:         "create",
@@ -260,7 +231,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deletekeypair": {
 		Action:         "delete",
@@ -268,7 +238,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createloadbalancer": {
 		Action:         "create",
@@ -276,7 +245,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "elbv2",
 		RequiredParams: []string{"name", "subnets"},
 		ExtraParams:    []string{"iptype", "scheme", "groups"},
-		TagsMapping:    []string{},
 	},
 	"deleteloadbalancer": {
 		Action:         "delete",
@@ -284,7 +252,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "elbv2",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createlistener": {
 		Action:         "create",
@@ -292,7 +259,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "elbv2",
 		RequiredParams: []string{"actiontype", "target", "loadbalancer", "port", "protocol"},
 		ExtraParams:    []string{"certificate", "sslpolicy"},
-		TagsMapping:    []string{},
 	},
 	"deletelistener": {
 		Action:         "delete",
@@ -300,7 +266,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "elbv2",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createtargetgroup": {
 		Action:         "create",
@@ -308,7 +273,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "elbv2",
 		RequiredParams: []string{"name", "port", "protocol", "vpc"},
 		ExtraParams:    []string{"healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "unhealthythreshold", "matcher"},
-		TagsMapping:    []string{},
 	},
 	"deletetargetgroup": {
 		Action:         "delete",
@@ -316,7 +280,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "elbv2",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createuser": {
 		Action:         "create",
@@ -324,7 +287,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deleteuser": {
 		Action:         "delete",
@@ -332,7 +294,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"attachuser": {
 		Action:         "attach",
@@ -340,7 +301,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"group", "name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"detachuser": {
 		Action:         "detach",
@@ -348,7 +308,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"group", "name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"creategroup": {
 		Action:         "create",
@@ -356,7 +315,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deletegroup": {
 		Action:         "delete",
@@ -364,7 +322,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"attachpolicy": {
 		Action:         "attach",
@@ -372,7 +329,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{"user", "group"},
-		TagsMapping:    []string{},
 	},
 	"detachpolicy": {
 		Action:         "detach",
@@ -380,7 +336,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "iam",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{"user", "group"},
-		TagsMapping:    []string{},
 	},
 	"createbucket": {
 		Action:         "create",
@@ -388,7 +343,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "s3",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deletebucket": {
 		Action:         "delete",
@@ -396,7 +350,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "s3",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createstorageobject": {
 		Action:         "create",
@@ -404,7 +357,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "s3",
 		RequiredParams: []string{"bucket", "file"},
 		ExtraParams:    []string{"name"},
-		TagsMapping:    []string{},
 	},
 	"deletestorageobject": {
 		Action:         "delete",
@@ -412,7 +364,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "s3",
 		RequiredParams: []string{"bucket", "key"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createtopic": {
 		Action:         "create",
@@ -420,7 +371,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "sns",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deletetopic": {
 		Action:         "delete",
@@ -428,7 +378,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "sns",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createsubscription": {
 		Action:         "create",
@@ -436,7 +385,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "sns",
 		RequiredParams: []string{"topic", "endpoint", "protocol"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"deletesubscription": {
 		Action:         "delete",
@@ -444,7 +392,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "sns",
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createqueue": {
 		Action:         "create",
@@ -452,7 +399,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "sqs",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{"delay", "maxMsgSize", "retentionPeriod", "policy", "msgWait", "redrivePolicy", "visibilityTimeout"},
-		TagsMapping:    []string{},
 	},
 	"deletequeue": {
 		Action:         "delete",
@@ -460,7 +406,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "sqs",
 		RequiredParams: []string{"url"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createzone": {
 		Action:         "create",
@@ -468,7 +413,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "route53",
 		RequiredParams: []string{"callerreference", "name"},
 		ExtraParams:    []string{"delegationsetid", "comment", "isprivate", "vpcid", "vpcregion"},
-		TagsMapping:    []string{},
 	},
 	"deletezone": {
 		Action:         "delete",
@@ -476,7 +420,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "route53",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 	"createrecord": {
 		Action:         "create",
@@ -484,7 +427,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "route53",
 		RequiredParams: []string{"zone", "name", "type", "value", "ttl"},
 		ExtraParams:    []string{"comment"},
-		TagsMapping:    []string{},
 	},
 	"deleterecord": {
 		Action:         "delete",
@@ -492,7 +434,6 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "route53",
 		RequiredParams: []string{"zone", "name", "type", "value", "ttl"},
 		ExtraParams:    []string{},
-		TagsMapping:    []string{},
 	},
 }
 
