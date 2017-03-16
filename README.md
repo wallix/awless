@@ -3,7 +3,7 @@
 
 `awless` is a fast, powerful and easy-to-use command line interface (CLI) to manage Amazon Web Services.
 
-[Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki)
+[Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki) | [Changelog](https://github.com/wallix/awless/blob/master/CHANGELOG.md#readme)
 
 # Why awless
 
@@ -23,7 +23,7 @@
 ![video of a few `awless` commands](https://raw.githubusercontent.com/wiki/wallix/awless/gif/awless-demo.gif "video of a few `awless` commands")
 
 - Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
-- Multiple output formats either human (table, trees, ...) or machine readable (csv, tsv, json, ...): `--format`
+- Output formats either human (Markdown-compatible tables, trees) or machine readable (csv, tsv, json, ...): `--format`
 - Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
