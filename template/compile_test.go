@@ -23,6 +23,14 @@ var defs = map[string]TemplateDefinition{
 		ExtraParams:    []string{},
 		TagsMapping:    []string{},
 	},
+	"createtag": {
+		Action:         "create",
+		Entity:         "tag",
+		Api:            "ec2",
+		RequiredParams: []string{"resource", "key", "value"},
+		ExtraParams:    []string{},
+		TagsMapping:    []string{},
+	},
 }
 
 func TestResolveAgainstDefinitionsPass(t *testing.T) {
@@ -58,13 +66,33 @@ func TestResolveAgainstDefinitionsPass(t *testing.T) {
 		}
 	})
 
-	t.Run("Err on unexpected param", func(t *testing.T) {
+	t.Run("Err on unexpected param key", func(t *testing.T) {
 		tpl := MustParse(`create instance type=t2.micro
-	create keypair name={keypair.name} type=wrong`)
+	                        create keypair name={keypair.name} type=wrong`)
 
 		_, _, err := resolveAgainstDefinitions(tpl, env)
 		if err == nil || !strings.Contains(err.Error(), "type") {
 			t.Fatalf("expected err with message containing 'type'")
+		}
+	})
+
+	t.Run("Err on unexpected ref key", func(t *testing.T) {
+		tpl := MustParse(`create instance type=t2.micro
+		create tag stuff=$any`)
+
+		_, _, err := resolveAgainstDefinitions(tpl, env)
+		if err == nil || !strings.Contains(err.Error(), "stuff") {
+			t.Fatalf("expected err with message containing 'stuff'")
+		}
+	})
+
+	t.Run("Err on unexpected hole key", func(t *testing.T) {
+		tpl := MustParse(`create instance type=t2.micro
+		create tag stuff={stuff.any}`)
+
+		_, _, err := resolveAgainstDefinitions(tpl, env)
+		if err == nil || !strings.Contains(err.Error(), "stuff") {
+			t.Fatalf("expected err with message containing 'stuff'")
 		}
 	})
 }

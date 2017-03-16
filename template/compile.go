@@ -83,24 +83,24 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 			return fmt.Errorf("cannot find template definition for '%s'", key)
 		}
 
-		for p := range cmd.Params {
+		for _, key := range cmd.Keys() {
 			var found bool
 
 			for _, k := range def.Required() {
-				if k == p {
+				if k == key {
 					found = true
 					break
 				}
 			}
 
 			for _, k := range def.Extra() {
-				if k == p {
+				if k == key {
 					found = true
 					break
 				}
 			}
 			if !found {
-				return fmt.Errorf("%s %s: unexpected param '%s'", cmd.Action, cmd.Entity, p)
+				return fmt.Errorf("%s %s: unexpected param key '%s'", cmd.Action, cmd.Entity, key)
 			}
 		}
 

@@ -111,8 +111,7 @@ func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {
 
 func (s *Template) visitCommandNodesE(fn func(n *ast.CommandNode) error) error {
 	for _, cmd := range s.CommandNodesIterator() {
-		err := fn(cmd)
-		if err != nil {
+		if err := fn(cmd); err != nil {
 			return err
 		}
 	}
