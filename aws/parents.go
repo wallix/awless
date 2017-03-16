@@ -320,11 +320,22 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 	}
 
 	for _, group := range user.GroupList {
-		parent, err := g.GetResource(cloud.Group, awssdk.StringValue(group))
+		groupName := awssdk.StringValue(group)
+		resources, err := g.ResolveResources(&graph.And{Resolvers: []graph.Resolver{
+			&graph.ByProperty{Name: "Name", Val: groupName},
+			&graph.ByType{Typ: cloud.Group},
+		}})
 		if err != nil {
 			return err
 		}
-		g.AddAppliesOnRelation(parent, n)
+		switch len(resources) {
+		case 0:
+			fmt.Fprintf(os.Stderr, "no group with name %s found for user %s\n", groupName, n.Id())
+		case 1:
+			g.AddAppliesOnRelation(resources[0], n)
+		default:
+			fmt.Fprintf(os.Stderr, "multiple groups with name %s found for user %s:%v\n", groupName, n.Id(), resources)
+		}
 	}
 	return nil
 }

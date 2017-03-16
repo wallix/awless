@@ -13,6 +13,10 @@
 - Better display of `awless show`. Added `--siblings` flag to display exhaustively all siblings
 - Reverse the sorting order when listing instances sorted by "up since"
 
+### Bugfixes
+
+- Fix `awless show` to properly show relations between groups and users
+
 ## 0.0.18 [2017-03-13]
 
 ### Features

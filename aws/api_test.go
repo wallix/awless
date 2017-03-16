@@ -56,50 +56,50 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 	usersDetails := []*iam.UserDetail{
 		{
 			UserId:                  awssdk.String("usr_1"),
-			GroupList:               []*string{awssdk.String("group_1"), awssdk.String("group_2")},
+			GroupList:               []*string{awssdk.String("ngroup_1"), awssdk.String("ngroup_2")},
 			AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_1")}},
 			UserPolicyList:          []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}, {PolicyName: awssdk.String("npolicy_2")}},
 		},
 		{
 			UserId:         awssdk.String("usr_2"),
-			GroupList:      []*string{awssdk.String("group_1")},
+			GroupList:      []*string{awssdk.String("ngroup_1")},
 			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}},
 		},
 		{
 			UserId:                  awssdk.String("usr_3"),
-			GroupList:               []*string{awssdk.String("group_1"), awssdk.String("group_4")},
+			GroupList:               []*string{awssdk.String("ngroup_1"), awssdk.String("ngroup_4")},
 			AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_1")}, {PolicyName: awssdk.String("nmanaged_policy_2")}},
 			UserPolicyList:          []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_1")}, {PolicyName: awssdk.String("npolicy_4")}},
 		},
 		{
 			UserId:         awssdk.String("usr_4"),
-			GroupList:      []*string{awssdk.String("group_2")},
+			GroupList:      []*string{awssdk.String("ngroup_2")},
 			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}},
 		},
 		{
 			UserId:         awssdk.String("usr_5"),
-			GroupList:      []*string{awssdk.String("group_2")},
+			GroupList:      []*string{awssdk.String("ngroup_2")},
 			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}},
 		},
 		{
 			UserId:                  awssdk.String("usr_6"),
-			GroupList:               []*string{awssdk.String("group_2")},
+			GroupList:               []*string{awssdk.String("ngroup_2")},
 			AttachedManagedPolicies: []*iam.AttachedPolicy{{PolicyName: awssdk.String("nmanaged_policy_3")}},
 			UserPolicyList:          []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}},
 		},
 		{
 			UserId:         awssdk.String("usr_7"),
-			GroupList:      []*string{awssdk.String("group_2"), awssdk.String("group_4")},
+			GroupList:      []*string{awssdk.String("ngroup_2"), awssdk.String("ngroup_4")},
 			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_2")}, {PolicyName: awssdk.String("npolicy_4")}},
 		},
 		{
 			UserId:         awssdk.String("usr_8"),
-			GroupList:      []*string{awssdk.String("group_4")},
+			GroupList:      []*string{awssdk.String("ngroup_4")},
 			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_4")}},
 		},
 		{
 			UserId:         awssdk.String("usr_9"),
-			GroupList:      []*string{awssdk.String("group_4")},
+			GroupList:      []*string{awssdk.String("ngroup_4")},
 			UserPolicyList: []*iam.PolicyDetail{{PolicyName: awssdk.String("npolicy_4")}},
 		},
 		{

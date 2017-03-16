@@ -83,6 +83,7 @@ var showCmd = &cobra.Command{
 			if _, err = sync.DefaultSyncer.Sync(srv); err != nil {
 				logger.Error(err)
 			}
+			resource, gph = findResourceInLocalGraphs(ref)
 		}
 
 		if resource != nil {
