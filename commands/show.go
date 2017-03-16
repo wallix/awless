@@ -198,7 +198,7 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 	exitOn(err)
 
 	name := deprefix(ref)
-	byName := &graph.ByProperty{"Name", name}
+	byName := &graph.ByProperty{Name: "Name", Val: name}
 
 	if strings.HasPrefix(ref, "@") {
 		logger.Verbosef("prefixed with @: forcing research by name '%s'", name)
@@ -207,7 +207,7 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 		return rs
 	} else {
 
-		rs, err := g.ResolveResources(&graph.ById{name})
+		rs, err := g.ResolveResources(&graph.ById{Id: name})
 		exitOn(err)
 
 		if len(rs) > 0 {
@@ -215,7 +215,7 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 		} else {
 			rs, err := g.ResolveResources(
 				byName,
-				&graph.ByProperty{"Arn", name},
+				&graph.ByProperty{Name: "Arn", Val: name},
 			)
 			exitOn(err)
 
