@@ -87,9 +87,31 @@ func TestSemverUpgradeOrNot(t *testing.T) {
 			t.Fatalf("(revert) %s -> %s, got %t, want %t", tc.latest, tc.current, got, want)
 		}
 
-		// with 'v' prefix
+		// with both 'v' prefix
 		current := "v" + tc.current
 		latest := "v" + tc.latest
+
+		if got, want := isSemverUpgrade(current, latest), tc.exp; got != want {
+			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+		}
+		if got, want := isSemverUpgrade(latest, current), tc.revert; got != want {
+			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+		}
+
+		// with current 'v' prefix
+		current = "v" + tc.current
+		latest = tc.latest
+
+		if got, want := isSemverUpgrade(current, latest), tc.exp; got != want {
+			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+		}
+		if got, want := isSemverUpgrade(latest, current), tc.revert; got != want {
+			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+		}
+
+		// with latest 'v' prefix
+		current = tc.current
+		latest = "v" + tc.latest
 
 		if got, want := isSemverUpgrade(current, latest), tc.exp; got != want {
 			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
