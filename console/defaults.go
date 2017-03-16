@@ -32,10 +32,10 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 			ColoredValues:          map[string]color.Attribute{"running": color.FgGreen, "stopped": color.FgRed},
 		},
 		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "KeyName", Friendly: "Access Key"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 		StringColumnDefinition{Prop: "PrivateIp", Friendly: "Private IP"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime", Friendly: "Up Since"}},
+		StringColumnDefinition{Prop: "KeyName", Friendly: "Access Key"},
 	},
 	cloud.Vpc: {
 		StringColumnDefinition{Prop: "Id"},
