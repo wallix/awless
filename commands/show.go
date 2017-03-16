@@ -230,12 +230,10 @@ func deprefix(s string) string {
 
 func printResourceList(title string, list []*graph.Resource, shortenListMsg ...string) {
 	all := graph.Resources(list).Map(func(r *graph.Resource) string { return r.String() })
-	if len(all) > 0 {
-		if !listAllSiblingsFlag && len(shortenListMsg) > 0 {
-			max := 5
-			if max > len(all) {
-				max = len(all)
-			}
+	count := len(all)
+	max := 3
+	if count > 0 {
+		if !listAllSiblingsFlag && len(shortenListMsg) > 0 && count > max {
 			fmt.Printf("\n%s: %s, ... (%s)\n", title, strings.Join(all[0:max], ", "), shortenListMsg[0])
 		} else {
 			fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
