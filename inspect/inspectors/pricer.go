@@ -72,7 +72,7 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 	var wg sync.WaitGroup
 	resultC := make(chan result)
 
-	for ty, _ := range pricePerType {
+	for ty := range pricePerType {
 		wg.Add(1)
 		go func(t string) {
 			defer wg.Done()

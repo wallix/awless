@@ -62,7 +62,9 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	table.SetHeader([]string{"Property" + ascSymbol, "Value"})
 
 	for i := range values {
-		table.Append([]string{fmt.Sprint(values[i][0]), fmt.Sprint(values[i][1])})
+		if val := fmt.Sprint(values[i][1]); val != "" {
+			table.Append([]string{fmt.Sprint(values[i][0]), val})
+		}
 	}
 
 	table.Render()

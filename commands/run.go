@@ -142,6 +142,7 @@ func runTemplate(templ *template.Template, env *template.Env) error {
 	fmt.Print("Confirm? (y/n): ")
 	var yesorno string
 	_, err = fmt.Scanln(&yesorno)
+	exitOn(err)
 
 	if strings.TrimSpace(yesorno) == "y" {
 		newTempl, err := templ.Run(awsDriver)

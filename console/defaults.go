@@ -25,7 +25,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	//EC2
 	cloud.Instance: {
 		StringColumnDefinition{Prop: "Id"},
-		StringColumnDefinition{Prop: "SubnetId"},
+		StringColumnDefinition{Prop: "AvailabilityZone", Friendly: "Zone"},
 		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
@@ -34,6 +34,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Type"},
 		StringColumnDefinition{Prop: "KeyName", Friendly: "Access Key"},
 		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+		StringColumnDefinition{Prop: "PrivateIp", Friendly: "Private IP"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "LaunchTime", Friendly: "Up Since"}},
 	},
 	cloud.Vpc: {

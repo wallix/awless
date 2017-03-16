@@ -83,7 +83,7 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 			return fmt.Errorf("cannot find template definition for '%s'", key)
 		}
 
-		for p, _ := range cmd.Params {
+		for p := range cmd.Params {
 			var found bool
 
 			for _, k := range def.Required() {
@@ -121,12 +121,12 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 			var isInParams bool
 			var isInRefs bool
 
-			for k, _ := range cmd.Params {
+			for k := range cmd.Params {
 				if k == required {
 					isInParams = true
 				}
 			}
-			for k, _ := range cmd.Refs {
+			for k := range cmd.Refs {
 				if k == required {
 					isInRefs = true
 				}

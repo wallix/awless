@@ -2,6 +2,8 @@
 
 ### Features
 
+- [#76](https://github.com/wallix/awless/issues/76): Show private IP and availability zones when listing instances.
+- Fetch more instances properties when showing instances (ex: network interfaces, public and private DNS, Root device type and name...)
 - DNS: listing Route53 zones and records `awless list zones/records`
 - DNS: basic creation/deletion of Route53 zones and records `awless create/delete zone/record`
 - Infra: detach EBS volumes `awless detach volume`
