@@ -162,9 +162,9 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
 	},
 	cloud.Object: {
-		StringColumnDefinition{Prop: "Key", TruncateRight: true},
+		StringColumnDefinition{Prop: "Id", TruncateRight: true},
 		StringColumnDefinition{Prop: "BucketName", Friendly: "Bucket"},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "ModifiedDate"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "ModifiedDate", Friendly: "Modified"}},
 		StringColumnDefinition{Prop: "OwnerId", TruncateRight: true},
 		StringColumnDefinition{Prop: "Size"},
 		StringColumnDefinition{Prop: "Class"},
