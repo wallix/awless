@@ -91,12 +91,12 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	cloud.Volume: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
-		StringColumnDefinition{Prop: "VolumeType"},
+		StringColumnDefinition{Prop: "VolumeType", Friendly: "Type"},
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "Size", Friendly: "Size (Gb)"},
 		StringColumnDefinition{Prop: "Encrypted"},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
-		StringColumnDefinition{Prop: "AvailabilityZone"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime", Friendly: "Created"}},
+		StringColumnDefinition{Prop: "AvailabilityZone", Friendly: "Zone"},
 	},
 	cloud.AvailabilityZone: {
 		StringColumnDefinition{Prop: "Name"},
@@ -110,7 +110,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "VpcId"},
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "DNSName"},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime", Friendly: "Created"}},
 		StringColumnDefinition{Prop: "Scheme"},
 	},
 	cloud.TargetGroup: {
@@ -163,7 +163,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	cloud.Object: {
 		StringColumnDefinition{Prop: "Key", TruncateRight: true},
-		StringColumnDefinition{Prop: "BucketName"},
+		StringColumnDefinition{Prop: "BucketName", Friendly: "Bucket"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "ModifiedDate"}},
 		StringColumnDefinition{Prop: "OwnerId", TruncateRight: true},
 		StringColumnDefinition{Prop: "Size"},
