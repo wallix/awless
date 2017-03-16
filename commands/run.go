@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 
@@ -48,21 +49,23 @@ func init() {
 }
 
 var runCmd = &cobra.Command{
-	Use:               "run FILEPATH",
-	Short:             "Run a template given a filepath",
-	Example:           "  awless run ~/templates/my-infra.txt",
+	Use:               "run PATH",
+	Short:             "Run a template given a filepath or a URL (prefixed with http)",
+	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("missing FILEPATH arg")
+			return errors.New("missing PATH arg (filepath or url)")
 		}
 
-		content, err := ioutil.ReadFile(args[0])
+		content, err := getTemplateText(args[0])
 		if err != nil {
 			return err
 		}
+
+		logger.Verbosef("Loaded template text:\n\n%s\n", content)
 
 		templ, err := template.Parse(string(content))
 		exitOn(err)
@@ -337,4 +340,18 @@ func oneLinerShortDesc(action string, entities []string) string {
 		return strings.Join(entities, ", ")
 	}
 
+}
+
+func getTemplateText(path string) ([]byte, error) {
+	if strings.HasPrefix(path, "http") {
+		resp, err := http.Get(path)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		return ioutil.ReadAll(resp.Body)
+	}
+
+	return ioutil.ReadFile(path)
 }
