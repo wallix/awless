@@ -20,7 +20,11 @@
 
 # Overview
 
-![video of a few `awless` commands](https://raw.githubusercontent.com/wiki/wallix/awless/gif/awless-demo.gif "video of a few `awless` commands")
+<p align="center">
+  <a href="https://raw.githubusercontent.com/wiki/wallix/awless/apng/awless-demo.png"><img src="https://raw.githubusercontent.com/wiki/wallix/awless/apng/awless-demo.png" alt="video of a few awless commands"></a>
+<br/>
+<em>Note that this video is in <a href="https://en.wikipedia.org/wiki/APNG">APNG</a>. On Chrome, you need <a href="https://chrome.google.com/webstore/detail/apng/ehkepjiconegkhpodgoaeamnpckdbblp">an extension</a> to view it.</em>
+</p>
 
 - Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Output formats either human (Markdown-compatible tables, trees) or machine readable (csv, tsv, json, ...): `--format`
