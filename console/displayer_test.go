@@ -402,8 +402,8 @@ func TestDateLists(t *testing.T) {
 	expected = `|  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
 |-------|---------------|------------------------|
 | user1 | my_username_1 |                        |
-| user3 | my_username_3 | 12/10/16 08:35         |
 | user2 | my_username_2 | 12/22/16 11:13         |
+| user3 | my_username_3 | 12/10/16 08:35         |
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {

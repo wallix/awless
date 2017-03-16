@@ -806,7 +806,7 @@ func valueLowerOrEqual(a, b interface{}) bool {
 	case time.Time:
 		aa := a.(time.Time)
 		bb := b.(time.Time)
-		return aa.Before(bb)
+		return aa.After(bb)
 	default:
 		panic(fmt.Sprintf("can not compare values of type %T", a))
 	}

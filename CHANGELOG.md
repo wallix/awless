@@ -10,6 +10,7 @@
 - Config: enable/disable the syncing of Route53 service `awless config set aws.dns.sync`
 - All listing with default format are now Markdown table compatible. 
 - Better display of `awless show`. Added `--siblings` flag to display exhaustively all siblings
+- Reverse the sorting order when listing instances sorted by "up since"
 
 ## 0.0.18 [2017-03-13]
 
