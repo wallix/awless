@@ -38,5 +38,5 @@ eval "$BIN check instance id=$ALIAS state=running timeout=20"
 $BIN -v revert $REVERT_ID
 
 rm $TMP_FILE
-rm ~/.awless/keys/$KEY_NAME.pem
+rm -f ~/.awless/keys/$KEY_NAME.pem
 rm $BIN

@@ -44,7 +44,6 @@ func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
 	pass := newMultiPass(
 		resolveAgainstDefinitions,
 		resolveHolesPass,
-		resolveAliasPass,
 		resolveMissingHolesPass,
 		resolveAliasPass,
 	)
