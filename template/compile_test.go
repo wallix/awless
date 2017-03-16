@@ -138,7 +138,7 @@ func TestResolveAliasPass(t *testing.T) {
 	tpl := MustParse("create instance subnet=@my-subnet ami={instance.ami} count=3")
 
 	env := NewEnv()
-	env.AliasFunc = func(k, v string) string {
+	env.AliasFunc = func(e, k, v string) string {
 		vals := map[string]string{
 			"my-ami":    "ami-12345",
 			"my-subnet": "sub-12345",

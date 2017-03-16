@@ -29,7 +29,7 @@ func TestValidation(t *testing.T) {
 		if got, want := len(errs), 1; got != want {
 			t.Fatalf("got %d, want %d", got, want)
 		}
-		exp := "create instance: name 'instance1_name' already exists\n"
+		exp := "create instance: name 'instance1_name' already exists"
 		if got, want := errs[0].Error(), exp; got != want {
 			t.Fatalf("got %q, want %q", got, want)
 		}

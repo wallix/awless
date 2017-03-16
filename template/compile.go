@@ -2,6 +2,7 @@ package template
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/wallix/awless/logger"
@@ -13,7 +14,7 @@ type Env struct {
 
 	Resolved         map[string]interface{}
 	DefLookupFunc    LookupTemplateDefFunc
-	AliasFunc        func(key, alias string) string
+	AliasFunc        func(entity, key, alias string) string
 	MissingHolesFunc func(string) interface{}
 
 	Log *logger.Logger
@@ -22,7 +23,7 @@ type Env struct {
 func NewEnv() *Env {
 	return &Env{
 		Resolved:         make(map[string]interface{}),
-		AliasFunc:        func(k, v string) string { return v },
+		AliasFunc:        func(e, k, v string) string { return v },
 		MissingHolesFunc: func(s string) interface{} { return s },
 		Log:              logger.DiscardLogger,
 	}
@@ -172,9 +173,14 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 			uniqueHoles[v] = struct{}{}
 		}
 	})
+	var sortedHoles []string
+	for k := range uniqueHoles {
+		sortedHoles = append(sortedHoles, k)
+	}
+	sort.Strings(sortedHoles)
 
 	fillers := make(map[string]interface{})
-	for k := range uniqueHoles {
+	for _, k := range sortedHoles {
 		actual := env.MissingHolesFunc(k)
 		fillers[k] = actual
 	}
@@ -194,7 +200,7 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 				if strings.HasPrefix(s, "@") {
 					env.Log.ExtraVerbosef("alias resolving: %s for key %s", s, k)
 					alias := strings.TrimPrefix(s, "@")
-					actual := env.AliasFunc(k, alias)
+					actual := env.AliasFunc(cmd.Entity, k, alias)
 					if actual == "" {
 						unresolved = append(unresolved, alias)
 					} else {

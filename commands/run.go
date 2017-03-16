@@ -73,13 +73,7 @@ var runCmd = &cobra.Command{
 		extraParams, err := template.ParseParams(strings.Join(args[1:], " "))
 		exitOn(err)
 
-		env := template.NewEnv()
-		env.Log = logger.DefaultLogger
-		env.AddFillers(config.Defaults, extraParams)
-		env.MissingHolesFunc = missingHolesStdinFunc()
-		env.DefLookupFunc = lookupTemplateDefinitionsFunc()
-
-		exitOn(runTemplate(templ, env))
+		exitOn(runTemplate(templ, config.Defaults, extraParams))
 
 		return nil
 	},
@@ -117,7 +111,14 @@ func missingHolesStdinFunc() func(string) interface{} {
 	}
 }
 
-func runTemplate(templ *template.Template, env *template.Env) error {
+func runTemplate(templ *template.Template, fillers ...map[string]interface{}) error {
+	env := template.NewEnv()
+	env.Log = logger.DefaultLogger
+	env.AddFillers(fillers...)
+	env.DefLookupFunc = lookupTemplateDefinitionsFunc
+	env.AliasFunc = resolveAliasFunc
+	env.MissingHolesFunc = missingHolesStdinFunc()
+
 	if len(env.Fillers) > 0 {
 		logger.Verbosef("default/given holes fillers: %s", sprintProcessedParams(env.Fillers))
 	}
@@ -198,7 +199,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	for _, entity := range entities {
-		templDef, ok := lookupTemplateDefinitionsFunc()(fmt.Sprintf("%s%s", action, entity))
+		templDef, ok := lookupTemplateDefinitionsFunc(fmt.Sprintf("%s%s", action, entity))
 		if !ok {
 			exitOn(errors.New("command unsupported on inline mode"))
 		}
@@ -209,14 +210,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				templ, err := template.Parse(text)
 				exitOn(err)
 
-				env := template.NewEnv()
-				env.Log = logger.DefaultLogger
-				env.AddFillers(config.Defaults)
-				env.DefLookupFunc = lookupTemplateDefinitionsFunc()
-				env.AliasFunc = resolveAliasFunc(def.Entity)
-				env.MissingHolesFunc = missingHolesStdinFunc()
-
-				exitOn(runTemplate(templ, env))
+				exitOn(runTemplate(templ, config.Defaults))
 				return nil
 			}
 		}
@@ -236,11 +230,9 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func lookupTemplateDefinitionsFunc() template.LookupTemplateDefFunc {
-	return func(key string) (t template.TemplateDefinition, ok bool) {
-		t, ok = aws.AWSTemplatesDefinitions[key]
-		return
-	}
+func lookupTemplateDefinitionsFunc(key string) (t template.TemplateDefinition, ok bool) {
+	t, ok = aws.AWSTemplatesDefinitions[key]
+	return
 }
 
 func runSyncFor(tpl *template.Template) {
@@ -248,7 +240,7 @@ func runSyncFor(tpl *template.Template) {
 		return
 	}
 
-	collector := &template.CollectDefinitions{L: lookupTemplateDefinitionsFunc()}
+	collector := &template.CollectDefinitions{L: lookupTemplateDefinitionsFunc}
 	tpl.Visit(collector)
 
 	uniqueNames := make(map[string]bool)
@@ -305,21 +297,17 @@ func printReport(t *template.Template) {
 	}
 }
 
-func resolveAliasFunc(entity string) func(k, v string) string {
+func resolveAliasFunc(entity, key, alias string) string {
 	gph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[entity])
-
-	return func(key, alias string) string {
-		resType := key
-		if strings.Contains(key, "id") {
-			resType = entity
-		}
-		a := graph.Alias(alias)
-		if id, ok := a.ResolveToId(gph, resType); ok {
-			return id
-		}
-		return ""
+	resType := key
+	if strings.Contains(key, "id") {
+		resType = entity
 	}
-
+	a := graph.Alias(alias)
+	if id, ok := a.ResolveToId(gph, resType); ok {
+		return id
+	}
+	return ""
 }
 
 func sprintProcessedParams(processed map[string]interface{}) string {

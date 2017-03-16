@@ -29,7 +29,7 @@ func (v *UniqueNameValidator) Execute(t *Template) (errs []error) {
 				errs = append(errs, err)
 			}
 			if len(resources) > 0 {
-				errs = append(errs, fmt.Errorf("%s %s: name '%s' already exists\n", cmd.Action, cmd.Entity, name))
+				errs = append(errs, fmt.Errorf("%s %s: name '%s' already exists", cmd.Action, cmd.Entity, name))
 			}
 		}
 	}
