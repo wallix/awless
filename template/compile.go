@@ -100,7 +100,7 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 				}
 			}
 			if !found {
-				return fmt.Errorf("%s %s: unexpected param key '%s'", cmd.Action, cmd.Entity, key)
+				return fmt.Errorf("%s %s: unexpected param key '%s'\n\t- required params: %s\n\t- extra params: %s\n", cmd.Action, cmd.Entity, key, strings.Join(def.Required(), ", "), strings.Join(def.Extra(), ", "))
 			}
 		}
 

@@ -112,8 +112,8 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 			Action: "{{ $def.Action }}",
 			Entity: "{{ $def.Entity }}",
 			Api: "{{ $service.Api }}",
-			RequiredParams: []string{ {{- range $awsField, $field := $def.RequiredParams }}"{{ $field.TemplateName }}", {{- end}} },
-			ExtraParams: []string{ {{- range $awsField, $field := $def.ExtraParams }}"{{ $field.TemplateName }}", {{- end}} },
+			RequiredParams: []string{ {{- range $key := $def.RequiredKeys }}"{{ $key }}", {{- end}} },
+			ExtraParams: []string{ {{- range $key := $def.ExtraKeys }}"{{ $key }}", {{- end}} },
 		},
 {{- end }}
 {{- end }}

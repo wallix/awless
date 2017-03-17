@@ -16,7 +16,11 @@ limitations under the License.
 
 package aws
 
-import "github.com/wallix/awless/cloud"
+import (
+	"sort"
+
+	"github.com/wallix/awless/cloud"
+)
 
 type param struct {
 	AwsField, AwsType string
@@ -33,10 +37,42 @@ type driver struct {
 	ManualFuncDefinition                      bool
 }
 
+func (d *driver) RequiredKeys() []string {
+	var keys []string
+	for _, p := range d.RequiredParams {
+		keys = append(keys, p.TemplateName)
+	}
+
+	return sortUnique(keys)
+}
+
+func (d *driver) ExtraKeys() []string {
+	var keys []string
+	for _, p := range d.ExtraParams {
+		keys = append(keys, p.TemplateName)
+	}
+
+	return sortUnique(keys)
+}
+
 type driversDef struct {
 	Api          string
 	ApiInterface string
 	Drivers      []driver
+}
+
+func sortUnique(arr []string) (sorted []string) {
+	unique := make(map[string]struct{})
+	for _, s := range arr {
+		unique[s] = struct{}{}
+	}
+
+	for k, _ := range unique {
+		sorted = append(sorted, k)
+	}
+
+	sort.Strings(sorted)
+	return
 }
 
 var DriversDefs = []driversDef{
