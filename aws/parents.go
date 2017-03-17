@@ -68,6 +68,7 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
 		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
+	// Loadbalancer
 	cloud.LoadBalancer: {
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
@@ -81,6 +82,11 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 		funcBuilder{parent: cloud.LoadBalancer, stringListName: "LoadBalancerArns", relation: APPLIES_ON}.build(),
 		fetchTargetsAndAddRelations,
+	},
+	// Database
+	cloud.Database: {
+		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
+		funcBuilder{parent: cloud.SecurityGroup, listName: "VpcSecurityGroups", fieldName: "VpcSecurityGroupId", relation: APPLIES_ON}.build(),
 	},
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},

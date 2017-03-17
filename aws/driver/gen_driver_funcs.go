@@ -2231,6 +2231,53 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
+func (d *RdsDriver) Delete_Database_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete database: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete database ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{}, error) {
+	input := &rds.DeleteDBInstanceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "DBInstanceIdentifier", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["skipsnapshot"]; ok {
+		err = setFieldWithType(params["skipsnapshot"], input, "SkipFinalSnapshot", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["snapshotid"]; ok {
+		err = setFieldWithType(params["snapshotid"], input, "FinalDBSnapshotIdentifier", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *rds.DeleteDBInstanceOutput
+	output, err = d.DeleteDBInstance(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete database: %s", err)
+	}
+	d.logger.ExtraVerbosef("rds.DeleteDBInstance call took %s", time.Since(start))
+	d.logger.Verbose("delete database done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *IamDriver) Create_User_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create user: missing required params 'name'")

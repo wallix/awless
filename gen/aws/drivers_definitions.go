@@ -444,6 +444,16 @@ var DriversDefs = []driversDef{
 					{AwsField: "VpcSecurityGroupIds", TemplateName: "vpcsecgroup", AwsType: "awsstringslice"},
 				},
 			},
+			{
+				Action: "delete", Entity: cloud.Database, ApiMethod: "DeleteDBInstance", Input: "DeleteDBInstanceInput", Output: "DeleteDBInstanceOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "DBInstanceIdentifier", TemplateName: "id", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "SkipFinalSnapshot", TemplateName: "skipsnapshot", AwsType: "awsbool"},
+					{AwsField: "FinalDBSnapshotIdentifier", TemplateName: "snapshotid", AwsType: "awsbool"},
+				},
+			},
 		},
 	},
 	{

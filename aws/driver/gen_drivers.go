@@ -315,6 +315,12 @@ func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Create_Database, nil
 
+	case "deletedatabase":
+		if d.dryRun {
+			return d.Delete_Database_DryRun, nil
+		}
+		return d.Delete_Database, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
