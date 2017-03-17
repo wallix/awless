@@ -193,8 +193,8 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Id", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Comment"},
-		StringColumnDefinition{Prop: "IsPrivateZone"},
-		StringColumnDefinition{Prop: "ResourceRecordSetCount"},
+		StringColumnDefinition{Prop: "IsPrivateZone", Friendly: "Private"},
+		StringColumnDefinition{Prop: "ResourceRecordSetCount", Friendly: "Nb Records"},
 		StringColumnDefinition{Prop: "CallerReference", DisableTruncate: true},
 	},
 	cloud.Record: {

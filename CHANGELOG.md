@@ -2,7 +2,8 @@
 
 ### Bugfixes
 
-- Better compute table columns width to choose the columns to truncate.
+- [#79](https://github.com/wallix/awless/issues/79): `awless list records` do not add new lines between records.
+- Better compute table columns width to adjust the number of columns to display exactly to the terminal width.
 
 ## v0.0.19 [2017-03-16]
 

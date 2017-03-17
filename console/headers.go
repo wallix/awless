@@ -127,7 +127,9 @@ func (h SliceColumnDefinition) format(i interface{}) string {
 	var buf bytes.Buffer
 	for i := 0; i < value.Len(); i++ {
 		buf.WriteString(fmt.Sprint(value.Index(i).Interface()))
-		buf.WriteRune('\n')
+		if i < value.Len()-1 {
+			buf.WriteRune(' ')
+		}
 	}
 	return buf.String()
 }
@@ -170,18 +172,14 @@ func (h FirewallRulesColumnDefinition) format(i interface{}) string {
 	var w bytes.Buffer
 
 	for _, r := range ii {
+		w.WriteString("[")
 		var netStrings []string
 		for _, net := range r.IPRanges {
-			ones, _ := net.Mask.Size()
-			if ones == 0 {
-				netStrings = append(netStrings, "any")
-			} else {
-				netStrings = append(netStrings, net.String())
-			}
+			netStrings = append(netStrings, net.String())
 		}
-		w.WriteString(strings.Join(netStrings, ","))
+		w.WriteString(strings.Join(netStrings, ";"))
 
-		w.WriteString("(")
+		w.WriteString("](")
 
 		switch {
 		case r.Protocol == "any":

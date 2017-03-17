@@ -28,13 +28,14 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
-	"unicode/utf8"
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
+
+const tableMaxColWidthAutowrap = 23
 
 type Displayer interface {
 	Print(io.Writer) error
@@ -416,7 +417,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	columnsToDisplay := d.headers
 	if d.maxwidth != 0 {
 		columnsToDisplay = []ColumnDefinition{}
-		currentWidth := 3 // borders
+		currentWidth := 1 // first border
 		for j, h := range d.headers {
 			colW := colWidth(j, values, h, j == markColumnAsc) + 3 // +3 (tables margin + border)
 			if currentWidth+colW > d.maxwidth {
@@ -431,6 +432,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetColWidth(tableMaxColWidthAutowrap)
 	var displayHeaders []string
 	for i, h := range columnsToDisplay {
 		displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
@@ -836,19 +838,23 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 }
 
 func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
-	displayColor := color.NoColor
-	color.NoColor = true
-	max := utf8.RuneCountInString(h.title(hasSortSign))
+	max := tablewriter.DisplayWidth(h.title(hasSortSign))
 	for i := range t {
-		lines, _ := tablewriter.WrapString(h.format(t[i][j]), tablewriter.MAX_ROW_WIDTH)
+		val := h.format(t[i][j])
+		valLen := tablewriter.DisplayWidth(val)
+		if valLen > tableMaxColWidthAutowrap {
+			if tableMaxColWidthAutowrap > max {
+				max = tableMaxColWidthAutowrap
+			}
+		}
+		lines, _ := tablewriter.WrapString(val, tableMaxColWidthAutowrap)
 		for _, line := range lines {
-			width := utf8.RuneCountInString(line)
+			width := tablewriter.DisplayWidth(line)
 			if width > max {
 				max = width
 			}
 		}
 	}
-	color.NoColor = displayColor
 	return max
 }
 
