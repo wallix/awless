@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
@@ -2012,6 +2013,221 @@ func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interfa
 	d.logger.ExtraVerbosef("elbv2.DeleteTargetGroup call took %s", time.Since(start))
 	d.logger.Verbose("delete targetgroup done")
 	return output, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Create_Database_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["type"]; !ok {
+		return nil, errors.New("create database: missing required params 'type'")
+	}
+
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("create database: missing required params 'id'")
+	}
+
+	if _, ok := params["engine"]; !ok {
+		return nil, errors.New("create database: missing required params 'engine'")
+	}
+
+	if _, ok := params["password"]; !ok {
+		return nil, errors.New("create database: missing required params 'password'")
+	}
+
+	if _, ok := params["username"]; !ok {
+		return nil, errors.New("create database: missing required params 'username'")
+	}
+
+	if _, ok := params["storage"]; !ok {
+		return nil, errors.New("create database: missing required params 'storage'")
+	}
+
+	d.logger.Verbose("params dry run: create database ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{}, error) {
+	input := &rds.CreateDBInstanceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["type"], input, "DBInstanceClass", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "DBInstanceIdentifier", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["engine"], input, "Engine", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["password"], input, "MasterUserPassword", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["username"], input, "MasterUsername", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["storage"], input, "AllocatedStorage", awsint64)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["autoupgrade"]; ok {
+		err = setFieldWithType(params["autoupgrade"], input, "AutoMinorVersionUpgrade", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["zone"]; ok {
+		err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["backupretention"]; ok {
+		err = setFieldWithType(params["backupretention"], input, "BackupRetentionPeriod", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["cluster"]; ok {
+		err = setFieldWithType(params["cluster"], input, "DBClusterIdentifier", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["dbname"]; ok {
+		err = setFieldWithType(params["dbname"], input, "DBName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["parametergroup"]; ok {
+		err = setFieldWithType(params["parametergroup"], input, "DBParameterGroupName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["dbsecgroup"]; ok {
+		err = setFieldWithType(params["dbsecgroup"], input, "DBSecurityGroups", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["subnetgroup"]; ok {
+		err = setFieldWithType(params["subnetgroup"], input, "DBSubnetGroupName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["domain"]; ok {
+		err = setFieldWithType(params["domain"], input, "Domain", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["iamrole"]; ok {
+		err = setFieldWithType(params["iamrole"], input, "DomainIAMRoleName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["version"]; ok {
+		err = setFieldWithType(params["version"], input, "EngineVersion", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["iops"]; ok {
+		err = setFieldWithType(params["iops"], input, "Iops", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["license"]; ok {
+		err = setFieldWithType(params["license"], input, "LicenseModel", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["multiaz"]; ok {
+		err = setFieldWithType(params["multiaz"], input, "MultiAZ", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["optiongroup"]; ok {
+		err = setFieldWithType(params["optiongroup"], input, "OptionGroupName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["port"]; ok {
+		err = setFieldWithType(params["port"], input, "Port", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["backupwindow"]; ok {
+		err = setFieldWithType(params["backupwindow"], input, "PreferredBackupWindow", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["maintenancewindow"]; ok {
+		err = setFieldWithType(params["maintenancewindow"], input, "PreferredMaintenanceWindow", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["public"]; ok {
+		err = setFieldWithType(params["public"], input, "PubliclyAccessible", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["encrypted"]; ok {
+		err = setFieldWithType(params["encrypted"], input, "StorageEncrypted", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["storagetype"]; ok {
+		err = setFieldWithType(params["storagetype"], input, "StorageType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["timezone"]; ok {
+		err = setFieldWithType(params["timezone"], input, "Timezone", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["vpcsecgroup"]; ok {
+		err = setFieldWithType(params["vpcsecgroup"], input, "VpcSecurityGroupIds", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *rds.CreateDBInstanceOutput
+	output, err = d.CreateDBInstance(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create database: %s", err)
+	}
+	d.logger.ExtraVerbosef("rds.CreateDBInstance call took %s", time.Since(start))
+	id := aws.StringValue(output.DBInstance.DBInstanceIdentifier)
+
+	d.logger.Verbosef("create database '%s' done", id)
+	return id, nil
 }
 
 // This function was auto generated

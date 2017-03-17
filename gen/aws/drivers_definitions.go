@@ -369,6 +369,48 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
+		Api: "rds",
+		Drivers: []driver{
+			// LoadBalancer
+			{
+				Action: "create", Entity: cloud.Database, Input: "CreateDBInstanceInput", Output: "CreateDBInstanceOutput", ApiMethod: "CreateDBInstance", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBInstance.DBInstanceIdentifier)",
+				RequiredParams: []param{
+					{AwsField: "DBInstanceClass", TemplateName: "type", AwsType: "awsstr"},
+					{AwsField: "DBInstanceIdentifier", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "Engine", TemplateName: "engine", AwsType: "awsstr"},
+					{AwsField: "MasterUserPassword", TemplateName: "password", AwsType: "awsstr"},
+					{AwsField: "MasterUsername", TemplateName: "username", AwsType: "awsstr"},
+					{AwsField: "AllocatedStorage", TemplateName: "storage", AwsType: "awsint64"},
+				},
+				ExtraParams: []param{
+					{AwsField: "AutoMinorVersionUpgrade", TemplateName: "autoupgrade", AwsType: "awsbool"},
+					{AwsField: "AvailabilityZone", TemplateName: "zone", AwsType: "awsstr"},
+					{AwsField: "BackupRetentionPeriod", TemplateName: "backupretention", AwsType: "awsint64"},
+					{AwsField: "DBClusterIdentifier", TemplateName: "cluster", AwsType: "awsstr"},
+					{AwsField: "DBName", TemplateName: "dbname", AwsType: "awsstr"},
+					{AwsField: "DBParameterGroupName", TemplateName: "parametergroup", AwsType: "awsstr"},
+					{AwsField: "DBSecurityGroups", TemplateName: "dbsecgroup", AwsType: "awsstringslice"},
+					{AwsField: "DBSubnetGroupName", TemplateName: "subnetgroup", AwsType: "awsstr"},
+					{AwsField: "Domain", TemplateName: "domain", AwsType: "awsstr"},
+					{AwsField: "DomainIAMRoleName", TemplateName: "iamrole", AwsType: "awsstr"},
+					{AwsField: "EngineVersion", TemplateName: "version", AwsType: "awsstr"},
+					{AwsField: "Iops", TemplateName: "iops", AwsType: "awsint64"},
+					{AwsField: "LicenseModel", TemplateName: "license", AwsType: "awsstr"}, // license-included | bring-your-own-license | general-public-license
+					{AwsField: "MultiAZ", TemplateName: "multiaz", AwsType: "awsbool"},
+					{AwsField: "OptionGroupName", TemplateName: "optiongroup", AwsType: "awsstr"},
+					{AwsField: "Port", TemplateName: "port", AwsType: "awsint64"},
+					{AwsField: "PreferredBackupWindow", TemplateName: "backupwindow", AwsType: "awsstr"},
+					{AwsField: "PreferredMaintenanceWindow", TemplateName: "maintenancewindow", AwsType: "awsstr"},
+					{AwsField: "PubliclyAccessible", TemplateName: "public", AwsType: "awsbool"},
+					{AwsField: "StorageEncrypted", TemplateName: "encrypted", AwsType: "awsbool"},
+					{AwsField: "StorageType", TemplateName: "storagetype", AwsType: "awsstr"},
+					{AwsField: "Timezone", TemplateName: "timezone", AwsType: "awsstr"},
+					{AwsField: "VpcSecurityGroupIds", TemplateName: "vpcsecgroup", AwsType: "awsstringslice"},
+				},
+			},
+		},
+	},
+	{
 		Api: "iam",
 		Drivers: []driver{
 			// USER

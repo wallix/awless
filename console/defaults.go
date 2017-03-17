@@ -132,6 +132,25 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Protocol"},
 		StringColumnDefinition{Prop: "SslPolicy"},
 	},
+	// Database
+	cloud.Database: {
+		StringColumnDefinition{Prop: "Id", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: "AvailabilityZone", Friendly: "Zone"},
+		StringColumnDefinition{Prop: "Class"},
+		ColoredValueColumnDefinition{
+			StringColumnDefinition: StringColumnDefinition{Prop: "Status"},
+			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
+		StringColumnDefinition{Prop: "AllocatedStorage", Friendly: "Size(Gb)"},
+		StringColumnDefinition{Prop: "Port"},
+		StringColumnDefinition{Prop: "Username"},
+		ColoredValueColumnDefinition{
+			StringColumnDefinition: StringColumnDefinition{Prop: "Public", Friendly: "Public"},
+			ColoredValues:          map[string]color.Attribute{"true": color.FgYellow}},
+		StringColumnDefinition{Prop: "Engine"},
+		StringColumnDefinition{Prop: "EngineVersion", Friendly: "Version"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime", Friendly: "Created"}},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: "Id"},

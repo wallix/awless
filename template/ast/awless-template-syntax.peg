@@ -10,10 +10,11 @@ Statement <- WhiteSpacing (Expr / Declaration / Comment) WhiteSpacing EndOfLine*
 Action <- 'none' / 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' / 'check' / 'detach'
 Entity <- 'none' / 
           'vpc' / 'subnet' / 'instance' / 'volume' / 'tag' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' /
+          'loadbalancer' / 'listener' / 'targetgroup' / 
+          'database' /
           'user' / 'group' / 'role' / 'policy' / 
           'bucket' / 'storageobject' / 
           'subscription' / 'topic' / 'queue' / 
-          'loadbalancer' / 'listener' / 'targetgroup' / 
           'zone' / 'record'
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
                Equal

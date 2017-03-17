@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
@@ -287,6 +288,32 @@ func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err e
 			return d.Delete_Targetgroup_DryRun, nil
 		}
 		return d.Delete_Targetgroup, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type RdsDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	rdsiface.RDSAPI
+}
+
+func (d *RdsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *RdsDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewRdsDriver(api rdsiface.RDSAPI) driver.Driver {
+	return &RdsDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
+
+	case "createdatabase":
+		if d.dryRun {
+			return d.Create_Database_DryRun, nil
+		}
+		return d.Create_Database, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

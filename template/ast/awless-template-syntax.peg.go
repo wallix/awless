@@ -713,7 +713,7 @@ func (p *Peg) Init() {
 		nil,
 		/* 2 Action <- <(('c' 'r' 'e' 'a' 't' 'e') / ('d' 'e' 'l' 'e' 't' 'e') / ('s' 't' 'a' 'r' 't') / ((&('d') ('d' 'e' 't' 'a' 'c' 'h')) | (&('c') ('c' 'h' 'e' 'c' 'k')) | (&('a') ('a' 't' 't' 'a' 'c' 'h')) | (&('u') ('u' 'p' 'd' 'a' 't' 'e')) | (&('s') ('s' 't' 'o' 'p')) | (&('n') ('n' 'o' 'n' 'e'))))> */
 		nil,
-		/* 3 Entity <- <(('v' 'p' 'c') / ('s' 'u' 'b' 'n' 'e' 't') / ('i' 'n' 's' 't' 'a' 'n' 'c' 'e') / ('t' 'a' 'g') / ('s' 'e' 'c' 'u' 'r' 'i' 't' 'y' 'g' 'r' 'o' 'u' 'p') / ('r' 'o' 'u' 't' 'e' 't' 'a' 'b' 'l' 'e') / ('r' 'o' 'u' 't' 'e') / ('r' 'o' 'l' 'e') / ('s' 't' 'o' 'r' 'a' 'g' 'e' 'o' 'b' 'j' 'e' 'c' 't') / ('t' 'o' 'p' 'i' 'c') / ('l' 'o' 'a' 'd' 'b' 'a' 'l' 'a' 'n' 'c' 'e' 'r') / ((&('r') ('r' 'e' 'c' 'o' 'r' 'd')) | (&('z') ('z' 'o' 'n' 'e')) | (&('t') ('t' 'a' 'r' 'g' 'e' 't' 'g' 'r' 'o' 'u' 'p')) | (&('l') ('l' 'i' 's' 't' 'e' 'n' 'e' 'r')) | (&('q') ('q' 'u' 'e' 'u' 'e')) | (&('s') ('s' 'u' 'b' 's' 'c' 'r' 'i' 'p' 't' 'i' 'o' 'n')) | (&('b') ('b' 'u' 'c' 'k' 'e' 't')) | (&('p') ('p' 'o' 'l' 'i' 'c' 'y')) | (&('g') ('g' 'r' 'o' 'u' 'p')) | (&('u') ('u' 's' 'e' 'r')) | (&('i') ('i' 'n' 't' 'e' 'r' 'n' 'e' 't' 'g' 'a' 't' 'e' 'w' 'a' 'y')) | (&('k') ('k' 'e' 'y' 'p' 'a' 'i' 'r')) | (&('v') ('v' 'o' 'l' 'u' 'm' 'e')) | (&('n') ('n' 'o' 'n' 'e'))))> */
+		/* 3 Entity <- <(('v' 'p' 'c') / ('s' 'u' 'b' 'n' 'e' 't') / ('i' 'n' 's' 't' 'a' 'n' 'c' 'e') / ('t' 'a' 'g') / ('s' 'e' 'c' 'u' 'r' 'i' 't' 'y' 'g' 'r' 'o' 'u' 'p') / ('r' 'o' 'u' 't' 'e' 't' 'a' 'b' 'l' 'e') / ('r' 'o' 'u' 't' 'e') / ('l' 'o' 'a' 'd' 'b' 'a' 'l' 'a' 'n' 'c' 'e' 'r') / ('t' 'a' 'r' 'g' 'e' 't' 'g' 'r' 'o' 'u' 'p') / ('r' 'o' 'l' 'e') / ('s' 't' 'o' 'r' 'a' 'g' 'e' 'o' 'b' 'j' 'e' 'c' 't') / ((&('r') ('r' 'e' 'c' 'o' 'r' 'd')) | (&('z') ('z' 'o' 'n' 'e')) | (&('q') ('q' 'u' 'e' 'u' 'e')) | (&('t') ('t' 'o' 'p' 'i' 'c')) | (&('s') ('s' 'u' 'b' 's' 'c' 'r' 'i' 'p' 't' 'i' 'o' 'n')) | (&('b') ('b' 'u' 'c' 'k' 'e' 't')) | (&('p') ('p' 'o' 'l' 'i' 'c' 'y')) | (&('g') ('g' 'r' 'o' 'u' 'p')) | (&('u') ('u' 's' 'e' 'r')) | (&('d') ('d' 'a' 't' 'a' 'b' 'a' 's' 'e')) | (&('l') ('l' 'i' 's' 't' 'e' 'n' 'e' 'r')) | (&('i') ('i' 'n' 't' 'e' 'r' 'n' 'e' 't' 'g' 'a' 't' 'e' 'w' 'a' 'y')) | (&('k') ('k' 'e' 'y' 'p' 'a' 'i' 'r')) | (&('v') ('v' 'o' 'l' 'u' 'm' 'e')) | (&('n') ('n' 'o' 'n' 'e'))))> */
 		nil,
 		/* 4 Declaration <- <(<Identifier> Action0 Equal Expr)> */
 		nil,
@@ -1177,11 +1177,27 @@ func (p *Peg) Init() {
 							goto l64
 						l71:
 							position, tokenIndex = position64, tokenIndex64
-							if buffer[position] != rune('r') {
+							if buffer[position] != rune('l') {
 								goto l72
 							}
 							position++
 							if buffer[position] != rune('o') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('a') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('d') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('b') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('a') {
 								goto l72
 							}
 							position++
@@ -1189,30 +1205,38 @@ func (p *Peg) Init() {
 								goto l72
 							}
 							position++
+							if buffer[position] != rune('a') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('n') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('c') {
+								goto l72
+							}
+							position++
 							if buffer[position] != rune('e') {
+								goto l72
+							}
+							position++
+							if buffer[position] != rune('r') {
 								goto l72
 							}
 							position++
 							goto l64
 						l72:
 							position, tokenIndex = position64, tokenIndex64
-							if buffer[position] != rune('s') {
-								goto l73
-							}
-							position++
 							if buffer[position] != rune('t') {
 								goto l73
 							}
 							position++
-							if buffer[position] != rune('o') {
+							if buffer[position] != rune('a') {
 								goto l73
 							}
 							position++
 							if buffer[position] != rune('r') {
-								goto l73
-							}
-							position++
-							if buffer[position] != rune('a') {
 								goto l73
 							}
 							position++
@@ -1224,34 +1248,34 @@ func (p *Peg) Init() {
 								goto l73
 							}
 							position++
+							if buffer[position] != rune('t') {
+								goto l73
+							}
+							position++
+							if buffer[position] != rune('g') {
+								goto l73
+							}
+							position++
+							if buffer[position] != rune('r') {
+								goto l73
+							}
+							position++
 							if buffer[position] != rune('o') {
 								goto l73
 							}
 							position++
-							if buffer[position] != rune('b') {
+							if buffer[position] != rune('u') {
 								goto l73
 							}
 							position++
-							if buffer[position] != rune('j') {
-								goto l73
-							}
-							position++
-							if buffer[position] != rune('e') {
-								goto l73
-							}
-							position++
-							if buffer[position] != rune('c') {
-								goto l73
-							}
-							position++
-							if buffer[position] != rune('t') {
+							if buffer[position] != rune('p') {
 								goto l73
 							}
 							position++
 							goto l64
 						l73:
 							position, tokenIndex = position64, tokenIndex64
-							if buffer[position] != rune('t') {
+							if buffer[position] != rune('r') {
 								goto l74
 							}
 							position++
@@ -1259,22 +1283,22 @@ func (p *Peg) Init() {
 								goto l74
 							}
 							position++
-							if buffer[position] != rune('p') {
+							if buffer[position] != rune('l') {
 								goto l74
 							}
 							position++
-							if buffer[position] != rune('i') {
-								goto l74
-							}
-							position++
-							if buffer[position] != rune('c') {
+							if buffer[position] != rune('e') {
 								goto l74
 							}
 							position++
 							goto l64
 						l74:
 							position, tokenIndex = position64, tokenIndex64
-							if buffer[position] != rune('l') {
+							if buffer[position] != rune('s') {
+								goto l75
+							}
+							position++
+							if buffer[position] != rune('t') {
 								goto l75
 							}
 							position++
@@ -1282,15 +1306,7 @@ func (p *Peg) Init() {
 								goto l75
 							}
 							position++
-							if buffer[position] != rune('a') {
-								goto l75
-							}
-							position++
-							if buffer[position] != rune('d') {
-								goto l75
-							}
-							position++
-							if buffer[position] != rune('b') {
+							if buffer[position] != rune('r') {
 								goto l75
 							}
 							position++
@@ -1298,19 +1314,7 @@ func (p *Peg) Init() {
 								goto l75
 							}
 							position++
-							if buffer[position] != rune('l') {
-								goto l75
-							}
-							position++
-							if buffer[position] != rune('a') {
-								goto l75
-							}
-							position++
-							if buffer[position] != rune('n') {
-								goto l75
-							}
-							position++
-							if buffer[position] != rune('c') {
+							if buffer[position] != rune('g') {
 								goto l75
 							}
 							position++
@@ -1318,7 +1322,27 @@ func (p *Peg) Init() {
 								goto l75
 							}
 							position++
-							if buffer[position] != rune('r') {
+							if buffer[position] != rune('o') {
+								goto l75
+							}
+							position++
+							if buffer[position] != rune('b') {
+								goto l75
+							}
+							position++
+							if buffer[position] != rune('j') {
+								goto l75
+							}
+							position++
+							if buffer[position] != rune('e') {
+								goto l75
+							}
+							position++
+							if buffer[position] != rune('c') {
+								goto l75
+							}
+							position++
+							if buffer[position] != rune('t') {
 								goto l75
 							}
 							position++
@@ -1371,86 +1395,6 @@ func (p *Peg) Init() {
 									}
 									position++
 									break
-								case 't':
-									if buffer[position] != rune('t') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('a') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('r') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('g') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('e') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('t') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('g') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('r') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('o') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('u') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('p') {
-										goto l52
-									}
-									position++
-									break
-								case 'l':
-									if buffer[position] != rune('l') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('i') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('s') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('t') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('e') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('n') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('e') {
-										goto l52
-									}
-									position++
-									if buffer[position] != rune('r') {
-										goto l52
-									}
-									position++
-									break
 								case 'q':
 									if buffer[position] != rune('q') {
 										goto l52
@@ -1469,6 +1413,28 @@ func (p *Peg) Init() {
 									}
 									position++
 									if buffer[position] != rune('e') {
+										goto l52
+									}
+									position++
+									break
+								case 't':
+									if buffer[position] != rune('t') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('o') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('p') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('i') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('c') {
 										goto l52
 									}
 									position++
@@ -1603,6 +1569,74 @@ func (p *Peg) Init() {
 									}
 									position++
 									if buffer[position] != rune('s') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('e') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('r') {
+										goto l52
+									}
+									position++
+									break
+								case 'd':
+									if buffer[position] != rune('d') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('a') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('t') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('a') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('b') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('a') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('s') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('e') {
+										goto l52
+									}
+									position++
+									break
+								case 'l':
+									if buffer[position] != rune('l') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('i') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('s') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('t') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('e') {
+										goto l52
+									}
+									position++
+									if buffer[position] != rune('n') {
 										goto l52
 									}
 									position++

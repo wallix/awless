@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -68,6 +69,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(awssdk.StringValue(ss.TargetGroupArn), cloud.TargetGroup)
 	case *elbv2.Listener:
 		res = graph.InitResource(awssdk.StringValue(ss.ListenerArn), cloud.Listener)
+		// Database
+	case *rds.DBInstance:
+		res = graph.InitResource(awssdk.StringValue(ss.DBInstanceIdentifier), cloud.Database)
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), cloud.User)

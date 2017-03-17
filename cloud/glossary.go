@@ -19,6 +19,9 @@ const (
 	TargetGroup  string = "targetgroup"
 	Listener     string = "listener"
 
+	//database
+	Database string = "database"
+
 	//access
 	User   string = "user"
 	Role   string = "role"

@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -101,6 +103,15 @@ func (m *mockELB) DescribeListenersPages(input *elbv2.DescribeListenersInput, fn
 }
 func (m *mockELB) DescribeTargetHealth(input *elbv2.DescribeTargetHealthInput) (*elbv2.DescribeTargetHealthOutput, error) {
 	return &elbv2.DescribeTargetHealthOutput{TargetHealthDescriptions: m.targetHealths[awssdk.StringValue(input.TargetGroupArn)]}, nil
+}
+
+type mockRDS struct {
+	rdsiface.RDSAPI
+}
+
+func (m *mockRDS) DescribeDBInstancesPages(input *rds.DescribeDBInstancesInput, fn func(p *rds.DescribeDBInstancesOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&rds.DescribeDBInstancesOutput{}, true)
+	return nil
 }
 
 type mockRoute53 struct {

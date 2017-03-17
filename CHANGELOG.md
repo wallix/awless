@@ -3,6 +3,7 @@
 ### Features
 
 - Better error messaging on parsing template errors
+- Infra: basic support of RDS: listing and creation of databases:  `awless list databases`; `awless create database`
 
 ### Bugfixes
 

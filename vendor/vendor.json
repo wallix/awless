@@ -261,6 +261,18 @@
 			"versionExact": "v1.7.3"
 		},
 		{
+			"checksumSHA1": "ra0UNwqr9Ic/fsEGk41dvl5jqbs=",
+			"path": "github.com/aws/aws-sdk-go/service/rds",
+			"revision": "c368cc7b0f3b232b55bb01dc5ee52bbe52030604",
+			"revisionTime": "2017-03-16T23:56:57Z"
+		},
+		{
+			"checksumSHA1": "derUDpmwipSFxbABR4JufbRo+20=",
+			"path": "github.com/aws/aws-sdk-go/service/rds/rdsiface",
+			"revision": "c368cc7b0f3b232b55bb01dc5ee52bbe52030604",
+			"revisionTime": "2017-03-16T23:56:57Z"
+		},
+		{
 			"checksumSHA1": "VWVMEqjfDDgB14lgsv0Zq3dQclU=",
 			"path": "github.com/aws/aws-sdk-go/service/route53",
 			"revision": "963d664c4279debae251c0f336e247571dc614db",

@@ -41,7 +41,7 @@ type fetcher struct {
 var FetchersDefs = []fetchersDef{
 	{
 		Name: "infra",
-		Api:  []string{"ec2", "elbv2"},
+		Api:  []string{"ec2", "elbv2", "rds"},
 		Fetchers: []fetcher{
 			{Api: "ec2", ResourceType: cloud.Instance, AWSType: "ec2.Instance", ApiMethod: "DescribeInstancesPages", Input: "ec2.DescribeInstancesInput{}", Output: "ec2.DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ec2", ResourceType: cloud.Subnet, AWSType: "ec2.Subnet", ApiMethod: "DescribeSubnets", Input: "ec2.DescribeSubnetsInput{}", Output: "ec2.DescribeSubnetsOutput", OutputsExtractor: "Subnets"},
@@ -55,6 +55,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "elbv2", ResourceType: cloud.LoadBalancer, AWSType: "elbv2.LoadBalancer", ApiMethod: "DescribeLoadBalancersPages", Input: "elbv2.DescribeLoadBalancersInput{}", Output: "elbv2.DescribeLoadBalancersOutput", OutputsExtractor: "LoadBalancers", Multipage: true, NextPageMarker: "NextMarker"},
 			{Api: "elbv2", ResourceType: cloud.TargetGroup, AWSType: "elbv2.TargetGroup", ApiMethod: "DescribeTargetGroups", Input: "elbv2.DescribeTargetGroupsInput{}", Output: "elbv2.DescribeTargetGroupsOutput", OutputsExtractor: "TargetGroups"},
 			{Api: "elbv2", ResourceType: cloud.Listener, AWSType: "elbv2.Listener", ManualFetcher: true},
+			{Api: "rds", ResourceType: cloud.Database, AWSType: "rds.DBInstance", ApiMethod: "DescribeDBInstancesPages", Input: "rds.DescribeDBInstancesInput{}", Output: "rds.DescribeDBInstancesOutput", OutputsExtractor: "DBInstances", Multipage: true, NextPageMarker: "Marker"},
 		},
 	},
 	{

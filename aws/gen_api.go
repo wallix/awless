@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -74,6 +76,7 @@ var ResourceTypes = []string{
 	"loadbalancer",
 	"targetgroup",
 	"listener",
+	"database",
 	"user",
 	"group",
 	"role",
@@ -90,6 +93,7 @@ var ResourceTypes = []string{
 var ServicePerAPI = map[string]string{
 	"ec2":     "infra",
 	"elbv2":   "infra",
+	"rds":     "infra",
 	"iam":     "access",
 	"s3":      "storage",
 	"sns":     "notification",
@@ -110,6 +114,7 @@ var ServicePerResourceType = map[string]string{
 	"loadbalancer":     "infra",
 	"targetgroup":      "infra",
 	"listener":         "infra",
+	"database":         "infra",
 	"user":             "access",
 	"group":            "access",
 	"role":             "access",
@@ -130,6 +135,7 @@ type Infra struct {
 	log    *logger.Logger
 	ec2iface.EC2API
 	elbv2iface.ELBV2API
+	rdsiface.RDSAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
@@ -137,6 +143,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 	return &Infra{
 		EC2API:   ec2.New(sess),
 		ELBV2API: elbv2.New(sess),
+		RDSAPI:   rds.New(sess),
 		config:   awsconf,
 		region:   region,
 		log:      log,
@@ -151,6 +158,7 @@ func (s *Infra) Drivers() []driver.Driver {
 	return []driver.Driver{
 		awsdriver.NewEc2Driver(s.EC2API),
 		awsdriver.NewElbv2Driver(s.ELBV2API),
+		awsdriver.NewRdsDriver(s.RDSAPI),
 	}
 }
 
@@ -167,6 +175,7 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "loadbalancer")
 	all = append(all, "targetgroup")
 	all = append(all, "listener")
+	all = append(all, "database")
 	return
 }
 
@@ -190,6 +199,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var loadbalancerList []*elbv2.LoadBalancer
 	var targetgroupList []*elbv2.TargetGroup
 	var listenerList []*elbv2.Listener
+	var databaseList []*rds.DBInstance
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -385,6 +395,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[listener]")
+	}
+	if s.config.getBool("aws.infra.database.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, databaseList, err = s.fetch_all_database_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[database]")
 	}
 
 	go func() {
@@ -589,6 +615,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.database.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range databaseList {
+				for _, fn := range addParentsFns["database"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -641,6 +682,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "listener":
 		graph, _, err := s.fetch_all_listener_graph()
+		return graph, err
+	case "database":
+		graph, _, err := s.fetch_all_database_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -887,6 +931,30 @@ func (s *Infra) fetch_all_targetgroup_graph() (*graph.Graph, []*elbv2.TargetGrou
 
 	return g, cloudResources, nil
 
+}
+
+func (s *Infra) fetch_all_database_graph() (*graph.Graph, []*rds.DBInstance, error) {
+	g := graph.NewGraph()
+	var cloudResources []*rds.DBInstance
+	var badResErr error
+	err := s.DescribeDBInstancesPages(&rds.DescribeDBInstancesInput{},
+		func(out *rds.DescribeDBInstancesOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.DBInstances {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.Marker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
 }
 
 func (s *Infra) IsSyncDisabled() bool {

@@ -281,6 +281,13 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		RequiredParams: []string{"arn"},
 		ExtraParams:    []string{},
 	},
+	"createdatabase": {
+		Action:         "create",
+		Entity:         "database",
+		Api:            "rds",
+		RequiredParams: []string{"type", "id", "engine", "password", "username", "storage"},
+		ExtraParams:    []string{"autoupgrade", "zone", "backupretention", "cluster", "dbname", "parametergroup", "dbsecgroup", "subnetgroup", "domain", "iamrole", "version", "iops", "license", "multiaz", "optiongroup", "port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecgroup"},
+	},
 	"createuser": {
 		Action:         "create",
 		Entity:         "user",
@@ -476,6 +483,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "listener")
 	supported["create"] = append(supported["create"], "targetgroup")
 	supported["delete"] = append(supported["delete"], "targetgroup")
+	supported["create"] = append(supported["create"], "database")
 	supported["create"] = append(supported["create"], "user")
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")
