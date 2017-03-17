@@ -1,5 +1,9 @@
 ## v0.0.20 [unreleased]
 
+### Features
+
+- Better error messaging on parsing template errors
+
 ### Bugfixes
 
 - [#79](https://github.com/wallix/awless/issues/79): `awless list records` do not add new lines between records.

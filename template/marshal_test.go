@@ -127,7 +127,7 @@ func TestMarshalToJSON(t *testing.T) {
 		}
 
 		if got, want := identJSON(actual), identJSON([]byte(c.out)); got != want {
-			t.Fatalf("\ngot\n\n%q\nwant\n\n%q\n", got, want)
+			t.Fatalf("\ngot\n\n%s\nwant\n\n%s\n", got, want)
 		}
 	}
 }

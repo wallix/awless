@@ -100,7 +100,9 @@ func (pe *parseError) Error() string {
 			buff.WriteString("   ")
 			buff.WriteString(l)
 		}
-		buff.WriteByte('\n')
+		if i < len(pe.lines)-1 {
+			buff.WriteByte('\n')
+		}
 	}
 
 	return buff.String()

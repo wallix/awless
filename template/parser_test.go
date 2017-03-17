@@ -42,13 +42,13 @@ func TestWrapPegParseError(t *testing.T) {
 			t.Fatalf("got %d, want %d", got, want)
 		}
 
-		exp := "error parsing template at line 2 (char 23):\n\t   create subnet\n\t-> create instance type= w\n\t   create vpc\n"
+		exp := "error parsing template at line 2 (char 23):\n\t   create subnet\n\t-> create instance type= w\n\t   create vpc"
 		if got, want := err.Error(), exp; got != want {
-			t.Fatalf("got\n\n%q\n\nwant\n\n%q\n", got, want)
+			t.Fatalf("got\n\n%s\n\nwant\n\n%s\n", got, want)
 		}
 	})
 
-	t.Run("Fallback on peg msg if cannot find contextal info", func(t *testing.T) {
+	t.Run("Fallback on peg msg if cannot find contextual info", func(t *testing.T) {
 		orig := "rubbish"
 		err := newParseError("create vpc\ncreate vpc", orig)
 		if got, want := err.Error(), orig; got != want {
@@ -268,13 +268,59 @@ func TestTemplateParsing(t *testing.T) {
 				input: `create vpc
 create subnet`,
 				verifyFn: func(s *Template) error {
-					err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
-						nil,
-						nil,
-						nil,
-						nil,
-					)
-					if err != nil {
+					if err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
+						nil, nil, nil, nil,
+					); err != nil {
+						return err
+					}
+					if err := assertCommandNode(s.Statements[1].Node, "create", "subnet",
+						nil, nil, nil, nil,
+					); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
+				input: `
+
+
+				create vpc
+
+create subnet
+
+
+`,
+				verifyFn: func(s *Template) error {
+					if err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
+						nil, nil, nil, nil,
+					); err != nil {
+						return err
+					}
+					if err := assertCommandNode(s.Statements[1].Node, "create", "subnet",
+						nil, nil, nil, nil,
+					); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
+				input: ` # first comment
+				create vpc  # second comment
+create subnet
+# third statement
+
+`,
+				verifyFn: func(s *Template) error {
+					if err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
+						nil, nil, nil, nil,
+					); err != nil {
+						return err
+					}
+					if err := assertCommandNode(s.Statements[1].Node, "create", "subnet",
+						nil, nil, nil, nil,
+					); err != nil {
 						return err
 					}
 					return nil
@@ -285,7 +331,7 @@ create subnet`,
 			myvpc  =   create   vpc  cidr=10.0.0.0/24 num=3
 mysubnet = delete subnet vpc=$myvpc name={ the_name } cidr=10.0.0.0/25
 create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3e0 ip=127.0.0.1
-		`,
+                       `,
 
 				verifyFn: func(s *Template) error {
 					err := assertDeclarationNode(s.Statements[0].Node, "myvpc", "create", "vpc",
