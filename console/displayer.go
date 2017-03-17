@@ -408,23 +408,23 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	}
 
 	d.sorter.sort(values)
+	markColumnAsc := -1
+	if len(d.sorter.columns()) > 0 {
+		markColumnAsc = d.sorter.columns()[0]
+	}
+
 	columnsToDisplay := d.headers
 	if d.maxwidth != 0 {
 		columnsToDisplay = []ColumnDefinition{}
-		currentWidth := 0
+		currentWidth := 3 // borders
 		for j, h := range d.headers {
-			colW := t(j, values, h) + 3 // +3 (tables margin)
+			colW := colWidth(j, values, h, j == markColumnAsc) + 3 // +3 (tables margin + border)
 			if currentWidth+colW > d.maxwidth {
 				break
 			}
 			currentWidth += colW
 			columnsToDisplay = append(columnsToDisplay, h)
 		}
-	}
-
-	markColumnAsc := -1
-	if len(d.sorter.columns()) > 0 {
-		markColumnAsc = d.sorter.columns()[0]
 	}
 
 	table := tablewriter.NewWriter(w)
@@ -835,18 +835,21 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 	return ids, nil
 }
 
-func t(j int, t table, h ColumnDefinition) int {
-	w := 0
+func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
+	displayColor := color.NoColor
+	color.NoColor = true
+	max := utf8.RuneCountInString(h.title(hasSortSign))
 	for i := range t {
-		words := get_words_from(h.format(t[i][j]))
-		for _, word := range words {
-			c := utf8.RuneCountInString(word)
-			if c > w {
-				w = c
+		lines, _ := tablewriter.WrapString(h.format(t[i][j]), tablewriter.MAX_ROW_WIDTH)
+		for _, line := range lines {
+			width := utf8.RuneCountInString(line)
+			if width > max {
+				max = width
 			}
 		}
 	}
-	return w
+	color.NoColor = displayColor
+	return max
 }
 
 func get_words_from(text string) []string {

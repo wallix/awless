@@ -1,3 +1,9 @@
+## v0.0.20 [unreleased]
+
+### Bugfixes
+
+- Better compute table columns width to choose the columns to truncate.
+
 ## v0.0.19 [2017-03-16]
 
 ### Features

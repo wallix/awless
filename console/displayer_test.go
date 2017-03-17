@@ -519,7 +519,7 @@ func TestMaxWidth(t *testing.T) {
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("s", "n"),
-		WithMaxWidth(21),
+		WithMaxWidth(30),
 	).SetSource(g).Build()
 
 	expected = `|   I   |   N   |  S ▲  |
