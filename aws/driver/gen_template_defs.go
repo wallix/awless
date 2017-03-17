@@ -285,8 +285,8 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "create",
 		Entity:         "database",
 		Api:            "rds",
-		RequiredParams: []string{"type", "id", "engine", "password", "username", "storage"},
-		ExtraParams:    []string{"autoupgrade", "zone", "backupretention", "cluster", "dbname", "parametergroup", "dbsecgroup", "subnetgroup", "domain", "iamrole", "version", "iops", "license", "multiaz", "optiongroup", "port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecgroup"},
+		RequiredParams: []string{"engine", "id", "password", "storage", "type", "username"},
+		ExtraParams:    []string{"autoupgrade", "backupretention", "backupwindow", "cluster", "dbname", "dbsecgroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecgroup", "zone"},
 	},
 	"deletedatabase": {
 		Action:         "delete",
@@ -321,6 +321,20 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Entity:         "user",
 		Api:            "iam",
 		RequiredParams: []string{"group", "name"},
+		ExtraParams:    []string{},
+	},
+	"createaccesskey": {
+		Action:         "create",
+		Entity:         "accesskey",
+		Api:            "iam",
+		RequiredParams: []string{"user"},
+		ExtraParams:    []string{},
+	},
+	"deleteaccesskey": {
+		Action:         "delete",
+		Entity:         "accesskey",
+		Api:            "iam",
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
 	"creategroup": {
@@ -496,6 +510,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")
 	supported["detach"] = append(supported["detach"], "user")
+	supported["create"] = append(supported["create"], "accesskey")
+	supported["delete"] = append(supported["delete"], "accesskey")
 	supported["create"] = append(supported["create"], "group")
 	supported["delete"] = append(supported["delete"], "group")
 	supported["attach"] = append(supported["attach"], "policy")

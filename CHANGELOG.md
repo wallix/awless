@@ -4,6 +4,7 @@
 
 - Better error messaging on parsing template errors
 - Infra: basic support of RDS: listing, creation and deletion of databases:  `awless list databases`; `awless create/delete database`
+- Access: create an AWS access key for a user
 
 ### Bugfixes
 

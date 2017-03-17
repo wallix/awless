@@ -487,6 +487,20 @@ var DriversDefs = []driversDef{
 				},
 			},
 
+			// Access key
+			{
+				Action: "create", Entity: cloud.AccessKey, DryRunUnsupported: true, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "user"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.AccessKey, DryRunUnsupported: true, ApiMethod: "DeleteAccessKey", Input: "DeleteAccessKeyInput", Output: "DeleteAccessKeyOutput",
+				RequiredParams: []param{
+					{AwsField: "AccessKeyId", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+
 			// GROUP
 			{
 				Action: "create", Entity: cloud.Group, DryRunUnsupported: true, Input: "CreateGroupInput", Output: "CreateGroupOutput", ApiMethod: "CreateGroup", OutputExtractor: "aws.StringValue(output.Group.GroupId)",

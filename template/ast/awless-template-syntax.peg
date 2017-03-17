@@ -12,7 +12,7 @@ Entity <- 'none' /
           'vpc' / 'subnet' / 'instance' / 'volume' / 'tag' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' /
           'loadbalancer' / 'listener' / 'targetgroup' / 
           'database' /
-          'user' / 'group' / 'role' / 'policy' / 
+          'user' / 'group' / 'role' / 'policy' / 'accesskey' /
           'bucket' / 'storageobject' / 
           'subscription' / 'topic' / 'queue' / 
           'zone' / 'record'

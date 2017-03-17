@@ -365,6 +365,18 @@ func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Detach_User, nil
 
+	case "createaccesskey":
+		if d.dryRun {
+			return d.Create_Accesskey_DryRun, nil
+		}
+		return d.Create_Accesskey, nil
+
+	case "deleteaccesskey":
+		if d.dryRun {
+			return d.Delete_Accesskey_DryRun, nil
+		}
+		return d.Delete_Accesskey, nil
+
 	case "creategroup":
 		if d.dryRun {
 			return d.Create_Group_DryRun, nil

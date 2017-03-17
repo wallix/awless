@@ -23,10 +23,11 @@ const (
 	Database string = "database"
 
 	//access
-	User   string = "user"
-	Role   string = "role"
-	Group  string = "group"
-	Policy string = "policy"
+	User      string = "user"
+	Role      string = "role"
+	Group     string = "group"
+	Policy    string = "policy"
+	AccessKey string = "accesskey"
 
 	//storage
 	Bucket string = "bucket"

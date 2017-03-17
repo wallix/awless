@@ -148,6 +148,51 @@ func performCall(d *IamDriver, desc string, input interface{}, fn interface{}, s
 	return
 }
 
+func (d *IamDriver) Create_Accesskey_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["user"]; !ok {
+		return nil, errors.New("create accesskey: missing required params 'user'")
+	}
+
+	d.logger.Verbose("params dry run: create accesskey ok")
+	return nil, nil
+}
+
+func (d *IamDriver) Create_Accesskey(params map[string]interface{}) (interface{}, error) {
+	input := &iam.CreateAccessKeyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["user"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.CreateAccessKeyOutput
+	output, err = d.CreateAccessKey(input)
+
+	if err != nil {
+		return nil, fmt.Errorf("create accesskey: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.CreateAccessKey call took %s", time.Since(start))
+
+	d.logger.Infof("Access key created. Here are the crendentials for user %s:", aws.StringValue(output.AccessKey.UserName))
+	fmt.Println()
+	fmt.Println(strings.Repeat("*", 64))
+	fmt.Printf("aws_access_key_id = %s\n", aws.StringValue(output.AccessKey.AccessKeyId))
+	fmt.Printf("aws_secret_access_key = %s\n", aws.StringValue(output.AccessKey.SecretAccessKey))
+	fmt.Println(strings.Repeat("*", 64))
+	fmt.Println()
+	d.logger.Warning("This is your only opportunity to view the secret access keys.")
+	d.logger.Warning("Save the user's new access key ID and secret access key in a safe and secure place.")
+	d.logger.Warning("You will not have access to the secret keys again after this step.")
+
+	id := aws.StringValue(output.AccessKey.AccessKeyId)
+
+	d.logger.Verbosef("create accesskey '%s' done", id)
+	return id, nil
+}
+
 func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeInstancesInput{}
 	input.DryRun = aws.Bool(true)

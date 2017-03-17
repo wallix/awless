@@ -2428,6 +2428,39 @@ func (d *IamDriver) Detach_User(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
+func (d *IamDriver) Delete_Accesskey_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete accesskey: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete accesskey ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Accesskey(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteAccessKeyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "AccessKeyId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeleteAccessKeyOutput
+	output, err = d.DeleteAccessKey(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete accesskey: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeleteAccessKey call took %s", time.Since(start))
+	d.logger.Verbose("delete accesskey done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *IamDriver) Create_Group_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create group: missing required params 'name'")
