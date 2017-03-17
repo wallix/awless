@@ -285,7 +285,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "create",
 		Entity:         "database",
 		Api:            "rds",
-		RequiredParams: []string{"engine", "id", "password", "storage", "type", "username"},
+		RequiredParams: []string{"engine", "id", "password", "size", "type", "username"},
 		ExtraParams:    []string{"autoupgrade", "backupretention", "backupwindow", "cluster", "dbname", "dbsecgroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecgroup", "zone"},
 	},
 	"deletedatabase": {

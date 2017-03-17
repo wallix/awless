@@ -30,15 +30,31 @@ func (te *Template) Revert() (*Template, error) {
 				revertAction = "attach"
 			case "attach":
 				revertAction = "detach"
+			case "delete":
+				revertAction = "create"
 			}
 
 			switch cmd.Action {
 			case "start", "stop", "attach", "detach":
 				for k, v := range cmd.Params {
-					params = append(params, fmt.Sprintf("%s=%s", k, v))
+					params = append(params, fmt.Sprintf("%s=%v", k, v))
 				}
 			case "create":
-				params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
+				switch cmd.Entity {
+				case "record":
+					for k, v := range cmd.Params {
+						params = append(params, fmt.Sprintf("%s=%v", k, v))
+					}
+				default:
+					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
+				}
+			case "delete":
+				switch cmd.Entity {
+				case "record":
+					for k, v := range cmd.Params {
+						params = append(params, fmt.Sprintf("%s=%v", k, v))
+					}
+				}
 			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
@@ -75,6 +91,9 @@ func isRevertible(cmd *ast.CommandNode) bool {
 
 	if cmd.Action == "check" {
 		return false
+	}
+	if cmd.Entity == "record" && (cmd.Action == "create" || cmd.Action == "delete") {
+		return true
 	}
 
 	if v, ok := cmd.CmdResult.(string); ok && v != "" {

@@ -416,7 +416,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "Engine", TemplateName: "engine", AwsType: "awsstr"},
 					{AwsField: "MasterUserPassword", TemplateName: "password", AwsType: "awsstr"},
 					{AwsField: "MasterUsername", TemplateName: "username", AwsType: "awsstr"},
-					{AwsField: "AllocatedStorage", TemplateName: "storage", AwsType: "awsint64"},
+					{AwsField: "AllocatedStorage", TemplateName: "size", AwsType: "awsint64"},
 				},
 				ExtraParams: []param{
 					{AwsField: "AutoMinorVersionUpgrade", TemplateName: "autoupgrade", AwsType: "awsbool"},

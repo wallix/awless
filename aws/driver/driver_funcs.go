@@ -611,13 +611,13 @@ func (d *Route53Driver) Create_Record(params map[string]interface{}) (interface{
 	start := time.Now()
 	var output *route53.ChangeResourceRecordSetsOutput
 	output, err = d.ChangeResourceRecordSets(input)
-	output = output
+
 	if err != nil {
 		return nil, fmt.Errorf("create record: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
 	d.logger.Verbose("create record done")
-	return output, nil
+	return aws.StringValue(output.ChangeInfo.Id), nil
 }
 
 func (d *Route53Driver) Delete_Record_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -680,13 +680,13 @@ func (d *Route53Driver) Delete_Record(params map[string]interface{}) (interface{
 	start := time.Now()
 	var output *route53.ChangeResourceRecordSetsOutput
 	output, err = d.ChangeResourceRecordSets(input)
-	output = output
+
 	if err != nil {
 		return nil, fmt.Errorf("delete record: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
 	d.logger.Verbose("delete record done")
-	return output, nil
+	return aws.StringValue(output.ChangeInfo.Id), nil
 }
 
 func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermission, error) {

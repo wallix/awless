@@ -70,6 +70,8 @@ func TestCmdNodeIsRevertible(t *testing.T) {
 		{line: "stop instance", result: "any", revertible: true},
 		{line: "attach policy", revertible: true},
 		{line: "detach policy", revertible: true},
+		{line: "create record", revertible: true},
+		{line: "delete record", revertible: true},
 	}
 
 	for _, tc := range tcases {

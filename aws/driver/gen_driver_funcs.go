@@ -2037,8 +2037,8 @@ func (d *RdsDriver) Create_Database_DryRun(params map[string]interface{}) (inter
 		return nil, errors.New("create database: missing required params 'username'")
 	}
 
-	if _, ok := params["storage"]; !ok {
-		return nil, errors.New("create database: missing required params 'storage'")
+	if _, ok := params["size"]; !ok {
+		return nil, errors.New("create database: missing required params 'size'")
 	}
 
 	d.logger.Verbose("params dry run: create database ok")
@@ -2071,7 +2071,7 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["storage"], input, "AllocatedStorage", awsint64)
+	err = setFieldWithType(params["size"], input, "AllocatedStorage", awsint64)
 	if err != nil {
 		return nil, err
 	}
