@@ -25,6 +25,46 @@ import (
 	"github.com/wallix/awless/template/ast"
 )
 
+func TestWrapPegParseError(t *testing.T) {
+	t.Run("Display better error message", func(t *testing.T) {
+		text := "create subnet\ncreate instance type= wrong=\ncreate vpc"
+		_, err := Parse(text)
+
+		perr, _ := err.(*parseError)
+
+		if got, want := perr.line, 2; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		if got, want := perr.start, 23; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		if got, want := perr.end, 28; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+
+		exp := "error parsing template at line 2 (char 23):\n\t   create subnet\n\t-> create instance type= w\n\t   create vpc\n"
+		if got, want := err.Error(), exp; got != want {
+			t.Fatalf("got\n\n%q\n\nwant\n\n%q\n", got, want)
+		}
+	})
+
+	t.Run("Fallback on peg msg if cannot find contextal info", func(t *testing.T) {
+		orig := "rubbish"
+		err := newParseError("create vpc\ncreate vpc", orig)
+		if got, want := err.Error(), orig; got != want {
+			t.Fatalf("got\n\n%q\n\nwant\n\n%q\n", got, want)
+		}
+	})
+
+	t.Run("Fallback on peg msg if out of bounds indexes info", func(t *testing.T) {
+		orig := "line 1 symbol 21 - line 1 symbol 22"
+		err := newParseError("create vpc\ncreate vpc", orig)
+		if got, want := err.Error(), orig; got != want {
+			t.Fatalf("got\n\n%q\n\nwant\n\n%q\n", got, want)
+		}
+	})
+}
+
 func TestParamsOnlyParsing(t *testing.T) {
 	params, err := ParseParams("type=t2.micro subnet=@my-subnet count=4")
 	if err != nil {

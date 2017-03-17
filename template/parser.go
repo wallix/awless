@@ -17,17 +17,21 @@ limitations under the License.
 package template
 
 import (
+	"bytes"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/wallix/awless/template/ast"
 )
 
 func Parse(text string) (*Template, error) {
-	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text), Pretty: true}
+	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text)}
 	p.Init()
 
 	if err := p.Parse(); err != nil {
-		return nil, err
+		return nil, newParseError(text, err.Error())
 	}
 	p.Execute()
 
@@ -64,4 +68,75 @@ func parseStatement(text string) (ast.Node, error) {
 	}
 
 	return templ.Statements[0].Node, nil
+}
+
+type parseError struct {
+	origMsg          string
+	lines            []string
+	line, start, end int
+}
+
+func newParseError(templText, pegErrMsg string) (perr *parseError) {
+	perr = buildParseError(pegErrMsg)
+	perr.origMsg = pegErrMsg
+	perr.lines = strings.Split(templText, "\n")
+	return
+}
+
+func (pe *parseError) Error() string {
+	if pe.invalidIndexes() {
+		return pe.origMsg
+	}
+
+	var buff bytes.Buffer
+	buff.WriteString(fmt.Sprintf("error parsing template at line %d (char %d):\n", pe.line, pe.start))
+
+	for i, l := range pe.lines {
+		buff.WriteByte('\t')
+		if pe.line == i+1 {
+			buff.WriteString("-> ")
+			buff.WriteString(l[0:pe.start])
+		} else {
+			buff.WriteString("   ")
+			buff.WriteString(l)
+		}
+		buff.WriteByte('\n')
+	}
+
+	return buff.String()
+}
+
+func (pe *parseError) invalidIndexes() bool {
+	if pe.line == 0 {
+		return true
+	}
+	if pe.line > len(pe.lines) {
+		return true
+	}
+	if pe.start > len(pe.lines[pe.line-1]) {
+		return true
+	}
+
+	return false
+}
+
+// ex: parse error near Equal (line 1 symbol 21 - line 1 symbol 22)
+var indexesRegex = regexp.MustCompile(`line\s+(\d{1,})\s+symbol\s+(\d{1,})\s+-\s+line \d{1,}\s+symbol\s+(\d{1,3})`)
+
+func buildParseError(s string) (perr *parseError) {
+	perr = &parseError{}
+
+	matches := indexesRegex.FindStringSubmatch(s)
+	if len(matches) != 4 {
+		return
+	}
+
+	toInt := func(s string) (i int) {
+		i, _ = strconv.Atoi(s)
+		return
+	}
+
+	perr.line, perr.start, perr.end = toInt(matches[1]), toInt(matches[2]), toInt(matches[3])
+
+	return
 }
