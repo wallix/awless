@@ -306,8 +306,11 @@ create subnet
 				},
 			},
 			{
-				input: ` # first comment
-				create vpc  # second comment
+				input: `# first comment. Next line contains whitespaces on purpose
+       
+				# second comment
+
+				create vpc  # inlined comment
 create subnet
 # third statement
 

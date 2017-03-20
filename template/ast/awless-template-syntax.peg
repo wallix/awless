@@ -5,7 +5,7 @@ type Peg Peg {
  *AST
 }
 
-Script   <- BlankLine* Statement+ BlankLine* WhiteSpacing EndOfFile
+Script   <- (BlankLine* Statement BlankLine*)+ WhiteSpacing EndOfFile
 Statement <- WhiteSpacing (Expr / Declaration / Comment) WhiteSpacing EndOfLine*
 Action <- 'none' / 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' / 'check' / 'detach'
 Entity <- 'none' / 
