@@ -55,8 +55,7 @@ var logCmd = &cobra.Command{
 		exitOn(err)
 
 		for _, templ := range all {
-			printer := template.NewPrinter(os.Stdout)
-			printer.IncludeMeta = true
+			printer := template.NewLogPrinter(os.Stdout)
 			printer.RenderKO = renderRedFn
 			printer.RenderOK = renderGreenFn
 

@@ -26,6 +26,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	stdsync "sync"
 
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
@@ -136,8 +137,23 @@ func askHole(hole string) (interface{}, error) {
 	return nil, nil
 }
 
+type onceLoader struct {
+	g    *graph.Graph
+	err  error
+	once stdsync.Once
+}
+
+func (l *onceLoader) load() (*graph.Graph, error) {
+	l.once.Do(func() {
+		l.g, l.err = sync.LoadAllGraphs()
+	})
+	return l.g, l.err
+}
+
+var allGraphsOnce = &onceLoader{}
+
 func idAndNameCompleter(hole string) readline.AutoCompleter {
-	g, err := sync.LoadAllGraphs()
+	g, err :=  allGraphsOnce.load()
 	if err != nil {
 		exitOn(err)
 	}
@@ -211,7 +227,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	if strings.TrimSpace(yesorno) == "y" {
 		newTempl, err := templ.Run(awsDriver)
 
-		printer := template.NewPrinter(os.Stdout)
+		printer := template.NewDefaultPrinter(os.Stdout)
 		printer.RenderKO = renderRedFn
 		printer.RenderOK = renderGreenFn
 		printer.Print(newTempl)

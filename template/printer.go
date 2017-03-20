@@ -15,35 +15,84 @@ type renderFunc func(...interface{}) string
 
 func renderNoop(s ...interface{}) string { return fmt.Sprint(s) }
 
-type Printer struct {
-	w io.Writer
-
-	IncludeMeta bool
-	RenderOK    renderFunc
-	RenderKO    renderFunc
+type Printer interface {
+	Print(*Template)
 }
 
-func NewPrinter(w io.Writer) *Printer {
-	return &Printer{
+func NewLogPrinter(w io.Writer) *logPrinter {
+	return &logPrinter{
 		w:        w,
 		RenderOK: renderNoop,
 		RenderKO: renderNoop,
 	}
 }
 
-func (p *Printer) Print(t *Template) {
+func NewDefaultPrinter(w io.Writer) *defaultPrinter {
+	return &defaultPrinter{
+		w:        w,
+		RenderOK: renderNoop,
+		RenderKO: renderNoop,
+	}
+}
+
+type defaultPrinter struct {
+	w io.Writer
+
+	RenderOK renderFunc
+	RenderKO renderFunc
+}
+
+func (p *defaultPrinter) Print(t *Template) {
 	buff := bufio.NewWriter(p.w)
 
-	if p.IncludeMeta {
-		buff.WriteString(fmt.Sprintf("Date: %s", parseULIDDate(t.ID)))
+	tabw := tabwriter.NewWriter(buff, 0, 8, 0, '\t', 0)
+	for _, cmd := range t.CommandNodesIterator() {
+		var status string
 
-		if IsRevertible(t) {
-			buff.WriteString(fmt.Sprintf(", RevertID: %s", t.ID))
+		if cmd.CmdErr != nil {
+			status = p.RenderKO("KO")
 		} else {
-			buff.WriteString(", RevertID: <not revertible>")
+			status = p.RenderOK("OK")
 		}
-		buff.WriteString("\n")
+
+		var line string
+		if v, ok := cmd.CmdResult.(string); ok && v != "" {
+			line = fmt.Sprintf("    %s\t%s = %s\t", status, cmd.Entity, v)
+		} else {
+			line = fmt.Sprintf("    %s\t%s %s\t", status, cmd.Action, cmd.Entity)
+		}
+
+		fmt.Fprintln(tabw, line)
+		if cmd.CmdErr != nil {
+			for _, err := range formatMultiLineErrMsg(cmd.CmdErr.Error()) {
+				fmt.Fprintf(tabw, "%s\t%s\n", "", err)
+			}
+		}
+
 	}
+
+	tabw.Flush()
+	buff.Flush()
+}
+
+type logPrinter struct {
+	w io.Writer
+
+	RenderOK renderFunc
+	RenderKO renderFunc
+}
+
+func (p *logPrinter) Print(t *Template) {
+	buff := bufio.NewWriter(p.w)
+
+	buff.WriteString(fmt.Sprintf("Date: %s", parseULIDDate(t.ID)))
+
+	if IsRevertible(t) {
+		buff.WriteString(fmt.Sprintf(", RevertID: %s", t.ID))
+	} else {
+		buff.WriteString(", RevertID: <not revertible>")
+	}
+	buff.WriteString("\n")
 
 	tabw := tabwriter.NewWriter(buff, 0, 8, 0, '\t', 0)
 	for _, cmd := range t.CommandNodesIterator() {
@@ -52,21 +101,16 @@ func (p *Printer) Print(t *Template) {
 		exec := fmt.Sprintf("%s", cmd.String())
 
 		if cmd.CmdErr != nil {
-			status = "KO"
+			status = p.RenderKO("KO")
 		} else {
-			status = "OK"
+			status = p.RenderOK("OK")
 		}
 
 		if v, ok := cmd.CmdResult.(string); ok && v != "" {
 			result = fmt.Sprintf("[%s]", v)
 		}
 
-		var line string
-		if cmd.CmdErr != nil {
-			line = fmt.Sprintf("    %s\t%s\t%s\t", p.RenderKO(status), exec, result)
-		} else {
-			line = fmt.Sprintf("    %s\t%s\t%s\t", p.RenderOK(status), exec, result)
-		}
+		line := fmt.Sprintf("    %s\t%s\t%s\t", status, exec, result)
 
 		fmt.Fprintln(tabw, line)
 		if cmd.CmdErr != nil {
