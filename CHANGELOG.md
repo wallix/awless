@@ -2,6 +2,7 @@
 
 ### Features
 
+- Auto completion of id/name to help fill in easily any missing info before template execution
 - Better error messaging on parsing template errors
 - Infra: basic support of RDS: listing, creation and deletion of databases and database subnets:  `awless list databases/dbsubnetgroups`; `awless create/delete database/dbsubnetgroup`
 - Infra: attach/detach an `instance` to a `targetgroup`

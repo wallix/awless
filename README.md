@@ -187,6 +187,8 @@ awless run awless-templates/create_instance_ssh.awless
 
 In each case, the CLI guide you through any running of a template (file template or one-liner) so you always have the chance to confirm or quit.
 
+For instance, you will get **id/name autocompletion** to fill in any missing info.
+
 Check out the examples of runnig those commands at [Examples](https://github.com/wallix/awless/wiki/Examples)
 
 Note that you can get inspired with our **in progress** [repo of pre-existing templates](https://github.com/wallix/awless-templates)
