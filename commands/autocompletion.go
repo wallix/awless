@@ -48,12 +48,12 @@ completion, e.g. on macOS:
 	$ source $(brew --prefix)/etc/bash_completion
 	$ source <(awless completion bash)
 	(or, if you want to preserve completion within new terminal sessions)
-	$ echo 'source <(awless completion bash)\n' >> ~/.bashrc
+	$ echo 'source <(awless completion bash)' >> ~/.bashrc
 
 Zsh
 	$ source <(awless completion zsh)
 	(or, if you want to preserve completion within new terminal sessions)
-	$ echo 'source <(awless completion zsh)\n' >> ~/.zshrc`,
+	$ echo 'source <(awless completion zsh)' >> ~/.zshrc`,
 }
 
 var bashAutocompleteCmd = &cobra.Command{
@@ -71,7 +71,7 @@ completion, e.g. on macOS:
 	$ source $(brew --prefix)/etc/bash_completion
 	$ source <(awless completion bash)
 	(or, if you want to preserve completion within new terminal sessions)
-	$ echo 'source <(awless completion bash)\n' >> ~/.bashrc`,
+	$ echo 'source <(awless completion bash)' >> ~/.bashrc`,
 	RunE: runCompletionBash,
 }
 
@@ -84,7 +84,7 @@ This command prints shell code which must be evaluated to provide interactive
 completion of awless commands.
 	$ source <(awless completion zsh)
 	(or, if you want to preserve completion within new terminal sessions)
-	$ echo 'source <(awless completion zsh)\n' >> ~/.zshrc
+	$ echo 'source <(awless completion zsh)' >> ~/.zshrc
 zsh completions are only supported in versions of zsh >= 5.2`,
 	RunE: runCompletionZsh,
 }
