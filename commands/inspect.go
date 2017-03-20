@@ -43,7 +43,7 @@ var inspectCmd = &cobra.Command{
 	Short: fmt.Sprintf(
 		"Inspecting your infrastructure using available inspectors: %s", allInspectors(),
 	),
-	Example:           "  awless inspect -i bucket_sizer",
+	Example:           "  awless inspect -i bucket_sizer\n  awless inspect -i pricer",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 

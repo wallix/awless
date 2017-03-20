@@ -210,7 +210,6 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	if strings.TrimSpace(yesorno) == "y" {
 		newTempl, err := templ.Run(awsDriver)
 
-		logger.Info("Executed:")
 		printer := template.NewPrinter(os.Stdout)
 		printer.RenderKO = renderRedFn
 		printer.RenderOK = renderGreenFn
