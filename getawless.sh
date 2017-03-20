@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Download latest awless binary from Github
 
@@ -20,8 +21,7 @@ else
   exit
 fi
 
-
-LATEST_VERSION=`curl -s https://updates.awless.io | grep -oE "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"`
+LATEST_VERSION=`curl -fs https://updates.awless.io | grep -oE "v[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"`
 
 DOWNLOAD_URL="https://github.com/wallix/awless/releases/download/$LATEST_VERSION/awless-$OS-$ARCH.zip"
 
@@ -29,8 +29,10 @@ echo "Downloading awless from $DOWNLOAD_URL"
 
 ZIPFILE="awless.zip"
 
-echo ""
-curl -o $ZIPFILE -L $DOWNLOAD_URL
+if ! curl --fail -o $ZIPFILE -L $DOWNLOAD_URL; then
+    exit
+fi
+
 echo ""
 echo "unzipping $ZIPFILE to ./awless"
 echo 'y' | unzip $ZIPFILE 2>&1 > /dev/null
