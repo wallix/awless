@@ -153,7 +153,7 @@ func (l *onceLoader) load() (*graph.Graph, error) {
 var allGraphsOnce = &onceLoader{}
 
 func idAndNameCompleter(hole string) readline.AutoCompleter {
-	g, err :=  allGraphsOnce.load()
+	g, err := allGraphsOnce.load()
 	if err != nil {
 		exitOn(err)
 	}

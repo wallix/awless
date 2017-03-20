@@ -31,9 +31,10 @@ const (
 	awsCloudPrefix = "aws."
 
 	//Defaults
-	instanceTypeDefaultsKey  = "instance.type"
-	instanceImageDefaultsKey = "instance.image"
-	instanceCountDefaultsKey = "instance.count"
+	instanceTypeDefaultsKey    = "instance.type"
+	instanceImageDefaultsKey   = "instance.image"
+	instanceCountDefaultsKey   = "instance.count"
+	instanceTimeoutDefaultsKey = "instance.timeout"
 )
 
 var configDefinitions = map[string]*Definition{
@@ -51,9 +52,10 @@ var configDefinitions = map[string]*Definition{
 }
 
 var defaultsDefinitions = map[string]*Definition{
-	instanceTypeDefaultsKey:  {defaultValue: "t2.micro", help: "AWS EC2 instance type", stdinParamProviderFn: awsconfig.StdinInstanceTypeSelector, parseParamFn: awsconfig.ParseInstanceType},
-	instanceImageDefaultsKey: {help: "AWS EC2 AMI"},
-	instanceCountDefaultsKey: {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
+	instanceTypeDefaultsKey:    {defaultValue: "t2.micro", help: "AWS EC2 instance type", stdinParamProviderFn: awsconfig.StdinInstanceTypeSelector, parseParamFn: awsconfig.ParseInstanceType},
+	instanceImageDefaultsKey:   {help: "AWS EC2 AMI"},
+	instanceCountDefaultsKey:   {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
+	instanceTimeoutDefaultsKey: {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
 }
 
 var deprecated = map[string]string{
