@@ -99,7 +99,7 @@ func missingHolesStdinFunc() func(string) interface{} {
 
 func askHole(hole string) (interface{}, error) {
 	l, err := readline.NewEx(&readline.Config{
-		Prompt:          fmt.Sprintf("%s ? ", hole),
+		Prompt:          fmt.Sprintf("%s? ", hole),
 		AutoComplete:    idAndNameCompleter(hole),
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
