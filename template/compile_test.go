@@ -30,6 +30,34 @@ var defs = map[string]TemplateDefinition{
 	},
 }
 
+func TestCheckReferencesDeclarationPass(t *testing.T) {
+	env := NewEnv()
+	tpl := MustParse(`
+	sub = create subnet
+	inst = create instance subnet=$sub
+	create instance subnet=$inst_2
+	`)
+
+	_, _, err := checkReferencesDeclaration(tpl, env)
+	if err == nil ||
+		!strings.Contains(err.Error(), "undefined") ||
+		!strings.Contains(err.Error(), "inst_2") {
+		t.Fatalf("expected err with specific words. Got %s", err)
+	}
+
+	tpl = MustParse(`
+	sub = create subnet
+	create vpc cidr=10.0.0.0/4
+	`)
+
+	_, _, err = checkReferencesDeclaration(tpl, env)
+	if err == nil ||
+		!strings.Contains(err.Error(), "unused") ||
+		!strings.Contains(err.Error(), "sub") {
+		t.Fatalf("expected err with specific words. Got %s", err)
+	}
+}
+
 func TestResolveAgainstDefinitionsPass(t *testing.T) {
 	env := NewEnv()
 	env.DefLookupFunc = func(in string) (TemplateDefinition, bool) {

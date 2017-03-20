@@ -3,6 +3,7 @@
 ### Features
 
 - Rudimentary security groups port scanner inspector via `awless inspect -i port_scanner`
+- Template: compile time check of undefined or unused references
 
 ### Bugfixes
 

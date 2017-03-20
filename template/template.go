@@ -119,6 +119,12 @@ func (s *Template) visitCommandNodesE(fn func(n *ast.CommandNode) error) error {
 	return nil
 }
 
+func (s *Template) visitCommandDeclarationNodes(fn func(n *ast.DeclarationNode)) {
+	for _, cmd := range s.commandDeclarationNodesIterator() {
+		fn(cmd)
+	}
+}
+
 func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 	for _, sts := range s.Statements {
 		switch sts.Node.(type) {
@@ -146,6 +152,20 @@ func (s *Template) CmdNodesReverseIterator() (nodes []*ast.CommandNode) {
 			switch expr.(type) {
 			case *ast.CommandNode:
 				nodes = append(nodes, expr.(*ast.CommandNode))
+			}
+		}
+	}
+	return
+}
+
+func (s *Template) commandDeclarationNodesIterator() (nodes []*ast.DeclarationNode) {
+	for _, sts := range s.Statements {
+		switch sts.Node.(type) {
+		case *ast.DeclarationNode:
+			expr := sts.Node.(*ast.DeclarationNode).Expr
+			switch expr.(type) {
+			case *ast.CommandNode:
+				nodes = append(nodes, sts.Node.(*ast.DeclarationNode))
 			}
 		}
 	}

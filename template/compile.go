@@ -44,6 +44,7 @@ func (e *Env) AddFillers(fills ...map[string]interface{}) {
 func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
 	pass := newMultiPass(
 		resolveAgainstDefinitions,
+		checkReferencesDeclaration,
 		resolveHolesPass,
 		resolveMissingHolesPass,
 		resolveAliasPass,
@@ -143,6 +144,34 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 			}
 		}
 	})
+
+	return tpl, env, nil
+}
+
+func checkReferencesDeclaration(tpl *Template, env *Env) (*Template, *Env, error) {
+	usedRefs := make(map[string]struct{})
+	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
+		for _, v := range cmd.Refs {
+			usedRefs[v] = struct{}{}
+		}
+	})
+
+	declRefs := make(map[string]struct{})
+	tpl.visitCommandDeclarationNodes(func(decl *ast.DeclarationNode) {
+		declRefs[decl.Ident] = struct{}{}
+	})
+
+	for r := range usedRefs {
+		if _, ok := declRefs[r]; !ok {
+			return tpl, env, fmt.Errorf("using reference '$%s' but '%s' is undefined in template\n", r, r)
+		}
+	}
+
+	for r := range declRefs {
+		if _, ok := usedRefs[r]; !ok {
+			return tpl, env, fmt.Errorf("unused reference '%s' in template\n", r)
+		}
+	}
 
 	return tpl, env, nil
 }
