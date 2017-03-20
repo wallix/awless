@@ -180,7 +180,6 @@ var DriversDefs = []driversDef{
 					{TemplateName: "timeout"},
 				},
 			},
-
 			// Security Group
 			{
 				Action: "create", Entity: cloud.SecurityGroup, Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
@@ -352,7 +351,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.LoadBalancer, Input: "DeleteLoadBalancerInput", Output: "DeleteLoadBalancerOutput", ApiMethod: "DeleteLoadBalancer", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{AwsField: "LoadBalancerArn", TemplateName: "arn", AwsType: "awsstr"},
+					{AwsField: "LoadBalancerArn", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			// Listener
@@ -373,7 +372,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.Listener, Input: "DeleteListenerInput", Output: "DeleteListenerOutput", ApiMethod: "DeleteListener", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{AwsField: "ListenerArn", TemplateName: "arn", AwsType: "awsstr"},
+					{AwsField: "ListenerArn", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			// Target group
@@ -399,7 +398,24 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.TargetGroup, Input: "DeleteTargetGroupInput", Output: "DeleteTargetGroupOutput", ApiMethod: "DeleteTargetGroup", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{AwsField: "TargetGroupArn", TemplateName: "arn", AwsType: "awsstr"},
+					{AwsField: "TargetGroupArn", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "attach", Entity: cloud.Instance, ApiMethod: "RegisterTargets", Input: "RegisterTargetsInput", Output: "RegisterTargetsOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "TargetGroupArn", TemplateName: "group", AwsType: "awsstr"},
+					{AwsField: "Targets[0]Id", TemplateName: "id", AwsType: "awsslicestruct"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Targets[0]Port", TemplateName: "port", AwsType: "awsslicestruct"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.Instance, ApiMethod: "DeregisterTargets", Input: "DeregisterTargetsInput", Output: "DeregisterTargetsOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "TargetGroupArn", TemplateName: "group", AwsType: "awsstr"},
+					{AwsField: "Targets[0]Id", TemplateName: "id", AwsType: "awsslicestruct"},
 				},
 			},
 		},
@@ -452,6 +468,20 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{AwsField: "SkipFinalSnapshot", TemplateName: "skipsnapshot", AwsType: "awsbool"},
 					{AwsField: "FinalDBSnapshotIdentifier", TemplateName: "snapshotid", AwsType: "awsbool"},
+				},
+			},
+			{
+				Action: "create", Entity: cloud.DbSubnet, ApiMethod: "CreateDBSubnetGroup", Input: "CreateDBSubnetGroupInput", Output: "CreateDBSubnetGroupOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)",
+				RequiredParams: []param{
+					{AwsField: "DBSubnetGroupDescription", TemplateName: "description", AwsType: "awsstr"},
+					{AwsField: "DBSubnetGroupName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "SubnetIds", TemplateName: "subnets", AwsType: "awsstringslice"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.DbSubnet, ApiMethod: "DeleteDBSubnetGroup", Input: "DeleteDBSubnetGroupInput", Output: "DeleteDBSubnetGroupOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "DBSubnetGroupName", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 		},
@@ -588,7 +618,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.Topic, DryRunUnsupported: true, Input: "DeleteTopicInput", Output: "DeleteTopicOutput", ApiMethod: "DeleteTopic",
 				RequiredParams: []param{
-					{AwsField: "TopicArn", TemplateName: "arn", AwsType: "awsstr"},
+					{AwsField: "TopicArn", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			//Subscription
@@ -603,7 +633,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.Subscription, DryRunUnsupported: true, Input: "UnsubscribeInput", Output: "UnsubscribeOutput", ApiMethod: "Unsubscribe",
 				RequiredParams: []param{
-					{AwsField: "SubscriptionArn", TemplateName: "arn", AwsType: "awsstr"},
+					{AwsField: "SubscriptionArn", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 		},

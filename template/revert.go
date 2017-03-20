@@ -45,6 +45,9 @@ func (te *Template) Revert() (*Template, error) {
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, v))
 					}
+				case "database":
+					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
+					params = append(params, "skipsnapshot=true")
 				default:
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 				}

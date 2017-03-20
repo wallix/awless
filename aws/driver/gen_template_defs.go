@@ -250,7 +250,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "delete",
 		Entity:         "loadbalancer",
 		Api:            "elbv2",
-		RequiredParams: []string{"arn"},
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
 	"createlistener": {
@@ -264,7 +264,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "delete",
 		Entity:         "listener",
 		Api:            "elbv2",
-		RequiredParams: []string{"arn"},
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
 	"createtargetgroup": {
@@ -278,7 +278,21 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "delete",
 		Entity:         "targetgroup",
 		Api:            "elbv2",
-		RequiredParams: []string{"arn"},
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
+	"attachinstance": {
+		Action:         "attach",
+		Entity:         "instance",
+		Api:            "elbv2",
+		RequiredParams: []string{"group", "id"},
+		ExtraParams:    []string{"port"},
+	},
+	"detachinstance": {
+		Action:         "detach",
+		Entity:         "instance",
+		Api:            "elbv2",
+		RequiredParams: []string{"group", "id"},
 		ExtraParams:    []string{},
 	},
 	"createdatabase": {
@@ -294,6 +308,20 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Api:            "rds",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"skipsnapshot", "snapshotid"},
+	},
+	"createdbsubnet": {
+		Action:         "create",
+		Entity:         "dbsubnet",
+		Api:            "rds",
+		RequiredParams: []string{"description", "name", "subnets"},
+		ExtraParams:    []string{},
+	},
+	"deletedbsubnet": {
+		Action:         "delete",
+		Entity:         "dbsubnet",
+		Api:            "rds",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
 	},
 	"createuser": {
 		Action:         "create",
@@ -404,7 +432,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "delete",
 		Entity:         "topic",
 		Api:            "sns",
-		RequiredParams: []string{"arn"},
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
 	"createsubscription": {
@@ -418,7 +446,7 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		Action:         "delete",
 		Entity:         "subscription",
 		Api:            "sns",
-		RequiredParams: []string{"arn"},
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
 	"createqueue": {
@@ -504,8 +532,12 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "listener")
 	supported["create"] = append(supported["create"], "targetgroup")
 	supported["delete"] = append(supported["delete"], "targetgroup")
+	supported["attach"] = append(supported["attach"], "instance")
+	supported["detach"] = append(supported["detach"], "instance")
 	supported["create"] = append(supported["create"], "database")
 	supported["delete"] = append(supported["delete"], "database")
+	supported["create"] = append(supported["create"], "dbsubnet")
+	supported["delete"] = append(supported["delete"], "dbsubnet")
 	supported["create"] = append(supported["create"], "user")
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")

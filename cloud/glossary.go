@@ -21,6 +21,7 @@ const (
 
 	//database
 	Database string = "database"
+	DbSubnet string = "dbsubnet"
 
 	//access
 	User      string = "user"

@@ -1728,8 +1728,8 @@ func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interf
 
 // This function was auto generated
 func (d *Elbv2Driver) Delete_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("delete loadbalancer: missing required params 'arn'")
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete loadbalancer: missing required params 'id'")
 	}
 
 	d.logger.Verbose("params dry run: delete loadbalancer ok")
@@ -1742,7 +1742,7 @@ func (d *Elbv2Driver) Delete_Loadbalancer(params map[string]interface{}) (interf
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["arn"], input, "LoadBalancerArn", awsstr)
+	err = setFieldWithType(params["id"], input, "LoadBalancerArn", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -1842,8 +1842,8 @@ func (d *Elbv2Driver) Create_Listener(params map[string]interface{}) (interface{
 
 // This function was auto generated
 func (d *Elbv2Driver) Delete_Listener_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("delete listener: missing required params 'arn'")
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete listener: missing required params 'id'")
 	}
 
 	d.logger.Verbose("params dry run: delete listener ok")
@@ -1856,7 +1856,7 @@ func (d *Elbv2Driver) Delete_Listener(params map[string]interface{}) (interface{
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["arn"], input, "ListenerArn", awsstr)
+	err = setFieldWithType(params["id"], input, "ListenerArn", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -1984,8 +1984,8 @@ func (d *Elbv2Driver) Create_Targetgroup(params map[string]interface{}) (interfa
 
 // This function was auto generated
 func (d *Elbv2Driver) Delete_Targetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("delete targetgroup: missing required params 'arn'")
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete targetgroup: missing required params 'id'")
 	}
 
 	d.logger.Verbose("params dry run: delete targetgroup ok")
@@ -1998,7 +1998,7 @@ func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interfa
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["arn"], input, "TargetGroupArn", awsstr)
+	err = setFieldWithType(params["id"], input, "TargetGroupArn", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -2012,6 +2012,96 @@ func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interfa
 	}
 	d.logger.ExtraVerbosef("elbv2.DeleteTargetGroup call took %s", time.Since(start))
 	d.logger.Verbose("delete targetgroup done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *Elbv2Driver) Attach_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["group"]; !ok {
+		return nil, errors.New("attach instance: missing required params 'group'")
+	}
+
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("attach instance: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: attach instance ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *Elbv2Driver) Attach_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &elbv2.RegisterTargetsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["group"], input, "TargetGroupArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "Targets[0]Id", awsslicestruct)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["port"]; ok {
+		err = setFieldWithType(params["port"], input, "Targets[0]Port", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *elbv2.RegisterTargetsOutput
+	output, err = d.RegisterTargets(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("attach instance: %s", err)
+	}
+	d.logger.ExtraVerbosef("elbv2.RegisterTargets call took %s", time.Since(start))
+	d.logger.Verbose("attach instance done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *Elbv2Driver) Detach_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["group"]; !ok {
+		return nil, errors.New("detach instance: missing required params 'group'")
+	}
+
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("detach instance: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: detach instance ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *Elbv2Driver) Detach_Instance(params map[string]interface{}) (interface{}, error) {
+	input := &elbv2.DeregisterTargetsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["group"], input, "TargetGroupArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["id"], input, "Targets[0]Id", awsslicestruct)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *elbv2.DeregisterTargetsOutput
+	output, err = d.DeregisterTargets(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("detach instance: %s", err)
+	}
+	d.logger.ExtraVerbosef("elbv2.DeregisterTargets call took %s", time.Since(start))
+	d.logger.Verbose("detach instance done")
 	return output, nil
 }
 
@@ -2274,6 +2364,90 @@ func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{},
 	}
 	d.logger.ExtraVerbosef("rds.DeleteDBInstance call took %s", time.Since(start))
 	d.logger.Verbose("delete database done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Create_Dbsubnet_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["description"]; !ok {
+		return nil, errors.New("create dbsubnet: missing required params 'description'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create dbsubnet: missing required params 'name'")
+	}
+
+	if _, ok := params["subnets"]; !ok {
+		return nil, errors.New("create dbsubnet: missing required params 'subnets'")
+	}
+
+	d.logger.Verbose("params dry run: create dbsubnet ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Create_Dbsubnet(params map[string]interface{}) (interface{}, error) {
+	input := &rds.CreateDBSubnetGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["description"], input, "DBSubnetGroupDescription", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "DBSubnetGroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnets"], input, "SubnetIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *rds.CreateDBSubnetGroupOutput
+	output, err = d.CreateDBSubnetGroup(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create dbsubnet: %s", err)
+	}
+	d.logger.ExtraVerbosef("rds.CreateDBSubnetGroup call took %s", time.Since(start))
+	id := aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)
+
+	d.logger.Verbosef("create dbsubnet '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Delete_Dbsubnet_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete dbsubnet: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete dbsubnet ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *RdsDriver) Delete_Dbsubnet(params map[string]interface{}) (interface{}, error) {
+	input := &rds.DeleteDBSubnetGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "DBSubnetGroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *rds.DeleteDBSubnetGroupOutput
+	output, err = d.DeleteDBSubnetGroup(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete dbsubnet: %s", err)
+	}
+	d.logger.ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
+	d.logger.Verbose("delete dbsubnet done")
 	return output, nil
 }
 
@@ -2674,8 +2848,8 @@ func (d *SnsDriver) Create_Topic(params map[string]interface{}) (interface{}, er
 
 // This function was auto generated
 func (d *SnsDriver) Delete_Topic_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("delete topic: missing required params 'arn'")
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete topic: missing required params 'id'")
 	}
 
 	d.logger.Verbose("params dry run: delete topic ok")
@@ -2688,7 +2862,7 @@ func (d *SnsDriver) Delete_Topic(params map[string]interface{}) (interface{}, er
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["arn"], input, "TopicArn", awsstr)
+	err = setFieldWithType(params["id"], input, "TopicArn", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -2758,8 +2932,8 @@ func (d *SnsDriver) Create_Subscription(params map[string]interface{}) (interfac
 
 // This function was auto generated
 func (d *SnsDriver) Delete_Subscription_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("delete subscription: missing required params 'arn'")
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete subscription: missing required params 'id'")
 	}
 
 	d.logger.Verbose("params dry run: delete subscription ok")
@@ -2772,7 +2946,7 @@ func (d *SnsDriver) Delete_Subscription(params map[string]interface{}) (interfac
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["arn"], input, "SubscriptionArn", awsstr)
+	err = setFieldWithType(params["id"], input, "SubscriptionArn", awsstr)
 	if err != nil {
 		return nil, err
 	}

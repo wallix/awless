@@ -11,9 +11,9 @@ Action <- 'none' / 'create' / 'delete' / 'start' / 'stop' / 'update' / 'attach' 
 Entity <- 'none' / 
           'vpc' / 'subnet' / 'instance' / 'volume' / 'tag' / 'keypair' / 'securitygroup' / 'internetgateway' / 'routetable' / 'route' /
           'loadbalancer' / 'listener' / 'targetgroup' / 
-          'database' /
+          'database' / 'dbsubnet' /
           'user' / 'group' / 'role' / 'policy' / 'accesskey' /
-          'bucket' / 'storageobject' / 
+          'bucket' / 'storageobject'
           'subscription' / 'topic' / 'queue' / 
           'zone' / 'record'
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }

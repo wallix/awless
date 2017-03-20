@@ -289,6 +289,18 @@ func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err e
 		}
 		return d.Delete_Targetgroup, nil
 
+	case "attachinstance":
+		if d.dryRun {
+			return d.Attach_Instance_DryRun, nil
+		}
+		return d.Attach_Instance, nil
+
+	case "detachinstance":
+		if d.dryRun {
+			return d.Detach_Instance_DryRun, nil
+		}
+		return d.Detach_Instance, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
@@ -320,6 +332,18 @@ func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 			return d.Delete_Database_DryRun, nil
 		}
 		return d.Delete_Database, nil
+
+	case "createdbsubnet":
+		if d.dryRun {
+			return d.Create_Dbsubnet_DryRun, nil
+		}
+		return d.Create_Dbsubnet, nil
+
+	case "deletedbsubnet":
+		if d.dryRun {
+			return d.Delete_Dbsubnet_DryRun, nil
+		}
+		return d.Delete_Dbsubnet, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound
