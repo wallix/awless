@@ -156,8 +156,9 @@ func idAndNameCompleter(hole string) readline.AutoCompleter {
 				switch val.(type) {
 				case string:
 					name := val.(string)
-					if strings.Contains(name, s) && name != "" {
-						suggest = append(suggest, fmt.Sprintf("@%s", name))
+					prefixed := fmt.Sprintf("@%s", name)
+					if strings.Contains(prefixed, s) && name != "" {
+						suggest = append(suggest, prefixed)
 					}
 				}
 			}
