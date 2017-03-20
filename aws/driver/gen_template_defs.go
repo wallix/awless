@@ -225,6 +225,13 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		RequiredParams: []string{"key", "resource", "value"},
 		ExtraParams:    []string{},
 	},
+	"deletetag": {
+		Action:         "delete",
+		Entity:         "tag",
+		Api:            "ec2",
+		RequiredParams: []string{"key", "resource", "value"},
+		ExtraParams:    []string{},
+	},
 	"createkeypair": {
 		Action:         "create",
 		Entity:         "keypair",
@@ -309,16 +316,16 @@ var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"skipsnapshot", "snapshotid"},
 	},
-	"createdbsubnet": {
+	"createdbsubnetgroup": {
 		Action:         "create",
-		Entity:         "dbsubnet",
+		Entity:         "dbsubnetgroup",
 		Api:            "rds",
 		RequiredParams: []string{"description", "name", "subnets"},
 		ExtraParams:    []string{},
 	},
-	"deletedbsubnet": {
+	"deletedbsubnetgroup": {
 		Action:         "delete",
-		Entity:         "dbsubnet",
+		Entity:         "dbsubnetgroup",
 		Api:            "rds",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
@@ -524,6 +531,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["create"] = append(supported["create"], "route")
 	supported["delete"] = append(supported["delete"], "route")
 	supported["create"] = append(supported["create"], "tag")
+	supported["delete"] = append(supported["delete"], "tag")
 	supported["create"] = append(supported["create"], "keypair")
 	supported["delete"] = append(supported["delete"], "keypair")
 	supported["create"] = append(supported["create"], "loadbalancer")
@@ -536,8 +544,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["detach"] = append(supported["detach"], "instance")
 	supported["create"] = append(supported["create"], "database")
 	supported["delete"] = append(supported["delete"], "database")
-	supported["create"] = append(supported["create"], "dbsubnet")
-	supported["delete"] = append(supported["delete"], "dbsubnet")
+	supported["create"] = append(supported["create"], "dbsubnetgroup")
+	supported["delete"] = append(supported["delete"], "dbsubnetgroup")
 	supported["create"] = append(supported["create"], "user")
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")

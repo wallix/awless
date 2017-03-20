@@ -221,6 +221,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Create_Tag, nil
 
+	case "deletetag":
+		if d.dryRun {
+			return d.Delete_Tag_DryRun, nil
+		}
+		return d.Delete_Tag, nil
+
 	case "createkeypair":
 		if d.dryRun {
 			return d.Create_Keypair_DryRun, nil
@@ -333,17 +339,17 @@ func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Database, nil
 
-	case "createdbsubnet":
+	case "createdbsubnetgroup":
 		if d.dryRun {
-			return d.Create_Dbsubnet_DryRun, nil
+			return d.Create_Dbsubnetgroup_DryRun, nil
 		}
-		return d.Create_Dbsubnet, nil
+		return d.Create_Dbsubnetgroup, nil
 
-	case "deletedbsubnet":
+	case "deletedbsubnetgroup":
 		if d.dryRun {
-			return d.Delete_Dbsubnet_DryRun, nil
+			return d.Delete_Dbsubnetgroup_DryRun, nil
 		}
-		return d.Delete_Dbsubnet, nil
+		return d.Delete_Dbsubnetgroup, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

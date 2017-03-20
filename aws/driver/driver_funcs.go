@@ -314,6 +314,53 @@ func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, erro
 	return output, nil
 }
 
+func (d *Ec2Driver) Delete_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteTagsInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["resource"], input, "Resources", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+	input.Tags = []*ec2.Tag{{Key: aws.String(fmt.Sprint(params["key"])), Value: aws.String(fmt.Sprint(params["value"]))}}
+
+	_, err = d.DeleteTags(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+			id := fakeDryRunId("tag")
+			d.logger.Verbosef("dry run: delete tag '%s=%s' ok", params["key"], params["value"])
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: delete tag: %s", err)
+}
+
+func (d *Ec2Driver) Delete_Tag(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteTagsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["resource"], input, "Resources", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+	input.Tags = []*ec2.Tag{{Key: aws.String(fmt.Sprint(params["key"])), Value: aws.String(fmt.Sprint(params["value"]))}}
+
+	start := time.Now()
+	var output *ec2.DeleteTagsOutput
+	output, err = d.DeleteTags(input)
+	if err != nil {
+		return nil, fmt.Errorf("delete tag: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DeleteTags call took %s", time.Since(start))
+	d.logger.Verbosef("delete tag '%s=%s' on '%s' done", params["key"], params["value"], params["resource"])
+	return output, nil
+}
+
 func (d *Ec2Driver) Create_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 

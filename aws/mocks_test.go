@@ -114,6 +114,11 @@ func (m *mockRDS) DescribeDBInstancesPages(input *rds.DescribeDBInstancesInput, 
 	return nil
 }
 
+func (m *mockRDS) DescribeDBSubnetGroupsPages(input *rds.DescribeDBSubnetGroupsInput, fn func(p *rds.DescribeDBSubnetGroupsOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&rds.DescribeDBSubnetGroupsOutput{}, true)
+	return nil
+}
+
 type mockRoute53 struct {
 	route53iface.Route53API
 	zonePages   [][]*route53.HostedZone

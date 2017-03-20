@@ -77,6 +77,7 @@ var ResourceTypes = []string{
 	"targetgroup",
 	"listener",
 	"database",
+	"dbsubnetgroup",
 	"user",
 	"group",
 	"role",
@@ -115,6 +116,7 @@ var ServicePerResourceType = map[string]string{
 	"targetgroup":      "infra",
 	"listener":         "infra",
 	"database":         "infra",
+	"dbsubnetgroup":    "infra",
 	"user":             "access",
 	"group":            "access",
 	"role":             "access",
@@ -176,6 +178,7 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "targetgroup")
 	all = append(all, "listener")
 	all = append(all, "database")
+	all = append(all, "dbsubnetgroup")
 	return
 }
 
@@ -200,6 +203,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var targetgroupList []*elbv2.TargetGroup
 	var listenerList []*elbv2.Listener
 	var databaseList []*rds.DBInstance
+	var dbsubnetgroupList []*rds.DBSubnetGroup
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -411,6 +415,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[database]")
+	}
+	if s.config.getBool("aws.infra.dbsubnetgroup.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, dbsubnetgroupList, err = s.fetch_all_dbsubnetgroup_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[dbsubnetgroup]")
 	}
 
 	go func() {
@@ -630,6 +650,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.dbsubnetgroup.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range dbsubnetgroupList {
+				for _, fn := range addParentsFns["dbsubnetgroup"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -685,6 +720,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "database":
 		graph, _, err := s.fetch_all_database_graph()
+		return graph, err
+	case "dbsubnetgroup":
+		graph, _, err := s.fetch_all_dbsubnetgroup_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -940,6 +978,30 @@ func (s *Infra) fetch_all_database_graph() (*graph.Graph, []*rds.DBInstance, err
 	err := s.DescribeDBInstancesPages(&rds.DescribeDBInstancesInput{},
 		func(out *rds.DescribeDBInstancesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.DBInstances {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				g.AddResource(res)
+			}
+			return out.Marker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Infra) fetch_all_dbsubnetgroup_graph() (*graph.Graph, []*rds.DBSubnetGroup, error) {
+	g := graph.NewGraph()
+	var cloudResources []*rds.DBSubnetGroup
+	var badResErr error
+	err := s.DescribeDBSubnetGroupsPages(&rds.DescribeDBSubnetGroupsInput{},
+		func(out *rds.DescribeDBSubnetGroupsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.DBSubnetGroups {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				res, badResErr = newResource(output)

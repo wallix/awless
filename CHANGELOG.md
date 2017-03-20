@@ -3,8 +3,9 @@
 ### Features
 
 - Better error messaging on parsing template errors
-- Infra: basic support of RDS: listing, creation and deletion of databases and database subnets:  `awless list databases`; `awless create/delete database/dbsubnet`
+- Infra: basic support of RDS: listing, creation and deletion of databases and database subnets:  `awless list databases/dbsubnetgroups`; `awless create/delete database/dbsubnetgroup`
 - Infra: attach/detach an `instance` to a `targetgroup`
+- Infra: delete tag: `awless delete tag`
 - Access: create an AWS access key for a user
 - DNS: allow to revert creation/deletion of records
 - [#80](https://github.com/wallix/awless/issues/80) DNS: return the ChangeInfo id when creating/deleting a record

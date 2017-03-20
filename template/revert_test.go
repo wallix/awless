@@ -26,7 +26,7 @@ func TestRevertTemplate(t *testing.T) {
 	})
 
 	t.Run("More advanced template", func(t *testing.T) {
-		tpl := MustParse("attach policy arn=stuff user=mrT\ncreate vpc\ncreate subnet\nstart instance id=i-54g3hj\ncreate tag\ncreate instance")
+		tpl := MustParse("attach policy arn=stuff user=mrT\ncreate vpc\ncreate subnet\nstart instance id=i-54g3hj\ncreate tag key=Key resource=myinst value=Value\ncreate instance")
 		for i, cmd := range tpl.CommandNodesIterator() {
 			if i == 1 {
 				cmd.CmdResult = "vpc-12345"
@@ -47,7 +47,7 @@ func TestRevertTemplate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		exp := "stop instance id=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
+		exp := "delete tag key=Key resource=myinst value=Value\nstop instance id=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

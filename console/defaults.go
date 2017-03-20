@@ -151,6 +151,13 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "EngineVersion", Friendly: "Version"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateTime", Friendly: "Created"}},
 	},
+	cloud.DbSubnetGroup: {
+		StringColumnDefinition{Prop: "Id", DisableTruncate: true},
+		StringColumnDefinition{Prop: "SubnetGroupStatus", Friendly: "Status"},
+		StringColumnDefinition{Prop: "Vpc"},
+		StringColumnDefinition{Prop: "Subnets", DisableTruncate: true},
+		StringColumnDefinition{Prop: "Description"},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: "Id"},

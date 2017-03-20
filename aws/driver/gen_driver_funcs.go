@@ -2368,25 +2368,25 @@ func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *RdsDriver) Create_Dbsubnet_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Create_Dbsubnetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["description"]; !ok {
-		return nil, errors.New("create dbsubnet: missing required params 'description'")
+		return nil, errors.New("create dbsubnetgroup: missing required params 'description'")
 	}
 
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("create dbsubnet: missing required params 'name'")
+		return nil, errors.New("create dbsubnetgroup: missing required params 'name'")
 	}
 
 	if _, ok := params["subnets"]; !ok {
-		return nil, errors.New("create dbsubnet: missing required params 'subnets'")
+		return nil, errors.New("create dbsubnetgroup: missing required params 'subnets'")
 	}
 
-	d.logger.Verbose("params dry run: create dbsubnet ok")
+	d.logger.Verbose("params dry run: create dbsubnetgroup ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *RdsDriver) Create_Dbsubnet(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Create_Dbsubnetgroup(params map[string]interface{}) (interface{}, error) {
 	input := &rds.CreateDBSubnetGroupInput{}
 	var err error
 
@@ -2409,27 +2409,27 @@ func (d *RdsDriver) Create_Dbsubnet(params map[string]interface{}) (interface{},
 	output, err = d.CreateDBSubnetGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("create dbsubnet: %s", err)
+		return nil, fmt.Errorf("create dbsubnetgroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("rds.CreateDBSubnetGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)
 
-	d.logger.Verbosef("create dbsubnet '%s' done", id)
+	d.logger.Verbosef("create dbsubnetgroup '%s' done", id)
 	return id, nil
 }
 
 // This function was auto generated
-func (d *RdsDriver) Delete_Dbsubnet_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Delete_Dbsubnetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
-		return nil, errors.New("delete dbsubnet: missing required params 'id'")
+		return nil, errors.New("delete dbsubnetgroup: missing required params 'id'")
 	}
 
-	d.logger.Verbose("params dry run: delete dbsubnet ok")
+	d.logger.Verbose("params dry run: delete dbsubnetgroup ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *RdsDriver) Delete_Dbsubnet(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interface{}, error) {
 	input := &rds.DeleteDBSubnetGroupInput{}
 	var err error
 
@@ -2444,10 +2444,10 @@ func (d *RdsDriver) Delete_Dbsubnet(params map[string]interface{}) (interface{},
 	output, err = d.DeleteDBSubnetGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete dbsubnet: %s", err)
+		return nil, fmt.Errorf("delete dbsubnetgroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
-	d.logger.Verbose("delete dbsubnet done")
+	d.logger.Verbose("delete dbsubnetgroup done")
 	return output, nil
 }
 

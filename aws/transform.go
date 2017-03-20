@@ -72,6 +72,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		// Database
 	case *rds.DBInstance:
 		res = graph.InitResource(awssdk.StringValue(ss.DBInstanceIdentifier), cloud.Database)
+	case *rds.DBSubnetGroup:
+		res = graph.InitResource(awssdk.StringValue(ss.DBSubnetGroupName), cloud.DbSubnetGroup)
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(awssdk.StringValue(ss.UserId), cloud.User)

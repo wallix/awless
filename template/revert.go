@@ -18,10 +18,6 @@ func (te *Template) Revert() (*Template, error) {
 			switch cmd.Action {
 			case "create":
 				revertAction = "delete"
-				switch cmd.Entity {
-				case "tag":
-					continue
-				}
 			case "start":
 				revertAction = "stop"
 			case "stop":
@@ -41,7 +37,7 @@ func (te *Template) Revert() (*Template, error) {
 				}
 			case "create":
 				switch cmd.Entity {
-				case "record":
+				case "record", "tag":
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, v))
 					}

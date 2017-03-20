@@ -56,6 +56,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "elbv2", ResourceType: cloud.TargetGroup, AWSType: "elbv2.TargetGroup", ApiMethod: "DescribeTargetGroups", Input: "elbv2.DescribeTargetGroupsInput{}", Output: "elbv2.DescribeTargetGroupsOutput", OutputsExtractor: "TargetGroups"},
 			{Api: "elbv2", ResourceType: cloud.Listener, AWSType: "elbv2.Listener", ManualFetcher: true},
 			{Api: "rds", ResourceType: cloud.Database, AWSType: "rds.DBInstance", ApiMethod: "DescribeDBInstancesPages", Input: "rds.DescribeDBInstancesInput{}", Output: "rds.DescribeDBInstancesOutput", OutputsExtractor: "DBInstances", Multipage: true, NextPageMarker: "Marker"},
+			{Api: "rds", ResourceType: cloud.DbSubnetGroup, AWSType: "rds.DBSubnetGroup", ApiMethod: "DescribeDBSubnetGroupsPages", Input: "rds.DescribeDBSubnetGroupsInput{}", Output: "rds.DescribeDBSubnetGroupsOutput", OutputsExtractor: "DBSubnetGroups", Multipage: true, NextPageMarker: "Marker"},
 		},
 	},
 	{

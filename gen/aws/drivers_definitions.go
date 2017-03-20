@@ -316,6 +316,14 @@ var DriversDefs = []driversDef{
 					{TemplateName: "value"},
 				},
 			},
+			{
+				Action: "delete", Entity: "tag", ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "resource"},
+					{TemplateName: "key"},
+					{TemplateName: "value"},
+				},
+			},
 
 			// Keypair
 			{
@@ -471,7 +479,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "create", Entity: cloud.DbSubnet, ApiMethod: "CreateDBSubnetGroup", Input: "CreateDBSubnetGroupInput", Output: "CreateDBSubnetGroupOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)",
+				Action: "create", Entity: cloud.DbSubnetGroup, ApiMethod: "CreateDBSubnetGroup", Input: "CreateDBSubnetGroupInput", Output: "CreateDBSubnetGroupOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)",
 				RequiredParams: []param{
 					{AwsField: "DBSubnetGroupDescription", TemplateName: "description", AwsType: "awsstr"},
 					{AwsField: "DBSubnetGroupName", TemplateName: "name", AwsType: "awsstr"},
@@ -479,7 +487,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.DbSubnet, ApiMethod: "DeleteDBSubnetGroup", Input: "DeleteDBSubnetGroupInput", Output: "DeleteDBSubnetGroupOutput", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.DbSubnetGroup, ApiMethod: "DeleteDBSubnetGroup", Input: "DeleteDBSubnetGroupInput", Output: "DeleteDBSubnetGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "DBSubnetGroupName", TemplateName: "id", AwsType: "awsstr"},
 				},

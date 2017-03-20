@@ -176,9 +176,16 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		"Timezone":                  {name: "Timezone", transform: extractValueFn},
 		"VpcSecurityGroup":          {name: "VpcSecurityGroups", transform: extractSliceValues("VpcSecurityGroupId")},
 	},
+	cloud.DbSubnetGroup: {
+		"Name":              {name: "DBSubnetGroupName", transform: extractValueFn},
+		"Arn":               {name: "DBSubnetGroupArn", transform: extractValueFn},
+		"Description":       {name: "DBSubnetGroupDescription", transform: extractValueFn},
+		"SubnetGroupStatus": {name: "SubnetGroupStatus", transform: extractValueFn},
+		"Subnets":           {name: "Subnets", transform: extractSliceValues("SubnetIdentifier")},
+		"Vpc":               {name: "VpcId", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
-		"Name":                 {name: "UserName", transform: extractValueFn},
 		"Arn":                  {name: "Arn", transform: extractValueFn},
 		"Path":                 {name: "Path", transform: extractValueFn},
 		"CreateDate":           {name: "CreateDate", transform: extractTimeFn},

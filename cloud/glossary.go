@@ -20,8 +20,8 @@ const (
 	Listener     string = "listener"
 
 	//database
-	Database string = "database"
-	DbSubnet string = "dbsubnet"
+	Database      string = "database"
+	DbSubnetGroup string = "dbsubnetgroup"
 
 	//access
 	User      string = "user"
