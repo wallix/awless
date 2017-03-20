@@ -109,9 +109,9 @@ func (g *Graph) FindResourcesByProperty(key string, value interface{}) ([]*Resou
 	return byProperty.Resolve(g)
 }
 
-func (g *Graph) GetAllResources(t string) ([]*Resource, error) {
-	byType := &ByType{t}
-	return byType.Resolve(g)
+func (g *Graph) GetAllResources(typs ...string) ([]*Resource, error) {
+	byTypes := &ByTypes{typs}
+	return byTypes.Resolve(g)
 }
 
 func (g *Graph) ResolveResources(resolvers ...Resolver) ([]*Resource, error) {

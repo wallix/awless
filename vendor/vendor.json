@@ -361,6 +361,12 @@
 			"revisionTime": "2015-07-15T15:15:32Z"
 		},
 		{
+			"checksumSHA1": "aTYPm16eYDQhbVLgreCGwvV2klw=",
+			"path": "github.com/chzyer/readline",
+			"revision": "41eea22f717c616615e1e59aa06cf831f9901f35",
+			"revisionTime": "2017-03-13T23:49:21Z"
+		},
+		{
 			"checksumSHA1": "x77xUarDfVxctJMAJPCQzlYk8JM=",
 			"path": "github.com/fatih/color",
 			"revision": "bf82308e8c8546dc2b945157173eb8a959ae9505",

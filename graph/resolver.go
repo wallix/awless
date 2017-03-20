@@ -112,6 +112,24 @@ func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
 	return res, nil
 }
 
+type ByTypes struct {
+	Typs []string
+}
+
+func (r *ByTypes) Resolve(g *Graph) ([]*Resource, error) {
+	var res []*Resource
+	for _, t := range r.Typs {
+		bt := &ByType{t}
+		all, err := bt.Resolve(g)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, all...)
+	}
+
+	return res, nil
+}
+
 func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
 	var resources []*Resource
 

@@ -17,15 +17,17 @@ limitations under the License.
 package commands
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 	awscloud "github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/driver"
@@ -81,34 +83,91 @@ var runCmd = &cobra.Command{
 
 func missingHolesStdinFunc() func(string) interface{} {
 	var count int
-	return func(hole string) interface{} {
+	return func(hole string) (response interface{}) {
 		if count < 1 {
-			fmt.Println("Please specify (Ctrl+C to quit):")
+			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion):")
 		}
-		var resp interface{}
-		ask := func() error {
-			fmt.Printf("%s ? ", hole)
-			line, err := bufio.NewReader(os.Stdin).ReadString('\n')
-			if err != nil {
-				return err
-			}
-			line = strings.TrimSpace(line)
-			if line == "" {
-				return errors.New("empty")
-			}
-			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
-			if err != nil {
-				return err
-			}
-			resp = params[hole]
-			return nil
-		}
-		for err := ask(); err != nil; err = ask() {
+
+		var err error
+		for response, err = askHole(hole); err != nil; response, err = askHole(hole) {
 			logger.Errorf("invalid value: %s", err)
 		}
 		count++
-		return resp
+		return
 	}
+}
+
+func askHole(hole string) (interface{}, error) {
+	l, err := readline.NewEx(&readline.Config{
+		Prompt:          fmt.Sprintf("%s ? ", hole),
+		AutoComplete:    idAndNameCompleter(hole),
+		InterruptPrompt: "^C",
+		EOFPrompt:       "exit",
+	})
+	if err != nil {
+		exitOn(err)
+	}
+	defer l.Close()
+
+	for {
+		line, err := l.Readline()
+		if err == readline.ErrInterrupt {
+			if len(line) == 0 {
+				os.Exit(0)
+			} else {
+				continue
+			}
+		} else if err == io.EOF {
+			break
+		}
+
+		line = strings.TrimSpace(line)
+		switch {
+		case line == "":
+			return nil, errors.New("empty")
+		default:
+			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
+			if err != nil {
+				return nil, err
+			}
+			return params[hole], nil
+		}
+	}
+	return nil, nil
+}
+
+func idAndNameCompleter(hole string) readline.AutoCompleter {
+	g, err := sync.LoadAllGraphs()
+	if err != nil {
+		exitOn(err)
+	}
+
+	types := strings.Split(hole, ".")
+	resources, err := g.GetAllResources(types...)
+	if err != nil {
+		exitOn(err)
+	}
+	listAllResourcesIdAndName := func(s string) (suggest []string) {
+		for _, res := range resources {
+			if strings.Contains(res.Id(), s) {
+				suggest = append(suggest, res.Id())
+			}
+			if val, ok := res.Properties["Name"]; ok {
+				switch val.(type) {
+				case string:
+					name := val.(string)
+					if strings.Contains(name, s) && name != "" {
+						suggest = append(suggest, fmt.Sprintf("@%s", name))
+					}
+				}
+			}
+		}
+
+		sort.Strings(suggest)
+
+		return
+	}
+	return readline.NewPrefixCompleter(readline.PcItemDynamic(listAllResourcesIdAndName))
 }
 
 func runTemplate(templ *template.Template, fillers ...map[string]interface{}) error {
