@@ -34,6 +34,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/mitchellh/ioprogress"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
 )
@@ -557,6 +558,44 @@ func (d *S3Driver) Create_Storageobject_DryRun(params map[string]interface{}) (i
 	return nil, nil
 }
 
+type progressReadSeeker struct {
+	file   *os.File
+	reader *ioprogress.Reader
+}
+
+func newProgressReader(f *os.File) (*progressReadSeeker, error) {
+	finfo, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	draw := func(progress, total int64) string {
+		// &s3.PutObjectInput.Body will be read twice
+		// once in memory and a second time for the HTTP upload
+		// here we only display for the actual HTTP upload
+		if progress > total {
+			return ioprogress.DrawTextFormatBytes(progress/2, total)
+		}
+		return ""
+	}
+
+	reader := &ioprogress.Reader{
+		DrawFunc: ioprogress.DrawTerminalf(os.Stdout, draw),
+		Reader:   f,
+		Size:     finfo.Size(),
+	}
+
+	return &progressReadSeeker{file: f, reader: reader}, nil
+}
+
+func (pr *progressReadSeeker) Read(p []byte) (int, error) {
+	return pr.reader.Read(p)
+}
+
+func (pr *progressReadSeeker) Seek(offset int64, whence int) (int64, error) {
+	return pr.file.Seek(offset, whence)
+}
+
 func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
@@ -565,7 +604,12 @@ func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interfac
 		return nil, err
 	}
 	defer f.Close()
-	input.Body = f
+
+	progressR, err := newProgressReader(f)
+	if err != nil {
+		return nil, err
+	}
+	input.Body = progressR
 
 	var fileName string
 	if n, ok := params["name"].(string); ok && n != "" {
@@ -580,6 +624,8 @@ func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interfac
 	if err != nil {
 		return nil, err
 	}
+
+	d.logger.Infof("uploading '%s'", fileName)
 
 	output, err := d.PutObject(input)
 	if err != nil {

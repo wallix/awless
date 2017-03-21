@@ -531,6 +531,12 @@
 			"revisionTime": "2016-10-12T01:35:12Z"
 		},
 		{
+			"checksumSHA1": "NB5fzIAruRSs7H8vH27kLXEGVBA=",
+			"path": "github.com/mitchellh/ioprogress",
+			"revision": "8163955264568045f462ae7e2d6d07b2001fc997",
+			"revisionTime": "2015-05-21T21:15:56Z"
+		},
+		{
 			"checksumSHA1": "KCJhN9Dx329wAN/SeL4CxeypPyk=",
 			"path": "github.com/mitchellh/mapstructure",
 			"revision": "d2dd0262208475919e1a362f675cfc0e7c10e905",

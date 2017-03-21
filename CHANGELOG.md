@@ -4,6 +4,7 @@
 
 - Rudimentary security groups port scanner inspector via `awless inspect -i port_scanner`
 - Template: compile time check of undefined or unused references
+- [#78](https://github.com/wallix/awless/issues/78): Show progress when uploadgin object to storage
 
 ### Bugfixes
 
