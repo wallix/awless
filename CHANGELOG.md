@@ -8,6 +8,8 @@
 
 ### Bugfixes
 
+- Fix regression: run templates/one-liners failed on `storageobject`, `subscription` entities
+
 ## v0.0.20 [2017-03-20]
 
 ### Features
