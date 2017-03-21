@@ -26,6 +26,7 @@ var (
 	verboseGlobalFlag      bool
 	extraVerboseGlobalFlag bool
 	localGlobalFlag        bool
+	forceGlobalFlag        bool
 	versionGlobalFlag      bool
 	awsRegionGlobalFlag    string
 	awsProfileGlobalFlag   string
@@ -38,7 +39,8 @@ var (
 func init() {
 	RootCmd.PersistentFlags().BoolVarP(&verboseGlobalFlag, "verbose", "v", false, "Turn on verbose mode for all commands")
 	RootCmd.PersistentFlags().BoolVarP(&extraVerboseGlobalFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (including regular verbose) for all commands")
-	RootCmd.PersistentFlags().BoolVar(&localGlobalFlag, "local", false, "Work offline only with synced/local resources")
+	RootCmd.PersistentFlags().BoolVarP(&localGlobalFlag, "local", "l", false, "Work offline only with synced/local resources")
+	RootCmd.PersistentFlags().BoolVarP(&forceGlobalFlag, "force", "f", false, "Force the command and bypass any confirmation prompt")
 	RootCmd.PersistentFlags().StringVar(&awsRegionGlobalFlag, "aws-region", "", "Overwrite AWS region")
 	RootCmd.PersistentFlags().StringVar(&awsProfileGlobalFlag, "aws-profile", "", "Overwrite AWS profile")
 	RootCmd.Flags().BoolVar(&versionGlobalFlag, "version", false, "Print awless version")

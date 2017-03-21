@@ -216,13 +216,17 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	_, err = templ.Compile(awsDriver)
 	exitOn(err)
 
-	fmt.Println()
 	fmt.Printf("%s\n", renderGreenFn(templ))
-	fmt.Println()
-	fmt.Print("Confirm? (y/n): ")
+
 	var yesorno string
-	_, err = fmt.Scanln(&yesorno)
-	exitOn(err)
+	if forceGlobalFlag {
+		yesorno = "y"
+	} else {
+		fmt.Println()
+		fmt.Print("Confirm? (y/n): ")
+		_, err = fmt.Scanln(&yesorno)
+		exitOn(err)
+	}
 
 	if strings.TrimSpace(yesorno) == "y" {
 		newTempl, err := templ.Run(awsDriver)
