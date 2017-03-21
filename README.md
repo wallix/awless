@@ -283,7 +283,7 @@ type Inspector interface {
 }
 ```
 
-Using `awless` cloud resources local synchronisation functionality, you can analyse your data offline (i.e: on your local graphs). There are some builtin inspectors that serve as examples: `pricer`, `bucket_sizer`, etc...
+Using `awless` cloud resources local synchronisation functionality, you can analyse your data offline (i.e: on your local graphs). There are some builtin inspectors that serve as examples: `pricer`, `bucket_sizer`, `port_scanner`, etc...
 
 For example, you would run the `bucket_sizer` inspector with:
 

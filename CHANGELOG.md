@@ -1,3 +1,11 @@
+## v0.0.21 [unreleased]
+
+### Features
+
+- Rudimentary security groups port scanner inspector via `awless inspect -i port_scanner`
+
+### Bugfixes
+
 ## v0.0.20 [2017-03-20]
 
 ### Features
