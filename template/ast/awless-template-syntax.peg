@@ -13,7 +13,7 @@ Entity <- 'none' /
           'loadbalancer' / 'listener' / 'targetgroup' / 
           'database' / 'dbsubnetgroup' /
           'user' / 'group' / 'role' / 'policy' / 'accesskey' /
-          'bucket' / 'storageobject'
+          'bucket' / 'storageobject' /
           'subscription' / 'topic' / 'queue' / 
           'zone' / 'record'
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
