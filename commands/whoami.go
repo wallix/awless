@@ -19,6 +19,7 @@ package commands
 import (
 	"fmt"
 	"regexp"
+	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -50,27 +51,39 @@ var whoamiCmd = &cobra.Command{
 
 		username := me.GetUsername()
 
-		policies, err := aws.AccessService.(*aws.Access).ListUserPolicies(&iam.ListUserPoliciesInput{
-			UserName: awssdk.String(username),
-		})
-		if err != nil {
-			logger.Error(err)
-		} else {
-			for _, name := range policies.PolicyNames {
-				me.InlinedPolicies = append(me.InlinedPolicies, awssdk.StringValue(name))
-			}
-		}
+		var wg sync.WaitGroup
 
-		attached, err := aws.AccessService.(*aws.Access).ListAttachedUserPolicies(&iam.ListAttachedUserPoliciesInput{
-			UserName: awssdk.String(username),
-		})
-		if err != nil {
-			logger.Error(err)
-		} else {
-			for _, pol := range attached.AttachedPolicies {
-				me.AttachedPolicies = append(me.AttachedPolicies, policy{Arn: awssdk.StringValue(pol.PolicyArn), Name: awssdk.StringValue(pol.PolicyName)})
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			policies, err := aws.AccessService.(*aws.Access).ListUserPolicies(&iam.ListUserPoliciesInput{
+				UserName: awssdk.String(username),
+			})
+			if err != nil {
+				logger.Error(err)
+			} else {
+				for _, name := range policies.PolicyNames {
+					me.InlinedPolicies = append(me.InlinedPolicies, awssdk.StringValue(name))
+				}
 			}
-		}
+		}()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			attached, err := aws.AccessService.(*aws.Access).ListAttachedUserPolicies(&iam.ListAttachedUserPoliciesInput{
+				UserName: awssdk.String(username),
+			})
+			if err != nil {
+				logger.Error(err)
+			} else {
+				for _, pol := range attached.AttachedPolicies {
+					me.AttachedPolicies = append(me.AttachedPolicies, policy{Arn: awssdk.StringValue(pol.PolicyArn), Name: awssdk.StringValue(pol.PolicyName)})
+				}
+			}
+		}()
+
+		wg.Wait()
 
 		fmt.Printf("Username: %s, Id: %s, Account: %s\n", username, me.UserId, me.Account)
 		if len(me.AttachedPolicies) > 0 {
