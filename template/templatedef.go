@@ -21,7 +21,16 @@ import (
 	"strings"
 )
 
-type LookupTemplateDefFunc func(key string) (TemplateDefinition, bool)
+type DefinitionLookupFunc func(key string) (TemplateDefinition, bool)
+
+type Definitions []TemplateDefinition
+
+func (defs Definitions) Map(fn func(TemplateDefinition) string) (reduced []string) {
+	for _, def := range defs {
+		reduced = append(reduced, fn(def))
+	}
+	return
+}
 
 type TemplateDefinition struct {
 	Action, Entity, Api         string

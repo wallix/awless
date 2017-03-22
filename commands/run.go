@@ -5,13 +5,13 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.
+uimitations under the License.
 */
 
 package commands
@@ -30,8 +30,8 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
-	awscloud "github.com/wallix/awless/aws"
-	"github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws"
+	awscloud "github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -44,7 +44,7 @@ import (
 
 func init() {
 	RootCmd.AddCommand(runCmd)
-	for action, entities := range aws.DriverSupportedActions() {
+	for action, entities := range awscloud.DriverSupportedActions() {
 		RootCmd.AddCommand(
 			createDriverCommands(action, entities),
 		)
@@ -256,7 +256,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 func validateTemplate(tpl *template.Template) {
 	unicityRule := &template.UniqueNameValidator{LookupGraph: func(key string) (*graph.Graph, bool) {
-		g := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[key])
+		g := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[key])
 		return g, true
 	}}
 
@@ -310,7 +310,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 }
 
 func lookupTemplateDefinitionsFunc(key string) (t template.TemplateDefinition, ok bool) {
-	t, ok = aws.AWSTemplatesDefinitions[key]
+	t, ok = awscloud.AWSTemplatesDefinitions[key]
 	return
 }
 
@@ -319,36 +319,16 @@ func runSyncFor(tpl *template.Template) {
 		return
 	}
 
-	collector := &template.CollectDefinitions{L: lookupTemplateDefinitionsFunc}
-	tpl.Visit(collector)
+	defs := tpl.UniqueDefinitions(lookupTemplateDefinitionsFunc)
 
-	uniqueNames := make(map[string]bool)
-	for _, def := range collector.C {
-		name, ok := awscloud.ServicePerAPI[def.Api]
-		if ok {
-			uniqueNames[name] = true
-		}
-	}
-
-	var srvNames []string
-	for name := range uniqueNames {
-		srvNames = append(srvNames, name)
-	}
-
-	var services []cloud.Service
-	for _, name := range srvNames {
-		srv, ok := cloud.ServiceRegistry[name]
-		if !ok {
-			logger.Errorf("internal: cannot resolve service name '%s'", name)
-		} else {
-			services = append(services, srv)
-		}
-	}
+	services := aws.GetCloudServicesForAPIs(defs.Map(
+		func(d template.TemplateDefinition) string { return d.Api },
+	)...)
 
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
 		logger.Error(err.Error())
 	} else {
-		logger.Verbosef("performed sync for %s", strings.Join(srvNames, ", "))
+		logger.Verbosef("performed sync for %s", strings.Join(cloud.Services(services).Names(), ", "))
 	}
 }
 
@@ -377,7 +357,7 @@ func printReport(t *template.Template) {
 }
 
 func resolveAliasFunc(entity, key, alias string) string {
-	gph := sync.LoadCurrentLocalGraph(awscloud.ServicePerResourceType[entity])
+	gph := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[entity])
 	resType := key
 	if strings.Contains(key, "id") {
 		resType = entity

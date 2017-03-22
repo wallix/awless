@@ -32,6 +32,36 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+func GetCloudServicesForAPIs(apis ...string) (services []cloud.Service) {
+	unique := make(map[string]struct{})
+	for _, api := range apis {
+		if name, ok := ServicePerAPI[api]; ok {
+			if service, exists := cloud.ServiceRegistry[name]; exists {
+				if _, done := unique[name]; !done {
+					unique[name] = struct{}{}
+					services = append(services, service)
+				}
+			}
+		}
+	}
+	return
+}
+
+func GetCloudServicesForTypes(types ...string) (services []cloud.Service) {
+	unique := make(map[string]struct{})
+	for _, typ := range types {
+		if name, ok := ServicePerResourceType[typ]; ok {
+			if service, exists := cloud.ServiceRegistry[name]; exists {
+				if _, done := unique[name]; !done {
+					unique[name] = struct{}{}
+					services = append(services, service)
+				}
+			}
+		}
+	}
+	return
+}
+
 type oncer struct {
 	sync.Once
 	result interface{}

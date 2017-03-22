@@ -36,6 +36,15 @@ type Service interface {
 	FetchByType(t string) (*graph.Graph, error)
 }
 
+type Services []Service
+
+func (srvs Services) Names() (names []string) {
+	for _, srv := range srvs {
+		names = append(names, srv.Name())
+	}
+	return
+}
+
 var ServiceRegistry = make(map[string]Service)
 
 func GetServiceForType(t string) (Service, error) {

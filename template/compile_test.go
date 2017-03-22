@@ -6,30 +6,6 @@ import (
 	"testing"
 )
 
-var defs = map[string]TemplateDefinition{
-	"createinstance": {
-		Action:         "create",
-		Entity:         "instance",
-		Api:            "ec2",
-		RequiredParams: []string{"image", "count", "count", "type", "subnet"},
-		ExtraParams:    []string{"key", "ip", "userdata", "group", "lock"},
-	},
-	"createkeypair": {
-		Action:         "create",
-		Entity:         "keypair",
-		Api:            "ec2",
-		RequiredParams: []string{"name"},
-		ExtraParams:    []string{},
-	},
-	"createtag": {
-		Action:         "create",
-		Entity:         "tag",
-		Api:            "ec2",
-		RequiredParams: []string{"resource", "key", "value"},
-		ExtraParams:    []string{},
-	},
-}
-
 func TestCheckReferencesDeclarationPass(t *testing.T) {
 	env := NewEnv()
 	tpl := MustParse(`
@@ -61,7 +37,7 @@ func TestCheckReferencesDeclarationPass(t *testing.T) {
 func TestResolveAgainstDefinitionsPass(t *testing.T) {
 	env := NewEnv()
 	env.DefLookupFunc = func(in string) (TemplateDefinition, bool) {
-		t, ok := defs[in]
+		t, ok := DefsExample[in]
 		return t, ok
 	}
 

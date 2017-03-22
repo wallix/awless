@@ -228,6 +228,29 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		}
 	})
 }
+func TestGetTemplateUniqueDefinitions(t *testing.T) {
+	text := "create instance name=nemo\ncreate keypair name=mykey\ncreate tag key=mine\ncreate instance\ncreate keypair"
+	tpl := MustParse(text)
+
+	lookup := func(key string) (t TemplateDefinition, ok bool) {
+		t, ok = DefsExample[key]
+		return
+	}
+	defs := tpl.UniqueDefinitions(lookup)
+
+	if got, want := len(defs), 3; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := defs[0].Name(), "createinstance"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := defs[1].Name(), "createkeypair"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := defs[2].Name(), "createtag"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
 
 type expectation struct {
 	lookupDone     bool

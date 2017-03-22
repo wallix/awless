@@ -18,6 +18,7 @@ package template
 
 import (
 	"crypto/rand"
+	"fmt"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -99,8 +100,19 @@ func (t *Template) HasErrors() bool {
 	return false
 }
 
-func (s *Template) Visit(v Visitor) error {
-	return v.Visit(s.CommandNodesIterator())
+func (t *Template) UniqueDefinitions(fn DefinitionLookupFunc) (definitions Definitions) {
+	unique := make(map[string]TemplateDefinition)
+	for _, cmd := range t.CommandNodesIterator() {
+		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
+		if def, ok := fn(key); ok {
+			if _, done := unique[key]; !done {
+				unique[key] = def
+				definitions = append(definitions, def)
+			}
+		}
+	}
+
+	return
 }
 
 func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {

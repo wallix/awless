@@ -13,7 +13,7 @@ type Env struct {
 	Fillers map[string]interface{}
 
 	Resolved         map[string]interface{}
-	DefLookupFunc    LookupTemplateDefFunc
+	DefLookupFunc    DefinitionLookupFunc
 	AliasFunc        func(entity, key, alias string) string
 	MissingHolesFunc func(string) interface{}
 
