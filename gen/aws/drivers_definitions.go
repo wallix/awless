@@ -495,6 +495,10 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
+		Api:     "sts",
+		Drivers: []driver{},
+	},
+	{
 		Api: "iam",
 		Drivers: []driver{
 			// USER

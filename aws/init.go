@@ -30,8 +30,6 @@ import (
 
 var (
 	AccessService, InfraService, StorageService, NotificationService, QueueService, DnsService cloud.Service
-
-	SecuAPI Security
 )
 
 func InitSession(region, profile string) (*session.Session, error) {
@@ -68,7 +66,6 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	AccessService = NewAccess(sess, awsconf, log)
 	InfraService = NewInfra(sess, awsconf, log)
 	StorageService = NewStorage(sess, awsconf, log)
-	SecuAPI = NewSecu(sess)
 	NotificationService = NewNotification(sess, awsconf, log)
 	QueueService = NewQueue(sess, awsconf, log)
 	DnsService = NewDns(sess, awsconf, log)

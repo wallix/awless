@@ -43,6 +43,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 	awsdriver "github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
@@ -96,6 +98,7 @@ var ServicePerAPI = map[string]string{
 	"elbv2":   "infra",
 	"rds":     "infra",
 	"iam":     "access",
+	"sts":     "access",
 	"s3":      "storage",
 	"sns":     "notification",
 	"sqs":     "queue",
@@ -1029,12 +1032,14 @@ type Access struct {
 	config config
 	log    *logger.Logger
 	iamiface.IAMAPI
+	stsiface.STSAPI
 }
 
 func NewAccess(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Access{
 		IAMAPI: iam.New(sess),
+		STSAPI: sts.New(sess),
 		config: awsconf,
 		region: region,
 		log:    log,
@@ -1048,6 +1053,7 @@ func (s *Access) Name() string {
 func (s *Access) Drivers() []driver.Driver {
 	return []driver.Driver{
 		awsdriver.NewIamDriver(s.IAMAPI),
+		awsdriver.NewStsDriver(s.STSAPI),
 	}
 }
 

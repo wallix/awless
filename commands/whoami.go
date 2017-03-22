@@ -18,11 +18,7 @@ package commands
 
 import (
 	"fmt"
-	"regexp"
-	"sync"
 
-	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/logger"
@@ -40,87 +36,32 @@ var whoamiCmd = &cobra.Command{
 	Short:             "Show your account, attached (i.e. managed) and inlined policies",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		me := &whoami{}
-
-		resp, err := aws.SecuAPI.GetCallerIdentity(nil)
+		me, err := aws.AccessService.(*aws.Access).GetIdentity()
 		exitOn(err)
 
-		me.Account = awssdk.StringValue(resp.Account)
-		me.Arn = awssdk.StringValue(resp.Arn)
-		me.UserId = awssdk.StringValue(resp.UserId)
+		fmt.Printf("Username: %s, Id: %s, Account: %s\n", me.Username, me.UserId, me.Account)
 
-		username := me.GetUsername()
-
-		var wg sync.WaitGroup
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			policies, err := aws.AccessService.(*aws.Access).ListUserPolicies(&iam.ListUserPoliciesInput{
-				UserName: awssdk.String(username),
-			})
-			if err != nil {
-				logger.Error(err)
-			} else {
-				for _, name := range policies.PolicyNames {
-					me.InlinedPolicies = append(me.InlinedPolicies, awssdk.StringValue(name))
-				}
-			}
-		}()
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			attached, err := aws.AccessService.(*aws.Access).ListAttachedUserPolicies(&iam.ListAttachedUserPoliciesInput{
-				UserName: awssdk.String(username),
-			})
-			if err != nil {
-				logger.Error(err)
-			} else {
-				for _, pol := range attached.AttachedPolicies {
-					me.AttachedPolicies = append(me.AttachedPolicies, policy{Arn: awssdk.StringValue(pol.PolicyArn), Name: awssdk.StringValue(pol.PolicyName)})
-				}
-			}
-		}()
-
-		wg.Wait()
-
-		fmt.Printf("Username: %s, Id: %s, Account: %s\n", username, me.UserId, me.Account)
-		if len(me.AttachedPolicies) > 0 {
-			fmt.Println("\nAttached policies (i.e. managed):")
-			for _, p := range me.AttachedPolicies {
-				fmt.Printf("\t- %s\n", p.Name)
-			}
+		policies, err := aws.AccessService.(*aws.Access).GetUserPolicies(me.Username)
+		if err != nil {
+			logger.Error(err)
+			return
 		} else {
-			fmt.Println("\nAttached policies (i.e. managed): none")
-		}
-		if len(me.InlinedPolicies) > 0 {
-			fmt.Println("\nInlined policies:")
-			for _, p := range me.InlinedPolicies {
-				fmt.Printf("\t- %s\n", p)
+			if attached := policies.Attached; len(attached) > 0 {
+				fmt.Println("\nAttached policies (i.e. managed):")
+				for _, name := range attached {
+					fmt.Printf("\t- %s\n", name)
+				}
+			} else {
+				fmt.Println("\nAttached policies (i.e. managed): none")
 			}
-		} else {
-			fmt.Println("\nInlined policies: none")
+			if inlined := policies.Inlined; len(inlined) > 0 {
+				fmt.Println("\nInlined policies:")
+				for _, name := range inlined {
+					fmt.Printf("\t- %s\n", name)
+				}
+			} else {
+				fmt.Println("\nInlined policies: none")
+			}
 		}
 	},
 }
-
-type policy struct {
-	Arn, Name string
-}
-
-type whoami struct {
-	Account, Arn, UserId string
-	AttachedPolicies     []policy
-	InlinedPolicies      []string
-}
-
-func (w *whoami) GetUsername() string {
-	matches := usernameRegex.FindStringSubmatch(w.Arn)
-	if len(matches) != 2 {
-		return ""
-	}
-	return matches[1]
-}
-
-var usernameRegex = regexp.MustCompile(`:user/([\w-.]*)$`)

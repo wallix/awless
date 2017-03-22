@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
 )
@@ -350,6 +351,26 @@ func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 			return d.Delete_Dbsubnetgroup_DryRun, nil
 		}
 		return d.Delete_Dbsubnetgroup, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type StsDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	stsiface.STSAPI
+}
+
+func (d *StsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *StsDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewStsDriver(api stsiface.STSAPI) driver.Driver {
+	return &StsDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *StsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

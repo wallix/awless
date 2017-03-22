@@ -18,27 +18,19 @@ package aws
 
 import (
 	"fmt"
+	"regexp"
 	"sync"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
-
-type Security interface {
-	stsiface.STSAPI
-	GetUserId() (string, error)
-	GetAccountId() (string, error)
-}
 
 type oncer struct {
 	sync.Once
@@ -46,28 +38,86 @@ type oncer struct {
 	err    error
 }
 
-type security struct {
-	stsiface.STSAPI
+var usernameArnRegex = regexp.MustCompile(`:user/([\w-.]*)$`)
+
+type Identity struct {
+	Account, Arn, UserId, Username string
 }
 
-func NewSecu(sess *session.Session) Security {
-	return &security{sts.New(sess)}
-}
-
-func (s *security) GetUserId() (string, error) {
-	output, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+func (s *Access) GetIdentity() (*Identity, error) {
+	resp, err := s.STSAPI.GetCallerIdentity(nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return awssdk.StringValue(output.Arn), nil
+	ident := &Identity{}
+
+	ident.Account = awssdk.StringValue(resp.Account)
+	ident.Arn = awssdk.StringValue(resp.Arn)
+	ident.UserId = awssdk.StringValue(resp.UserId)
+
+	matches := usernameArnRegex.FindStringSubmatch(ident.Arn)
+	if len(matches) == 2 {
+		ident.Username = matches[1]
+	}
+
+	return ident, nil
 }
 
-func (s *security) GetAccountId() (string, error) {
-	output, err := s.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return "", err
+type UserPolicies struct {
+	Username string
+	Inlined  []string
+	Attached []string
+}
+
+func (s *Access) GetUserPolicies(username string) (*UserPolicies, error) {
+	var wg sync.WaitGroup
+
+	all := &UserPolicies{Username: username}
+
+	errc := make(chan error, 2)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		policies, err := s.ListUserPolicies(&iam.ListUserPoliciesInput{
+			UserName: awssdk.String(username),
+		})
+		if err != nil {
+			errc <- err
+			return
+		}
+
+		for _, name := range policies.PolicyNames {
+			all.Inlined = append(all.Inlined, awssdk.StringValue(name))
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		attached, err := s.ListAttachedUserPolicies(&iam.ListAttachedUserPoliciesInput{
+			UserName: awssdk.String(username),
+		})
+		if err != nil {
+			errc <- err
+			return
+		}
+
+		for _, pol := range attached.AttachedPolicies {
+			all.Attached = append(all.Attached, awssdk.StringValue(pol.PolicyName))
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for e := range errc {
+		return all, e
 	}
-	return awssdk.StringValue(output.Account), nil
+
+	return all, nil
 }
 
 func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error) {
