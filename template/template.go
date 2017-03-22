@@ -22,8 +22,8 @@ import (
 	"time"
 
 	"github.com/oklog/ulid"
-	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 type Template struct {

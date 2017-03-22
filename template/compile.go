@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 type Env struct {

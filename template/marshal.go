@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 type toJSON struct {

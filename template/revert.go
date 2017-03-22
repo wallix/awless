@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 func (te *Template) Revert() (*Template, error) {

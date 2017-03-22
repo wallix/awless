@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 func TestParsingInvalidActionAndEntities(t *testing.T) {

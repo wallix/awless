@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wallix/awless/template/ast"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 func TestUnmarshalFromJSON(t *testing.T) {

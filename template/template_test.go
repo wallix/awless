@@ -23,8 +23,8 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/ast"
 	"github.com/wallix/awless/template/driver"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 type noopDriver struct{}
