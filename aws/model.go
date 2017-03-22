@@ -186,6 +186,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	//IAM
 	cloud.User: {
+		"Name":                 {name: "UserName", transform: extractValueFn},
 		"Arn":                  {name: "Arn", transform: extractValueFn},
 		"Path":                 {name: "Path", transform: extractValueFn},
 		"CreateDate":           {name: "CreateDate", transform: extractTimeFn},
