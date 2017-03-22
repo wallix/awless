@@ -26,16 +26,32 @@ import (
 	"github.com/wallix/awless/template/ast"
 )
 
-func Parse(text string) (*Template, error) {
+func Parse(text string) (tmpl *Template, err error) {
+	defer func() { // as peg lib does not allow errors in Execute, we use panic to build the AST
+		if rerr := recover(); rerr != nil {
+			switch rerr.(type) {
+			case error:
+				err = rerr.(error)
+			default:
+				panic(rerr)
+			}
+		}
+	}()
+
+	tmpl = &Template{}
+
 	p := &ast.Peg{AST: &ast.AST{}, Buffer: string(text)}
 	p.Init()
 
-	if err := p.Parse(); err != nil {
-		return nil, newParseError(text, err.Error())
+	if err = p.Parse(); err != nil {
+		err = newParseError(text, err.Error())
+		return
 	}
 	p.Execute()
 
-	return &Template{AST: p.AST}, nil
+	tmpl.AST = p.AST
+
+	return
 }
 
 func MustParse(text string) *Template {

@@ -20,10 +20,23 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/wallix/awless/template/ast"
 )
+
+func TestParsingInvalidActionAndEntities(t *testing.T) {
+	_, err := Parse(`creat instance`)
+	if err == nil || !strings.Contains(err.Error(), "action 'creat'") {
+		t.Fatalf("expected error with specific message, got: %s", err)
+	}
+
+	_, err = Parse(`create intance`)
+	if err == nil || !strings.Contains(err.Error(), "entity 'intance'") {
+		t.Fatalf("expected error with specific message, got: %s", err)
+	}
+}
 
 func TestWrapPegParseError(t *testing.T) {
 	t.Run("Display better error message", func(t *testing.T) {

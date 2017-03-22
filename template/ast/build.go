@@ -8,7 +8,12 @@ import (
 )
 
 func (a *AST) addAction(text string) {
+	if IsInvalidAction(text) {
+		panic(fmt.Errorf("unknown action '%s'", text))
+	}
+
 	cmd := &CommandNode{Action: text}
+
 	decl := a.currentDeclaration()
 	if decl != nil {
 		decl.Expr = cmd
@@ -23,6 +28,9 @@ func (a *AST) addAction(text string) {
 }
 
 func (a *AST) addEntity(text string) {
+	if IsInvalidEntity(text) {
+		panic(fmt.Errorf("unknown entity '%s'", text))
+	}
 	node := a.currentCommand()
 	node.Entity = text
 }
