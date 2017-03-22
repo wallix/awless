@@ -36,7 +36,7 @@ func TestCheckReferencesDeclarationPass(t *testing.T) {
 
 func TestResolveAgainstDefinitionsPass(t *testing.T) {
 	env := NewEnv()
-	env.DefLookupFunc = func(in string) (TemplateDefinition, bool) {
+	env.DefLookupFunc = func(in string) (Definition, bool) {
 		t, ok := DefsExample[in]
 		return t, ok
 	}

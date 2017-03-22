@@ -102,7 +102,7 @@ func (t *Template) HasErrors() bool {
 }
 
 func (t *Template) UniqueDefinitions(fn DefinitionLookupFunc) (definitions Definitions) {
-	unique := make(map[string]TemplateDefinition)
+	unique := make(map[string]Definition)
 	for _, cmd := range t.CommandNodesIterator() {
 		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
 		if def, ok := fn(key); ok {

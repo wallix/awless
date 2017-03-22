@@ -232,7 +232,7 @@ func TestGetTemplateUniqueDefinitions(t *testing.T) {
 	text := "create instance name=nemo\ncreate keypair name=mykey\ncreate tag key=mine\ncreate instance\ncreate keypair"
 	tpl := MustParse(text)
 
-	lookup := func(key string) (t TemplateDefinition, ok bool) {
+	lookup := func(key string) (t Definition, ok bool) {
 		t, ok = DefsExample[key]
 		return
 	}

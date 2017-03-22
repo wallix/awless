@@ -21,7 +21,7 @@ import (
 	"github.com/wallix/awless/template"
 )
 
-var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
+var AWSTemplatesDefinitions = map[string]template.Definition{
 	"createvpc": {
 		Action:         "create",
 		Entity:         "vpc",

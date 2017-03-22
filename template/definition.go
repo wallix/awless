@@ -21,27 +21,27 @@ import (
 	"strings"
 )
 
-type DefinitionLookupFunc func(key string) (TemplateDefinition, bool)
+type DefinitionLookupFunc func(key string) (Definition, bool)
 
-type Definitions []TemplateDefinition
+type Definitions []Definition
 
-func (defs Definitions) Map(fn func(TemplateDefinition) string) (reduced []string) {
+func (defs Definitions) Map(fn func(Definition) string) (reduced []string) {
 	for _, def := range defs {
 		reduced = append(reduced, fn(def))
 	}
 	return
 }
 
-type TemplateDefinition struct {
+type Definition struct {
 	Action, Entity, Api         string
 	RequiredParams, ExtraParams []string
 }
 
-func (def TemplateDefinition) Name() string {
+func (def Definition) Name() string {
 	return fmt.Sprintf("%s%s", def.Action, def.Entity)
 }
 
-func (def TemplateDefinition) String() string {
+func (def Definition) String() string {
 	var required []string
 	for _, v := range def.Required() {
 		required = append(required, fmt.Sprintf("%s = { %s.%s }", v, def.Entity, v))
@@ -49,14 +49,14 @@ func (def TemplateDefinition) String() string {
 	return fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(required, " "))
 }
 
-func (def TemplateDefinition) GetTemplate() (*Template, error) {
+func (def Definition) GetTemplate() (*Template, error) {
 	return Parse(def.String())
 }
 
-func (def TemplateDefinition) Required() []string {
+func (def Definition) Required() []string {
 	return def.RequiredParams
 }
 
-func (def TemplateDefinition) Extra() []string {
+func (def Definition) Extra() []string {
 	return def.ExtraParams
 }

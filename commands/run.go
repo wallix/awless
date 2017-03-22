@@ -191,7 +191,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	env := template.NewEnv()
 	env.Log = logger.DefaultLogger
 	env.AddFillers(fillers...)
-	env.DefLookupFunc = lookupTemplateDefinitionsFunc
+	env.DefLookupFunc = lookupDefinitionsFunc
 	env.AliasFunc = resolveAliasFunc
 	env.MissingHolesFunc = missingHolesStdinFunc()
 
@@ -278,11 +278,11 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	for _, entity := range entities {
-		templDef, ok := lookupTemplateDefinitionsFunc(fmt.Sprintf("%s%s", action, entity))
+		templDef, ok := lookupDefinitionsFunc(fmt.Sprintf("%s%s", action, entity))
 		if !ok {
 			exitOn(errors.New("command unsupported on inline mode"))
 		}
-		run := func(def template.TemplateDefinition) func(cmd *cobra.Command, args []string) error {
+		run := func(def template.Definition) func(cmd *cobra.Command, args []string) error {
 			return func(cmd *cobra.Command, args []string) error {
 				text := fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(args, " "))
 
@@ -309,7 +309,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func lookupTemplateDefinitionsFunc(key string) (t template.TemplateDefinition, ok bool) {
+func lookupDefinitionsFunc(key string) (t template.Definition, ok bool) {
 	t, ok = awscloud.AWSTemplatesDefinitions[key]
 	return
 }
@@ -319,10 +319,10 @@ func runSyncFor(tpl *template.Template) {
 		return
 	}
 
-	defs := tpl.UniqueDefinitions(lookupTemplateDefinitionsFunc)
+	defs := tpl.UniqueDefinitions(lookupDefinitionsFunc)
 
 	services := aws.GetCloudServicesForAPIs(defs.Map(
-		func(d template.TemplateDefinition) string { return d.Api },
+		func(d template.Definition) string { return d.Api },
 	)...)
 
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {

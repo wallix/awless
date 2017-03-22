@@ -5,7 +5,7 @@ import (
 )
 
 func TestGetTemplateFromDef(t *testing.T) {
-	def := &TemplateDefinition{
+	def := &Definition{
 		Action: "create",
 		Entity: "instance",
 	}

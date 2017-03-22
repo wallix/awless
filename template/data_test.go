@@ -1,6 +1,6 @@
 package template
 
-var DefsExample = map[string]TemplateDefinition{
+var DefsExample = map[string]Definition{
 	"createinstance": {
 		Action:         "create",
 		Entity:         "instance",

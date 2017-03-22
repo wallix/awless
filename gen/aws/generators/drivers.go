@@ -105,10 +105,10 @@ import (
 	"github.com/wallix/awless/template"
 )
 
-var AWSTemplatesDefinitions = map[string]template.TemplateDefinition{
+var AWSTemplatesDefinitions = map[string]template.Definition{
 {{- range $, $service := . }}
 {{- range $index, $def := $service.Drivers }}
-	"{{ $def.Action }}{{ $def.Entity }}": template.TemplateDefinition{
+	"{{ $def.Action }}{{ $def.Entity }}": template.Definition{
 			Action: "{{ $def.Action }}",
 			Entity: "{{ $def.Entity }}",
 			Api: "{{ $service.Api }}",
