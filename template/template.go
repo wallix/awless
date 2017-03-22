@@ -75,11 +75,12 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	return current, nil
 }
 
-func (s *Template) Compile(d driver.Driver) (*Template, error) {
+func (s *Template) DryRun(d driver.Driver) error {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
 
-	return s.Run(d)
+	_, err := s.Run(d)
+	return err
 }
 
 func (s *Template) Validate(rules ...Validator) (all []error) {

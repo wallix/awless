@@ -163,29 +163,29 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate", Friendly: "PasswordLastUsed"}},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate", Friendly: "Created"}},
 	},
 	cloud.Role: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate", Friendly: "Created"}},
 	},
 	cloud.Policy: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "UpdateDate"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate", Friendly: "Created"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "UpdateDate", Friendly: "Updated"}},
 	},
 	cloud.Group: {
 		StringColumnDefinition{Prop: "Id"},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate", Friendly: "Created"}},
 	},
 	// S3
 	cloud.Bucket: {
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "Grants"}},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "CreateDate", Friendly: "Created"}},
 	},
 	cloud.Object: {
 		StringColumnDefinition{Prop: "Id", TruncateRight: true},

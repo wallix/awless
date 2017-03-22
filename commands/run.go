@@ -213,7 +213,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 	awsDriver.SetLogger(logger.DefaultLogger)
 
-	_, err = templ.Compile(awsDriver)
+	err = templ.DryRun(awsDriver)
 	exitOn(err)
 
 	fmt.Printf("%s\n", renderGreenFn(templ))
