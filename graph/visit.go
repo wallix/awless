@@ -85,7 +85,12 @@ func prepareRDFVisit(g *Graph, root *Resource, each visitEachFunc, includeRoot b
 	}
 
 	foreach := func(rdfG *rdf.Graph, n *node.Node, i int) error {
-		res, err := g.GetResource(newResourceType(n), n.ID().String())
+		id := n.ID().String()
+		rT, err := resolveResourceType(g.rdfG, id)
+		if err != nil {
+			return err
+		}
+		res, err := g.GetResource(rT, id)
 		if err != nil {
 			return err
 		}

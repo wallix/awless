@@ -26,20 +26,20 @@ import (
 func TestIntersectTriples(t *testing.T) {
 	var a, b, expect []*triple.Triple
 
-	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
-	a = append(a, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	a = append(a, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	a = append(a, parseTriple("/a<4>  \"to\"@[] /b<4>"))
+	a = append(a, parseTriple("/node<1>  \"to\"@[] /node<1>"))
+	a = append(a, parseTriple("/node<2>  \"to\"@[] /node<2>"))
+	a = append(a, parseTriple("/node<3>  \"to\"@[] /node<3>"))
+	a = append(a, parseTriple("/node<4>  \"to\"@[] /node<4>"))
 
-	b = append(b, parseTriple("/a<0>  \"to\"@[] /b<0>"))
-	b = append(b, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	b = append(b, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
-	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
+	b = append(b, parseTriple("/node<0>  \"to\"@[] /node<0>"))
+	b = append(b, parseTriple("/node<2>  \"to\"@[] /node<2>"))
+	b = append(b, parseTriple("/node<3>  \"to\"@[] /node<3>"))
+	b = append(b, parseTriple("/node<5>  \"to\"@[] /node<5>"))
+	b = append(b, parseTriple("/node<6>  \"to\"@[] /node<6>"))
 
 	result := intersectTriples(a, b)
-	expect = append(expect, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	expect = append(expect, parseTriple("/a<3>  \"to\"@[] /b<3>"))
+	expect = append(expect, parseTriple("/node<2>  \"to\"@[] /node<2>"))
+	expect = append(expect, parseTriple("/node<3>  \"to\"@[] /node<3>"))
 
 	if got, want := MarshalTriples(result), MarshalTriples(expect); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
@@ -49,20 +49,20 @@ func TestIntersectTriples(t *testing.T) {
 func TestSubtractTriples(t *testing.T) {
 	var a, b, expect []*triple.Triple
 
-	a = append(a, parseTriple("/a<1>  \"to\"@[] /b<1>"))
-	a = append(a, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	a = append(a, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	a = append(a, parseTriple("/a<4>  \"to\"@[] /b<4>"))
+	a = append(a, parseTriple("/node<1>  \"to\"@[] /node<1>"))
+	a = append(a, parseTriple("/node<2>  \"to\"@[] /node<2>"))
+	a = append(a, parseTriple("/node<3>  \"to\"@[] /node<3>"))
+	a = append(a, parseTriple("/node<4>  \"to\"@[] /node<4>"))
 
-	b = append(b, parseTriple("/a<0>  \"to\"@[] /b<0>"))
-	b = append(b, parseTriple("/a<2>  \"to\"@[] /b<2>"))
-	b = append(b, parseTriple("/a<3>  \"to\"@[] /b<3>"))
-	b = append(b, parseTriple("/a<5>  \"to\"@[] /b<5>"))
-	b = append(b, parseTriple("/a<6>  \"to\"@[] /b<6>"))
+	b = append(b, parseTriple("/node<0>  \"to\"@[] /node<0>"))
+	b = append(b, parseTriple("/node<2>  \"to\"@[] /node<2>"))
+	b = append(b, parseTriple("/node<3>  \"to\"@[] /node<3>"))
+	b = append(b, parseTriple("/node<5>  \"to\"@[] /node<5>"))
+	b = append(b, parseTriple("/node<6>  \"to\"@[] /node<6>"))
 
 	result := subtractTriples(a, b)
-	expect = append(expect, parseTriple("/a<1>  \"to\"@[] /b<1>"))
-	expect = append(expect, parseTriple("/a<4>  \"to\"@[] /b<4>"))
+	expect = append(expect, parseTriple("/node<1>  \"to\"@[] /node<1>"))
+	expect = append(expect, parseTriple("/node<4>  \"to\"@[] /node<4>"))
 
 	if got, want := MarshalTriples(result), MarshalTriples(expect); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
@@ -70,9 +70,9 @@ func TestSubtractTriples(t *testing.T) {
 
 	result = subtractTriples(b, a)
 	expect = []*triple.Triple{}
-	expect = append(expect, parseTriple("/a<0>  \"to\"@[] /b<0>"))
-	expect = append(expect, parseTriple("/a<5>  \"to\"@[] /b<5>"))
-	expect = append(expect, parseTriple("/a<6>  \"to\"@[] /b<6>"))
+	expect = append(expect, parseTriple("/node<0>  \"to\"@[] /node<0>"))
+	expect = append(expect, parseTriple("/node<5>  \"to\"@[] /node<5>"))
+	expect = append(expect, parseTriple("/node<6>  \"to\"@[] /node<6>"))
 
 	if got, want := MarshalTriples(result), MarshalTriples(expect); got != want {
 		t.Fatalf("got %s\nwant%s\n", got, want)
@@ -80,15 +80,15 @@ func TestSubtractTriples(t *testing.T) {
 }
 
 func TestAttachTriple(t *testing.T) {
-	tri := parseTriple("/a<1>  \"to\"@[] /b<1>")
+	tri := parseTriple("/node<1>  \"to\"@[] /node<1>")
 	objNode, _ := tri.Object().Node()
 
 	g := NewGraphFromTriples([]*triple.Triple{tri})
 
 	l, _ := literal.DefaultBuilder().Build(literal.Text, "trumped")
-	attachLiteralToNode(g, objNode, DiffPredicate, l)
+	attachLiteralToNode(g, objNode, MetaPredicate, l)
 
-	triples, _ := g.TriplesForSubjectPredicate(objNode, DiffPredicate)
+	triples, _ := g.TriplesForSubjectPredicate(objNode, MetaPredicate)
 
 	if got, want := len(triples), 1; got != want {
 		t.Fatalf("got %d, want %d", got, want)

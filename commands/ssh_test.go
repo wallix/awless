@@ -20,14 +20,15 @@ import (
 	"path/filepath"
 	"testing"
 
+	p "github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 )
 
 func TestInstanceCredentialsFromName(t *testing.T) {
-	g, err := graph.NewGraphFromFile(filepath.Join("testdata", "infra.rdf"))
-	if err != nil {
-		t.Fatal(err)
-	}
+	g := graph.NewGraph()
+	g.AddResource(resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Build())
+	g.AddResource(resourcetest.Instance("inst_2").Prop(p.PublicIP, "2.3.4.5").Build())
 
 	cred, err := instanceCredentialsFromGraph(g, "inst_1", "")
 	if err != nil {
@@ -62,8 +63,8 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 	if got, want := cred.KeyPath, "/path/toward/inst2.key"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	_, err = instanceCredentialsFromGraph(g, "inst_12", "")
-	if err == nil {
+
+	if _, err = instanceCredentialsFromGraph(g, "inst_12", ""); err == nil {
 		t.Fatal("expected error got none")
 	}
 	if _, err := instanceCredentialsFromGraph(g, "inst_3", ""); err == nil {

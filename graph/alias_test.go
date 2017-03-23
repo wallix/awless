@@ -14,27 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package graph
+package graph_test
 
 import (
 	"testing"
+
+	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 )
 
 func TestResourceNameToId(t *testing.T) {
-	g := NewGraph()
-	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
-	/instance<inst_2>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Name","Value":"redis2"}"^^type:text
-	/instance<inst_3>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"mongo"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"CreationDate","Value":"2017-01-10T16:47:18Z"}"^^type:text
-	/subnet<subnet_1>  "has_type"@[] "/subnet"^^type:text
-  /subnet<subnet_1>  "property"@[] "{"Key":"Id","Value":"subnet_1"}"^^type:text
-  /subnet<subnet_1>  "property"@[] "{"Key":"Name","Value":"mongo"}"^^type:text`))
+	g := graph.NewGraph()
+	g.AddResource(
+		resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
+		resourcetest.Instance("inst_2").Prop("Name", "redis2").Build(),
+		resourcetest.Instance("inst_3").Prop("Name", "mongo").Build(),
+		resourcetest.Subnet("subnet_1").Prop("Name", "mongo").Build(),
+	)
 
 	tcases := []struct {
 		name         string
@@ -48,15 +44,15 @@ func TestResourceNameToId(t *testing.T) {
 		{name: "mongo", resourceType: "subnet", expectID: "subnet_1", ok: true},
 		{name: "nothere", expectID: "", ok: false},
 	}
-	for _, tcase := range tcases {
-		a := Alias(tcase.name)
+	for i, tcase := range tcases {
+		a := graph.Alias(tcase.name)
 		id, ok := a.ResolveToId(g, tcase.resourceType)
 		if got, want := ok, tcase.ok; got != want {
-			t.Fatalf("got %t, want %t", got, want)
+			t.Fatalf("%d: got %t, want %t", i, got, want)
 		}
 		if ok {
 			if got, want := id, tcase.expectID; got != want {
-				t.Fatalf("got %s, want %s", got, want)
+				t.Fatalf("%d: got %s, want %s", i, got, want)
 			}
 		}
 	}

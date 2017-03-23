@@ -25,13 +25,17 @@ import (
 
 func TestCollectors(t *testing.T) {
 	g := graph.NewGraph()
-	i1 := graph.InitResource("inst_1", "instance")
-	i2 := graph.InitResource("inst_2", "instance")
-	i3 := graph.InitResource("inst_3", "instance")
-	s1 := graph.InitResource("sub_1", "subnet")
-	s2 := graph.InitResource("sub_2", "subnet")
-	v1 := graph.InitResource("vpc_1", "vpc")
-	v2 := graph.InitResource("vpc_2", "vpc")
+	i1 := graph.InitResource("instance", "inst_1")
+	i2 := graph.InitResource("instance", "inst_2")
+	i3 := graph.InitResource("instance", "inst_3")
+	s1 := graph.InitResource("subnet", "sub_1")
+	s2 := graph.InitResource("subnet", "sub_2")
+	v1 := graph.InitResource("vpc", "vpc_1")
+	v2 := graph.InitResource("vpc", "vpc_2")
+	err := g.AddResource(i1, i2, i3, s1, s2, v1, v2)
+	if err != nil {
+		t.Fatal(err)
+	}
 	g.AddParentRelation(s1, i1)
 	g.AddParentRelation(s1, i2)
 	g.AddParentRelation(s2, i3)

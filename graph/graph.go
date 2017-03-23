@@ -40,7 +40,7 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 
 func (g *Graph) AddResource(resources ...*Resource) error {
 	for _, res := range resources {
-		triples, err := res.marshalRDF()
+		triples, err := res.marshalFullRDF()
 		if err != nil {
 			return err
 		}
@@ -63,26 +63,13 @@ func (g *Graph) AddAppliesOnRelation(parent, child *Resource) error {
 }
 
 func (g *Graph) GetResource(t string, id string) (*Resource, error) {
-	resource := InitResource(id, t)
+	resource := InitResource(t, id)
 
-	node, err := resource.toRDFNode()
-	if err != nil {
+	if err := resource.unmarshalFullRdf(g.rdfG); err != nil {
 		return resource, err
 	}
 
-	propsTriples, err := g.rdfG.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
-	if err != nil {
-		return resource, err
-	}
-	if er := resource.Properties.unmarshalRDF(propsTriples); er != nil {
-		return resource, er
-	}
-
-	metaTriples, err := g.rdfG.TriplesForSubjectPredicate(node, rdf.MetaPredicate)
-	if err != nil {
-		return resource, err
-	}
-	if err := resource.Meta.unmarshalRDF(metaTriples); err != nil {
+	if err := resource.unmarshalMeta(g.rdfG); err != nil {
 		return resource, err
 	}
 
@@ -140,7 +127,12 @@ func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
 		return resources, err
 	}
 	for _, node := range relations {
-		res, err := g.GetResource(newResourceType(node), node.ID().String())
+		id := node.ID().String()
+		rT, err := resolveResourceType(g.rdfG, id)
+		if err != nil {
+			return resources, err
+		}
+		res, err := g.GetResource(rT, id)
 		if err != nil {
 			return resources, err
 		}
@@ -172,7 +164,7 @@ func (g *Graph) addRelation(one, other *Resource, pred *predicate.Predicate) err
 		return err
 	}
 
-	oneN, err := node.NewNodeFromStrings("/"+one.Type(), one.Id())
+	oneN, err := node.NewNodeFromStrings("/node", one.Id())
 	if err != nil {
 		return err
 	}

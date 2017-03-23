@@ -37,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
 )
 
@@ -45,64 +46,64 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	switch ss := source.(type) {
 	// EC2
 	case *ec2.Instance:
-		res = graph.InitResource(awssdk.StringValue(ss.InstanceId), cloud.Instance)
+		res = graph.InitResource(cloud.Instance, awssdk.StringValue(ss.InstanceId))
 	case *ec2.Vpc:
-		res = graph.InitResource(awssdk.StringValue(ss.VpcId), cloud.Vpc)
+		res = graph.InitResource(cloud.Vpc, awssdk.StringValue(ss.VpcId))
 	case *ec2.Subnet:
-		res = graph.InitResource(awssdk.StringValue(ss.SubnetId), cloud.Subnet)
+		res = graph.InitResource(cloud.Subnet, awssdk.StringValue(ss.SubnetId))
 	case *ec2.SecurityGroup:
-		res = graph.InitResource(awssdk.StringValue(ss.GroupId), cloud.SecurityGroup)
+		res = graph.InitResource(cloud.SecurityGroup, awssdk.StringValue(ss.GroupId))
 	case *ec2.KeyPairInfo:
-		res = graph.InitResource(awssdk.StringValue(ss.KeyName), cloud.Keypair)
+		res = graph.InitResource(cloud.Keypair, awssdk.StringValue(ss.KeyName))
 	case *ec2.Volume:
-		res = graph.InitResource(awssdk.StringValue(ss.VolumeId), cloud.Volume)
+		res = graph.InitResource(cloud.Volume, awssdk.StringValue(ss.VolumeId))
 	case *ec2.InternetGateway:
-		res = graph.InitResource(awssdk.StringValue(ss.InternetGatewayId), cloud.InternetGateway)
+		res = graph.InitResource(cloud.InternetGateway, awssdk.StringValue(ss.InternetGatewayId))
 	case *ec2.RouteTable:
-		res = graph.InitResource(awssdk.StringValue(ss.RouteTableId), cloud.RouteTable)
+		res = graph.InitResource(cloud.RouteTable, awssdk.StringValue(ss.RouteTableId))
 	case *ec2.AvailabilityZone:
-		res = graph.InitResource(awssdk.StringValue(ss.ZoneName), cloud.AvailabilityZone)
+		res = graph.InitResource(cloud.AvailabilityZone, awssdk.StringValue(ss.ZoneName))
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
-		res = graph.InitResource(awssdk.StringValue(ss.LoadBalancerArn), cloud.LoadBalancer)
+		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))
 	case *elbv2.TargetGroup:
-		res = graph.InitResource(awssdk.StringValue(ss.TargetGroupArn), cloud.TargetGroup)
+		res = graph.InitResource(cloud.TargetGroup, awssdk.StringValue(ss.TargetGroupArn))
 	case *elbv2.Listener:
-		res = graph.InitResource(awssdk.StringValue(ss.ListenerArn), cloud.Listener)
+		res = graph.InitResource(cloud.Listener, awssdk.StringValue(ss.ListenerArn))
 		// Database
 	case *rds.DBInstance:
-		res = graph.InitResource(awssdk.StringValue(ss.DBInstanceIdentifier), cloud.Database)
+		res = graph.InitResource(cloud.Database, awssdk.StringValue(ss.DBInstanceIdentifier))
 	case *rds.DBSubnetGroup:
-		res = graph.InitResource(awssdk.StringValue(ss.DBSubnetGroupName), cloud.DbSubnetGroup)
+		res = graph.InitResource(cloud.DbSubnetGroup, awssdk.StringValue(ss.DBSubnetGroupName))
 	// IAM
 	case *iam.User:
-		res = graph.InitResource(awssdk.StringValue(ss.UserId), cloud.User)
+		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))
 	case *iam.UserDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.UserId), cloud.User)
+		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))
 	case *iam.RoleDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.RoleId), cloud.Role)
+		res = graph.InitResource(cloud.Role, awssdk.StringValue(ss.RoleId))
 	case *iam.GroupDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.GroupId), cloud.Group)
+		res = graph.InitResource(cloud.Group, awssdk.StringValue(ss.GroupId))
 	case *iam.Policy:
-		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), cloud.Policy)
+		res = graph.InitResource(cloud.Policy, awssdk.StringValue(ss.PolicyId))
 	case *iam.ManagedPolicyDetail:
-		res = graph.InitResource(awssdk.StringValue(ss.PolicyId), cloud.Policy)
+		res = graph.InitResource(cloud.Policy, awssdk.StringValue(ss.PolicyId))
 	// S3
 	case *s3.Bucket:
-		res = graph.InitResource(awssdk.StringValue(ss.Name), cloud.Bucket)
+		res = graph.InitResource(cloud.Bucket, awssdk.StringValue(ss.Name))
 	case *s3.Object:
-		res = graph.InitResource(awssdk.StringValue(ss.Key), cloud.Object)
+		res = graph.InitResource(cloud.Object, awssdk.StringValue(ss.Key))
 	//SNS
 	case *sns.Subscription:
-		res = graph.InitResource(awssdk.StringValue(ss.Endpoint), cloud.Subscription)
+		res = graph.InitResource(cloud.Subscription, awssdk.StringValue(ss.Endpoint))
 	case *sns.Topic:
-		res = graph.InitResource(awssdk.StringValue(ss.TopicArn), cloud.Topic)
+		res = graph.InitResource(cloud.Topic, awssdk.StringValue(ss.TopicArn))
 		// DNS
 	case *route53.HostedZone:
-		res = graph.InitResource(awssdk.StringValue(ss.Id), cloud.Zone)
+		res = graph.InitResource(cloud.Zone, awssdk.StringValue(ss.Id))
 	case *route53.ResourceRecordSet:
 		id := hashFields(awssdk.StringValue(ss.Name), awssdk.StringValue(ss.Type))
-		res = graph.InitResource(id, cloud.Record)
+		res = graph.InitResource(cloud.Record, id)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -124,7 +125,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 	resultc := make(chan graph.Property)
 	errc := make(chan error)
 	var wg sync.WaitGroup
-	res.Properties["Id"] = res.Id()
+	res.Properties[properties.ID] = res.Id()
 
 	for prop, trans := range awsResourcesDef[res.Type()] {
 		wg.Add(1)
@@ -293,9 +294,9 @@ var extractTagFn = func(key string) transformFn {
 	}
 }
 
-var extractSliceValues = func(key string) transformFn {
+var extractStringSliceValues = func(key string) transformFn {
 	return func(i interface{}) (interface{}, error) {
-		var res []interface{}
+		var res []string
 		value := reflect.ValueOf(i)
 		if value.Kind() != reflect.Slice {
 			return nil, fmt.Errorf("extract slice: not a slice but a %T", i)
@@ -305,7 +306,11 @@ var extractSliceValues = func(key string) transformFn {
 			if err != nil {
 				return nil, err
 			}
-			res = append(res, e)
+			str, ok := e.(string)
+			if !ok {
+				return nil, fmt.Errorf("extract string slice: not a string but a %T", e)
+			}
+			res = append(res, str)
 		}
 
 		return res, nil
@@ -329,6 +334,9 @@ var extractRoutesSliceFn = func(i interface{}) (interface{}, error) {
 			if _, route.DestinationIPv6, err = net.ParseCIDR(awssdk.StringValue(r.DestinationIpv6CidrBlock)); err != nil {
 				return nil, err
 			}
+		}
+		if notEmpty(r.DestinationPrefixListId) {
+			route.DestinationPrefixListId = awssdk.StringValue(r.DestinationPrefixListId)
 		}
 		if notEmpty(r.EgressOnlyInternetGatewayId) {
 			routeTarget := &graph.RouteTarget{Type: graph.EgressOnlyInternetGatewayTarget, Ref: awssdk.StringValue(r.EgressOnlyInternetGatewayId)}

@@ -55,7 +55,7 @@ var historyCmd = &cobra.Command{
 
 		region := config.GetAWSRegion()
 
-		root := graph.InitResource(region, cloud.Region)
+		root := graph.InitResource(cloud.Region, region)
 
 		var diffs []*sync.Diff
 

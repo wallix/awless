@@ -26,16 +26,16 @@ import (
 func TestResourceDisplay(t *testing.T) {
 	g := graph.NewGraph()
 
-	res1 := graph.InitResource("inst_1", "instance")
+	res1 := graph.InitResource("instance", "inst_1")
 	res1.Properties = map[string]interface{}{
-		"Id":     "inst_1",
-		"Name":   "instance 1",
-		"Prop 1": "prop 1",
-		"Prop 2": "prop 2",
+		"ID":   "inst_1",
+		"Name": "instance 1",
 	}
-	res2 := graph.InitResource("inst_2", "instance")
+	res2 := graph.InitResource("instance", "inst_2")
 
-	g.AddResource(res1, res2)
+	if err := g.AddResource(res1, res2); err != nil {
+		t.Fatal(err)
+	}
 
 	r, err := g.GetResource("instance", "inst_1")
 	if err != nil {
@@ -43,11 +43,8 @@ func TestResourceDisplay(t *testing.T) {
 	}
 
 	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "State"},
-		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
 	}
 
 	displayer := BuildOptions(
@@ -58,10 +55,8 @@ func TestResourceDisplay(t *testing.T) {
 	expected := `+------------+------------+
 | PROPERTY ▲ |   VALUE    |
 +------------+------------+
-| Id         | inst_1     |
+| ID         | inst_1     |
 | Name       | instance 1 |
-| Prop 1     | prop 1     |
-| Prop 2     | prop 2     |
 +------------+------------+
 `
 	var w bytes.Buffer

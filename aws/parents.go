@@ -129,11 +129,7 @@ func (fb funcBuilder) addRelationWithField() addParentFn {
 			return nil
 		}
 
-		parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
-		if err != nil {
-			return err
-		}
-
+		parent := graph.InitResource(fb.parent, awssdk.StringValue(str))
 		return addRelation(g, parent, res, fb.relation)
 	}
 }
@@ -163,10 +159,7 @@ func (fb funcBuilder) addRelationListWithStringField() addParentFn {
 			if awssdk.StringValue(str) == "" {
 				continue
 			}
-			parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
-			if err != nil {
-				return err
-			}
+			parent := graph.InitResource(fb.parent, awssdk.StringValue(str))
 
 			if err = addRelation(g, parent, res, fb.relation); err != nil {
 				return err
@@ -213,10 +206,7 @@ func (fb funcBuilder) addRelationListWithField() addParentFn {
 			if awssdk.StringValue(str) == "" {
 				continue
 			}
-			parent, err := g.GetResource(fb.parent, awssdk.StringValue(str))
-			if err != nil {
-				return err
-			}
+			parent := graph.InitResource(fb.parent, awssdk.StringValue(str))
 
 			if err = addRelation(g, parent, res, fb.relation); err != nil {
 				return err
@@ -305,10 +295,7 @@ func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
 			fmt.Fprintf(os.Stderr, "add parent to '%s/%s': unknown policy named '%s'. Ignoring it.\n", res.Type(), res.Id(), awssdk.StringValue(policy.PolicyName))
 			return nil
 		}
-		parent, err := g.GetResource(cloud.Policy, pid)
-		if err != nil {
-			return err
-		}
+		parent := graph.InitResource(cloud.Policy, pid)
 		g.AddAppliesOnRelation(parent, res)
 	}
 	return nil
@@ -361,10 +348,7 @@ func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
 	}
 
 	for _, t := range targets.TargetHealthDescriptions {
-		n, err := g.GetResource(cloud.Instance, awssdk.StringValue(t.Target.Id))
-		if err != nil {
-			return err
-		}
+		n := graph.InitResource(cloud.Instance, awssdk.StringValue(t.Target.Id))
 		g.AddAppliesOnRelation(parent, n)
 	}
 	return nil

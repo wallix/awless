@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package graph
+package graph_test
 
 import (
 	"fmt"
@@ -22,22 +22,26 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/wallix/awless/cloud/properties"
+	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 )
 
 func TestAddGraphRelation(t *testing.T) {
 
 	t.Run("Add parent", func(t *testing.T) {
-		g := NewGraph()
-		g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text`))
+		g := graph.NewGraph()
+		g.Unmarshal([]byte(`/node<inst_1>  "rdf:type"@[] /node<cloud-owl:Instance>`))
 
 		res, err := g.GetResource("instance", "inst_1")
 		if err != nil {
 			t.Fatal(err)
 		}
-		g.AddParentRelation(InitResource("subnet_1", "subnet"), res)
+		g.AddParentRelation(graph.InitResource("subnet", "subnet_1"), res)
 
-		exp := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
-/subnet<subnet_1>	"parent_of"@[]	/instance<inst_1>`
+		exp := `/node<inst_1>	"rdf:type"@[]	/node<cloud-owl:Instance>
+/node<subnet_1>	"parent_of"@[]	/node<inst_1>`
 
 		if got, want := g.MustMarshal(), exp; got != want {
 			t.Fatalf("got\n%q\nwant\n%q\n", got, want)
@@ -45,17 +49,17 @@ func TestAddGraphRelation(t *testing.T) {
 	})
 
 	t.Run("Add applies on", func(t *testing.T) {
-		g := NewGraph()
-		g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text`))
+		g := graph.NewGraph()
+		g.Unmarshal([]byte(`/node<inst_1>  "rdf:type"@[] /node<cloud-owl:Instance>`))
 
 		res, err := g.GetResource("instance", "inst_1")
 		if err != nil {
 			t.Fatal(err)
 		}
-		g.AddAppliesOnRelation(InitResource("subnet_1", "subnet"), res)
+		g.AddAppliesOnRelation(graph.InitResource("subnet", "subnet_1"), res)
 
-		exp := `/instance<inst_1>	"has_type"@[]	"/instance"^^type:text
-/subnet<subnet_1>	"applies_on"@[]	/instance<inst_1>`
+		exp := `/node<inst_1>	"rdf:type"@[]	/node<cloud-owl:Instance>
+/node<subnet_1>	"applies_on"@[]	/node<inst_1>`
 
 		if got, want := g.MustMarshal(), exp; got != want {
 			t.Fatalf("got\n%q\nwant\n%q\n", got, want)
@@ -64,25 +68,20 @@ func TestAddGraphRelation(t *testing.T) {
 }
 
 func TestGetResource(t *testing.T) {
-	g := NewGraph()
+	g := graph.NewGraph()
 
-	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Tags","Value":[{"Key":"Name","Value":"redis"}]}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Type","Value":"t2.micro"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"PublicIp","Value":"1.2.3.4"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"State","Value":{"Code": 16,"Name":"running"}}"^^type:text`))
+	g.AddResource(
+		resourcetest.Instance("inst_1").Prop("Name", "redis").Prop("Type", "t2.micro").Prop("PublicIP", "1.2.3.4").Prop("State", "running").Build(),
+	)
 
 	res, err := g.GetResource("instance", "inst_1")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expected := Properties{"Id": "inst_1", "Type": "t2.micro", "PublicIp": "1.2.3.4",
-		"State": map[string]interface{}{"Code": float64(16), "Name": "running"},
-		"Tags": []interface{}{
-			map[string]interface{}{"Key": "Name", "Value": "redis"},
-		},
+	expected := graph.Properties{properties.ID: "inst_1", properties.Type: "t2.micro", properties.PublicIP: "1.2.3.4",
+		properties.State: "running",
+		properties.Name:  "redis",
 	}
 
 	if got, want := res.Properties, expected; !reflect.DeepEqual(got, want) {
@@ -92,15 +91,13 @@ func TestGetResource(t *testing.T) {
 
 func TestFindResources(t *testing.T) {
 	t.Parallel()
-	g := NewGraph()
+	g := graph.NewGraph()
 
-	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
-  /instance<inst_2>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-  /subnet<sub_1>  "has_type"@[] "/subnet"^^type:text
-  /subnet<sub_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text`))
+	g.AddResource(
+		resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
+		resourcetest.Instance("inst_2").Build(),
+		resourcetest.Subnet("sub_1").Prop("Name", "redis").Build(),
+	)
 
 	t.Run("FindResource", func(t *testing.T) {
 		t.Parallel()
@@ -128,12 +125,12 @@ func TestFindResources(t *testing.T) {
 	})
 	t.Run("FindResourcesByProperty", func(t *testing.T) {
 		t.Parallel()
-		res, err := g.FindResourcesByProperty("Id", "inst_1")
+		res, err := g.FindResourcesByProperty("ID", "inst_1")
 		if err != nil {
 			t.Fatal(err)
 		}
-		expected := []*Resource{
-			{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Id": interface{}("inst_1"), "Name": interface{}("redis")}, Meta: make(Properties)},
+		expected := []*graph.Resource{
+			resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
 		}
 		if got, want := len(res), len(expected); got != want {
 			t.Fatalf("got %d want %d", got, want)
@@ -145,9 +142,9 @@ func TestFindResources(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		expected = []*Resource{
-			{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Id": "inst_1", "Name": "redis"}, Meta: make(Properties)},
-			{id: "sub_1", kind: "subnet", Properties: map[string]interface{}{"Name": "redis"}, Meta: make(Properties)},
+		expected = []*graph.Resource{
+			resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
+			resourcetest.Subnet("sub_1").Prop("Name", "redis").Build(),
 		}
 		if got, want := len(res), len(expected); got != want {
 			t.Fatalf("got %d want %d", got, want)
@@ -171,27 +168,21 @@ func TestFindResources(t *testing.T) {
 }
 
 func TestGetAllResources(t *testing.T) {
-	g := NewGraph()
-
-	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
-  /instance<inst_2>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Name","Value":"redis2"}"^^type:text
-  /instance<inst_3>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Id","Value":"inst_3"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"Name","Value":"redis3"}"^^type:text
-  /instance<inst_3>  "property"@[] "{"Key":"CreationDate","Value":"2017-01-10T16:47:18Z"}"^^type:text
-  /instance<subnet>  "has_type"@[] "/subnet"^^type:text
-  /instance<subnet>  "property"@[] "{"Key":"Id","Value":"my subnet"}"^^type:text`))
+	g := graph.NewGraph()
 
 	time, _ := time.Parse(time.RFC3339, "2017-01-10T16:47:18Z")
 
-	expected := []*Resource{
-		{kind: "instance", id: "inst_1", Properties: Properties{"Id": "inst_1", "Name": "redis"}},
-		{kind: "instance", id: "inst_2", Properties: Properties{"Id": "inst_2", "Name": "redis2"}},
-		{kind: "instance", id: "inst_3", Properties: Properties{"Id": "inst_3", "Name": "redis3", "CreationDate": time}},
+	g.AddResource(
+		resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
+		resourcetest.Instance("inst_2").Prop("Name", "redis2").Build(),
+		resourcetest.Instance("inst_3").Prop("Name", "redis3").Prop("Created", time).Build(),
+		resourcetest.Subnet("subnet").Prop("Name", "redis").Build(),
+	)
+
+	expected := []*graph.Resource{
+		resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
+		resourcetest.Instance("inst_2").Prop("Name", "redis2").Build(),
+		resourcetest.Instance("inst_3").Prop("Name", "redis3").Prop("Created", time).Build(),
 	}
 	res, err := g.GetAllResources("instance")
 	if err != nil {
@@ -203,7 +194,7 @@ func TestGetAllResources(t *testing.T) {
 	for _, r := range expected {
 		found := false
 		for _, r2 := range res {
-			if r2.kind == r.kind && r2.id == r.id && reflect.DeepEqual(r2.Properties, r.Properties) {
+			if r2.Type() == r.Type() && r2.Id() == r.Id() && reflect.DeepEqual(r2.Properties, r.Properties) {
 				found = true
 			}
 		}
@@ -214,35 +205,41 @@ func TestGetAllResources(t *testing.T) {
 }
 
 func TestLoadIpPermissions(t *testing.T) {
-	g := NewGraph()
-	g.Unmarshal([]byte(`/securitygroup<sg-1234>	"has_type"@[]	"/securitygroup"^^type:text
-/securitygroup<sg-1234>	"property"@[]	"{"Key":"Id","Value":"sg-1234"}"^^type:text
-/securitygroup<sg-1234>	"property"@[]	"{"Key":"InboundRules","Value":[{"PortRange":{"FromPort":22,"ToPort":22,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"10.10.0.0","Mask":"//8AAA=="}]},{"PortRange":{"FromPort":443,"ToPort":443,"Any":false},"Protocol":"tcp","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text
-/securitygroup<sg-1234>	"property"@[]	"{"Key":"OutboundRules","Value":[{"PortRange":{"FromPort":0,"ToPort":0,"Any":true},"Protocol":"any","IPRanges":[{"IP":"0.0.0.0","Mask":"AAAAAA=="}]}]}"^^type:text`))
-	expected := []*Resource{
-		{kind: "securitygroup", id: "sg-1234", Properties: Properties{
-			"Id": "sg-1234",
-			"InboundRules": []*FirewallRule{
-				{
-					PortRange: PortRange{FromPort: int64(22), ToPort: int64(22), Any: false},
-					Protocol:  "tcp",
-					IPRanges:  []*net.IPNet{{IP: net.IPv4(10, 10, 0, 0), Mask: net.CIDRMask(16, 32)}},
-				},
-				{
-					PortRange: PortRange{FromPort: int64(443), ToPort: int64(443), Any: false},
-					Protocol:  "tcp",
-					IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
-				},
+	g := graph.NewGraph()
+
+	g.Unmarshal([]byte(`/node<sg-1234>	"rdf:type"@[]	/node<cloud-owl:Securitygroup>
+/node<sg-1234>	"cloud:id"@[]	"sg-1234"^^type:text
+/node<sg-1234>	"net:inboundRules"@[]	/node<d04ab55f>
+/node<d04ab55f>	"net:portRange"@[]	"22:22"^^type:text
+/node<d04ab55f>	"net:protocol"@[]	"tcp"^^type:text
+/node<d04ab55f>	"net:cidr"@[]	"10.10.0.0/16"^^type:text
+/node<sg-1234>	"net:inboundRules"@[]	/node<36d9ff45>
+/node<36d9ff45>	"net:portRange"@[]	"443:443"^^type:text
+/node<36d9ff45>	"net:protocol"@[]	"tcp"^^type:text
+/node<36d9ff45>	"net:cidr"@[]	"0.0.0.0/0"^^type:text
+/node<sg-1234>	"net:outboundRules"@[]	/node<6172bfe3>
+/node<6172bfe3>	"net:portRange"@[]	":"^^type:text
+/node<6172bfe3>	"net:protocol"@[]	"any"^^type:text
+/node<6172bfe3>	"net:cidr"@[]	"0.0.0.0/0"^^type:text`))
+	expected := []*graph.Resource{
+		resourcetest.SecGroup("sg-1234").Prop("InboundRules", []*graph.FirewallRule{
+			{
+				PortRange: graph.PortRange{FromPort: int64(22), ToPort: int64(22), Any: false},
+				Protocol:  "tcp",
+				IPRanges:  []*net.IPNet{{IP: net.IPv4(10, 10, 0, 0), Mask: net.CIDRMask(16, 32)}},
 			},
-			"OutboundRules": []*FirewallRule{
-				{
-					PortRange: PortRange{Any: true},
-					Protocol:  "any",
-					IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
-				},
+			{
+				PortRange: graph.PortRange{FromPort: int64(443), ToPort: int64(443), Any: false},
+				Protocol:  "tcp",
+				IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
 			},
-		},
-		},
+		}).Prop("OutboundRules", []*graph.FirewallRule{
+			{
+				PortRange: graph.PortRange{Any: true},
+				Protocol:  "any",
+				IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
+			},
+		}).Build(),
 	}
 	res, err := g.GetAllResources("securitygroup")
 	if err != nil {
@@ -251,10 +248,10 @@ func TestLoadIpPermissions(t *testing.T) {
 	if got, want := len(res), len(expected); got != want {
 		t.Fatalf("got %d want %d", got, want)
 	}
-	if got, want := res[0].id, expected[0].id; got != want {
+	if got, want := res[0].Id(), expected[0].Id(); got != want {
 		t.Fatalf("got %s want %s", got, want)
 	}
-	if got, want := res[0].kind, expected[0].kind; got != want {
+	if got, want := res[0].Type(), expected[0].Type(); got != want {
 		t.Fatalf("got %s want %s", got, want)
 	}
 	if got, want := len(res[0].Properties), len(expected[0].Properties); got != want {

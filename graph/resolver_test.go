@@ -1,22 +1,24 @@
-package graph
+package graph_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
+)
 
 func TestAndResolver(t *testing.T) {
 	t.Parallel()
-	g := NewGraph()
+	g := graph.NewGraph()
+	g.AddResource(
+		resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
+		resourcetest.Instance("inst_2").Build(),
+		resourcetest.Subnet("sub_1").Prop("Name", "redis").Build(),
+	)
 
-	g.Unmarshal([]byte(`/instance<inst_1>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Id","Value":"inst_1"}"^^type:text
-  /instance<inst_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text
-  /instance<inst_2>  "has_type"@[] "/instance"^^type:text
-  /instance<inst_2>  "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-  /subnet<sub_1>  "has_type"@[] "/subnet"^^type:text
-  /subnet<sub_1>  "property"@[] "{"Key":"Name","Value":"redis"}"^^type:text`))
-
-	resources, err := g.ResolveResources(&And{[]Resolver{
-		&ByType{Typ: "instance"},
-		&ByProperty{Name: "Name", Val: "redis"},
+	resources, err := g.ResolveResources(&graph.And{[]graph.Resolver{
+		&graph.ByType{Typ: "instance"},
+		&graph.ByProperty{Name: "Name", Val: "redis"},
 	},
 	})
 	if err != nil {
@@ -29,9 +31,9 @@ func TestAndResolver(t *testing.T) {
 		t.Fatalf("got %s want %s", got, want)
 	}
 
-	resources, err = g.ResolveResources(&And{[]Resolver{
-		&ByType{Typ: "subnet"},
-		&ByProperty{Name: "Id", Val: "inst_2"},
+	resources, err = g.ResolveResources(&graph.And{[]graph.Resolver{
+		&graph.ByType{Typ: "subnet"},
+		&graph.ByProperty{Name: "ID", Val: "inst_2"},
 	},
 	})
 	if err != nil {

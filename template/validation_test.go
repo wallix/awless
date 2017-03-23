@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 	"github.com/wallix/awless/template"
 )
 
@@ -12,13 +13,10 @@ func TestValidation(t *testing.T) {
 		text := "create instance name=instance1_name"
 
 		g := graph.NewGraph()
-		g.Unmarshal([]byte(`
-      /instance<inst_1> "has_type"@[] "/instance"^^type:text
-      /instance<inst_1> "property"@[] "{"Key":"Name","Value":"instance1_name"}"^^type:text
-      /instance<inst_2> "has_type"@[] "/instance"^^type:text
-      /instance<inst_2> "property"@[] "{"Key":"Id","Value":"inst_2"}"^^type:text
-      /instance<inst_2> "property"@[] "{"Key":"Name","Value":"instance2_name"}"^^type:text
-    `))
+		g.AddResource(
+			resourcetest.Instance("inst_1").Prop("Name", "instance1_name").Build(),
+			resourcetest.Instance("inst_2").Prop("Name", "instance2_name").Build(),
+		)
 
 		tpl := template.MustParse(text)
 

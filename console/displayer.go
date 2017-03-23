@@ -17,7 +17,6 @@ limitations under the License.
 package console
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -204,7 +203,7 @@ func WithIDsOnly(only bool) optsFn {
 	return func(b *Builder) *Builder {
 		if only {
 			b.headers = []ColumnDefinition{
-				&StringColumnDefinition{Prop: "Id"},
+				&StringColumnDefinition{Prop: "ID"},
 				&StringColumnDefinition{Prop: "Name"},
 			}
 			b.format = "porcelain"
@@ -703,11 +702,17 @@ func (d *diffTreeDisplayer) Print(w io.Writer) error {
 			if err != nil {
 				return err
 			}
-			g.AddResource(res)
+			if err := g.AddResource(res); err != nil {
+				return err
+			}
 			previous := res
 			for _, parent := range parents {
-				g.AddResource(parent)
-				g.AddParentRelation(parent, previous)
+				if err := g.AddResource(parent); err != nil {
+					return err
+				}
+				if err := g.AddParentRelation(parent, previous); err != nil {
+					return err
+				}
 				previous = parent
 			}
 		}
@@ -720,22 +725,19 @@ func (d *diffTreeDisplayer) Print(w io.Writer) error {
 	}
 
 	each = func(res *graph.Resource, distance int) error {
-		var tabs bytes.Buffer
-		for i := 0; i < distance; i++ {
-			tabs.WriteByte('\t')
-		}
+		tabs := strings.Repeat("\t", distance)
 
 		switch res.Meta["diff"] {
 		case "extra":
 			color.Set(color.FgGreen)
-			fmt.Fprintf(w, "+%s%s, %s\n", tabs.String(), res.Type(), res.Id())
+			fmt.Fprintf(w, "+%s%s, %s\n", tabs, res.Type(), res.Id())
 			color.Unset()
 		case "missing":
 			color.Set(color.FgRed)
-			fmt.Fprintf(w, "-%s%s, %s\n", tabs.String(), res.Type(), res.Id())
+			fmt.Fprintf(w, "-%s%s, %s\n", tabs, res.Type(), res.Id())
 			color.Unset()
 		default:
-			fmt.Fprintf(w, "%s%s, %s\n", tabs.String(), res.Type(), res.Id())
+			fmt.Fprintf(w, "%s%s, %s\n", tabs, res.Type(), res.Id())
 		}
 		return nil
 	}

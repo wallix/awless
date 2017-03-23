@@ -191,8 +191,10 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 	var instanceList []*ec2.Instance
 	var subnetList []*ec2.Subnet
 	var vpcList []*ec2.Vpc
@@ -746,7 +748,9 @@ func (s *Infra) fetch_all_instance_graph() (*graph.Graph, []*ec2.Instance, error
 					if badResErr != nil {
 						return false
 					}
-					g.AddResource(res)
+					if badResErr = g.AddResource(res); badResErr != nil {
+						return false
+					}
 				}
 			}
 			return out.NextToken != nil
@@ -772,7 +776,9 @@ func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, []*ec2.Subnet, error) {
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -793,7 +799,9 @@ func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, []*ec2.Vpc, error) {
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -814,7 +822,9 @@ func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, []*ec2.KeyPairInfo, err
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -835,7 +845,9 @@ func (s *Infra) fetch_all_securitygroup_graph() (*graph.Graph, []*ec2.SecurityGr
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -855,7 +867,9 @@ func (s *Infra) fetch_all_volume_graph() (*graph.Graph, []*ec2.Volume, error) {
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.NextToken != nil
 		})
@@ -880,7 +894,9 @@ func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.Internet
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -901,7 +917,9 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, e
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -922,7 +940,9 @@ func (s *Infra) fetch_all_availabilityzone_graph() (*graph.Graph, []*ec2.Availab
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -942,7 +962,9 @@ func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalan
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.NextMarker != nil
 		})
@@ -967,7 +989,9 @@ func (s *Infra) fetch_all_targetgroup_graph() (*graph.Graph, []*elbv2.TargetGrou
 		if err != nil {
 			return g, cloudResources, err
 		}
-		g.AddResource(res)
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
 	}
 
 	return g, cloudResources, nil
@@ -987,7 +1011,9 @@ func (s *Infra) fetch_all_database_graph() (*graph.Graph, []*rds.DBInstance, err
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.Marker != nil
 		})
@@ -1011,7 +1037,9 @@ func (s *Infra) fetch_all_dbsubnetgroup_graph() (*graph.Graph, []*rds.DBSubnetGr
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.Marker != nil
 		})
@@ -1071,8 +1099,10 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 	var userList []*iam.UserDetail
 	var groupList []*iam.GroupDetail
 	var roleList []*iam.RoleDetail
@@ -1275,7 +1305,9 @@ func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.GroupDetail, erro
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.Marker != nil
 		})
@@ -1299,7 +1331,9 @@ func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error)
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.Marker != nil
 		})
@@ -1323,7 +1357,9 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.Marker != nil
 		})
@@ -1378,8 +1414,10 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 	var bucketList []*s3.Bucket
 	var storageobjectList []*s3.Object
 
@@ -1543,8 +1581,10 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 	var subscriptionList []*sns.Subscription
 	var topicList []*sns.Topic
 
@@ -1677,7 +1717,9 @@ func (s *Notification) fetch_all_subscription_graph() (*graph.Graph, []*sns.Subs
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.NextToken != nil
 		})
@@ -1701,7 +1743,9 @@ func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, erro
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.NextToken != nil
 		})
@@ -1755,8 +1799,10 @@ func (s *Queue) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 	var queueList []*string
 
 	errc := make(chan error)
@@ -1885,8 +1931,10 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 	var zoneList []*route53.HostedZone
 	var recordList []*route53.ResourceRecordSet
 
@@ -2019,7 +2067,9 @@ func (s *Dns) fetch_all_zone_graph() (*graph.Graph, []*route53.HostedZone, error
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			return out.NextMarker != nil
 		})

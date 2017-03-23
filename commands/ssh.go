@@ -104,7 +104,7 @@ func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string
 		return nil, err
 	}
 
-	ip, ok := inst.Properties["PublicIp"]
+	ip, ok := inst.Properties["PublicIP"]
 	if !ok {
 		return nil, fmt.Errorf("no public IP address for instance %s", instanceID)
 	}
@@ -112,7 +112,7 @@ func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string
 	if keyPathFlag != "" {
 		keyPath = keyPathFlag
 	} else {
-		key, ok := inst.Properties["KeyName"]
+		key, ok := inst.Properties["SSHKey"]
 		if !ok {
 			return nil, fmt.Errorf("no access key set for instance %s", instanceID)
 		}

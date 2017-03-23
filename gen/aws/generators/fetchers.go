@@ -186,8 +186,10 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		return g, nil
 	}
 		
-	regionN := graph.InitResource(s.region, cloud.Region)
-	g.AddResource(regionN)
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
 
 	{{- range $index, $fetcher := $service.Fetchers }}
   var {{ $fetcher.ResourceType }}List []*{{ $fetcher.AWSType }}
@@ -299,7 +301,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 					if badResErr != nil {
 						return false
 					}
-	        g.AddResource(res)
+	        if badResErr = g.AddResource(res); badResErr != nil {
+						return false
+					}
 	      }
 	    }
 			{{- else }}
@@ -310,7 +314,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 				if badResErr != nil {
 					return false
 				}
-				g.AddResource(res)
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
 			}
 			{{- end }}
 			return out.{{ $fetcher.NextPageMarker }} != nil
@@ -333,7 +339,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
         if err != nil {
           return g, cloudResources, err
         }
-        g.AddResource(res)
+        if err = g.AddResource(res); err != nil {
+					return g, cloudResources, err
+				}
       }
     }
   	{{ else }}
@@ -343,7 +351,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
       if err != nil {
         return g, cloudResources, err
       }
-      g.AddResource(res)
+			if err = g.AddResource(res); err != nil {
+				return g, cloudResources, err
+			}
     }
   	{{ end }}
   return g, cloudResources, nil

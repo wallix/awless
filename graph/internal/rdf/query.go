@@ -32,6 +32,7 @@ const (
 	SUBJECT_PREDICATE QueryType = iota
 	PREDICATE_OBJECT
 	PREDICATE_ONLY
+	SUBJECT_ONLY
 )
 
 func (g *Graph) TriplesForSubjectPredicate(subject *node.Node, predicate *predicate.Predicate) ([]*triple.Triple, error) {
@@ -40,6 +41,10 @@ func (g *Graph) TriplesForSubjectPredicate(subject *node.Node, predicate *predic
 
 func (g *Graph) TriplesForPredicateObject(predicate *predicate.Predicate, object *triple.Object) ([]*triple.Triple, error) {
 	return g.returnTriples(PREDICATE_OBJECT, predicate, object)
+}
+
+func (g *Graph) TriplesForSubjectOnly(subject *node.Node) ([]*triple.Triple, error) {
+	return g.returnTriples(SUBJECT_ONLY, subject)
 }
 
 func (g *Graph) CountTriplesForSubjectAndPredicate(subject *node.Node, predicate *predicate.Predicate) (int, error) {
@@ -134,6 +139,9 @@ func (g *Graph) returnTriples(kind QueryType, objects ...interface{}) ([]*triple
 		case PREDICATE_ONLY:
 			predicate := objects[0].(*predicate.Predicate)
 			errc <- g.TriplesForPredicate(context.Background(), predicate, storage.DefaultLookup, triplec)
+		case SUBJECT_ONLY:
+			subject := objects[0].(*node.Node)
+			errc <- g.TriplesForSubject(context.Background(), subject, storage.DefaultLookup, triplec)
 		}
 	}()
 

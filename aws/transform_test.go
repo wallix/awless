@@ -171,19 +171,19 @@ func TestTransformFunctions(t *testing.T) {
 			{GroupId: awssdk.String("MyGroup2"), GroupName: awssdk.String("MyGroupName2")},
 		}
 
-		val, err := extractSliceValues("GroupId")(slice)
+		val, err := extractStringSliceValues("GroupId")(slice)
 		if err != nil {
 			t.Fatal(err)
 		}
-		expectedI := []interface{}{"MyGroup1", "MyGroup2"}
+		expectedI := []string{"MyGroup1", "MyGroup2"}
 		if got, want := val, expectedI; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %v, want %v", got, want)
 		}
-		val, err = extractSliceValues("GroupName")(slice)
+		val, err = extractStringSliceValues("GroupName")(slice)
 		if err != nil {
 			t.Fatal(err)
 		}
-		expectedI = []interface{}{"MyGroupName1", "MyGroupName2"}
+		expectedI = []string{"MyGroupName1", "MyGroupName2"}
 		if got, want := val, expectedI; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %v, want %v", got, want)
 		}

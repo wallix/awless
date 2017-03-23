@@ -18,11 +18,13 @@ package console
 
 import (
 	"bytes"
-	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/fatih/color"
+	p "github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 )
 
 func init() {
@@ -39,9 +41,9 @@ func TestJSONDisplays(t *testing.T) {
 			WithFormat("json"),
 		).SetSource(g).Build()
 
-		expected := `[{"Id": "inst_1", "Name": "redis", "PublicIp": "1.2.3.4", "State": "running", "Type": "t2.micro"},
-		{"Id": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
-		{"Id": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge"}]`
+		expected := `[{"ID": "inst_1", "Name": "redis", "PublicIP": "1.2.3.4", "State": "running", "Type": "t2.micro"},
+		{"ID": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
+		{"ID": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge"}]`
 
 		if err := displayer.Print(&w); err != nil {
 			t.Fatal(err)
@@ -58,13 +60,13 @@ func TestJSONDisplays(t *testing.T) {
 		).SetSource(g).Build()
 
 		expected := `{"instances": [
-			{ "Id": "inst_1", "Name": "redis", "PublicIp": "1.2.3.4", "State": "running", "Type": "t2.micro"},
-		  { "Id": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
-		  { "Id": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge" }
+			{ "ID": "inst_1", "Name": "redis", "PublicIP": "1.2.3.4", "State": "running", "Type": "t2.micro"},
+		  { "ID": "inst_2", "Name": "django", "State": "stopped", "Type": "t2.medium" },
+		  { "ID": "inst_3", "Name": "apache", "State": "running", "Type": "t2.xlarge" }
 		 ], "subnets": [
-		  { "Id": "sub_1", "Name": "my_subnet", "VpcId": "vpc_1" }, {"Id": "sub_2", "VpcId": "vpc_2" }
+		  { "ID": "sub_1", "Name": "my_subnet", "Vpc": "vpc_1" }, {"ID": "sub_2", "Vpc": "vpc_2" }
 		 ], "vpcs": [
-		  { "Id": "vpc_1", "NewProp": "my_value" }, { "Id": "vpc_2", "Name": "my_vpc_2" }
+		  { "ID": "vpc_1", "NewProp": "my_value" }, { "ID": "vpc_2", "Name": "my_vpc_2" }
 		 ]}`
 
 		w.Reset()
@@ -79,11 +81,11 @@ func TestJSONDisplays(t *testing.T) {
 func TestTabularDisplays(t *testing.T) {
 	g := createInfraGraph()
 	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
 	displayer := BuildOptions(
@@ -92,7 +94,7 @@ func TestTabularDisplays(t *testing.T) {
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
-	expected := "Id, Name, State, Type, Public IP\n" +
+	expected := "ID, Name, State, Type, Public IP\n" +
 		"inst_1, redis, running, t2.micro, 1.2.3.4\n" +
 		"inst_2, django, stopped, t2.medium, \n" +
 		"inst_3, apache, running, t2.xlarge, "
@@ -111,7 +113,7 @@ func TestTabularDisplays(t *testing.T) {
 		WithSortBy("Name"),
 	).SetSource(g).Build()
 
-	expected = "Id, Name, State, Type, Public IP\n" +
+	expected = "ID, Name, State, Type, Public IP\n" +
 		"inst_3, apache, running, t2.xlarge, \n" +
 		"inst_2, django, stopped, t2.medium, \n" +
 		"inst_1, redis, running, t2.micro, 1.2.3.4"
@@ -125,14 +127,14 @@ func TestTabularDisplays(t *testing.T) {
 	}
 
 	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
 			ColoredValues:          map[string]color.Attribute{"running": color.FgGreen},
 		},
 		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
 	displayer = BuildOptions(
@@ -195,7 +197,7 @@ func TestTabularDisplays(t *testing.T) {
 	}
 
 	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
 	}
 
@@ -230,28 +232,27 @@ func TestMultiResourcesDisplays(t *testing.T) {
 
 	expected := `|  TYPE ▲  |  NAME/ID  | PROPERTY  |   VALUE   |
 |----------|-----------|-----------|-----------|
-| instance | apache    | Id        | inst_3    |
+| instance | apache    | ID        | inst_3    |
 |          |           | Name      | apache    |
 |          |           | State     | running   |
 |          |           | Type      | t2.xlarge |
-|          | django    | Id        | inst_2    |
+|          | django    | ID        | inst_2    |
 |          |           | Name      | django    |
 |          |           | State     | stopped   |
 |          |           | Type      | t2.medium |
-|          | redis     | Id        | inst_1    |
+|          | redis     | ID        | inst_1    |
 |          |           | Name      | redis     |
 |          |           | Public IP | 1.2.3.4   |
 |          |           | State     | running   |
 |          |           | Type      | t2.micro  |
-| subnet   | my_subnet | Id        | sub_1     |
+| subnet   | my_subnet | ID        | sub_1     |
 |          |           | Name      | my_subnet |
-|          |           | VpcId     | vpc_1     |
-|          | sub_2     | Id        | sub_2     |
-|          |           | VpcId     | vpc_2     |
-| vpc      | my_vpc_2  | Id        |           |
+|          |           | Vpc       | vpc_1     |
+|          | sub_2     | ID        | sub_2     |
+|          |           | Vpc       | vpc_2     |
+| vpc      | my_vpc_2  | ID        |           |
 |          |           | Name      | my_vpc_2  |
-|          | vpc_1     | Id        | vpc_1     |
-|          |           | NewProp   | my_value  |
+|          | vpc_1     | ID        | vpc_1     |
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -261,13 +262,28 @@ func TestMultiResourcesDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
-		StringColumnDefinition{Prop: "Name"},
+	displayer = BuildOptions(
+		WithHeaders([]ColumnDefinition{StringColumnDefinition{Prop: "ID"}}),
+		WithFormat("porcelain"),
+	).SetSource(g).Build()
+
+	expected = `inst_1
+inst_2
+inst_3
+sub_1
+sub_2
+vpc_1
+vpc_2`
+
+	w.Reset()
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
 	displayer = BuildOptions(
-		WithHeaders(headers),
 		WithFormat("porcelain"),
 		WithIDsOnly(true),
 	).SetSource(g).Build()
@@ -295,7 +311,7 @@ my_vpc_2`
 }
 
 func TestDiffDisplay(t *testing.T) {
-	rootNode := graph.InitResource("eu-west-1", "region")
+	rootNode := graph.InitResource("region", "eu-west-1")
 	diff, err := createDiff(rootNode)
 	if err != nil {
 		t.Fatal(err)
@@ -306,23 +322,23 @@ func TestDiffDisplay(t *testing.T) {
 		WithRootNode(rootNode),
 	).SetSource(diff).Build()
 
-	expected := `|  TYPE ▲  |   NAME/ID    | PROPERTY |   VALUE    |
-|----------|--------------|----------|------------|
-| instance | + inst_4     |          |            |
-|          | + inst_5     |          |            |
-|          | + inst_6     |          |            |
-|          | - inst_2     |          |            |
-|          | redis        | Id       | + new_id   |
-|          |              |          | - inst_1   |
-| subnet   | + new_subnet |          |            |
-| vpc      | vpc_1        | NewProp  | - my_value |
+	expected := `|  TYPE ▲  |   NAME/ID    | PROPERTY |  VALUE   |
+|----------|--------------|----------|----------|
+| instance | + inst_4     |          |          |
+|          | + inst_5     |          |          |
+|          | + inst_6     |          |          |
+|          | - inst_2     |          |          |
+|          | redis        | ID       | + new_id |
+|          |              |          | - inst_1 |
+| subnet   | + new_subnet |          |          |
+| vpc      | vpc_1        | Default  | - true   |
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
 	}
 	if got, want := w.String(), expected; got != want {
-		t.Errorf("got \n%s\n\nwant\n\n%s\n", got, want)
+		t.Errorf("got \n%s\n\nwant \n%s\n", got, want)
 	}
 
 	displayer = BuildOptions(
@@ -349,29 +365,17 @@ func TestDiffDisplay(t *testing.T) {
 }
 
 func TestDateLists(t *testing.T) {
-	users := []byte(`/region<eu-west-1>	"has_type"@[]	"/region"^^type:text
-/region<eu-west-1>	"parent_of"@[]	/user<user1>
-/region<eu-west-1>	"parent_of"@[]	/user<user2>
-/region<eu-west-1>	"parent_of"@[]	/user<user3>
-/user<user1>	"has_type"@[]	"/user"^^type:text
-/user<user2>	"has_type"@[]	"/user"^^type:text
-/user<user3>	"has_type"@[]	"/user"^^type:text
-/user<user1>	"property"@[]	"{"Key":"Id","Value":"user1"}"^^type:text
-/user<user2>	"property"@[]	"{"Key":"Id","Value":"user2"}"^^type:text
-/user<user3>	"property"@[]	"{"Key":"Id","Value":"user3"}"^^type:text
-/user<user1>	"property"@[]	"{"Key":"Name","Value":"my_username_1"}"^^type:text
-/user<user2>	"property"@[]	"{"Key":"Name","Value":"my_username_2"}"^^type:text
-/user<user3>	"property"@[]	"{"Key":"Name","Value":"my_username_3"}"^^type:text
-/user<user2>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2016-12-22T11:13:23Z"}"^^type:text
-/user<user3>	"property"@[]	"{"Key":"PasswordLastUsedDate","Value":"2016-12-10T08:35:37Z"}"^^type:text`)
-
 	g := graph.NewGraph()
-	g.Unmarshal(users)
+	g.AddResource(resourcetest.Region("eu-west-1").Build(),
+		resourcetest.User("user1").Prop("Name", "my_username_1").Build(),
+		resourcetest.User("user2").Prop("Name", "my_username_2").Prop("PasswordLastUsed", time.Unix(1482405203, 0).UTC()).Build(),
+		resourcetest.User("user3").Prop("Name", "my_username_3").Prop("PasswordLastUsed", time.Unix(1481358937, 0).UTC()).Build(),
+	)
 
 	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsedDate"}, Format: Short},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsed"}, Format: Short},
 	}
 
 	displayer := BuildOptions(
@@ -379,11 +383,11 @@ func TestDateLists(t *testing.T) {
 		WithRdfType("user"),
 	).SetSource(g).Build()
 
-	expected := `| ID ▲  |     NAME      | PASSWORDLASTUSEDDATE |
-|-------|---------------|----------------------|
-| user1 | my_username_1 |                      |
-| user2 | my_username_2 | 12/22/16 11:13       |
-| user3 | my_username_3 | 12/10/16 08:35       |
+	expected := `| ID ▲  |     NAME      | PASSWORDLASTUSED |
+|-------|---------------|------------------|
+| user1 | my_username_1 |                  |
+| user2 | my_username_2 | 12/22/16 11:13   |
+| user3 | my_username_3 | 12/10/16 08:35   |
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -396,14 +400,14 @@ func TestDateLists(t *testing.T) {
 	displayer = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("user"),
-		WithSortBy("passwordlastuseddate"),
+		WithSortBy("passwordlastused"),
 	).SetSource(g).Build()
 
-	expected = `|  ID   |     NAME      | PASSWORDLASTUSEDDATE ▲ |
-|-------|---------------|------------------------|
-| user1 | my_username_1 |                        |
-| user2 | my_username_2 | 12/22/16 11:13         |
-| user3 | my_username_3 | 12/10/16 08:35         |
+	expected = `|  ID   |     NAME      | PASSWORDLASTUSED ▲ |
+|-------|---------------|--------------------|
+| user1 | my_username_1 |                    |
+| user2 | my_username_2 | 12/22/16 11:13     |
+| user3 | my_username_3 | 12/10/16 08:35     |
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -417,11 +421,11 @@ func TestDateLists(t *testing.T) {
 func TestMaxWidth(t *testing.T) {
 	g := createInfraGraph()
 	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "State"},
 		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
 	displayer := BuildOptions(
@@ -445,11 +449,11 @@ func TestMaxWidth(t *testing.T) {
 	}
 
 	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id", TruncateSize: 4, TruncateRight: true},
+		StringColumnDefinition{Prop: "ID", TruncateSize: 4, TruncateRight: true},
 		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: "State", DisableTruncate: true},
 		StringColumnDefinition{Prop: "Type", TruncateSize: 6},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP", DisableTruncate: true},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP", DisableTruncate: true},
 	}
 
 	displayer = BuildOptions(
@@ -473,11 +477,11 @@ func TestMaxWidth(t *testing.T) {
 	}
 
 	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id", Friendly: "I", TruncateSize: 5},
+		StringColumnDefinition{Prop: "ID", Friendly: "I", TruncateSize: 5},
 		StringColumnDefinition{Prop: "Name", Friendly: "N", TruncateSize: 5},
 		StringColumnDefinition{Prop: "State", Friendly: "S", TruncateSize: 5},
 		StringColumnDefinition{Prop: "Type", Friendly: "T", TruncateSize: 5},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "P", TruncateSize: 5},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "P", TruncateSize: 5},
 	}
 
 	displayer = BuildOptions(
@@ -539,10 +543,12 @@ Columns truncated to fit terminal: 'T', 'P'
 }
 
 func TestFilter(t *testing.T) {
-	g, err := graph.NewGraphFromFile(filepath.Join("testdata", "subnets.rdf"))
-	if err != nil {
-		t.Fatal(err)
-	}
+	g := graph.NewGraph()
+	g.AddResource(
+		resourcetest.Subnet("sub_1").Prop(p.Name, "my_subnet").Prop(p.Vpc, "vpc_1").Prop(p.Public, true).Build(),
+		resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_2").Prop(p.Public, false).Build(),
+		resourcetest.Subnet("sub_3").Prop(p.Name, "my_subnet").Prop(p.Vpc, "vpc_1").Prop(p.Public, false).Build(),
+	)
 
 	t.Run("No filter", func(t *testing.T) {
 		var w bytes.Buffer
@@ -550,9 +556,9 @@ func TestFilter(t *testing.T) {
 			WithRdfType("subnet"),
 			WithFormat("json"),
 		).SetSource(g).Build()
-		expected := `[{"Id":"sub_1","MapPublicIpOnLaunch":true,"Name":"my_subnet","VpcId":"vpc_1"},
-		{"Id":"sub_2","MapPublicIpOnLaunch":false,"VpcId":"vpc_2"},
-		{"Id":"sub_3","MapPublicIpOnLaunch":false,"Name":"my_subnet","VpcId":"vpc_1"}]`
+		expected := `[{"ID":"sub_1","Public":true,"Name":"my_subnet","Vpc":"vpc_1"},
+		{"ID":"sub_2","Public":false,"Vpc":"vpc_2"},
+		{"ID":"sub_3","Public":false,"Name":"my_subnet","Vpc":"vpc_1"}]`
 		if err := displayer.Print(&w); err != nil {
 			t.Fatal(err)
 		}
@@ -563,10 +569,10 @@ func TestFilter(t *testing.T) {
 		displayer := BuildOptions(
 			WithRdfType("subnet"),
 			WithFormat("json"),
-			WithFilters([]string{"VpcId=vpc_1"}),
+			WithFilters([]string{"Vpc=vpc_1"}),
 		).SetSource(g).Build()
-		expected := `[{"Id":"sub_1","MapPublicIpOnLaunch":true,"Name":"my_subnet","VpcId":"vpc_1"},
-		{"Id":"sub_3","MapPublicIpOnLaunch":false,"Name":"my_subnet","VpcId":"vpc_1"}]`
+		expected := `[{"ID":"sub_1","Public":true,"Name":"my_subnet","Vpc":"vpc_1"},
+		{"ID":"sub_3","Public":false,"Name":"my_subnet","Vpc":"vpc_1"}]`
 		if err := displayer.Print(&w); err != nil {
 			t.Fatal(err)
 		}
@@ -579,8 +585,8 @@ func TestFilter(t *testing.T) {
 			WithFormat("json"),
 			WithFilters([]string{"public=false"}),
 		).SetSource(g).Build()
-		expected := `[{"Id":"sub_2","MapPublicIpOnLaunch":false,"VpcId":"vpc_2"},
-		{"Id":"sub_3","MapPublicIpOnLaunch":false,"Name":"my_subnet","VpcId":"vpc_1"}]`
+		expected := `[{"ID":"sub_2","Public":false,"Vpc":"vpc_2"},
+		{"ID":"sub_3","Public":false,"Name":"my_subnet","Vpc":"vpc_1"}]`
 		if err := displayer.Print(&w); err != nil {
 			t.Fatal(err)
 		}
@@ -613,33 +619,73 @@ func TestCompareInterface(t *testing.T) {
 }
 
 func createInfraGraph() *graph.Graph {
-	g, err := graph.NewGraphFromFile(filepath.Join("testdata", "infra.rdf"))
-	if err != nil {
-		panic(err)
-	}
+	g := graph.NewGraph()
+	g.AddResource(resourcetest.Region("eu-west-1").Build(),
+		resourcetest.Instance("inst_1").Prop(p.Name, "redis").Prop(p.Type, "t2.micro").Prop(p.PublicIP, "1.2.3.4").Prop(p.State, "running").Build(),
+		resourcetest.Instance("inst_2").Prop(p.Name, "django").Prop(p.Type, "t2.medium").Prop(p.State, "stopped").Build(),
+		resourcetest.Instance("inst_3").Prop(p.Name, "apache").Prop(p.Type, "t2.xlarge").Prop(p.State, "running").Build(),
+		resourcetest.VPC("vpc_1").Build(),
+		resourcetest.VPC("vpc_2").Prop(p.Name, "my_vpc_2").Build(),
+		resourcetest.Subnet("sub_1").Prop(p.Name, "my_subnet").Prop(p.Vpc, "vpc_1").Build(),
+		resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_2").Build(),
+	)
 
 	return g
 }
 
 func createDiff(root *graph.Resource) (*graph.Diff, error) {
-	localDiffG, err := graph.NewGraphFromFile(filepath.Join("testdata", "local_infra_diff.rdf"))
+	localDiffG := graph.NewGraph()
+	err := localDiffG.AddResource(
+		resourcetest.Region("eu-west-1").Build(),
+		resourcetest.Instance("inst_1").Prop(p.Name, "redis").Prop(p.Type, "t2.micro").Prop(p.State, "running").Build(),
+		resourcetest.Instance("inst_2").Build(),
+		resourcetest.Instance("inst_3").Prop(p.Name, "apache").Prop(p.Type, "t2.xlarge").Prop(p.State, "running").Build(),
+		resourcetest.Subnet("sub_1").Prop(p.Name, "my_subnet").Prop(p.Vpc, "vpc_1").Build(),
+		resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_2").Build(),
+		resourcetest.VPC("vpc_1").Prop(p.Default, true).Build(),
+		resourcetest.VPC("vpc_2").Prop(p.Name, "my_vpc_2").Build(),
+	)
+	resourcetest.AddParents(localDiffG,
+		"eu-west-1 -> vpc_1", "eu-west-1 -> vpc_2",
+		"vpc_1 -> sub_1", "vpc_2 -> sub_2",
+		"sub_1 -> inst_1", "sub_2 -> inst_2", "sub_2 -> inst_3",
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	remoteDiffG, err := graph.NewGraphFromFile(filepath.Join("testdata", "remote_infra_diff.rdf"))
+	remoteDiffG := graph.NewGraph()
+	err = remoteDiffG.AddResource(
+		resourcetest.Region("eu-west-1").Build(),
+		resourcetest.Instance("inst_1").Prop(p.ID, "new_id").Prop(p.Name, "redis").Prop(p.Type, "t2.micro").Prop(p.State, "running").Build(),
+		resourcetest.Instance("inst_3").Prop(p.Name, "apache").Prop(p.Type, "t2.xlarge").Prop(p.State, "running").Build(),
+		resourcetest.Instance("inst_4").Build(),
+		resourcetest.Instance("inst_5").Build(),
+		resourcetest.Instance("inst_6").Build(),
+		resourcetest.Subnet("sub_1").Prop(p.Name, "my_subnet").Prop(p.Vpc, "vpc_1").Build(),
+		resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_2").Build(),
+		resourcetest.Subnet("new_subnet").Build(),
+		resourcetest.VPC("vpc_1").Build(),
+		resourcetest.VPC("vpc_2").Prop(p.Name, "my_vpc_2").Build(),
+	)
+	resourcetest.AddParents(remoteDiffG,
+		"eu-west-1 -> vpc_1", "eu-west-1 -> vpc_2",
+		"vpc_1 -> sub_1", "vpc_2 -> sub_2", "vpc_2 -> new_subnet",
+		"sub_1 -> inst_1", "sub_2 -> inst_3", "sub_2 -> inst_4", "sub_2 -> inst_5", "new_subnet -> inst_6",
+	)
 	if err != nil {
 		panic(err)
 	}
+
 	return graph.Differ.Run(root, localDiffG, remoteDiffG)
 }
 
 func TestEmotyDisplays(t *testing.T) {
 	g := graph.NewGraph()
 	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "Id"},
+		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "PublicIp", Friendly: "Public IP"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
 	displayer := BuildOptions(
@@ -648,7 +694,7 @@ func TestEmotyDisplays(t *testing.T) {
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
-	expected := "Id, Name, Public IP"
+	expected := "ID, Name, Public IP"
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)

@@ -1,6 +1,12 @@
 package graph
 
-import "github.com/wallix/awless/graph/internal/rdf"
+import (
+	"fmt"
+
+	"github.com/wallix/awless/cloud/properties"
+	cloudrdf "github.com/wallix/awless/cloud/rdf"
+	"github.com/wallix/awless/graph/internal/rdf"
+)
 
 type Resolver interface {
 	Resolve(g *Graph) ([]*Resource, error)
@@ -11,25 +17,8 @@ type ById struct {
 }
 
 func (r *ById) Resolve(g *Graph) ([]*Resource, error) {
-	var resources []*Resource
-
-	triples, err := g.rdfG.TriplesForGivenPredicate(rdf.HasTypePredicate)
-	if err != nil {
-		return resources, err
-	}
-
-	for _, triple := range triples {
-		sub := triple.Subject()
-		if sub.ID().String() == r.Id {
-			res, err := g.GetResource(newResourceType(sub), sub.ID().String())
-			if err != nil {
-				return resources, nil
-			}
-			resources = append(resources, res)
-		}
-	}
-
-	return resources, nil
+	resolver := &ByProperty{Name: properties.ID, Val: r.Id}
+	return resolver.Resolve(g)
 }
 
 type ByProperty struct {
@@ -39,20 +28,31 @@ type ByProperty struct {
 
 func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 	var resources []*Resource
-
-	prop := Property{Key: r.Name, Value: r.Val}
-	propL, err := prop.marshalRDF()
-	if err != nil {
-		return resources, err
+	rdfpropLabel, ok := cloudrdf.Labels[r.Name]
+	if !ok {
+		return resources, fmt.Errorf("resolve resources by property: undefined property label '%s'", r.Name)
 	}
-	triples, err := g.rdfG.TriplesForPredicateObject(rdf.PropertyPredicate, propL)
+	rdfProp, ok := cloudrdf.RdfProperties[rdfpropLabel]
+	if !ok {
+		return resources, fmt.Errorf("resolve resources by property: undefined property definition '%s'", rdfpropLabel)
+	}
+	obj, err := marshalToRdfObject(r.Val, rdfProp.RdfsDefinedBy, rdfProp.RdfsDataType)
+	if err != nil {
+		return resources, fmt.Errorf("resolve resources: unmarshaling property '%s': '%s'", r.Name, err)
+	}
+	triples, err := g.rdfG.TriplesForPredicateObject(rdf.MustBuildPredicate(rdfpropLabel), obj)
 	if err != nil {
 		return resources, err
 	}
 	for _, t := range triples {
 		s := t.Subject()
-		r, err := g.GetResource(newResourceType(s), s.ID().String())
+		rt, err := resolveResourceType(g.rdfG, s.ID().String())
 		if err != nil {
+			return resources, err
+		}
+		r := InitResource(rt, s.ID().String())
+
+		if err := r.unmarshalFullRdf(g.rdfG); err != nil {
 			return resources, err
 		}
 		resources = append(resources, r)
@@ -96,20 +96,26 @@ type ByType struct {
 }
 
 func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
-	var res []*Resource
-	nodes, err := g.rdfG.NodesForType("/" + r.Typ)
-	if err != nil {
-		return res, err
-	}
+	var resources []*Resource
 
-	for _, node := range nodes {
-		r, err := g.GetResource(r.Typ, node.ID().String())
-		if err != nil {
-			return res, err
-		}
-		res = append(res, r)
+	typObj, err := marshalResourceType(r.Typ)
+	if err != nil {
+		return resources, err
 	}
-	return res, nil
+	triples, err := g.rdfG.TriplesForPredicateObject(rdf.MustBuildPredicate(cloudrdf.RdfType), typObj)
+	if err != nil {
+		return resources, err
+	}
+	for _, t := range triples {
+		s := t.Subject()
+		r := InitResource(r.Typ, s.ID().String())
+		err := r.unmarshalFullRdf(g.rdfG)
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, r)
+	}
+	return resources, nil
 }
 
 type ByTypes struct {
@@ -143,7 +149,12 @@ func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
 		return resources, err
 	}
 	for _, node := range relations {
-		res, err := g.GetResource(newResourceType(node), node.ID().String())
+		id := node.ID().String()
+		rT, err := resolveResourceType(g.rdfG, id)
+		if err != nil {
+			return resources, err
+		}
+		res, err := g.GetResource(rT, id)
 		if err != nil {
 			return resources, err
 		}
