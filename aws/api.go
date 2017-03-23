@@ -97,14 +97,18 @@ type UserPolicies struct {
 	Username string
 	Inlined  []string
 	Attached []string
+	ByGroup  map[string][]string
 }
 
 func (s *Access) GetUserPolicies(username string) (*UserPolicies, error) {
 	var wg sync.WaitGroup
 
-	all := &UserPolicies{Username: username}
+	all := &UserPolicies{
+		Username: username,
+		ByGroup:  make(map[string][]string),
+	}
 
-	errc := make(chan error, 2)
+	errc := make(chan error, 4)
 
 	wg.Add(1)
 	go func() {
@@ -135,6 +139,50 @@ func (s *Access) GetUserPolicies(username string) (*UserPolicies, error) {
 
 		for _, pol := range attached.AttachedPolicies {
 			all.Attached = append(all.Attached, awssdk.StringValue(pol.PolicyName))
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		groups, err := s.ListGroupsForUser(&iam.ListGroupsForUserInput{
+			UserName: awssdk.String(username),
+		})
+		if err != nil {
+			errc <- err
+			return
+		}
+
+		type result struct {
+			group, policy string
+		}
+		resultC := make(chan result)
+		var wgg sync.WaitGroup
+		for _, group := range groups.Groups {
+			wgg.Add(1)
+			go func(name string) {
+				defer wgg.Done()
+
+				output, err := s.ListAttachedGroupPolicies(&iam.ListAttachedGroupPoliciesInput{
+					GroupName: awssdk.String(name),
+				})
+				if err != nil {
+					errc <- err
+					return
+				}
+				for _, pol := range output.AttachedPolicies {
+					resultC <- result{group: name, policy: awssdk.StringValue(pol.PolicyName)}
+				}
+			}(awssdk.StringValue(group.GroupName))
+		}
+
+		go func() {
+			wgg.Wait()
+			close(resultC)
+		}()
+
+		for res := range resultC {
+			all.ByGroup[res.group] = append(all.ByGroup[res.group], res.policy)
 		}
 	}()
 

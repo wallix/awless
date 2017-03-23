@@ -18,6 +18,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
@@ -61,6 +62,11 @@ var whoamiCmd = &cobra.Command{
 				}
 			} else {
 				fmt.Println("\nInlined policies: none")
+			}
+			if byGroup := policies.ByGroup; len(byGroup) > 0 {
+				for g, pol := range byGroup {
+					fmt.Printf("\nPolicies from group '%s': %s\n", g, strings.Join(pol, ", "))
+				}
 			}
 		}
 	},
