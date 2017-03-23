@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -e
+
 TMP_FILE=./tmp-integration-test.awless
 BIN=./awless
 
@@ -7,6 +9,9 @@ go build
 
 echo "flushing awless logs..."
 $BIN log --delete
+
+ORIG_REGION=`$BIN config get aws.region`
+ORIG_IMAGE=`$BIN config get instance.image`
 
 REGION="us-west-1"
 AMI="ami-165a0876"
@@ -28,16 +33,20 @@ testinstance = create instance subnet=\$testsubnet image={instance.image} type=t
 create tag resource=\$testinstance key=Env value=Testing
 EOF
 
-$BIN -v run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e
+$BIN run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e -f
 REVERT_ID=`$BIN log | grep RevertID | cut -d , -f2 | cut -d : -f2`
 
 $BIN ls instances
 
 ALIAS="\@$INSTANCE_NAME"
-eval "$BIN check instance id=$ALIAS state=running timeout=20"
+eval "$BIN check instance id=$ALIAS state=running timeout=20 -f"
 
+$BIN revert $REVERT_ID -e -f
 
-$BIN -v revert $REVERT_ID
+echo "Clean up and reverting back to region '$ORIG_REGION' and ami '$ORIG_IMAGE'"
+
+$BIN config set aws.region $ORIG_REGION
+$BIN config set instance.image $ORIG_IMAGE
 
 rm $TMP_FILE
 rm -f ~/.awless/keys/$KEY_NAME.pem
