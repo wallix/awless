@@ -42,7 +42,8 @@ func init() {
 
 var historyCmd = &cobra.Command{
 	Use:               "history",
-	Short:             "(in progress) Show a resource/service/infrastructure history & changes using your locally sync snapshots",
+	Hidden:            true,
+	Short:             "(in progress) Show a infra resource history & changes using your locally sync snapshots",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
@@ -75,7 +76,6 @@ var historyCmd = &cobra.Command{
 		}
 
 		for _, diff := range diffs {
-			displayRevisionDiff(diff, aws.AccessService.Name(), root, verboseGlobalFlag)
 			displayRevisionDiff(diff, aws.InfraService.Name(), root, verboseGlobalFlag)
 		}
 
@@ -92,9 +92,6 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resou
 	var graphdiff *graph.Diff
 	if cloudService == aws.InfraService.Name() {
 		graphdiff = diff.InfraDiff
-	}
-	if cloudService == aws.AccessService.Name() {
-		graphdiff = diff.AccessDiff
 	}
 
 	if showProperties {

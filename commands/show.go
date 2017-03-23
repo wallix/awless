@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -107,18 +108,19 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
 	exitOn(err)
 
-	fmt.Println(renderCyanBoldFn("\nRelations:"))
-
+	var parentsW bytes.Buffer
 	var count int
 	for i := len(parents) - 1; i >= 0; i-- {
 		if count == 0 {
-			fmt.Printf("%s\n", parents[i])
+			fmt.Fprintf(&parentsW, "%s\n", parents[i])
 		} else {
-			fmt.Printf("%s↳ %s\n", strings.Repeat("\t", count), parents[i])
+			fmt.Fprintf(&parentsW, "%s↳ %s\n", strings.Repeat("\t", count), parents[i])
 		}
 		count++
 	}
 
+	var childrenW bytes.Buffer
+	var hasChildren bool
 	printWithTabs := func(r *graph.Resource, distance int) error {
 		var tabs bytes.Buffer
 		tabs.WriteString(strings.Repeat("\t", count))
@@ -129,19 +131,20 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 		display := r.String()
 		if r.Same(resource) {
 			display = renderGreenFn(resource.String())
+		} else {
+			hasChildren = true
 		}
-		fmt.Printf("%s↳ %s\n", tabs.String(), display)
-
+		fmt.Fprintf(&childrenW, "%s↳ %s\n", tabs.String(), display)
 		return nil
 	}
-
 	err = gph.Accept(&graph.ChildrenVisitor{From: resource, Each: printWithTabs, IncludeFrom: true})
 	exitOn(err)
 
-	var siblings []*graph.Resource
-	err = gph.Accept(&graph.SiblingsVisitor{From: resource, Each: graph.VisitorCollectFunc(&siblings)})
-	exitOn(err)
-	printResourceList(renderCyanBoldFn("Siblings"), siblings, "display all with flag --siblings")
+	if len(parents) > 0 || hasChildren {
+		fmt.Println(renderCyanBoldFn("\nRelations:"))
+		fmt.Printf(parentsW.String())
+		fmt.Printf(childrenW.String())
+	}
 
 	appliedOn, err := gph.ListResourcesAppliedOn(resource)
 	exitOn(err)
@@ -150,6 +153,11 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	dependingOn, err := gph.ListResourcesDependingOn(resource)
 	exitOn(err)
 	printResourceList(renderCyanBoldFn("Depending on"), dependingOn)
+
+	var siblings []*graph.Resource
+	err = gph.Accept(&graph.SiblingsVisitor{From: resource, Each: graph.VisitorCollectFunc(&siblings)})
+	exitOn(err)
+	printResourceList(renderCyanBoldFn("Siblings"), siblings, "display all with flag --siblings")
 }
 
 func runFullSync() {
@@ -231,6 +239,7 @@ func deprefix(s string) string {
 }
 
 func printResourceList(title string, list []*graph.Resource, shortenListMsg ...string) {
+	sort.Sort(byTypeAndString{list})
 	all := graph.Resources(list).Map(func(r *graph.Resource) string { return r.String() })
 	count := len(all)
 	max := 3
@@ -241,4 +250,19 @@ func printResourceList(title string, list []*graph.Resource, shortenListMsg ...s
 			fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
 		}
 	}
+}
+
+type byTypeAndString struct {
+	res []*graph.Resource
+}
+
+func (b byTypeAndString) Len() int { return len(b.res) }
+func (b byTypeAndString) Swap(i, j int) {
+	b.res[i], b.res[j] = b.res[j], b.res[i]
+}
+func (b byTypeAndString) Less(i, j int) bool {
+	if b.res[i].Type() != b.res[j].Type() {
+		return b.res[i].Type() < b.res[j].Type()
+	}
+	return b.res[i].String() <= b.res[j].String()
 }

@@ -12,6 +12,7 @@
 
 - Fix regression: run templates/one-liners failed on `storageobject`, `subscription` entities
 - Filtering in `awless list --filter` now works with column types other than string
+- Users, groups and policies are now independent of the region
 
 ## v0.0.20 [2017-03-20]
 

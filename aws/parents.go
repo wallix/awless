@@ -91,10 +91,9 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},
 	cloud.Keypair:          {addRegionParent},
-	cloud.User:             {addRegionParent, userAddGroupsRelations, addManagedPoliciesRelations},
-	cloud.Role:             {addRegionParent, addManagedPoliciesRelations},
-	cloud.Group:            {addRegionParent, addManagedPoliciesRelations},
-	cloud.Policy:           {addRegionParent},
+	cloud.User:             {userAddGroupsRelations, addManagedPoliciesRelations},
+	cloud.Role:             {addManagedPoliciesRelations},
+	cloud.Group:            {addManagedPoliciesRelations},
 	cloud.Bucket:           {addRegionParent},
 }
 
