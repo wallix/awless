@@ -538,6 +538,56 @@ Columns truncated to fit terminal: 'T', 'P'
 	}
 }
 
+func TestFilter(t *testing.T) {
+	g, err := graph.NewGraphFromFile(filepath.Join("testdata", "subnets.rdf"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("No filter", func(t *testing.T) {
+		var w bytes.Buffer
+		displayer := BuildOptions(
+			WithRdfType("subnet"),
+			WithFormat("json"),
+		).SetSource(g).Build()
+		expected := `[{"Id":"sub_1","MapPublicIpOnLaunch":true,"Name":"my_subnet","VpcId":"vpc_1"},
+		{"Id":"sub_2","MapPublicIpOnLaunch":false,"VpcId":"vpc_2"},
+		{"Id":"sub_3","MapPublicIpOnLaunch":false,"Name":"my_subnet","VpcId":"vpc_1"}]`
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+		compareJSON(t, w.String(), expected)
+	})
+	t.Run("Filter column name", func(t *testing.T) {
+		var w bytes.Buffer
+		displayer := BuildOptions(
+			WithRdfType("subnet"),
+			WithFormat("json"),
+			WithFilters([]string{"VpcId=vpc_1"}),
+		).SetSource(g).Build()
+		expected := `[{"Id":"sub_1","MapPublicIpOnLaunch":true,"Name":"my_subnet","VpcId":"vpc_1"},
+		{"Id":"sub_3","MapPublicIpOnLaunch":false,"Name":"my_subnet","VpcId":"vpc_1"}]`
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+		compareJSON(t, w.String(), expected)
+	})
+	t.Run("Filter friendly name", func(t *testing.T) {
+		var w bytes.Buffer
+		displayer := BuildOptions(
+			WithRdfType("subnet"),
+			WithFormat("json"),
+			WithFilters([]string{"public=false"}),
+		).SetSource(g).Build()
+		expected := `[{"Id":"sub_2","MapPublicIpOnLaunch":false,"VpcId":"vpc_2"},
+		{"Id":"sub_3","MapPublicIpOnLaunch":false,"Name":"my_subnet","VpcId":"vpc_1"}]`
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+		compareJSON(t, w.String(), expected)
+	})
+}
+
 func TestCompareInterface(t *testing.T) {
 	if got, want := valueLowerOrEqual(interface{}(1), interface{}(4)), true; got != want {
 		t.Fatalf("got %t want %t", got, want)
