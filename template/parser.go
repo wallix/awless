@@ -18,6 +18,7 @@ package template
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -37,6 +38,10 @@ func Parse(text string) (tmpl *Template, err error) {
 			}
 		}
 	}()
+
+	if clean := strings.TrimSpace(text); clean == "" {
+		return nil, errors.New("empty template")
+	}
 
 	tmpl = &Template{}
 

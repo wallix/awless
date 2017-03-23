@@ -38,6 +38,13 @@ func TestParsingInvalidActionAndEntities(t *testing.T) {
 	}
 }
 
+func TestParsingEmptyTemplate(t *testing.T) {
+	_, err := Parse(``)
+	if err == nil || err.Error() != "empty template" {
+		t.Fatalf("expected error with specific message, got: %s", err)
+	}
+}
+
 func TestWrapPegParseError(t *testing.T) {
 	t.Run("Display better error message", func(t *testing.T) {
 		text := "create subnet\ncreate instance type= wrong=\ncreate vpc"
