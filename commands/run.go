@@ -54,7 +54,7 @@ func init() {
 var runCmd = &cobra.Command{
 	Use:               "run PATH",
 	Short:             "Run a template given a filepath or a URL (prefixed with http)",
-	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls",
+	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls\n  awless run repo:create_vpc",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
@@ -64,9 +64,7 @@ var runCmd = &cobra.Command{
 		}
 
 		content, err := getTemplateText(args[0])
-		if err != nil {
-			return err
-		}
+		exitOn(err)
 
 		logger.Verbosef("Loaded template text:\n\n%s\n", content)
 
@@ -389,13 +387,28 @@ func oneLinerShortDesc(action string, entities []string) string {
 
 }
 
+const (
+	DEFAULT_REPO_PREFIX = "https://raw.githubusercontent.com/wallix/awless-templates/master"
+	FILE_EXT            = ".awls"
+)
+
 func getTemplateText(path string) ([]byte, error) {
+	if strings.HasPrefix(path, "repo:") {
+		path = fmt.Sprintf("%s/%s", DEFAULT_REPO_PREFIX, strings.TrimPrefix(path[5:], "/"))
+		path = fmt.Sprintf("%s%s", strings.TrimSuffix(path, FILE_EXT), FILE_EXT)
+	}
+
 	if strings.HasPrefix(path, "http") {
+		logger.ExtraVerbosef("fetching remote template at '%s'", path)
 		resp, err := http.Get(path)
 		if err != nil {
 			return nil, err
 		}
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("'%s' when fetching template at '%s'", resp.Status, path)
+		}
 
 		return ioutil.ReadAll(resp.Body)
 	}
