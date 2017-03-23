@@ -26,6 +26,7 @@ import (
 )
 
 func TestUpgradeMessaging(t *testing.T) {
+	BuildFor = "zip"
 	tserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if ua := r.Header.Get("User-Agent"); !strings.HasPrefix(ua, "awless-client-"+Version) {
 			t.Fatalf("unexpected user-agent: %s", ua)
