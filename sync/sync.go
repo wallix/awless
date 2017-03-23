@@ -89,7 +89,9 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 			start := time.Now()
 			g, err := srv.FetchResources()
 			errorc <- &srvErr{name: srv.Name(), err: err}
-			resultc <- &result{name: srv.Name(), gph: g, start: start}
+			if err == nil {
+				resultc <- &result{name: srv.Name(), gph: g, start: start}
+			}
 		}(service)
 	}
 
@@ -144,9 +146,9 @@ func concatErrors(errs []error) error {
 		return nil
 	}
 
-	var lines []string
+	lines := []string{"syncing errors:"}
 	for _, err := range errs {
-		lines = append(lines, err.Error())
+		lines = append(lines, fmt.Sprintf("\t\t%s", err))
 	}
 
 	return errors.New(strings.Join(lines, "\n"))

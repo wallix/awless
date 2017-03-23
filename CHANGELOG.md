@@ -13,6 +13,7 @@
 - Fix regression: run templates/one-liners failed on `storageobject`, `subscription` entities
 - Filtering in `awless list --filter` now works with column types other than string
 - Users, groups and policies are now independent of the region
+- [#83](https://github.com/wallix/awless/issues/83): Syncing while offline does not clear local cloud infra
 
 ## v0.0.20 [2017-03-20]
 
