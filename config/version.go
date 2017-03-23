@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	Version  = "v0.0.20"
+	Version  = "v0.0.21"
 	BuildFor string
 
 	buildSha, buildDate, buildArch, buildOS string
