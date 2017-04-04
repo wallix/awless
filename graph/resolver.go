@@ -5,7 +5,7 @@ import (
 
 	"github.com/wallix/awless/cloud/properties"
 	cloudrdf "github.com/wallix/awless/cloud/rdf"
-	"github.com/wallix/awless/graph/internal/rdf"
+	tstore "github.com/wallix/triplestore"
 )
 
 type Resolver interface {
@@ -40,19 +40,15 @@ func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 	if err != nil {
 		return resources, fmt.Errorf("resolve resources: unmarshaling property '%s': '%s'", r.Name, err)
 	}
-	triples, err := g.rdfG.TriplesForPredicateObject(rdf.MustBuildPredicate(rdfpropLabel), obj)
-	if err != nil {
-		return resources, err
-	}
-	for _, t := range triples {
-		s := t.Subject()
-		rt, err := resolveResourceType(g.rdfG, s.ID().String())
+	snap := g.store.Snapshot()
+	for _, t := range snap.WithPredObj(rdfpropLabel, obj) {
+		rt, err := resolveResourceType(snap, t.Subject())
 		if err != nil {
 			return resources, err
 		}
-		r := InitResource(rt, s.ID().String())
+		r := InitResource(rt, t.Subject())
 
-		if err := r.unmarshalFullRdf(g.rdfG); err != nil {
+		if err := r.unmarshalFullRdf(snap); err != nil {
 			return resources, err
 		}
 		resources = append(resources, r)
@@ -97,19 +93,11 @@ type ByType struct {
 
 func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
 	var resources []*Resource
-
-	typObj, err := marshalResourceType(r.Typ)
-	if err != nil {
-		return resources, err
-	}
-	triples, err := g.rdfG.TriplesForPredicateObject(rdf.MustBuildPredicate(cloudrdf.RdfType), typObj)
-	if err != nil {
-		return resources, err
-	}
-	for _, t := range triples {
-		s := t.Subject()
-		r := InitResource(r.Typ, s.ID().String())
-		err := r.unmarshalFullRdf(g.rdfG)
+	snap := g.store.Snapshot()
+	typ := namespacedResourceType(r.Typ)
+	for _, t := range snap.WithPredObj(cloudrdf.RdfType, tstore.Resource(typ)) {
+		r := InitResource(r.Typ, t.Subject())
+		err := r.unmarshalFullRdf(snap)
 		if err != nil {
 			return resources, err
 		}
@@ -134,32 +122,4 @@ func (r *ByTypes) Resolve(g *Graph) ([]*Resource, error) {
 	}
 
 	return res, nil
-}
-
-func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
-	var resources []*Resource
-
-	node, err := start.toRDFNode()
-	if err != nil {
-		return resources, err
-	}
-
-	relations, err := g.rdfG.ListAttachedTo(node, rdf.AppliesOnPredicate)
-	if err != nil {
-		return resources, err
-	}
-	for _, node := range relations {
-		id := node.ID().String()
-		rT, err := resolveResourceType(g.rdfG, id)
-		if err != nil {
-			return resources, err
-		}
-		res, err := g.GetResource(rT, id)
-		if err != nil {
-			return resources, err
-		}
-		resources = append(resources, res)
-	}
-
-	return resources, nil
 }

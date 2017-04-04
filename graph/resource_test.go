@@ -17,22 +17,16 @@ limitations under the License.
 package graph
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"os"
 	"reflect"
 	"runtime/pprof"
 	"sort"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/literal"
 	"github.com/wallix/awless/cloud/properties"
-	"github.com/wallix/awless/graph/internal/rdf"
 )
 
 func TestSortResource(t *testing.T) {
@@ -148,14 +142,14 @@ func TestMarshalUnmarshalFullRdf(t *testing.T) {
 		vpcResource("vpc1").prop(properties.ID, "vpc1").build(),
 	}
 	for _, r := range res {
-		g := rdf.NewGraph()
+		g := NewGraph()
 		triples, err := r.marshalFullRDF()
 		if err != nil {
 			t.Fatal(err)
 		}
-		g.Add(triples...)
+		g.store.Add(triples...)
 		rawRes := InitResource(r.Type(), r.Id())
-		err = rawRes.unmarshalFullRdf(g)
+		err = rawRes.unmarshalFullRdf(g.store.Snapshot())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -165,16 +159,36 @@ func TestMarshalUnmarshalFullRdf(t *testing.T) {
 	}
 }
 
-func TestMarshalUnmarshalList(t *testing.T) {
-	r := instResource("inst1").prop(properties.ID, "inst1").prop(properties.SecurityGroups, []string{"sgroup1", "sgroup2", "sgroup3"}).prop(properties.Actions, []string{"start", "stop", "delete"}).build()
-	g := rdf.NewGraph()
+func TestResourceMarshalUnmarshalHandlesNilValues(t *testing.T) {
+	r := instResource("inst1").prop(properties.Host, nil).prop(properties.Name, "any").build()
+	g := NewGraph()
 	triples, err := r.marshalFullRDF()
 	if err != nil {
 		t.Fatal(err)
 	}
-	g.Add(triples...)
+	g.store.Add(triples...)
+
 	rawRes := InitResource(r.Type(), r.Id())
-	err = rawRes.unmarshalFullRdf(g)
+	err = rawRes.unmarshalFullRdf(g.store.Snapshot())
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedNoNil := instResource("inst1").prop(properties.Name, "any").build()
+	if got, want := rawRes, expectedNoNil; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
+	}
+}
+
+func TestMarshalUnmarshalList(t *testing.T) {
+	r := instResource("inst1").prop(properties.ID, "inst1").prop(properties.SecurityGroups, []string{"sgroup1", "sgroup2", "sgroup3"}).prop(properties.Actions, []string{"start", "stop", "delete"}).build()
+	g := NewGraph()
+	triples, err := r.marshalFullRDF()
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.store.Add(triples...)
+	rawRes := InitResource(r.Type(), r.Id())
+	err = rawRes.unmarshalFullRdf(g.store.Snapshot())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,14 +215,14 @@ func TestMarshalUnmarshalFirewallRules(t *testing.T) {
 		"OutboundRules", []*FirewallRule{
 			{PortRange: PortRange{Any: true}, Protocol: "icmp", IPRanges: []*net.IPNet{localhost, {IP: net.ParseIP("::1"), Mask: net.CIDRMask(128, 128)}}},
 		}).build()
-	g := rdf.NewGraph()
+	g := NewGraph()
 	triples, err := r.marshalFullRDF()
 	if err != nil {
 		t.Fatal(err)
 	}
-	g.Add(triples...)
+	g.store.Add(triples...)
 	rawRes := InitResource(r.Type(), r.Id())
-	err = rawRes.unmarshalFullRdf(g)
+	err = rawRes.unmarshalFullRdf(g.store.Snapshot())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -231,14 +245,14 @@ func TestMarshalUnmarshalRouteTables(t *testing.T) {
 			{Destination: subnet1cidr, DestinationPrefixListId: "toto", Targets: []*RouteTarget{{Type: InstanceTarget, Ref: "ref_1", Owner: "me"}, {Type: GatewayTarget, Ref: "ref_2"}}},
 			{Destination: subnet2cidr, DestinationIPv6: subnet2ipv6, DestinationPrefixListId: "tata", Targets: []*RouteTarget{{Type: NetworkInterfaceTarget, Ref: "ref_3"}}},
 		}).build()
-	g := rdf.NewGraph()
+	g := NewGraph()
 	triples, err := r.marshalFullRDF()
 	if err != nil {
 		t.Fatal(err)
 	}
-	g.Add(triples...)
+	g.store.Add(triples...)
 	rawRes := InitResource(r.Type(), r.Id())
-	err = rawRes.unmarshalFullRdf(g)
+	err = rawRes.unmarshalFullRdf(g.store.Snapshot())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -258,14 +272,14 @@ func TestMarshalUnmarshalGrants(t *testing.T) {
 			{Permission: "granted", GranteeID: "123", GranteeDisplayName: "John Smith", GranteeType: "user"},
 			{Permission: "other", GranteeID: "myid"},
 		}).build()
-	g := rdf.NewGraph()
+	g := NewGraph()
 	triples, err := r.marshalFullRDF()
 	if err != nil {
 		t.Fatal(err)
 	}
-	g.Add(triples...)
+	g.store.Add(triples...)
 	rawRes := InitResource(r.Type(), r.Id())
-	err = rawRes.unmarshalFullRdf(g)
+	err = rawRes.unmarshalFullRdf(g.store.Snapshot())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,6 +289,60 @@ func TestMarshalUnmarshalGrants(t *testing.T) {
 
 	if got, want := rawRes, r; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
+	}
+}
+
+func TestMarshalUnmarshalIPPermissions(t *testing.T) {
+	expected := []*Resource{
+		testResource("sg-1234", "securitygroup").prop("InboundRules", []*FirewallRule{
+			{
+				PortRange: PortRange{FromPort: int64(22), ToPort: int64(22), Any: false},
+				Protocol:  "tcp",
+				IPRanges:  []*net.IPNet{{IP: net.IPv4(10, 10, 0, 0), Mask: net.CIDRMask(16, 32)}},
+			},
+			{
+				PortRange: PortRange{FromPort: int64(443), ToPort: int64(443), Any: false},
+				Protocol:  "tcp",
+				IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
+			},
+		}).prop("OutboundRules", []*FirewallRule{
+			{
+				PortRange: PortRange{Any: true},
+				Protocol:  "any",
+				IPRanges:  []*net.IPNet{{IP: net.IPv4(0, 0, 0, 0), Mask: net.CIDRMask(0, 32)}},
+			},
+		}).build(),
+	}
+
+	g := NewGraph()
+	for _, r := range expected {
+		triples, err := r.marshalFullRDF()
+		if err != nil {
+			t.Fatal(err)
+		}
+		g.store.Add(triples...)
+	}
+
+	res, err := g.GetAllResources("securitygroup")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(res), len(expected); got != want {
+		t.Fatalf("got %d want %d", got, want)
+	}
+	if got, want := res[0].Id(), expected[0].Id(); got != want {
+		t.Fatalf("got %s want %s", got, want)
+	}
+	if got, want := res[0].Type(), expected[0].Type(); got != want {
+		t.Fatalf("got %s want %s", got, want)
+	}
+	if got, want := len(res[0].Properties), len(expected[0].Properties); got != want {
+		t.Fatalf("got %d want %d", got, want)
+	}
+	for k := range expected[0].Properties {
+		if got, want := fmt.Sprintf("%T", res[0].Properties[k]), fmt.Sprintf("%T", expected[0].Properties[k]); got != want {
+			t.Fatalf("got %s want %s", got, want)
+		}
 	}
 }
 
@@ -328,36 +396,15 @@ func BenchmarkRdfMarshaling(b *testing.B) {
 			}
 		}
 	})
-	b.Run("json RDF", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			for _, res := range resources {
-				if _, err := res.marshalRDF(); err != nil {
-					b.Fatal(err)
-				}
-			}
-		}
-	})
 }
 
-func buildBenchmarkFullRdfTriples(resources []*Resource) *rdf.Graph {
-	graph := rdf.NewGraph()
+func buildBenchmarkFullRdfTriples(resources []*Resource) *Graph {
+	graph := NewGraph()
 	for _, res := range resources {
 		if triples, err := res.marshalFullRDF(); err != nil {
 			panic(err)
 		} else {
-			graph.Add(triples...)
-		}
-	}
-	return graph
-}
-
-func buildBenchmarkJsonRdfTriples(resources []*Resource) *Graph {
-	graph := NewGraph()
-	for _, res := range resources {
-		if t, err := res.marshalRDF(); err != nil {
-			panic(err)
-		} else {
-			graph.rdfG.Add(t...)
+			graph.store.Add(triples...)
 		}
 	}
 	return graph
@@ -365,174 +412,20 @@ func buildBenchmarkJsonRdfTriples(resources []*Resource) *Graph {
 
 func BenchmarkRdfUnmarshaling(b *testing.B) {
 	resources := buildBenchmarkData()
-	fullRdfGraph := buildBenchmarkFullRdfTriples(resources)
-	jsonRdfGraph := buildBenchmarkJsonRdfTriples(resources)
+	graph := buildBenchmarkFullRdfTriples(resources)
 	b.ResetTimer()
 	f, _ := os.Create("./fullcpu.out")
 	pprof.StartCPUProfile(f)
 	defer pprof.StopCPUProfile()
 	b.Run("full RDF", func(b *testing.B) {
+		snap := graph.store.Snapshot()
 		for i := 0; i < b.N; i++ {
 			for _, r := range resources {
 				rawRes := InitResource(r.Type(), r.Id())
-				if err := rawRes.unmarshalFullRdf(fullRdfGraph); err != nil {
+				if err := rawRes.unmarshalFullRdf(snap); err != nil {
 					b.Fatal(err)
 				}
 			}
 		}
 	})
-	b.Run("json RDF", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			for _, r := range resources {
-				if _, err := jsonRdfGraph.GetResourceJson(r.Type(), r.Id()); err != nil {
-					b.Fatal(err)
-				}
-			}
-		}
-	})
-}
-
-func (res *Resource) marshalRDF() ([]*triple.Triple, error) {
-	var triples []*triple.Triple
-	n, err := res.toRDFNode()
-	if err != nil {
-		return triples, err
-	}
-	var lit *literal.Literal
-	if lit, err = literal.DefaultBuilder().Build(literal.Text, "/"+res.kind); err != nil {
-		return triples, err
-	}
-	t, err := triple.New(n, rdf.HasTypePredicate, triple.NewLiteralObject(lit))
-	if err != nil {
-		return triples, err
-	}
-	triples = append(triples, t)
-
-	for propKey, propValue := range res.Properties {
-		prop := Property{Key: propKey, Value: propValue}
-		propL, err := prop.marshalRDF()
-		if err != nil {
-			return nil, err
-		}
-		if propT, err := triple.New(n, rdf.PropertyPredicate, propL); err != nil {
-			return nil, err
-		} else {
-			triples = append(triples, propT)
-		}
-	}
-
-	for metaKey, metaValue := range res.Meta {
-		prop := Property{Key: metaKey, Value: metaValue}
-		propL, err := prop.marshalRDF()
-		if err != nil {
-			return nil, err
-		}
-		if propT, err := triple.New(n, rdf.MetaPredicate, propL); err != nil {
-			return nil, err
-		} else {
-			triples = append(triples, propT)
-		}
-	}
-
-	return triples, nil
-}
-
-func (prop *Property) marshalRDF() (*triple.Object, error) {
-	json, err := json.Marshal(prop)
-	if err != nil {
-		return nil, err
-	}
-	var propL *literal.Literal
-	if propL, err = literal.DefaultBuilder().Build(literal.Text, string(json)); err != nil {
-		return nil, err
-	}
-	return triple.NewLiteralObject(propL), nil
-}
-
-func (g *Graph) GetResourceJson(t string, id string) (*Resource, error) {
-	resource := InitResource(id, t)
-
-	node, err := resource.toRDFNode()
-	if err != nil {
-		return resource, err
-	}
-
-	propsTriples, err := g.rdfG.TriplesForSubjectPredicate(node, rdf.PropertyPredicate)
-	if err != nil {
-		return resource, err
-	}
-	if er := resource.Properties.unmarshalJsonRDF(propsTriples); er != nil {
-		return resource, er
-	}
-
-	return resource, nil
-}
-
-func (props Properties) unmarshalJsonRDF(triples []*triple.Triple) error {
-	for _, tr := range triples {
-		prop := &Property{}
-		if err := prop.unmarshalJsonRDF(tr); err != nil {
-			return err
-		}
-		props[prop.Key] = prop.Value
-	}
-
-	return nil
-}
-
-func (prop *Property) unmarshalJsonRDF(t *triple.Triple) error {
-	oL, err := t.Object().Literal()
-	if err != nil {
-		return err
-	}
-	propStr, err := oL.Text()
-	if err != nil {
-		return err
-	}
-
-	if err = json.Unmarshal([]byte(propStr), prop); err != nil {
-		fmt.Printf("cannot unmarshal %s: %s\n", propStr, err)
-	}
-
-	switch {
-	case strings.HasSuffix(strings.ToLower(prop.Key), "time"), strings.HasSuffix(strings.ToLower(prop.Key), "date"):
-		t, er := time.Parse(time.RFC3339, fmt.Sprint(prop.Value))
-		if er == nil {
-			prop.Value = t
-		}
-	case strings.HasSuffix(strings.ToLower(prop.Key), "timestamp"):
-		tmstp, er := strconv.Atoi(fmt.Sprint(prop.Value))
-		if er == nil {
-			prop.Value = time.Unix(int64(tmstp), 0)
-		}
-	case strings.HasSuffix(strings.ToLower(prop.Key), "rules"):
-		var propRules struct {
-			Key   string
-			Value []*FirewallRule
-		}
-		err = json.Unmarshal([]byte(propStr), &propRules)
-		if err == nil {
-			prop.Value = propRules.Value
-		}
-	case strings.HasSuffix(strings.ToLower(prop.Key), "routes"):
-		var propRoutes struct {
-			Key   string
-			Value []*Route
-		}
-		err = json.Unmarshal([]byte(propStr), &propRoutes)
-		if err == nil {
-			prop.Value = propRoutes.Value
-		}
-	case strings.HasSuffix(strings.ToLower(prop.Key), "grants"):
-		var propGrants struct {
-			Key   string
-			Value []*Grant
-		}
-		err = json.Unmarshal([]byte(propStr), &propGrants)
-		if err == nil {
-			prop.Value = propGrants.Value
-		}
-	}
-
-	return nil
 }

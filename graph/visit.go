@@ -17,8 +17,10 @@ limitations under the License.
 package graph
 
 import (
-	"github.com/google/badwolf/triple/node"
-	"github.com/wallix/awless/graph/internal/rdf"
+	"fmt"
+	"sort"
+
+	tstore "github.com/wallix/triplestore"
 )
 
 type Visitor interface {
@@ -46,7 +48,7 @@ func (v *ParentsVisitor) Visit(g *Graph) error {
 		return err
 	}
 
-	return g.rdfG.VisitBottomUp(startNode, foreach)
+	return visitBottomUp(g.store.Snapshot(), startNode, foreach)
 }
 
 type ChildrenVisitor struct {
@@ -60,7 +62,7 @@ func (v *ChildrenVisitor) Visit(g *Graph) error {
 	if err != nil {
 		return err
 	}
-	return g.rdfG.VisitTopDown(startNode, foreach)
+	return visitTopDown(g.store.Snapshot(), startNode, foreach)
 }
 
 type SiblingsVisitor struct {
@@ -75,22 +77,18 @@ func (v *SiblingsVisitor) Visit(g *Graph) error {
 		return err
 	}
 
-	return g.rdfG.VisitSiblings(startNode, foreach)
+	return visitSiblings(g.store.Snapshot(), startNode, foreach)
 }
 
-func prepareRDFVisit(g *Graph, root *Resource, each visitEachFunc, includeRoot bool) (*node.Node, func(rdfG *rdf.Graph, n *node.Node, i int) error, error) {
-	rootNode, err := root.toRDFNode()
-	if err != nil {
-		return nil, nil, err
-	}
+func prepareRDFVisit(g *Graph, root *Resource, each visitEachFunc, includeRoot bool) (string, func(g tstore.RDFGraph, n string, i int) error, error) {
+	rootNode := root.Id()
 
-	foreach := func(rdfG *rdf.Graph, n *node.Node, i int) error {
-		id := n.ID().String()
-		rT, err := resolveResourceType(g.rdfG, id)
+	foreach := func(rdfG tstore.RDFGraph, n string, i int) error {
+		rT, err := resolveResourceType(rdfG, n)
 		if err != nil {
 			return err
 		}
-		res, err := g.GetResource(rT, id)
+		res, err := g.GetResource(rT, n)
 		if err != nil {
 			return err
 		}
@@ -102,4 +100,108 @@ func prepareRDFVisit(g *Graph, root *Resource, each visitEachFunc, includeRoot b
 		return nil
 	}
 	return rootNode, foreach, nil
+}
+
+func visitTopDown(snap tstore.RDFGraph, root string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
+	var dist int
+	if len(distances) > 0 {
+		dist = distances[0]
+	}
+
+	if err := each(snap, root, dist); err != nil {
+		return err
+	}
+
+	triples := snap.WithSubjPred(root, ParentOfPredicate)
+
+	var childs []string
+	for _, tri := range triples {
+		n, ok := tri.Object().ResourceID()
+		if !ok {
+			return fmt.Errorf("object is not a resource identifier")
+		}
+		childs = append(childs, n)
+	}
+
+	sort.Strings(childs)
+
+	for _, child := range childs {
+		visitTopDown(snap, child, each, dist+1)
+	}
+
+	return nil
+}
+
+func visitBottomUp(snap tstore.RDFGraph, startNode string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
+	var dist int
+	if len(distances) > 0 {
+		dist = distances[0]
+	}
+
+	if err := each(snap, startNode, dist); err != nil {
+		return err
+	}
+	triples := snap.WithPredObj(ParentOfPredicate, tstore.Resource(startNode))
+	var parents []string
+	for _, tri := range triples {
+		parents = append(parents, tri.Subject())
+	}
+
+	sort.Strings(parents)
+
+	for _, child := range parents {
+		visitBottomUp(snap, child, each, dist+1)
+	}
+
+	return nil
+}
+
+func visitSiblings(snap tstore.RDFGraph, start string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
+	triples := snap.WithPredObj(ParentOfPredicate, tstore.Resource(start))
+
+	var parents []string
+	for _, tri := range triples {
+		parents = append(parents, tri.Subject())
+	}
+
+	if len(parents) == 0 {
+		return each(snap, start, 0)
+	}
+
+	sort.Strings(parents)
+
+	for _, parent := range parents {
+		parentTs := snap.WithSubjPred(parent, ParentOfPredicate)
+
+		var childs []string
+		for _, parentT := range parentTs {
+			child, ok := parentT.Object().ResourceID()
+			if !ok {
+				return fmt.Errorf("object is not a resource identifier")
+			}
+			childs = append(childs, child)
+		}
+
+		sort.Strings(childs)
+
+		startType, err := resolveResourceType(snap, start)
+		if err != nil {
+			return err
+		}
+
+		for _, child := range childs {
+			rt, err := resolveResourceType(snap, child)
+			if err != nil {
+				return err
+			}
+			sameType := rt == startType
+			if sameType {
+				if err := each(snap, child, 0); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }

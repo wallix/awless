@@ -17,21 +17,19 @@ limitations under the License.
 package graph
 
 import (
-	"github.com/google/badwolf/triple"
 	cloudrdf "github.com/wallix/awless/cloud/rdf"
-	"github.com/wallix/awless/graph/internal/rdf"
+	tstore "github.com/wallix/triplestore"
 )
 
 type Alias string
 
 func (a Alias) ResolveToId(g *Graph, resT string) (string, bool) {
-	triples, err := g.rdfG.TriplesForPredicateObject(rdf.MustBuildPredicate(cloudrdf.Name), triple.NewLiteralObject(rdf.MustBuildLiteral(string(a))))
-	if err != nil {
-		return "", false
-	}
+	snap := g.store.Snapshot()
+	triples := snap.WithPredObj(cloudrdf.Name, tstore.StringLiteral(string(a)))
+
 	for _, t := range triples {
-		id := t.Subject().ID().String()
-		rt, err := resolveResourceType(g.rdfG, id)
+		id := t.Subject()
+		rt, err := resolveResourceType(snap, id)
 		if err != nil {
 			return id, false
 		}

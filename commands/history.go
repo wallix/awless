@@ -69,7 +69,7 @@ var historyCmd = &cobra.Command{
 			to, err := sync.DefaultSyncer.LoadRev(all[i].Id)
 			exitOn(err)
 
-			d, err := sync.BuildDiff(from, to, root)
+			d, err := sync.BuildDiff(from, to, root.Id())
 			exitOn(err)
 
 			diffs = append(diffs, d)

@@ -17,7 +17,6 @@ limitations under the License.
 package sync
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -169,16 +168,15 @@ func LoadAllGraphs() (*graph.Graph, error) {
 
 	g := graph.NewGraph()
 
-	var buff bytes.Buffer
+	var readers []io.Reader
 	for _, f := range files {
 		reader, err := os.Open(f)
 		if err != nil {
 			return g, fmt.Errorf("loading '%s': %s", f, err)
 		}
-		io.Copy(&buff, reader)
-		buff.WriteByte('\n')
+		readers = append(readers, reader)
 	}
 
-	g.Unmarshal(buff.Bytes())
-	return g, nil
+	err := g.UnmarshalMultiple(readers...)
+	return g, err
 }

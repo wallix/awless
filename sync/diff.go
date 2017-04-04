@@ -29,13 +29,13 @@ type Diff struct {
 	AccessDiff *graph.Diff
 }
 
-func BuildDiff(from, to *repo.Rev, root *graph.Resource) (*Diff, error) {
-	infraDiff, err := graph.Differ.Run(root, from.Infra, to.Infra)
+func BuildDiff(from, to *repo.Rev, root string) (*Diff, error) {
+	infraDiff, err := graph.DefaultDiffer.Run(root, from.Infra, to.Infra)
 	if err != nil {
 		return nil, err
 	}
 
-	accessDiff, err := graph.Differ.Run(root, from.Access, to.Access)
+	accessDiff, err := graph.DefaultDiffer.Run(root, from.Access, to.Access)
 	if err != nil {
 		return nil, err
 	}

@@ -20,12 +20,9 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/node"
 	cloudrdf "github.com/wallix/awless/cloud/rdf"
-	"github.com/wallix/awless/graph/internal/rdf"
+	tstore "github.com/wallix/triplestore"
 )
 
 type Resource struct {
@@ -71,145 +68,125 @@ func (res *Resource) Same(other *Resource) bool {
 	return res.Id() == other.Id() && res.Type() == other.Type()
 }
 
-func (res *Resource) toRDFNode() (*node.Node, error) {
-	return node.NewNodeFromStrings("/node", res.id)
-}
+func (res *Resource) marshalFullRDF() ([]tstore.Triple, error) {
+	var triples []tstore.Triple
 
-func (res *Resource) marshalFullRDF() ([]*triple.Triple, error) {
-	var triples []*triple.Triple
-
-	triples = append(triples, rdf.Subject(res.id).Predicate(cloudrdf.RdfType).Object(strings.Title(res.Type()), cloudrdf.CloudOwlNS))
+	cloudType := namespacedResourceType(res.Type())
+	triples = append(triples, tstore.SubjPred(res.id, cloudrdf.RdfType).Resource(cloudType))
 
 	for key, value := range res.Meta {
 		if key == "diff" {
-			triples = append(triples, rdf.Subject(res.id).Predicate(string(rdf.MetaPredicate.ID())).Literal(fmt.Sprint(value)))
+			triples = append(triples, tstore.SubjPred(res.id, MetaPredicate).StringLiteral(fmt.Sprint(value)))
 		}
 	}
 
 	for key, value := range res.Properties {
+		if value == nil {
+			continue
+		}
+
 		propId, err := getPropertyRDFId(key)
 		if err != nil {
-			return triples, fmt.Errorf("marshalling property: %s", err)
+			return triples, fmt.Errorf("resource %s: marshalling property: %s", res, err)
 		}
 
 		propType, err := getPropertyDefinedBy(propId)
 		if err != nil {
-			return triples, fmt.Errorf("marshalling property: %s", err)
+			return triples, fmt.Errorf("resource %s: marshalling property: %s", res, err)
 		}
 		dataType, err := getPropertyDataType(propId)
 		if err != nil {
-			return triples, fmt.Errorf("marshalling property: %s", err)
+			return triples, fmt.Errorf("resource %s: marshalling property: %s", res, err)
 		}
 		switch propType {
 		case cloudrdf.RdfsLiteral, cloudrdf.RdfsClass:
 			obj, err := marshalToRdfObject(value, propType, dataType)
 			if err != nil {
-				return triples, fmt.Errorf("marshalling property '%s': %s", key, err)
+				return triples, fmt.Errorf("resource %s: marshalling property '%s': %s", res, key, err)
 			}
-			triple, err := triple.New(rdf.MustBuildNode(res.id), rdf.MustBuildPredicate(propId), obj)
-			if err != nil {
-				return triples, err
-			}
-			triples = append(triples, triple)
+			triples = append(triples, tstore.SubjPred(res.Id(), propId).Object(obj))
 		case cloudrdf.RdfsList:
 			switch dataType {
 			case cloudrdf.XsdString:
 				list, ok := value.([]string)
 				if !ok {
-					return triples, fmt.Errorf("marshalling property '%s': expected a string slice, got a %T", key, value)
+					return triples, fmt.Errorf("resource %s: marshalling property '%s': expected a string slice, got a %T", res, key, value)
 				}
 				for _, l := range list {
-					triples = append(triples, rdf.Subject(res.id).Predicate(propId).Literal(l))
+					triples = append(triples, tstore.SubjPred(res.id, propId).StringLiteral(l))
 				}
 			case cloudrdf.RdfsClass:
 				list, ok := value.([]string)
 				if !ok {
-					return triples, fmt.Errorf("marshalling property '%s': expected a string slice, got a %T", key, value)
+					return triples, fmt.Errorf("resource %s: marshalling property '%s': expected a string slice, got a %T", res, key, value)
 				}
 				for _, l := range list {
-					triples = append(triples, rdf.Subject(res.id).Predicate(propId).Object(l))
+					triples = append(triples, tstore.SubjPred(res.id, propId).Resource(l))
 				}
 			case cloudrdf.NetFirewallRule:
 				list, ok := value.([]*FirewallRule)
 				if !ok {
-					return triples, fmt.Errorf("marshalling property '%s': expected a firewall rule slice, got a %T", key, value)
+					return triples, fmt.Errorf("resource %s: marshalling property '%s': expected a firewall rule slice, got a %T", res, key, value)
 				}
 				for _, r := range list {
 					ruleId := randomRdfId()
-					triples = append(triples, rdf.Subject(res.id).Predicate(propId).Object(ruleId))
+					triples = append(triples, tstore.SubjPred(res.id, propId).Resource(ruleId))
 					triples = append(triples, r.marshalToTriples(ruleId)...)
 				}
 			case cloudrdf.NetRoute:
 				list, ok := value.([]*Route)
 				if !ok {
-					return triples, fmt.Errorf("marshalling property '%s': expected a route slice, got a %T", key, value)
+					return triples, fmt.Errorf("resource %s: marshalling property '%s': expected a route slice, got a %T", res, key, value)
 				}
 				for _, r := range list {
 					routeId := randomRdfId()
-					triples = append(triples, rdf.Subject(res.id).Predicate(propId).Object(routeId))
+					triples = append(triples, tstore.SubjPred(res.id, propId).Resource(routeId))
 					triples = append(triples, r.marshalToTriples(routeId)...)
 				}
 			case cloudrdf.Grant:
 				list, ok := value.([]*Grant)
 				if !ok {
-					return triples, fmt.Errorf("marshalling property '%s': expected a grant slice, got a %T", key, value)
+					return triples, fmt.Errorf("resource %s: marshalling property '%s': expected a grant slice, got a %T", res, key, value)
 				}
 				for _, g := range list {
 					grantId := randomRdfId()
-					triples = append(triples, rdf.Subject(res.id).Predicate(propId).Object(grantId))
+					triples = append(triples, tstore.SubjPred(res.id, propId).Resource(grantId))
 					triples = append(triples, g.marshalToTriples(grantId)...)
 				}
 			default:
-				return triples, fmt.Errorf("marshalling property '%s': unexpected rdfs:DataType: %s", key, dataType)
+				return triples, fmt.Errorf("resource %s: marshalling property '%s': unexpected rdfs:DataType: %s", res, key, dataType)
 			}
 
 		default:
-			return triples, fmt.Errorf("marshalling property '%s': unexpected rdfs:isDefinedBy: %s", key, propType)
+			return triples, fmt.Errorf("resource %s: marshalling property '%s': unexpected rdfs:isDefinedBy: %s", res, key, propType)
 		}
 
 	}
 	return triples, nil
 }
 
-func marshalToRdfObject(i interface{}, definedBy, dataType string) (*triple.Object, error) {
+func marshalToRdfObject(i interface{}, definedBy, dataType string) (tstore.Object, error) {
 	switch definedBy {
 	case cloudrdf.RdfsLiteral:
-		switch dataType {
-		case cloudrdf.XsdDateTime:
-			datetime, ok := i.(time.Time)
-			if !ok {
-				return nil, fmt.Errorf("expected a time, got a %T", i)
-			}
-			txt, _ := datetime.MarshalText()
-			return triple.NewLiteralObject(rdf.MustBuildLiteral(string(txt))), nil
-		default:
-			return triple.NewLiteralObject(rdf.MustBuildLiteral((fmt.Sprint(i)))), nil
-		}
+		return tstore.ObjectLiteral(i)
 	case cloudrdf.RdfsClass:
-		return triple.NewNodeObject(rdf.MustBuildNode(fmt.Sprint(i))), nil
+		return tstore.Resource(fmt.Sprint(i)), nil
 	default:
 		return nil, fmt.Errorf("unexpected rdfs:isDefinedBy: %s", definedBy)
 	}
 }
 
-func (res *Resource) unmarshalFullRdf(gph *rdf.Graph) error {
-	triples, err := gph.TriplesForSubjectOnly(rdf.MustBuildNode(res.Id()))
-	if err != nil {
-		return err
+func (res *Resource) unmarshalFullRdf(gph tstore.RDFGraph) error {
+	cloudType := namespacedResourceType(res.Type())
+	if !gph.Contains(tstore.SubjPred(res.Id(), cloudrdf.RdfType).Resource(cloudType)) {
+		return fmt.Errorf("resource with id '%s' has not type '%s'", res.Id(), cloudType)
 	}
-	rTobj, err := marshalResourceType(res.Type())
-	if err != nil {
-		return err
-	}
-	if !gph.HasTriple(rdf.Subject(res.Id()).Predicate(cloudrdf.RdfType).ObjectNode(rTobj)) {
-		return fmt.Errorf("resource with id '%s' has not type '%s'", res.Id(), res.Type())
-	}
-	for _, t := range triples {
-		pred := string(t.Predicate().ID())
-
+	for _, t := range gph.WithSubject(res.Id()) {
+		pred := t.Predicate()
 		if !isRDFProperty(pred) || isRDFSubProperty(pred) {
 			continue
 		}
+
 		propKey, err := getPropertyLabel(pred)
 		if err != nil {
 			return fmt.Errorf("unmarshalling property: label: %s", err)
@@ -262,23 +239,19 @@ func (res *Resource) unmarshalFullRdf(gph *rdf.Graph) error {
 	return nil
 }
 
-func (r *Resource) unmarshalMeta(gph *rdf.Graph) error {
-	triples, err := gph.TriplesForSubjectPredicate(rdf.MustBuildNode(r.Id()), rdf.MetaPredicate)
-	if err != nil {
-		return err
-	}
-	for _, t := range triples {
-		lit, err := t.Object().Literal()
-		if err != nil {
-			return err
-		}
-		text, err := lit.Text()
+func (r *Resource) unmarshalMeta(gph tstore.RDFGraph) error {
+	for _, t := range gph.WithSubjPred(r.Id(), MetaPredicate) {
+		text, err := tstore.ParseString(t.Object())
 		if err != nil {
 			return err
 		}
 		r.Meta["diff"] = text
 	}
 	return nil
+}
+
+func namespacedResourceType(typ string) string {
+	return fmt.Sprintf("%s:%s", cloudrdf.CloudOwlNS, strings.Title(typ))
 }
 
 type Resources []*Resource
@@ -310,31 +283,20 @@ func (props Properties) Subtract(other Properties) Properties {
 	return sub
 }
 
-func marshalResourceType(rT string) (*triple.Object, error) {
-	n, err := node.NewNodeFromStrings("/node", fmt.Sprintf("%s:%s", cloudrdf.CloudOwlNS, strings.Title(rT)))
-	if err != nil {
-		return nil, err
-	}
-	return triple.NewNodeObject(n), nil
-}
-
-func resolveResourceType(g *rdf.Graph, id string) (string, error) {
-	typeTs, err := g.TriplesForSubjectPredicate(rdf.MustBuildNode(id), rdf.MustBuildPredicate(cloudrdf.RdfType))
-	if err != nil {
-		return "", err
-	}
+func resolveResourceType(g tstore.RDFGraph, id string) (string, error) {
+	typeTs := g.WithSubjPred(id, cloudrdf.RdfType)
 	if len(typeTs) != 1 {
 		return "", fmt.Errorf("cannot resolve unique type for resource '%s', got: %v", id, typeTs)
 	}
 	return unmarshalResourceType(typeTs[0].Object())
 }
 
-func unmarshalResourceType(obj *triple.Object) (string, error) {
-	node, err := obj.Node()
-	if err != nil {
-		return "", err
+func unmarshalResourceType(obj tstore.Object) (string, error) {
+	node, ok := obj.ResourceID()
+	if !ok {
+		return "", fmt.Errorf("object is not a resource identifier, %v", obj)
 	}
-	return strings.ToLower(rdf.TrimNS(node.ID().String())), nil
+	return strings.ToLower(trimNS(node)), nil
 }
 
 type Property struct {
@@ -347,3 +309,11 @@ type ResourceById []*Resource
 func (r ResourceById) Len() int           { return len(r) }
 func (r ResourceById) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 func (r ResourceById) Less(i, j int) bool { return r[i].Id() < r[j].Id() }
+
+func trimNS(s string) string {
+	spl := strings.Split(s, ":")
+	if len(spl) == 0 {
+		return s
+	}
+	return spl[len(spl)-1]
+}

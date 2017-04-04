@@ -184,7 +184,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	// S3
 	cloud.Bucket: {
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
 		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Grants}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},

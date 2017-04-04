@@ -17,25 +17,34 @@ limitations under the License.
 package graph
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"os"
 
-	"github.com/google/badwolf/triple"
-	"github.com/google/badwolf/triple/node"
-	"github.com/google/badwolf/triple/predicate"
-	"github.com/wallix/awless/graph/internal/rdf"
+	tstore "github.com/wallix/triplestore"
 )
 
 type Graph struct {
-	rdfG *rdf.Graph
+	store tstore.Source
 }
 
 func NewGraph() *Graph {
-	return &Graph{rdf.NewGraph()}
+	return &Graph{tstore.NewSource()}
 }
 
 func NewGraphFromFile(filepath string) (*Graph, error) {
-	g, err := rdf.NewGraphFromFile(filepath)
-	return &Graph{g}, err
+	g := NewGraph()
+	f, err := os.Open(filepath)
+	if err != nil {
+		return g, err
+	}
+	ts, err := tstore.NewBinaryDecoder(f).Decode()
+	if err != nil {
+		return g, err
+	}
+	g.store.Add(ts...)
+	return g, nil
 }
 
 func (g *Graph) AddResource(resources ...*Resource) error {
@@ -45,31 +54,31 @@ func (g *Graph) AddResource(resources ...*Resource) error {
 			return err
 		}
 
-		g.rdfG.Add(triples...)
+		g.store.Add(triples...)
 	}
 	return nil
 }
 
-func (g *Graph) AddGraph(gph *Graph) {
-	g.rdfG.AddGraph(gph.rdfG)
+func (g *Graph) AddGraph(other *Graph) {
+	g.store.Add(other.store.Snapshot().Triples()...)
 }
 
 func (g *Graph) AddParentRelation(parent, child *Resource) error {
-	return g.addRelation(parent, child, rdf.ParentOfPredicate)
+	return g.addRelation(parent, child, ParentOfPredicate)
 }
 
 func (g *Graph) AddAppliesOnRelation(parent, child *Resource) error {
-	return g.addRelation(parent, child, rdf.AppliesOnPredicate)
+	return g.addRelation(parent, child, AppliesOnPredicate)
 }
 
 func (g *Graph) GetResource(t string, id string) (*Resource, error) {
 	resource := InitResource(t, id)
-
-	if err := resource.unmarshalFullRdf(g.rdfG); err != nil {
+	snap := g.store.Snapshot()
+	if err := resource.unmarshalFullRdf(snap); err != nil {
 		return resource, err
 	}
 
-	if err := resource.unmarshalMeta(g.rdfG); err != nil {
+	if err := resource.unmarshalMeta(snap); err != nil {
 		return resource, err
 	}
 
@@ -117,18 +126,33 @@ func (g *Graph) ResolveResources(resolvers ...Resolver) ([]*Resource, error) {
 func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
 	var resources []*Resource
 
-	node, err := start.toRDFNode()
-	if err != nil {
-		return resources, err
+	snap := g.store.Snapshot()
+	for _, tri := range snap.WithPredObj(AppliesOnPredicate, tstore.Resource(start.Id())) {
+		id := tri.Subject()
+		rT, err := resolveResourceType(snap, id)
+		if err != nil {
+			return resources, err
+		}
+		res, err := g.GetResource(rT, id)
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, res)
 	}
+	return resources, nil
+}
 
-	relations, err := g.rdfG.ListAttachedFrom(node, rdf.AppliesOnPredicate)
-	if err != nil {
-		return resources, err
-	}
-	for _, node := range relations {
-		id := node.ID().String()
-		rT, err := resolveResourceType(g.rdfG, id)
+func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
+	var resources []*Resource
+
+	snap := g.store.Snapshot()
+
+	for _, tri := range snap.WithSubjPred(start.Id(), AppliesOnPredicate) {
+		id, ok := tri.Object().ResourceID()
+		if !ok {
+			return resources, fmt.Errorf("triple %s %s: object is not a resource identifier", start.Id(), AppliesOnPredicate)
+		}
+		rT, err := resolveResourceType(snap, id)
 		if err != nil {
 			return resources, err
 		}
@@ -147,34 +171,39 @@ func (g *Graph) Accept(v Visitor) error {
 }
 
 func (g *Graph) Unmarshal(data []byte) error {
-	return g.rdfG.Unmarshal(data)
+	ts, err := tstore.NewBinaryDecoder(bytes.NewReader(data)).Decode()
+	if err != nil {
+		return err
+	}
+	g.store.Add(ts...)
+	return nil
+}
+
+func (g *Graph) UnmarshalMultiple(readers ...io.Reader) error {
+	dec := tstore.NewDatasetDecoder(tstore.NewBinaryDecoder, readers...)
+	ts, err := dec.Decode()
+	if err != nil {
+		return err
+	}
+	g.store.Add(ts...)
+	return nil
 }
 
 func (g *Graph) MustMarshal() string {
-	return g.rdfG.MustMarshal()
+	b, err := g.Marshal()
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
 }
 
 func (g *Graph) Marshal() ([]byte, error) {
-	return g.rdfG.Marshal()
+	var buff bytes.Buffer
+	err := tstore.NewBinaryEncoder(&buff).Encode(g.store.Snapshot().Triples()...)
+	return buff.Bytes(), err
 }
 
-func (g *Graph) addRelation(one, other *Resource, pred *predicate.Predicate) error {
-	n, err := other.toRDFNode()
-	if err != nil {
-		return err
-	}
-
-	oneN, err := node.NewNodeFromStrings("/node", one.Id())
-	if err != nil {
-		return err
-	}
-
-	t, err := triple.New(oneN, pred, triple.NewNodeObject(n))
-	if err != nil {
-		return err
-	}
-
-	g.rdfG.Add(t)
-
+func (g *Graph) addRelation(one, other *Resource, pred string) error {
+	g.store.Add(tstore.SubjPred(one.Id(), pred).Resource(other.Id()))
 	return nil
 }

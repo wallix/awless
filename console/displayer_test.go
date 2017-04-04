@@ -677,7 +677,7 @@ func createDiff(root *graph.Resource) (*graph.Diff, error) {
 		panic(err)
 	}
 
-	return graph.Differ.Run(root, localDiffG, remoteDiffG)
+	return graph.DefaultDiffer.Run(root.Id(), localDiffG, remoteDiffG)
 }
 
 func TestEmotyDisplays(t *testing.T) {

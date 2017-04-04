@@ -329,7 +329,7 @@ var RdfProperties = map[string]rdfProp{
 	Default:                 {ID: Default, RdfType: RdfProperty, RdfsLabel: properties.Default, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdBoolean},
 	Delay:                   {ID: Delay, RdfType: RdfProperty, RdfsLabel: properties.Delay, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Description:             {ID: Description, RdfType: RdfProperty, RdfsLabel: properties.Description, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
-	Encrypted:               {ID: Encrypted, RdfType: RdfProperty, RdfsLabel: properties.Encrypted, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
+	Encrypted:               {ID: Encrypted, RdfType: RdfProperty, RdfsLabel: properties.Encrypted, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdBoolean},
 	Endpoint:                {ID: Endpoint, RdfType: RdfProperty, RdfsLabel: properties.Endpoint, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Engine:                  {ID: Engine, RdfType: RdfProperty, RdfsLabel: properties.Engine, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	EngineVersion:           {ID: EngineVersion, RdfType: RdfProperty, RdfsLabel: properties.EngineVersion, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
