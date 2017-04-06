@@ -17,10 +17,14 @@ limitations under the License.
 package graph
 
 import (
+	cloudrdf "github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
 
-var DefaultDiffer = &hierarchicDiffer{ParentOfPredicate}
+var (
+	DefaultDiffer = &hierarchicDiffer{cloudrdf.ParentOf}
+	MetaPredicate = "meta"
+)
 
 const (
 	extraLit   = "extra"

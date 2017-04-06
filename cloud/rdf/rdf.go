@@ -15,6 +15,7 @@ const (
 	RdfsNS     = "rdfs"
 	RdfNS      = "rdf"
 	CloudNS    = "cloud"
+	CloudRelNS = "cloud-rel"
 	CloudOwlNS = "cloud-owl"
 	XsdNS      = "xsd"
 	netNS      = "net"
@@ -54,6 +55,12 @@ var (
 
 	NetRouteTargets          = fmt.Sprintf("%s:routeTargets", netNS)
 	NetDestinationPrefixList = fmt.Sprintf("%s:routeDestinationPrefixList", netNS)
+)
+
+// Relations
+var (
+	ParentOf = fmt.Sprintf("%s:parentOf", CloudRelNS)
+	ApplyOn  = fmt.Sprintf("%s:applyOn", CloudRelNS)
 )
 
 // Properties

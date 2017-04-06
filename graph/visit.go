@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"sort"
 
+	cloudrdf "github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
 
@@ -112,7 +113,7 @@ func visitTopDown(snap tstore.RDFGraph, root string, each func(tstore.RDFGraph, 
 		return err
 	}
 
-	triples := snap.WithSubjPred(root, ParentOfPredicate)
+	triples := snap.WithSubjPred(root, cloudrdf.ParentOf)
 
 	var childs []string
 	for _, tri := range triples {
@@ -141,7 +142,7 @@ func visitBottomUp(snap tstore.RDFGraph, startNode string, each func(tstore.RDFG
 	if err := each(snap, startNode, dist); err != nil {
 		return err
 	}
-	triples := snap.WithPredObj(ParentOfPredicate, tstore.Resource(startNode))
+	triples := snap.WithPredObj(cloudrdf.ParentOf, tstore.Resource(startNode))
 	var parents []string
 	for _, tri := range triples {
 		parents = append(parents, tri.Subject())
@@ -157,7 +158,7 @@ func visitBottomUp(snap tstore.RDFGraph, startNode string, each func(tstore.RDFG
 }
 
 func visitSiblings(snap tstore.RDFGraph, start string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
-	triples := snap.WithPredObj(ParentOfPredicate, tstore.Resource(start))
+	triples := snap.WithPredObj(cloudrdf.ParentOf, tstore.Resource(start))
 
 	var parents []string
 	for _, tri := range triples {
@@ -171,7 +172,7 @@ func visitSiblings(snap tstore.RDFGraph, start string, each func(tstore.RDFGraph
 	sort.Strings(parents)
 
 	for _, parent := range parents {
-		parentTs := snap.WithSubjPred(parent, ParentOfPredicate)
+		parentTs := snap.WithSubjPred(parent, cloudrdf.ParentOf)
 
 		var childs []string
 		for _, parentT := range parentTs {
