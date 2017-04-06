@@ -31,8 +31,6 @@ var (
 	RepoDir                             = filepath.Join(AwlessHome, "aws", "rdf")
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
-	InfraFilename                       = "infra.rdf"
-	AccessFilename                      = "access.rdf"
 	AwlessFirstInstall, AwlessFirstSync bool
 )
 
@@ -40,9 +38,6 @@ func InitAwlessEnv() error {
 	os.Setenv("__AWLESS_HOME", AwlessHome)
 	os.Setenv("__AWLESS_KEYS_DIR", KeysDir)
 	_, err := os.Stat(AwlessHome)
-	_, ierr := os.Stat(filepath.Join(RepoDir, InfraFilename))
-	_, aerr := os.Stat(filepath.Join(RepoDir, AccessFilename))
-	AwlessFirstSync = os.IsNotExist(ierr) || os.IsNotExist(aerr)
 
 	AwlessFirstInstall = os.IsNotExist(err)
 

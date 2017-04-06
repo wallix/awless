@@ -144,10 +144,10 @@ func (r *gitRepo) LoadRev(version string) (*Rev, error) {
 	rev.Infra = graph.NewGraph()
 	rev.Access = graph.NewGraph()
 
-	if err := unmarshalIntoGraph(rev.Infra, commit, config.InfraFilename); err != nil {
+	if err := unmarshalIntoGraph(rev.Infra, commit, "infra.triples"); err != nil {
 		return rev, err
 	}
-	if err := unmarshalIntoGraph(rev.Access, commit, config.AccessFilename); err != nil {
+	if err := unmarshalIntoGraph(rev.Access, commit, "access.triples"); err != nil {
 		return rev, err
 	}
 

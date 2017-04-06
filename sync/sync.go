@@ -34,6 +34,8 @@ import (
 	"github.com/wallix/awless/sync/repo"
 )
 
+const fileExt = ".triples"
+
 var DefaultSyncer Syncer
 
 type Syncer interface {
@@ -121,7 +123,7 @@ Loop:
 	var filenames []string
 
 	for name, g := range graphs {
-		filename := fmt.Sprintf("%s.rdf", name)
+		filename := fmt.Sprintf("%s%s", name, fileExt)
 		tofile, err := g.Marshal()
 		if err != nil {
 			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
@@ -154,7 +156,7 @@ func concatErrors(errs []error) error {
 }
 
 func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
-	path := filepath.Join(config.RepoDir, fmt.Sprintf("%s.rdf", serviceName))
+	path := filepath.Join(config.RepoDir, fmt.Sprintf("%s%s", serviceName, fileExt))
 	g, err := graph.NewGraphFromFile(path)
 	if err != nil {
 		return graph.NewGraph()
@@ -163,7 +165,7 @@ func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
 }
 
 func LoadAllGraphs() (*graph.Graph, error) {
-	path := filepath.Join(config.RepoDir, "*.rdf")
+	path := filepath.Join(config.RepoDir, fmt.Sprintf("*%s", fileExt))
 	files, _ := filepath.Glob(path)
 
 	g := graph.NewGraph()
