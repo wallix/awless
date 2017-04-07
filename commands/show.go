@@ -102,7 +102,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 		console.WithFormat(listingFormat),
 	).SetSource(resource).Build()
 
-	exitOn(displayer.Print(os.Stderr))
+	exitOn(displayer.Print(os.Stdout))
 
 	var parents []*graph.Resource
 	err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
@@ -141,7 +141,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	exitOn(err)
 
 	if len(parents) > 0 || hasChildren {
-		fmt.Println(renderCyanBoldFn("\nRelations:"))
+		fmt.Println(renderCyanBoldFn("\n# Relations:"))
 		fmt.Printf(parentsW.String())
 		fmt.Printf(childrenW.String())
 	}

@@ -52,12 +52,10 @@ func TestResourceDisplay(t *testing.T) {
 		WithFormat("table"),
 	).SetSource(r).Build()
 
-	expected := `+------------+------------+
-| PROPERTY ▲ |   VALUE    |
-+------------+------------+
+	expected := `| PROPERTY ▲ |   VALUE    |
+|------------|------------|
 | ID         | inst_1     |
 | Name       | instance 1 |
-+------------+------------+
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {

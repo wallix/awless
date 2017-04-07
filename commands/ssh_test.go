@@ -35,8 +35,8 @@ func TestCannotFindInstance(t *testing.T) {
 
 func TestInstanceCredentialsFromName(t *testing.T) {
 	g := graph.NewGraph()
-	g.AddResource(resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Build())
-	g.AddResource(resourcetest.Instance("inst_2").Prop(p.PublicIP, "2.3.4.5").Build())
+	g.AddResource(resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Prop(p.State, "running").Build())
+	g.AddResource(resourcetest.Instance("inst_2").Prop(p.PublicIP, "2.3.4.5").Prop(p.State, "running").Build())
 
 	cred, err := instanceCredentialsFromGraph(g, "inst_1", "")
 	if err != nil {
