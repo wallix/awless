@@ -26,7 +26,7 @@ import (
 	"github.com/fatih/color"
 )
 
-var DefaultLogger *Logger = &Logger{out: log.New(os.Stdout, "", 0)}
+var DefaultLogger *Logger = &Logger{out: log.New(os.Stderr, "", 0)}
 var DiscardLogger *Logger = &Logger{out: log.New(ioutil.Discard, "", 0)}
 
 const (
@@ -48,7 +48,7 @@ var (
 )
 
 func New(prefix string, flag int) *Logger {
-	return &Logger{out: log.New(os.Stdout, prefix, flag)}
+	return &Logger{out: log.New(os.Stderr, prefix, flag)}
 }
 
 func (l *Logger) Verbosef(format string, v ...interface{}) {
