@@ -36,6 +36,22 @@ func (v *UniqueNameValidator) Execute(t *Template) (errs []error) {
 	return
 }
 
+type ParamIsSetValidator struct {
+	Entity, Action, Param, WarningMessage string
+}
+
+func (v *ParamIsSetValidator) Execute(t *Template) (errs []error) {
+	for _, cmd := range t.CommandNodesIterator() {
+		if cmd.Action == v.Action && cmd.Entity == v.Entity {
+			_, ok := cmd.Params[v.Param]
+			if !ok {
+				errs = append(errs, fmt.Errorf(v.WarningMessage))
+			}
+		}
+	}
+	return
+}
+
 func sliceContains(s string, arrs ...[]string) bool {
 	for _, arr := range arrs {
 		for _, el := range arr {
