@@ -132,6 +132,10 @@ func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
 		id := tri.Subject()
 		rT, err := resolveResourceType(snap, id)
 		if err != nil {
+			if err == errTypeNotFound {
+				resources = append(resources, NotFoundResource(id))
+				continue
+			}
 			return resources, err
 		}
 		res, err := g.GetResource(rT, id)
@@ -155,6 +159,10 @@ func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
 		}
 		rT, err := resolveResourceType(snap, id)
 		if err != nil {
+			if err == errTypeNotFound {
+				resources = append(resources, NotFoundResource(id))
+				continue
+			}
 			return resources, err
 		}
 		res, err := g.GetResource(rT, id)

@@ -17,6 +17,7 @@ limitations under the License.
 package graph
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -32,6 +33,12 @@ type Resource struct {
 	Meta       Properties
 }
 
+const notFoundResourceType = "notfound"
+
+func NotFoundResource(id string) *Resource {
+	return &Resource{id: id, kind: notFoundResourceType, Properties: make(Properties), Meta: make(Properties)}
+}
+
 func InitResource(kind, id string) *Resource {
 	return &Resource{id: id, kind: kind, Properties: make(Properties), Meta: make(Properties)}
 }
@@ -40,6 +47,9 @@ func (res *Resource) String() string {
 	var identifier string
 	if res == nil || (res.Id() == "" && res.Type() == "") {
 		return "[none]"
+	}
+	if res.kind == notFoundResourceType {
+		return fmt.Sprintf("%s[!not found!]", res.Id())
 	}
 	if name, ok := res.Properties["Name"]; ok && name != "" {
 		identifier = fmt.Sprintf("@%v", name)
@@ -283,12 +293,18 @@ func (props Properties) Subtract(other Properties) Properties {
 	return sub
 }
 
+var errTypeNotFound = errors.New("resource type not found")
+
 func resolveResourceType(g tstore.RDFGraph, id string) (string, error) {
 	typeTs := g.WithSubjPred(id, cloudrdf.RdfType)
-	if len(typeTs) != 1 {
+	switch len(typeTs) {
+	case 0:
+		return "", errTypeNotFound
+	case 1:
+		return unmarshalResourceType(typeTs[0].Object())
+	default:
 		return "", fmt.Errorf("cannot resolve unique type for resource '%s', got: %v", id, typeTs)
 	}
-	return unmarshalResourceType(typeTs[0].Object())
 }
 
 func unmarshalResourceType(obj tstore.Object) (string, error) {
