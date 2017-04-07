@@ -28,17 +28,20 @@ type ByProperty struct {
 
 func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 	var resources []*Resource
+	if r.Val == nil {
+		return resources, nil
+	}
 	rdfpropLabel, ok := cloudrdf.Labels[r.Name]
 	if !ok {
-		return resources, fmt.Errorf("resolve resources by property: undefined property label '%s'", r.Name)
+		return resources, fmt.Errorf("resolve by property: undefined property label '%s'", r.Name)
 	}
 	rdfProp, ok := cloudrdf.RdfProperties[rdfpropLabel]
 	if !ok {
-		return resources, fmt.Errorf("resolve resources by property: undefined property definition '%s'", rdfpropLabel)
+		return resources, fmt.Errorf("resolve by property: undefined property definition '%s'", rdfpropLabel)
 	}
 	obj, err := marshalToRdfObject(r.Val, rdfProp.RdfsDefinedBy, rdfProp.RdfsDataType)
 	if err != nil {
-		return resources, fmt.Errorf("resolve resources: unmarshaling property '%s': '%s'", r.Name, err)
+		return resources, fmt.Errorf("resolve by property: unmarshaling property '%s': %s", r.Name, err)
 	}
 	snap := g.store.Snapshot()
 	for _, t := range snap.WithPredObj(rdfpropLabel, obj) {
