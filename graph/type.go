@@ -46,6 +46,16 @@ type FirewallRule struct {
 	IPRanges  []*net.IPNet // IPv4 or IPv6 range
 }
 
+func (r *FirewallRule) Contains(ip string) bool {
+	addr := net.ParseIP(ip)
+	for _, n := range r.IPRanges {
+		if n.Contains(addr) {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *FirewallRule) String() string {
 	return fmt.Sprintf("PortRange:%+v; Protocol:%s; IPRanges:%+v", r.PortRange, r.Protocol, r.IPRanges)
 }
@@ -98,6 +108,19 @@ func (r *FirewallRule) unmarshalFromTriples(g tstore.RDFGraph, id string) error 
 type PortRange struct {
 	FromPort, ToPort int64
 	Any              bool
+}
+
+func (p PortRange) Contains(port int64) bool {
+	if p.Any {
+		return true
+	}
+
+	from, to := p.FromPort, p.ToPort
+	if from == port || to == port || (from < port && to > port) {
+		return true
+	}
+
+	return false
 }
 
 func (p PortRange) String() string {

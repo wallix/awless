@@ -25,20 +25,15 @@ import (
 	"github.com/wallix/awless/graph/resourcetest"
 )
 
-func TestCannotFindInstance(t *testing.T) {
-	g := graph.NewGraph()
-	_, err := instanceCredentialsFromGraph(g, "any", "")
-	if err != ErrInstanceNotFound {
-		t.Fatalf("expected instance not found error, was %T", err)
-	}
-}
-
 func TestInstanceCredentialsFromName(t *testing.T) {
+	inst_1 := resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Build()
+	inst_2 := resourcetest.Instance("inst_2").Prop(p.PublicIP, "2.3.4.5").Build()
+	inst_3 := resourcetest.Instance("inst_3").Build()
+	inst_12 := resourcetest.Instance("inst_12").Build()
 	g := graph.NewGraph()
-	g.AddResource(resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Prop(p.State, "running").Build())
-	g.AddResource(resourcetest.Instance("inst_2").Prop(p.PublicIP, "2.3.4.5").Prop(p.State, "running").Build())
+	g.AddResource(inst_1, inst_2)
 
-	cred, err := instanceCredentialsFromGraph(g, "inst_1", "")
+	cred, err := instanceCredentialsFromGraph(g, inst_1, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +46,7 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 	if got, want := cred.User, ""; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	cred, err = instanceCredentialsFromGraph(g, "inst_1", "/path/toward/myinst.key")
+	cred, err = instanceCredentialsFromGraph(g, inst_1, "/path/toward/myinst.key")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +56,7 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 	if got, want := cred.KeyPath, "/path/toward/myinst.key"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	cred, err = instanceCredentialsFromGraph(g, "inst_2", "/path/toward/inst2.key")
+	cred, err = instanceCredentialsFromGraph(g, inst_2, "/path/toward/inst2.key")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,13 +67,13 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
-	if _, err = instanceCredentialsFromGraph(g, "inst_12", ""); err == nil {
+	if _, err = instanceCredentialsFromGraph(g, inst_12, ""); err == nil {
 		t.Fatal("expected error got none")
 	}
-	if _, err := instanceCredentialsFromGraph(g, "inst_3", ""); err == nil {
+	if _, err := instanceCredentialsFromGraph(g, inst_3, ""); err == nil {
 		t.Fatal("expected error got none")
 	}
-	if _, err := instanceCredentialsFromGraph(g, "inst_2", ""); err == nil {
+	if _, err := instanceCredentialsFromGraph(g, inst_2, ""); err == nil {
 		t.Fatal("expected error got none")
 	}
 }

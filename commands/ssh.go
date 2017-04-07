@@ -19,11 +19,15 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 	"syscall"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 
@@ -67,15 +71,24 @@ var sshCmd = &cobra.Command{
 			instanceID = args[0]
 		}
 
-		instancesGraph, err := aws.InfraService.FetchByType(cloud.Instance)
+		resourcesGraph, err := aws.InfraService.FetchByType(cloud.Instance)
+		exitOn(err)
+		sgroupsGraph, err := aws.InfraService.FetchByType(cloud.SecurityGroup)
 		exitOn(err)
 
+		resourcesGraph.AddGraph(sgroupsGraph)
+
 		a := graph.Alias(instanceID)
-		if id, ok := a.ResolveToId(instancesGraph, cloud.Instance); ok {
+		if id, ok := a.ResolveToId(resourcesGraph, cloud.Instance); ok {
 			instanceID = id
 		}
 
-		cred, err := instanceCredentialsFromGraph(instancesGraph, instanceID, keyPathFlag)
+		inst, err := findResource(resourcesGraph, instanceID, cloud.Instance)
+		exitOn(err)
+
+		checkInstanceAccessible(resourcesGraph, inst)
+
+		cred, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
 		exitOn(err)
 
 		var client *ssh.Client
@@ -102,35 +115,19 @@ var sshCmd = &cobra.Command{
 
 var ErrInstanceNotFound = errors.New("instance not found")
 
-func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string) (*console.Credentials, error) {
-	if found, err := g.FindResource(instanceID); found == nil || err != nil {
-		return nil, ErrInstanceNotFound
-	}
-
-	inst, err := g.GetResource(cloud.Instance, instanceID)
-	if err != nil {
-		return nil, err
-	}
-
-	state, ok := inst.Properties[properties.State]
-	if st := fmt.Sprint(state); st != "running" {
-		logger.Warningf("Instance %s is '%s' (cannot ssh to a non running state)", instanceID, st)
-		if st == "stopped" {
-			logger.Warningf("You can start it with `awless -f start instance id=%s`", instanceID)
-		}
-	}
-
+func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*console.Credentials, error) {
 	ip, ok := inst.Properties[properties.PublicIP]
 	if !ok {
-		return nil, fmt.Errorf("no public IP address for instance %s", instanceID)
+		return nil, fmt.Errorf("no public IP address for instance %s", inst.Id())
 	}
+
 	var keyPath string
 	if keyPathFlag != "" {
 		keyPath = keyPathFlag
 	} else {
 		key, ok := inst.Properties[properties.SSHKey]
 		if !ok {
-			return nil, fmt.Errorf("no access key set for instance %s", instanceID)
+			return nil, fmt.Errorf("no access key set for instance %s", inst.Id())
 		}
 		keyPath = path.Join(config.KeysDir, fmt.Sprint(key))
 	}
@@ -147,4 +144,70 @@ func sshConnect(sshClient *ssh.Client, cred *console.Credentials) error {
 		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using key '%s'", cred.User, cred.IP, cred.KeyPath)
 		return console.InteractiveTerminal(sshClient)
 	}
+}
+
+func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource) {
+	state, ok := inst.Properties[properties.State]
+	if st := fmt.Sprint(state); st != "running" {
+		logger.Warningf("This instance is '%s' (cannot ssh to a non running state)", st)
+		if st == "stopped" {
+			logger.Warningf("You can start it with `awless -f start instance id=%s`", inst.Id())
+		}
+		return
+	}
+
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	var myip net.IP
+	resp, err := client.Get("http://checkip.amazonaws.com/")
+	if err == nil {
+		b, _ := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		myip = net.ParseIP(strings.TrimSpace(string(b)))
+	}
+
+	sgroups, ok := inst.Properties[properties.SecurityGroups].([]string)
+	if ok {
+		var sshPortOpen, myIPAllowed bool
+		for _, id := range sgroups {
+			sgroup, err := findResource(g, id, cloud.SecurityGroup)
+			if err != nil {
+				break
+			}
+
+			rules, ok := sgroup.Properties[properties.InboundRules].([]*graph.FirewallRule)
+			if ok {
+				for _, r := range rules {
+					if r.PortRange.Contains(22) {
+						sshPortOpen = true
+					}
+					if myip != nil && r.Contains(myip.String()) {
+						myIPAllowed = true
+					}
+				}
+			}
+		}
+
+		if !sshPortOpen {
+			logger.Warning("Port 22 is not open on this instance")
+		}
+		if !myIPAllowed && myip != nil {
+			logger.Warningf("Your ip %s is not authorized for this instance. You might want to update the security group with:", myip)
+			var group = "mygroup"
+			if len(sgroups) == 1 {
+				group = sgroups[0]
+			}
+			logger.Warningf("`awless update securitygroup id=%s inbound=authorize protocol=tcp cidr=%s/32 portrange=22`", group, myip)
+		}
+	}
+}
+
+func findResource(g *graph.Graph, id, typ string) (*graph.Resource, error) {
+	if found, err := g.FindResource(id); found == nil || err != nil {
+		return nil, ErrInstanceNotFound
+	}
+
+	return g.GetResource(typ, id)
 }
