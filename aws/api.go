@@ -71,7 +71,7 @@ type oncer struct {
 	err    error
 }
 
-var usernameArnRegex = regexp.MustCompile(`:user/([\w-.]*)$`)
+var usernameArnRegex = regexp.MustCompile(`:(root)|user[/\w*/]*/([\w-.]*)$`)
 
 type Identity struct {
 	Account, Arn, UserId, Username string
@@ -89,8 +89,12 @@ func (s *Access) GetIdentity() (*Identity, error) {
 	ident.UserId = awssdk.StringValue(resp.UserId)
 
 	matches := usernameArnRegex.FindStringSubmatch(ident.Arn)
-	if len(matches) == 2 {
-		ident.Username = matches[1]
+	if len(matches) == 3 {
+		if matches[1] != "" {
+			ident.Username = matches[1]
+		} else {
+			ident.Username = matches[2]
+		}
 	}
 
 	return ident, nil

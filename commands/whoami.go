@@ -40,6 +40,12 @@ var whoamiCmd = &cobra.Command{
 		me, err := aws.AccessService.(*aws.Access).GetIdentity()
 		exitOn(err)
 
+		if me.Username == "root" {
+			logger.Warning("You are currently root")
+			logger.Warning("Best practices suggest to create a new user and affecting it roles of access")
+			logger.Warning("awless official templates might help https://github.com/wallix/awless-templates\n")
+		}
+
 		fmt.Printf("Username: %s, Id: %s, Account: %s\n", me.Username, me.UserId, me.Account)
 
 		policies, err := aws.AccessService.(*aws.Access).GetUserPolicies(me.Username)

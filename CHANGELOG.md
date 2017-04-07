@@ -1,3 +1,14 @@
+## v0.0.22 [unreleased]
+
+### Features
+
+- awless model/storing is now full RDF ;). Allow exploration of all your infra in RDF tools and ontology editor (Ex: [Protege](http://protege.stanford.edu/))
+- Faster, better and simpler RDF & triples management now done through the nifty library [triplestore](https://github.com/wallix/triplestore)
+
+### Bugfixes
+
+- `awless whoami` now supports displaying info for `root` user and user with org path 
+
 ## v0.0.21 [2017-03-23]
 
 ### Features
