@@ -38,7 +38,7 @@ func NewSSHClient(cred *Credentials) (*ssh.Client, error) {
 	if os.IsNotExist(err) {
 		privateKey, err = ioutil.ReadFile(cred.KeyPath + ".pem")
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("Could not find a SSH key at path '%s'.", cred.KeyPath)
+			return nil, fmt.Errorf("Cannot find SSH key at '%s'. You can add `-i ./path/to/key`", cred.KeyPath)
 		}
 		cred.KeyPath = cred.KeyPath + ".pem"
 	}

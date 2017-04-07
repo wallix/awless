@@ -26,6 +26,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -71,12 +72,7 @@ var sshCmd = &cobra.Command{
 			instanceID = args[0]
 		}
 
-		resourcesGraph, err := aws.InfraService.FetchByType(cloud.Instance)
-		exitOn(err)
-		sgroupsGraph, err := aws.InfraService.FetchByType(cloud.SecurityGroup)
-		exitOn(err)
-
-		resourcesGraph.AddGraph(sgroupsGraph)
+		resourcesGraph, ip := fetchConnectionInfo()
 
 		a := graph.Alias(instanceID)
 		if id, ok := a.ResolveToId(resourcesGraph, cloud.Instance); ok {
@@ -86,8 +82,6 @@ var sshCmd = &cobra.Command{
 		inst, err := findResource(resourcesGraph, instanceID, cloud.Instance)
 		exitOn(err)
 
-		checkInstanceAccessible(resourcesGraph, inst)
-
 		cred, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
 		exitOn(err)
 
@@ -95,21 +89,27 @@ var sshCmd = &cobra.Command{
 		if user != "" {
 			cred.User = user
 			client, err = console.NewSSHClient(cred)
-			exitOn(err)
-			exitOn(sshConnect(client, cred))
-			return nil
-		}
-		for _, user := range awsconfig.DefaultAMIUsers {
-			cred.User = user
-			client, err = console.NewSSHClient(cred)
-			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
-				continue
+			if err != nil {
+				checkInstanceAccessible(resourcesGraph, inst, ip)
+				exitOn(err)
 			}
-			exitOn(err)
 			exitOn(sshConnect(client, cred))
-			return nil
+		} else {
+			for _, user := range awsconfig.DefaultAMIUsers {
+				cred.User = user
+				client, err = console.NewSSHClient(cred)
+				if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
+					continue
+				}
+				if err != nil {
+					checkInstanceAccessible(resourcesGraph, inst, ip)
+					exitOn(err)
+				}
+				exitOn(sshConnect(client, cred))
+			}
 		}
-		return err
+		exitOn(err)
+		return nil
 	},
 }
 
@@ -135,6 +135,7 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathF
 }
 
 func sshConnect(sshClient *ssh.Client, cred *console.Credentials) error {
+	defer sshClient.Close()
 	sshPath, sshErr := exec.LookPath("ssh")
 	if sshErr == nil {
 		logger.Infof("Login as '%s' on '%s', using key '%s' with ssh client at '%s'", cred.User, cred.IP, cred.KeyPath, sshPath)
@@ -146,26 +147,68 @@ func sshConnect(sshClient *ssh.Client, cred *console.Credentials) error {
 	}
 }
 
-func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource) {
+func fetchConnectionInfo() (*graph.Graph, net.IP) {
+	var resourcesGraph, sgroupsGraph *graph.Graph
+	var myip net.IP
+	var wg sync.WaitGroup
+	var errc = make(chan error)
+
+	wg.Add(1)
+	go func() {
+		var err error
+		defer wg.Done()
+		resourcesGraph, err = aws.InfraService.FetchByType(cloud.Instance)
+		if err != nil {
+			errc <- err
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		var err error
+		defer wg.Done()
+		sgroupsGraph, err = aws.InfraService.FetchByType(cloud.SecurityGroup)
+		if err != nil {
+			errc <- err
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		client := &http.Client{
+			Timeout: 2 * time.Second,
+		}
+		resp, err := client.Get("http://checkip.amazonaws.com/")
+		if err == nil {
+			b, _ := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+			myip = net.ParseIP(strings.TrimSpace(string(b)))
+		}
+	}()
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+	for err := range errc {
+		if err != nil {
+			exitOn(err)
+		}
+	}
+	resourcesGraph.AddGraph(sgroupsGraph)
+
+	return resourcesGraph, myip
+
+}
+
+func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP) {
 	state, ok := inst.Properties[properties.State]
-	if st := fmt.Sprint(state); st != "running" {
+	if st := fmt.Sprint(state); ok && st != "running" {
 		logger.Warningf("This instance is '%s' (cannot ssh to a non running state)", st)
 		if st == "stopped" {
 			logger.Warningf("You can start it with `awless -f start instance id=%s`", inst.Id())
 		}
 		return
-	}
-
-	client := &http.Client{
-		Timeout: 2 * time.Second,
-	}
-
-	var myip net.IP
-	resp, err := client.Get("http://checkip.amazonaws.com/")
-	if err == nil {
-		b, _ := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		myip = net.ParseIP(strings.TrimSpace(string(b)))
 	}
 
 	sgroups, ok := inst.Properties[properties.SecurityGroups].([]string)
