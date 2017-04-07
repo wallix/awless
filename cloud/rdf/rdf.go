@@ -49,6 +49,7 @@ var (
 
 	NetFirewallRule = fmt.Sprintf("%s:FirewallRule", netowlNS)
 	NetRoute        = fmt.Sprintf("%s:Route", netowlNS)
+	CloudGrantee    = fmt.Sprintf("%s:Grantee", CloudOwlNS)
 
 	Permission = fmt.Sprintf("%s:permission", CloudNS)
 	Grantee    = fmt.Sprintf("%s:grantee", CloudNS)
@@ -109,6 +110,7 @@ var (
 	Fingerprint               = fmt.Sprintf("%s:fingerprint", CloudNS)
 	GlobalID                  = fmt.Sprintf("%s:globalID", CloudNS)
 	Grants                    = fmt.Sprintf("%s:grants", CloudNS)
+	GranteeType               = fmt.Sprintf("%s:granteeType", CloudNS)
 	HealthCheck               = fmt.Sprintf("%s:healthCheck", CloudNS)
 	HealthyThresholdCount     = fmt.Sprintf("%s:healthyThresholdCount", CloudNS)
 	Host                      = fmt.Sprintf("%s:host", CloudNS)
@@ -385,7 +387,7 @@ var RdfProperties = map[string]rdfProp{
 	Public:                   {ID: Public, RdfType: RdfProperty, RdfsLabel: properties.Public, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdBoolean},
 	PublicDNS:                {ID: PublicDNS, RdfType: RdfProperty, RdfsLabel: properties.PublicDNS, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	PublicIP:                 {ID: PublicIP, RdfType: RdfProperty, RdfsLabel: properties.PublicIP, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
-	Records:                  {ID: Records, RdfType: RdfProperty, RdfsLabel: properties.Records, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
+	Records:                  {ID: Records, RdfType: RdfProperty, RdfsLabel: properties.Records, RdfsDefinedBy: RdfsList, RdfsDataType: XsdString},
 	RecordCount:              {ID: RecordCount, RdfType: RdfProperty, RdfsLabel: properties.RecordCount, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Region:                   {ID: Region, RdfType: RdfProperty, RdfsLabel: properties.Region, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	RootDevice:               {ID: RootDevice, RdfType: RdfProperty, RdfsLabel: properties.RootDevice, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},

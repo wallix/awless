@@ -52,6 +52,7 @@ func (r *FirewallRule) String() string {
 
 func (r *FirewallRule) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
+	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.NetFirewallRule))
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.PortRange).StringLiteral(r.PortRange.String()))
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.Protocol).StringLiteral(r.Protocol))
 	for _, cidr := range r.IPRanges {
@@ -192,6 +193,7 @@ func (r *Route) String() string {
 
 func (r *Route) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
+	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.NetRoute))
 
 	if r.Destination != nil {
 		triples = append(triples, tstore.SubjPred(id, cloudrdf.CIDR).StringLiteral(r.Destination.String()))
@@ -279,10 +281,12 @@ func (g *Grant) String() string {
 func (g *Grant) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
 
+	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.Grant))
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.Permission).StringLiteral(g.Permission))
 
 	granteeId := randomRdfId()
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.Grantee).Resource(granteeId))
+	triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.RdfType).Resource(cloudrdf.CloudGrantee))
 	if g.GranteeID != "" {
 		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.ID).StringLiteral(g.GranteeID))
 	}
@@ -290,7 +294,7 @@ func (g *Grant) marshalToTriples(id string) []tstore.Triple {
 		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.Name).StringLiteral(g.GranteeDisplayName))
 	}
 	if g.GranteeType != "" {
-		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.RdfType).StringLiteral(g.GranteeType))
+		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.GranteeType).StringLiteral(g.GranteeType))
 	}
 	return triples
 }
@@ -325,7 +329,7 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 		}
 	}
 
-	granteeTypeTs := gph.WithSubjPred(granteeNode, cloudrdf.RdfType)
+	granteeTypeTs := gph.WithSubjPred(granteeNode, cloudrdf.GranteeType)
 	if len(granteeTypeTs) > 0 {
 		g.GranteeType, err = extractUniqueLiteralTextFromTriples(granteeTypeTs)
 		if err != nil {
