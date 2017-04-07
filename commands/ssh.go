@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -30,6 +31,7 @@ import (
 	"github.com/wallix/awless/aws"
 	awsconfig "github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
@@ -56,8 +58,8 @@ var sshCmd = &cobra.Command{
 		if len(args) != 1 {
 			return fmt.Errorf("instance required")
 		}
-		var instanceID string
-		var user string
+
+		var user, instanceID string
 		if strings.Contains(args[0], "@") {
 			user = strings.Split(args[0], "@")[0]
 			instanceID = strings.Split(args[0], "@")[1]
@@ -98,13 +100,27 @@ var sshCmd = &cobra.Command{
 	},
 }
 
+var ErrInstanceNotFound = errors.New("instance not found")
+
 func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string) (*console.Credentials, error) {
+	if found, err := g.FindResource(instanceID); found == nil || err != nil {
+		return nil, ErrInstanceNotFound
+	}
+
 	inst, err := g.GetResource(cloud.Instance, instanceID)
 	if err != nil {
 		return nil, err
 	}
 
-	ip, ok := inst.Properties["PublicIP"]
+	state, ok := inst.Properties[properties.State]
+	if st := fmt.Sprint(state); st != "running" {
+		logger.Warningf("Instance %s is '%s' (cannot ssh to a non running state)", instanceID, st)
+		if st == "stopped" {
+			logger.Warningf("You can start it with `awless -f start instance id=%s`", instanceID)
+		}
+	}
+
+	ip, ok := inst.Properties[properties.PublicIP]
 	if !ok {
 		return nil, fmt.Errorf("no public IP address for instance %s", instanceID)
 	}
@@ -112,7 +128,7 @@ func instanceCredentialsFromGraph(g *graph.Graph, instanceID, keyPathFlag string
 	if keyPathFlag != "" {
 		keyPath = keyPathFlag
 	} else {
-		key, ok := inst.Properties["SSHKey"]
+		key, ok := inst.Properties[properties.SSHKey]
 		if !ok {
 			return nil, fmt.Errorf("no access key set for instance %s", instanceID)
 		}

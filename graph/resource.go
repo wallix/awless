@@ -179,7 +179,7 @@ func marshalToRdfObject(i interface{}, definedBy, dataType string) (tstore.Objec
 func (res *Resource) unmarshalFullRdf(gph tstore.RDFGraph) error {
 	cloudType := namespacedResourceType(res.Type())
 	if !gph.Contains(tstore.SubjPred(res.Id(), cloudrdf.RdfType).Resource(cloudType)) {
-		return fmt.Errorf("resource with id '%s' has not type '%s'", res.Id(), cloudType)
+		return fmt.Errorf("triple <%s><%s><%s> not found in graph", res.Id(), cloudrdf.RdfType, cloudType)
 	}
 	for _, t := range gph.WithSubject(res.Id()) {
 		pred := t.Predicate()

@@ -25,6 +25,14 @@ import (
 	"github.com/wallix/awless/graph/resourcetest"
 )
 
+func TestCannotFindInstance(t *testing.T) {
+	g := graph.NewGraph()
+	_, err := instanceCredentialsFromGraph(g, "any", "")
+	if err != ErrInstanceNotFound {
+		t.Fatalf("expected instance not found error, was %T", err)
+	}
+}
+
 func TestInstanceCredentialsFromName(t *testing.T) {
 	g := graph.NewGraph()
 	g.AddResource(resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Build())

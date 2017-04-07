@@ -5,6 +5,7 @@
 - awless model/storing is now full RDF ;). Allow exploration of all your infra in RDF tools and ontology editor (Ex: [Protege](http://protege.stanford.edu/))
 - Faster, better and simpler RDF & triples management now done through the nifty library [triplestore](https://github.com/wallix/triplestore)
 - Loggers are now sent to the stderr file descriptor which makes easier piping and redirecting output.
+- Warn and help when trying to ssh to a non running instance
 
 ### Bugfixes
 
