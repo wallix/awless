@@ -19,6 +19,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -44,10 +45,14 @@ import (
 )
 
 var keyPathFlag string
+var printSSHConfigFlag bool
+var printSSHCLIFlag bool
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path toward the identity (key file) to use to connect through SSH")
+	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
+	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 }
 
 var sshCmd = &cobra.Command{
@@ -123,9 +128,10 @@ var sshCmd = &cobra.Command{
 				checkInstanceAccessible(resourcesGraph, inst, ip)
 				exitOn(err)
 			}
-			exitOn(sshConnect(client, cred))
+			exitOn(sshConnect(instanceID, client, cred))
 		} else {
 			for _, user := range awsconfig.DefaultAMIUsers {
+				logger.Verbosef("trying user '%s'", user)
 				cred.User = user
 				client, err = console.NewSSHClient(cred)
 				if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
@@ -135,7 +141,8 @@ var sshCmd = &cobra.Command{
 					checkInstanceAccessible(resourcesGraph, inst, ip)
 					exitOn(err)
 				}
-				exitOn(sshConnect(client, cred))
+				exitOn(sshConnect(instanceID, client, cred))
+				return nil
 			}
 		}
 		exitOn(err)
@@ -164,14 +171,34 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathF
 	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyPath: keyPath}, nil
 }
 
-func sshConnect(sshClient *ssh.Client, cred *console.Credentials) error {
+func sshConnect(name string, sshClient *ssh.Client, cred *console.Credentials) error {
 	defer sshClient.Close()
+	if printSSHConfigFlag {
+		params := struct {
+			*console.Credentials
+			Name string
+		}{cred, name}
+		return template.Must(template.New("ssh_config").Parse(`Host {{ .Name }}
+	Hostname {{ .IP }}
+	User {{ .User }}
+	IdentityFile {{ .KeyPath }}
+`)).Execute(os.Stdout, params)
+	}
+
 	sshPath, sshErr := exec.LookPath("ssh")
+	args := []string{"ssh", "-i", cred.KeyPath, fmt.Sprintf("%s@%s", cred.User, cred.IP)}
 	if sshErr == nil {
+		if printSSHCLIFlag {
+			fmt.Println(sshPath + " " + strings.Join(args[1:], " "))
+			return nil
+		}
 		logger.Infof("Login as '%s' on '%s', using key '%s' with ssh client at '%s'", cred.User, cred.IP, cred.KeyPath, sshPath)
-		args := []string{"ssh", "-i", cred.KeyPath, fmt.Sprintf("%s@%s", cred.User, cred.IP)}
 		return syscall.Exec(sshPath, args, os.Environ())
 	} else { // Fallback SSH
+		if printSSHCLIFlag {
+			fmt.Println(strings.Join(args, " "))
+			return nil
+		}
 		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using key '%s'", cred.User, cred.IP, cred.KeyPath)
 		return console.InteractiveTerminal(sshClient)
 	}
