@@ -93,7 +93,7 @@ var sshCmd = &cobra.Command{
 			inst = resources[0]
 		default:
 			idStatus := graph.Resources(resources).Map(func(r *graph.Resource) string {
-				return fmt.Sprintf("%s (%s)	", r.Id(), r.Properties[properties.State])
+				return fmt.Sprintf("%s (%s)", r.Id(), r.Properties[properties.State])
 			})
 			logger.Infof("Found %d resources with name '%s': %s", len(resources), instanceID, strings.Join(idStatus, ", "))
 
@@ -111,7 +111,11 @@ var sshCmd = &cobra.Command{
 			default:
 				logger.Warning("Connect through the running ones using their id:")
 				for _, res := range running {
-					logger.Warningf("\t`awless ssh %s`", res.Id())
+					var up string
+					if uptime, ok := res.Properties[properties.Launched].(time.Time); ok {
+						up = fmt.Sprintf("\t\t(uptime: %s)", console.HumanizeTime(uptime))
+					}
+					logger.Warningf("\t`awless ssh %s`%s", res.Id(), up)
 				}
 				return nil
 			}

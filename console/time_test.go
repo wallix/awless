@@ -41,7 +41,7 @@ func TestHumanizeTime(t *testing.T) {
 	}
 
 	for _, tcase := range tcases {
-		if got, want := humanizeTime(tcase.stamp), tcase.expect; got != want {
+		if got, want := HumanizeTime(tcase.stamp), tcase.expect; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
 	}

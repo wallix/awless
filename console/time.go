@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-func humanizeTime(t time.Time) string {
+func HumanizeTime(t time.Time) string {
 	d := time.Now().UTC().Sub(t)
 	switch {
 	case d.Seconds() <= time.Second.Seconds():

@@ -66,7 +66,7 @@ func (t *Template) UnmarshalJSON(b []byte) error {
 			if len(c.Errors) > 0 {
 				n.CmdErr = errors.New(c.Errors[0])
 			}
-			tt.Statements = append(tt.Statements, &ast.Statement{n})
+			tt.Statements = append(tt.Statements, &ast.Statement{Node: n})
 		}
 	}
 

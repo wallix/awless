@@ -142,7 +142,7 @@ func (h TimeColumnDefinition) format(i interface{}) string {
 	}
 	switch h.Format {
 	case Humanize:
-		return humanizeTime(ii)
+		return HumanizeTime(ii)
 	case Short:
 		return ii.Format("1/2/06 15:04")
 	default:

@@ -63,7 +63,7 @@ func TestParseQuotedString(t *testing.T) {
 				t.Fatalf("%d. got %s, want %s", i+1, got, want)
 			}
 		} else {
-			t.Fatal("expected command node, was %T", n)
+			t.Fatalf("expected command node, was %T", n)
 		}
 
 	}
