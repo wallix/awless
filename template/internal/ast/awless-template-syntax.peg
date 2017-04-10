@@ -32,10 +32,13 @@ Value <- HoleValue {  p.addParamHoleValue(text) }
         / <CSVValue> {p.addCsvValue(text)}
         / <IntRangeValue> { p.addParamValue(text) }
         / <IntValue> { p.addParamIntValue(text) }
+        / QuotedStringValue { p.addParamValue(text) }
         / <StringValue> { p.addParamValue(text) }
 
 
 StringValue <- [a-zA-Z0-9-._:/]+
+
+QuotedStringValue <- '"'<[^"]*>'"'
 
 CSVValue <- (StringValue WhiteSpacing ',' WhiteSpacing)+ StringValue
 CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+

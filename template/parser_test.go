@@ -26,6 +26,49 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
+func TestParseQuotedString(t *testing.T) {
+	tcases := []struct {
+		text, exp string
+	}{
+		{"create instance data=\"\"", ""},
+		{"create instance data=\"hello\"", "hello"},
+		{"create instance data=\"hello.\"", "hello."},
+		{"create instance data=\"just jack\"", "just jack"},
+		{"create instance data=\" just  jack \"", " just  jack "},
+
+		{"create instance data=\"\t\tjust\t \tjack\t\"", "\t\tjust\t \tjack\t"},
+
+		{"create instance data=\"just jack\n\"", "just jack\n"},
+		{"create instance data=\"just jack\r\"", "just jack\r"},
+		{"create instance data=\"just jack\n\r\"", "just jack\n\r"},
+		{"create instance data=\"just jack\r\n\"", "just jack\r\n"},
+
+		{"create instance data=\"\njust jack\"", "\njust jack"},
+		{"create instance data=\"\rjust jack\"", "\rjust jack"},
+		{"create instance data=\"\n\rjust jack\"", "\n\rjust jack"},
+		{"create instance data=\"\r\njust jack\"", "\r\njust jack"},
+
+		{"create instance data=\"!£$%^*()/{}_-+=:;@'~#,.?/<>\"", "!£$%^*()/{}_-+=:;@'~#,.?/<>"},
+		{"create instance data=\"#!/bin/bash;touch /home/ubuntu/stuff.txt\"", "#!/bin/bash;touch /home/ubuntu/stuff.txt"},
+	}
+
+	for i, tcase := range tcases {
+		tpl, err := Parse(tcase.text)
+		if err != nil {
+			t.Fatalf("%d. %s", i+1, err)
+		}
+
+		if n, ok := tpl.Statements[0].Node.(*ast.CommandNode); ok {
+			if got, want := n.Params["data"], tcase.exp; got != want {
+				t.Fatalf("%d. got %s, want %s", i+1, got, want)
+			}
+		} else {
+			t.Fatal("expected command node, was %T", n)
+		}
+
+	}
+}
+
 func TestParsingInvalidActionAndEntities(t *testing.T) {
 	_, err := Parse(`creat instance`)
 	if err == nil || !strings.Contains(err.Error(), "action 'creat'") {
