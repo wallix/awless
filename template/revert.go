@@ -32,8 +32,13 @@ func (te *Template) Revert() (*Template, error) {
 
 			switch cmd.Action {
 			case "start", "stop", "attach", "detach":
-				for k, v := range cmd.Params {
-					params = append(params, fmt.Sprintf("%s=%v", k, v))
+				switch cmd.Entity {
+				case "routetable":
+					params = append(params, fmt.Sprintf("association=%s", cmd.CmdResult))
+				default:
+					for k, v := range cmd.Params {
+						params = append(params, fmt.Sprintf("%s=%v", k, v))
+					}
 				}
 			case "create":
 				switch cmd.Entity {
