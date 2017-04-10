@@ -19,7 +19,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -29,6 +28,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"text/template"
 	"time"
 
 	"golang.org/x/crypto/ssh"
