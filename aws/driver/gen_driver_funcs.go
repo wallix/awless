@@ -375,7 +375,7 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 		}
 	}
 	if _, ok := params["userdata"]; ok {
-		err = setFieldWithType(params["userdata"], input, "UserData", awsstr)
+		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64)
 		if err != nil {
 			return nil, err
 		}
@@ -452,7 +452,7 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 		}
 	}
 	if _, ok := params["userdata"]; ok {
-		err = setFieldWithType(params["userdata"], input, "UserData", awsstr)
+		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64)
 		if err != nil {
 			return nil, err
 		}

@@ -138,7 +138,7 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{AwsField: "KeyName", TemplateName: "key", AwsType: "awsstr"},
 					{AwsField: "PrivateIpAddress", TemplateName: "ip", AwsType: "awsstr"},
-					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsstr"},
+					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
 					{AwsField: "SecurityGroupIds", TemplateName: "group", AwsType: "awsstringslice"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
 				},

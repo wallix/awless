@@ -17,7 +17,9 @@ limitations under the License.
 package aws
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -38,6 +40,7 @@ const (
 	awsstringslice
 	awsstringpointermap
 	awsslicestruct
+	awsfiletobase64
 )
 
 var (
@@ -85,6 +88,11 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 		default:
 			str := fmt.Sprint(v)
 			v = []*string{&str}
+		}
+	case awsfiletobase64:
+		v, err = fileAsBase64(v)
+		if err != nil {
+			return err
 		}
 	case awsint64slice:
 		var awsint int64
@@ -196,4 +204,14 @@ func castInt64(v interface{}) (int64, error) {
 	default:
 		return int64(0), fmt.Errorf("cannot cast %T to int64", v)
 	}
+}
+
+func fileAsBase64(v interface{}) (string, error) {
+	path := fmt.Sprint(v)
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(b), nil
 }

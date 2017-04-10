@@ -17,12 +17,41 @@ limitations under the License.
 package aws
 
 import (
+	"encoding/base64"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
+
+func TestSetFieldWithTypeAWSFile(t *testing.T) {
+	text := []byte("file content")
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatal(f)
+	}
+	defer os.Remove(f.Name())
+
+	finfo, _ := f.Stat()
+	err = ioutil.WriteFile(f.Name(), text, finfo.Mode().Perm())
+	if err != nil {
+		t.Fatal(f)
+	}
+
+	awsparams := &ec2.RunInstancesInput{}
+
+	err = setFieldWithType(f.Name(), awsparams, "UserData", awsfiletobase64)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := aws.StringValue(awsparams.UserData), base64.StdEncoding.EncodeToString(text); got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
 
 func TestSetFieldsOnAwsStruct(t *testing.T) {
 	awsparams := &ec2.RunInstancesInput{}
