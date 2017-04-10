@@ -187,10 +187,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 		res := resources[0]
 		return res, sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[res.Type()])
 	default:
-		var all []string
-		for _, res := range resources {
-			all = append(all, fmt.Sprintf("%s[%s]", res.Id(), res.Type()))
-		}
+		all := graph.Resources(resources).Map(func(r *graph.Resource) string { return r.String() })
 		logger.Infof("%d resources found with name '%s': %s", len(resources), deprefix(ref), strings.Join(all, ", "))
 		logger.Info("Show them using the id:")
 		for _, res := range resources {
@@ -208,7 +205,7 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 	exitOn(err)
 
 	name := deprefix(ref)
-	byName := &graph.ByProperty{Name: "Name", Val: name}
+	byName := &graph.ByProperty{Key: "Name", Value: name}
 
 	if strings.HasPrefix(ref, "@") {
 		logger.Verbosef("prefixed with @: forcing research by name '%s'", name)
@@ -225,7 +222,7 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 		} else {
 			rs, err := g.ResolveResources(
 				byName,
-				&graph.ByProperty{Name: "Arn", Val: name},
+				&graph.ByProperty{Key: "Arn", Value: name},
 			)
 			exitOn(err)
 

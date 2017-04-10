@@ -74,13 +74,43 @@ var sshCmd = &cobra.Command{
 
 		resourcesGraph, ip := fetchConnectionInfo()
 
-		a := graph.Alias(instanceID)
-		if id, ok := a.ResolveToId(resourcesGraph, cloud.Instance); ok {
-			instanceID = id
-		}
+		var inst *graph.Resource
 
-		inst, err := findResource(resourcesGraph, instanceID, cloud.Instance)
+		instanceResolvers := []graph.Resolver{&graph.ByProperty{Key: "Name", Value: instanceID}, &graph.ByType{Typ: cloud.Instance}}
+		resources, err := resourcesGraph.ResolveResources(&graph.And{Resolvers: instanceResolvers})
 		exitOn(err)
+		switch len(resources) {
+		case 0:
+			// No instance with that name, use the id
+			inst, err = findResource(resourcesGraph, instanceID, cloud.Instance)
+			exitOn(err)
+		case 1:
+			inst = resources[0]
+		default:
+			idStatus := graph.Resources(resources).Map(func(r *graph.Resource) string {
+				return fmt.Sprintf("%s (%s)	", r.Id(), r.Properties[properties.State])
+			})
+			logger.Infof("Found %d resources with name '%s': %s", len(resources), instanceID, strings.Join(idStatus, ", "))
+
+			var running []*graph.Resource
+			running, err = resourcesGraph.ResolveResources(&graph.And{Resolvers: append(instanceResolvers, &graph.ByProperty{Key: properties.State, Value: "running"})})
+			exitOn(err)
+
+			switch len(running) {
+			case 0:
+				logger.Warning("None of them is running, cannot connect through SSH")
+				return nil
+			case 1:
+				logger.Infof("Found only one instance running: %s. Will connect to this instance.", running[0].Id())
+				inst = running[0]
+			default:
+				logger.Warning("Connect through the running ones using their id:")
+				for _, res := range running {
+					logger.Warningf("\t`awless ssh %s`", res.Id())
+				}
+				return nil
+			}
+		}
 
 		cred, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
 		exitOn(err)

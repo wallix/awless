@@ -6,7 +6,8 @@
 - Faster, better and simpler RDF & triples management now done through the nifty library [triplestore](https://github.com/wallix/triplestore)
 - Loggers are now sent to the stderr file descriptor which makes easier piping and redirecting output.
 - Warn when creating an instance without access key.
-- ssh to instance: more warning; provide help and context on failing connections
+- ssh: better handle when several instances have the same name (e.g., with a running and a terminated instance)
+- ssh: more warning; provide help and context on failing connections
 
 ### Bugfixes
 

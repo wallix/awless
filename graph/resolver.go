@@ -17,31 +17,31 @@ type ById struct {
 }
 
 func (r *ById) Resolve(g *Graph) ([]*Resource, error) {
-	resolver := &ByProperty{Name: properties.ID, Val: r.Id}
+	resolver := &ByProperty{Key: properties.ID, Value: r.Id}
 	return resolver.Resolve(g)
 }
 
 type ByProperty struct {
-	Name string
-	Val  interface{}
+	Key   string
+	Value interface{}
 }
 
 func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 	var resources []*Resource
-	if r.Val == nil {
+	if r.Value == nil {
 		return resources, nil
 	}
-	rdfpropLabel, ok := cloudrdf.Labels[r.Name]
+	rdfpropLabel, ok := cloudrdf.Labels[r.Key]
 	if !ok {
-		return resources, fmt.Errorf("resolve by property: undefined property label '%s'", r.Name)
+		return resources, fmt.Errorf("resolve by property: undefined property label '%s'", r.Key)
 	}
 	rdfProp, ok := cloudrdf.RdfProperties[rdfpropLabel]
 	if !ok {
 		return resources, fmt.Errorf("resolve by property: undefined property definition '%s'", rdfpropLabel)
 	}
-	obj, err := marshalToRdfObject(r.Val, rdfProp.RdfsDefinedBy, rdfProp.RdfsDataType)
+	obj, err := marshalToRdfObject(r.Value, rdfProp.RdfsDefinedBy, rdfProp.RdfsDataType)
 	if err != nil {
-		return resources, fmt.Errorf("resolve by property: unmarshaling property '%s': %s", r.Name, err)
+		return resources, fmt.Errorf("resolve by property: unmarshaling property '%s': %s", r.Key, err)
 	}
 	snap := g.store.Snapshot()
 	for _, t := range snap.WithPredObj(rdfpropLabel, obj) {

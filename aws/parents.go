@@ -289,14 +289,15 @@ func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
 	}
 
 	for _, policy := range policies {
-		a := graph.Alias(awssdk.StringValue(policy.PolicyName))
-		pid, ok := a.ResolveToId(g, cloud.Policy)
-		if !ok {
+		policies, err := g.ResolveResources(&graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: awssdk.StringValue(policy.PolicyName)}, &graph.ByType{Typ: cloud.Policy}}})
+		if err != nil {
+			return err
+		}
+		if len(policies) != 1 {
 			fmt.Fprintf(os.Stderr, "add parent to '%s/%s': unknown policy named '%s'. Ignoring it.\n", res.Type(), res.Id(), awssdk.StringValue(policy.PolicyName))
 			return nil
 		}
-		parent := graph.InitResource(cloud.Policy, pid)
-		g.AddAppliesOnRelation(parent, res)
+		g.AddAppliesOnRelation(policies[0], res)
 	}
 	return nil
 }
@@ -314,7 +315,7 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 	for _, group := range user.GroupList {
 		groupName := awssdk.StringValue(group)
 		resources, err := g.ResolveResources(&graph.And{Resolvers: []graph.Resolver{
-			&graph.ByProperty{Name: "Name", Val: groupName},
+			&graph.ByProperty{Key: "Name", Value: groupName},
 			&graph.ByType{Typ: cloud.Group},
 		}})
 		if err != nil {
