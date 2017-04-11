@@ -411,8 +411,8 @@ func TestBuildStorageRdfGraph(t *testing.T) {
 
 	expected := map[string]*graph.Resource{
 		"eu-west-1":   resourcetest.Region("eu-west-1").Build(),
-		"bucket_eu_1": resourcetest.Bucket("bucket_eu_1").Prop(p.Grants, []*graph.Grant{{GranteeID: "usr_2", Permission: "Write"}}).Build(),
-		"bucket_eu_2": resourcetest.Bucket("bucket_eu_2").Prop(p.Grants, []*graph.Grant{{GranteeID: "usr_1", Permission: "Write"}}).Build(),
+		"bucket_eu_1": resourcetest.Bucket("bucket_eu_1").Prop(p.Grants, []*graph.Grant{{Grantee: graph.Grantee{GranteeID: "usr_2"}, Permission: "Write"}}).Build(),
+		"bucket_eu_2": resourcetest.Bucket("bucket_eu_2").Prop(p.Grants, []*graph.Grant{{Grantee: graph.Grantee{GranteeID: "usr_1"}, Permission: "Write"}}).Build(),
 	}
 	expectedChildren := map[string][]string{
 		"eu-west-1":   {"bucket_eu_1", "bucket_eu_2"},

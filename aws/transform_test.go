@@ -362,9 +362,9 @@ func TestFetchFunctions(t *testing.T) {
 		}
 		res := i.([]*graph.Grant)
 		expected := []*graph.Grant{
-			{Permission: "Read", GranteeID: "usr_1", GranteeType: "my_type_1"},
-			{Permission: "Write", GranteeID: "usr_2", GranteeDisplayName: "my_user_2", GranteeType: "my_type_2"},
-			{Permission: "Execute", GranteeID: "usr_3", GranteeDisplayName: "my_user_3<user@domain>", GranteeType: "my_type_3"},
+			{Permission: "Read", Grantee: graph.Grantee{GranteeID: "usr_1", GranteeType: "my_type_1"}},
+			{Permission: "Write", Grantee: graph.Grantee{GranteeID: "usr_2", GranteeDisplayName: "my_user_2", GranteeType: "my_type_2"}},
+			{Permission: "Execute", Grantee: graph.Grantee{GranteeID: "usr_3", GranteeDisplayName: "my_user_3<user@domain>", GranteeType: "my_type_3"}},
 		}
 		if got, want := len(res), len(expected); got != want {
 			t.Fatalf("got %d, want %d", got, want)
@@ -382,8 +382,8 @@ func TestFetchFunctions(t *testing.T) {
 		}
 		res = i.([]*graph.Grant)
 		expected = []*graph.Grant{
-			{Permission: "Read", GranteeID: "group_uri", GranteeType: "Group"},
-			{Permission: "Write", GranteeID: "usr_1", GranteeType: "my_type_2"},
+			{Permission: "Read", Grantee: graph.Grantee{GranteeID: "group_uri", GranteeType: "Group"}},
+			{Permission: "Write", Grantee: graph.Grantee{GranteeID: "usr_1", GranteeType: "my_type_2"}},
 		}
 		for i := range expected {
 			if got, want := res[i].String(), expected[i].String(); got != want {

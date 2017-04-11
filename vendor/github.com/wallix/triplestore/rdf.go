@@ -1,5 +1,7 @@
+// Package triplestore provides APIs to manage, store and query triples, sources and RDFGraphs
 package triplestore
 
+// A triple consists of a subject, a predicate and a object
 type Triple interface {
 	Subject() string
 	Predicate() string
@@ -7,12 +9,14 @@ type Triple interface {
 	Equal(Triple) bool
 }
 
+// An object is a resource (i.e. IRI) or a literal. Note that blank node are not supported.
 type Object interface {
 	Literal() (Literal, bool)
 	Resource() (string, bool)
 	Equal(Object) bool
 }
 
+// A literal is a unicode string associated with a datatype (ex: string, integer, ...).
 type Literal interface {
 	Type() XsdType
 	Value() string

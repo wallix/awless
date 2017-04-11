@@ -269,8 +269,8 @@ func TestMarshalUnmarshalGrants(t *testing.T) {
 	r := testResource("bck1", "bucket").prop(properties.ID, "bck1").prop(
 		"Grants", []*Grant{
 			{Permission: "denied"},
-			{Permission: "granted", GranteeID: "123", GranteeDisplayName: "John Smith", GranteeType: "user"},
-			{Permission: "other", GranteeID: "myid"},
+			{Permission: "granted", Grantee: Grantee{GranteeID: "123", GranteeDisplayName: "John Smith", GranteeType: "user"}},
+			{Permission: "other", Grantee: Grantee{GranteeID: "myid"}},
 		}).build()
 	g := NewGraph()
 	triples, err := r.marshalFullRDF()

@@ -42,6 +42,7 @@ type datasetDecoder struct {
 	rs             []io.Reader
 }
 
+// A dataset is a basically a collection of RDFGraph.
 func NewDatasetDecoder(fn func(io.Reader) Decoder, readers ...io.Reader) Decoder {
 	return &datasetDecoder{newDecoderFunc: fn, rs: readers}
 }

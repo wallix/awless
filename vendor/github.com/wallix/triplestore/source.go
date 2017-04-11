@@ -8,12 +8,14 @@ import (
 	"sync/atomic"
 )
 
+// A source is a persistent yet mutable source or container of triples.
 type Source interface {
 	Add(...Triple)
 	Remove(...Triple)
 	Snapshot() RDFGraph
 }
 
+// A RDFGraph is an immutable set of triples. It is a snapshot of a source and it is queryable.
 type RDFGraph interface {
 	Contains(Triple) bool
 	Triples() []Triple
@@ -67,7 +69,8 @@ type source struct {
 	triples    map[string]Triple
 }
 
-func NewSource() *source {
+// A source is a persistent yet mutable source or container of triples
+func NewSource() Source {
 	return &source{
 		triples:    make(map[string]Triple),
 		latestSnap: newGraph(0),

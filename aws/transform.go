@@ -408,17 +408,23 @@ var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
 	}
 	var grants []*graph.Grant
 	for _, acl := range acls.Grants {
-		grant := &graph.Grant{
-			Permission:         awssdk.StringValue(acl.Permission),
-			GranteeID:          awssdk.StringValue(acl.Grantee.ID),
-			GranteeType:        awssdk.StringValue(acl.Grantee.Type),
-			GranteeDisplayName: awssdk.StringValue(acl.Grantee.DisplayName),
-		}
+		displayName := awssdk.StringValue(acl.Grantee.DisplayName)
+		granteeType := awssdk.StringValue(acl.Grantee.Type)
+		granteeId := awssdk.StringValue(acl.Grantee.ID)
+
 		if awssdk.StringValue(acl.Grantee.EmailAddress) != "" {
-			grant.GranteeDisplayName += "<" + awssdk.StringValue(acl.Grantee.EmailAddress) + ">"
+			displayName += "<" + awssdk.StringValue(acl.Grantee.EmailAddress) + ">"
 		}
-		if grant.GranteeType == "Group" {
-			grant.GranteeID += awssdk.StringValue(acl.Grantee.URI)
+		if granteeType == "Group" {
+			granteeId += awssdk.StringValue(acl.Grantee.URI)
+		}
+		grant := &graph.Grant{
+			Permission: awssdk.StringValue(acl.Permission),
+			Grantee: graph.Grantee{
+				GranteeID:          granteeId,
+				GranteeType:        granteeType,
+				GranteeDisplayName: displayName,
+			},
 		}
 		grants = append(grants, grant)
 	}

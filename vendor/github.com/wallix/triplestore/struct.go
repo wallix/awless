@@ -41,12 +41,15 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 		tag, embedded := field.Tag.Lookup(subTag)
 		fVal, ok := getStructOrPtrToStruct(fVal)
 		if ok && embedded {
-			sub := tag
+			embedSub := tag
 			if tag == "rand" {
-				sub = fmt.Sprintf("%x", random.Uint32())
+				embedSub = fmt.Sprintf("%x", random.Uint32())
 			}
-			tris := TriplesFromStruct(sub, fVal.Interface())
+			tris := TriplesFromStruct(embedSub, fVal.Interface())
 			out = append(out, tris...)
+			if embedPred, hasPred := field.Tag.Lookup(predTag); hasPred {
+				out = append(out, SubjPred(sub, embedPred).Resource(embedSub))
+			}
 			continue
 		}
 

@@ -263,22 +263,22 @@ func (h GrantsColumnDefinition) format(i interface{}) string {
 	for _, g := range ii {
 		w.WriteString(g.Permission)
 		w.WriteString("[")
-		switch g.GranteeType {
+		switch g.Grantee.GranteeType {
 		case "CanonicalUser":
 			w.WriteString("user:")
-			if g.GranteeDisplayName != "" {
-				w.WriteString(g.GranteeDisplayName)
+			if g.Grantee.GranteeDisplayName != "" {
+				w.WriteString(g.Grantee.GranteeDisplayName)
 			} else {
-				w.WriteString(g.GranteeID)
+				w.WriteString(g.Grantee.GranteeID)
 			}
 		case "Group":
 			w.WriteString("group:")
-			w.WriteString(g.GranteeID)
+			w.WriteString(g.Grantee.GranteeID)
 
 		default:
-			w.WriteString(g.GranteeType)
+			w.WriteString(g.Grantee.GranteeType)
 			w.WriteString(":")
-			w.WriteString(g.GranteeID)
+			w.WriteString(g.Grantee.GranteeID)
 
 		}
 		w.WriteString("]")

@@ -96,6 +96,8 @@ func ObjectLiteral(i interface{}) (Object, error) {
 		return DateTimeLiteral(ii), nil
 	case *time.Time:
 		return DateTimeLiteral(*ii), nil
+	case fmt.Stringer:
+		return StringLiteral(ii.String()), nil
 	default:
 		return nil, UnsupportedLiteralTypeError{i}
 	}

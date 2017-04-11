@@ -41,9 +41,9 @@ func (rules FirewallRules) Sort() {
 }
 
 type FirewallRule struct {
-	PortRange PortRange
-	Protocol  string
-	IPRanges  []*net.IPNet // IPv4 or IPv6 range
+	PortRange PortRange    `predicate:"net:portRange"`
+	Protocol  string       `predicate:"net:protocol"`
+	IPRanges  []*net.IPNet `predicate:"net:cidr"` // IPv4 or IPv6 range
 }
 
 func (r *FirewallRule) Contains(ip string) bool {
@@ -63,11 +63,7 @@ func (r *FirewallRule) String() string {
 func (r *FirewallRule) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.NetFirewallRule))
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.PortRange).StringLiteral(r.PortRange.String()))
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.Protocol).StringLiteral(r.Protocol))
-	for _, cidr := range r.IPRanges {
-		triples = append(triples, tstore.SubjPred(id, cloudrdf.CIDR).StringLiteral(cidr.String()))
-	}
+	triples = append(triples, tstore.TriplesFromStruct(id, r)...)
 	return triples
 }
 
@@ -291,34 +287,26 @@ func (grants Grants) Sort() {
 }
 
 type Grant struct {
-	Permission,
-	GranteeID,
-	GranteeDisplayName,
-	GranteeType string
+	Permission string  `predicate:"cloud:permission"`
+	Grantee    Grantee `predicate:"cloud:grantee" subject:"rand"`
+}
+
+type Grantee struct {
+	GranteeID          string `predicate:"cloud:id"`
+	GranteeDisplayName string `predicate:"cloud:name"`
+	GranteeType        string `predicate:"cloud:granteeType"`
 }
 
 func (g *Grant) String() string {
-	return fmt.Sprintf("Permission:%s; GranteeID:%s; GranteeDisplayName:%s; GranteeType:%s", g.Permission, g.GranteeID, g.GranteeDisplayName, g.GranteeType)
+	return fmt.Sprintf("Permission:%s; GranteeID:%s; GranteeDisplayName:%s; GranteeType:%s", g.Permission, g.Grantee.GranteeID, g.Grantee.GranteeDisplayName, g.Grantee.GranteeType)
 }
 
 func (g *Grant) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
 
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.Grant))
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.Permission).StringLiteral(g.Permission))
+	triples = append(triples, tstore.TriplesFromStruct(id, g)...)
 
-	granteeId := randomRdfId()
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.Grantee).Resource(granteeId))
-	triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.RdfType).Resource(cloudrdf.CloudGrantee))
-	if g.GranteeID != "" {
-		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.ID).StringLiteral(g.GranteeID))
-	}
-	if g.GranteeDisplayName != "" {
-		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.Name).StringLiteral(g.GranteeDisplayName))
-	}
-	if g.GranteeType != "" {
-		triples = append(triples, tstore.SubjPred(granteeId, cloudrdf.GranteeType).StringLiteral(g.GranteeType))
-	}
 	return triples
 }
 
@@ -339,14 +327,14 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 	}
 	granteeIdTs := gph.WithSubjPred(granteeNode, cloudrdf.ID)
 	if len(granteeIdTs) > 0 {
-		g.GranteeID, err = extractUniqueLiteralTextFromTriples(granteeIdTs)
+		g.Grantee.GranteeID, err = extractUniqueLiteralTextFromTriples(granteeIdTs)
 		if err != nil {
 			return fmt.Errorf("unmarshal grant: grantee id: %s", err)
 		}
 	}
 	granteeNameTs := gph.WithSubjPred(granteeNode, cloudrdf.Name)
 	if len(granteeNameTs) > 0 {
-		g.GranteeDisplayName, err = extractUniqueLiteralTextFromTriples(granteeNameTs)
+		g.Grantee.GranteeDisplayName, err = extractUniqueLiteralTextFromTriples(granteeNameTs)
 		if err != nil {
 			return fmt.Errorf("unmarshal grant: grantee name: %s", err)
 		}
@@ -354,7 +342,7 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 
 	granteeTypeTs := gph.WithSubjPred(granteeNode, cloudrdf.GranteeType)
 	if len(granteeTypeTs) > 0 {
-		g.GranteeType, err = extractUniqueLiteralTextFromTriples(granteeTypeTs)
+		g.Grantee.GranteeType, err = extractUniqueLiteralTextFromTriples(granteeTypeTs)
 		if err != nil {
 			return fmt.Errorf("unmarshal grant: grantee type: %s", err)
 		}
