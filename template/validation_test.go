@@ -48,5 +48,16 @@ func TestValidation(t *testing.T) {
 		if got, want := errs[0].Error(), exp; got != want {
 			t.Fatalf("got %q, want %q", got, want)
 		}
+
+		text = `create subnet name=subnet_name
+		create instance key=$mykey`
+		tpl = template.MustParse(text)
+
+		rule = &template.ParamIsSetValidator{Entity: "instance", Action: "create", Param: "key", WarningMessage: "no key set"}
+
+		errs = tpl.Validate(rule)
+		if got, want := len(errs), 0; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
 	})
 }

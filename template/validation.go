@@ -43,8 +43,9 @@ type ParamIsSetValidator struct {
 func (v *ParamIsSetValidator) Execute(t *Template) (errs []error) {
 	for _, cmd := range t.CommandNodesIterator() {
 		if cmd.Action == v.Action && cmd.Entity == v.Entity {
-			_, ok := cmd.Params[v.Param]
-			if !ok {
+			_, hasParam := cmd.Params[v.Param]
+			_, hasRef := cmd.Refs[v.Param]
+			if !hasParam && !hasRef {
 				errs = append(errs, fmt.Errorf(v.WarningMessage))
 			}
 		}
