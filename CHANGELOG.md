@@ -5,6 +5,7 @@
 - Amazon [**userdata**](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) supports. Ex: `awless create instance userdata=/tmp/mydata.sh ...`. Allow to pass user data (_bash scripts_ or _cloud-init_) when creating an instance.
 - awless model/storing is now full RDF ;). Allow exploration of all your infra in RDF tools and ontology editor (Ex: [Protege](http://protege.stanford.edu/))
 - Faster, better and simpler RDF & triples management now done through the nifty library [triplestore](https://github.com/wallix/triplestore)
+- Ability to use strings with spaces and special characters in template parameters by surrounding them with single or double quotes.
 - Loggers are now sent to the stderr file descriptor which makes easier piping and redirecting output.
 - Warn when creating an instance without access key.
 - ssh: print SSH configuration (`~/.ssh/config`) or the CLI one-liner to connect with SSH using `--print-config` or `--print-cli` flags.

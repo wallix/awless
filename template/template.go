@@ -205,3 +205,7 @@ func (s *Template) IsSameAs(t2 *Template) bool {
 
 	return true
 }
+
+func MatchStringParamValue(s string) bool {
+	return ast.SimpleStringValue.MatchString(s)
+}

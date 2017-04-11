@@ -42,7 +42,7 @@ update subnet id=\$testsubnet public=true
 rtable = create routetable vpc=\$testvpc
 attach routetable id=\$rtable subnet=\$testsubnet
 create route cidr=0.0.0.0/0 gateway=\$gateway table=\$rtable
-sgroup = create securitygroup vpc=\$testvpc description=ssh-from-internet name=ssh-from-internet
+sgroup = create securitygroup vpc=\$testvpc description="authorize SSH from the Internet" name=ssh-from-internet
 update securitygroup id=\$sgroup inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=22
 testkeypair = create keypair name=$KEY_NAME
 testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} key=\$testkeypair name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE group=\$sgroup

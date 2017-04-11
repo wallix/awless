@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -146,6 +147,8 @@ func (n *CommandNode) String() string {
 			continue
 		case []string:
 			all = append(all, fmt.Sprintf("%s=%s", k, strings.Join(vv, ",")))
+		case string:
+			all = append(all, fmt.Sprintf("%s=%s", k, quoteStringIfNeeded(vv)))
 		default:
 			all = append(all, fmt.Sprintf("%s=%v", k, v))
 		}
@@ -202,4 +205,18 @@ func (a *AST) Clone() *AST {
 		clone.Statements = append(clone.Statements, stat.Clone())
 	}
 	return clone
+}
+
+var SimpleStringValue = regexp.MustCompile("^[a-zA-Z0-9-._:/+;~@<>]+$") // in sync with [a-zA-Z0-9-._:/+;~@<>]+ in PEG (with ^ and $ around)
+
+func quoteStringIfNeeded(input string) string {
+	if SimpleStringValue.MatchString(input) {
+		return input
+	} else {
+		if strings.ContainsRune(input, '\'') {
+			return "\"" + input + "\""
+		} else {
+			return "'" + input + "'"
+		}
+	}
 }

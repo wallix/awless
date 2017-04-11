@@ -124,6 +124,8 @@ func askHole(hole string) (interface{}, error) {
 		switch {
 		case line == "":
 			return nil, errors.New("empty")
+		case !isQuoted(line) && !template.MatchStringParamValue(line):
+			return nil, errors.New("string contains spaces or special characters: surround it with quotes")
 		default:
 			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
 			if err != nil {
@@ -163,13 +165,20 @@ func idAndNameCompleter(hole string) readline.AutoCompleter {
 	}
 	listAllResourcesIdAndName := func(s string) (suggest []string) {
 		for _, res := range resources {
-			if strings.Contains(res.Id(), s) {
-				suggest = append(suggest, res.Id())
+			id := res.Id()
+			if !template.MatchStringParamValue(id) {
+				id = "'" + id + "'"
+			}
+			if strings.Contains(id, s) {
+				suggest = append(suggest, id)
 			}
 			if val, ok := res.Properties["Name"]; ok {
 				switch val.(type) {
 				case string:
 					name := val.(string)
+					if !template.MatchStringParamValue(name) {
+						name = "'" + name + "'"
+					}
 					prefixed := fmt.Sprintf("@%s", name)
 					if strings.Contains(prefixed, s) && name != "" {
 						suggest = append(suggest, prefixed)
@@ -419,4 +428,11 @@ func getTemplateText(path string) ([]byte, error) {
 	}
 
 	return ioutil.ReadFile(path)
+}
+
+func isQuoted(s string) bool {
+	if strings.HasPrefix(s, "@") {
+		return isQuoted(s[1:])
+	}
+	return (strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")) || strings.HasPrefix(s, "'") && strings.HasSuffix(s, "'")
 }

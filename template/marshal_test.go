@@ -3,6 +3,7 @@ package template
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -53,7 +54,6 @@ func TestUnmarshalFromJSON(t *testing.T) {
 	if got, want := cmds[1].Entity, "subnet"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	exp = make(map[string]interface{})
 	if got, want := len(cmds[1].Params), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
@@ -118,6 +118,24 @@ func TestMarshalToJSON(t *testing.T) {
 			  ]
 			}`,
 		},
+		{
+			MustParse("create instance name='my instance'"),
+			`{ 
+			  "id": "",
+			  "commands": [
+			    {"line": "create instance name='my instance'"}
+			  ]
+			}`,
+		},
+		{
+			MustParse("create instance name=\"my instance '$&\\ special) chars\""),
+			`{ 
+			  "id": "",
+			  "commands": [
+			    {"line": "create instance name=\"my instance '$&\\ special) chars\""}
+			  ]
+			}`,
+		},
 	}
 
 	for _, c := range tcases {
@@ -136,6 +154,7 @@ func identJSON(content []byte) string {
 	var v interface{}
 	err := json.Unmarshal(content, &v)
 	if err != nil {
+		fmt.Println("", string(content))
 		panic(err)
 	}
 	ident, err := json.MarshalIndent(v, " ", " ")

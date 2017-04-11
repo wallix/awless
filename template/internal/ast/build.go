@@ -54,6 +54,11 @@ func (a *AST) addParamKey(text string) {
 	a.currentKey = text
 }
 
+func (a *AST) addAliasParam(text string) {
+	node := a.currentCommand()
+	node.Params[a.currentKey] = "@" + text
+}
+
 func (a *AST) addParamValue(text string) {
 	node := a.currentCommand()
 	node.Params[a.currentKey] = text

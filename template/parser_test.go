@@ -26,7 +26,7 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
-func TestParseQuotedString(t *testing.T) {
+func TestParseDoubleQuotedString(t *testing.T) {
 	tcases := []struct {
 		text, exp string
 	}{
@@ -50,6 +50,49 @@ func TestParseQuotedString(t *testing.T) {
 
 		{"create instance data=\"!£$%^*()/{}_-+=:;@'~#,.?/<>\"", "!£$%^*()/{}_-+=:;@'~#,.?/<>"},
 		{"create instance data=\"#!/bin/bash;touch /home/ubuntu/stuff.txt\"", "#!/bin/bash;touch /home/ubuntu/stuff.txt"},
+	}
+
+	for i, tcase := range tcases {
+		tpl, err := Parse(tcase.text)
+		if err != nil {
+			t.Fatalf("%d. %s", i+1, err)
+		}
+
+		if n, ok := tpl.Statements[0].Node.(*ast.CommandNode); ok {
+			if got, want := n.Params["data"], tcase.exp; got != want {
+				t.Fatalf("%d. got %s, want %s", i+1, got, want)
+			}
+		} else {
+			t.Fatalf("expected command node, was %T", n)
+		}
+
+	}
+}
+
+func TestParseSingleQuotedString(t *testing.T) {
+	tcases := []struct {
+		text, exp string
+	}{
+		{"create instance data=''", ""},
+		{"create instance data='hello'", "hello"},
+		{"create instance data='hello.'", "hello."},
+		{"create instance data='just jack'", "just jack"},
+		{"create instance data=' just  jack '", " just  jack "},
+
+		{"create instance data='\t\tjust\t \tjack\t'", "\t\tjust\t \tjack\t"},
+
+		{"create instance data='just jack\n'", "just jack\n"},
+		{"create instance data='just jack\r'", "just jack\r"},
+		{"create instance data='just jack\n\r'", "just jack\n\r"},
+		{"create instance data='just jack\r\n'", "just jack\r\n"},
+
+		{"create instance data='\njust jack'", "\njust jack"},
+		{"create instance data='\rjust jack'", "\rjust jack"},
+		{"create instance data='\n\rjust jack'", "\n\rjust jack"},
+		{"create instance data='\r\njust jack'", "\r\njust jack"},
+
+		{"create instance data='!£$%^*()/{}_-+=:;@\"~#,.?/<>'", "!£$%^*()/{}_-+=:;@\"~#,.?/<>"},
+		{"create instance data='#!/bin/bash;touch /home/ubuntu/stuff.txt'", "#!/bin/bash;touch /home/ubuntu/stuff.txt"},
 	}
 
 	for i, tcase := range tcases {
@@ -156,12 +199,39 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
+				input: "create instance name=a2zR_-+:;@~./<>",
+				verifyFn: func(tpl *Template) error {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return assertParams(tpl.Statements[0].Node, map[string]interface{}{"name": "a2zR_-+:;@~./<>"})
+				},
+			},
+			{
 				input: "attach policy arn=@arn:aws:iam::aws:policy/AmazonS3FullAccess",
 				verifyFn: func(tpl *Template) error {
 					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
-					return nil
+					return assertParams(tpl.Statements[0].Node, map[string]interface{}{"arn": "@arn:aws:iam::aws:policy/AmazonS3FullAccess"})
+				},
+			},
+			{
+				input: "attach instance id=@\"my vm name\"",
+				verifyFn: func(tpl *Template) error {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return assertParams(tpl.Statements[0].Node, map[string]interface{}{"id": "@my vm name"})
+				},
+			},
+			{
+				input: "attach instance id=@'my f$!=€&g vm name'",
+				verifyFn: func(tpl *Template) error {
+					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return assertParams(tpl.Statements[0].Node, map[string]interface{}{"id": "@my f$!=€&g vm name"})
 				},
 			},
 			{
@@ -260,6 +330,18 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
+				input: `create vpc cidr="10.0.0.0/24" num="3" ip="127.0.0.1" name="bousin"`,
+				verifyFn: func(n ast.Node) error {
+					return assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/24", "num": "3", "ip": "127.0.0.1", "name": "bousin"})
+				},
+			},
+			{
+				input: `create vpc cidr='10.0.0.0/24' num='3' ip='127.0.0.1' name='bousin'`,
+				verifyFn: func(n ast.Node) error {
+					return assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/24", "num": "3", "ip": "127.0.0.1", "name": "bousin"})
+				},
+			},
+			{
 				input: `create subnet vpc=$myvpc`,
 				verifyFn: func(n ast.Node) error {
 					return assertRefs(n, map[string]string{"vpc": "myvpc"})
@@ -287,7 +369,37 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
+				input: `create securitygroup port="20-80"`,
+				verifyFn: func(n ast.Node) error {
+					if err := assertParams(n, map[string]interface{}{"port": "20-80"}); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
+				input: `create securitygroup port='20-80'`,
+				verifyFn: func(n ast.Node) error {
+					if err := assertParams(n, map[string]interface{}{"port": "20-80"}); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
 				input: `create vpc array=test1,test2, 20 , my-array-elem4 ip=127.0.0.1`,
+				verifyFn: func(n ast.Node) error {
+					return assertParams(n, map[string]interface{}{"array": []string{"test1", "test2", "20", "my-array-elem4"}, "ip": "127.0.0.1"})
+				},
+			},
+			{
+				input: `create vpc array="test1,test2, 20 , my-array-elem4" ip="127.0.0.1"`,
+				verifyFn: func(n ast.Node) error {
+					return assertParams(n, map[string]interface{}{"array": []string{"test1", "test2", "20", "my-array-elem4"}, "ip": "127.0.0.1"})
+				},
+			},
+			{
+				input: `create vpc array='test1,test2, 20 , my-array-elem4' ip='127.0.0.1'`,
 				verifyFn: func(n ast.Node) error {
 					return assertParams(n, map[string]interface{}{"array": []string{"test1", "test2", "20", "my-array-elem4"}, "ip": "127.0.0.1"})
 				},
