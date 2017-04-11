@@ -103,7 +103,7 @@ func (d *hierarchicDiffer) Run(root string, from *Graph, to *Graph) (*Diff, erro
 			}
 
 			for _, extra := range extras {
-				res, ok := extra.Object().ResourceID()
+				res, ok := extra.Object().Resource()
 				if ok {
 					diff.hasDiffs = true
 					diff.toGraph.store.Add(tstore.SubjPred(res, MetaPredicate).StringLiteral(extraLit))
@@ -112,7 +112,7 @@ func (d *hierarchicDiffer) Run(root string, from *Graph, to *Graph) (*Diff, erro
 			}
 
 			for _, missing := range missings {
-				res, ok := missing.Object().ResourceID()
+				res, ok := missing.Object().Resource()
 				if ok {
 					diff.hasDiffs = true
 					diff.fromGraph.store.Add(tstore.SubjPred(res, MetaPredicate).StringLiteral(extraLit))
@@ -121,7 +121,7 @@ func (d *hierarchicDiffer) Run(root string, from *Graph, to *Graph) (*Diff, erro
 			}
 
 			for _, nextNodeToProcess := range commons {
-				res, ok := nextNodeToProcess.Object().ResourceID()
+				res, ok := nextNodeToProcess.Object().Resource()
 				if ok {
 					processing <- res
 				}

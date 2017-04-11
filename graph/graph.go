@@ -153,7 +153,7 @@ func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
 	snap := g.store.Snapshot()
 
 	for _, tri := range snap.WithSubjPred(start.Id(), cloudrdf.ApplyOn) {
-		id, ok := tri.Object().ResourceID()
+		id, ok := tri.Object().Resource()
 		if !ok {
 			return resources, fmt.Errorf("triple %s %s: object is not a resource identifier", start.Id(), cloudrdf.ApplyOn)
 		}

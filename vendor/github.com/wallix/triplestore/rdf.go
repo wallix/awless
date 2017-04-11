@@ -9,7 +9,7 @@ type Triple interface {
 
 type Object interface {
 	Literal() (Literal, bool)
-	ResourceID() (string, bool)
+	Resource() (string, bool)
 	Equal(Object) bool
 }
 
@@ -63,24 +63,24 @@ func (t *triple) Equal(other Triple) bool {
 }
 
 type object struct {
-	isLit      bool
-	resourceID string
-	lit        literal
+	isLit    bool
+	resource string
+	lit      literal
 }
 
 func (o object) Literal() (Literal, bool) {
 	return o.lit, o.isLit
 }
 
-func (o object) ResourceID() (string, bool) {
-	return o.resourceID, !o.isLit
+func (o object) Resource() (string, bool) {
+	return o.resource, !o.isLit
 }
 
 func (o object) key() string {
 	if o.isLit {
 		return "\"" + o.lit.val + "\"^^" + string(o.lit.typ)
 	}
-	return "<" + o.resourceID + ">"
+	return "<" + o.resource + ">"
 }
 
 func (o object) Equal(other Object) bool {
@@ -92,13 +92,13 @@ func (o object) Equal(other Object) bool {
 	if ok {
 		return lit.Type() == otherLit.Type() && lit.Value() == otherLit.Value()
 	}
-	resId, ok := o.ResourceID()
-	otherResId, otherOk := other.ResourceID()
+	res, ok := o.Resource()
+	otherRes, otherOk := other.Resource()
 	if ok != otherOk {
 		return false
 	}
 	if ok {
-		return resId == otherResId
+		return res == otherRes
 	}
 	return true
 }

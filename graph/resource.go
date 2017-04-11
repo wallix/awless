@@ -308,7 +308,7 @@ func resolveResourceType(g tstore.RDFGraph, id string) (string, error) {
 }
 
 func unmarshalResourceType(obj tstore.Object) (string, error) {
-	node, ok := obj.ResourceID()
+	node, ok := obj.Resource()
 	if !ok {
 		return "", fmt.Errorf("object is not a resource identifier, %v", obj)
 	}

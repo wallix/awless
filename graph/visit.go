@@ -117,7 +117,7 @@ func visitTopDown(snap tstore.RDFGraph, root string, each func(tstore.RDFGraph, 
 
 	var childs []string
 	for _, tri := range triples {
-		n, ok := tri.Object().ResourceID()
+		n, ok := tri.Object().Resource()
 		if !ok {
 			return fmt.Errorf("object is not a resource identifier")
 		}
@@ -176,7 +176,7 @@ func visitSiblings(snap tstore.RDFGraph, start string, each func(tstore.RDFGraph
 
 		var childs []string
 		for _, parentT := range parentTs {
-			child, ok := parentT.Object().ResourceID()
+			child, ok := parentT.Object().Resource()
 			if !ok {
 				return fmt.Errorf("object is not a resource identifier")
 			}

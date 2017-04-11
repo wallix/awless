@@ -5,7 +5,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -143,9 +145,9 @@ func encodeTriple(t Triple) ([]byte, error) {
 		buff.WriteString(litVal)
 	} else {
 		binary.Write(&buff, binary.BigEndian, resourceTypeEncoding)
-		resID, _ := obj.ResourceID()
-		binary.Write(&buff, binary.BigEndian, wordLength(len(resID)))
-		buff.WriteString(resID)
+		res, _ := obj.Resource()
+		binary.Write(&buff, binary.BigEndian, wordLength(len(res)))
+		buff.WriteString(res)
 	}
 
 	return buff.Bytes(), nil
@@ -197,7 +199,7 @@ func (dec *binaryDecoder) decodeTriple() (bool, error) {
 		if err != nil {
 			return false, fmt.Errorf("resource: %s", err)
 		}
-		decodedObj.resourceID = string(resource)
+		decodedObj.resource = string(resource)
 
 	} else {
 		decodedObj.isLit = true
@@ -258,7 +260,7 @@ func (enc *ntriplesEncoder) Encode(tris ...Triple) error {
 	var buff bytes.Buffer
 	for _, t := range tris {
 		buff.WriteString(fmt.Sprintf("<%s> <%s> ", enc.buildIRI(t.Subject()), enc.buildIRI(t.Predicate())))
-		if rid, ok := t.Object().ResourceID(); ok {
+		if rid, ok := t.Object().Resource(); ok {
 			buff.WriteString(fmt.Sprintf("<%s>", enc.buildIRI(rid)))
 		}
 		if lit, ok := t.Object().Literal(); ok {
@@ -270,7 +272,7 @@ func (enc *ntriplesEncoder) Encode(tris ...Triple) error {
 				namespace = lit.Type().NTriplesNamespaced()
 			}
 
-			buff.WriteString(fmt.Sprintf("\"%s\"%s", lit.Value(), namespace))
+			buff.WriteString(fmt.Sprintf("%s%s", strconv.QuoteToASCII(lit.Value()), namespace))
 		}
 		buff.WriteString(" .\n")
 	}
@@ -285,13 +287,13 @@ func (enc *ntriplesEncoder) buildIRI(id string) string {
 			for k, uri := range enc.c.Prefixes {
 				prefix := k + ":"
 				if strings.HasPrefix(id, prefix) {
-					id = uri + strings.TrimLeft(id, prefix)
+					id = uri + url.QueryEscape(strings.TrimPrefix(id, prefix))
 					continue
 				}
 			}
 		}
 		if !strings.HasPrefix(id, "http") && enc.c.Base != "" {
-			id = enc.c.Base + id
+			id = enc.c.Base + url.QueryEscape(id)
 		}
 	}
 	return id

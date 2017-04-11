@@ -75,7 +75,7 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 	case definedBy == cloudrdf.RdfsLiteral, (definedBy == cloudrdf.RdfsList) && (dataType == cloudrdf.XsdString):
 		return tstore.ParseLiteral(propObj)
 	case definedBy == cloudrdf.RdfsList && dataType == cloudrdf.NetFirewallRule:
-		id, ok := propObj.ResourceID()
+		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
 		}
@@ -86,13 +86,13 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 		}
 		return rule, nil
 	case definedBy == cloudrdf.RdfsClass, dataType == cloudrdf.RdfsClass:
-		id, ok := propObj.ResourceID()
+		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
 		}
 		return id, nil
 	case definedBy == cloudrdf.RdfsList && dataType == cloudrdf.NetRoute:
-		id, ok := propObj.ResourceID()
+		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
 		}
@@ -103,7 +103,7 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 		}
 		return route, nil
 	case definedBy == cloudrdf.RdfsList && dataType == cloudrdf.Grant:
-		id, ok := propObj.ResourceID()
+		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
 		}
