@@ -320,7 +320,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "attach",
 		Entity:         "instance",
 		Api:            "elbv2",
-		RequiredParams: []string{"group", "id"},
+		RequiredParams: []string{"id", "targetgroup"},
 		ExtraParams:    []string{"port"},
 	},
 	"detachinstance": {

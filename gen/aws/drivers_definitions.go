@@ -445,7 +445,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "attach", Entity: cloud.Instance, ApiMethod: "RegisterTargets", Input: "RegisterTargetsInput", Output: "RegisterTargetsOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{AwsField: "TargetGroupArn", TemplateName: "group", AwsType: "awsstr"},
+					{AwsField: "TargetGroupArn", TemplateName: "targetgroup", AwsType: "awsstr"},
 					{AwsField: "Targets[0]Id", TemplateName: "id", AwsType: "awsslicestruct"},
 				},
 				ExtraParams: []param{

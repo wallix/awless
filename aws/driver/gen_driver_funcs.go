@@ -2005,8 +2005,8 @@ func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interfa
 
 // This function was auto generated
 func (d *Elbv2Driver) Attach_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["group"]; !ok {
-		return nil, errors.New("attach instance: missing required params 'group'")
+	if _, ok := params["targetgroup"]; !ok {
+		return nil, errors.New("attach instance: missing required params 'targetgroup'")
 	}
 
 	if _, ok := params["id"]; !ok {
@@ -2023,7 +2023,7 @@ func (d *Elbv2Driver) Attach_Instance(params map[string]interface{}) (interface{
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["group"], input, "TargetGroupArn", awsstr)
+	err = setFieldWithType(params["targetgroup"], input, "TargetGroupArn", awsstr)
 	if err != nil {
 		return nil, err
 	}
