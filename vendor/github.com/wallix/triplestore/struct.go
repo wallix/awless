@@ -38,6 +38,16 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 			continue
 		}
 
+		intValue := reflect.ValueOf(fVal.Interface())
+		if intValue.Kind() == reflect.Ptr && intValue.IsNil() {
+			continue
+		}
+
+		pred := field.Tag.Get(predTag)
+		if tri, ok := buildTripleFromVal(sub, pred, fVal); ok {
+			out = append(out, tri)
+		}
+
 		tag, embedded := field.Tag.Lookup(subTag)
 		fVal, ok := getStructOrPtrToStruct(fVal)
 		if ok && embedded {
@@ -53,8 +63,6 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 			continue
 		}
 
-		pred := field.Tag.Get(predTag)
-
 		switch fVal.Kind() {
 		case reflect.Slice:
 			length := fVal.Len()
@@ -66,9 +74,6 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 			}
 		}
 
-		if tri, ok := buildTripleFromVal(sub, pred, fVal); ok {
-			out = append(out, tri)
-		}
 	}
 
 	return

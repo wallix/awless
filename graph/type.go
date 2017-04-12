@@ -200,10 +200,10 @@ func (routes Routes) Sort() {
 }
 
 type Route struct {
-	Destination             *net.IPNet
-	DestinationIPv6         *net.IPNet
-	DestinationPrefixListId string
-	Targets                 []*RouteTarget
+	Destination             *net.IPNet     `predicate:"net:cidr"`
+	DestinationIPv6         *net.IPNet     `predicate:"net:cidrv6"`
+	DestinationPrefixListId string         `predicate:"net:routeDestinationPrefixList"`
+	Targets                 []*RouteTarget `predicate:"net:routeTargets"`
 }
 
 func (r *Route) String() string {
@@ -213,18 +213,7 @@ func (r *Route) String() string {
 func (r *Route) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
 	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.NetRoute))
-
-	if r.Destination != nil {
-		triples = append(triples, tstore.SubjPred(id, cloudrdf.CIDR).StringLiteral(r.Destination.String()))
-	}
-	if r.DestinationIPv6 != nil {
-		triples = append(triples, tstore.SubjPred(id, cloudrdf.CIDRv6).StringLiteral(r.DestinationIPv6.String()))
-	}
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.NetDestinationPrefixList).StringLiteral(r.DestinationPrefixListId))
-
-	for _, t := range r.Targets {
-		triples = append(triples, tstore.SubjPred(id, cloudrdf.NetRouteTargets).StringLiteral(t.String()))
-	}
+	triples = append(triples, tstore.TriplesFromStruct(id, r)...)
 	return triples
 }
 
