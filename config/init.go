@@ -28,20 +28,21 @@ import (
 
 var (
 	AwlessHome                          = filepath.Join(os.Getenv("HOME"), ".awless")
-	RepoDir                             = filepath.Join(AwlessHome, "aws", "rdf")
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
 	AwlessFirstInstall, AwlessFirstSync bool
 )
 
-func InitAwlessEnv() error {
+func init() {
 	os.Setenv("__AWLESS_HOME", AwlessHome)
 	os.Setenv("__AWLESS_KEYS_DIR", KeysDir)
+}
+
+func InitAwlessEnv() error {
 	_, err := os.Stat(AwlessHome)
 
 	AwlessFirstInstall = os.IsNotExist(err)
 
-	os.MkdirAll(RepoDir, 0700)
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {

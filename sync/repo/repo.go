@@ -26,7 +26,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
 
 	git "gopkg.in/src-d/go-git.v4"
@@ -64,9 +63,15 @@ type gitRepo struct {
 	path  string
 }
 
+func Dir() string {
+	return filepath.Join(os.Getenv("__AWLESS_HOME"), "aws", "rdf")
+}
+
 func New() (Repo, error) {
 	if IsGitInstalled() {
-		return newGitRepo(config.RepoDir)
+		dir := Dir()
+		os.MkdirAll(dir, 0700)
+		return newGitRepo(dir)
 	} else {
 		return &noRevisionRepo{}, nil
 	}

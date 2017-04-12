@@ -8,8 +8,12 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/wallix/awless/aws"
 	awsconfig "github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/sync"
 )
 
 var (
@@ -39,7 +43,7 @@ const (
 
 var configDefinitions = map[string]*Definition{
 	autosyncConfigKey:                {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
-	RegionConfigKey:                  {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFn: awsconfig.WarningChangeRegion},
+	RegionConfigKey:                  {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{awsconfig.WarningChangeRegion, runSyncWithUpdatedRegion}},
 	ProfileConfigKey:                 {help: "AWS profile", defaultValue: "default"},
 	"aws.infra.sync":                 {help: "Sync AWS EC2/ELBv2 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.access.sync":                {help: "Sync AWS IAM service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
@@ -63,11 +67,13 @@ var deprecated = map[string]string{
 	"region":    RegionConfigKey,
 }
 
+type onUpdateFunc func(interface{})
+
 type Definition struct {
 	help                 string
 	parseParamFn         func(string) (interface{}, error)
 	stdinParamProviderFn func() string
-	onUpdateFn           func(interface{})
+	onUpdateFns          []onUpdateFunc
 	defaultValue         string
 }
 
@@ -128,8 +134,10 @@ func Set(key, value string) error {
 	if err := db.SetConfig(databaseKey, key, v); err != nil {
 		return err
 	}
-	if def != nil && def.onUpdateFn != nil {
-		def.onUpdateFn(v)
+	if def != nil {
+		for _, fn := range def.onUpdateFns {
+			fn(v)
+		}
 	}
 
 	return nil
@@ -324,4 +332,22 @@ func displayDefaults() string {
 		t.Flush()
 	}
 	return b.String()
+}
+
+func runSyncWithUpdatedRegion(i interface{}) {
+	if !GetAutosync() {
+		return
+	}
+
+	fmt.Println("Syncing new region...")
+	aws.InitServices(GetConfigWithPrefix("aws."), logger.DiscardLogger)
+
+	var services []cloud.Service
+	for _, srv := range cloud.ServiceRegistry {
+		services = append(services, srv)
+	}
+
+	if sync.DefaultSyncer != nil {
+		sync.DefaultSyncer.Sync(services...)
+	}
 }

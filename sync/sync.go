@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync/repo"
@@ -128,7 +127,7 @@ Loop:
 		if err != nil {
 			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
 		}
-		filepath := filepath.Join(config.RepoDir, filename)
+		filepath := filepath.Join(repo.Dir(), filename)
 		if err = ioutil.WriteFile(filepath, tofile, 0600); err != nil {
 			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", filepath, err))
 		}
@@ -156,7 +155,7 @@ func concatErrors(errs []error) error {
 }
 
 func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
-	path := filepath.Join(config.RepoDir, fmt.Sprintf("%s%s", serviceName, fileExt))
+	path := filepath.Join(repo.Dir(), fmt.Sprintf("%s%s", serviceName, fileExt))
 	g, err := graph.NewGraphFromFile(path)
 	if err != nil {
 		return graph.NewGraph()
@@ -165,7 +164,7 @@ func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
 }
 
 func LoadAllGraphs() (*graph.Graph, error) {
-	path := filepath.Join(config.RepoDir, fmt.Sprintf("*%s", fileExt))
+	path := filepath.Join(repo.Dir(), fmt.Sprintf("*%s", fileExt))
 	files, _ := filepath.Glob(path)
 
 	g := graph.NewGraph()
