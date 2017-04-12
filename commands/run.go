@@ -220,8 +220,13 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 	awsDriver.SetLogger(logger.DefaultLogger)
 
-	err = templ.DryRun(awsDriver)
-	exitOn(err)
+	errs := templ.DryRun(awsDriver)
+	if len(errs) > 0 {
+		for _, dryRunErr := range errs {
+			logger.Errorf(dryRunErr.Error())
+		}
+		exitOn(errors.New("Dryrun failed"))
+	}
 
 	fmt.Printf("%s\n", renderGreenFn(templ))
 
@@ -237,7 +242,9 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 	if strings.TrimSpace(yesorno) == "y" {
 		newTempl, err := templ.Run(awsDriver)
-		exitOn(err)
+		if err != nil {
+			logger.Errorf("Running template error: %s", err)
+		}
 
 		printer := template.NewDefaultPrinter(os.Stdout)
 		printer.RenderKO = renderRedFn
@@ -248,7 +255,10 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		exitOn(err)
 		defer close()
 
-		db.AddTemplate(newTempl)
+		err = db.AddTemplate(newTempl)
+		if err != nil {
+			logger.Errorf("Cannot save executed template in awless logs: %s", err)
+		}
 		if template.IsRevertible(newTempl) {
 			fmt.Println()
 			logger.Infof("Revert this template with `awless revert %s`", newTempl.ID)

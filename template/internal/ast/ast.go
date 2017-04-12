@@ -72,13 +72,13 @@ func (n *CommandNode) Result() interface{} { return n.CmdResult }
 func (n *CommandNode) Err() error          { return n.CmdErr }
 
 func (n *CommandNode) Keys() (keys []string) {
-	for k, _ := range n.Params {
+	for k := range n.Params {
 		keys = append(keys, k)
 	}
-	for k, _ := range n.Holes {
+	for k := range n.Holes {
 		keys = append(keys, k)
 	}
-	for k, _ := range n.Refs {
+	for k := range n.Refs {
 		keys = append(keys, k)
 	}
 

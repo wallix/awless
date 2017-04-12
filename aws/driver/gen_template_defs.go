@@ -260,6 +260,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
+	"checkloadbalancer": {
+		Action:         "check",
+		Entity:         "loadbalancer",
+		Api:            "elbv2",
+		RequiredParams: []string{"id", "state", "timeout"},
+		ExtraParams:    []string{},
+	},
 	"createlistener": {
 		Action:         "create",
 		Entity:         "listener",
@@ -536,6 +543,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "keypair")
 	supported["create"] = append(supported["create"], "loadbalancer")
 	supported["delete"] = append(supported["delete"], "loadbalancer")
+	supported["check"] = append(supported["check"], "loadbalancer")
 	supported["create"] = append(supported["create"], "listener")
 	supported["delete"] = append(supported["delete"], "listener")
 	supported["create"] = append(supported["create"], "targetgroup")

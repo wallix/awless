@@ -50,7 +50,7 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			cmd.ProcessRefs(vars)
 
 			if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
-				return current, cmd.CmdErr
+				return current, nil
 			}
 		case *ast.DeclarationNode:
 			ident := clone.Node.(*ast.DeclarationNode).Ident
@@ -65,7 +65,7 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 				cmd.ProcessRefs(vars)
 
 				if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
-					return current, cmd.CmdErr
+					return current, nil
 				}
 				vars[ident] = cmd.CmdResult
 			}
@@ -75,12 +75,21 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	return current, nil
 }
 
-func (s *Template) DryRun(d driver.Driver) error {
+func (s *Template) DryRun(d driver.Driver) (errors []error) {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
 
-	_, err := s.Run(d)
-	return err
+	res, err := s.Run(d)
+	if err != nil {
+		errors = append(errors, err)
+		return
+	}
+	for _, cmd := range res.CommandNodesIterator() {
+		if cmderr := cmd.Err(); cmderr != nil {
+			errors = append(errors, cmderr)
+		}
+	}
+	return
 }
 
 func (s *Template) Validate(rules ...Validator) (all []error) {

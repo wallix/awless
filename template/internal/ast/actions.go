@@ -20,15 +20,15 @@ const (
 )
 
 var actions = map[Action]struct{}{
-	NoneAction: struct{}{},
-	Create:     struct{}{},
-	Delete:     struct{}{},
-	Update:     struct{}{},
-	Check:      struct{}{},
-	Start:      struct{}{},
-	Stop:       struct{}{},
-	Attach:     struct{}{},
-	Detach:     struct{}{},
+	NoneAction: {},
+	Create:     {},
+	Delete:     {},
+	Update:     {},
+	Check:      {},
+	Start:      {},
+	Stop:       {},
+	Attach:     {},
+	Detach:     {},
 }
 
 func IsInvalidAction(s string) bool {

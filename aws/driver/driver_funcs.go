@@ -31,12 +31,17 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/mitchellh/ioprogress"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
+)
+
+const (
+	notFoundState = "not-found"
 )
 
 func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -262,6 +267,78 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 				}
 			}
 
+		case <-timer.C:
+			return nil, fmt.Errorf("timeout of %s expired", timeout)
+		}
+	}
+}
+
+func (d *Elbv2Driver) Check_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check loadbalancer: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"provisioning": {},
+		"active":       {},
+		"failed":       {},
+		notFoundState:  {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check loadbalancer: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check loadbalancer: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check loadbalancer: missing required params 'timeout'")
+	}
+
+	d.logger.Verbose("params dry run: check loadbalancer ok")
+	return nil, nil
+}
+
+func (d *Elbv2Driver) Check_Loadbalancer(params map[string]interface{}) (interface{}, error) {
+	input := &elbv2.DescribeLoadBalancersInput{}
+
+	// Required params
+	err := setFieldWithType(params["id"], input, "LoadBalancerArns", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+
+	timeout := time.Duration(params["timeout"].(int)) * time.Second
+	timer := time.NewTimer(timeout)
+	retry := 5 * time.Second
+	for {
+		select {
+		case <-time.After(retry):
+			output, err := d.DescribeLoadBalancers(input)
+			var currentStatus string
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "LoadBalancerNotFound" {
+						currentStatus = notFoundState
+					}
+				} else {
+					return nil, fmt.Errorf("check loadbalancer: %s", err)
+				}
+			} else {
+				for _, lb := range output.LoadBalancers {
+					if aws.StringValue(lb.LoadBalancerArn) == params["id"] {
+						currentStatus = aws.StringValue(lb.State.Code)
+					}
+				}
+			}
+			if currentStatus == params["state"] {
+				d.logger.Verbosef("check loadbalancer status '%s' done", params["state"])
+				timer.Stop()
+				return nil, nil
+			}
+			d.logger.Infof("loadbalancer status '%s', expect '%s', retry in %s (timeout %s).", currentStatus, params["state"], retry, timeout)
 		case <-timer.C:
 			return nil, fmt.Errorf("timeout of %s expired", timeout)
 		}

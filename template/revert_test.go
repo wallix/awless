@@ -19,7 +19,28 @@ func TestRevertTemplate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		exp := "delete instance id=i-54321\ncheck instance id=i-54321 state=terminated timeout=180"
+		exp := "delete instance id=i-54321"
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
+
+	t.Run("Revert an instance creation that is not the first command", func(t *testing.T) {
+		tpl := MustParse("create subnet\ncreate instance type=t2.micro")
+		for i, cmd := range tpl.CommandNodesIterator() {
+			if i == 0 {
+				cmd.CmdResult = "i-12345"
+			}
+			if i == 1 {
+				cmd.CmdResult = "i-54321"
+			}
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := "delete instance id=i-54321\ncheck instance id=i-54321 state=terminated timeout=180\ndelete subnet id=i-12345"
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
@@ -48,6 +69,43 @@ func TestRevertTemplate(t *testing.T) {
 		}
 
 		exp := "delete tag key=Key resource=myinst value=Value\nstop instance id=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
+
+	t.Run("Revert load balancer creation", func(t *testing.T) {
+		tpl := MustParse(`
+loadbalancerfw = create securitygroup
+update securitygroup cidr=0.0.0.0/0 id=$loadbalancerfw inbound=authorize portrange=80 protocol=tcp
+lb = create loadbalancer groups=$loadbalancerfw name=loadbalancer
+create listener actiontype=forward loadbalancer=$lb
+inst1 = create instance
+`)
+		for i, cmd := range tpl.CommandNodesIterator() {
+			if i == 0 {
+				cmd.CmdResult = "secgroup-1"
+			}
+			if i == 2 {
+				cmd.CmdResult = "lb-1"
+			}
+			if i == 3 {
+				cmd.CmdResult = "list-1"
+			}
+			if i == 4 {
+				cmd.CmdResult = "i-1"
+			}
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+		exp := `delete instance id=i-1
+check instance id=i-1 state=terminated timeout=180
+delete listener id=list-1
+delete loadbalancer id=lb-1
+check loadbalancer id=lb-1 state=not-found timeout=180
+delete securitygroup id=secgroup-1`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

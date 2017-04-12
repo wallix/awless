@@ -272,6 +272,12 @@ func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err e
 		}
 		return d.Delete_Loadbalancer, nil
 
+	case "checkloadbalancer":
+		if d.dryRun {
+			return d.Check_Loadbalancer_DryRun, nil
+		}
+		return d.Check_Loadbalancer, nil
+
 	case "createlistener":
 		if d.dryRun {
 			return d.Create_Listener_DryRun, nil

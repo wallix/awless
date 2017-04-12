@@ -67,7 +67,7 @@ func sortUnique(arr []string) (sorted []string) {
 		unique[s] = struct{}{}
 	}
 
-	for k, _ := range unique {
+	for k := range unique {
 		sorted = append(sorted, k)
 	}
 
@@ -360,6 +360,14 @@ var DriversDefs = []driversDef{
 				Action: "delete", Entity: cloud.LoadBalancer, Input: "DeleteLoadBalancerInput", Output: "DeleteLoadBalancerOutput", ApiMethod: "DeleteLoadBalancer", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "LoadBalancerArn", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "check", Entity: cloud.LoadBalancer, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
 				},
 			},
 			// Listener
