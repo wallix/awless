@@ -11,10 +11,12 @@
 - ssh: print SSH configuration (`~/.ssh/config`) or the CLI one-liner to connect with SSH using `--print-config` or `--print-cli` flags.
 - ssh: better handle when several instances have the same name (e.g., with a running and a terminated instance)
 - ssh: more warning; provide help and context on failing connections
+- Manage properly secgroups on instances with `awless attach/detach securitygroup id=... instance=@my-instance`
 
 ### Bugfixes
 
 - `awless whoami` now supports displaying info for `root` user and user with org path
+- Fix the fact you could not attach multiple security groups to an instance
 - Reverting the creation of a load balancer now waits the deletion of its network interfaces
 
 ## v0.0.21 [2017-03-23]

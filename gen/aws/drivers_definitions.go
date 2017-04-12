@@ -150,7 +150,6 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "InstanceType", TemplateName: "type", AwsType: "awsstr"},
-					{AwsField: "Groups", TemplateName: "group", AwsType: "awsstringslice"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
 				},
 			},
@@ -216,6 +215,25 @@ var DriversDefs = []driversDef{
 					{TemplateName: "timeout"},
 				},
 			},
+			{
+				Action: "attach", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "instance"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "instance"},
+				},
+			},
+
 			// VOLUME
 			{
 				Action: "create", Entity: cloud.Volume, Input: "CreateVolumeInput", Output: "Volume", ApiMethod: "CreateVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",

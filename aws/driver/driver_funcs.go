@@ -39,11 +39,116 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/driver"
 )
 
 const (
 	notFoundState = "not-found"
 )
+
+func (d *Ec2Driver) Attach_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("attach securitygroup: missing required params 'id'")
+	}
+
+	_, hasInstance := params["instance"]
+
+	if !hasInstance {
+		return nil, errors.New("attach securitygroup: missing 'instance' param")
+	}
+
+	d.logger.Verbose("params dry run: attach securitygroup ok")
+	return nil, nil
+}
+
+func (d *Ec2Driver) Attach_Securitygroup(params map[string]interface{}) (interface{}, error) {
+	instance, hasInstance := params["instance"].(string)
+
+	switch {
+	case hasInstance:
+		groups, err := d.fetchInstanceSecurityGroups(instance)
+		if err != nil {
+			return nil, fmt.Errorf("fetching security groups for instance %s: %s", instance, err)
+		}
+
+		groups = append(groups, fmt.Sprint(params["id"]))
+		if len(groups) == 0 {
+			d.logger.Errorf("AWS instances must have at least one security group")
+		}
+		return performCall(d, d.logger, "attach securitygroup", &ec2.ModifyInstanceAttributeInput{}, d.ModifyInstanceAttribute, []setter{
+			{val: instance, fieldPath: "InstanceID", fieldType: awsstr},
+			{val: groups, fieldPath: "Groups", fieldType: awsstringslice},
+		}...)
+	}
+
+	return nil, errors.New("missing 'instance' param")
+}
+
+func (d *Ec2Driver) Detach_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("detach securitygroup: missing required params 'id'")
+	}
+
+	_, hasInstance := params["instance"]
+
+	if !hasInstance {
+		return nil, errors.New("detach securitygroup: missing 'instance' param")
+	}
+
+	d.logger.Verbose("params dry run: detach securitygroup ok")
+	return nil, nil
+}
+
+func (d *Ec2Driver) Detach_Securitygroup(params map[string]interface{}) (interface{}, error) {
+	instance, hasInstance := params["instance"].(string)
+
+	switch {
+	case hasInstance:
+		groups, err := d.fetchInstanceSecurityGroups(instance)
+		if err != nil {
+			return nil, fmt.Errorf("fetching security groups for instance %s: %s", instance, err)
+		}
+
+		cleaned := removeString(groups, fmt.Sprint(params["id"]))
+
+		if len(cleaned) == 0 {
+			d.logger.Errorf("AWS instances must have at least one security group")
+		}
+		return performCall(d, d.logger, "attach securitygroup", &ec2.ModifyInstanceAttributeInput{}, d.ModifyInstanceAttribute, []setter{
+			{val: instance, fieldPath: "InstanceID", fieldType: awsstr},
+			{val: cleaned, fieldPath: "Groups", fieldType: awsstringslice},
+		}...)
+	}
+
+	return nil, errors.New("missing 'instance' param")
+}
+
+func (d *Ec2Driver) fetchInstanceSecurityGroups(id string) ([]string, error) {
+	params := &ec2.DescribeInstanceAttributeInput{
+		Attribute:  aws.String("groupSet"),
+		InstanceId: aws.String(id),
+	}
+	resp, err := d.DescribeInstanceAttribute(params)
+	if err != nil {
+		return nil, err
+	}
+
+	var groups []string
+	for _, g := range resp.Groups {
+		groups = append(groups, aws.StringValue(g.GroupId))
+	}
+
+	return groups, nil
+}
+
+func removeString(arr []string, s string) (out []string) {
+	for _, e := range arr {
+		if e != s {
+			out = append(out, e)
+		}
+	}
+	return
+}
 
 func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
@@ -67,12 +172,12 @@ func (d *IamDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 
 	switch {
 	case hasUser:
-		return performCall(d, "attach user", &iam.AttachUserPolicyInput{}, d.AttachUserPolicy, []setter{
+		return performCall(d, d.logger, "attach user", &iam.AttachUserPolicyInput{}, d.AttachUserPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: user, fieldPath: "UserName", fieldType: awsstr},
 		}...)
 	case hasGroup:
-		return performCall(d, "attach user", &iam.AttachGroupPolicyInput{}, d.AttachGroupPolicy, []setter{
+		return performCall(d, d.logger, "attach user", &iam.AttachGroupPolicyInput{}, d.AttachGroupPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: group, fieldPath: "GroupName", fieldType: awsstr},
 		}...)
@@ -103,12 +208,12 @@ func (d *IamDriver) Detach_Policy(params map[string]interface{}) (interface{}, e
 
 	switch {
 	case hasUser:
-		return performCall(d, "detach user", &iam.DetachUserPolicyInput{}, d.DetachUserPolicy, []setter{
+		return performCall(d, d.logger, "detach user", &iam.DetachUserPolicyInput{}, d.DetachUserPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: user, fieldPath: "UserName", fieldType: awsstr},
 		}...)
 	case hasGroup:
-		return performCall(d, "detach user", &iam.DetachGroupPolicyInput{}, d.DetachGroupPolicy, []setter{
+		return performCall(d, d.logger, "detach user", &iam.DetachGroupPolicyInput{}, d.DetachGroupPolicy, []setter{
 			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
 			{val: group, fieldPath: "GroupName", fieldType: awsstr},
 		}...)
@@ -123,7 +228,7 @@ type setter struct {
 	fieldType int
 }
 
-func performCall(d *IamDriver, desc string, input interface{}, fn interface{}, setters ...setter) (output interface{}, err error) {
+func performCall(d driver.Driver, dlog *logger.Logger, desc string, input interface{}, fn interface{}, setters ...setter) (output interface{}, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			output = nil
@@ -147,8 +252,8 @@ func performCall(d *IamDriver, desc string, input interface{}, fn interface{}, s
 		return nil, fmt.Errorf("%s: %s", desc, err)
 	}
 
-	d.logger.ExtraVerbosef("%s call took %s", desc, time.Since(start))
-	d.logger.Verbosef("%s done", desc)
+	dlog.ExtraVerbosef("%s call took %s", desc, time.Since(start))
+	dlog.Verbosef("%s done", desc)
 
 	output = results[0].Interface()
 

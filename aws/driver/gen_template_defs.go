@@ -69,7 +69,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "instance",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
-		ExtraParams:    []string{"group", "lock", "type"},
+		ExtraParams:    []string{"lock", "type"},
 	},
 	"deleteinstance": {
 		Action:         "delete",
@@ -126,6 +126,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Api:            "ec2",
 		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
+	},
+	"attachsecuritygroup": {
+		Action:         "attach",
+		Entity:         "securitygroup",
+		Api:            "ec2",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{"instance"},
+	},
+	"detachsecuritygroup": {
+		Action:         "detach",
+		Entity:         "securitygroup",
+		Api:            "ec2",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{"instance"},
 	},
 	"createvolume": {
 		Action:         "create",
@@ -531,6 +545,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["update"] = append(supported["update"], "securitygroup")
 	supported["delete"] = append(supported["delete"], "securitygroup")
 	supported["check"] = append(supported["check"], "securitygroup")
+	supported["attach"] = append(supported["attach"], "securitygroup")
+	supported["detach"] = append(supported["detach"], "securitygroup")
 	supported["create"] = append(supported["create"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")

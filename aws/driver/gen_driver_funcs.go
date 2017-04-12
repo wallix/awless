@@ -508,12 +508,6 @@ func (d *Ec2Driver) Update_Instance_DryRun(params map[string]interface{}) (inter
 			return nil, err
 		}
 	}
-	if _, ok := params["group"]; ok {
-		err = setFieldWithType(params["group"], input, "Groups", awsstringslice)
-		if err != nil {
-			return nil, err
-		}
-	}
 	if _, ok := params["lock"]; ok {
 		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
 		if err != nil {
@@ -548,12 +542,6 @@ func (d *Ec2Driver) Update_Instance(params map[string]interface{}) (interface{},
 	// Extra params
 	if _, ok := params["type"]; ok {
 		err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if _, ok := params["group"]; ok {
-		err = setFieldWithType(params["group"], input, "Groups", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
