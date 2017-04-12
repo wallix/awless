@@ -13,8 +13,8 @@
 - easily explore your infrastructure and cloud resources inter relations via CLI
 - ensure smart defaults & security best practices
 - manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
+- ssh connect cleanly and simply to cloud instances
 - explore, analyse and query your infrastructure **offline**
-- explore, analyse and query your infrastructure **through time**
 
 `awless` brings a new approach to manage AWS infrastructures through CLI.
 
@@ -33,11 +33,11 @@
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
+- Clean and simple ssh to instances: `awless ssh`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
-- [*IN PROGRESS*] A local history and versioning of the changes that occurred in your cloud: `awless history`
 
 # Design concepts
 
@@ -86,7 +86,7 @@ Read the wiki page for setting autocompletion for [bash](https://github.com/wall
 
 Awless allows for easy resource creation with your cloud provider; We will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
 
-## First `awless` commands
+## Getting started
 
 `awless` works by performing commands, which query either the AWS services or a local snapshot of the cloud services.
 
@@ -209,17 +209,6 @@ awless revert 01B89ZY529E5D7WKDTQHFC0RPA
 
 The CLI guide you through a revert action and you have the chance to confirm or quit.
 
-### Cloud history (in progress)
-
-Using the local auto sync functionality of the cloud resources `awless history` will display in a digested manner the changes that occurred in your infra:
-
-```sh
-awless history      # show changes at the resources level
-awless history -p   # show changes including changes in the resources properties
-```
-
-*Note*: As model/relations for resources may evolve, if you have any issues with `awless history` between version upgrades, run `rm -Rf ~/.awless/aws/rdf` to start fresh.
-
 ### Sync
 
 `awless` syncs automatically (_autosync_) the remote cloud resources locally as RDF graphs.
@@ -253,14 +242,21 @@ awless config set aws.infra.listener.sync false
 
 ### SSH
 
-You can directly ssh to an instance with:
+With `awless ssh` there is a fallback on an embedded SSH client (Golang one), in case the machine does not have SSH installed. (ex: on some Windows machines or use a minimalistic cloud instance that pilot `awless`)
+
+When connecting to an instance through ssh the SSH key and default SSH user are deduced automatically by `awless`. So you can simply and directly ssh to an instance with:
 
 ```sh
-awless ssh i-abcd1234
-awless ssh ubuntu@i-abcd1234
+awless ssh i-abcd1234        # with an id
+awless ssh my-instance-name  # with a name
 ```
 
-In the first case, note that `awless` can work out the default ssh user to use given a cloud (ex: `ec2` for AWS)
+You can still specify an SSH user or a SSH key though with:
+
+```
+awless ssh ubuntu@i-abcd1234
+awless ssh -i ~/.ssh/mykey ubuntu@i-abcd1234
+```
 
 ### Aliasing
 
