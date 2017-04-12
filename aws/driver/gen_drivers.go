@@ -132,6 +132,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Securitygroup, nil
 
+	case "checksecuritygroup":
+		if d.dryRun {
+			return d.Check_Securitygroup_DryRun, nil
+		}
+		return d.Check_Securitygroup, nil
+
 	case "createvolume":
 		if d.dryRun {
 			return d.Create_Volume_DryRun, nil

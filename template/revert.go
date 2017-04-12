@@ -11,6 +11,7 @@ func (te *Template) Revert() (*Template, error) {
 	var lines []string
 	cmdsReverseIterator := te.CmdNodesReverseIterator()
 	for i, cmd := range cmdsReverseIterator {
+		notLastCommand := (i != len(cmdsReverseIterator)-1)
 		if isRevertible(cmd) {
 			var revertAction string
 			var params []string
@@ -61,8 +62,15 @@ func (te *Template) Revert() (*Template, error) {
 				}
 			}
 
+			// Prechecks
+			if cmd.Action == "create" && cmd.Entity == "securitygroup" {
+				lines = append(lines, fmt.Sprintf("check securitygroup id=%s state=unused timeout=180", cmd.CmdResult))
+			}
+
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
-			if i != len(cmdsReverseIterator)-1 { //If this command is not the last one to revert
+
+			// Postchecks
+			if notLastCommand {
 				if cmd.Action == "create" && cmd.Entity == "instance" {
 					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=180", cmd.CmdResult))
 				}

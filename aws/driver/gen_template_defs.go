@@ -120,6 +120,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
+	"checksecuritygroup": {
+		Action:         "check",
+		Entity:         "securitygroup",
+		Api:            "ec2",
+		RequiredParams: []string{"id", "state", "timeout"},
+		ExtraParams:    []string{},
+	},
 	"createvolume": {
 		Action:         "create",
 		Entity:         "volume",
@@ -523,6 +530,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["create"] = append(supported["create"], "securitygroup")
 	supported["update"] = append(supported["update"], "securitygroup")
 	supported["delete"] = append(supported["delete"], "securitygroup")
+	supported["check"] = append(supported["check"], "securitygroup")
 	supported["create"] = append(supported["create"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")

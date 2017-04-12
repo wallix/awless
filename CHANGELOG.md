@@ -14,7 +14,8 @@
 
 ### Bugfixes
 
-- `awless whoami` now supports displaying info for `root` user and user with org path 
+- `awless whoami` now supports displaying info for `root` user and user with org path
+- Reverting the creation of a load balancer now waits the deletion of its network interfaces
 
 ## v0.0.21 [2017-03-23]
 

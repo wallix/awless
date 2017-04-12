@@ -38,6 +38,7 @@ import (
 	"github.com/mitchellh/ioprogress"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
+	"github.com/wallix/awless/logger"
 )
 
 const (
@@ -200,18 +201,38 @@ func (d *IamDriver) Create_Accesskey(params map[string]interface{}) (interface{}
 }
 
 func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
-	input := &ec2.DescribeInstancesInput{}
-	input.DryRun = aws.Bool(true)
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check instance: missing required params 'id'")
+	}
 
-	for _, val := range []string{"state", "id", "timeout"} {
-		if _, ok := params[val]; !ok {
-			return nil, fmt.Errorf("check instance: missing required param '%s'", val)
+	states := map[string]struct{}{
+		"pending":       {},
+		"running":       {},
+		"shutting-down": {},
+		"terminated":    {},
+		"stopping":      {},
+		"stopped":       {},
+		notFoundState:   {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check instance: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check instance: invalid state '%s'", state)
 		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check instance: missing required params 'timeout'")
 	}
 
 	if _, ok := params["timeout"].(int); !ok {
 		return nil, errors.New("check instance: timeout param is not int")
 	}
+
+	input := &ec2.DescribeInstancesInput{}
+	input.DryRun = aws.Bool(true)
 
 	// Required params
 	err := setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
@@ -239,38 +260,96 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
-
-	timeout := time.Duration(params["timeout"].(int)) * time.Second
-	timer := time.NewTimer(timeout)
-	retry := 5 * time.Second
-	for {
-		select {
-		case <-time.After(retry):
+	c := &checker{
+		description: "instance",
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
 			output, err := d.DescribeInstances(input)
 			if err != nil {
-				return nil, fmt.Errorf("check instance: %s", err)
-			}
-
-			if res := output.Reservations; len(res) > 0 {
-				if instances := output.Reservations[0].Instances; len(instances) > 0 {
-					for _, inst := range instances {
-						if aws.StringValue(inst.InstanceId) == params["id"] {
-							currentStatus := aws.StringValue(inst.State.Name)
-							if currentStatus == params["state"] {
-								d.logger.Verbosef("check instance status '%s' done", params["state"])
-								timer.Stop()
-								return nil, nil
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "InstanceNotFound" {
+						return notFoundState, nil
+					}
+				} else {
+					return "", err
+				}
+			} else {
+				if res := output.Reservations; len(res) > 0 {
+					if instances := output.Reservations[0].Instances; len(instances) > 0 {
+						for _, inst := range instances {
+							if aws.StringValue(inst.InstanceId) == params["id"] {
+								return aws.StringValue(inst.State.Name), nil
 							}
-							d.logger.Infof("instance status '%s', expect '%s', retry in %s (timeout %s).", currentStatus, params["state"], retry, timeout)
 						}
 					}
 				}
 			}
+			return notFoundState, nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
 
-		case <-timer.C:
-			return nil, fmt.Errorf("timeout of %s expired", timeout)
+func (d *Ec2Driver) Check_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check security group: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"unused": {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check security group: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check security group: invalid state '%s'", state)
 		}
 	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check security group: missing required params 'timeout'")
+	}
+
+	if _, ok := params["timeout"].(int); !ok {
+		return nil, errors.New("check security group: timeout param is not int")
+	}
+	d.logger.Verbose("dry run: check instance ok")
+	return nil, nil
+}
+
+func (d *Ec2Driver) Check_Securitygroup(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DescribeNetworkInterfacesInput{
+		Filters: []*ec2.Filter{
+			{Name: aws.String("group-id"), Values: []*string{aws.String(fmt.Sprint(params["id"]))}},
+		},
+	}
+
+	c := &checker{
+		description: "securitygroup",
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeNetworkInterfaces(input)
+			if err != nil {
+				return "", err
+			}
+			if len(output.NetworkInterfaces) == 0 {
+				return "unused", nil
+			}
+			var niIds []string
+			for _, ni := range output.NetworkInterfaces {
+				niIds = append(niIds, aws.StringValue(ni.NetworkInterfaceId))
+			}
+			return fmt.Sprintf("used by %s", strings.Join(niIds, ", ")), nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
 }
 
 func (d *Elbv2Driver) Check_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -309,40 +388,33 @@ func (d *Elbv2Driver) Check_Loadbalancer(params map[string]interface{}) (interfa
 	if err != nil {
 		return nil, err
 	}
-
-	timeout := time.Duration(params["timeout"].(int)) * time.Second
-	timer := time.NewTimer(timeout)
-	retry := 5 * time.Second
-	for {
-		select {
-		case <-time.After(retry):
+	c := &checker{
+		description: "loadbalancer",
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
 			output, err := d.DescribeLoadBalancers(input)
-			var currentStatus string
 			if err != nil {
 				if awserr, ok := err.(awserr.Error); ok {
 					if awserr.Code() == "LoadBalancerNotFound" {
-						currentStatus = notFoundState
+						return notFoundState, nil
 					}
 				} else {
-					return nil, fmt.Errorf("check loadbalancer: %s", err)
+					return "", err
 				}
 			} else {
 				for _, lb := range output.LoadBalancers {
 					if aws.StringValue(lb.LoadBalancerArn) == params["id"] {
-						currentStatus = aws.StringValue(lb.State.Code)
+						return aws.StringValue(lb.State.Code), nil
 					}
 				}
 			}
-			if currentStatus == params["state"] {
-				d.logger.Verbosef("check loadbalancer status '%s' done", params["state"])
-				timer.Stop()
-				return nil, nil
-			}
-			d.logger.Infof("loadbalancer status '%s', expect '%s', retry in %s (timeout %s).", currentStatus, params["state"], retry, timeout)
-		case <-timer.C:
-			return nil, fmt.Errorf("timeout of %s expired", timeout)
-		}
+			return notFoundState, nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
 	}
+	return nil, c.check()
 }
 
 func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -930,5 +1002,35 @@ func fakeDryRunId(entity string) string {
 		return fmt.Sprintf("igw-%d", suffix)
 	default:
 		return fmt.Sprintf("dryrunid-%d", suffix)
+	}
+}
+
+type checker struct {
+	description string
+	timeout     time.Duration
+	frequency   time.Duration
+	fetchFunc   func() (string, error)
+	expect      string
+	logger      *logger.Logger
+}
+
+func (c *checker) check() error {
+	timer := time.NewTimer(c.timeout)
+	defer timer.Stop()
+	for {
+		select {
+		case <-time.After(c.frequency):
+			got, err := c.fetchFunc()
+			if err != nil {
+				return fmt.Errorf("check %s: %s", c.description, err)
+			}
+			if got == c.expect {
+				c.logger.Verbosef("check %s status '%s' done", c.description, c.expect)
+				return nil
+			}
+			c.logger.Infof("%s status '%s', expect '%s', retry in %s (timeout %s).", c.description, got, c.expect, c.frequency, c.timeout)
+		case <-timer.C:
+			return fmt.Errorf("timeout of %s expired", c.timeout)
+		}
 	}
 }

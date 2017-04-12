@@ -105,7 +105,25 @@ check instance id=i-1 state=terminated timeout=180
 delete listener id=list-1
 delete loadbalancer id=lb-1
 check loadbalancer id=lb-1 state=not-found timeout=180
+check securitygroup id=secgroup-1 state=unused timeout=180
 delete securitygroup id=secgroup-1`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
+
+	t.Run("Delete one securitygroup", func(t *testing.T) {
+		tpl := MustParse("create securitygroup")
+		for _, cmd := range tpl.CommandNodesIterator() {
+			cmd.CmdResult = "sg-54321"
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `check securitygroup id=sg-54321 state=unused timeout=180
+delete securitygroup id=sg-54321`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

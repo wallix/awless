@@ -208,7 +208,14 @@ var DriversDefs = []driversDef{
 					{AwsField: "GroupId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
-
+			{
+				Action: "check", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
 			// VOLUME
 			{
 				Action: "create", Entity: cloud.Volume, Input: "CreateVolumeInput", Output: "Volume", ApiMethod: "CreateVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
