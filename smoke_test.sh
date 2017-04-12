@@ -9,10 +9,10 @@ TMP_USERDATA_FILE=./tmp-user-data.sh
 echo "success" > /tmp/awless-ssh-userdata-success.txt
 EOF
 
-BIN=./awless
+BIN=./awless-test
 
 echo "building awless"
-go build
+go build -o $BIN
 
 echo "flushing awless logs..."
 $BIN log --delete
