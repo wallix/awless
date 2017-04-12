@@ -381,13 +381,24 @@ func resolveAliasFunc(entity, key, alias string) string {
 	if strings.Contains(key, "id") {
 		resType = entity
 	}
+
 	resources, err := gph.ResolveResources(&graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: alias}, &graph.ByType{Typ: resType}}})
 	if err != nil {
 		return ""
 	}
-	if len(resources) == 1 {
+	switch len(resources) {
+	case 1:
 		return resources[0].Id()
+	default:
+		resources, err := gph.ResolveResources(&graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: alias}}})
+		if err != nil {
+			return ""
+		}
+		if len(resources) > 0 {
+			return resources[0].Id()
+		}
 	}
+
 	return ""
 }
 
