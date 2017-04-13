@@ -301,7 +301,7 @@ func (d *IamDriver) Create_Accesskey(params map[string]interface{}) (interface{}
 
 	id := aws.StringValue(output.AccessKey.AccessKeyId)
 
-	d.logger.Verbosef("create accesskey '%s' done", id)
+	d.logger.Infof("create accesskey '%s' done", id)
 	return id, nil
 }
 
@@ -565,7 +565,7 @@ func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, erro
 		return nil, fmt.Errorf("create tag: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.CreateTags call took %s", time.Since(start))
-	d.logger.Verbosef("create tag '%s=%s' on '%s' done", params["key"], params["value"], params["resource"])
+	d.logger.Infof("create tag '%s=%s' on '%s' done", params["key"], params["value"], params["resource"])
 	return output, nil
 }
 
@@ -612,7 +612,7 @@ func (d *Ec2Driver) Delete_Tag(params map[string]interface{}) (interface{}, erro
 		return nil, fmt.Errorf("delete tag: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteTags call took %s", time.Since(start))
-	d.logger.Verbosef("delete tag '%s=%s' on '%s' done", params["key"], params["value"], params["resource"])
+	d.logger.Infof("delete tag '%s=%s' on '%s' done", params["key"], params["value"], params["resource"])
 	return output, nil
 }
 
@@ -784,7 +784,7 @@ func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interfa
 		return nil, fmt.Errorf("update securitygroup: %s", err)
 	}
 
-	d.logger.Verbose("update securitygroup done")
+	d.logger.Info("update securitygroup done")
 	return output, nil
 }
 
@@ -886,7 +886,7 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 		return nil, fmt.Errorf("create s3object: %s", err)
 	}
 
-	d.logger.Verbose("create s3object done")
+	d.logger.Info("create s3object done")
 	return output, nil
 }
 
@@ -963,7 +963,7 @@ func (d *Route53Driver) Create_Record(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("create record: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
-	d.logger.Verbose("create record done")
+	d.logger.Info("create record done")
 	return aws.StringValue(output.ChangeInfo.Id), nil
 }
 
@@ -1032,7 +1032,7 @@ func (d *Route53Driver) Delete_Record(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("delete record: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
-	d.logger.Verbose("delete record done")
+	d.logger.Info("delete record done")
 	return aws.StringValue(output.ChangeInfo.Id), nil
 }
 
@@ -1130,7 +1130,7 @@ func (c *checker) check() error {
 				return fmt.Errorf("check %s: %s", c.description, err)
 			}
 			if got == c.expect {
-				c.logger.Verbosef("check %s status '%s' done", c.description, c.expect)
+				c.logger.Infof("check %s status '%s' done", c.description, c.expect)
 				return nil
 			}
 			c.logger.Infof("%s status '%s', expect '%s', retry in %s (timeout %s).", c.description, got, c.expect, c.frequency, c.timeout)

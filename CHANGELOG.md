@@ -13,6 +13,7 @@
 - ssh: better handle when several instances have the same name (e.g., with a running and a terminated instance)
 - ssh: more warning; provide help and context on failing connections
 - Manage properly secgroups on instances with `awless attach/detach secgroup id=... instance=@my-instance`
+- Logging more info when running templates
 
 ### Bugfixes
 

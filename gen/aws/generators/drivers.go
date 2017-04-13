@@ -307,10 +307,10 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 		{{- end }}
 	{{- end }}
 	
-	d.logger.Verbosef("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)
+	d.logger.Infof("{{ $def.Action }} {{ $def.Entity }} '%s' done", id)
 	return id, nil
 	{{- else }}
-	d.logger.Verbose("{{ $def.Action }} {{ $def.Entity }} done")
+	d.logger.Info("{{ $def.Action }} {{ $def.Entity }} done")
 	return output, nil
 	{{- end }}
 }

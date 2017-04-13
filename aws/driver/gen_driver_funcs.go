@@ -104,7 +104,7 @@ func (d *Ec2Driver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 		}
 	}
 
-	d.logger.Verbosef("create vpc '%s' done", id)
+	d.logger.Infof("create vpc '%s' done", id)
 	return id, nil
 }
 
@@ -152,7 +152,7 @@ func (d *Ec2Driver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 		return nil, fmt.Errorf("delete vpc: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteVpc call took %s", time.Since(start))
-	d.logger.Verbose("delete vpc done")
+	d.logger.Info("delete vpc done")
 	return output, nil
 }
 
@@ -240,7 +240,7 @@ func (d *Ec2Driver) Create_Subnet(params map[string]interface{}) (interface{}, e
 		}
 	}
 
-	d.logger.Verbosef("create subnet '%s' done", id)
+	d.logger.Infof("create subnet '%s' done", id)
 	return id, nil
 }
 
@@ -281,7 +281,7 @@ func (d *Ec2Driver) Update_Subnet(params map[string]interface{}) (interface{}, e
 		return nil, fmt.Errorf("update subnet: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.ModifySubnetAttribute call took %s", time.Since(start))
-	d.logger.Verbose("update subnet done")
+	d.logger.Info("update subnet done")
 	return output, nil
 }
 
@@ -329,7 +329,7 @@ func (d *Ec2Driver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 		return nil, fmt.Errorf("delete subnet: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteSubnet call took %s", time.Since(start))
-	d.logger.Verbose("delete subnet done")
+	d.logger.Info("delete subnet done")
 	return output, nil
 }
 
@@ -485,7 +485,7 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 		return nil, fmt.Errorf("create instance: adding tags: %s", err)
 	}
 
-	d.logger.Verbosef("create instance '%s' done", id)
+	d.logger.Infof("create instance '%s' done", id)
 	return id, nil
 }
 
@@ -561,7 +561,7 @@ func (d *Ec2Driver) Update_Instance(params map[string]interface{}) (interface{},
 		return nil, fmt.Errorf("update instance: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.ModifyInstanceAttribute call took %s", time.Since(start))
-	d.logger.Verbose("update instance done")
+	d.logger.Info("update instance done")
 	return output, nil
 }
 
@@ -609,7 +609,7 @@ func (d *Ec2Driver) Delete_Instance(params map[string]interface{}) (interface{},
 		return nil, fmt.Errorf("delete instance: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.TerminateInstances call took %s", time.Since(start))
-	d.logger.Verbose("delete instance done")
+	d.logger.Info("delete instance done")
 	return output, nil
 }
 
@@ -659,7 +659,7 @@ func (d *Ec2Driver) Start_Instance(params map[string]interface{}) (interface{}, 
 	d.logger.ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StartingInstances[0].InstanceId)
 
-	d.logger.Verbosef("start instance '%s' done", id)
+	d.logger.Infof("start instance '%s' done", id)
 	return id, nil
 }
 
@@ -709,7 +709,7 @@ func (d *Ec2Driver) Stop_Instance(params map[string]interface{}) (interface{}, e
 	d.logger.ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.StoppingInstances[0].InstanceId)
 
-	d.logger.Verbosef("stop instance '%s' done", id)
+	d.logger.Infof("stop instance '%s' done", id)
 	return id, nil
 }
 
@@ -775,7 +775,7 @@ func (d *Ec2Driver) Create_Securitygroup(params map[string]interface{}) (interfa
 	d.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.GroupId)
 
-	d.logger.Verbosef("create securitygroup '%s' done", id)
+	d.logger.Infof("create securitygroup '%s' done", id)
 	return id, nil
 }
 
@@ -823,7 +823,7 @@ func (d *Ec2Driver) Delete_Securitygroup(params map[string]interface{}) (interfa
 		return nil, fmt.Errorf("delete securitygroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
-	d.logger.Verbose("delete securitygroup done")
+	d.logger.Info("delete securitygroup done")
 	return output, nil
 }
 
@@ -881,7 +881,7 @@ func (d *Ec2Driver) Create_Volume(params map[string]interface{}) (interface{}, e
 	d.logger.ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 
-	d.logger.Verbosef("create volume '%s' done", id)
+	d.logger.Infof("create volume '%s' done", id)
 	return id, nil
 }
 
@@ -929,7 +929,7 @@ func (d *Ec2Driver) Delete_Volume(params map[string]interface{}) (interface{}, e
 		return nil, fmt.Errorf("delete volume: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteVolume call took %s", time.Since(start))
-	d.logger.Verbose("delete volume done")
+	d.logger.Info("delete volume done")
 	return output, nil
 }
 
@@ -995,7 +995,7 @@ func (d *Ec2Driver) Attach_Volume(params map[string]interface{}) (interface{}, e
 	d.logger.ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 
-	d.logger.Verbosef("attach volume '%s' done", id)
+	d.logger.Infof("attach volume '%s' done", id)
 	return id, nil
 }
 
@@ -1077,7 +1077,7 @@ func (d *Ec2Driver) Detach_Volume(params map[string]interface{}) (interface{}, e
 	d.logger.ExtraVerbosef("ec2.DetachVolume call took %s", time.Since(start))
 	id := aws.StringValue(output.VolumeId)
 
-	d.logger.Verbosef("detach volume '%s' done", id)
+	d.logger.Infof("detach volume '%s' done", id)
 	return id, nil
 }
 
@@ -1115,7 +1115,7 @@ func (d *Ec2Driver) Create_Internetgateway(params map[string]interface{}) (inter
 	d.logger.ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
 	id := aws.StringValue(output.InternetGateway.InternetGatewayId)
 
-	d.logger.Verbosef("create internetgateway '%s' done", id)
+	d.logger.Infof("create internetgateway '%s' done", id)
 	return id, nil
 }
 
@@ -1163,7 +1163,7 @@ func (d *Ec2Driver) Delete_Internetgateway(params map[string]interface{}) (inter
 		return nil, fmt.Errorf("delete internetgateway: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteInternetGateway call took %s", time.Since(start))
-	d.logger.Verbose("delete internetgateway done")
+	d.logger.Info("delete internetgateway done")
 	return output, nil
 }
 
@@ -1219,7 +1219,7 @@ func (d *Ec2Driver) Attach_Internetgateway(params map[string]interface{}) (inter
 		return nil, fmt.Errorf("attach internetgateway: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.AttachInternetGateway call took %s", time.Since(start))
-	d.logger.Verbose("attach internetgateway done")
+	d.logger.Info("attach internetgateway done")
 	return output, nil
 }
 
@@ -1275,7 +1275,7 @@ func (d *Ec2Driver) Detach_Internetgateway(params map[string]interface{}) (inter
 		return nil, fmt.Errorf("detach internetgateway: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DetachInternetGateway call took %s", time.Since(start))
-	d.logger.Verbose("detach internetgateway done")
+	d.logger.Info("detach internetgateway done")
 	return output, nil
 }
 
@@ -1325,7 +1325,7 @@ func (d *Ec2Driver) Create_Routetable(params map[string]interface{}) (interface{
 	d.logger.ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.RouteTable.RouteTableId)
 
-	d.logger.Verbosef("create routetable '%s' done", id)
+	d.logger.Infof("create routetable '%s' done", id)
 	return id, nil
 }
 
@@ -1373,7 +1373,7 @@ func (d *Ec2Driver) Delete_Routetable(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("delete routetable: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteRouteTable call took %s", time.Since(start))
-	d.logger.Verbose("delete routetable done")
+	d.logger.Info("delete routetable done")
 	return output, nil
 }
 
@@ -1431,7 +1431,7 @@ func (d *Ec2Driver) Attach_Routetable(params map[string]interface{}) (interface{
 	d.logger.ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
 	id := aws.StringValue(output.AssociationId)
 
-	d.logger.Verbosef("attach routetable '%s' done", id)
+	d.logger.Infof("attach routetable '%s' done", id)
 	return id, nil
 }
 
@@ -1479,7 +1479,7 @@ func (d *Ec2Driver) Detach_Routetable(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("detach routetable: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DisassociateRouteTable call took %s", time.Since(start))
-	d.logger.Verbose("detach routetable done")
+	d.logger.Info("detach routetable done")
 	return output, nil
 }
 
@@ -1543,7 +1543,7 @@ func (d *Ec2Driver) Create_Route(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("create route: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.CreateRoute call took %s", time.Since(start))
-	d.logger.Verbose("create route done")
+	d.logger.Info("create route done")
 	return output, nil
 }
 
@@ -1599,7 +1599,7 @@ func (d *Ec2Driver) Delete_Route(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("delete route: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteRoute call took %s", time.Since(start))
-	d.logger.Verbose("delete route done")
+	d.logger.Info("delete route done")
 	return output, nil
 }
 
@@ -1647,7 +1647,7 @@ func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 		return nil, fmt.Errorf("delete keypair: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
-	d.logger.Verbose("delete keypair done")
+	d.logger.Info("delete keypair done")
 	return output, nil
 }
 
@@ -1710,7 +1710,7 @@ func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interf
 	d.logger.ExtraVerbosef("elbv2.CreateLoadBalancer call took %s", time.Since(start))
 	id := aws.StringValue(output.LoadBalancers[0].LoadBalancerArn)
 
-	d.logger.Verbosef("create loadbalancer '%s' done", id)
+	d.logger.Infof("create loadbalancer '%s' done", id)
 	return id, nil
 }
 
@@ -1743,7 +1743,7 @@ func (d *Elbv2Driver) Delete_Loadbalancer(params map[string]interface{}) (interf
 		return nil, fmt.Errorf("delete loadbalancer: %s", err)
 	}
 	d.logger.ExtraVerbosef("elbv2.DeleteLoadBalancer call took %s", time.Since(start))
-	d.logger.Verbose("delete loadbalancer done")
+	d.logger.Info("delete loadbalancer done")
 	return output, nil
 }
 
@@ -1824,7 +1824,7 @@ func (d *Elbv2Driver) Create_Listener(params map[string]interface{}) (interface{
 	d.logger.ExtraVerbosef("elbv2.CreateListener call took %s", time.Since(start))
 	id := aws.StringValue(output.Listeners[0].ListenerArn)
 
-	d.logger.Verbosef("create listener '%s' done", id)
+	d.logger.Infof("create listener '%s' done", id)
 	return id, nil
 }
 
@@ -1857,7 +1857,7 @@ func (d *Elbv2Driver) Delete_Listener(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("delete listener: %s", err)
 	}
 	d.logger.ExtraVerbosef("elbv2.DeleteListener call took %s", time.Since(start))
-	d.logger.Verbose("delete listener done")
+	d.logger.Info("delete listener done")
 	return output, nil
 }
 
@@ -1966,7 +1966,7 @@ func (d *Elbv2Driver) Create_Targetgroup(params map[string]interface{}) (interfa
 	d.logger.ExtraVerbosef("elbv2.CreateTargetGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.TargetGroups[0].TargetGroupArn)
 
-	d.logger.Verbosef("create targetgroup '%s' done", id)
+	d.logger.Infof("create targetgroup '%s' done", id)
 	return id, nil
 }
 
@@ -1999,7 +1999,7 @@ func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interfa
 		return nil, fmt.Errorf("delete targetgroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("elbv2.DeleteTargetGroup call took %s", time.Since(start))
-	d.logger.Verbose("delete targetgroup done")
+	d.logger.Info("delete targetgroup done")
 	return output, nil
 }
 
@@ -2048,7 +2048,7 @@ func (d *Elbv2Driver) Attach_Instance(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("attach instance: %s", err)
 	}
 	d.logger.ExtraVerbosef("elbv2.RegisterTargets call took %s", time.Since(start))
-	d.logger.Verbose("attach instance done")
+	d.logger.Info("attach instance done")
 	return output, nil
 }
 
@@ -2089,7 +2089,7 @@ func (d *Elbv2Driver) Detach_Instance(params map[string]interface{}) (interface{
 		return nil, fmt.Errorf("detach instance: %s", err)
 	}
 	d.logger.ExtraVerbosef("elbv2.DeregisterTargets call took %s", time.Since(start))
-	d.logger.Verbose("detach instance done")
+	d.logger.Info("detach instance done")
 	return output, nil
 }
 
@@ -2304,7 +2304,7 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 	d.logger.ExtraVerbosef("rds.CreateDBInstance call took %s", time.Since(start))
 	id := aws.StringValue(output.DBInstance.DBInstanceIdentifier)
 
-	d.logger.Verbosef("create database '%s' done", id)
+	d.logger.Infof("create database '%s' done", id)
 	return id, nil
 }
 
@@ -2351,7 +2351,7 @@ func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{},
 		return nil, fmt.Errorf("delete database: %s", err)
 	}
 	d.logger.ExtraVerbosef("rds.DeleteDBInstance call took %s", time.Since(start))
-	d.logger.Verbose("delete database done")
+	d.logger.Info("delete database done")
 	return output, nil
 }
 
@@ -2402,7 +2402,7 @@ func (d *RdsDriver) Create_Dbsubnetgroup(params map[string]interface{}) (interfa
 	d.logger.ExtraVerbosef("rds.CreateDBSubnetGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)
 
-	d.logger.Verbosef("create dbsubnetgroup '%s' done", id)
+	d.logger.Infof("create dbsubnetgroup '%s' done", id)
 	return id, nil
 }
 
@@ -2435,7 +2435,7 @@ func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interfa
 		return nil, fmt.Errorf("delete dbsubnetgroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
-	d.logger.Verbose("delete dbsubnetgroup done")
+	d.logger.Info("delete dbsubnetgroup done")
 	return output, nil
 }
 
@@ -2470,7 +2470,7 @@ func (d *IamDriver) Create_User(params map[string]interface{}) (interface{}, err
 	d.logger.ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
 	id := aws.StringValue(output.User.UserId)
 
-	d.logger.Verbosef("create user '%s' done", id)
+	d.logger.Infof("create user '%s' done", id)
 	return id, nil
 }
 
@@ -2503,7 +2503,7 @@ func (d *IamDriver) Delete_User(params map[string]interface{}) (interface{}, err
 		return nil, fmt.Errorf("delete user: %s", err)
 	}
 	d.logger.ExtraVerbosef("iam.DeleteUser call took %s", time.Since(start))
-	d.logger.Verbose("delete user done")
+	d.logger.Info("delete user done")
 	return output, nil
 }
 
@@ -2544,7 +2544,7 @@ func (d *IamDriver) Attach_User(params map[string]interface{}) (interface{}, err
 		return nil, fmt.Errorf("attach user: %s", err)
 	}
 	d.logger.ExtraVerbosef("iam.AddUserToGroup call took %s", time.Since(start))
-	d.logger.Verbose("attach user done")
+	d.logger.Info("attach user done")
 	return output, nil
 }
 
@@ -2585,7 +2585,7 @@ func (d *IamDriver) Detach_User(params map[string]interface{}) (interface{}, err
 		return nil, fmt.Errorf("detach user: %s", err)
 	}
 	d.logger.ExtraVerbosef("iam.RemoveUserFromGroup call took %s", time.Since(start))
-	d.logger.Verbose("detach user done")
+	d.logger.Info("detach user done")
 	return output, nil
 }
 
@@ -2618,7 +2618,7 @@ func (d *IamDriver) Delete_Accesskey(params map[string]interface{}) (interface{}
 		return nil, fmt.Errorf("delete accesskey: %s", err)
 	}
 	d.logger.ExtraVerbosef("iam.DeleteAccessKey call took %s", time.Since(start))
-	d.logger.Verbose("delete accesskey done")
+	d.logger.Info("delete accesskey done")
 	return output, nil
 }
 
@@ -2653,7 +2653,7 @@ func (d *IamDriver) Create_Group(params map[string]interface{}) (interface{}, er
 	d.logger.ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.Group.GroupId)
 
-	d.logger.Verbosef("create group '%s' done", id)
+	d.logger.Infof("create group '%s' done", id)
 	return id, nil
 }
 
@@ -2686,7 +2686,7 @@ func (d *IamDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("delete group: %s", err)
 	}
 	d.logger.ExtraVerbosef("iam.DeleteGroup call took %s", time.Since(start))
-	d.logger.Verbose("delete group done")
+	d.logger.Info("delete group done")
 	return output, nil
 }
 
@@ -2721,7 +2721,7 @@ func (d *S3Driver) Create_Bucket(params map[string]interface{}) (interface{}, er
 	d.logger.ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
 	id := params["name"]
 
-	d.logger.Verbosef("create bucket '%s' done", id)
+	d.logger.Infof("create bucket '%s' done", id)
 	return id, nil
 }
 
@@ -2754,7 +2754,7 @@ func (d *S3Driver) Delete_Bucket(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("delete bucket: %s", err)
 	}
 	d.logger.ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
-	d.logger.Verbose("delete bucket done")
+	d.logger.Info("delete bucket done")
 	return output, nil
 }
 
@@ -2795,7 +2795,7 @@ func (d *S3Driver) Delete_S3object(params map[string]interface{}) (interface{}, 
 		return nil, fmt.Errorf("delete s3object: %s", err)
 	}
 	d.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
-	d.logger.Verbose("delete s3object done")
+	d.logger.Info("delete s3object done")
 	return output, nil
 }
 
@@ -2830,7 +2830,7 @@ func (d *SnsDriver) Create_Topic(params map[string]interface{}) (interface{}, er
 	d.logger.ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
 	id := aws.StringValue(output.TopicArn)
 
-	d.logger.Verbosef("create topic '%s' done", id)
+	d.logger.Infof("create topic '%s' done", id)
 	return id, nil
 }
 
@@ -2863,7 +2863,7 @@ func (d *SnsDriver) Delete_Topic(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("delete topic: %s", err)
 	}
 	d.logger.ExtraVerbosef("sns.DeleteTopic call took %s", time.Since(start))
-	d.logger.Verbose("delete topic done")
+	d.logger.Info("delete topic done")
 	return output, nil
 }
 
@@ -2914,7 +2914,7 @@ func (d *SnsDriver) Create_Subscription(params map[string]interface{}) (interfac
 	d.logger.ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
 	id := aws.StringValue(output.SubscriptionArn)
 
-	d.logger.Verbosef("create subscription '%s' done", id)
+	d.logger.Infof("create subscription '%s' done", id)
 	return id, nil
 }
 
@@ -2947,7 +2947,7 @@ func (d *SnsDriver) Delete_Subscription(params map[string]interface{}) (interfac
 		return nil, fmt.Errorf("delete subscription: %s", err)
 	}
 	d.logger.ExtraVerbosef("sns.Unsubscribe call took %s", time.Since(start))
-	d.logger.Verbose("delete subscription done")
+	d.logger.Info("delete subscription done")
 	return output, nil
 }
 
@@ -3026,7 +3026,7 @@ func (d *SqsDriver) Create_Queue(params map[string]interface{}) (interface{}, er
 	d.logger.ExtraVerbosef("sqs.CreateQueue call took %s", time.Since(start))
 	id := aws.StringValue(output.QueueUrl)
 
-	d.logger.Verbosef("create queue '%s' done", id)
+	d.logger.Infof("create queue '%s' done", id)
 	return id, nil
 }
 
@@ -3059,7 +3059,7 @@ func (d *SqsDriver) Delete_Queue(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("delete queue: %s", err)
 	}
 	d.logger.ExtraVerbosef("sqs.DeleteQueue call took %s", time.Since(start))
-	d.logger.Verbose("delete queue done")
+	d.logger.Info("delete queue done")
 	return output, nil
 }
 
@@ -3134,7 +3134,7 @@ func (d *Route53Driver) Create_Zone(params map[string]interface{}) (interface{},
 	d.logger.ExtraVerbosef("route53.CreateHostedZone call took %s", time.Since(start))
 	id := aws.StringValue(output.HostedZone.Id)
 
-	d.logger.Verbosef("create zone '%s' done", id)
+	d.logger.Infof("create zone '%s' done", id)
 	return id, nil
 }
 
@@ -3167,6 +3167,6 @@ func (d *Route53Driver) Delete_Zone(params map[string]interface{}) (interface{},
 		return nil, fmt.Errorf("delete zone: %s", err)
 	}
 	d.logger.ExtraVerbosef("route53.DeleteHostedZone call took %s", time.Since(start))
-	d.logger.Verbose("delete zone done")
+	d.logger.Info("delete zone done")
 	return output, nil
 }
