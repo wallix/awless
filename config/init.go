@@ -24,6 +24,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsconfig "github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/database"
 )
 
 var (
@@ -55,6 +56,16 @@ func InitAwlessEnv() error {
 		if _, err = overwriteDefaults(); err != nil {
 			return err
 		}
+
+		db, err, dbclose := database.Current()
+		if err != nil {
+			fmt.Printf("opening db error: %s\n", err)
+		}
+
+		if err := db.SetStringValue("current.version", Version); err != nil {
+			fmt.Printf("storing current version in db: %s\n", err)
+		}
+		dbclose()
 	}
 
 	if err = LoadAll(); err != nil {
