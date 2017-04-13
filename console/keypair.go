@@ -25,7 +25,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func GenerateSSHKey(size int) ([]byte, []byte, error) {
+func GenerateSSHKeyPair(size int) ([]byte, []byte, error) {
 	key, err := rsa.GenerateKey(rand.Reader, size)
 	if err != nil {
 		return nil, nil, err

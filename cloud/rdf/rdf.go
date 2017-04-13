@@ -161,11 +161,11 @@ var (
 	Routes                    = fmt.Sprintf("%s:routes", netNS)
 	Scheme                    = fmt.Sprintf("%s:scheme", netNS)
 	SecondaryAvailabilityZone = fmt.Sprintf("%s:secondaryAvailabilityZone", CloudNS)
-	SecurityGroups            = fmt.Sprintf("%s:secGroups", CloudNS)
+	SecurityGroups            = fmt.Sprintf("%s:securityGroups", CloudNS)
 	Set                       = fmt.Sprintf("%s:set", CloudNS)
 	Size                      = fmt.Sprintf("%s:size", CloudNS)
 	SpotInstanceRequestId     = fmt.Sprintf("%s:spotInstanceRequestId", CloudNS)
-	SSHKey                    = fmt.Sprintf("%s:sshKey", CloudNS)
+	KeyPair                   = fmt.Sprintf("%s:keyPair", CloudNS)
 	State                     = fmt.Sprintf("%s:state", CloudNS)
 	Storage                   = fmt.Sprintf("%s:storage", CloudNS)
 	StorageType               = fmt.Sprintf("%s:storageType", CloudNS)
@@ -282,7 +282,7 @@ var Labels = map[string]string{
 	properties.Set:                       Set,
 	properties.Size:                      Size,
 	properties.SpotInstanceRequestId:     SpotInstanceRequestId,
-	properties.SSHKey:                    SSHKey,
+	properties.KeyPair:                   KeyPair,
 	properties.State:                     State,
 	properties.Storage:                   Storage,
 	properties.StorageType:               StorageType,
@@ -399,7 +399,7 @@ var RdfProperties = map[string]rdfProp{
 	Set:                       {ID: Set, RdfType: RdfProperty, RdfsLabel: properties.Set, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Size:                      {ID: Size, RdfType: RdfProperty, RdfsLabel: properties.Size, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	SpotInstanceRequestId: {ID: SpotInstanceRequestId, RdfType: RdfProperty, RdfsLabel: properties.SpotInstanceRequestId, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
-	SSHKey:                {ID: SSHKey, RdfType: RdfProperty, RdfsLabel: properties.SSHKey, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
+	KeyPair:               {ID: KeyPair, RdfType: RdfProperty, RdfsLabel: properties.KeyPair, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	State:                 {ID: State, RdfType: RdfProperty, RdfsLabel: properties.State, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Storage:               {ID: Storage, RdfType: RdfProperty, RdfsLabel: properties.Storage, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	StorageType:           {ID: StorageType, RdfType: RdfProperty, RdfsLabel: properties.StorageType, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},

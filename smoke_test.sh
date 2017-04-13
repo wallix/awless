@@ -44,8 +44,8 @@ attach routetable id=\$rtable subnet=\$testsubnet
 create route cidr=0.0.0.0/0 gateway=\$gateway table=\$rtable
 sgroup = create securitygroup vpc=\$testvpc description="authorize SSH from the Internet" name=ssh-from-internet
 update securitygroup id=\$sgroup inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=22
-testkey = create key name=$KEY_NAME
-testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} key=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
+testkey = create keypair name=$KEY_NAME
+testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
 create tag resource=\$testinstance key=Env value=Testing
 EOF
 

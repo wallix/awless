@@ -166,11 +166,11 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathF
 	if keyPathFlag != "" {
 		keyPath = keyPathFlag
 	} else {
-		key, ok := inst.Properties[properties.SSHKey]
+		keypair, ok := inst.Properties[properties.KeyPair]
 		if !ok {
 			return nil, fmt.Errorf("no access key set for instance %s", inst.Id())
 		}
-		keyPath = path.Join(config.KeysDir, fmt.Sprint(key))
+		keyPath = path.Join(config.KeysDir, fmt.Sprint(keypair))
 	}
 	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyPath: keyPath}, nil
 }
@@ -196,14 +196,14 @@ func sshConnect(name string, sshClient *ssh.Client, cred *console.Credentials) e
 			fmt.Println(sshPath + " " + strings.Join(args[1:], " "))
 			return nil
 		}
-		logger.Infof("Login as '%s' on '%s', using key '%s' with ssh client at '%s'", cred.User, cred.IP, cred.KeyPath, sshPath)
+		logger.Infof("Login as '%s' on '%s', using keypair '%s' with ssh client at '%s'", cred.User, cred.IP, cred.KeyPath, sshPath)
 		return syscall.Exec(sshPath, args, os.Environ())
 	} else { // Fallback SSH
 		if printSSHCLIFlag {
 			fmt.Println(strings.Join(args, " "))
 			return nil
 		}
-		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using key '%s'", cred.User, cred.IP, cred.KeyPath)
+		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using keypair '%s'", cred.User, cred.IP, cred.KeyPath)
 		return console.InteractiveTerminal(sshClient)
 	}
 }

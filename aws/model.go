@@ -32,7 +32,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Image:             {name: "ImageId", transform: extractValueFn},
 		properties.Launched:          {name: "LaunchTime", transform: extractValueFn},
 		properties.State:             {name: "State", transform: extractFieldFn("Name")},
-		properties.SSHKey:            {name: "KeyName", transform: extractValueFn},
+		properties.KeyPair:           {name: "KeyName", transform: extractValueFn},
 		properties.SecurityGroups:    {name: "SecurityGroups", transform: extractStringSliceValues("GroupId")},
 		properties.Affinity:          {name: "Placement", transform: extractFieldFn("Affinity")},
 		properties.AvailabilityZone:  {name: "Placement", transform: extractFieldFn("AvailabilityZone")},
@@ -70,7 +70,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Owner:         {name: "OwnerId", transform: extractValueFn},
 		properties.Vpc:           {name: "VpcId", transform: extractValueFn},
 	},
-	cloud.Key: {
+	cloud.Keypair: {
 		properties.Fingerprint: {name: "KeyFingerprint", transform: extractValueFn},
 	},
 	cloud.Volume: {

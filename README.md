@@ -121,7 +121,7 @@ awless list volumes --filter state=in-use --filter type=gp2
 awless list instances --filter state=running,type=t2.micro 
 
 # when dealing with name with spaces use
-awless list instances --filter "access key"=my-key
+awless list instances --filter "private ip"=127.0.0.1
 ```
     
 For instance, you could list all storage objects in a given bucket using only local data with:

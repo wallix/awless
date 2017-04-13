@@ -3,9 +3,7 @@
 ### Features
 
 - Amazon [**userdata**](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) support. Give the data as local file or remote http file resource. Ex: `awless create instance userdata=/tmp/mydata.sh ...` or `awless create instance userdata=https://gist.github.com/jsmith/5f58272fa5406`.
-- Global rename of `securitygroup` to `secgroup` for shorter typing in CLI.
 - Global rename of `storageobject` to `s3object` for shorter typing in CLI.
-- Global rename of `keypair` to `key` for shorter typing in CLI.
 - awless model/storing is now full RDF ;). Allow exploration of all your infra in RDF tools and ontology editor (Ex: [Protege](http://protege.stanford.edu/))
 - Faster, better and simpler RDF & triples management now done through the nifty library [triplestore](https://github.com/wallix/triplestore)
 - Ability to use strings with spaces and special characters in template parameters by surrounding them with single or double quotes.
@@ -20,6 +18,7 @@
 
 - `awless whoami` now supports displaying info for `root` user and user with org path
 - Use `securitygroup` rather than `group` in templates, when appropriate.
+- Use `keypair` rather than `key` in templates, when appropriate.
 - Fix the fact you could not attach multiple security groups to an instance
 - Reverting the creation of a load balancer now waits the deletion of its network interfaces
 

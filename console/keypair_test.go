@@ -21,9 +21,9 @@ import (
 	"testing"
 )
 
-func TestGenerateKey(t *testing.T) {
+func TestGenerateKeyPair(t *testing.T) {
 	size := 1024
-	pub, private, err := GenerateSSHKey(size)
+	pub, private, err := GenerateSSHKeyPair(size)
 	if err != nil {
 		t.Fatal(err)
 	}

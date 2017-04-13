@@ -246,17 +246,17 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Tag, nil
 
-	case "createkey":
+	case "createkeypair":
 		if d.dryRun {
-			return d.Create_Key_DryRun, nil
+			return d.Create_Keypair_DryRun, nil
 		}
-		return d.Create_Key, nil
+		return d.Create_Keypair, nil
 
-	case "deletekey":
+	case "deletekeypair":
 		if d.dryRun {
-			return d.Delete_Key_DryRun, nil
+			return d.Delete_Keypair_DryRun, nil
 		}
-		return d.Delete_Key, nil
+		return d.Delete_Keypair, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

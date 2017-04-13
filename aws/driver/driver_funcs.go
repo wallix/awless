@@ -616,7 +616,7 @@ func (d *Ec2Driver) Delete_Tag(params map[string]interface{}) (interface{}, erro
 	return output, nil
 }
 
-func (d *Ec2Driver) Create_Key_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 
 	input.DryRun = aws.Bool(true)
@@ -644,15 +644,15 @@ func (d *Ec2Driver) Create_Key_DryRun(params map[string]interface{}) (interface{
 	return nil, nil
 }
 
-func (d *Ec2Driver) Create_Key(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 	err := setFieldWithType(params["name"], input, "KeyName", awsstr)
 	if err != nil {
 		return nil, err
 	}
 
-	d.logger.Info("Generating locally a RSA 4096 bits key...")
-	pub, priv, err := console.GenerateSSHKey(4096)
+	d.logger.Info("Generating locally a RSA 4096 bits keypair...")
+	pub, priv, err := console.GenerateSSHKeyPair(4096)
 	if err != nil {
 		return nil, fmt.Errorf("generating key: %s", err)
 	}
@@ -665,7 +665,7 @@ func (d *Ec2Driver) Create_Key(params map[string]interface{}) (interface{}, erro
 	if err != nil {
 		return nil, fmt.Errorf("saving private key: %s", err)
 	}
-	d.logger.Infof("4096 RSA key generated locally and stored in '%s'", privKeyPath)
+	d.logger.Infof("4096 RSA keypair generated locally and stored in '%s'", privKeyPath)
 	input.PublicKeyMaterial = pub
 
 	output, err := d.ImportKeyPair(input)
@@ -673,7 +673,7 @@ func (d *Ec2Driver) Create_Key(params map[string]interface{}) (interface{}, erro
 		return nil, fmt.Errorf("create key: %s", err)
 	}
 	id := aws.StringValue(output.KeyName)
-	d.logger.Infof("create key '%s' done", id)
+	d.logger.Infof("create keypair '%s' done", id)
 	return aws.StringValue(output.KeyName), nil
 }
 

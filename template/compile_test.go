@@ -69,7 +69,7 @@ func TestResolveAgainstDefinitionsPass(t *testing.T) {
 
 	t.Run("Err on unexpected param key", func(t *testing.T) {
 		tpl := MustParse(`create instance type=t2.micro
-	                        create key name={key.name} type=wrong`)
+	                        create keypair name={key.name} type=wrong`)
 
 		_, _, err := resolveAgainstDefinitions(tpl, env)
 		if err == nil || !strings.Contains(err.Error(), "type") {

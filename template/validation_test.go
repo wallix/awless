@@ -38,22 +38,22 @@ func TestValidation(t *testing.T) {
 		create instance name=instance1_name`
 		tpl := template.MustParse(text)
 
-		rule := &template.ParamIsSetValidator{Entity: "instance", Action: "create", Param: "key", WarningMessage: "no key set"}
+		rule := &template.ParamIsSetValidator{Entity: "instance", Action: "create", Param: "keypair", WarningMessage: "no keypair set"}
 
 		errs := tpl.Validate(rule)
 		if got, want := len(errs), 1; got != want {
 			t.Fatalf("got %d, want %d", got, want)
 		}
-		exp := "no key set"
+		exp := "no keypair set"
 		if got, want := errs[0].Error(), exp; got != want {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 
 		text = `create subnet name=subnet_name
-		create instance key=$mykey`
+		create instance keypair=$mykey`
 		tpl = template.MustParse(text)
 
-		rule = &template.ParamIsSetValidator{Entity: "instance", Action: "create", Param: "key", WarningMessage: "no key set"}
+		rule = &template.ParamIsSetValidator{Entity: "instance", Action: "create", Param: "keypair", WarningMessage: "no keypair set"}
 
 		errs = tpl.Validate(rule)
 		if got, want := len(errs), 0; got != want {

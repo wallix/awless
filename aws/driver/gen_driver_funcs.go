@@ -362,8 +362,8 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	}
 
 	// Extra params
-	if _, ok := params["key"]; ok {
-		err = setFieldWithType(params["key"], input, "KeyName", awsstr)
+	if _, ok := params["keypair"]; ok {
+		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -439,8 +439,8 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 	}
 
 	// Extra params
-	if _, ok := params["key"]; ok {
-		err = setFieldWithType(params["key"], input, "KeyName", awsstr)
+	if _, ok := params["keypair"]; ok {
+		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -1604,7 +1604,7 @@ func (d *Ec2Driver) Delete_Route(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Key_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -1619,17 +1619,17 @@ func (d *Ec2Driver) Delete_Key_DryRun(params map[string]interface{}) (interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			id := fakeDryRunId("key")
-			d.logger.Verbose("dry run: delete key ok")
+			id := fakeDryRunId("keypair")
+			d.logger.Verbose("dry run: delete keypair ok")
 			return id, nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: delete key: %s", err)
+	return nil, fmt.Errorf("dry run: delete keypair: %s", err)
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Key(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	var err error
 
@@ -1644,10 +1644,10 @@ func (d *Ec2Driver) Delete_Key(params map[string]interface{}) (interface{}, erro
 	output, err = d.DeleteKeyPair(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete key: %s", err)
+		return nil, fmt.Errorf("delete keypair: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
-	d.logger.Verbose("delete key done")
+	d.logger.Verbose("delete keypair done")
 	return output, nil
 }
 

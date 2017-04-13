@@ -278,7 +278,7 @@ func validateTemplate(tpl *template.Template) {
 		return g, true
 	}}
 
-	errs := tpl.Validate(unicityRule, &template.ParamIsSetValidator{Action: "create", Entity: "instance", Param: "key", WarningMessage: "This instance has no access key. You might not be able to connect to it. Use `awless create instance key=my-key ...`"})
+	errs := tpl.Validate(unicityRule, &template.ParamIsSetValidator{Action: "create", Entity: "instance", Param: "keypair", WarningMessage: "This instance has no access keypair. You might not be able to connect to it. Use `awless create instance keypair=my-keypair ...`"})
 
 	if len(errs) > 0 {
 		for _, err := range errs {

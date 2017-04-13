@@ -37,8 +37,8 @@ func SecurityGroup(id string) *rBuilder {
 	return new("securitygroup", id).Prop(properties.ID, id)
 }
 
-func Key(id string) *rBuilder {
-	return new("key", id).Prop(properties.ID, id)
+func KeyPair(id string) *rBuilder {
+	return new("keypair", id).Prop(properties.ID, id)
 }
 
 func InternetGw(id string) *rBuilder {

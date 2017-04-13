@@ -36,7 +36,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.PublicIP, Friendly: "Public IP"},
 		StringColumnDefinition{Prop: properties.PrivateIP, Friendly: "Private IP"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Launched, Friendly: "Uptime"}},
-		StringColumnDefinition{Prop: properties.SSHKey, Friendly: "Access Key"},
+		StringColumnDefinition{Prop: properties.KeyPair},
 	},
 	cloud.Vpc: {
 		StringColumnDefinition{Prop: properties.ID},
@@ -85,7 +85,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Main},
 		RoutesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Routes}},
 	},
-	cloud.Key: {
+	cloud.Keypair: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Fingerprint, DisableTruncate: true},
 	},

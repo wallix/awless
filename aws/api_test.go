@@ -280,7 +280,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "key", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -300,8 +300,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"inst_1":          resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
 		"inst_2":          resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Build(),
 		"inst_3":          resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"inst_4":          resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.SSHKey, "my_key").Build(),
-		"inst_5":          resourcetest.Instance("inst_5").Prop(p.SSHKey, "unexisting_key").Build(),
+		"inst_4":          resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.KeyPair, "my_key").Build(),
+		"inst_5":          resourcetest.Instance("inst_5").Prop(p.KeyPair, "unexisting_key").Build(),
 		"vpc_1":           resourcetest.VPC("vpc_1").Build(),
 		"vpc_2":           resourcetest.VPC("vpc_2").Build(),
 		"securitygroup_1": resourcetest.SecurityGroup("securitygroup_1").Prop(p.Name, "my_securitygroup").Prop(p.Vpc, "vpc_1").Build(),
@@ -310,7 +310,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"sub_2":           resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
 		"sub_3":           resourcetest.Subnet("sub_3").Prop(p.Vpc, "vpc_2").Build(),
 		"sub_4":           resourcetest.Subnet("sub_4").Build(),
-		"my_key":          resourcetest.Key("my_key").Build(),
+		"my_key":          resourcetest.KeyPair("my_key").Build(),
 		"igw_1":           resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
 		"rt_1":            resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
 		"lb_1":            resourcetest.LoadBalancer("lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),

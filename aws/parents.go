@@ -51,7 +51,7 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Instance: {
 		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId"}.build(),
 		funcBuilder{parent: cloud.SecurityGroup, fieldName: "GroupId", listName: "SecurityGroups", relation: APPLIES_ON}.build(),
-		funcBuilder{parent: cloud.Key, fieldName: "KeyName", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
 	},
 	cloud.SecurityGroup: {
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
@@ -90,7 +90,7 @@ var addParentsFns = map[string][]addParentFn{
 	},
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},
-	cloud.Key:              {addRegionParent},
+	cloud.Keypair:          {addRegionParent},
 	cloud.User:             {userAddGroupsRelations, addManagedPoliciesRelations},
 	cloud.Role:             {addManagedPoliciesRelations},
 	cloud.Group:            {addManagedPoliciesRelations},

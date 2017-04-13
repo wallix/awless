@@ -136,7 +136,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "Name", TemplateName: "name", AsAwsTag: true},
 				},
 				ExtraParams: []param{
-					{AwsField: "KeyName", TemplateName: "key", AwsType: "awsstr"},
+					{AwsField: "KeyName", TemplateName: "keypair", AwsType: "awsstr"},
 					{AwsField: "PrivateIpAddress", TemplateName: "ip", AwsType: "awsstr"},
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
 					{AwsField: "SecurityGroupIds", TemplateName: "securitygroup", AwsType: "awsstringslice"},
@@ -352,13 +352,13 @@ var DriversDefs = []driversDef{
 
 			// Key
 			{
-				Action: "create", Entity: cloud.Key, ManualFuncDefinition: true,
+				Action: "create", Entity: cloud.Keypair, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "name"},
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Key, Input: "DeleteKeyPairInput", Output: "DeleteKeyPairOutput", ApiMethod: "DeleteKeyPair",
+				Action: "delete", Entity: cloud.Keypair, Input: "DeleteKeyPairInput", Output: "DeleteKeyPairOutput", ApiMethod: "DeleteKeyPair",
 				RequiredParams: []param{
 					{AwsField: "KeyName", TemplateName: "id", AwsType: "awsstr"},
 				},

@@ -26,7 +26,7 @@ import (
 )
 
 func TestInstanceCredentialsFromName(t *testing.T) {
-	inst_1 := resourcetest.Instance("inst_1").Prop(p.SSHKey, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Build()
+	inst_1 := resourcetest.Instance("inst_1").Prop(p.KeyPair, "my-key-name").Prop(p.PublicIP, "1.2.3.4").Build()
 	inst_2 := resourcetest.Instance("inst_2").Prop(p.PublicIP, "2.3.4.5").Build()
 	inst_3 := resourcetest.Instance("inst_3").Build()
 	inst_12 := resourcetest.Instance("inst_12").Build()
