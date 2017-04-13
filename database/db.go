@@ -17,7 +17,6 @@ limitations under the License.
 package database
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -222,8 +221,4 @@ func (db *DB) getLinesFromBucket(bucket string, fromID int) ([]*line, error) {
 		return nil
 	})
 	return result, err
-}
-
-func generateAnonymousID(seed string) (string, error) {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(salt+seed))), nil
 }

@@ -20,5 +20,4 @@ const (
 	awlessBucket      = "awless"
 	logsKey           = "logs"
 	historyBucketName = "line"
-	defaultsKey       = "defaults"
 )
