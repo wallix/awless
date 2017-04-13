@@ -182,7 +182,7 @@ See [Templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more
 You can also run an `awless` template from a predefined template file with:
 
 ```sh
-awless run awless-templates/create_instance_ssh.awls
+awless run awless-templates/create_instance_ssh.aws
 ```
 
 In each case, the CLI guide you through any running of a template (file template or one-liner) so you always have the chance to confirm or quit.

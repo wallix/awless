@@ -424,7 +424,7 @@ func oneLinerShortDesc(action string, entities []string) string {
 
 const (
 	DEFAULT_REPO_PREFIX = "https://raw.githubusercontent.com/wallix/awless-templates/master"
-	FILE_EXT            = ".awls"
+	FILE_EXT            = ".aws"
 )
 
 func getTemplateText(path string) ([]byte, error) {
