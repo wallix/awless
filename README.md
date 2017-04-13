@@ -29,7 +29,7 @@
 - Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Output formats either human (Markdown-compatible tables, trees) or machine readable (csv, tsv, json, ...): `--format`
 - Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
-- Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
+- Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults and sound autocomplete through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
@@ -51,7 +51,7 @@ Choose one of the following options:
 1. On macOS, use [homebrew](http://brew.sh):  `brew tap wallix/awless; brew install awless`
 2. With `curl` (macOS/Linux), run: `curl https://raw.githubusercontent.com/wallix/awless/master/getawless.sh | bash`
 3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
-4. If you have Golang already installed, build the source with: `go get github.com/wallix/awless`
+4. If you have Golang already installed, install from the source with: `go get github.com/wallix/awless`
 
 # Getting started
 
@@ -84,7 +84,7 @@ Read the wiki page for setting autocompletion for [bash](https://github.com/wall
 
 ## Disclaimer
 
-Awless allows for easy resource creation with your cloud provider; We will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
+Awless allows for easy resource creation with your cloud provider; we will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
 
 ## Getting started
 
@@ -96,7 +96,7 @@ You can list various resources:
 
 ```sh
 awless list buckets
-awless list instances --sort launchtime
+awless list instances --sort uptime
 
 # ls is an alias for list
 awless ls users --format csv             
@@ -115,7 +115,7 @@ Use `awless list`, `awless list -h` or `awless help list` to see all resources t
 When dealing with long lists of resources you can filter with the `--filter` flag as such:
 
 ```sh
-awless list volumes --filter state=in-use --filter volumetype=gp2
+awless list volumes --filter state=in-use --filter type=gp2
 
 # or with a csv notation
 awless list instances --filter state=running,type=t2.micro 
@@ -182,7 +182,7 @@ See [Templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more
 You can also run an `awless` template from a predefined template file with:
 
 ```sh
-awless run awless-templates/create_instance_ssh.awless
+awless run awless-templates/create_instance_ssh.awls
 ```
 
 In each case, the CLI guide you through any running of a template (file template or one-liner) so you always have the chance to confirm or quit.
@@ -242,13 +242,15 @@ awless config set aws.infra.listener.sync false
 
 ### SSH
 
-With `awless ssh` there is a fallback on an embedded SSH client (Golang one), in case the machine does not have SSH installed. (ex: on some Windows machines or use a minimalistic cloud instance that pilot `awless`)
+`awless ssh` provides an easy way to connect via [SSH](https://en.wikipedia.org/wiki/Secure_Shell) to an instance via its name, without needing either the AWS ID, public IP, keypair name nor account username.
+If your local host has a SSH client installed, `awless` will use it to connect to the instance.
+Otherwise, there is a fallback on an embedded SSH client (Golang one) needed, for example, on some Windows machines or on a minimalistic cloud instance that pilot `awless`.
 
-When connecting to an instance through ssh the SSH key and default SSH user are deduced automatically by `awless`. So you can simply and directly ssh to an instance with:
+When connecting to an instance through SSH the SSH key and default SSH user are deduced automatically by `awless`. So you can simply and directly ssh to an instance with:
 
 ```sh
-awless ssh i-abcd1234        # with an id
 awless ssh my-instance-name  # with a name
+awless ssh i-abcd1234        # with an id
 ```
 
 You can still specify an SSH user or a SSH key though with:
