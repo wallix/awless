@@ -178,7 +178,7 @@ awless delete subnet id=subnet-12345678
 awless attach volume id=vol-12345678 instance=i-12345678
 ```
 
-See [Templates (wiki)](https://github.com/wallix/awless/wiki/Templates) for more.
+Check out more examples at [Examples](https://github.com/wallix/awless/wiki/Examples)
 
 You can also run an `awless` template from a predefined template file with:
 
@@ -190,9 +190,17 @@ In each case, the CLI guide you through any running of a template (file template
 
 For instance, you will get **id/name autocompletion** to fill in any missing info.
 
-Check out the examples of runnig those commands at [Examples](https://github.com/wallix/awless/wiki/Examples)
 
 Note that you can get inspired with our **in progress** [repo of pre-existing templates](https://github.com/wallix/awless-templates)
+
+You can also run remote templates with:
+
+```
+awless run repo:create_instance_ssh.aws       # from official awless repo
+awless run http://mydomain.com/mytemplate.aws # from a remote url
+```
+
+Also more info on the design of the templates at [Templates (wiki)](https://github.com/wallix/awless/wiki/Templates).
 
 ### Log & revert executed template commands
 
