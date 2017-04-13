@@ -33,7 +33,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Launched:          {name: "LaunchTime", transform: extractValueFn},
 		properties.State:             {name: "State", transform: extractFieldFn("Name")},
 		properties.SSHKey:            {name: "KeyName", transform: extractValueFn},
-		properties.SecurityGroups:    {name: "SecurityGroups", transform: extractStringSliceValues("GroupId")},
+		properties.SecGroups:         {name: "SecurityGroups", transform: extractStringSliceValues("GroupId")},
 		properties.Affinity:          {name: "Placement", transform: extractFieldFn("Affinity")},
 		properties.AvailabilityZone:  {name: "Placement", transform: extractFieldFn("AvailabilityZone")},
 		properties.PlacementGroup:    {name: "Placement", transform: extractFieldFn("GroupName")},
@@ -62,7 +62,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.AvailabilityZone: {name: "AvailabilityZone", transform: extractValueFn},
 		properties.Default:          {name: "DefaultForAz", transform: extractValueFn},
 	},
-	cloud.SecurityGroup: {
+	cloud.SecGroup: {
 		properties.Name:          {name: "GroupName", transform: extractValueFn},
 		properties.Description:   {name: "Description", transform: extractValueFn},
 		properties.InboundRules:  {name: "IpPermissions", transform: extractIpPermissionSliceFn},
@@ -149,7 +149,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:                     {name: "DBInstanceStatus", transform: extractValueFn},
 		properties.Name:                      {name: "DBName", transform: extractValueFn},
 		properties.ParameterGroups:           {name: "DBParameterGroups", transform: extractStringSliceValues("DBParameterGroupName")},
-		properties.DBSecurityGroups:          {name: "DBSecurityGroups", transform: extractStringSliceValues("DBSecurityGroupName")},
+		properties.DBSecGroups:               {name: "DBSecurityGroups", transform: extractStringSliceValues("DBSecurityGroupName")},
 		properties.DBSubnetGroup:             {name: "DBSubnetGroup", transform: extractFieldFn("DBSubnetGroupName")},
 		properties.Port:                      {name: "DbInstancePort", transform: extractValueFn},
 		properties.GlobalID:                  {name: "DbiResourceId", transform: extractValueFn},
@@ -173,7 +173,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Encrypted:                 {name: "StorageEncrypted", transform: extractValueFn},
 		properties.StorageType:               {name: "StorageType", transform: extractValueFn},
 		properties.Timezone:                  {name: "Timezone", transform: extractValueFn},
-		properties.SecurityGroups:            {name: "VpcSecurityGroups", transform: extractStringSliceValues("VpcSecurityGroupId")},
+		properties.SecGroups:                 {name: "VpcSecurityGroups", transform: extractStringSliceValues("VpcSecurityGroupId")},
 	},
 	cloud.DbSubnetGroup: {
 		properties.Name:        {name: "DBSubnetGroupName", transform: extractValueFn},

@@ -63,8 +63,8 @@ func (te *Template) Revert() (*Template, error) {
 			}
 
 			// Prechecks
-			if cmd.Action == "create" && cmd.Entity == "securitygroup" {
-				lines = append(lines, fmt.Sprintf("check securitygroup id=%s state=unused timeout=180", cmd.CmdResult))
+			if cmd.Action == "create" && cmd.Entity == "secgroup" {
+				lines = append(lines, fmt.Sprintf("check secgroup id=%s state=unused timeout=180", cmd.CmdResult))
 			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))

@@ -14,13 +14,13 @@ Here the RDF triples implementation follows along the [W3C RDF concepts](https:/
 
 - Create and manage triples through a convenient DSL
 - Snapshot and query RDFGraphs
-- Encode triples to binary, NTriples format
+- Encode triples to binary, [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), NTriples format
 - Decode triples from binary
 - CLI (Command line interface) utility to read and convert triples files.
 
 Roadmap
-- RDF graph comparison
 - Simple RDF graph traversals API
+- RDF graph comparison
 - Encode to [Turtle syntax](https://en.wikipedia.org/wiki/Turtle_(syntax))
 
 ## Library 
@@ -214,6 +214,28 @@ enc := NewNTriplesEncoder(f)
 err := enc.Encode(triples)
 
 ``` 
+
+Encode to a DOT graph
+```go
+tris := []Triple{
+        SubjPredRes("me", "rel", "you"),
+        SubjPredRes("me", "rdf:type", "person"),
+        SubjPredRes("you", "rel", "other"),
+        SubjPredRes("you", "rdf:type", "child"),
+        SubjPredRes("other", "any", "john"),
+}
+
+err := NewDotGraphEncoder(file, "rel").Encode(tris...)
+...
+
+// output
+// digraph "rel" {
+//  "me" -> "you";
+//  "me" [label="me<person>"];
+//  "you" -> "other";
+//  "you" [label="you<child>"];
+//}
+```
 
 Load a binary dataset (i.e. multiple RDFGraph) concurrently from given files:
 

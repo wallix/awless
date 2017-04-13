@@ -50,10 +50,10 @@ var addParentsFns = map[string][]addParentFn{
 	},
 	cloud.Instance: {
 		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId"}.build(),
-		funcBuilder{parent: cloud.SecurityGroup, fieldName: "GroupId", listName: "SecurityGroups", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.SecGroup, fieldName: "GroupId", listName: "SecurityGroups", relation: APPLIES_ON}.build(),
 		funcBuilder{parent: cloud.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
 	},
-	cloud.SecurityGroup: {
+	cloud.SecGroup: {
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 	},
 	cloud.InternetGateway: {
@@ -73,7 +73,7 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
 		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
 		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "ZoneName", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
-		funcBuilder{parent: cloud.SecurityGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.SecGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
 	},
 	cloud.Listener: {
 		funcBuilder{parent: cloud.LoadBalancer, fieldName: "LoadBalancerArn"}.build(),
@@ -86,7 +86,7 @@ var addParentsFns = map[string][]addParentFn{
 	// Database
 	cloud.Database: {
 		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
-		funcBuilder{parent: cloud.SecurityGroup, listName: "VpcSecurityGroups", fieldName: "VpcSecurityGroupId", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.SecGroup, listName: "VpcSecurityGroups", fieldName: "VpcSecurityGroupId", relation: APPLIES_ON}.build(),
 	},
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},

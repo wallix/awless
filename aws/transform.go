@@ -52,7 +52,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *ec2.Subnet:
 		res = graph.InitResource(cloud.Subnet, awssdk.StringValue(ss.SubnetId))
 	case *ec2.SecurityGroup:
-		res = graph.InitResource(cloud.SecurityGroup, awssdk.StringValue(ss.GroupId))
+		res = graph.InitResource(cloud.SecGroup, awssdk.StringValue(ss.GroupId))
 	case *ec2.KeyPairInfo:
 		res = graph.InitResource(cloud.Keypair, awssdk.StringValue(ss.KeyName))
 	case *ec2.Volume:

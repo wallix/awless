@@ -139,7 +139,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "KeyName", TemplateName: "key", AwsType: "awsstr"},
 					{AwsField: "PrivateIpAddress", TemplateName: "ip", AwsType: "awsstr"},
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
-					{AwsField: "SecurityGroupIds", TemplateName: "group", AwsType: "awsstringslice"},
+					{AwsField: "SecurityGroupIds", TemplateName: "secgroup", AwsType: "awsstringslice"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
 				},
 			},
@@ -181,7 +181,7 @@ var DriversDefs = []driversDef{
 			},
 			// Security Group
 			{
-				Action: "create", Entity: cloud.SecurityGroup, Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
+				Action: "create", Entity: cloud.SecGroup, Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
 				RequiredParams: []param{
 					{AwsField: "GroupName", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
@@ -189,7 +189,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "update", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				Action: "update", Entity: cloud.SecGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 					{TemplateName: "cidr"},
@@ -202,13 +202,13 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.SecurityGroup, Input: "DeleteSecurityGroupInput", Output: "DeleteSecurityGroupOutput", ApiMethod: "DeleteSecurityGroup",
+				Action: "delete", Entity: cloud.SecGroup, Input: "DeleteSecurityGroupInput", Output: "DeleteSecurityGroupOutput", ApiMethod: "DeleteSecurityGroup",
 				RequiredParams: []param{
 					{AwsField: "GroupId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "check", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				Action: "check", Entity: cloud.SecGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 					{TemplateName: "state"},
@@ -216,7 +216,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "attach", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				Action: "attach", Entity: cloud.SecGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 				},
@@ -225,7 +225,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "detach", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
+				Action: "detach", Entity: cloud.SecGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 				},
@@ -378,7 +378,7 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{AwsField: "IpAddressType", TemplateName: "iptype", AwsType: "awsstr"},
 					{AwsField: "Scheme", TemplateName: "scheme", AwsType: "awsstr"},
-					{AwsField: "SecurityGroups", TemplateName: "groups", AwsType: "awsstringslice"},
+					{AwsField: "SecurityGroups", TemplateName: "secgroups", AwsType: "awsstringslice"},
 				},
 			},
 			{
@@ -455,7 +455,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "detach", Entity: cloud.Instance, ApiMethod: "DeregisterTargets", Input: "DeregisterTargetsInput", Output: "DeregisterTargetsOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{AwsField: "TargetGroupArn", TemplateName: "group", AwsType: "awsstr"},
+					{AwsField: "TargetGroupArn", TemplateName: "targetgroup", AwsType: "awsstr"},
 					{AwsField: "Targets[0]Id", TemplateName: "id", AwsType: "awsslicestruct"},
 				},
 			},

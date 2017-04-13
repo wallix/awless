@@ -76,8 +76,8 @@ func TestRevertTemplate(t *testing.T) {
 
 	t.Run("Revert load balancer creation", func(t *testing.T) {
 		tpl := MustParse(`
-loadbalancerfw = create securitygroup
-update securitygroup cidr=0.0.0.0/0 id=$loadbalancerfw inbound=authorize portrange=80 protocol=tcp
+loadbalancerfw = create secgroup
+update secgroup cidr=0.0.0.0/0 id=$loadbalancerfw inbound=authorize portrange=80 protocol=tcp
 lb = create loadbalancer groups=$loadbalancerfw name=loadbalancer
 create listener actiontype=forward loadbalancer=$lb
 inst1 = create instance
@@ -105,15 +105,15 @@ check instance id=i-1 state=terminated timeout=180
 delete listener id=list-1
 delete loadbalancer id=lb-1
 check loadbalancer id=lb-1 state=not-found timeout=180
-check securitygroup id=secgroup-1 state=unused timeout=180
-delete securitygroup id=secgroup-1`
+check secgroup id=secgroup-1 state=unused timeout=180
+delete secgroup id=secgroup-1`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
 
-	t.Run("Delete one securitygroup", func(t *testing.T) {
-		tpl := MustParse("create securitygroup")
+	t.Run("Delete one secgroup", func(t *testing.T) {
+		tpl := MustParse("create secgroup")
 		for _, cmd := range tpl.CommandNodesIterator() {
 			cmd.CmdResult = "sg-54321"
 		}
@@ -122,8 +122,8 @@ delete securitygroup id=secgroup-1`
 			t.Fatal(err)
 		}
 
-		exp := `check securitygroup id=sg-54321 state=unused timeout=180
-delete securitygroup id=sg-54321`
+		exp := `check secgroup id=sg-54321 state=unused timeout=180
+delete secgroup id=sg-54321`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

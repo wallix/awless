@@ -360,7 +360,7 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
-				input: `create securitygroup port=20-80`,
+				input: `create secgroup port=20-80`,
 				verifyFn: func(n ast.Node) error {
 					if err := assertParams(n, map[string]interface{}{"port": "20-80"}); err != nil {
 						return err
@@ -369,7 +369,7 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
-				input: `create securitygroup port="20-80"`,
+				input: `create secgroup port="20-80"`,
 				verifyFn: func(n ast.Node) error {
 					if err := assertParams(n, map[string]interface{}{"port": "20-80"}); err != nil {
 						return err
@@ -378,7 +378,7 @@ func TestTemplateParsing(t *testing.T) {
 				},
 			},
 			{
-				input: `create securitygroup port='20-80'`,
+				input: `create secgroup port='20-80'`,
 				verifyFn: func(n ast.Node) error {
 					if err := assertParams(n, map[string]interface{}{"port": "20-80"}); err != nil {
 						return err

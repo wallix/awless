@@ -36,7 +36,7 @@ func (p *PortScanner) Name() string {
 }
 
 func (p *PortScanner) Inspect(g *graph.Graph) error {
-	sgroups, err := g.GetAllResources(cloud.SecurityGroup)
+	sgroups, err := g.GetAllResources(cloud.SecGroup)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (p *PortScanner) Print(w io.Writer) {
 		} else {
 			targets = strings.Join(p.applyingOn[sg], ", ")
 		}
-		fmt.Fprintf(w, "Security group %s applying on %s: \n", sg, targets)
+		fmt.Fprintf(w, "Secgroup %s applying on %s: \n", sg, targets)
 
 		var allPermissive bool
 

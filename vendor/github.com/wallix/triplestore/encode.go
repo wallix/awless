@@ -147,3 +147,62 @@ func (enc *ntriplesEncoder) buildIRI(id string) string {
 	}
 	return id
 }
+
+type dotGraphEncoder struct {
+	pred string
+	w    io.Writer
+}
+
+func NewDotGraphEncoder(w io.Writer, predicate string) Encoder {
+	return &dotGraphEncoder{w: w, pred: predicate}
+}
+
+func (dg *dotGraphEncoder) Encode(tris ...Triple) error {
+	src := NewSource()
+	src.Add(tris...)
+
+	snap := src.Snapshot()
+	all := snap.WithPredicate(dg.pred)
+
+	queryDone := make(map[string][]string)
+
+	getTypes := func(ref string) ([]string, bool) {
+		if all, ok := queryDone[ref]; ok {
+			return all, true
+		} else {
+			fresh := snap.WithSubjPred(ref, "rdf:type")
+			for _, typ := range fresh {
+				val, _ := typ.Object().Resource()
+				queryDone[ref] = append(queryDone[ref], val)
+			}
+			return queryDone[ref], false
+		}
+	}
+
+	fmt.Fprintf(dg.w, "digraph \"%s\" {\n", dg.pred)
+	for _, tri := range all {
+		sub := tri.Subject()
+		res, ok := tri.Object().Resource()
+		if ok {
+			fmt.Fprintf(dg.w, "\"%s\" -> \"%s\";\n", sub, res)
+
+			subTypes, done := getTypes(sub)
+			if !done {
+				for _, typ := range subTypes {
+					fmt.Fprintf(dg.w, "\"%s\" [label=\"%s<%s>\"];\n", sub, sub, typ)
+				}
+			}
+
+			resTypes, done := getTypes(res)
+			if !done {
+				for _, typ := range resTypes {
+					fmt.Fprintf(dg.w, "\"%s\" [label=\"%s<%s>\"];\n", res, res, typ)
+				}
+			}
+		}
+	}
+
+	fmt.Fprintf(dg.w, "}")
+
+	return nil
+}

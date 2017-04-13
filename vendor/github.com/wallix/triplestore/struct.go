@@ -12,7 +12,9 @@ const (
 	subTag  = "subject"
 )
 
-var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // Convert a Struct or ptr to Struct into triples
 // using field tags.
@@ -53,7 +55,7 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 		if ok && embedded {
 			embedSub := tag
 			if tag == "rand" {
-				embedSub = fmt.Sprintf("%x", random.Uint32())
+				embedSub = fmt.Sprintf("%x", rand.Uint32())
 			}
 			tris := TriplesFromStruct(embedSub, fVal.Interface())
 			out = append(out, tris...)

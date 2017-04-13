@@ -46,36 +46,36 @@ const (
 	notFoundState = "not-found"
 )
 
-func (d *Ec2Driver) Attach_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Secgroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
-		return nil, errors.New("attach securitygroup: missing required params 'id'")
+		return nil, errors.New("attach secgroup: missing required params 'id'")
 	}
 
 	_, hasInstance := params["instance"]
 
 	if !hasInstance {
-		return nil, errors.New("attach securitygroup: missing 'instance' param")
+		return nil, errors.New("attach secgroup: missing 'instance' param")
 	}
 
-	d.logger.Verbose("params dry run: attach securitygroup ok")
+	d.logger.Verbose("params dry run: attach secgroup ok")
 	return nil, nil
 }
 
-func (d *Ec2Driver) Attach_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Secgroup(params map[string]interface{}) (interface{}, error) {
 	instance, hasInstance := params["instance"].(string)
 
 	switch {
 	case hasInstance:
-		groups, err := d.fetchInstanceSecurityGroups(instance)
+		groups, err := d.fetchInstanceSecGroups(instance)
 		if err != nil {
-			return nil, fmt.Errorf("fetching security groups for instance %s: %s", instance, err)
+			return nil, fmt.Errorf("fetching secgroups for instance %s: %s", instance, err)
 		}
 
 		groups = append(groups, fmt.Sprint(params["id"]))
 		if len(groups) == 0 {
-			d.logger.Errorf("AWS instances must have at least one security group")
+			d.logger.Errorf("AWS instances must have at least one secgroup")
 		}
-		return performCall(d, d.logger, "attach securitygroup", &ec2.ModifyInstanceAttributeInput{}, d.ModifyInstanceAttribute, []setter{
+		return performCall(d, d.logger, "attach secgroup", &ec2.ModifyInstanceAttributeInput{}, d.ModifyInstanceAttribute, []setter{
 			{val: instance, fieldPath: "InstanceID", fieldType: awsstr},
 			{val: groups, fieldPath: "Groups", fieldType: awsstringslice},
 		}...)
@@ -84,37 +84,37 @@ func (d *Ec2Driver) Attach_Securitygroup(params map[string]interface{}) (interfa
 	return nil, errors.New("missing 'instance' param")
 }
 
-func (d *Ec2Driver) Detach_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Secgroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
-		return nil, errors.New("detach securitygroup: missing required params 'id'")
+		return nil, errors.New("detach secgroup: missing required params 'id'")
 	}
 
 	_, hasInstance := params["instance"]
 
 	if !hasInstance {
-		return nil, errors.New("detach securitygroup: missing 'instance' param")
+		return nil, errors.New("detach secgroup: missing 'instance' param")
 	}
 
-	d.logger.Verbose("params dry run: detach securitygroup ok")
+	d.logger.Verbose("params dry run: detach secgroup ok")
 	return nil, nil
 }
 
-func (d *Ec2Driver) Detach_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Secgroup(params map[string]interface{}) (interface{}, error) {
 	instance, hasInstance := params["instance"].(string)
 
 	switch {
 	case hasInstance:
-		groups, err := d.fetchInstanceSecurityGroups(instance)
+		groups, err := d.fetchInstanceSecGroups(instance)
 		if err != nil {
-			return nil, fmt.Errorf("fetching security groups for instance %s: %s", instance, err)
+			return nil, fmt.Errorf("fetching secgroups for instance %s: %s", instance, err)
 		}
 
 		cleaned := removeString(groups, fmt.Sprint(params["id"]))
 
 		if len(cleaned) == 0 {
-			d.logger.Errorf("AWS instances must have at least one security group")
+			d.logger.Errorf("AWS instances must have at least one secgroup")
 		}
-		return performCall(d, d.logger, "attach securitygroup", &ec2.ModifyInstanceAttributeInput{}, d.ModifyInstanceAttribute, []setter{
+		return performCall(d, d.logger, "attach secgroup", &ec2.ModifyInstanceAttributeInput{}, d.ModifyInstanceAttribute, []setter{
 			{val: instance, fieldPath: "InstanceID", fieldType: awsstr},
 			{val: cleaned, fieldPath: "Groups", fieldType: awsstringslice},
 		}...)
@@ -123,7 +123,7 @@ func (d *Ec2Driver) Detach_Securitygroup(params map[string]interface{}) (interfa
 	return nil, errors.New("missing 'instance' param")
 }
 
-func (d *Ec2Driver) fetchInstanceSecurityGroups(id string) ([]string, error) {
+func (d *Ec2Driver) fetchInstanceSecGroups(id string) ([]string, error) {
 	params := &ec2.DescribeInstanceAttributeInput{
 		Attribute:  aws.String("groupSet"),
 		InstanceId: aws.String(id),
@@ -398,9 +398,9 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 	return nil, c.check()
 }
 
-func (d *Ec2Driver) Check_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Secgroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
-		return nil, errors.New("check security group: missing required params 'id'")
+		return nil, errors.New("check secgroup: missing required params 'id'")
 	}
 
 	states := map[string]struct{}{
@@ -408,25 +408,25 @@ func (d *Ec2Driver) Check_Securitygroup_DryRun(params map[string]interface{}) (i
 	}
 
 	if state, ok := params["state"].(string); !ok {
-		return nil, errors.New("check security group: missing required params 'state'")
+		return nil, errors.New("check secgroup: missing required params 'state'")
 	} else {
 		if _, stok := states[state]; !stok {
-			return nil, fmt.Errorf("check security group: invalid state '%s'", state)
+			return nil, fmt.Errorf("check secgroup: invalid state '%s'", state)
 		}
 	}
 
 	if _, ok := params["timeout"]; !ok {
-		return nil, errors.New("check security group: missing required params 'timeout'")
+		return nil, errors.New("check secgroup: missing required params 'timeout'")
 	}
 
 	if _, ok := params["timeout"].(int); !ok {
-		return nil, errors.New("check security group: timeout param is not int")
+		return nil, errors.New("check secgroup: timeout param is not int")
 	}
 	d.logger.Verbose("dry run: check instance ok")
 	return nil, nil
 }
 
-func (d *Ec2Driver) Check_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Secgroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeNetworkInterfacesInput{
 		Filters: []*ec2.Filter{
 			{Name: aws.String("group-id"), Values: []*string{aws.String(fmt.Sprint(params["id"]))}},
@@ -434,7 +434,7 @@ func (d *Ec2Driver) Check_Securitygroup(params map[string]interface{}) (interfac
 	}
 
 	c := &checker{
-		description: "securitygroup",
+		description: "secgroup",
 		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
 		frequency:   5 * time.Second,
 		fetchFunc: func() (string, error) {
@@ -677,7 +677,7 @@ func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	return aws.StringValue(output.KeyName), nil
 }
 
-func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Secgroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	ipPerms, err := buildIpPermissionsFromParams(params)
 	if err != nil {
 		return nil, err
@@ -726,14 +726,14 @@ func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			d.logger.Verbose("dry run: update securitygroup ok")
+			d.logger.Verbose("dry run: update secgroup ok")
 			return nil, nil
 		}
 	}
-	return nil, fmt.Errorf("dry run: update securitygroup: %s", err)
+	return nil, fmt.Errorf("dry run: update secgroup: %s", err)
 }
 
-func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Secgroup(params map[string]interface{}) (interface{}, error) {
 	ipPerms, err := buildIpPermissionsFromParams(params)
 	if err != nil {
 		return nil, err
@@ -781,10 +781,10 @@ func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interfa
 		output, err = d.RevokeSecurityGroupEgress(ii)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("update securitygroup: %s", err)
+		return nil, fmt.Errorf("update secgroup: %s", err)
 	}
 
-	d.logger.Verbose("update securitygroup done")
+	d.logger.Verbose("update secgroup done")
 	return output, nil
 }
 
@@ -1101,7 +1101,7 @@ func fakeDryRunId(entity string) string {
 		return fmt.Sprintf("vpc-%d", suffix)
 	case cloud.Volume:
 		return fmt.Sprintf("vol-%d", suffix)
-	case cloud.SecurityGroup:
+	case cloud.SecGroup:
 		return fmt.Sprintf("sg-%d", suffix)
 	case cloud.InternetGateway:
 		return fmt.Sprintf("igw-%d", suffix)

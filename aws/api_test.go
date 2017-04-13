@@ -280,14 +280,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "secgroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.SecurityGroups].([]string); ok {
+		if p, ok := res.Properties[p.SecGroups].([]string); ok {
 			sort.Strings(p)
 		}
 		if p, ok := res.Properties[p.Vpcs].([]string); ok {
@@ -298,9 +298,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	expected := map[string]*graph.Resource{
 		"eu-west-1":   resourcetest.Region("eu-west-1").Build(),
 		"inst_1":      resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
-		"inst_2":      resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"secgroup_1"}).Build(),
+		"inst_2":      resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecGroups, []string{"secgroup_1"}).Build(),
 		"inst_3":      resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"inst_4":      resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"secgroup_1", "secgroup_2"}).Prop(p.SSHKey, "my_key_pair").Build(),
+		"inst_4":      resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecGroups, []string{"secgroup_1", "secgroup_2"}).Prop(p.SSHKey, "my_key_pair").Build(),
 		"inst_5":      resourcetest.Instance("inst_5").Prop(p.SSHKey, "unexisting_keypair").Build(),
 		"vpc_1":       resourcetest.VPC("vpc_1").Build(),
 		"vpc_2":       resourcetest.VPC("vpc_2").Build(),

@@ -120,7 +120,7 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 
 func extractUniqueLiteralTextFromTriples(triples []tstore.Triple) (string, error) {
 	if ln := len(triples); ln != 1 {
-		return "", fmt.Errorf("expected unique, got %d", ln)
+		return "", fmt.Errorf("expected unique, got %d: %s", ln, triples)
 	}
 	return tstore.ParseString(triples[0].Object())
 }

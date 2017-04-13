@@ -180,7 +180,7 @@ func TestResourceMarshalUnmarshalHandlesNilValues(t *testing.T) {
 }
 
 func TestMarshalUnmarshalList(t *testing.T) {
-	r := instResource("inst1").prop(properties.ID, "inst1").prop(properties.SecurityGroups, []string{"sgroup1", "sgroup2", "sgroup3"}).prop(properties.Actions, []string{"start", "stop", "delete"}).build()
+	r := instResource("inst1").prop(properties.ID, "inst1").prop(properties.SecGroups, []string{"sgroup1", "sgroup2", "sgroup3"}).prop(properties.Actions, []string{"start", "stop", "delete"}).build()
 	g := NewGraph()
 	triples, err := r.marshalFullRDF()
 	if err != nil {
@@ -193,8 +193,8 @@ func TestMarshalUnmarshalList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sort.Strings(r.Properties["SecurityGroups"].([]string))
-	sort.Strings(rawRes.Properties["SecurityGroups"].([]string))
+	sort.Strings(r.Properties["SecGroups"].([]string))
+	sort.Strings(rawRes.Properties["SecGroups"].([]string))
 
 	sort.Strings(r.Properties["Actions"].([]string))
 	sort.Strings(rawRes.Properties["Actions"].([]string))
@@ -294,7 +294,7 @@ func TestMarshalUnmarshalGrants(t *testing.T) {
 
 func TestMarshalUnmarshalIPPermissions(t *testing.T) {
 	expected := []*Resource{
-		testResource("sg-1234", "securitygroup").prop("InboundRules", []*FirewallRule{
+		testResource("sg-1234", "secgroup").prop("InboundRules", []*FirewallRule{
 			{
 				PortRange: PortRange{FromPort: int64(22), ToPort: int64(22), Any: false},
 				Protocol:  "tcp",
@@ -323,7 +323,7 @@ func TestMarshalUnmarshalIPPermissions(t *testing.T) {
 		g.store.Add(triples...)
 	}
 
-	res, err := g.GetAllResources("securitygroup")
+	res, err := g.GetAllResources("secgroup")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -377,7 +377,7 @@ func buildBenchmarkData() (data []*Resource) {
 				secGroup2Id := fmt.Sprintf("%s_secgroup2", instId)
 				data = append(data, sGrpResource(secGroup2Id).prop(properties.ID, secGroup2Id).prop("InboundRules", rules).prop("OutboundRules", rules).prop(properties.Vpc, vpcId).prop(properties.Launched, time.Now()).build())
 
-				data = append(data, instResource(instId).prop(properties.ID, instId).prop("Name", instId+"name").prop(properties.Subnet, subId).prop(properties.Vpc, vpcId).prop(properties.Launched, time.Now()).prop(properties.SecurityGroups, []string{secGroup1Id, secGroup2Id}).build())
+				data = append(data, instResource(instId).prop(properties.ID, instId).prop("Name", instId+"name").prop(properties.Subnet, subId).prop(properties.Vpc, vpcId).prop(properties.Launched, time.Now()).prop(properties.SecGroups, []string{secGroup1Id, secGroup2Id}).build())
 			}
 		}
 	}
