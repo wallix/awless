@@ -311,7 +311,7 @@ func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {
 	return g, buckets, err
 }
 
-func (s *Storage) fetch_all_storageobject_graph() (*graph.Graph, []*s3.Object, error) {
+func (s *Storage) fetch_all_s3object_graph() (*graph.Graph, []*s3.Object, error) {
 	g := graph.NewGraph()
 	var cloudResources []*s3.Object
 

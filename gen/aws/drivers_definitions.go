@@ -632,7 +632,7 @@ var DriversDefs = []driversDef{
 
 			// OBJECT
 			{
-				Action: "create", Entity: cloud.Object, ManualFuncDefinition: true,
+				Action: "create", Entity: cloud.S3Object, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{AwsField: "Bucket", TemplateName: "bucket", AwsType: "awsstr"},
 					{AwsField: "Body", TemplateName: "file", AwsType: "awsstr"},
@@ -642,7 +642,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Object, DryRunUnsupported: true, Input: "DeleteObjectInput", Output: "DeleteObjectOutput", ApiMethod: "DeleteObject",
+				Action: "delete", Entity: cloud.S3Object, DryRunUnsupported: true, Input: "DeleteObjectInput", Output: "DeleteObjectOutput", ApiMethod: "DeleteObject",
 				RequiredParams: []param{
 					{AwsField: "Bucket", TemplateName: "bucket", AwsType: "awsstr"},
 					{AwsField: "Key", TemplateName: "key", AwsType: "awsstr"},

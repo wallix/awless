@@ -788,13 +788,13 @@ func (d *Ec2Driver) Update_Secgroup(params map[string]interface{}) (interface{},
 	return output, nil
 }
 
-func (d *S3Driver) Create_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_S3object_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
-		return nil, errors.New("create storageobject: missing required params 'bucket'")
+		return nil, errors.New("create s3object: missing required params 'bucket'")
 	}
 
 	if _, ok := params["file"].(string); !ok {
-		return nil, errors.New("create storageobject: missing required string params 'file'")
+		return nil, errors.New("create s3object: missing required string params 'file'")
 	}
 
 	stat, err := os.Stat(params["file"].(string))
@@ -808,7 +808,7 @@ func (d *S3Driver) Create_Storageobject_DryRun(params map[string]interface{}) (i
 		return nil, fmt.Errorf("'%s' is a directory", params["file"])
 	}
 
-	d.logger.Verbose("params dry run: create storageobject ok")
+	d.logger.Verbose("params dry run: create s3object ok")
 	return nil, nil
 }
 
@@ -850,7 +850,7 @@ func (pr *progressReadSeeker) Seek(offset int64, whence int) (int64, error) {
 	return pr.file.Seek(offset, whence)
 }
 
-func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
 	f, err := os.Open(params["file"].(string))
@@ -883,10 +883,10 @@ func (d *S3Driver) Create_Storageobject(params map[string]interface{}) (interfac
 
 	output, err := d.PutObject(input)
 	if err != nil {
-		return nil, fmt.Errorf("create storageobject: %s", err)
+		return nil, fmt.Errorf("create s3object: %s", err)
 	}
 
-	d.logger.Verbose("create storageobject done")
+	d.logger.Verbose("create s3object done")
 	return output, nil
 }
 

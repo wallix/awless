@@ -28,9 +28,9 @@ const (
 	Policy    string = "policy"
 	AccessKey string = "accesskey"
 	//storage
-	Bucket string = "bucket"
-	Object string = "storageobject"
-	Acl    string = "storageacl"
+	Bucket   string = "bucket"
+	S3Object string = "s3object"
+	Acl      string = "storageacl"
 	//notification
 	Subscription string = "subscription"
 	Topic        string = "topic"

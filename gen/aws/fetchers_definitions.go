@@ -74,7 +74,7 @@ var FetchersDefs = []fetchersDef{
 		Api:  []string{"s3"},
 		Fetchers: []fetcher{
 			{Api: "s3", ResourceType: cloud.Bucket, AWSType: "s3.Bucket", ManualFetcher: true},
-			{Api: "s3", ResourceType: cloud.Object, AWSType: "s3.Object", ManualFetcher: true},
+			{Api: "s3", ResourceType: cloud.S3Object, AWSType: "s3.Object", ManualFetcher: true},
 		},
 	},
 	{

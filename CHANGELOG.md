@@ -3,6 +3,8 @@
 ### Features
 
 - Amazon [**userdata**](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) supports. Ex: `awless create instance userdata=/tmp/mydata.sh ...`. Allow to pass user data (_bash scripts_ or _cloud-init_) when creating an instance.
+- Global rename of `securitygroup` to `secgroup` for shorter typing in CLI.
+- Global rename of `storageobject` to `s3object` for shorter typing in CLI.
 - awless model/storing is now full RDF ;). Allow exploration of all your infra in RDF tools and ontology editor (Ex: [Protege](http://protege.stanford.edu/))
 - Faster, better and simpler RDF & triples management now done through the nifty library [triplestore](https://github.com/wallix/triplestore)
 - Ability to use strings with spaces and special characters in template parameters by surrounding them with single or double quotes.
@@ -11,7 +13,7 @@
 - ssh: print SSH configuration (`~/.ssh/config`) or the CLI one-liner to connect with SSH using `--print-config` or `--print-cli` flags.
 - ssh: better handle when several instances have the same name (e.g., with a running and a terminated instance)
 - ssh: more warning; provide help and context on failing connections
-- Manage properly secgroups on instances with `awless attach/detach securitygroup id=... instance=@my-instance`
+- Manage properly secgroups on instances with `awless attach/detach secgroup id=... instance=@my-instance`
 
 ### Bugfixes
 

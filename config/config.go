@@ -42,17 +42,17 @@ const (
 )
 
 var configDefinitions = map[string]*Definition{
-	autosyncConfigKey:                {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
-	RegionConfigKey:                  {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{awsconfig.WarningChangeRegion, runSyncWithUpdatedRegion}},
-	ProfileConfigKey:                 {help: "AWS profile", defaultValue: "default"},
-	"aws.infra.sync":                 {help: "Sync AWS EC2/ELBv2 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	"aws.access.sync":                {help: "Sync AWS IAM service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	"aws.storage.sync":               {help: "Sync AWS S3 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	"aws.storage.storageobject.sync": {help: "Sync AWS S3/storageobject (when empty: true)", defaultValue: "false", parseParamFn: parseBool},
-	"aws.notification.sync":          {help: "Sync AWS SNS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	"aws.queue.sync":                 {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	"aws.dns.sync":                   {help: "Sync Route53 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	checkUpgradeFrequencyConfigKey:   {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
+	autosyncConfigKey:              {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
+	RegionConfigKey:                {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{awsconfig.WarningChangeRegion, runSyncWithUpdatedRegion}},
+	ProfileConfigKey:               {help: "AWS profile", defaultValue: "default"},
+	"aws.infra.sync":               {help: "Sync AWS EC2/ELBv2 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.access.sync":              {help: "Sync AWS IAM service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.storage.sync":             {help: "Sync AWS S3 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.storage.s3object.sync":    {help: "Sync AWS S3/s3object (when empty: true)", defaultValue: "false", parseParamFn: parseBool},
+	"aws.notification.sync":        {help: "Sync AWS SNS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.queue.sync":               {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.dns.sync":                 {help: "Sync Route53 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	checkUpgradeFrequencyConfigKey: {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
 }
 
 var defaultsDefinitions = map[string]*Definition{

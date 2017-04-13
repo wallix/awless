@@ -92,7 +92,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *s3.Bucket:
 		res = graph.InitResource(cloud.Bucket, awssdk.StringValue(ss.Name))
 	case *s3.Object:
-		res = graph.InitResource(cloud.Object, awssdk.StringValue(ss.Key))
+		res = graph.InitResource(cloud.S3Object, awssdk.StringValue(ss.Key))
 	//SNS
 	case *sns.Subscription:
 		res = graph.InitResource(cloud.Subscription, awssdk.StringValue(ss.Endpoint))

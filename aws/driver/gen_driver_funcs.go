@@ -2759,21 +2759,21 @@ func (d *S3Driver) Delete_Bucket(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *S3Driver) Delete_Storageobject_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Delete_S3object_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
-		return nil, errors.New("delete storageobject: missing required params 'bucket'")
+		return nil, errors.New("delete s3object: missing required params 'bucket'")
 	}
 
 	if _, ok := params["key"]; !ok {
-		return nil, errors.New("delete storageobject: missing required params 'key'")
+		return nil, errors.New("delete s3object: missing required params 'key'")
 	}
 
-	d.logger.Verbose("params dry run: delete storageobject ok")
+	d.logger.Verbose("params dry run: delete s3object ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *S3Driver) Delete_Storageobject(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Delete_S3object(params map[string]interface{}) (interface{}, error) {
 	input := &s3.DeleteObjectInput{}
 	var err error
 
@@ -2792,10 +2792,10 @@ func (d *S3Driver) Delete_Storageobject(params map[string]interface{}) (interfac
 	output, err = d.DeleteObject(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete storageobject: %s", err)
+		return nil, fmt.Errorf("delete s3object: %s", err)
 	}
 	d.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
-	d.logger.Verbose("delete storageobject done")
+	d.logger.Verbose("delete s3object done")
 	return output, nil
 }
 

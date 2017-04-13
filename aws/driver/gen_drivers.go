@@ -508,17 +508,17 @@ func (d *S3Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err erro
 		}
 		return d.Delete_Bucket, nil
 
-	case "createstorageobject":
+	case "creates3object":
 		if d.dryRun {
-			return d.Create_Storageobject_DryRun, nil
+			return d.Create_S3object_DryRun, nil
 		}
-		return d.Create_Storageobject, nil
+		return d.Create_S3object, nil
 
-	case "deletestorageobject":
+	case "deletes3object":
 		if d.dryRun {
-			return d.Delete_Storageobject_DryRun, nil
+			return d.Delete_S3object_DryRun, nil
 		}
-		return d.Delete_Storageobject, nil
+		return d.Delete_S3object, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

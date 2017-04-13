@@ -220,7 +220,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Created: {name: "CreationDate", transform: extractTimeFn},
 		properties.Grants:  {fetch: fetchAndExtractGrantsFn},
 	},
-	cloud.Object: {
+	cloud.S3Object: {
 		properties.Key:      {name: "Key", transform: extractValueFn},
 		properties.Modified: {name: "LastModified", transform: extractTimeFn},
 		properties.Owner:    {name: "Owner", transform: extractFieldFn("ID")},

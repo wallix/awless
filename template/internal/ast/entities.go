@@ -31,8 +31,8 @@ const (
 	Policy    Entity = "policy"
 	Accesskey Entity = "accesskey"
 
-	Bucket        Entity = "bucket"
-	Storageobject Entity = "storageobject"
+	Bucket   Entity = "bucket"
+	S3object Entity = "s3object"
 
 	Subscription Entity = "subscription"
 	Topic        Entity = "topic"
@@ -64,7 +64,7 @@ var entities = map[Entity]struct{}{
 	Policy:          {},
 	Accesskey:       {},
 	Bucket:          {},
-	Storageobject:   {},
+	S3object:        {},
 	Subscription:    {},
 	Topic:           {},
 	Queue:           {},

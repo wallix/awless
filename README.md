@@ -127,7 +127,7 @@ awless list instances --filter "access key"=my-key
 For instance, you could list all storage objects in a given bucket using only local data with:
 
 ```sh
-awless --local ls storageobjects --filter bucketname=pdf-bucket 
+awless --local ls s3objects --filter bucketname=pdf-bucket 
 ```
 
 Note that filters:
@@ -231,8 +231,8 @@ Note that you can configure the sync per services and per resources. For example
 # disable sync for queue service (sqs) entirely
 awless config set aws.queue.sync false 
 
-# enable sync for storageobject resources in the storage service (s3)
-awless config set aws.storage.storageobject.sync true 
+# enable sync for s3object resources in the storage service (s3)
+awless config set aws.storage.s3object.sync true 
 
 # disable sync for load balancing resources (elbv2) in the infra service
 awless config set aws.infra.loadbalancer.sync false 

@@ -188,7 +188,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Grants}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
-	cloud.Object: {
+	cloud.S3Object: {
 		StringColumnDefinition{Prop: properties.ID, TruncateRight: true},
 		StringColumnDefinition{Prop: properties.Bucket, Friendly: "Bucket"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified, Friendly: "Modified"}},

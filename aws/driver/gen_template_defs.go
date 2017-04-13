@@ -442,16 +442,16 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
-	"createstorageobject": {
+	"creates3object": {
 		Action:         "create",
-		Entity:         "storageobject",
+		Entity:         "s3object",
 		Api:            "s3",
 		RequiredParams: []string{"bucket", "file"},
 		ExtraParams:    []string{"name"},
 	},
-	"deletestorageobject": {
+	"deletes3object": {
 		Action:         "delete",
-		Entity:         "storageobject",
+		Entity:         "s3object",
 		Api:            "s3",
 		RequiredParams: []string{"bucket", "key"},
 		ExtraParams:    []string{},
@@ -590,8 +590,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["detach"] = append(supported["detach"], "policy")
 	supported["create"] = append(supported["create"], "bucket")
 	supported["delete"] = append(supported["delete"], "bucket")
-	supported["create"] = append(supported["create"], "storageobject")
-	supported["delete"] = append(supported["delete"], "storageobject")
+	supported["create"] = append(supported["create"], "s3object")
+	supported["delete"] = append(supported["delete"], "s3object")
 	supported["create"] = append(supported["create"], "topic")
 	supported["delete"] = append(supported["delete"], "topic")
 	supported["create"] = append(supported["create"], "subscription")

@@ -85,7 +85,7 @@ var ResourceTypes = []string{
 	"role",
 	"policy",
 	"bucket",
-	"storageobject",
+	"s3object",
 	"subscription",
 	"topic",
 	"queue",
@@ -125,7 +125,7 @@ var ServicePerResourceType = map[string]string{
 	"role":             "access",
 	"policy":           "access",
 	"bucket":           "storage",
-	"storageobject":    "storage",
+	"s3object":         "storage",
 	"subscription":     "notification",
 	"topic":            "notification",
 	"queue":            "queue",
@@ -1404,7 +1404,7 @@ func (s *Storage) Drivers() []driver.Driver {
 
 func (s *Storage) ResourceTypes() (all []string) {
 	all = append(all, "bucket")
-	all = append(all, "storageobject")
+	all = append(all, "s3object")
 	return
 }
 
@@ -1419,7 +1419,7 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		return g, err
 	}
 	var bucketList []*s3.Bucket
-	var storageobjectList []*s3.Object
+	var s3objectList []*s3.Object
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -1440,13 +1440,13 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource storage[bucket]")
 	}
-	if s.config.getBool("aws.storage.storageobject.sync", true) {
+	if s.config.getBool("aws.storage.s3object.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			var resGraph *graph.Graph
 			var err error
-			resGraph, storageobjectList, err = s.fetch_all_storageobject_graph()
+			resGraph, s3objectList, err = s.fetch_all_s3object_graph()
 			if err != nil {
 				errc <- err
 				return
@@ -1454,7 +1454,7 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource storage[storageobject]")
+		s.log.Verbose("sync: *disabled* for resource storage[s3object]")
 	}
 
 	go func() {
@@ -1494,12 +1494,12 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-	if s.config.getBool("aws.storage.storageobject.sync", true) {
+	if s.config.getBool("aws.storage.s3object.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for _, r := range storageobjectList {
-				for _, fn := range addParentsFns["storageobject"] {
+			for _, r := range s3objectList {
+				for _, fn := range addParentsFns["s3object"] {
 					err := fn(g, r)
 					if err != nil {
 						errc <- err
@@ -1529,8 +1529,8 @@ func (s *Storage) FetchByType(t string) (*graph.Graph, error) {
 	case "bucket":
 		graph, _, err := s.fetch_all_bucket_graph()
 		return graph, err
-	case "storageobject":
-		graph, _, err := s.fetch_all_storageobject_graph()
+	case "s3object":
+		graph, _, err := s.fetch_all_s3object_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws storage: unsupported fetch for type %s", t)

@@ -42,7 +42,7 @@ func (*BucketSizer) Name() string {
 func (i *BucketSizer) Inspect(g *graph.Graph) error {
 	i.buckets = make(map[string]*bucket)
 
-	objects, err := g.GetAllResources(cloud.Object)
+	objects, err := g.GetAllResources(cloud.S3Object)
 	if err != nil {
 		return err
 	}
