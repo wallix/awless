@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	deleteAllLogsFlag bool
+	deleteAllLogsFlag    bool
 	deleteFromIdLogsFlag string
 )
 

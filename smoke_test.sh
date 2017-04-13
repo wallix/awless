@@ -15,7 +15,7 @@ echo "building awless"
 go build -o $BIN
 
 echo "flushing awless logs..."
-$BIN log --delete
+$BIN log --delete-all
 
 ORIG_REGION=`$BIN config get aws.region`
 ORIG_IMAGE=`$BIN config get instance.image`

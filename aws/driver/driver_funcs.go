@@ -366,7 +366,7 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 		return nil, err
 	}
 	c := &checker{
-		description: "instance",
+		description: fmt.Sprintf("instance %s", params["id"]),
 		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
 		frequency:   5 * time.Second,
 		fetchFunc: func() (string, error) {
@@ -434,7 +434,7 @@ func (d *Ec2Driver) Check_Secgroup(params map[string]interface{}) (interface{}, 
 	}
 
 	c := &checker{
-		description: "secgroup",
+		description: fmt.Sprintf("secgroup %s", params["id"]),
 		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
 		frequency:   5 * time.Second,
 		fetchFunc: func() (string, error) {
@@ -494,7 +494,7 @@ func (d *Elbv2Driver) Check_Loadbalancer(params map[string]interface{}) (interfa
 		return nil, err
 	}
 	c := &checker{
-		description: "loadbalancer",
+		description: fmt.Sprintf("loadbalancer %s", params["id"]),
 		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
 		frequency:   5 * time.Second,
 		fetchFunc: func() (string, error) {
