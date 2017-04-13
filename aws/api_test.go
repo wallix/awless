@@ -214,8 +214,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
 		{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}}},
 		{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
-		{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}, {GroupId: awssdk.String("secgroup_2")}}, KeyName: awssdk.String("my_key_pair")},
-		{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil, KeyName: awssdk.String("unexisting_keypair")}, // terminated instance (no vpc, subnet ids)
+		{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("secgroup_1")}, {GroupId: awssdk.String("secgroup_2")}}, KeyName: awssdk.String("my_key")},
+		{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil, KeyName: awssdk.String("unexisting_key")}, // terminated instance (no vpc, subnet ids)
 	}
 
 	vpcs := []*ec2.Vpc{
@@ -236,7 +236,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	keypairs := []*ec2.KeyPairInfo{
-		{KeyName: awssdk.String("my_key_pair")},
+		{KeyName: awssdk.String("my_key")},
 	}
 
 	igws := []*ec2.InternetGateway{
@@ -280,7 +280,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "secgroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "secgroup", "subnet", "key", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,36 +296,36 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expected := map[string]*graph.Resource{
-		"eu-west-1":   resourcetest.Region("eu-west-1").Build(),
-		"inst_1":      resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
-		"inst_2":      resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecGroups, []string{"secgroup_1"}).Build(),
-		"inst_3":      resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"inst_4":      resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecGroups, []string{"secgroup_1", "secgroup_2"}).Prop(p.SSHKey, "my_key_pair").Build(),
-		"inst_5":      resourcetest.Instance("inst_5").Prop(p.SSHKey, "unexisting_keypair").Build(),
-		"vpc_1":       resourcetest.VPC("vpc_1").Build(),
-		"vpc_2":       resourcetest.VPC("vpc_2").Build(),
-		"secgroup_1":  resourcetest.SecGroup("secgroup_1").Prop(p.Name, "my_secgroup").Prop(p.Vpc, "vpc_1").Build(),
-		"secgroup_2":  resourcetest.SecGroup("secgroup_2").Prop(p.Vpc, "vpc_1").Build(),
-		"sub_1":       resourcetest.Subnet("sub_1").Prop(p.Vpc, "vpc_1").Build(),
-		"sub_2":       resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
-		"sub_3":       resourcetest.Subnet("sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"sub_4":       resourcetest.Subnet("sub_4").Build(),
-		"my_key_pair": resourcetest.Keypair("my_key_pair").Build(),
-		"igw_1":       resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
-		"rt_1":        resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
-		"lb_1":        resourcetest.LoadBalancer("lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
-		"lb_2":        resourcetest.LoadBalancer("lb_2").Prop(p.Vpc, "vpc_2").Build(),
-		"lb_3":        resourcetest.LoadBalancer("lb_3").Prop(p.Vpc, "vpc_1").Build(),
-		"tg_1":        resourcetest.TargetGroup("tg_1").Prop(p.Vpc, "vpc_1").Build(),
-		"tg_2":        resourcetest.TargetGroup("tg_2").Prop(p.Vpc, "vpc_2").Build(),
-		"list_1":      resourcetest.Listener("list_1").Prop(p.LoadBalancer, "lb_1").Build(),
-		"list_1.2":    resourcetest.Listener("list_1.2").Prop(p.LoadBalancer, "lb_1").Build(),
-		"list_2":      resourcetest.Listener("list_2").Prop(p.LoadBalancer, "lb_2").Build(),
-		"list_3":      resourcetest.Listener("list_3").Prop(p.LoadBalancer, "lb_3").Build(),
+		"eu-west-1":  resourcetest.Region("eu-west-1").Build(),
+		"inst_1":     resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
+		"inst_2":     resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecGroups, []string{"secgroup_1"}).Build(),
+		"inst_3":     resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"inst_4":     resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecGroups, []string{"secgroup_1", "secgroup_2"}).Prop(p.SSHKey, "my_key").Build(),
+		"inst_5":     resourcetest.Instance("inst_5").Prop(p.SSHKey, "unexisting_key").Build(),
+		"vpc_1":      resourcetest.VPC("vpc_1").Build(),
+		"vpc_2":      resourcetest.VPC("vpc_2").Build(),
+		"secgroup_1": resourcetest.SecGroup("secgroup_1").Prop(p.Name, "my_secgroup").Prop(p.Vpc, "vpc_1").Build(),
+		"secgroup_2": resourcetest.SecGroup("secgroup_2").Prop(p.Vpc, "vpc_1").Build(),
+		"sub_1":      resourcetest.Subnet("sub_1").Prop(p.Vpc, "vpc_1").Build(),
+		"sub_2":      resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
+		"sub_3":      resourcetest.Subnet("sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"sub_4":      resourcetest.Subnet("sub_4").Build(),
+		"my_key":     resourcetest.Key("my_key").Build(),
+		"igw_1":      resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
+		"rt_1":       resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
+		"lb_1":       resourcetest.LoadBalancer("lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
+		"lb_2":       resourcetest.LoadBalancer("lb_2").Prop(p.Vpc, "vpc_2").Build(),
+		"lb_3":       resourcetest.LoadBalancer("lb_3").Prop(p.Vpc, "vpc_1").Build(),
+		"tg_1":       resourcetest.TargetGroup("tg_1").Prop(p.Vpc, "vpc_1").Build(),
+		"tg_2":       resourcetest.TargetGroup("tg_2").Prop(p.Vpc, "vpc_2").Build(),
+		"list_1":     resourcetest.Listener("list_1").Prop(p.LoadBalancer, "lb_1").Build(),
+		"list_1.2":   resourcetest.Listener("list_1.2").Prop(p.LoadBalancer, "lb_1").Build(),
+		"list_2":     resourcetest.Listener("list_2").Prop(p.LoadBalancer, "lb_2").Build(),
+		"list_3":     resourcetest.Listener("list_3").Prop(p.LoadBalancer, "lb_3").Build(),
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"igw_1", "my_key_pair", "vpc_1", "vpc_2"},
+		"eu-west-1": {"igw_1", "my_key", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
@@ -337,16 +337,16 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expectedAppliedOn := map[string][]string{
-		"igw_1":       {"vpc_2"},
-		"lb_1":        {"tg_1"},
-		"lb_2":        {"tg_2"},
-		"lb_3":        {"tg_1"},
-		"my_key_pair": {"inst_4"},
-		"rt_1":        {"sub_1"},
-		"secgroup_1":  {"inst_2", "inst_4", "lb_3"},
-		"secgroup_2":  {"inst_4", "lb_3"},
-		"tg_1":        {"inst_1"},
-		"tg_2":        {"inst_2", "inst_3"},
+		"igw_1":      {"vpc_2"},
+		"lb_1":       {"tg_1"},
+		"lb_2":       {"tg_2"},
+		"lb_3":       {"tg_1"},
+		"my_key":     {"inst_4"},
+		"rt_1":       {"sub_1"},
+		"secgroup_1": {"inst_2", "inst_4", "lb_3"},
+		"secgroup_2": {"inst_4", "lb_3"},
+		"tg_1":       {"inst_1"},
+		"tg_2":       {"inst_2", "inst_3"},
 	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)

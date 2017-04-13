@@ -9,7 +9,7 @@ const (
 	Image            string = "image"
 	SecGroup         string = "secgroup"
 	AvailabilityZone string = "availabilityzone"
-	Keypair          string = "keypair"
+	Key              string = "key"
 	Volume           string = "volume"
 	Instance         string = "instance"
 	InternetGateway  string = "internetgateway"

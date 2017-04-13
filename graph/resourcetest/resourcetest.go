@@ -37,8 +37,8 @@ func SecGroup(id string) *rBuilder {
 	return new("secgroup", id).Prop(properties.ID, id)
 }
 
-func Keypair(id string) *rBuilder {
-	return new("keypair", id).Prop(properties.ID, id)
+func Key(id string) *rBuilder {
+	return new("key", id).Prop(properties.ID, id)
 }
 
 func InternetGw(id string) *rBuilder {

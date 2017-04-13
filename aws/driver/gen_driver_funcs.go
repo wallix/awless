@@ -1604,7 +1604,7 @@ func (d *Ec2Driver) Delete_Route(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Key_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -1619,17 +1619,17 @@ func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			id := fakeDryRunId("keypair")
-			d.logger.Verbose("dry run: delete keypair ok")
+			id := fakeDryRunId("key")
+			d.logger.Verbose("dry run: delete key ok")
 			return id, nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: delete keypair: %s", err)
+	return nil, fmt.Errorf("dry run: delete key: %s", err)
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Key(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	var err error
 
@@ -1644,10 +1644,10 @@ func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 	output, err = d.DeleteKeyPair(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete keypair: %s", err)
+		return nil, fmt.Errorf("delete key: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
-	d.logger.Verbose("delete keypair done")
+	d.logger.Verbose("delete key done")
 	return output, nil
 }
 

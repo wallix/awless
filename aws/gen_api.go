@@ -69,7 +69,7 @@ var ResourceTypes = []string{
 	"instance",
 	"subnet",
 	"vpc",
-	"keypair",
+	"key",
 	"secgroup",
 	"volume",
 	"internetgateway",
@@ -109,7 +109,7 @@ var ServicePerResourceType = map[string]string{
 	"instance":         "infra",
 	"subnet":           "infra",
 	"vpc":              "infra",
-	"keypair":          "infra",
+	"key":              "infra",
 	"secgroup":         "infra",
 	"volume":           "infra",
 	"internetgateway":  "infra",
@@ -171,7 +171,7 @@ func (s *Infra) ResourceTypes() (all []string) {
 	all = append(all, "instance")
 	all = append(all, "subnet")
 	all = append(all, "vpc")
-	all = append(all, "keypair")
+	all = append(all, "key")
 	all = append(all, "secgroup")
 	all = append(all, "volume")
 	all = append(all, "internetgateway")
@@ -198,7 +198,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var instanceList []*ec2.Instance
 	var subnetList []*ec2.Subnet
 	var vpcList []*ec2.Vpc
-	var keypairList []*ec2.KeyPairInfo
+	var keyList []*ec2.KeyPairInfo
 	var secgroupList []*ec2.SecurityGroup
 	var volumeList []*ec2.Volume
 	var internetgatewayList []*ec2.InternetGateway
@@ -261,13 +261,13 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[vpc]")
 	}
-	if s.config.getBool("aws.infra.keypair.sync", true) {
+	if s.config.getBool("aws.infra.key.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			var resGraph *graph.Graph
 			var err error
-			resGraph, keypairList, err = s.fetch_all_keypair_graph()
+			resGraph, keyList, err = s.fetch_all_key_graph()
 			if err != nil {
 				errc <- err
 				return
@@ -275,7 +275,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource infra[keypair]")
+		s.log.Verbose("sync: *disabled* for resource infra[key]")
 	}
 	if s.config.getBool("aws.infra.secgroup.sync", true) {
 		wg.Add(1)
@@ -505,12 +505,12 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-	if s.config.getBool("aws.infra.keypair.sync", true) {
+	if s.config.getBool("aws.infra.key.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for _, r := range keypairList {
-				for _, fn := range addParentsFns["keypair"] {
+			for _, r := range keyList {
+				for _, fn := range addParentsFns["key"] {
 					err := fn(g, r)
 					if err != nil {
 						errc <- err
@@ -696,8 +696,8 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	case "vpc":
 		graph, _, err := s.fetch_all_vpc_graph()
 		return graph, err
-	case "keypair":
-		graph, _, err := s.fetch_all_keypair_graph()
+	case "key":
+		graph, _, err := s.fetch_all_key_graph()
 		return graph, err
 	case "secgroup":
 		graph, _, err := s.fetch_all_secgroup_graph()
@@ -808,7 +808,7 @@ func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, []*ec2.Vpc, error) {
 
 }
 
-func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, []*ec2.KeyPairInfo, error) {
+func (s *Infra) fetch_all_key_graph() (*graph.Graph, []*ec2.KeyPairInfo, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.KeyPairInfo
 	out, err := s.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})

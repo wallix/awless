@@ -253,16 +253,16 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"key", "resource", "value"},
 		ExtraParams:    []string{},
 	},
-	"createkeypair": {
+	"createkey": {
 		Action:         "create",
-		Entity:         "keypair",
+		Entity:         "key",
 		Api:            "ec2",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
-	"deletekeypair": {
+	"deletekey": {
 		Action:         "delete",
-		Entity:         "keypair",
+		Entity:         "key",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
@@ -563,8 +563,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "route")
 	supported["create"] = append(supported["create"], "tag")
 	supported["delete"] = append(supported["delete"], "tag")
-	supported["create"] = append(supported["create"], "keypair")
-	supported["delete"] = append(supported["delete"], "keypair")
+	supported["create"] = append(supported["create"], "key")
+	supported["delete"] = append(supported["delete"], "key")
 	supported["create"] = append(supported["create"], "loadbalancer")
 	supported["delete"] = append(supported["delete"], "loadbalancer")
 	supported["check"] = append(supported["check"], "loadbalancer")

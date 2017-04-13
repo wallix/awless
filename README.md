@@ -242,7 +242,7 @@ awless config set aws.infra.listener.sync false
 
 ### SSH
 
-`awless ssh` provides an easy way to connect via [SSH](https://en.wikipedia.org/wiki/Secure_Shell) to an instance via its name, without needing either the AWS ID, public IP, keypair name nor account username.
+`awless ssh` provides an easy way to connect via [SSH](https://en.wikipedia.org/wiki/Secure_Shell) to an instance via its name, without needing either the AWS ID, public IP, key name nor account username.
 If your local host has a SSH client installed, `awless` will use it to connect to the instance.
 Otherwise, there is a fallback on an embedded SSH client (Golang one) needed, for example, on some Windows machines or on a minimalistic cloud instance that pilot `awless`.
 

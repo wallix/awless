@@ -70,7 +70,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Owner:         {name: "OwnerId", transform: extractValueFn},
 		properties.Vpc:           {name: "VpcId", transform: extractValueFn},
 	},
-	cloud.Keypair: {
+	cloud.Key: {
 		properties.Fingerprint: {name: "KeyFingerprint", transform: extractValueFn},
 	},
 	cloud.Volume: {
