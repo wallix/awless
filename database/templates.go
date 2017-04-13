@@ -47,12 +47,6 @@ func (db *DB) AddTemplate(templ *template.Template) error {
 	})
 }
 
-func (db *DB) DeleteTemplates() error {
-	return db.bolt.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket([]byte(TEMPLATES_BUCKET))
-	})
-}
-
 func (db *DB) GetTemplate(id string) (*template.Template, error) {
 	tpl := &template.Template{}
 
@@ -71,8 +65,31 @@ func (db *DB) GetTemplate(id string) (*template.Template, error) {
 	return tpl, err
 }
 
-func (db *DB) ListTemplates() ([]*template.Template, error) {
-	var result []*template.Template
+func (db *DB) DeleteTemplates() error {
+	return db.bolt.Update(func(tx *bolt.Tx) error {
+		return tx.DeleteBucket([]byte(TEMPLATES_BUCKET))
+	})
+}
+
+func (db *DB) DeleteTemplate(id string) error {
+	return db.bolt.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
+		if b == nil {
+			return errors.New("no templates stored yet")
+		}
+		return b.Delete([]byte(id))
+	})
+}
+
+
+type LoadedTemplate struct {
+	Err error
+	Tpl *template.Template
+	Key, Raw string
+}
+
+func (db *DB) ListTemplates() ([]*LoadedTemplate, error) {
+	var results []*LoadedTemplate
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
@@ -84,14 +101,13 @@ func (db *DB) ListTemplates() ([]*template.Template, error) {
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			t := &template.Template{}
-			if err := t.UnmarshalJSON(v); err != nil {
-				return err
-			}
-			result = append(result, t)
+			terr := t.UnmarshalJSON(v)
+			lt :=  &LoadedTemplate{Tpl: t, Err: terr, Key: string(k), Raw: string(v)}
+			results = append(results, lt)
 		}
 
 		return nil
 	})
 
-	return result, err
+	return results, err
 }

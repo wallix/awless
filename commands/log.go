@@ -22,31 +22,39 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template"
 )
 
 var (
-	deleteLogsFlag bool
+	deleteAllLogsFlag bool
+	deleteFromIdLogsFlag string
 )
 
 func init() {
 	RootCmd.AddCommand(logCmd)
 
-	logCmd.Flags().BoolVarP(&deleteLogsFlag, "delete", "d", false, "Delete all logs from local db")
+	logCmd.Flags().BoolVar(&deleteAllLogsFlag, "delete-all", false, "Delete all logs from local db")
+	logCmd.Flags().StringVar(&deleteFromIdLogsFlag, "delete", "", "Delete a specifc log entry given its id")
 }
 
 var logCmd = &cobra.Command{
 	Use:               "log",
 	Short:             "Shows the cloud infrastructure changes log",
-	PersistentPreRun:  applyHooks(initAwlessEnvHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook),
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(c *cobra.Command, args []string) error {
 		db, err, dbclose := database.Current()
 		exitOn(err)
 
-		if deleteLogsFlag {
-			db.DeleteTemplates()
+		if deleteAllLogsFlag {
+			exitOn(db.DeleteTemplates())
+			return nil
+		}
+
+		if tid := deleteFromIdLogsFlag; tid != "" {
+			exitOn(db.DeleteTemplate(tid))
 			return nil
 		}
 
@@ -54,12 +62,19 @@ var logCmd = &cobra.Command{
 		dbclose()
 		exitOn(err)
 
-		for _, templ := range all {
-			printer := template.NewLogPrinter(os.Stdout)
-			printer.RenderKO = renderRedFn
-			printer.RenderOK = renderGreenFn
+		printer := template.NewLogPrinter(os.Stdout)
+		printer.RenderKO = renderRedFn
+		printer.RenderOK = renderGreenFn
 
-			printer.Print(templ)
+		for _, loaded := range all {
+			if loaded.Err != nil {
+				logger.Errorf("Template '%s' in error: %s", string(loaded.Key), loaded.Err)
+				logger.Verbosef("Template raw content\n%s", loaded.Raw)
+				fmt.Println()
+				continue
+			}
+
+			printer.Print(loaded.Tpl)
 			fmt.Println()
 		}
 
