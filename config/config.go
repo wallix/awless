@@ -39,6 +39,7 @@ const (
 	instanceImageDefaultsKey   = "instance.image"
 	instanceCountDefaultsKey   = "instance.count"
 	instanceTimeoutDefaultsKey = "instance.timeout"
+	volumeDeviceDefaultsKey    = "volume.device"
 )
 
 var configDefinitions = map[string]*Definition{
@@ -60,6 +61,7 @@ var defaultsDefinitions = map[string]*Definition{
 	instanceImageDefaultsKey:   {help: "AWS EC2 AMI"},
 	instanceCountDefaultsKey:   {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
 	instanceTimeoutDefaultsKey: {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
+	volumeDeviceDefaultsKey:    {defaultValue: "/dev/sdh", help: "Device name to expose to an EC2 instance"},
 }
 
 var deprecated = map[string]string{
