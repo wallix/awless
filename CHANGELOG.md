@@ -2,7 +2,8 @@
 
 ### Features
 
-- Amazon [**userdata**](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) supports. Ex: `awless create instance userdata=/tmp/mydata.sh ...`. Allow to pass user data (_bash scripts_ or _cloud-init_) when creating an instance.
+- Amazon [**userdata**](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) support. Give the data as local file or remote http file resource. Ex: `awless create instance userdata=/tmp/mydata.sh ...` or `awless create instance userdata=https://gist.github.com/jsmith/5f58272fa5406`.
+- Global rename of `securitygroup` to `secgroup` for shorter typing in CLI.
 - Global rename of `storageobject` to `s3object` for shorter typing in CLI.
 - Global rename of `keypair` to `key` for shorter typing in CLI.
 - awless model/storing is now full RDF ;). Allow exploration of all your infra in RDF tools and ontology editor (Ex: [Protege](http://protege.stanford.edu/))

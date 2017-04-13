@@ -20,13 +20,17 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/wallix/awless/logger"
 )
 
 const (
@@ -90,7 +94,7 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			v = []*string{&str}
 		}
 	case awsfiletobase64:
-		v, err = fileAsBase64(v)
+		v, err = fileOrRemoteFileAsBase64(v)
 		if err != nil {
 			return err
 		}
@@ -206,12 +210,30 @@ func castInt64(v interface{}) (int64, error) {
 	}
 }
 
-func fileAsBase64(v interface{}) (string, error) {
+func fileOrRemoteFileAsBase64(v interface{}) (string, error) {
 	path := fmt.Sprint(v)
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
+
+	var readErr error
+	var content []byte
+
+	if strings.HasPrefix(path, "http") {
+		client := &http.Client{Timeout: 5 * time.Second}
+
+		logger.ExtraVerbosef("fetching remote userdata at '%s'", path)
+		resp, err := client.Get(path)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("'%s' when fetching userdata at '%s'", resp.Status, path)
+		}
+
+		content, readErr = ioutil.ReadAll(resp.Body)
+	} else {
+		content, readErr = ioutil.ReadFile(path)
 	}
 
-	return base64.StdEncoding.EncodeToString(b), nil
+	return base64.StdEncoding.EncodeToString(content), readErr
 }
