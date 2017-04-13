@@ -41,7 +41,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "subnet",
 		Api:            "ec2",
 		RequiredParams: []string{"cidr", "vpc"},
-		ExtraParams:    []string{"name", "zone"},
+		ExtraParams:    []string{"availabilityzone", "name"},
 	},
 	"updatesubnet": {
 		Action:         "update",
@@ -145,7 +145,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "create",
 		Entity:         "volume",
 		Api:            "ec2",
-		RequiredParams: []string{"size", "zone"},
+		RequiredParams: []string{"availabilityzone", "size"},
 		ExtraParams:    []string{},
 	},
 	"deletevolume": {
@@ -335,7 +335,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "database",
 		Api:            "rds",
 		RequiredParams: []string{"engine", "id", "password", "size", "type", "username"},
-		ExtraParams:    []string{"autoupgrade", "backupretention", "backupwindow", "cluster", "dbname", "dbsecgroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecgroup", "zone"},
+		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecgroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecgroup"},
 	},
 	"deletedatabase": {
 		Action:         "delete",

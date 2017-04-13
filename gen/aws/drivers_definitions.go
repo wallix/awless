@@ -104,7 +104,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
 				},
 				ExtraParams: []param{
-					{AwsField: "AvailabilityZone", TemplateName: "zone", AwsType: "awsstr"},
+					{AwsField: "AvailabilityZone", TemplateName: "availabilityzone", AwsType: "awsstr"},
 					{AwsField: "Name", TemplateName: "name", AsAwsTag: true},
 				},
 			},
@@ -238,7 +238,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "create", Entity: cloud.Volume, Input: "CreateVolumeInput", Output: "Volume", ApiMethod: "CreateVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
 				RequiredParams: []param{
-					{AwsField: "AvailabilityZone", TemplateName: "zone", AwsType: "awsstr"},
+					{AwsField: "AvailabilityZone", TemplateName: "availabilityzone", AwsType: "awsstr"},
 					{AwsField: "Size", TemplateName: "size", AwsType: "awsint64"},
 				},
 			},
@@ -477,7 +477,7 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "AutoMinorVersionUpgrade", TemplateName: "autoupgrade", AwsType: "awsbool"},
-					{AwsField: "AvailabilityZone", TemplateName: "zone", AwsType: "awsstr"},
+					{AwsField: "AvailabilityZone", TemplateName: "availabilityzone", AwsType: "awsstr"},
 					{AwsField: "BackupRetentionPeriod", TemplateName: "backupretention", AwsType: "awsint64"},
 					{AwsField: "DBClusterIdentifier", TemplateName: "cluster", AwsType: "awsstr"},
 					{AwsField: "DBName", TemplateName: "dbname", AwsType: "awsstr"},

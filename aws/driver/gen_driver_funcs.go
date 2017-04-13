@@ -173,8 +173,8 @@ func (d *Ec2Driver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 	}
 
 	// Extra params
-	if _, ok := params["zone"]; ok {
-		err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	if _, ok := params["availabilityzone"]; ok {
+		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -216,8 +216,8 @@ func (d *Ec2Driver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	}
 
 	// Extra params
-	if _, ok := params["zone"]; ok {
-		err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	if _, ok := params["availabilityzone"]; ok {
+		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -834,7 +834,7 @@ func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -862,7 +862,7 @@ func (d *Ec2Driver) Create_Volume(params map[string]interface{}) (interface{}, e
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -2161,8 +2161,8 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 			return nil, err
 		}
 	}
-	if _, ok := params["zone"]; ok {
-		err = setFieldWithType(params["zone"], input, "AvailabilityZone", awsstr)
+	if _, ok := params["availabilityzone"]; ok {
+		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
 		if err != nil {
 			return nil, err
 		}
