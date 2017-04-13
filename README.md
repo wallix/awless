@@ -31,6 +31,7 @@
 - Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults and sound autocomplete through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
+- Leveraging AWS `userdata` to provision instance on creation from remote (i.e http) or local scripts: `awless create instance userdata=http://...` 
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
 - Clean and simple ssh to instances: `awless ssh`
@@ -86,7 +87,7 @@ Read the wiki page for setting autocompletion for [bash](https://github.com/wall
 
 Awless allows for easy resource creation with your cloud provider; we will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
 
-## Getting started
+## First `awless` commands
 
 `awless` works by performing commands, which query either the AWS services or a local snapshot of the cloud services.
 
@@ -243,10 +244,12 @@ awless config set aws.infra.listener.sync false
 ### SSH
 
 `awless ssh` provides an easy way to connect via [SSH](https://en.wikipedia.org/wiki/Secure_Shell) to an instance via its name, without needing either the AWS ID, public IP, key name nor account username.
-If your local host has a SSH client installed, `awless` will use it to connect to the instance.
-Otherwise, there is a fallback on an embedded SSH client (Golang one) needed, for example, on some Windows machines or on a minimalistic cloud instance that pilot `awless`.
 
-When connecting to an instance through SSH the SSH key and default SSH user are deduced automatically by `awless`. So you can simply and directly ssh to an instance with:
+If your local host has a SSH client installed, `awless` will use it to connect. Otherwise, it falls back on an the Golang embedded SSH client (ex: some Windows machines or minimalistic cloud instances that pilot `awless`).
+
+Connecting to an instance through SSH the key and default SSH user are deduced automatically by `awless`. 
+
+So you can simply and directly ssh to an instance with:
 
 ```sh
 awless ssh my-instance-name  # with a name
@@ -258,6 +261,14 @@ You can still specify an SSH user or a SSH key though with:
 ```
 awless ssh ubuntu@i-abcd1234
 awless ssh -i ~/.ssh/mykey ubuntu@i-abcd1234
+```
+
+Useful as well, you can also print the SSH config or SSH CLI for any valid instances with:
+
+```
+awless ssh my-instance --print-config >> ~/.ssh/config
+# or 
+awless ssh my-instance --print-cli
 ```
 
 ### Aliasing
