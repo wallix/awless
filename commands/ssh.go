@@ -17,7 +17,6 @@ limitations under the License.
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -154,8 +153,6 @@ var sshCmd = &cobra.Command{
 	},
 }
 
-var ErrInstanceNotFound = errors.New("instance not found")
-
 func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*console.Credentials, error) {
 	ip, ok := inst.Properties[properties.PublicIP]
 	if !ok {
@@ -182,7 +179,8 @@ func sshConnect(name string, sshClient *ssh.Client, cred *console.Credentials) e
 			*console.Credentials
 			Name string
 		}{cred, name}
-		return template.Must(template.New("ssh_config").Parse(`Host {{ .Name }}
+		return template.Must(template.New("ssh_config").Parse(`
+Host {{ .Name }}
 	Hostname {{ .IP }}
 	User {{ .User }}
 	IdentityFile {{ .KeyPath }}
@@ -310,7 +308,7 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP) 
 
 func findResource(g *graph.Graph, id, typ string) (*graph.Resource, error) {
 	if found, err := g.FindResource(id); found == nil || err != nil {
-		return nil, ErrInstanceNotFound
+		return nil, fmt.Errorf("instance '%s' not found", id)
 	}
 
 	return g.GetResource(typ, id)
