@@ -65,6 +65,14 @@ func GetCloudServicesForTypes(types ...string) (services []cloud.Service) {
 	return
 }
 
+func ResourceTypesPerServiceName() map[string][]string {
+	out := make(map[string][]string)
+	for rT, s := range ServicePerResourceType {
+		out[s] = append(out[s], rT)
+	}
+	return out
+}
+
 type oncer struct {
 	sync.Once
 	result interface{}

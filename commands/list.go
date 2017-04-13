@@ -38,12 +38,16 @@ var (
 func init() {
 	RootCmd.AddCommand(listCmd)
 
+	cobra.EnableCommandSorting = false
+
 	for _, srvName := range aws.ServiceNames {
 		listCmd.AddCommand(listAllResourceInServiceCmd(srvName))
 	}
 
-	for _, resType := range aws.ResourceTypes {
-		listCmd.AddCommand(listSpecificResourceCmd(resType))
+	for _, name := range aws.ServiceNames {
+		for _, resType := range aws.ResourceTypesPerServiceName()[name] {
+			listCmd.AddCommand(listSpecificResourceCmd(resType))
+		}
 	}
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Output format: table, csv, tsv, json (default to table)")
@@ -55,7 +59,7 @@ func init() {
 var listCmd = &cobra.Command{
 	Use:               "list",
 	Aliases:           []string{"ls"},
-	Example:           "  awless list instances --sort \"up since\"\n  awless list users --format csv\n  awless list volumes --filter state=use --filter type=gp2\n  awless list instances --filter state=running,type=micro\n  awless list storageobjects --filter bucketname=pdf-bucket ",
+	Example:           "  awless list instances --sort uptime\n  awless list users --format csv\n  awless list volumes --filter state=use --filter type=gp2\n  awless list instances --filter state=running,type=micro\n  awless list storageobjects --filter bucketname=pdf-bucket ",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 	Short:             "List various type of resources",
@@ -64,7 +68,7 @@ var listCmd = &cobra.Command{
 var listSpecificResourceCmd = func(resType string) *cobra.Command {
 	return &cobra.Command{
 		Use:   cloud.PluralizeResource(resType),
-		Short: fmt.Sprintf("List AWS %s", cloud.PluralizeResource(resType)),
+		Short: fmt.Sprintf("[%s] List AWS %s", aws.ServicePerResourceType[resType], cloud.PluralizeResource(resType)),
 
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *graph.Graph
@@ -89,8 +93,9 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 
 var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 	return &cobra.Command{
-		Use:   srvName,
-		Short: fmt.Sprintf("List all %s resources", srvName),
+		Use:    srvName,
+		Short:  fmt.Sprintf("List all %s resources", srvName),
+		Hidden: true,
 
 		Run: func(cmd *cobra.Command, args []string) {
 			g := sync.LoadCurrentLocalGraph(srvName)
