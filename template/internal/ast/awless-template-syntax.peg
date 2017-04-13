@@ -8,7 +8,7 @@ type Peg Peg {
 Script   <- (BlankLine* Statement BlankLine*)+ WhiteSpacing EndOfFile
 Statement <- WhiteSpacing (Expr / Declaration / Comment) WhiteSpacing EndOfLine*
 Action <- [a-z]+
-Entity <- [a-z]+
+Entity <- [a-z0-9]+
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
                Equal
                Expr

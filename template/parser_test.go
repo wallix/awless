@@ -555,6 +555,36 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 			}
 		}
 	})
+
+	t.Run("Create s3 object", func(t *testing.T) {
+		tcases := []struct {
+			input    string
+			verifyFn func(s *Template) error
+		}{
+			{
+				input: `create s3object bucket=my-existing-bucket file=./todolist.txt`,
+				verifyFn: func(s *Template) error {
+					if err := assertCommandNode(s.Statements[0].Node, "create", "s3object",
+						map[string]string{}, map[string]interface{}{"bucket": "my-existing-bucket", "file": "./todolist.txt"}, map[string]string{}, map[string]string{},
+					); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+		}
+
+		for _, tcase := range tcases {
+			templ, err := Parse(tcase.input)
+			if err != nil {
+				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
+			}
+
+			if err := tcase.verifyFn(templ); err != nil {
+				t.Fatalf("\ninput: [%s]\nError: %s\n", tcase.input, err)
+			}
+		}
+	})
 }
 
 func assertParams(n ast.Node, expected map[string]interface{}) error {

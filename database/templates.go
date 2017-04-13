@@ -81,10 +81,9 @@ func (db *DB) DeleteTemplate(id string) error {
 	})
 }
 
-
 type LoadedTemplate struct {
-	Err error
-	Tpl *template.Template
+	Err      error
+	Tpl      *template.Template
 	Key, Raw string
 }
 
@@ -102,7 +101,7 @@ func (db *DB) ListTemplates() ([]*LoadedTemplate, error) {
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			t := &template.Template{}
 			terr := t.UnmarshalJSON(v)
-			lt :=  &LoadedTemplate{Tpl: t, Err: terr, Key: string(k), Raw: string(v)}
+			lt := &LoadedTemplate{Tpl: t, Err: terr, Key: string(k), Raw: string(v)}
 			results = append(results, lt)
 		}
 
