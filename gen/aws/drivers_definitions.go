@@ -139,7 +139,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "KeyName", TemplateName: "key", AwsType: "awsstr"},
 					{AwsField: "PrivateIpAddress", TemplateName: "ip", AwsType: "awsstr"},
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
-					{AwsField: "SecurityGroupIds", TemplateName: "secgroup", AwsType: "awsstringslice"},
+					{AwsField: "SecurityGroupIds", TemplateName: "securitygroup", AwsType: "awsstringslice"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
 				},
 			},
@@ -181,7 +181,7 @@ var DriversDefs = []driversDef{
 			},
 			// Security Group
 			{
-				Action: "create", Entity: cloud.SecGroup, Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
+				Action: "create", Entity: cloud.SecurityGroup, Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
 				RequiredParams: []param{
 					{AwsField: "GroupName", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
@@ -189,7 +189,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "update", Entity: cloud.SecGroup, ManualFuncDefinition: true,
+				Action: "update", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 					{TemplateName: "cidr"},
@@ -202,13 +202,13 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.SecGroup, Input: "DeleteSecurityGroupInput", Output: "DeleteSecurityGroupOutput", ApiMethod: "DeleteSecurityGroup",
+				Action: "delete", Entity: cloud.SecurityGroup, Input: "DeleteSecurityGroupInput", Output: "DeleteSecurityGroupOutput", ApiMethod: "DeleteSecurityGroup",
 				RequiredParams: []param{
 					{AwsField: "GroupId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "check", Entity: cloud.SecGroup, ManualFuncDefinition: true,
+				Action: "check", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 					{TemplateName: "state"},
@@ -216,7 +216,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "attach", Entity: cloud.SecGroup, ManualFuncDefinition: true,
+				Action: "attach", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 				},
@@ -225,7 +225,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "detach", Entity: cloud.SecGroup, ManualFuncDefinition: true,
+				Action: "detach", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
 				},
@@ -378,7 +378,7 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{AwsField: "IpAddressType", TemplateName: "iptype", AwsType: "awsstr"},
 					{AwsField: "Scheme", TemplateName: "scheme", AwsType: "awsstr"},
-					{AwsField: "SecurityGroups", TemplateName: "secgroups", AwsType: "awsstringslice"},
+					{AwsField: "SecurityGroups", TemplateName: "securitygroups", AwsType: "awsstringslice"},
 				},
 			},
 			{
@@ -482,7 +482,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "DBClusterIdentifier", TemplateName: "cluster", AwsType: "awsstr"},
 					{AwsField: "DBName", TemplateName: "dbname", AwsType: "awsstr"},
 					{AwsField: "DBParameterGroupName", TemplateName: "parametergroup", AwsType: "awsstr"},
-					{AwsField: "DBSecurityGroups", TemplateName: "dbsecgroup", AwsType: "awsstringslice"},
+					{AwsField: "DBSecurityGroups", TemplateName: "dbsecuritygroup", AwsType: "awsstringslice"},
 					{AwsField: "DBSubnetGroupName", TemplateName: "subnetgroup", AwsType: "awsstr"},
 					{AwsField: "Domain", TemplateName: "domain", AwsType: "awsstr"},
 					{AwsField: "DomainIAMRoleName", TemplateName: "iamrole", AwsType: "awsstr"},
@@ -498,7 +498,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "StorageEncrypted", TemplateName: "encrypted", AwsType: "awsbool"},
 					{AwsField: "StorageType", TemplateName: "storagetype", AwsType: "awsstr"},
 					{AwsField: "Timezone", TemplateName: "timezone", AwsType: "awsstr"},
-					{AwsField: "VpcSecurityGroupIds", TemplateName: "vpcsecgroup", AwsType: "awsstringslice"},
+					{AwsField: "VpcSecurityGroupIds", TemplateName: "vpcsecuritygroup", AwsType: "awsstringslice"},
 				},
 			},
 			{

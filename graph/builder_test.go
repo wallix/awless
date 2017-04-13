@@ -22,7 +22,7 @@ func vpcResource(id string) *rBuilder {
 }
 
 func sGrpResource(id string) *rBuilder {
-	return testResource(id, "secgroup")
+	return testResource(id, "securitygroup")
 }
 
 func (b *rBuilder) prop(key string, value interface{}) *rBuilder {

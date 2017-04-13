@@ -33,8 +33,8 @@ func VPC(id string) *rBuilder {
 	return new("vpc", id).Prop(properties.ID, id)
 }
 
-func SecGroup(id string) *rBuilder {
-	return new("secgroup", id).Prop(properties.ID, id)
+func SecurityGroup(id string) *rBuilder {
+	return new("securitygroup", id).Prop(properties.ID, id)
 }
 
 func Key(id string) *rBuilder {

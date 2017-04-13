@@ -97,7 +97,7 @@ var (
 	CopyTagsToSnapshot        = fmt.Sprintf("%s:copyTagsToSnapshot", CloudNS)
 	Country                   = fmt.Sprintf("%s:country", CloudNS)
 	Created                   = fmt.Sprintf("%s:created", CloudNS)
-	DBSecGroups               = fmt.Sprintf("%s:dbSecGroups", CloudNS)
+	DBSecurityGroups          = fmt.Sprintf("%s:dbSecurityGroups", CloudNS)
 	DBSubnetGroup             = fmt.Sprintf("%s:dbSubnetGroup", CloudNS)
 	Default                   = fmt.Sprintf("%s:default", CloudNS)
 	Delay                     = fmt.Sprintf("%s:delaySeconds", CloudNS)
@@ -161,7 +161,7 @@ var (
 	Routes                    = fmt.Sprintf("%s:routes", netNS)
 	Scheme                    = fmt.Sprintf("%s:scheme", netNS)
 	SecondaryAvailabilityZone = fmt.Sprintf("%s:secondaryAvailabilityZone", CloudNS)
-	SecGroups                 = fmt.Sprintf("%s:secGroups", CloudNS)
+	SecurityGroups            = fmt.Sprintf("%s:secGroups", CloudNS)
 	Set                       = fmt.Sprintf("%s:set", CloudNS)
 	Size                      = fmt.Sprintf("%s:size", CloudNS)
 	SpotInstanceRequestId     = fmt.Sprintf("%s:spotInstanceRequestId", CloudNS)
@@ -216,7 +216,7 @@ var Labels = map[string]string{
 	properties.CopyTagsToSnapshot:        CopyTagsToSnapshot,
 	properties.Country:                   Country,
 	properties.Created:                   Created,
-	properties.DBSecGroups:               DBSecGroups,
+	properties.DBSecurityGroups:          DBSecurityGroups,
 	properties.DBSubnetGroup:             DBSubnetGroup,
 	properties.Default:                   Default,
 	properties.Delay:                     Delay,
@@ -278,7 +278,7 @@ var Labels = map[string]string{
 	properties.Routes:                    Routes,
 	properties.Scheme:                    Scheme,
 	properties.SecondaryAvailabilityZone: SecondaryAvailabilityZone,
-	properties.SecGroups:                 SecGroups,
+	properties.SecurityGroups:            SecurityGroups,
 	properties.Set:                       Set,
 	properties.Size:                      Size,
 	properties.SpotInstanceRequestId:     SpotInstanceRequestId,
@@ -333,7 +333,7 @@ var RdfProperties = map[string]rdfProp{
 	CopyTagsToSnapshot:      {ID: CopyTagsToSnapshot, RdfType: RdfProperty, RdfsLabel: properties.CopyTagsToSnapshot, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Country:                 {ID: Country, RdfType: RdfProperty, RdfsLabel: properties.Country, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Created:                 {ID: Created, RdfType: RdfProperty, RdfsLabel: properties.Created, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdDateTime},
-	DBSecGroups:             {ID: DBSecGroups, RdfType: RdfProperty, RdfsLabel: properties.DBSecGroups, RdfsDefinedBy: RdfsList, RdfsDataType: XsdString},
+	DBSecurityGroups:        {ID: DBSecurityGroups, RdfType: RdfProperty, RdfsLabel: properties.DBSecurityGroups, RdfsDefinedBy: RdfsList, RdfsDataType: XsdString},
 	DBSubnetGroup:           {ID: DBSubnetGroup, RdfType: RdfProperty, RdfsLabel: properties.DBSubnetGroup, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Default:                 {ID: Default, RdfType: RdfProperty, RdfsLabel: properties.Default, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdBoolean},
 	Delay:                   {ID: Delay, RdfType: RdfProperty, RdfsLabel: properties.Delay, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
@@ -395,7 +395,7 @@ var RdfProperties = map[string]rdfProp{
 	Routes:                   {ID: Routes, RdfType: RdfProperty, RdfsLabel: properties.Routes, RdfsDefinedBy: RdfsList, RdfsDataType: NetRoute},
 	Scheme:                   {ID: Scheme, RdfType: RdfProperty, RdfsLabel: properties.Scheme, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	SecondaryAvailabilityZone: {ID: SecondaryAvailabilityZone, RdfType: RdfProperty, RdfsLabel: properties.SecondaryAvailabilityZone, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
-	SecGroups:                 {ID: SecGroups, RdfType: RdfProperty, RdfsLabel: properties.SecGroups, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
+	SecurityGroups:            {ID: SecurityGroups, RdfType: RdfProperty, RdfsLabel: properties.SecurityGroups, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
 	Set:                       {ID: Set, RdfType: RdfProperty, RdfsLabel: properties.Set, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Size:                      {ID: Size, RdfType: RdfProperty, RdfsLabel: properties.Size, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	SpotInstanceRequestId: {ID: SpotInstanceRequestId, RdfType: RdfProperty, RdfsLabel: properties.SpotInstanceRequestId, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},

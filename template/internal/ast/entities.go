@@ -11,7 +11,7 @@ const (
 	Instance        Entity = "instance"
 	Volume          Entity = "volume"
 	Tag             Entity = "tag"
-	Secgroup        Entity = "secgroup"
+	Securitygroup        Entity = "securitygroup"
 	Key             Entity = "key"
 	Internetgateway Entity = "internetgateway"
 	Routetable      Entity = "routetable"
@@ -46,7 +46,7 @@ var entities = map[Entity]struct{}{
 	Instance:        {},
 	Volume:          {},
 	Tag:             {},
-	Secgroup:        {},
+	Securitygroup:        {},
 	Key:             {},
 	Internetgateway: {},
 	Routetable:      {},

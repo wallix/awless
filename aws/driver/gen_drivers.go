@@ -114,41 +114,41 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Check_Instance, nil
 
-	case "createsecgroup":
+	case "createsecuritygroup":
 		if d.dryRun {
-			return d.Create_Secgroup_DryRun, nil
+			return d.Create_Securitygroup_DryRun, nil
 		}
-		return d.Create_Secgroup, nil
+		return d.Create_Securitygroup, nil
 
-	case "updatesecgroup":
+	case "updatesecuritygroup":
 		if d.dryRun {
-			return d.Update_Secgroup_DryRun, nil
+			return d.Update_Securitygroup_DryRun, nil
 		}
-		return d.Update_Secgroup, nil
+		return d.Update_Securitygroup, nil
 
-	case "deletesecgroup":
+	case "deletesecuritygroup":
 		if d.dryRun {
-			return d.Delete_Secgroup_DryRun, nil
+			return d.Delete_Securitygroup_DryRun, nil
 		}
-		return d.Delete_Secgroup, nil
+		return d.Delete_Securitygroup, nil
 
-	case "checksecgroup":
+	case "checksecuritygroup":
 		if d.dryRun {
-			return d.Check_Secgroup_DryRun, nil
+			return d.Check_Securitygroup_DryRun, nil
 		}
-		return d.Check_Secgroup, nil
+		return d.Check_Securitygroup, nil
 
-	case "attachsecgroup":
+	case "attachsecuritygroup":
 		if d.dryRun {
-			return d.Attach_Secgroup_DryRun, nil
+			return d.Attach_Securitygroup_DryRun, nil
 		}
-		return d.Attach_Secgroup, nil
+		return d.Attach_Securitygroup, nil
 
-	case "detachsecgroup":
+	case "detachsecuritygroup":
 		if d.dryRun {
-			return d.Detach_Secgroup_DryRun, nil
+			return d.Detach_Securitygroup_DryRun, nil
 		}
-		return d.Detach_Secgroup, nil
+		return d.Detach_Securitygroup, nil
 
 	case "createvolume":
 		if d.dryRun {

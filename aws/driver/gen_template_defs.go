@@ -62,7 +62,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "instance",
 		Api:            "ec2",
 		RequiredParams: []string{"count", "image", "name", "subnet", "type"},
-		ExtraParams:    []string{"ip", "key", "lock", "secgroup", "userdata"},
+		ExtraParams:    []string{"ip", "key", "lock", "securitygroup", "userdata"},
 	},
 	"updateinstance": {
 		Action:         "update",
@@ -99,44 +99,44 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
 	},
-	"createsecgroup": {
+	"createsecuritygroup": {
 		Action:         "create",
-		Entity:         "secgroup",
+		Entity:         "securitygroup",
 		Api:            "ec2",
 		RequiredParams: []string{"description", "name", "vpc"},
 		ExtraParams:    []string{},
 	},
-	"updatesecgroup": {
+	"updatesecuritygroup": {
 		Action:         "update",
-		Entity:         "secgroup",
+		Entity:         "securitygroup",
 		Api:            "ec2",
 		RequiredParams: []string{"cidr", "id", "protocol"},
 		ExtraParams:    []string{"inbound", "outbound", "portrange"},
 	},
-	"deletesecgroup": {
+	"deletesecuritygroup": {
 		Action:         "delete",
-		Entity:         "secgroup",
+		Entity:         "securitygroup",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
-	"checksecgroup": {
+	"checksecuritygroup": {
 		Action:         "check",
-		Entity:         "secgroup",
+		Entity:         "securitygroup",
 		Api:            "ec2",
 		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
 	},
-	"attachsecgroup": {
+	"attachsecuritygroup": {
 		Action:         "attach",
-		Entity:         "secgroup",
+		Entity:         "securitygroup",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"instance"},
 	},
-	"detachsecgroup": {
+	"detachsecuritygroup": {
 		Action:         "detach",
-		Entity:         "secgroup",
+		Entity:         "securitygroup",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"instance"},
@@ -272,7 +272,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "loadbalancer",
 		Api:            "elbv2",
 		RequiredParams: []string{"name", "subnets"},
-		ExtraParams:    []string{"iptype", "scheme", "secgroups"},
+		ExtraParams:    []string{"iptype", "scheme", "securitygroups"},
 	},
 	"deleteloadbalancer": {
 		Action:         "delete",
@@ -335,7 +335,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "database",
 		Api:            "rds",
 		RequiredParams: []string{"engine", "id", "password", "size", "type", "username"},
-		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecgroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecgroup"},
+		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecuritygroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecuritygroup"},
 	},
 	"deletedatabase": {
 		Action:         "delete",
@@ -541,12 +541,12 @@ func DriverSupportedActions() map[string][]string {
 	supported["start"] = append(supported["start"], "instance")
 	supported["stop"] = append(supported["stop"], "instance")
 	supported["check"] = append(supported["check"], "instance")
-	supported["create"] = append(supported["create"], "secgroup")
-	supported["update"] = append(supported["update"], "secgroup")
-	supported["delete"] = append(supported["delete"], "secgroup")
-	supported["check"] = append(supported["check"], "secgroup")
-	supported["attach"] = append(supported["attach"], "secgroup")
-	supported["detach"] = append(supported["detach"], "secgroup")
+	supported["create"] = append(supported["create"], "securitygroup")
+	supported["update"] = append(supported["update"], "securitygroup")
+	supported["delete"] = append(supported["delete"], "securitygroup")
+	supported["check"] = append(supported["check"], "securitygroup")
+	supported["attach"] = append(supported["attach"], "securitygroup")
+	supported["detach"] = append(supported["detach"], "securitygroup")
 	supported["create"] = append(supported["create"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")

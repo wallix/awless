@@ -380,8 +380,8 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 			return nil, err
 		}
 	}
-	if _, ok := params["secgroup"]; ok {
-		err = setFieldWithType(params["secgroup"], input, "SecurityGroupIds", awsstringslice)
+	if _, ok := params["securitygroup"]; ok {
+		err = setFieldWithType(params["securitygroup"], input, "SecurityGroupIds", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
@@ -457,8 +457,8 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 			return nil, err
 		}
 	}
-	if _, ok := params["secgroup"]; ok {
-		err = setFieldWithType(params["secgroup"], input, "SecurityGroupIds", awsstringslice)
+	if _, ok := params["securitygroup"]; ok {
+		err = setFieldWithType(params["securitygroup"], input, "SecurityGroupIds", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
@@ -714,7 +714,7 @@ func (d *Ec2Driver) Stop_Instance(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Secgroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -737,17 +737,17 @@ func (d *Ec2Driver) Create_Secgroup_DryRun(params map[string]interface{}) (inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			id := fakeDryRunId("secgroup")
-			d.logger.Verbose("dry run: create secgroup ok")
+			id := fakeDryRunId("securitygroup")
+			d.logger.Verbose("dry run: create securitygroup ok")
 			return id, nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: create secgroup: %s", err)
+	return nil, fmt.Errorf("dry run: create securitygroup: %s", err)
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Secgroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	var err error
 
@@ -770,17 +770,17 @@ func (d *Ec2Driver) Create_Secgroup(params map[string]interface{}) (interface{},
 	output, err = d.CreateSecurityGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("create secgroup: %s", err)
+		return nil, fmt.Errorf("create securitygroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	id := aws.StringValue(output.GroupId)
 
-	d.logger.Verbosef("create secgroup '%s' done", id)
+	d.logger.Verbosef("create securitygroup '%s' done", id)
 	return id, nil
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Secgroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -795,17 +795,17 @@ func (d *Ec2Driver) Delete_Secgroup_DryRun(params map[string]interface{}) (inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound):
-			id := fakeDryRunId("secgroup")
-			d.logger.Verbose("dry run: delete secgroup ok")
+			id := fakeDryRunId("securitygroup")
+			d.logger.Verbose("dry run: delete securitygroup ok")
 			return id, nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: delete secgroup: %s", err)
+	return nil, fmt.Errorf("dry run: delete securitygroup: %s", err)
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Secgroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Securitygroup(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
 	var err error
 
@@ -820,10 +820,10 @@ func (d *Ec2Driver) Delete_Secgroup(params map[string]interface{}) (interface{},
 	output, err = d.DeleteSecurityGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete secgroup: %s", err)
+		return nil, fmt.Errorf("delete securitygroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
-	d.logger.Verbose("delete secgroup done")
+	d.logger.Verbose("delete securitygroup done")
 	return output, nil
 }
 
@@ -1693,8 +1693,8 @@ func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interf
 			return nil, err
 		}
 	}
-	if _, ok := params["secgroups"]; ok {
-		err = setFieldWithType(params["secgroups"], input, "SecurityGroups", awsstringslice)
+	if _, ok := params["securitygroups"]; ok {
+		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
@@ -2191,8 +2191,8 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 			return nil, err
 		}
 	}
-	if _, ok := params["dbsecgroup"]; ok {
-		err = setFieldWithType(params["dbsecgroup"], input, "DBSecurityGroups", awsstringslice)
+	if _, ok := params["dbsecuritygroup"]; ok {
+		err = setFieldWithType(params["dbsecuritygroup"], input, "DBSecurityGroups", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
@@ -2287,8 +2287,8 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 			return nil, err
 		}
 	}
-	if _, ok := params["vpcsecgroup"]; ok {
-		err = setFieldWithType(params["vpcsecgroup"], input, "VpcSecurityGroupIds", awsstringslice)
+	if _, ok := params["vpcsecuritygroup"]; ok {
+		err = setFieldWithType(params["vpcsecuritygroup"], input, "VpcSecurityGroupIds", awsstringslice)
 		if err != nil {
 			return nil, err
 		}

@@ -65,7 +65,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: properties.State},
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
 	},
-	cloud.SecGroup: {
+	cloud.SecurityGroup: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Vpc},
 		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.InboundRules, Friendly: "Inbound"}},

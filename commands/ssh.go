@@ -228,7 +228,7 @@ func fetchConnectionInfo() (*graph.Graph, net.IP) {
 	go func() {
 		var err error
 		defer wg.Done()
-		sgroupsGraph, err = aws.InfraService.FetchByType(cloud.SecGroup)
+		sgroupsGraph, err = aws.InfraService.FetchByType(cloud.SecurityGroup)
 		if err != nil {
 			errc <- err
 		}
@@ -272,11 +272,11 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP) 
 		return
 	}
 
-	sgroups, ok := inst.Properties[properties.SecGroups].([]string)
+	sgroups, ok := inst.Properties[properties.SecurityGroups].([]string)
 	if ok {
 		var sshPortOpen, myIPAllowed bool
 		for _, id := range sgroups {
-			sgroup, err := findResource(g, id, cloud.SecGroup)
+			sgroup, err := findResource(g, id, cloud.SecurityGroup)
 			if err != nil {
 				break
 			}
@@ -298,12 +298,12 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP) 
 			logger.Warning("Port 22 is not open on this instance")
 		}
 		if !myIPAllowed && myip != nil {
-			logger.Warningf("Your ip %s is not authorized for this instance. You might want to update the secgroup with:", myip)
+			logger.Warningf("Your ip %s is not authorized for this instance. You might want to update the securitygroup with:", myip)
 			var group = "mygroup"
 			if len(sgroups) == 1 {
 				group = sgroups[0]
 			}
-			logger.Warningf("`awless update secgroup id=%s inbound=authorize protocol=tcp cidr=%s/32 portrange=22`", group, myip)
+			logger.Warningf("`awless update securitygroup id=%s inbound=authorize protocol=tcp cidr=%s/32 portrange=22`", group, myip)
 		}
 	}
 }

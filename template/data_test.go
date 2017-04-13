@@ -6,7 +6,7 @@ var DefsExample = map[string]Definition{
 		Entity:         "instance",
 		Api:            "ec2",
 		RequiredParams: []string{"image", "count", "count", "type", "subnet"},
-		ExtraParams:    []string{"key", "ip", "userdata", "secgroup", "lock"},
+		ExtraParams:    []string{"key", "ip", "userdata", "securitygroup", "lock"},
 	},
 	"createkey": {
 		Action:         "create",

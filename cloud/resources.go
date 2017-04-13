@@ -7,7 +7,7 @@ const (
 	Vpc              string = "vpc"
 	Subnet           string = "subnet"
 	Image            string = "image"
-	SecGroup         string = "secgroup"
+	SecurityGroup         string = "securitygroup"
 	AvailabilityZone string = "availabilityzone"
 	Key              string = "key"
 	Volume           string = "volume"
