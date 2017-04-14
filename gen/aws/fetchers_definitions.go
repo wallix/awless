@@ -102,4 +102,13 @@ var FetchersDefs = []fetchersDef{
 			{Api: "route53", ResourceType: cloud.Record, AWSType: "route53.ResourceRecordSet", ManualFetcher: true},
 		},
 	},
+
+	{
+		Name:          "lambda",
+		Api:           []string{"lambda"},
+		ApiInterfaces: map[string]string{"lambda": "LambdaAPI"},
+		Fetchers: []fetcher{
+			{Api: "lambda", ResourceType: cloud.Function, AWSType: "lambda.FunctionConfiguration", ApiMethod: "ListFunctionsPages", Input: "lambda.ListFunctionsInput{}", Output: "lambda.ListFunctionsOutput", OutputsExtractor: "Functions", Multipage: true, NextPageMarker: "NextMarker"},
+		},
+	},
 }

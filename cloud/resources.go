@@ -39,4 +39,6 @@ const (
 	//dns
 	Zone   string = "zone"
 	Record string = "record"
+	//lambda
+	Function string = "function"
 )

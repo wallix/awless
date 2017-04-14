@@ -759,4 +759,9 @@ var DriversDefs = []driversDef{
 			},
 		},
 	},
+	{
+		Api:          "lambda",
+		ApiInterface: "LambdaAPI",
+		Drivers:      []driver{},
+	},
 }

@@ -2,7 +2,10 @@
 
 ### Features
 
+- lambda: list Lambda functions
 - access: list IAM access keys
+
+- Friendlier display for storage size (s3objects, volumes, lambda functions)
 - Display the entity AWS API in command help
 
 ## v0.0.22 [2017-04-13]

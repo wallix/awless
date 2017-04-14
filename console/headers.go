@@ -150,6 +150,25 @@ func (h TimeColumnDefinition) format(i interface{}) string {
 	}
 }
 
+type StorageColumnDefinition struct {
+	StringColumnDefinition
+	Unit storageUnit
+}
+
+func (h StorageColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	val := reflect.ValueOf(i)
+	if val.Kind() == reflect.Uint || val.Kind() == reflect.Uint64 {
+		return HumanizeStorage(val.Uint(), h.Unit)
+	}
+	if val.Kind() == reflect.Int || val.Kind() == reflect.Int64 {
+		return HumanizeStorage(uint64(val.Int()), h.Unit)
+	}
+	return "invalid size"
+}
+
 type FirewallRulesColumnDefinition struct {
 	StringColumnDefinition
 }

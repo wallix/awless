@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -639,6 +640,26 @@ func (d *Route53Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err
 			return d.Delete_Record_DryRun, nil
 		}
 		return d.Delete_Record, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type LambdaDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	lambdaiface.LambdaAPI
+}
+
+func (d *LambdaDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *LambdaDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewLambdaDriver(api lambdaiface.LambdaAPI) driver.Driver {
+	return &LambdaDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *LambdaDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

@@ -46,3 +46,28 @@ func TestHumanizeTime(t *testing.T) {
 		}
 	}
 }
+
+func TestHumanizeStorage(t *testing.T) {
+	tcases := []struct {
+		from   uint64
+		unit   storageUnit
+		expect string
+	}{
+		{from: 3, unit: b, expect: "3B"},
+		{from: 300, unit: b, expect: "300B"},
+		{from: 3072, unit: b, expect: "3KB"},
+		{from: 31457280, unit: b, expect: "30MB"},
+		{from: 31457285, unit: b, expect: "~30MB"},
+		{from: 2, unit: kb, expect: "2KB"},
+		{from: 20, unit: kb, expect: "20KB"},
+		{from: 2048, unit: kb, expect: "2MB"},
+		{from: 2070, unit: kb, expect: "~2MB"},
+		{from: 4096, unit: mb, expect: "4GB"},
+	}
+
+	for _, tcase := range tcases {
+		if got, want := HumanizeStorage(tcase.from, tcase.unit), tcase.expect; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+	}
+}

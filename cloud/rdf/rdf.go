@@ -111,6 +111,8 @@ var (
 	GlobalID                  = fmt.Sprintf("%s:globalID", CloudNS)
 	Grants                    = fmt.Sprintf("%s:grants", CloudNS)
 	GranteeType               = fmt.Sprintf("%s:granteeType", CloudNS)
+	Hash                      = fmt.Sprintf("%s:hash", CloudNS)
+	Handler                   = fmt.Sprintf("%s:handler", CloudNS)
 	HealthCheck               = fmt.Sprintf("%s:healthCheck", CloudNS)
 	HealthyThresholdCount     = fmt.Sprintf("%s:healthyThresholdCount", CloudNS)
 	Host                      = fmt.Sprintf("%s:host", CloudNS)
@@ -128,6 +130,7 @@ var (
 	Lifecycle                 = fmt.Sprintf("%s:lifecycle", CloudNS)
 	LoadBalancer              = fmt.Sprintf("%s:loadBalancer", CloudNS)
 	Main                      = fmt.Sprintf("%s:main", CloudNS)
+	Memory                    = fmt.Sprintf("%s:memory", CloudNS)
 	Messages                  = fmt.Sprintf("%s:messages", CloudNS)
 	Modified                  = fmt.Sprintf("%s:modified", CloudNS)
 	MonitoringInterval        = fmt.Sprintf("%s:monitoringInterval", CloudNS)
@@ -156,9 +159,11 @@ var (
 	RecordCount               = fmt.Sprintf("%s:recordCount", CloudNS)
 	Records                   = fmt.Sprintf("%s:records", CloudNS)
 	Region                    = fmt.Sprintf("%s:region", CloudNS)
+	Role                      = fmt.Sprintf("%s:role", CloudNS)
 	RootDevice                = fmt.Sprintf("%s:rootDevice", CloudNS)
 	RootDeviceType            = fmt.Sprintf("%s:rootDeviceType", CloudNS)
 	Routes                    = fmt.Sprintf("%s:routes", netNS)
+	Runtime                   = fmt.Sprintf("%s:runtime", CloudNS)
 	Scheme                    = fmt.Sprintf("%s:scheme", netNS)
 	SecondaryAvailabilityZone = fmt.Sprintf("%s:secondaryAvailabilityZone", CloudNS)
 	SecurityGroups            = fmt.Sprintf("%s:securityGroups", CloudNS)
@@ -172,6 +177,7 @@ var (
 	Subnet                    = fmt.Sprintf("%s:subnet", CloudNS)
 	Subnets                   = fmt.Sprintf("%s:subnets", CloudNS)
 	Timezone                  = fmt.Sprintf("%s:timezone", CloudNS)
+	Timeout                   = fmt.Sprintf("%s:timeout", CloudNS)
 	Topic                     = fmt.Sprintf("%s:topic", CloudNS)
 	TrafficPolicyInstance     = fmt.Sprintf("%s:trafficPolicyInstance", CloudNS)
 	TTL                       = fmt.Sprintf("%s:ttl", CloudNS)
@@ -179,6 +185,7 @@ var (
 	UnhealthyThresholdCount   = fmt.Sprintf("%s:unhealthyThresholdCount", CloudNS)
 	Updated                   = fmt.Sprintf("%s:updated", CloudNS)
 	Username                  = fmt.Sprintf("%s:username", CloudNS)
+	Version                   = fmt.Sprintf("%s:version", CloudNS)
 	Vpc                       = fmt.Sprintf("%s:vpc", CloudNS)
 	Vpcs                      = fmt.Sprintf("%s:vpcs", CloudNS)
 	Weight                    = fmt.Sprintf("%s:weight", CloudNS)
@@ -229,6 +236,8 @@ var Labels = map[string]string{
 	properties.Fingerprint:               Fingerprint,
 	properties.GlobalID:                  GlobalID,
 	properties.Grants:                    Grants,
+	properties.Handler:                   Handler,
+	properties.Hash:                      Hash,
 	properties.HealthCheck:               HealthCheck,
 	properties.HealthyThresholdCount:     HealthyThresholdCount,
 	properties.Host:                      Host,
@@ -246,6 +255,7 @@ var Labels = map[string]string{
 	properties.Lifecycle:                 Lifecycle,
 	properties.LoadBalancer:              LoadBalancer,
 	properties.Main:                      Main,
+	properties.Memory:                    Memory,
 	properties.Messages:                  Messages,
 	properties.Modified:                  Modified,
 	properties.MonitoringInterval:        MonitoringInterval,
@@ -273,9 +283,11 @@ var Labels = map[string]string{
 	properties.Records:                   Records,
 	properties.RecordCount:               RecordCount,
 	properties.Region:                    Region,
+	properties.Role:                      Role,
 	properties.RootDevice:                RootDevice,
 	properties.RootDeviceType:            RootDeviceType,
 	properties.Routes:                    Routes,
+	properties.Runtime:                   Runtime,
 	properties.Scheme:                    Scheme,
 	properties.SecondaryAvailabilityZone: SecondaryAvailabilityZone,
 	properties.SecurityGroups:            SecurityGroups,
@@ -288,6 +300,7 @@ var Labels = map[string]string{
 	properties.StorageType:               StorageType,
 	properties.Subnet:                    Subnet,
 	properties.Subnets:                   Subnets,
+	properties.Timeout:                   Timeout,
 	properties.Timezone:                  Timezone,
 	properties.Topic:                     Topic,
 	properties.TrafficPolicyInstance:     TrafficPolicyInstance,
@@ -296,6 +309,7 @@ var Labels = map[string]string{
 	properties.UnhealthyThresholdCount:   UnhealthyThresholdCount,
 	properties.Updated:                   Updated,
 	properties.Username:                  Username,
+	properties.Version:                   Version,
 	properties.Vpc:                       Vpc,
 	properties.Vpcs:                      Vpcs,
 	properties.Weight:                    Weight,
@@ -346,6 +360,8 @@ var RdfProperties = map[string]rdfProp{
 	Fingerprint:             {ID: Fingerprint, RdfType: RdfProperty, RdfsLabel: properties.Fingerprint, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	GlobalID:                {ID: GlobalID, RdfType: RdfProperty, RdfsLabel: properties.GlobalID, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Grants:                  {ID: Grants, RdfType: RdfProperty, RdfsLabel: properties.Grants, RdfsDefinedBy: RdfsList, RdfsDataType: Grant},
+	Handler:                 {ID: Handler, RdfType: RdfProperty, RdfsLabel: properties.Handler, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
+	Hash:                    {ID: Hash, RdfType: RdfProperty, RdfsLabel: properties.Hash, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	HealthCheck:             {ID: HealthCheck, RdfType: RdfProperty, RdfsLabel: properties.HealthCheck, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	HealthyThresholdCount:   {ID: HealthyThresholdCount, RdfType: RdfProperty, RdfsLabel: properties.HealthyThresholdCount, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Host:                     {ID: Host, RdfType: RdfProperty, RdfsLabel: properties.Host, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
@@ -363,6 +379,7 @@ var RdfProperties = map[string]rdfProp{
 	Lifecycle:                {ID: Lifecycle, RdfType: RdfProperty, RdfsLabel: properties.Lifecycle, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	LoadBalancer:             {ID: LoadBalancer, RdfType: RdfProperty, RdfsLabel: properties.LoadBalancer, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	Main:                     {ID: Main, RdfType: RdfProperty, RdfsLabel: properties.Main, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdBoolean},
+	Memory:                   {ID: Memory, RdfType: RdfProperty, RdfsLabel: properties.Memory, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Messages:                 {ID: Messages, RdfType: RdfProperty, RdfsLabel: properties.Messages, RdfsDefinedBy: RdfsList, RdfsDataType: XsdString},
 	Modified:                 {ID: Modified, RdfType: RdfProperty, RdfsLabel: properties.Modified, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdDateTime},
 	MonitoringInterval:       {ID: MonitoringInterval, RdfType: RdfProperty, RdfsLabel: properties.MonitoringInterval, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
@@ -392,7 +409,9 @@ var RdfProperties = map[string]rdfProp{
 	Region:                   {ID: Region, RdfType: RdfProperty, RdfsLabel: properties.Region, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	RootDevice:               {ID: RootDevice, RdfType: RdfProperty, RdfsLabel: properties.RootDevice, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	RootDeviceType:           {ID: RootDeviceType, RdfType: RdfProperty, RdfsLabel: properties.RootDeviceType, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
+	Role:                     {ID: Role, RdfType: RdfProperty, RdfsLabel: properties.Role, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	Routes:                   {ID: Routes, RdfType: RdfProperty, RdfsLabel: properties.Routes, RdfsDefinedBy: RdfsList, RdfsDataType: NetRoute},
+	Runtime:                  {ID: Runtime, RdfType: RdfProperty, RdfsLabel: properties.Runtime, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Scheme:                   {ID: Scheme, RdfType: RdfProperty, RdfsLabel: properties.Scheme, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	SecondaryAvailabilityZone: {ID: SecondaryAvailabilityZone, RdfType: RdfProperty, RdfsLabel: properties.SecondaryAvailabilityZone, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	SecurityGroups:            {ID: SecurityGroups, RdfType: RdfProperty, RdfsLabel: properties.SecurityGroups, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
@@ -405,6 +424,7 @@ var RdfProperties = map[string]rdfProp{
 	StorageType:           {ID: StorageType, RdfType: RdfProperty, RdfsLabel: properties.StorageType, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Subnet:                {ID: Subnet, RdfType: RdfProperty, RdfsLabel: properties.Subnet, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	Subnets:               {ID: Subnets, RdfType: RdfProperty, RdfsLabel: properties.Subnets, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
+	Timeout:               {ID: Timeout, RdfType: RdfProperty, RdfsLabel: properties.Timeout, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Timezone:              {ID: Timezone, RdfType: RdfProperty, RdfsLabel: properties.Timezone, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Topic:                 {ID: Topic, RdfType: RdfProperty, RdfsLabel: properties.Topic, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	TrafficPolicyInstance: {ID: TrafficPolicyInstance, RdfType: RdfProperty, RdfsLabel: properties.TrafficPolicyInstance, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
@@ -413,6 +433,7 @@ var RdfProperties = map[string]rdfProp{
 	UnhealthyThresholdCount: {ID: UnhealthyThresholdCount, RdfType: RdfProperty, RdfsLabel: properties.UnhealthyThresholdCount, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Updated:                 {ID: Updated, RdfType: RdfProperty, RdfsLabel: properties.Updated, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Username:                {ID: Username, RdfType: RdfProperty, RdfsLabel: properties.Username, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
+	Version:                 {ID: Version, RdfType: RdfProperty, RdfsLabel: properties.Version, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Vpc:                     {ID: Vpc, RdfType: RdfProperty, RdfsLabel: properties.Vpc, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	Vpcs:                    {ID: Vpcs, RdfType: RdfProperty, RdfsLabel: properties.Vpcs, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
 	Weight:                  {ID: Weight, RdfType: RdfProperty, RdfsLabel: properties.Weight, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},

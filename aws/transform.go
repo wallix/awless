@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -106,6 +107,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *route53.ResourceRecordSet:
 		id := hashFields(awssdk.StringValue(ss.Name), awssdk.StringValue(ss.Type))
 		res = graph.InitResource(cloud.Record, id)
+		// Lambda
+	case *lambda.FunctionConfiguration:
+		res = graph.InitResource(cloud.Function, awssdk.StringValue(ss.FunctionArn))
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -205,10 +209,18 @@ var extractValueFn = func(i interface{}) (interface{}, error) {
 // Extract time forcing timezone to UTC (friendlier when running test in different timezones i.e. travis)
 var extractTimeFn = func(i interface{}) (interface{}, error) {
 	t, ok := i.(*time.Time)
-	if !ok {
-		return nil, fmt.Errorf("extract time: expected time pointer, got: %T", i)
+	if ok {
+		return t.UTC(), nil
 	}
-	return t.UTC(), nil
+	s, ok := i.(*string)
+	if ok {
+		t, err := time.Parse("2006-01-02T15:04:05.000+0000", awssdk.StringValue(s))
+		if err != nil {
+			return nil, err
+		}
+		return t.UTC(), nil
+	}
+	return nil, fmt.Errorf("extract time: expected time pointer, got: %T", i)
 }
 
 var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {

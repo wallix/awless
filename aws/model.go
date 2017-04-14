@@ -265,6 +265,20 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Type:                  {name: "Type", transform: extractValueFn},
 		properties.Weight:                {name: "Weight", transform: extractValueFn},
 	},
+	// Lambda
+	cloud.Function: {
+		properties.Name:        {name: "FunctionName", transform: extractValueFn},
+		properties.Hash:        {name: "CodeSha256", transform: extractValueFn},
+		properties.Size:        {name: "CodeSize", transform: extractValueFn},
+		properties.Description: {name: "Description", transform: extractValueFn},
+		properties.Handler:     {name: "Handler", transform: extractValueFn},
+		properties.Modified:    {name: "LastModified", transform: extractTimeFn},
+		properties.Memory:      {name: "MemorySize", transform: extractValueFn},
+		properties.Role:        {name: "Role", transform: extractValueFn},
+		properties.Runtime:     {name: "Runtime", transform: extractValueFn},
+		properties.Timeout:     {name: "Timeout", transform: extractValueFn},
+		properties.Version:     {name: "Version", transform: extractValueFn},
+	},
 	//Queue
 	cloud.Queue: {}, //Manually set
 }

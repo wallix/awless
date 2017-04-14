@@ -42,3 +42,46 @@ func HumanizeTime(t time.Time) string {
 		return fmt.Sprintf("%d years", int(d.Hours()/(24*365)))
 	}
 }
+
+type storageUnit uint
+
+const (
+	b storageUnit = iota
+	kb
+	mb
+	gb
+)
+
+func HumanizeStorage(nb uint64, unit storageUnit) string {
+	var nbBytes uint64
+	switch unit {
+	case b:
+		nbBytes = nb
+	case kb:
+		nbBytes = nb * 1024
+	case mb:
+		nbBytes = nb * 1024 * 1024
+	case gb:
+		nbBytes = nb * 1024 * 1024 * 1024
+	default:
+		return "invalid storage unit"
+	}
+	switch {
+	case nbBytes < 1024:
+		return fmt.Sprintf("%dB", nbBytes)
+	case nbBytes < 1024*1024:
+		return fmt.Sprintf("%sKB", divideValue(nbBytes, 1024))
+	case nbBytes < 1024*1024*1024:
+		return fmt.Sprintf("%sMB", divideValue(nbBytes, 1024*1024))
+	default:
+		return fmt.Sprintf("%sGB", divideValue(nbBytes, 1024*1024*1024))
+	}
+}
+
+func divideValue(from, by uint64) string {
+	res := from / by
+	if from%by != 0 {
+		return fmt.Sprintf("~%d", res)
+	}
+	return fmt.Sprint(res)
+}

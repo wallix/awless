@@ -94,7 +94,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
 		StringColumnDefinition{Prop: properties.Type},
 		StringColumnDefinition{Prop: properties.State},
-		StringColumnDefinition{Prop: properties.Size, Friendly: "Size (Gb)"},
+		StorageColumnDefinition{Unit: gb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 		StringColumnDefinition{Prop: properties.Encrypted},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
 		StringColumnDefinition{Prop: properties.AvailabilityZone, Friendly: "Zone"},
@@ -142,7 +142,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: properties.State},
 			ColoredValues:          map[string]color.Attribute{"available": color.FgGreen}},
-		StringColumnDefinition{Prop: properties.Storage, Friendly: "Size(Gb)"},
+		StorageColumnDefinition{Unit: gb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Storage}},
 		StringColumnDefinition{Prop: properties.Port},
 		StringColumnDefinition{Prop: properties.Username},
 		ColoredValueColumnDefinition{
@@ -199,7 +199,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Bucket, Friendly: "Bucket"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified, Friendly: "Modified"}},
 		StringColumnDefinition{Prop: properties.Owner, TruncateRight: true},
-		StringColumnDefinition{Prop: properties.Size},
+		StorageColumnDefinition{Unit: b, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 		StringColumnDefinition{Prop: properties.Class},
 	},
 	//Notification
@@ -236,5 +236,15 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
 		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Records}},
 		StringColumnDefinition{Prop: properties.TTL},
+	},
+	// Lamba
+	cloud.Function: {
+		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StorageColumnDefinition{Unit: b, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
+		StorageColumnDefinition{Unit: mb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Memory}},
+		StringColumnDefinition{Prop: properties.Runtime},
+		StringColumnDefinition{Prop: properties.Version},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified}},
+		StringColumnDefinition{Prop: properties.Description},
 	},
 }

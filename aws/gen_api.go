@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -61,6 +63,7 @@ func init() {
 	ServiceNames = append(ServiceNames, "notification")
 	ServiceNames = append(ServiceNames, "queue")
 	ServiceNames = append(ServiceNames, "dns")
+	ServiceNames = append(ServiceNames, "lambda")
 }
 
 var ServiceNames = []string{}
@@ -92,6 +95,7 @@ var ResourceTypes = []string{
 	"queue",
 	"zone",
 	"record",
+	"function",
 }
 
 var ServicePerAPI = map[string]string{
@@ -104,6 +108,7 @@ var ServicePerAPI = map[string]string{
 	"sns":     "notification",
 	"sqs":     "queue",
 	"route53": "dns",
+	"lambda":  "lambda",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -133,6 +138,7 @@ var ServicePerResourceType = map[string]string{
 	"queue":            "queue",
 	"zone":             "dns",
 	"record":           "dns",
+	"function":         "lambda",
 }
 
 var APIPerResourceType = map[string]string{
@@ -162,6 +168,7 @@ var APIPerResourceType = map[string]string{
 	"queue":            "sqs",
 	"zone":             "route53",
 	"record":           "route53",
+	"function":         "lambda",
 }
 
 type Infra struct {
@@ -2175,4 +2182,161 @@ func (s *Dns) fetch_all_zone_graph() (*graph.Graph, []*route53.HostedZone, error
 
 func (s *Dns) IsSyncDisabled() bool {
 	return !s.config.getBool("aws.dns.sync", true)
+}
+
+type Lambda struct {
+	once   oncer
+	region string
+	config config
+	log    *logger.Logger
+	lambdaiface.LambdaAPI
+}
+
+func NewLambda(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Lambda{
+		LambdaAPI: lambda.New(sess),
+		config:    awsconf,
+		region:    region,
+		log:       log,
+	}
+}
+
+func (s *Lambda) Name() string {
+	return "lambda"
+}
+
+func (s *Lambda) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewLambdaDriver(s.LambdaAPI),
+	}
+}
+
+func (s *Lambda) ResourceTypes() (all []string) {
+	all = append(all, "function")
+	return
+}
+
+func (s *Lambda) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
+	var functionList []*lambda.FunctionConfiguration
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	if s.config.getBool("aws.lambda.function.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, functionList, err = s.fetch_all_function_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource lambda[function]")
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case accessDenied:
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	if s.config.getBool("aws.lambda.function.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range functionList {
+				for _, fn := range addParentsFns["function"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Lambda) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "function":
+		graph, _, err := s.fetch_all_function_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws lambda: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Lambda) fetch_all_function_graph() (*graph.Graph, []*lambda.FunctionConfiguration, error) {
+	g := graph.NewGraph()
+	var cloudResources []*lambda.FunctionConfiguration
+	var badResErr error
+	err := s.ListFunctionsPages(&lambda.ListFunctionsInput{},
+		func(out *lambda.ListFunctionsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Functions {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextMarker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Lambda) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.lambda.sync", true)
 }
