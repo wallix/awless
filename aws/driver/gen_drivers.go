@@ -661,6 +661,18 @@ func NewLambdaDriver(api lambdaiface.LambdaAPI) driver.Driver {
 func (d *LambdaDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createfunction":
+		if d.dryRun {
+			return d.Create_Function_DryRun, nil
+		}
+		return d.Create_Function, nil
+
+	case "deletefunction":
+		if d.dryRun {
+			return d.Delete_Function_DryRun, nil
+		}
+		return d.Delete_Function, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

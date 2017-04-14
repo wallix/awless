@@ -95,6 +95,7 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Role:             {addManagedPoliciesRelations},
 	cloud.Group:            {addManagedPoliciesRelations},
 	cloud.Bucket:           {addRegionParent},
+	cloud.Function:         {addRegionParent},
 }
 
 func (fb funcBuilder) build() addParentFn {

@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -3168,5 +3169,155 @@ func (d *Route53Driver) Delete_Zone(params map[string]interface{}) (interface{},
 	}
 	d.logger.ExtraVerbosef("route53.DeleteHostedZone call took %s", time.Since(start))
 	d.logger.Info("delete zone done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *LambdaDriver) Create_Function_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create function: missing required params 'name'")
+	}
+
+	if _, ok := params["handler"]; !ok {
+		return nil, errors.New("create function: missing required params 'handler'")
+	}
+
+	if _, ok := params["role"]; !ok {
+		return nil, errors.New("create function: missing required params 'role'")
+	}
+
+	if _, ok := params["runtime"]; !ok {
+		return nil, errors.New("create function: missing required params 'runtime'")
+	}
+
+	d.logger.Verbose("params dry run: create function ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *LambdaDriver) Create_Function(params map[string]interface{}) (interface{}, error) {
+	input := &lambda.CreateFunctionInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "FunctionName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["handler"], input, "Handler", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["role"], input, "Role", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["runtime"], input, "Runtime", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["bucket"]; ok {
+		err = setFieldWithType(params["bucket"], input, "Code.S3Bucket", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["object"]; ok {
+		err = setFieldWithType(params["object"], input, "Code.S3Key", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["objectversion"]; ok {
+		err = setFieldWithType(params["objectversion"], input, "Code.S3ObjectVersion", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["zipfile"]; ok {
+		err = setFieldWithType(params["zipfile"], input, "Code.ZipFile", awsfiletostring)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["memory"]; ok {
+		err = setFieldWithType(params["memory"], input, "MemorySize", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["publish"]; ok {
+		err = setFieldWithType(params["publish"], input, "Publish", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["timeout"]; ok {
+		err = setFieldWithType(params["timeout"], input, "Timeout", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *lambda.FunctionConfiguration
+	output, err = d.CreateFunction(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create function: %s", err)
+	}
+	d.logger.ExtraVerbosef("lambda.CreateFunction call took %s", time.Since(start))
+	id := aws.StringValue(output.FunctionArn)
+
+	d.logger.Infof("create function '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *LambdaDriver) Delete_Function_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete function: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete function ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *LambdaDriver) Delete_Function(params map[string]interface{}) (interface{}, error) {
+	input := &lambda.DeleteFunctionInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "FunctionName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["version"]; ok {
+		err = setFieldWithType(params["version"], input, "Qualifier", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *lambda.DeleteFunctionOutput
+	output, err = d.DeleteFunction(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete function: %s", err)
+	}
+	d.logger.ExtraVerbosef("lambda.DeleteFunction call took %s", time.Since(start))
+	d.logger.Info("delete function done")
 	return output, nil
 }

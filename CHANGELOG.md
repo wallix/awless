@@ -3,6 +3,7 @@
 ### Features
 
 - lambda: list Lambda functions
+- lambda: create/delete Lambda functions
 - access: list IAM access keys
 
 - Friendlier display for storage size (s3objects, volumes, lambda functions)

@@ -762,6 +762,35 @@ var DriversDefs = []driversDef{
 	{
 		Api:          "lambda",
 		ApiInterface: "LambdaAPI",
-		Drivers:      []driver{},
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.Function, DryRunUnsupported: true, ApiMethod: "CreateFunction", Input: "CreateFunctionInput", Output: "FunctionConfiguration", OutputExtractor: "aws.StringValue(output.FunctionArn)",
+				RequiredParams: []param{
+					{AwsField: "FunctionName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "Handler", TemplateName: "handler", AwsType: "awsstr"},
+					{AwsField: "Role", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "Runtime", TemplateName: "runtime", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Code.S3Bucket", TemplateName: "bucket", AwsType: "awsstr"},
+					{AwsField: "Code.S3Key", TemplateName: "object", AwsType: "awsstr"},
+					{AwsField: "Code.S3ObjectVersion", TemplateName: "objectversion", AwsType: "awsstr"},
+					{AwsField: "Code.ZipFile", TemplateName: "zipfile", AwsType: "awsfiletostring"},
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+					{AwsField: "MemorySize", TemplateName: "memory", AwsType: "awsint64"},
+					{AwsField: "Publish", TemplateName: "publish", AwsType: "awsbool"},
+					{AwsField: "Timeout", TemplateName: "timeout", AwsType: "awsint64"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Function, DryRunUnsupported: true, ApiMethod: "DeleteFunction", Input: "DeleteFunctionInput", Output: "DeleteFunctionOutput",
+				RequiredParams: []param{
+					{AwsField: "FunctionName", TemplateName: "id", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Qualifier", TemplateName: "version", AwsType: "awsstr"},
+				},
+			},
+		},
 	},
 }

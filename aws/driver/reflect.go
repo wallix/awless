@@ -45,6 +45,7 @@ const (
 	awsstringpointermap
 	awsslicestruct
 	awsfiletobase64
+	awsfiletostring
 )
 
 var (
@@ -95,6 +96,11 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 		}
 	case awsfiletobase64:
 		v, err = fileOrRemoteFileAsBase64(v)
+		if err != nil {
+			return err
+		}
+	case awsfiletostring:
+		v, err = ioutil.ReadFile(fmt.Sprint(v))
 		if err != nil {
 			return err
 		}

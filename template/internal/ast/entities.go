@@ -37,6 +37,8 @@ const (
 	Subscription Entity = "subscription"
 	Topic        Entity = "topic"
 	Queue        Entity = "queue"
+
+	Function Entity = "function"
 )
 
 var entities = map[Entity]struct{}{
@@ -68,6 +70,7 @@ var entities = map[Entity]struct{}{
 	Subscription:    {},
 	Topic:           {},
 	Queue:           {},
+	Function:        {},
 }
 
 func IsInvalidEntity(s string) bool {

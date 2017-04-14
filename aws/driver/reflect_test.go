@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/lambda"
 )
 
 func TestSetFieldWithTypeAWSFile(t *testing.T) {
@@ -49,6 +50,17 @@ func TestSetFieldWithTypeAWSFile(t *testing.T) {
 	}
 
 	if got, want := aws.StringValue(awsparams.UserData), base64.StdEncoding.EncodeToString(text); got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	functionInput := &lambda.CreateFunctionInput{}
+
+	err = setFieldWithType(f.Name(), functionInput, "Code.ZipFile", awsfiletostring)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := string(functionInput.Code.ZipFile), string(text); got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }
