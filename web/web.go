@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 
@@ -35,7 +34,7 @@ func (s *server) Start() error {
 
 	s.gph = g
 
-	log.Printf("Starting web ui on port %s\n", s.port)
+	log.Printf("Starting browsing on http://localhost%s\n", s.port)
 	return http.ListenAndServe(s.port, s.routes())
 }
 
@@ -81,8 +80,14 @@ func (s *server) rdfHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tstore.NewNTriplesEncoder(w).Encode(tris...)
-	if err != nil {
+	var encErr error
+	if r.FormValue("namespaced") == "true" {
+		encErr = tstore.NewNTriplesEncoderWithContext(w, tstore.RDFContext).Encode(tris...)
+	} else {
+		encErr = tstore.NewNTriplesEncoder(w).Encode(tris...)
+	}
+
+	if encErr != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -101,6 +106,10 @@ func (s *server) showResourceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resource := newResource(res)
+	deps, _ := s.gph.ListResourcesDependingOn(res)
+	resource.AddDependsOn(deps...)
+	applies, _ := s.gph.ListResourcesAppliedOn(res)
+	resource.AddAppliesOn(applies...)
 
 	if err := t.Execute(w, resource); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -109,9 +118,7 @@ func (s *server) showResourceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("resources").Funcs(template.FuncMap{
-		"EscapeForURL": url.PathEscape,
-	}).Parse(resourcesTpl)
+	t, err := template.New("resources").Parse(resourcesTpl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -119,13 +126,13 @@ func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
 	resourcesByTypes := make(map[string][]*Resource)
 
 	for _, typ := range aws.ResourceTypes {
-		res, err := s.gph.GetAllResources(typ)
+		gRes, err := s.gph.GetAllResources(typ)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		for _, r := range res {
+		for _, r := range gRes {
 			resourcesByTypes[typ] = append(resourcesByTypes[typ], newResource(r))
 		}
 	}
@@ -139,6 +146,20 @@ func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
 type Resource struct {
 	Id, Type   string
 	Properties map[string]interface{}
+	DependsOn  []*Resource
+	AppliesOn  []*Resource
+}
+
+func (r *Resource) AddDependsOn(gr ...*graph.Resource) {
+	for _, res := range gr {
+		r.DependsOn = append(r.DependsOn, newResource(res))
+	}
+}
+
+func (r *Resource) AddAppliesOn(gr ...*graph.Resource) {
+	for _, res := range gr {
+		r.AppliesOn = append(r.AppliesOn, newResource(res))
+	}
 }
 
 func newResource(r *graph.Resource) *Resource {
@@ -154,6 +175,7 @@ const homeTpl = `<!DOCTYPE html>
 	<ul>
 	<li><a href="/resources">List resources</a></li>
 	<li><a href="/rdf">View RDF</a></li>
+	<li><a href="/rdf?namespaced=true">View namespaced RDF</a></li>
 	</ul>
 	</body>
 </html>`
@@ -170,6 +192,24 @@ const showResourceTpl = `<!DOCTYPE html>
 	  <li><b>{{$name}}:</b> {{$val}}</li>
         {{end}}
         </ul>
+
+	{{if (len .DependsOn) gt 0}}
+	<h4>Depends on:</h4>
+	<ul>
+	{{range .DependsOn}}
+	  <li>{{.Type}} <a href="/resources/{{ urlquery .Id}}">{{.Id}}</a></li>
+	{{end}}
+	</ul>
+	{{end}}
+
+	{{if (len .AppliesOn) gt 0}}
+	<h4>Applies on:</h4>
+	<ul>
+	{{range .AppliesOn}}
+	  <li>{{.Type}} <a href="/resources/{{ urlquery .Id}}">{{.Id}}</a></li>
+	{{end}}
+	</ul>
+	{{end}}
 	</body>
 </html>`
 
@@ -180,11 +220,14 @@ const resourcesTpl = `<!DOCTYPE html>
 	</head>
 	<body>
 		{{range $type, $resource := .}}
-		<h2>{{$type}}</h2>
+		<h2>{{$type}} ({{len .}})</h2>
 		<ul>
 		  {{range $resource}}
 		         {{ $name := index .Properties "Name" }}
-			 <li><b>Id:</b> <a href="/resources/{{ EscapeForURL .Id}}">{{.Id}}</a>{{if $name}} {{if (ne (print $name) "")}}, <b>Name:</b> {{$name}}{{end}}{{end}}</li>
+			 <li>
+			  {{if $name}} {{if (ne (print $name) "")}}<b>Name:</b> {{$name}}, {{end}}{{end}}
+			  <b>Id: </b><a href="/resources/{{ urlquery .Id}}">{{.Id}}</a>
+			 </li>
 		  {{end}}
 		</ul>
 		{{end}}
