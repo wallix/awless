@@ -869,7 +869,7 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 	if n, ok := params["name"].(string); ok && n != "" {
 		fileName = n
 	} else {
-		fileName = f.Name()
+		_, fileName = filepath.Split(f.Name())
 	}
 	input.Key = aws.String(fileName)
 

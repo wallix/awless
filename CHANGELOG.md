@@ -7,6 +7,10 @@
 
 - Friendlier (using units: KB, MB, GB) display for storage size (s3objects, volumes, lambda functions)
 
+### Bugfixes
+
+- Take the file name rather than full path as default name when uploading a s3object
+
 ## v0.0.22 [2017-04-13]
 
 ### Features

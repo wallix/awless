@@ -530,7 +530,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "delete",
 		Entity:         "s3object",
 		Api:            "s3",
-		RequiredParams: []string{"bucket", "key"},
+		RequiredParams: []string{"bucket", "name"},
 		ExtraParams:    []string{},
 	},
 	"createtopic": {

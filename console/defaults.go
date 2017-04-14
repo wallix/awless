@@ -195,7 +195,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	cloud.S3Object: {
-		StringColumnDefinition{Prop: properties.ID, TruncateRight: true},
+		StringColumnDefinition{Prop: properties.ID, TruncateRight: true, Friendly: "Name"},
 		StringColumnDefinition{Prop: properties.Bucket, Friendly: "Bucket"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified, Friendly: "Modified"}},
 		StringColumnDefinition{Prop: properties.Owner, TruncateRight: true},

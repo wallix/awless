@@ -2765,8 +2765,8 @@ func (d *S3Driver) Delete_S3object_DryRun(params map[string]interface{}) (interf
 		return nil, errors.New("delete s3object: missing required params 'bucket'")
 	}
 
-	if _, ok := params["key"]; !ok {
-		return nil, errors.New("delete s3object: missing required params 'key'")
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete s3object: missing required params 'name'")
 	}
 
 	d.logger.Verbose("params dry run: delete s3object ok")
@@ -2783,7 +2783,7 @@ func (d *S3Driver) Delete_S3object(params map[string]interface{}) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["key"], input, "Key", awsstr)
+	err = setFieldWithType(params["name"], input, "Key", awsstr)
 	if err != nil {
 		return nil, err
 	}

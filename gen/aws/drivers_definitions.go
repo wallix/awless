@@ -645,7 +645,7 @@ var DriversDefs = []driversDef{
 				Action: "delete", Entity: cloud.S3Object, DryRunUnsupported: true, Input: "DeleteObjectInput", Output: "DeleteObjectOutput", ApiMethod: "DeleteObject",
 				RequiredParams: []param{
 					{AwsField: "Bucket", TemplateName: "bucket", AwsType: "awsstr"},
-					{AwsField: "Key", TemplateName: "key", AwsType: "awsstr"},
+					{AwsField: "Key", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 		},
