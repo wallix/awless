@@ -88,6 +88,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Policy, awssdk.StringValue(ss.PolicyId))
 	case *iam.ManagedPolicyDetail:
 		res = graph.InitResource(cloud.Policy, awssdk.StringValue(ss.PolicyId))
+	case *iam.AccessKeyMetadata:
+		res = graph.InitResource(cloud.AccessKey, awssdk.StringValue(ss.AccessKeyId))
 	// S3
 	case *s3.Bucket:
 		res = graph.InitResource(cloud.Bucket, awssdk.StringValue(ss.Name))

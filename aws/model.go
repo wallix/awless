@@ -215,6 +215,11 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Attachable:  {name: "IsAttachable", transform: extractValueFn},
 		properties.Path:        {name: "Path", transform: extractValueFn},
 	},
+	cloud.AccessKey: {
+		properties.Username: {name: "UserName", transform: extractValueFn},
+		properties.State:    {name: "Status", transform: extractValueFn},
+		properties.Created:  {name: "CreateDate", transform: extractTimeFn},
+	},
 	//S3
 	cloud.Bucket: {
 		properties.Created: {name: "CreationDate", transform: extractTimeFn},

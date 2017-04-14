@@ -182,6 +182,12 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
+	cloud.AccessKey: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Username, DisableTruncate: true},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+	},
 	// S3
 	cloud.Bucket: {
 		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},

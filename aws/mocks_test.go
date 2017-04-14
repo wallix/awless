@@ -190,6 +190,13 @@ func (m *mockIam) GetAccountAuthorizationDetailsPages(input *iam.GetAccountAutho
 	return nil
 }
 
+// not tested
+
+func (m *mockIam) ListAccessKeysPages(input *iam.ListAccessKeysInput, fn func(p *iam.ListAccessKeysOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&iam.ListAccessKeysOutput{}, true)
+	return nil
+}
+
 type mockS3 struct {
 	s3iface.S3API
 	bucketsACL       map[string][]*s3.Grant

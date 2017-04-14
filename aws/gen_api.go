@@ -84,6 +84,7 @@ var ResourceTypes = []string{
 	"group",
 	"role",
 	"policy",
+	"accesskey",
 	"bucket",
 	"s3object",
 	"subscription",
@@ -124,6 +125,7 @@ var ServicePerResourceType = map[string]string{
 	"group":            "access",
 	"role":             "access",
 	"policy":           "access",
+	"accesskey":        "access",
 	"bucket":           "storage",
 	"s3object":         "storage",
 	"subscription":     "notification",
@@ -152,6 +154,7 @@ var APIPerResourceType = map[string]string{
 	"group":            "iam",
 	"role":             "iam",
 	"policy":           "iam",
+	"accesskey":        "iam",
 	"bucket":           "s3",
 	"s3object":         "s3",
 	"subscription":     "sns",
@@ -1118,6 +1121,7 @@ func (s *Access) ResourceTypes() (all []string) {
 	all = append(all, "group")
 	all = append(all, "role")
 	all = append(all, "policy")
+	all = append(all, "accesskey")
 	return
 }
 
@@ -1135,6 +1139,7 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 	var groupList []*iam.GroupDetail
 	var roleList []*iam.RoleDetail
 	var policyList []*iam.Policy
+	var accesskeyList []*iam.AccessKeyMetadata
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -1202,6 +1207,22 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource access[policy]")
+	}
+	if s.config.getBool("aws.access.accesskey.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, accesskeyList, err = s.fetch_all_accesskey_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource access[accesskey]")
 	}
 
 	go func() {
@@ -1286,6 +1307,21 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.access.accesskey.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range accesskeyList {
+				for _, fn := range addParentsFns["accesskey"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1314,6 +1350,9 @@ func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "policy":
 		graph, _, err := s.fetch_all_policy_graph()
+		return graph, err
+	case "accesskey":
+		graph, _, err := s.fetch_all_accesskey_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws access: unsupported fetch for type %s", t)
@@ -1379,6 +1418,32 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 	err := s.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
 		func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Policies {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				res, badResErr = newResource(output)
+				if badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.Marker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Access) fetch_all_accesskey_graph() (*graph.Graph, []*iam.AccessKeyMetadata, error) {
+	g := graph.NewGraph()
+	var cloudResources []*iam.AccessKeyMetadata
+	var badResErr error
+	err := s.ListAccessKeysPages(&iam.ListAccessKeysInput{},
+		func(out *iam.ListAccessKeysOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.AccessKeyMetadata {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				res, badResErr = newResource(output)
