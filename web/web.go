@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
 	"io"
@@ -43,6 +44,7 @@ func (s *server) routes() http.Handler {
 	r.HandleFunc("/resources/{id}", s.showResourceHandler)
 	r.HandleFunc("/resources", s.listResourcesHandler)
 	r.HandleFunc("/rdf", s.rdfHandler)
+	r.HandleFunc("/graph", s.graphHandler)
 	r.HandleFunc("/", s.homeHandler)
 	return r
 }
@@ -59,22 +61,7 @@ func (s *server) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) rdfHandler(w http.ResponseWriter, r *http.Request) {
-	path := filepath.Join(repo.Dir(), fmt.Sprintf("*%s", ".triples"))
-	files, _ := filepath.Glob(path)
-
-	var readers []io.Reader
-	for _, f := range files {
-		reader, err := os.Open(f)
-		if err != nil {
-			msg := fmt.Sprintf("loading '%s': %s", f, err)
-			http.Error(w, msg, http.StatusInternalServerError)
-			return
-		}
-		readers = append(readers, reader)
-	}
-
-	dec := tstore.NewDatasetDecoder(tstore.NewBinaryDecoder, readers...)
-	tris, err := dec.Decode()
+	tris, err := loadLocalTriples()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -88,6 +75,30 @@ func (s *server) rdfHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if encErr != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *server) graphHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.New("graph").Parse(graphVizTpl)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	tris, err := loadLocalTriples()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var data bytes.Buffer
+	if err := tstore.NewDotGraphEncoder(&data, "cloud-rel:parentOf").Encode(tris...); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := t.Execute(w, data.String()); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -166,6 +177,23 @@ func newResource(r *graph.Resource) *Resource {
 	return &Resource{Id: r.Id(), Type: r.Type(), Properties: r.Properties}
 }
 
+func loadLocalTriples() ([]tstore.Triple, error) {
+	path := filepath.Join(repo.Dir(), fmt.Sprintf("*%s", ".triples"))
+	files, _ := filepath.Glob(path)
+
+	var readers []io.Reader
+	for _, f := range files {
+		reader, err := os.Open(f)
+		if err != nil {
+			return nil, fmt.Errorf("loading '%s': %s", f, err)
+		}
+		readers = append(readers, reader)
+	}
+
+	dec := tstore.NewDatasetDecoder(tstore.NewBinaryDecoder, readers...)
+	return dec.Decode()
+}
+
 const homeTpl = `<!DOCTYPE html>
 <html>
 	<head>
@@ -173,7 +201,8 @@ const homeTpl = `<!DOCTYPE html>
 	</head>
 	<body>
 	<ul>
-	<li><a href="/resources">List resources</a></li>
+	<li><a href="/resources">View resources</a></li>
+	<li><a href="/graph">View DOT graph</a></li>
 	<li><a href="/rdf">View RDF</a></li>
 	<li><a href="/rdf?namespaced=true">View namespaced RDF</a></li>
 	</ul>
@@ -231,5 +260,18 @@ const resourcesTpl = `<!DOCTYPE html>
 		  {{end}}
 		</ul>
 		{{end}}
+	</body>
+</html>`
+
+const graphVizTpl = `<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	</head>
+	<body>
+        <script src="https://github.com/mdaines/viz.js/releases/download/v1.7.1/viz-lite.js"></script>
+	<script>
+	   document.body.innerHTML += Viz("{{ . }}");
+	</script>
 	</body>
 </html>`
