@@ -45,21 +45,25 @@ var logCmd = &cobra.Command{
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(c *cobra.Command, args []string) error {
-		db, err, dbclose := database.Current()
-		exitOn(err)
-
 		if deleteAllLogsFlag {
-			exitOn(db.DeleteTemplates())
+			exitOn(database.Execute(func(db *database.DB) error {
+				return db.DeleteTemplates()
+			}))
 			return nil
 		}
 
 		if tid := deleteFromIdLogsFlag; tid != "" {
-			exitOn(db.DeleteTemplate(tid))
+			exitOn(database.Execute(func(db *database.DB) error {
+				return db.DeleteTemplate(tid)
+			}))
 			return nil
 		}
 
-		all, err := db.ListTemplates()
-		dbclose()
+		var all []*database.LoadedTemplate
+		err := database.Execute(func(db *database.DB) (dberr error) {
+			all, dberr = db.ListTemplates()
+			return
+		})
 		exitOn(err)
 
 		printer := template.NewLogPrinter(os.Stdout)

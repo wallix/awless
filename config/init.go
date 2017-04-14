@@ -57,15 +57,12 @@ func InitAwlessEnv() error {
 			return err
 		}
 
-		db, err, dbclose := database.Current()
+		err := database.Execute(func(db *database.DB) error {
+			return db.SetStringValue("current.version", Version)
+		})
 		if err != nil {
-			fmt.Printf("opening db error: %s\n", err)
+			fmt.Printf("cannot store current version in db: %s\n", err)
 		}
-
-		if err := db.SetStringValue("current.version", Version); err != nil {
-			fmt.Printf("storing current version in db: %s\n", err)
-		}
-		dbclose()
 	}
 
 	if err = LoadAll(); err != nil {

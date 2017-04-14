@@ -96,11 +96,11 @@ func initLoggerHook(cmd *cobra.Command, args []string) error {
 }
 
 func saveHistoryHook(cmd *cobra.Command, args []string) error {
-	db, err, close := database.Current()
-	if err == nil && db != nil {
+	database.Execute(func(db *database.DB) error {
 		db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
-		defer close()
-	}
+		return nil
+	})
+
 	return nil
 }
 

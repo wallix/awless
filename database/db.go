@@ -38,27 +38,33 @@ type DB struct {
 	bolt *bolt.DB
 }
 
-func MustGetCurrent() (*DB, func()) {
-	db, err, close := Current()
+func Execute(fn func(*DB) error) error {
+	db, err := current()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	return db, close
+	defer db.Close()
+
+	return fn(db)
 }
 
-func Current() (*DB, error, func()) {
+func current() (*DB, error) {
 	awlessHome := os.Getenv("__AWLESS_HOME")
 	if awlessHome == "" {
-		return nil, errors.New("database: awless home is not set"), nil
+		return nil, errors.New("database: awless home is not set")
 	}
-	db, err := open(filepath.Join(awlessHome, databaseFilename))
+
+	path := filepath.Join(awlessHome, databaseFilename)
+	db, err := open(path)
 	if err != nil {
-		return nil, err, nil
+		return nil, err
 	}
-	todefer := func() {
-		db.Close()
+
+	if db == nil {
+		return nil, fmt.Errorf("db is nil while no error in opening at '%s'", path)
 	}
-	return db, nil, todefer
+
+	return db, nil
 }
 
 func open(path string) (*DB, error) {

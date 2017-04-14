@@ -80,22 +80,20 @@ type Definition struct {
 }
 
 func LoadAll() error {
-	db, err, dbclose := database.Current()
-	if err != nil {
-		return fmt.Errorf("load config: %s", err)
-	}
-	defer dbclose()
+	err := database.Execute(func(db *database.DB) (dberr error) {
+		Config, dberr = db.GetConfigs(configDatabaseKey)
+		if dberr != nil {
+			return fmt.Errorf("config: load config: %s", dberr)
+		}
 
-	Config, err = db.GetConfigs(configDatabaseKey)
-	if err != nil {
-		return fmt.Errorf("config: load config: %s", err)
-	}
+		Defaults, dberr = db.GetConfigs(defaultsDatabaseKey)
+		if dberr != nil {
+			return fmt.Errorf("config: load defaults: %s", dberr)
+		}
+		return
+	})
 
-	Defaults, err = db.GetConfigs(defaultsDatabaseKey)
-	if err != nil {
-		return fmt.Errorf("config: load defaults: %s", err)
-	}
-	return nil
+	return err
 }
 
 func Display() string {
@@ -128,14 +126,12 @@ func Set(key, value string) error {
 		databaseKey = defaultsDatabaseKey
 	}
 
-	db, err, dbclose := database.Current()
-	if err != nil {
-		return fmt.Errorf("set config: %s", err)
-	}
-	defer dbclose()
-	if err := db.SetConfig(databaseKey, key, v); err != nil {
+	if err := database.Execute(func(db *database.DB) error {
+		return db.SetConfig(databaseKey, key, v)
+	}); err != nil {
 		return err
 	}
+
 	if def != nil {
 		for _, fn := range def.onUpdateFns {
 			fn(v)
@@ -156,16 +152,13 @@ func Unset(key string) error {
 		dbKey = defaultsDatabaseKey
 	}
 	if dbKey != "" {
-		db, err, dbclose := database.Current()
-		if err != nil {
+		if err := database.Execute(func(db *database.DB) error {
+			return db.UnsetConfig(dbKey, key)
+		}); err != nil {
 			return fmt.Errorf("unset config: %s", err)
 		}
-		err = db.UnsetConfig(dbKey, key)
-		if err != nil {
-			return fmt.Errorf("unset config: %s", err)
-		}
-		dbclose()
 	}
+
 	return nil
 }
 

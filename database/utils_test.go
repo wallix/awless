@@ -29,10 +29,13 @@ func newTestDb() (*DB, func()) {
 
 	os.Setenv("__AWLESS_HOME", f)
 
-	db, closing := MustGetCurrent()
+	db, err := current()
+	if err != nil {
+		panic(err)
+	}
 
 	todefer := func() {
-		closing()
+		db.Close()
 		os.RemoveAll(f)
 	}
 

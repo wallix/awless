@@ -69,11 +69,9 @@ func ExecuteRoot() error {
 	err := RootCmd.Execute()
 
 	if err != nil {
-		db, dberr, dbclose := database.Current()
-		if dberr == nil && db != nil {
-			db.AddLog(err.Error())
-			dbclose()
-		}
+		database.Execute(func(db *database.DB) error {
+			return db.AddLog(err.Error())
+		})
 	}
 
 	return err

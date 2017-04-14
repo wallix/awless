@@ -21,6 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/template"
 )
 
 func init() {
@@ -41,11 +42,11 @@ var revertCmd = &cobra.Command{
 
 		revertId := args[0]
 
-		db, err, dbclose := database.Current()
-		exitOn(err)
-		tpl, err := db.GetTemplate(revertId)
-		dbclose()
-		exitOn(err)
+		var tpl *template.Template
+		exitOn(database.Execute(func(db *database.DB) (terr error) {
+			tpl, terr = db.GetTemplate(revertId)
+			return
+		}))
 
 		reverted, err := tpl.Revert()
 		exitOn(err)

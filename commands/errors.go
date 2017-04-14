@@ -25,11 +25,10 @@ import (
 
 func exitOn(err error) {
 	if err != nil {
-		db, dberr, close := database.Current()
-		if dberr == nil && db != nil {
-			defer close()
+		database.Execute(func(db *database.DB) error {
 			db.AddLog(err.Error())
-		}
+			return nil
+		})
 		fmt.Fprintln(os.Stderr, "Error:", err)
 		os.Exit(1)
 	}

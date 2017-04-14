@@ -33,26 +33,23 @@ const (
 )
 
 func VerifyNewVersionAvailable(url string, messaging io.Writer) error {
-	db, err, close := database.Current()
-	if err != nil {
-		return err
-	}
-	defer close()
+	return database.Execute(func(db *database.DB) error {
+		last, err := db.GetTimeValue(lastUpgradeCheckDbKey)
+		if err != nil {
+			return err
+		}
 
-	last, err := db.GetTimeValue(lastUpgradeCheckDbKey)
-	if err != nil {
-		return err
-	}
-	upgradeFreq := getCheckUpgradeFrequency()
-	if upgradeFreq < 0 {
-		return nil
-	}
+		upgradeFreq := getCheckUpgradeFrequency()
+		if upgradeFreq < 0 {
+			return nil
+		}
 
-	if time.Since(last) > upgradeFreq {
-		notifyIfUpgrade(url, messaging)
-	}
+		if time.Since(last) > upgradeFreq {
+			notifyIfUpgrade(url, messaging)
+		}
 
-	return db.SetTimeValue(lastUpgradeCheckDbKey, time.Now())
+		return db.SetTimeValue(lastUpgradeCheckDbKey, time.Now())
+	})
 }
 
 func notifyIfUpgrade(url string, messaging io.Writer) error {

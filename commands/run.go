@@ -251,14 +251,12 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		printer.RenderOK = renderGreenFn
 		printer.Print(newTempl)
 
-		db, err, close := database.Current()
-		exitOn(err)
-		defer close()
-
-		err = db.AddTemplate(newTempl)
-		if err != nil {
+		if err := database.Execute(func(db *database.DB) error {
+			return db.AddTemplate(newTempl)
+		}); err != nil {
 			logger.Errorf("Cannot save executed template in awless logs: %s", err)
 		}
+
 		if template.IsRevertible(newTempl) {
 			fmt.Println()
 			logger.Infof("Revert this template with `awless revert %s`", newTempl.ID)
