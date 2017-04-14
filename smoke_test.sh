@@ -17,8 +17,8 @@ go build -o $BIN
 echo "flushing awless logs..."
 $BIN log --delete-all
 
-ORIG_REGION=`$BIN config get aws.region`
-ORIG_IMAGE=`$BIN config get instance.image`
+ORIG_REGION=$($BIN config get aws.region)
+ORIG_IMAGE=$($BIN config get instance.image)
 
 REGION="us-west-1"
 AMI="ami-165a0876"
@@ -27,7 +27,7 @@ echo "Setting region $REGION, ami $AMI"
 $BIN config set aws.region $REGION
 $BIN config set instance.image $AMI
 
-SUFFIX=integ-test-`date +%s`
+SUFFIX=integ-test-$(date +%s)
 INSTANCE_NAME=inst-$SUFFIX
 VPC_NAME=vpc-$SUFFIX
 SUBNET_NAME=subnet-$SUFFIX
@@ -57,9 +57,9 @@ eval "$BIN check instance id=$ALIAS state=running timeout=20 -f"
 echo "Instance is running. Waiting 20s for system boot"
 sleep 20 
 
-SSH_CONNECT=`$BIN ssh $INSTANCE_NAME --print-cli`
+SSH_CONNECT=$($BIN ssh $INSTANCE_NAME --print-cli)
 echo "Connecting to instance with $SSH_CONNECT"
-RESULT=`$SSH_CONNECT -o StrictHostKeychecking=no 'cat /tmp/awless-ssh-userdata-success.txt'`
+RESULT=$($SSH_CONNECT -o StrictHostKeychecking=no 'cat /tmp/awless-ssh-userdata-success.txt')
 
 if [ "$RESULT" != "success" ]; then
 	echo "FAIL to read correct token in remote file after ssh to instance"
@@ -68,7 +68,7 @@ fi
 
 echo "Reading token in remote file on instance with success"
 
-REVERT_ID=`$BIN log | grep RevertID | cut -d , -f2 | cut -d : -f2`
+REVERT_ID=$($BIN log | grep RevertID | cut -d , -f2 | cut -d : -f2)
 $BIN revert $REVERT_ID -e -f
 
 echo "Clean up and reverting back to region '$ORIG_REGION' and ami '$ORIG_IMAGE'"

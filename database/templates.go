@@ -67,6 +67,10 @@ func (db *DB) GetTemplate(id string) (*template.Template, error) {
 
 func (db *DB) DeleteTemplates() error {
 	return db.bolt.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
+		if b == nil {
+			return nil
+		}
 		return tx.DeleteBucket([]byte(TEMPLATES_BUCKET))
 	})
 }
