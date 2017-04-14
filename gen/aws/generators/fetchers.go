@@ -125,6 +125,14 @@ var ServicePerResourceType = map[string]string {
 {{- end }}
 }
 
+var APIPerResourceType = map[string]string {
+{{- range $index, $service := . }}
+  {{- range $idx, $fetcher := $service.Fetchers }}
+  "{{ $fetcher.ResourceType }}": "{{ $fetcher.Api }}",
+  {{- end }}
+{{- end }}
+}
+
 {{ range $index, $service := . }}
 type {{ Title $service.Name }} struct {
 	once oncer

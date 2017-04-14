@@ -31,7 +31,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
-	awscloud "github.com/wallix/awless/aws/driver"
+	awsdriver "github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -44,7 +44,7 @@ import (
 
 func init() {
 	RootCmd.AddCommand(runCmd)
-	for action, entities := range awscloud.DriverSupportedActions() {
+	for action, entities := range awsdriver.DriverSupportedActions() {
 		RootCmd.AddCommand(
 			createDriverCommands(action, entities),
 		)
@@ -312,14 +312,25 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				return nil
 			}
 		}
-
+		var apiStr string
+		if api, ok := awsdriver.APIPerTemplateDefName[templDef.Name()]; ok {
+			apiStr = fmt.Sprint(strings.ToUpper(api) + " ")
+		}
+		var requiredStr string
+		if req := strings.Join(templDef.Required(), ", "); req != "" {
+			requiredStr = fmt.Sprintf("\n\tRequired params: %s", req)
+		}
+		var extraStr string
+		if ext := strings.Join(templDef.Extra(), ", "); ext != "" {
+			extraStr = fmt.Sprintf("\n\tExtra params: %s", ext)
+		}
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:               templDef.Entity,
 				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
 				PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
-				Short:             fmt.Sprintf("%s a %s", strings.Title(action), templDef.Entity),
-				Long:              fmt.Sprintf("%s a %s\n\tRequired params: %s\n\tExtra params: %s", strings.Title(templDef.Action), templDef.Entity, strings.Join(templDef.Required(), ", "), strings.Join(templDef.Extra(), ", ")),
+				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
+				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr, extraStr),
 				RunE:              run(templDef),
 			},
 		)
@@ -329,7 +340,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 }
 
 func lookupDefinitionsFunc(key string) (t template.Definition, ok bool) {
-	t, ok = awscloud.AWSTemplatesDefinitions[key]
+	t, ok = awsdriver.AWSTemplatesDefinitions[key]
 	return
 }
 

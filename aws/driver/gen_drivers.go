@@ -15,7 +15,7 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package aws
+package driver
 
 import (
 	"strings"

@@ -99,11 +99,20 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package aws
+package driver
 
 import (
 	"github.com/wallix/awless/template"
 )
+
+
+var APIPerTemplateDefName = map[string]string {
+{{- range $, $service := . }}
+  {{- range $, $def := $service.Drivers }}
+  "{{ $def.Action }}{{ $def.Entity }}": "{{ $service.Api }}",
+  {{- end }}
+{{- end }}
+}
 
 var AWSTemplatesDefinitions = map[string]template.Definition{
 {{- range $, $service := . }}
@@ -147,7 +156,7 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package aws
+package driver
 
 import (
 	"errors"
@@ -166,6 +175,7 @@ const (
 	dryRunOperation = "DryRunOperation"
 	notFound = "NotFound"
 )
+
 {{- range $, $service := . }}
 {{ range $index, $def := $service.Drivers }}
 {{- if not $def.ManualFuncDefinition }}
@@ -335,7 +345,7 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package aws
+package driver
 
 import (
 	"strings"

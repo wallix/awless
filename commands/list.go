@@ -19,6 +19,8 @@ package commands
 import (
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
@@ -45,7 +47,12 @@ func init() {
 	}
 
 	for _, name := range aws.ServiceNames {
+		var resources []string
 		for _, resType := range aws.ResourceTypesPerServiceName()[name] {
+			resources = append(resources, resType)
+		}
+		sort.Strings(resources)
+		for _, resType := range resources {
 			listCmd.AddCommand(listSpecificResourceCmd(resType))
 		}
 	}
@@ -68,7 +75,7 @@ var listCmd = &cobra.Command{
 var listSpecificResourceCmd = func(resType string) *cobra.Command {
 	return &cobra.Command{
 		Use:   cloud.PluralizeResource(resType),
-		Short: fmt.Sprintf("[%s] List AWS %s", aws.ServicePerResourceType[resType], cloud.PluralizeResource(resType)),
+		Short: fmt.Sprintf("[%s] List %s %s", aws.ServicePerResourceType[resType], strings.ToUpper(aws.APIPerResourceType[resType]), cloud.PluralizeResource(resType)),
 
 		Run: func(cmd *cobra.Command, args []string) {
 			var g *graph.Graph

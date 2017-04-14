@@ -1,3 +1,9 @@
+## v0.0.23 [unreleased]
+
+### Features
+
+- Display the entity AWS API in command help
+
 ## v0.0.22 [2017-04-13]
 
 ### Features

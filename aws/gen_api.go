@@ -133,6 +133,34 @@ var ServicePerResourceType = map[string]string{
 	"record":           "dns",
 }
 
+var APIPerResourceType = map[string]string{
+	"instance":         "ec2",
+	"subnet":           "ec2",
+	"vpc":              "ec2",
+	"keypair":          "ec2",
+	"securitygroup":    "ec2",
+	"volume":           "ec2",
+	"internetgateway":  "ec2",
+	"routetable":       "ec2",
+	"availabilityzone": "ec2",
+	"loadbalancer":     "elbv2",
+	"targetgroup":      "elbv2",
+	"listener":         "elbv2",
+	"database":         "rds",
+	"dbsubnetgroup":    "rds",
+	"user":             "iam",
+	"group":            "iam",
+	"role":             "iam",
+	"policy":           "iam",
+	"bucket":           "s3",
+	"s3object":         "s3",
+	"subscription":     "sns",
+	"topic":            "sns",
+	"queue":            "sqs",
+	"zone":             "route53",
+	"record":           "route53",
+}
+
 type Infra struct {
 	once   oncer
 	region string
