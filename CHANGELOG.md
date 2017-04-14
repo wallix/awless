@@ -2,12 +2,10 @@
 
 ### Features
 
-- lambda: list Lambda functions
-- lambda: create/delete Lambda functions
+- lambda: create/delete and list Lambda functions
 - access: list IAM access keys
 
-- Friendlier display for storage size (s3objects, volumes, lambda functions)
-- Display the entity AWS API in command help
+- Friendlier (using units: KB, MB, GB) display for storage size (s3objects, volumes, lambda functions)
 
 ## v0.0.22 [2017-04-13]
 
