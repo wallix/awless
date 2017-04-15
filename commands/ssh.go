@@ -46,12 +46,14 @@ import (
 var keyPathFlag string
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
+var privateIpFlag bool
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path toward the identity (key file) to use to connect through SSH")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
+	sshCmd.Flags().BoolVarP(&privateIpFlag, "private", "p", false, "Use private ip to connect to host")
 }
 
 var sshCmd = &cobra.Command{
@@ -153,10 +155,28 @@ var sshCmd = &cobra.Command{
 	},
 }
 
-func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*console.Credentials, error) {
-	ip, ok := inst.Properties[properties.PublicIP]
+func getIp(inst *graph.Resource) (string, error){
+	var ipKeyType string
+
+	if privateIpFlag {
+		ipKeyType = properties.PrivateIP
+	} else {
+		ipKeyType = properties.PublicIP
+	}
+
+	ip, ok := inst.Properties[ipKeyType]
+
 	if !ok {
-		return nil, fmt.Errorf("no public IP address for instance %s", inst.Id())
+		return "", fmt.Errorf("no IP address for instance %s", inst.Id())
+	}
+
+	return fmt.Sprint(ip), nil
+}
+
+func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*console.Credentials, error) {
+	ip, err := getIp(inst)
+	if err != nil {
+		return nil, err
 	}
 
 	var keyPath string
