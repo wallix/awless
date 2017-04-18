@@ -53,7 +53,7 @@ func init() {
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path toward the identity (key file) to use to connect through SSH")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
-	sshCmd.Flags().BoolVarP(&privateIpFlag, "private", "p", false, "Use private ip to connect to host")
+	sshCmd.Flags().BoolVar(&privateIpFlag, "private", false, "Use private ip to connect to host")
 }
 
 var sshCmd = &cobra.Command{
@@ -155,7 +155,7 @@ var sshCmd = &cobra.Command{
 	},
 }
 
-func getIp(inst *graph.Resource) (string, error){
+func getIp(inst *graph.Resource) (string, error) {
 	var ipKeyType string
 
 	if privateIpFlag {
