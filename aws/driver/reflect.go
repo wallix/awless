@@ -53,6 +53,16 @@ var (
 	sliceStructRegex  = regexp.MustCompile(`(.+)\[0\](.*)`)
 )
 
+type setter struct {
+	val       interface{}
+	fieldPath string
+	fieldType int
+}
+
+func (s setter) set(i interface{}) error {
+	return setFieldWithType(s.val, i, s.fieldPath, s.fieldType)
+}
+
 func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
