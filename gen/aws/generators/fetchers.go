@@ -93,13 +93,11 @@ import (
 
 const accessDenied = "Access Denied"
 
-func init() {
-  {{- range $index, $service := . }}
-  ServiceNames = append(ServiceNames, "{{ $service.Name }}")
+var ServiceNames = []string{
+	{{- range $index, $service := . }}
+  "{{ $service.Name }}",
   {{- end }}
 }
-
-var ServiceNames = []string{}
 
 var ResourceTypes = []string {
 {{- range $index, $service := . }}
@@ -181,11 +179,12 @@ func (s *{{ Title $service.Name }}) Drivers() []driver.Driver {
 	}
 }
 
-func (s *{{ Title $service.Name }}) ResourceTypes() (all []string) {
-  {{- range $index, $fetcher := $service.Fetchers }}
-  all = append(all, "{{ $fetcher.ResourceType }}")
-  {{- end }}
-  return
+func (s *{{ Title $service.Name }}) ResourceTypes() []string {
+	return []string{
+	{{- range $index, $fetcher := $service.Fetchers }}
+		"{{ $fetcher.ResourceType }}",
+	{{- end }}
+	}
 }
 
 func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
@@ -302,29 +301,18 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 		func(out *{{ $fetcher.Output }}, lastPage bool) (shouldContinue bool) {
 			{{- if ne $fetcher.OutputsContainers "" }}
 			for _, all := range out.{{ $fetcher.OutputsContainers }} {
-	      for _, output := range all.{{ $fetcher.OutputsExtractor }} {
+			{{- end }}
+				for _, output := range {{ if ne $fetcher.OutputsContainers "" }}all{{ else }}out{{ end }}.{{ $fetcher.OutputsExtractor }} {
 					cloudResources = append(cloudResources, output)
 					var res *graph.Resource
-					res, badResErr = newResource(output)
-					if badResErr != nil {
+					if res, badResErr = newResource(output); badResErr != nil {
 						return false
 					}
-	        if badResErr = g.AddResource(res); badResErr != nil {
+					if badResErr = g.AddResource(res); badResErr != nil {
 						return false
 					}
-	      }
-	    }
-			{{- else }}
-			for _, output := range out.{{ $fetcher.OutputsExtractor }} {
-				cloudResources = append(cloudResources, output)
-				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
-					return false
 				}
-				if badResErr = g.AddResource(res); badResErr != nil {
-					return false
-				}
+			{{- if ne $fetcher.OutputsContainers "" }}
 			}
 			{{- end }}
 			return out.{{ $fetcher.NextPageMarker }} != nil
@@ -335,25 +323,13 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 
 	return g, cloudResources, badResErr
 	{{- else }}
+	
   out, err := s.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }})
   if err != nil {
     return nil, cloudResources, err
   }
-  	{{ if ne $fetcher.OutputsContainers "" }}
-    for _, all := range out.{{ $fetcher.OutputsContainers }} {
-      for _, output := range all.{{ $fetcher.OutputsExtractor }} {
-				cloudResources = append(cloudResources, output)
-        res, err := newResource(output)
-        if err != nil {
-          return g, cloudResources, err
-        }
-        if err = g.AddResource(res); err != nil {
-					return g, cloudResources, err
-				}
-      }
-    }
-  	{{ else }}
-    for _, output := range out.{{ $fetcher.OutputsExtractor }} {
+
+	for _, output := range out.{{ $fetcher.OutputsExtractor }} {
 			cloudResources = append(cloudResources, output)
       res, err := newResource(output)
       if err != nil {
@@ -363,7 +339,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 				return g, cloudResources, err
 			}
     }
-  	{{ end }}
+		
   return g, cloudResources, nil
 	{{ end }}
 }

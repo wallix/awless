@@ -56,17 +56,15 @@ import (
 
 const accessDenied = "Access Denied"
 
-func init() {
-	ServiceNames = append(ServiceNames, "infra")
-	ServiceNames = append(ServiceNames, "access")
-	ServiceNames = append(ServiceNames, "storage")
-	ServiceNames = append(ServiceNames, "notification")
-	ServiceNames = append(ServiceNames, "queue")
-	ServiceNames = append(ServiceNames, "dns")
-	ServiceNames = append(ServiceNames, "lambda")
+var ServiceNames = []string{
+	"infra",
+	"access",
+	"storage",
+	"notification",
+	"queue",
+	"dns",
+	"lambda",
 }
-
-var ServiceNames = []string{}
 
 var ResourceTypes = []string{
 	"instance",
@@ -205,22 +203,23 @@ func (s *Infra) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Infra) ResourceTypes() (all []string) {
-	all = append(all, "instance")
-	all = append(all, "subnet")
-	all = append(all, "vpc")
-	all = append(all, "keypair")
-	all = append(all, "securitygroup")
-	all = append(all, "volume")
-	all = append(all, "internetgateway")
-	all = append(all, "routetable")
-	all = append(all, "availabilityzone")
-	all = append(all, "loadbalancer")
-	all = append(all, "targetgroup")
-	all = append(all, "listener")
-	all = append(all, "database")
-	all = append(all, "dbsubnetgroup")
-	return
+func (s *Infra) ResourceTypes() []string {
+	return []string{
+		"instance",
+		"subnet",
+		"vpc",
+		"keypair",
+		"securitygroup",
+		"volume",
+		"internetgateway",
+		"routetable",
+		"availabilityzone",
+		"loadbalancer",
+		"targetgroup",
+		"listener",
+		"database",
+		"dbsubnetgroup",
+	}
 }
 
 func (s *Infra) FetchResources() (*graph.Graph, error) {
@@ -782,8 +781,7 @@ func (s *Infra) fetch_all_instance_graph() (*graph.Graph, []*ec2.Instance, error
 				for _, output := range all.Instances {
 					cloudResources = append(cloudResources, output)
 					var res *graph.Resource
-					res, badResErr = newResource(output)
-					if badResErr != nil {
+					if res, badResErr = newResource(output); badResErr != nil {
 						return false
 					}
 					if badResErr = g.AddResource(res); badResErr != nil {
@@ -803,6 +801,7 @@ func (s *Infra) fetch_all_instance_graph() (*graph.Graph, []*ec2.Instance, error
 func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, []*ec2.Subnet, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.Subnet
+
 	out, err := s.DescribeSubnets(&ec2.DescribeSubnetsInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -826,6 +825,7 @@ func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, []*ec2.Subnet, error) {
 func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, []*ec2.Vpc, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.Vpc
+
 	out, err := s.DescribeVpcs(&ec2.DescribeVpcsInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -849,6 +849,7 @@ func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, []*ec2.Vpc, error) {
 func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, []*ec2.KeyPairInfo, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.KeyPairInfo
+
 	out, err := s.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -872,6 +873,7 @@ func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, []*ec2.KeyPairInfo, err
 func (s *Infra) fetch_all_securitygroup_graph() (*graph.Graph, []*ec2.SecurityGroup, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.SecurityGroup
+
 	out, err := s.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -901,8 +903,7 @@ func (s *Infra) fetch_all_volume_graph() (*graph.Graph, []*ec2.Volume, error) {
 			for _, output := range out.Volumes {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -921,6 +922,7 @@ func (s *Infra) fetch_all_volume_graph() (*graph.Graph, []*ec2.Volume, error) {
 func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.InternetGateway, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.InternetGateway
+
 	out, err := s.DescribeInternetGateways(&ec2.DescribeInternetGatewaysInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -944,6 +946,7 @@ func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.Internet
 func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.RouteTable
+
 	out, err := s.DescribeRouteTables(&ec2.DescribeRouteTablesInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -967,6 +970,7 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, e
 func (s *Infra) fetch_all_availabilityzone_graph() (*graph.Graph, []*ec2.AvailabilityZone, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.AvailabilityZone
+
 	out, err := s.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -996,8 +1000,7 @@ func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalan
 			for _, output := range out.LoadBalancers {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1016,6 +1019,7 @@ func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalan
 func (s *Infra) fetch_all_targetgroup_graph() (*graph.Graph, []*elbv2.TargetGroup, error) {
 	g := graph.NewGraph()
 	var cloudResources []*elbv2.TargetGroup
+
 	out, err := s.DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{})
 	if err != nil {
 		return nil, cloudResources, err
@@ -1045,8 +1049,7 @@ func (s *Infra) fetch_all_database_graph() (*graph.Graph, []*rds.DBInstance, err
 			for _, output := range out.DBInstances {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1071,8 +1074,7 @@ func (s *Infra) fetch_all_dbsubnetgroup_graph() (*graph.Graph, []*rds.DBSubnetGr
 			for _, output := range out.DBSubnetGroups {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1123,13 +1125,14 @@ func (s *Access) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Access) ResourceTypes() (all []string) {
-	all = append(all, "user")
-	all = append(all, "group")
-	all = append(all, "role")
-	all = append(all, "policy")
-	all = append(all, "accesskey")
-	return
+func (s *Access) ResourceTypes() []string {
+	return []string{
+		"user",
+		"group",
+		"role",
+		"policy",
+		"accesskey",
+	}
 }
 
 func (s *Access) FetchResources() (*graph.Graph, error) {
@@ -1375,8 +1378,7 @@ func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.GroupDetail, erro
 			for _, output := range out.GroupDetailList {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1401,8 +1403,7 @@ func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error)
 			for _, output := range out.RoleDetailList {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1427,8 +1428,7 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 			for _, output := range out.Policies {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1453,8 +1453,7 @@ func (s *Access) fetch_all_accesskey_graph() (*graph.Graph, []*iam.AccessKeyMeta
 			for _, output := range out.AccessKeyMetadata {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1502,10 +1501,11 @@ func (s *Storage) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Storage) ResourceTypes() (all []string) {
-	all = append(all, "bucket")
-	all = append(all, "s3object")
-	return
+func (s *Storage) ResourceTypes() []string {
+	return []string{
+		"bucket",
+		"s3object",
+	}
 }
 
 func (s *Storage) FetchResources() (*graph.Graph, error) {
@@ -1669,10 +1669,11 @@ func (s *Notification) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Notification) ResourceTypes() (all []string) {
-	all = append(all, "subscription")
-	all = append(all, "topic")
-	return
+func (s *Notification) ResourceTypes() []string {
+	return []string{
+		"subscription",
+		"topic",
+	}
 }
 
 func (s *Notification) FetchResources() (*graph.Graph, error) {
@@ -1813,8 +1814,7 @@ func (s *Notification) fetch_all_subscription_graph() (*graph.Graph, []*sns.Subs
 			for _, output := range out.Subscriptions {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1839,8 +1839,7 @@ func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, erro
 			for _, output := range out.Topics {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -1888,9 +1887,10 @@ func (s *Queue) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Queue) ResourceTypes() (all []string) {
-	all = append(all, "queue")
-	return
+func (s *Queue) ResourceTypes() []string {
+	return []string{
+		"queue",
+	}
 }
 
 func (s *Queue) FetchResources() (*graph.Graph, error) {
@@ -2019,10 +2019,11 @@ func (s *Dns) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Dns) ResourceTypes() (all []string) {
-	all = append(all, "zone")
-	all = append(all, "record")
-	return
+func (s *Dns) ResourceTypes() []string {
+	return []string{
+		"zone",
+		"record",
+	}
 }
 
 func (s *Dns) FetchResources() (*graph.Graph, error) {
@@ -2163,8 +2164,7 @@ func (s *Dns) fetch_all_zone_graph() (*graph.Graph, []*route53.HostedZone, error
 			for _, output := range out.HostedZones {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
@@ -2212,9 +2212,10 @@ func (s *Lambda) Drivers() []driver.Driver {
 	}
 }
 
-func (s *Lambda) ResourceTypes() (all []string) {
-	all = append(all, "function")
-	return
+func (s *Lambda) ResourceTypes() []string {
+	return []string{
+		"function",
+	}
 }
 
 func (s *Lambda) FetchResources() (*graph.Graph, error) {
@@ -2320,8 +2321,7 @@ func (s *Lambda) fetch_all_function_graph() (*graph.Graph, []*lambda.FunctionCon
 			for _, output := range out.Functions {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
-				res, badResErr = newResource(output)
-				if badResErr != nil {
+				if res, badResErr = newResource(output); badResErr != nil {
 					return false
 				}
 				if badResErr = g.AddResource(res); badResErr != nil {
