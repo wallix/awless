@@ -465,6 +465,30 @@ func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Group, nil
 
+	case "createrole":
+		if d.dryRun {
+			return d.Create_Role_DryRun, nil
+		}
+		return d.Create_Role, nil
+
+	case "deleterole":
+		if d.dryRun {
+			return d.Delete_Role_DryRun, nil
+		}
+		return d.Delete_Role, nil
+
+	case "createpolicy":
+		if d.dryRun {
+			return d.Create_Policy_DryRun, nil
+		}
+		return d.Create_Policy, nil
+
+	case "deletepolicy":
+		if d.dryRun {
+			return d.Delete_Policy_DryRun, nil
+		}
+		return d.Delete_Policy, nil
+
 	case "attachpolicy":
 		if d.dryRun {
 			return d.Attach_Policy_DryRun, nil

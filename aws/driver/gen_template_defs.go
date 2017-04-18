@@ -78,6 +78,10 @@ var APIPerTemplateDefName = map[string]string{
 	"deleteaccesskey":       "iam",
 	"creategroup":           "iam",
 	"deletegroup":           "iam",
+	"createrole":            "iam",
+	"deleterole":            "iam",
+	"createpolicy":          "iam",
+	"deletepolicy":          "iam",
 	"attachpolicy":          "iam",
 	"detachpolicy":          "iam",
 	"createbucket":          "s3",
@@ -491,19 +495,47 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
+	"createrole": {
+		Action:         "create",
+		Entity:         "role",
+		Api:            "iam",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{"principal-account", "principal-service", "principal-user"},
+	},
+	"deleterole": {
+		Action:         "delete",
+		Entity:         "role",
+		Api:            "iam",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{},
+	},
+	"createpolicy": {
+		Action:         "create",
+		Entity:         "policy",
+		Api:            "iam",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{"action", "description", "effect", "resource"},
+	},
+	"deletepolicy": {
+		Action:         "delete",
+		Entity:         "policy",
+		Api:            "iam",
+		RequiredParams: []string{"arn"},
+		ExtraParams:    []string{},
+	},
 	"attachpolicy": {
 		Action:         "attach",
 		Entity:         "policy",
 		Api:            "iam",
 		RequiredParams: []string{"arn"},
-		ExtraParams:    []string{"group", "user"},
+		ExtraParams:    []string{"group", "role", "user"},
 	},
 	"detachpolicy": {
 		Action:         "detach",
 		Entity:         "policy",
 		Api:            "iam",
 		RequiredParams: []string{"arn"},
-		ExtraParams:    []string{"group", "user"},
+		ExtraParams:    []string{"group", "role", "user"},
 	},
 	"createbucket": {
 		Action:         "create",
@@ -677,6 +709,10 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "accesskey")
 	supported["create"] = append(supported["create"], "group")
 	supported["delete"] = append(supported["delete"], "group")
+	supported["create"] = append(supported["create"], "role")
+	supported["delete"] = append(supported["delete"], "role")
+	supported["create"] = append(supported["create"], "policy")
+	supported["delete"] = append(supported["delete"], "policy")
 	supported["attach"] = append(supported["attach"], "policy")
 	supported["detach"] = append(supported["detach"], "policy")
 	supported["create"] = append(supported["create"], "bucket")

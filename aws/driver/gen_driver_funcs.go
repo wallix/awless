@@ -2692,6 +2692,72 @@ func (d *IamDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
+func (d *IamDriver) Delete_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete role: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete role ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Role(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteRoleInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "RoleName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeleteRoleOutput
+	output, err = d.DeleteRole(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete role: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeleteRole call took %s", time.Since(start))
+	d.logger.Info("delete role done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("delete policy: missing required params 'arn'")
+	}
+
+	d.logger.Verbose("params dry run: delete policy ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Policy(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeletePolicyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["arn"], input, "PolicyArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeletePolicyOutput
+	output, err = d.DeletePolicy(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete policy: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeletePolicy call took %s", time.Since(start))
+	d.logger.Info("delete policy done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *S3Driver) Create_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create bucket: missing required params 'name'")

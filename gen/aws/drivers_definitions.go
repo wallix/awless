@@ -590,7 +590,44 @@ var DriversDefs = []driversDef{
 				},
 			},
 
+			// ROLE
+			{
+				Action: "create", Entity: cloud.Role, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{AwsField: "RoleName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "principal-account"},
+					{TemplateName: "principal-user"},
+					{TemplateName: "principal-service"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Role, DryRunUnsupported: true, Input: "DeleteRoleInput", Output: "DeleteRoleOutput", ApiMethod: "DeleteRole",
+				RequiredParams: []param{
+					{AwsField: "RoleName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+
 			// POLICY
+			{
+				Action: "create", Entity: cloud.Policy, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{AwsField: "PolicyName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+					{TemplateName: "effect"},
+					{TemplateName: "action"},
+					{TemplateName: "resource"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Policy, DryRunUnsupported: true, Input: "DeletePolicyInput", Output: "DeletePolicyOutput", ApiMethod: "DeletePolicy",
+				RequiredParams: []param{
+					{AwsField: "PolicyArn", TemplateName: "arn", AwsType: "awsstr"},
+				},
+			},
 			{
 				Action: "attach", Entity: cloud.Policy, ManualFuncDefinition: true,
 				RequiredParams: []param{
@@ -599,6 +636,7 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{TemplateName: "user"},
 					{TemplateName: "group"},
+					{TemplateName: "role"},
 				},
 			},
 			{
@@ -609,6 +647,7 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{TemplateName: "user"},
 					{TemplateName: "group"},
+					{TemplateName: "role"},
 				},
 			},
 		},

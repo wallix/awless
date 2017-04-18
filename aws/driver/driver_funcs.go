@@ -17,6 +17,7 @@ limitations under the License.
 package driver
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -162,6 +163,132 @@ func removeString(arr []string, s string) (out []string) {
 	return
 }
 
+func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+	_, effect := params["effect"]
+	_, action := params["action"]
+	_, resource := params["resource"]
+
+	if !effect && !action && !resource {
+		return nil, errors.New("create role: missing policy effect, action and resource values")
+	}
+
+	d.logger.Verbose("params dry run: create policy ok")
+	return nil, nil
+}
+
+func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, error) {
+	effect, _ := params["effect"].(string)
+	action, _ := params["action"].(string)
+	resource, _ := params["resource"].(string)
+
+	policy := &policyBody{
+		Version:   "2012-10-17",
+		Statement: []policyStatement{{Effect: effect, Action: action, Resource: resource}},
+	}
+
+	b, err := json.MarshalIndent(policy, "", " ")
+	if err != nil {
+		return nil, errors.New("cannot marshal policy document")
+	}
+
+	d.logger.ExtraVerbosef("policy document json:\n%s\n", string(b))
+
+	call := &driverCall{
+		d:      d,
+		desc:   "create policy",
+		fn:     d.CreatePolicy,
+		logger: d.logger,
+		setters: []setter{
+			{val: params["name"], fieldPath: "PolicyName", fieldType: awsstr},
+			{val: string(b), fieldPath: "PolicyDocument", fieldType: awsstr},
+		},
+	}
+
+	output, err := call.execute(&iam.CreatePolicyInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	return aws.StringValue(output.(*iam.CreatePolicyOutput).Policy.Arn), nil
+}
+
+func (d *IamDriver) Create_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+	_, pAccount := params["principal-account"]
+	_, pService := params["principal-service"]
+	_, pUser := params["principal-user"]
+
+	if !pAccount && !pService && !pUser {
+		return nil, errors.New("create role: missing principal (either a user, service or account)")
+	}
+
+	d.logger.Verbose("params dry run: create role ok")
+	return nil, nil
+}
+
+type principal struct {
+	AWS     interface{} `json:",omitempty"`
+	Service interface{} `json:",omitempty"`
+}
+
+type policyStatement struct {
+	Effect    string     `json:",omitempty"`
+	Action    string     `json:",omitempty"`
+	Resource  string     `json:",omitempty"`
+	Principal *principal `json:",omitempty"`
+}
+
+type policyBody struct {
+	Version   string
+	Statement []policyStatement
+}
+
+func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, error) {
+	pAccount, _ := params["principal-account"]
+	pService, _ := params["principal-service"]
+	pUser, _ := params["principal-user"]
+
+	var awsPrinc string
+	if pAccount != nil {
+		awsPrinc = fmt.Sprint(pAccount)
+	} else if pUser != nil {
+		awsPrinc = fmt.Sprint(pUser)
+	}
+
+	princ := &principal{
+		AWS: awsPrinc, Service: pService,
+	}
+
+	trust := &policyBody{
+		Version:   "2012-10-17",
+		Statement: []policyStatement{{Effect: "Allow", Action: "sts:AssumeRole", Principal: princ}},
+	}
+
+	b, err := json.MarshalIndent(trust, "", " ")
+	if err != nil {
+		return nil, errors.New("cannot marshal role trust policy document")
+	}
+
+	d.logger.ExtraVerbosef("role trust policy document json:\n%s\n", string(b))
+
+	call := &driverCall{
+		d:      d,
+		desc:   "create role",
+		fn:     d.CreateRole,
+		logger: d.logger,
+		setters: []setter{
+			{val: params["name"], fieldPath: "RoleName", fieldType: awsstr},
+			{val: string(b), fieldPath: "AssumeRolePolicyDocument", fieldType: awsstr},
+		},
+	}
+
+	output, err := call.execute(&iam.CreateRoleInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	return aws.StringValue(output.(*iam.CreateRoleOutput).Role.Arn), nil
+}
+
 func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("attach policy: missing required params 'arn'")
@@ -169,9 +296,10 @@ func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interfa
 
 	_, hasUser := params["user"]
 	_, hasGroup := params["group"]
+	_, hasRole := params["role"]
 
-	if !hasUser && !hasGroup {
-		return nil, errors.New("attach policy: missing one of 'user, group' param")
+	if !hasUser && !hasGroup && !hasRole {
+		return nil, errors.New("attach policy: missing one of 'user, group, role' param")
 	}
 
 	d.logger.Verbose("params dry run: attach policy ok")
@@ -181,6 +309,7 @@ func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interfa
 func (d *IamDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
 	user, hasUser := params["user"]
 	group, hasGroup := params["group"]
+	role, hasRole := params["role"]
 
 	call := &driverCall{
 		d:      d,
@@ -201,9 +330,14 @@ func (d *IamDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 		call.fn = d.AttachGroupPolicy
 		call.setters = append(call.setters, setter{val: group, fieldPath: "GroupName", fieldType: awsstr})
 		return call.execute(&iam.AttachGroupPolicyInput{})
+	case hasRole:
+		call.desc = "attach policy to role"
+		call.fn = d.AttachRolePolicy
+		call.setters = append(call.setters, setter{val: role, fieldPath: "RoleName", fieldType: awsstr})
+		return call.execute(&iam.AttachRolePolicyInput{})
 	}
 
-	return nil, errors.New("missing one of 'user, group' param")
+	return nil, errors.New("missing one of 'user, group, role' param")
 }
 
 func (d *IamDriver) Detach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
@@ -213,9 +347,10 @@ func (d *IamDriver) Detach_Policy_DryRun(params map[string]interface{}) (interfa
 
 	_, hasUser := params["user"]
 	_, hasGroup := params["group"]
+	_, hasRole := params["role"]
 
-	if !hasUser && !hasGroup {
-		return nil, errors.New("detach policy: missing one of 'user, group' param")
+	if !hasUser && !hasGroup && !hasRole {
+		return nil, errors.New("detach policy: missing one of 'user, group, role' param")
 	}
 
 	d.logger.Verbose("params dry run: detach policy ok")
@@ -225,6 +360,8 @@ func (d *IamDriver) Detach_Policy_DryRun(params map[string]interface{}) (interfa
 func (d *IamDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
 	user, hasUser := params["user"]
 	group, hasGroup := params["group"]
+	role, hasRole := params["role"]
+
 	call := &driverCall{
 		d:      d,
 		logger: d.logger,
@@ -244,9 +381,14 @@ func (d *IamDriver) Detach_Policy(params map[string]interface{}) (interface{}, e
 		call.fn = d.DetachGroupPolicy
 		call.setters = append(call.setters, setter{val: group, fieldPath: "GroupName", fieldType: awsstr})
 		return call.execute(&iam.DetachGroupPolicyInput{})
+	case hasRole:
+		call.desc = "detach policy from role"
+		call.fn = d.DetachRolePolicy
+		call.setters = append(call.setters, setter{val: role, fieldPath: "RoleName", fieldType: awsstr})
+		return call.execute(&iam.DetachRolePolicyInput{})
 	}
 
-	return nil, errors.New("missing one of 'user, group' param")
+	return nil, errors.New("missing one of 'user, group, role' param")
 }
 
 func (d *IamDriver) Create_Accesskey_DryRun(params map[string]interface{}) (interface{}, error) {

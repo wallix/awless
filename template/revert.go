@@ -50,6 +50,10 @@ func (te *Template) Revert() (*Template, error) {
 				case "database":
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 					params = append(params, "skipsnapshot=true")
+				case "policy": 
+					params = append(params, fmt.Sprintf("arn=%s", cmd.CmdResult))
+				case "role":
+					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"]))
 				default:
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 				}
