@@ -2,6 +2,7 @@
 
 ### Features
 
+- [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
 - lambda: create/delete and list Lambda functions
 - access: list IAM access keys
 
