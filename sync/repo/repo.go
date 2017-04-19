@@ -68,9 +68,10 @@ func Dir() string {
 }
 
 func New() (Repo, error) {
+	dir := Dir()
+	os.MkdirAll(dir, 0700)
+
 	if IsGitInstalled() {
-		dir := Dir()
-		os.MkdirAll(dir, 0700)
 		return newGitRepo(dir)
 	} else {
 		return &noRevisionRepo{}, nil
