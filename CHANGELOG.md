@@ -4,12 +4,14 @@
 
 - Create and attach role to a user, instance, etc ...
 - [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
+- `awless ssh` now checks the remote host public key before connecting. Check can be disabled with the (insecure) `--disable-strict-host-keychecking` flag.
 - Create/delete and list Lambda functions
 - List IAM access keys
 - Friendlier (using units: KB, MB, GB) display for storage size (s3objects, volumes, lambda functions)
 
 ### Bugfixes
 
+- Update SSH library to fix [CVE-2017-3204](http://www.cve.mitre.org/cgi-bin/cvename.cgi?name=2017-3204).
 - Take the file name rather than full path as default name when uploading a s3object
 - Correctly create repo on first install on machine with git not installed
 

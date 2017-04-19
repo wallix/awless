@@ -57,9 +57,9 @@ eval "$BIN check instance id=$ALIAS state=running timeout=20 -f"
 echo "Instance is running. Waiting 20s for system boot"
 sleep 20 
 
-SSH_CONNECT=$($BIN ssh $INSTANCE_NAME --print-cli)
+SSH_CONNECT=$($BIN ssh $INSTANCE_NAME --print-cli --disable-strict-host-keychecking)
 echo "Connecting to instance with $SSH_CONNECT"
-RESULT=$($SSH_CONNECT -o StrictHostKeychecking=no 'cat /tmp/awless-ssh-userdata-success.txt')
+RESULT=$($SSH_CONNECT 'cat /tmp/awless-ssh-userdata-success.txt')
 
 if [ "$RESULT" != "success" ]; then
 	echo "FAIL to read correct token in remote file after ssh to instance"

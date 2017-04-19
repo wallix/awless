@@ -47,6 +47,7 @@ var keyPathFlag string
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
 var privateIpFlag bool
+var disableStrictHostKeyCheckingFlag bool
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
@@ -54,6 +55,7 @@ func init() {
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIpFlag, "private", false, "Use private ip to connect to host")
+	sshCmd.Flags().BoolVar(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
 }
 
 var sshCmd = &cobra.Command{
@@ -128,7 +130,7 @@ var sshCmd = &cobra.Command{
 		var client *ssh.Client
 		if user != "" {
 			cred.User = user
-			client, err = console.NewSSHClient(cred)
+			client, err = console.NewSSHClient(cred, disableStrictHostKeyCheckingFlag)
 			if err != nil {
 				checkInstanceAccessible(resourcesGraph, inst, ip)
 				exitOn(err)
@@ -138,7 +140,7 @@ var sshCmd = &cobra.Command{
 			for _, user := range awsconfig.DefaultAMIUsers {
 				logger.Verbosef("trying user '%s'", user)
 				cred.User = user
-				client, err = console.NewSSHClient(cred)
+				client, err = console.NewSSHClient(cred, disableStrictHostKeyCheckingFlag)
 				if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
 					continue
 				}
@@ -209,6 +211,9 @@ Host {{ .Name }}
 
 	sshPath, sshErr := exec.LookPath("ssh")
 	args := []string{"ssh", "-i", cred.KeyPath, fmt.Sprintf("%s@%s", cred.User, cred.IP)}
+	if disableStrictHostKeyCheckingFlag {
+		args = append(args, "-o", "StrictHostKeychecking=no")
+	}
 	if sshErr == nil {
 		if printSSHCLIFlag {
 			fmt.Println(sshPath + " " + strings.Join(args[1:], " "))

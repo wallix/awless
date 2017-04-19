@@ -17,15 +17,22 @@ limitations under the License.
 package console
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
+
+const awlessKnownHostsFile = "known_hosts"
 
 type Credentials struct {
 	IP      string
@@ -33,7 +40,7 @@ type Credentials struct {
 	KeyPath string
 }
 
-func NewSSHClient(cred *Credentials) (*ssh.Client, error) {
+func NewSSHClient(cred *Credentials, disableStrictHostKeyChecking bool) (*ssh.Client, error) {
 	privateKey, err := ioutil.ReadFile(cred.KeyPath)
 	if os.IsNotExist(err) {
 		privateKey, err = ioutil.ReadFile(cred.KeyPath + ".pem")
@@ -56,7 +63,11 @@ func NewSSHClient(cred *Credentials) (*ssh.Client, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
-		Timeout: 2 * time.Second,
+		Timeout:         2 * time.Second,
+		HostKeyCallback: checkHostKey,
+	}
+	if disableStrictHostKeyChecking {
+		config.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	}
 
 	return ssh.Dial("tcp", cred.IP+":22", config)
@@ -120,6 +131,80 @@ func InteractiveTerminal(client *ssh.Client) error {
 	go propagateSignals(signalc, session, stdin)
 	signal.Notify(signalc, os.Interrupt, os.Kill)
 	return session.Wait()
+}
+
+var trustKeyFunc func(hostname string, remote net.Addr, key ssh.PublicKey, keyFileName string) bool = func(hostname string, remote net.Addr, key ssh.PublicKey, keyFileName string) bool {
+	fmt.Printf("awless could not validate the authenticity of '%s' (unknown host)\n", hostname)
+	fmt.Printf("%s public key fingerprint is %s.\n", key.Type(), ssh.FingerprintSHA256(key))
+	fmt.Printf("Do you want to continue connecting and persist this key to '%s' (yes/no)? ", keyFileName)
+	var yesorno string
+	_, err := fmt.Scanln(&yesorno)
+	if err != nil {
+		return false
+	}
+	return strings.ToLower(yesorno) == "yes"
+}
+
+func checkHostKey(hostname string, remote net.Addr, key ssh.PublicKey) error {
+	var knownHostsFiles []string
+	var fileToAddKnownKey string
+
+	opensshFile := filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts")
+	if _, err := os.Stat(opensshFile); err == nil {
+		knownHostsFiles = append(knownHostsFiles, opensshFile)
+		fileToAddKnownKey = opensshFile
+	}
+
+	awlessFile := filepath.Join(os.Getenv("__AWLESS_HOME"), "known_hosts")
+	if _, err := os.Stat(awlessFile); err == nil {
+		knownHostsFiles = append(knownHostsFiles, awlessFile)
+	}
+	if fileToAddKnownKey == "" {
+		fileToAddKnownKey = awlessFile
+	}
+
+	checkKnownHostFunc, err := knownhosts.New(knownHostsFiles...)
+	if err != nil {
+		return err
+	}
+	knownhostsErr := checkKnownHostFunc(hostname, remote, key)
+	keyError, ok := knownhostsErr.(*knownhosts.KeyError)
+	if !ok {
+		return knownhostsErr
+	}
+	if len(keyError.Want) == 0 {
+		if trustKeyFunc(hostname, remote, key, fileToAddKnownKey) {
+			f, err := os.OpenFile(fileToAddKnownKey, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			_, err = f.WriteString(knownhosts.Line([]string{hostname}, key))
+			return err
+		} else {
+			return errors.New("Host public key verification failed.")
+		}
+	}
+
+	var knownKeyInfos string
+	var knownKeyFiles []string
+	for _, knownKey := range keyError.Want {
+		knownKeyInfos += fmt.Sprintf("\n-> %s (%s key in %s:%d)", ssh.FingerprintSHA256(knownKey.Key), knownKey.Key.Type(), knownKey.Filename, knownKey.Line)
+		knownKeyFiles = append(knownKeyFiles, fmt.Sprintf("'%s:%d'", knownKey.Filename, knownKey.Line))
+	}
+
+	return fmt.Errorf(`
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+AWLESS DETECTED THAT THE REMOTE HOST PUBLIC KEY HAS CHANGED
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+Host key for '%s' has changed and you did not disable strict host key checking.
+Someone may be trying to intercept your connection (man-in-the-middle attack). Otherwise, the host key may have been changed.
+
+The fingerprint for the %s key sent by the remote host is %s.
+You persisted:%s
+
+To get rid of this message, update %s`, hostname, key.Type(), ssh.FingerprintSHA256(key), knownKeyInfos, strings.Join(knownKeyFiles, ","))
 }
 
 func propagateSignals(signalc chan os.Signal, session *ssh.Session, stdin io.WriteCloser) {
