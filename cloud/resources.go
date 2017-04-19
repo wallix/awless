@@ -12,6 +12,7 @@ const (
 	Keypair          string = "keypair"
 	Volume           string = "volume"
 	Instance         string = "instance"
+	InstanceProfile  string = "instanceprofile"
 	InternetGateway  string = "internetgateway"
 	RouteTable       string = "routetable"
 	//loadbalancer

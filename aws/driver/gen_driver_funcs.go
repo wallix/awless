@@ -393,6 +393,12 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 			return nil, err
 		}
 	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "IamInstanceProfile.Name", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	_, err = d.RunInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -466,6 +472,12 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 	}
 	if _, ok := params["lock"]; ok {
 		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "IamInstanceProfile.Name", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -2692,35 +2704,150 @@ func (d *IamDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Role_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["name"]; !ok {
-		return nil, errors.New("delete role: missing required params 'name'")
+func (d *IamDriver) Attach_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["instanceprofile"]; !ok {
+		return nil, errors.New("attach role: missing required params 'instanceprofile'")
 	}
 
-	d.logger.Verbose("params dry run: delete role ok")
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("attach role: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: attach role ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Role(params map[string]interface{}) (interface{}, error) {
-	input := &iam.DeleteRoleInput{}
+func (d *IamDriver) Attach_Role(params map[string]interface{}) (interface{}, error) {
+	input := &iam.AddRoleToInstanceProfileInput{}
 	var err error
 
 	// Required params
+	err = setFieldWithType(params["instanceprofile"], input, "InstanceProfileName", awsstr)
+	if err != nil {
+		return nil, err
+	}
 	err = setFieldWithType(params["name"], input, "RoleName", awsstr)
 	if err != nil {
 		return nil, err
 	}
 
 	start := time.Now()
-	var output *iam.DeleteRoleOutput
-	output, err = d.DeleteRole(input)
+	var output *iam.AddRoleToInstanceProfileOutput
+	output, err = d.AddRoleToInstanceProfile(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete role: %s", err)
+		return nil, fmt.Errorf("attach role: %s", err)
 	}
-	d.logger.ExtraVerbosef("iam.DeleteRole call took %s", time.Since(start))
-	d.logger.Info("delete role done")
+	d.logger.ExtraVerbosef("iam.AddRoleToInstanceProfile call took %s", time.Since(start))
+	d.logger.Info("attach role done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Detach_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["instanceprofile"]; !ok {
+		return nil, errors.New("detach role: missing required params 'instanceprofile'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("detach role: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: detach role ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Detach_Role(params map[string]interface{}) (interface{}, error) {
+	input := &iam.RemoveRoleFromInstanceProfileInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["instanceprofile"], input, "InstanceProfileName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "RoleName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.RemoveRoleFromInstanceProfileOutput
+	output, err = d.RemoveRoleFromInstanceProfile(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("detach role: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.RemoveRoleFromInstanceProfile call took %s", time.Since(start))
+	d.logger.Info("detach role done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Create_Instanceprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create instanceprofile: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create instanceprofile ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Create_Instanceprofile(params map[string]interface{}) (interface{}, error) {
+	input := &iam.CreateInstanceProfileInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "InstanceProfileName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.CreateInstanceProfileOutput
+	output, err = d.CreateInstanceProfile(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create instanceprofile: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.CreateInstanceProfile call took %s", time.Since(start))
+	d.logger.Info("create instanceprofile done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Instanceprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete instanceprofile: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete instanceprofile ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Instanceprofile(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteInstanceProfileInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "InstanceProfileName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeleteInstanceProfileOutput
+	output, err = d.DeleteInstanceProfile(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete instanceprofile: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeleteInstanceProfile call took %s", time.Since(start))
+	d.logger.Info("delete instanceprofile done")
 	return output, nil
 }
 

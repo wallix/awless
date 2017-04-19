@@ -141,6 +141,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
 					{AwsField: "SecurityGroupIds", TemplateName: "securitygroup", AwsType: "awsstringslice"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
+					{AwsField: "IamInstanceProfile.Name", TemplateName: "role", AwsType: "awsstr"},
 				},
 			},
 			{
@@ -603,9 +604,37 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Role, DryRunUnsupported: true, Input: "DeleteRoleInput", Output: "DeleteRoleOutput", ApiMethod: "DeleteRole",
+				Action: "delete", Entity: cloud.Role, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{AwsField: "RoleName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "attach", Entity: cloud.Role, DryRunUnsupported: true, Input: "AddRoleToInstanceProfileInput", Output: "AddRoleToInstanceProfileOutput", ApiMethod: "AddRoleToInstanceProfile",
+				RequiredParams: []param{
+					{AwsField: "InstanceProfileName", TemplateName: "instanceprofile", AwsType: "awsstr"},
+					{AwsField: "RoleName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.Role, DryRunUnsupported: true, Input: "RemoveRoleFromInstanceProfileInput", Output: "RemoveRoleFromInstanceProfileOutput", ApiMethod: "RemoveRoleFromInstanceProfile",
+				RequiredParams: []param{
+					{AwsField: "InstanceProfileName", TemplateName: "instanceprofile", AwsType: "awsstr"},
+					{AwsField: "RoleName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+
+			// INSTANCE PROFILE
+			{
+				Action: "create", Entity: cloud.InstanceProfile, DryRunUnsupported: true, Input: "CreateInstanceProfileInput", Output: "CreateInstanceProfileOutput", ApiMethod: "CreateInstanceProfile",
+				RequiredParams: []param{
+					{AwsField: "InstanceProfileName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.InstanceProfile, DryRunUnsupported: true, Input: "DeleteInstanceProfileInput", Output: "DeleteInstanceProfileOutput", ApiMethod: "DeleteInstanceProfile",
+				RequiredParams: []param{
+					{AwsField: "InstanceProfileName", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 

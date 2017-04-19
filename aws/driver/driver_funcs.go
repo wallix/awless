@@ -212,6 +212,39 @@ func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, e
 	return aws.StringValue(output.(*iam.CreatePolicyOutput).Policy.Arn), nil
 }
 
+func (d *IamDriver) Delete_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete role: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete role ok")
+	return nil, nil
+}
+
+func (d *IamDriver) Delete_Role(params map[string]interface{}) (interface{}, error) {
+	d.Detach_Role(map[string]interface{}{
+		"name":            params["name"],
+		"instanceprofile": params["name"],
+	})
+	d.Delete_Instanceprofile(params)
+
+	input := &iam.DeleteRoleInput{}
+
+	if err := setFieldWithType(params["name"], input, "RoleName", awsstr); err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	output, err := d.DeleteRole(input)
+	if err != nil {
+		return nil, fmt.Errorf("delete role: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeleteRole call took %s", time.Since(start))
+	d.logger.Info("delete role done")
+
+	return output, nil
+}
+
 func (d *IamDriver) Create_Role_DryRun(params map[string]interface{}) (interface{}, error) {
 	_, pAccount := params["principal-account"]
 	_, pService := params["principal-service"]
@@ -247,15 +280,13 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 	pService, _ := params["principal-service"]
 	pUser, _ := params["principal-user"]
 
-	var awsPrinc string
+	princ := new(principal)
 	if pAccount != nil {
-		awsPrinc = fmt.Sprint(pAccount)
+		princ.AWS = pAccount
 	} else if pUser != nil {
-		awsPrinc = fmt.Sprint(pUser)
-	}
-
-	princ := &principal{
-		AWS: awsPrinc, Service: pService,
+		princ.AWS = pUser
+	} else if pService != nil {
+		princ.Service = pService
 	}
 
 	trust := &policyBody{
@@ -285,8 +316,16 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 	if err != nil {
 		return nil, err
 	}
+	role := output.(*iam.CreateRoleOutput).Role
+	roleName := aws.StringValue(role.RoleName)
 
-	return aws.StringValue(output.(*iam.CreateRoleOutput).Role.Arn), nil
+	d.Create_Instanceprofile(params)
+	d.Attach_Role(map[string]interface{}{
+		"name":            roleName,
+		"instanceprofile": roleName,
+	})
+
+	return aws.StringValue(role.Arn), nil
 }
 
 func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {

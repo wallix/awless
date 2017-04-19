@@ -80,6 +80,10 @@ var APIPerTemplateDefName = map[string]string{
 	"deletegroup":           "iam",
 	"createrole":            "iam",
 	"deleterole":            "iam",
+	"attachrole":            "iam",
+	"detachrole":            "iam",
+	"createinstanceprofile": "iam",
+	"deleteinstanceprofile": "iam",
 	"createpolicy":          "iam",
 	"deletepolicy":          "iam",
 	"attachpolicy":          "iam",
@@ -143,7 +147,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "instance",
 		Api:            "ec2",
 		RequiredParams: []string{"count", "image", "name", "subnet", "type"},
-		ExtraParams:    []string{"ip", "keypair", "lock", "securitygroup", "userdata"},
+		ExtraParams:    []string{"ip", "keypair", "lock", "role", "securitygroup", "userdata"},
 	},
 	"updateinstance": {
 		Action:         "update",
@@ -509,6 +513,34 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
+	"attachrole": {
+		Action:         "attach",
+		Entity:         "role",
+		Api:            "iam",
+		RequiredParams: []string{"instanceprofile", "name"},
+		ExtraParams:    []string{},
+	},
+	"detachrole": {
+		Action:         "detach",
+		Entity:         "role",
+		Api:            "iam",
+		RequiredParams: []string{"instanceprofile", "name"},
+		ExtraParams:    []string{},
+	},
+	"createinstanceprofile": {
+		Action:         "create",
+		Entity:         "instanceprofile",
+		Api:            "iam",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{},
+	},
+	"deleteinstanceprofile": {
+		Action:         "delete",
+		Entity:         "instanceprofile",
+		Api:            "iam",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{},
+	},
 	"createpolicy": {
 		Action:         "create",
 		Entity:         "policy",
@@ -711,6 +743,10 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "group")
 	supported["create"] = append(supported["create"], "role")
 	supported["delete"] = append(supported["delete"], "role")
+	supported["attach"] = append(supported["attach"], "role")
+	supported["detach"] = append(supported["detach"], "role")
+	supported["create"] = append(supported["create"], "instanceprofile")
+	supported["delete"] = append(supported["delete"], "instanceprofile")
 	supported["create"] = append(supported["create"], "policy")
 	supported["delete"] = append(supported["delete"], "policy")
 	supported["attach"] = append(supported["attach"], "policy")

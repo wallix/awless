@@ -477,6 +477,30 @@ func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Role, nil
 
+	case "attachrole":
+		if d.dryRun {
+			return d.Attach_Role_DryRun, nil
+		}
+		return d.Attach_Role, nil
+
+	case "detachrole":
+		if d.dryRun {
+			return d.Detach_Role_DryRun, nil
+		}
+		return d.Detach_Role, nil
+
+	case "createinstanceprofile":
+		if d.dryRun {
+			return d.Create_Instanceprofile_DryRun, nil
+		}
+		return d.Create_Instanceprofile, nil
+
+	case "deleteinstanceprofile":
+		if d.dryRun {
+			return d.Delete_Instanceprofile_DryRun, nil
+		}
+		return d.Delete_Instanceprofile, nil
+
 	case "createpolicy":
 		if d.dryRun {
 			return d.Create_Policy_DryRun, nil
