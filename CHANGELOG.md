@@ -2,15 +2,16 @@
 
 ### Features
 
+- Create and attach role to a user, instance, etc ...
 - [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
-- lambda: create/delete and list Lambda functions
-- access: list IAM access keys
-
+- Create/delete and list Lambda functions
+- List IAM access keys
 - Friendlier (using units: KB, MB, GB) display for storage size (s3objects, volumes, lambda functions)
 
 ### Bugfixes
 
 - Take the file name rather than full path as default name when uploading a s3object
+- Correctly create repo on first install on machine with git not installed
 
 ## v0.0.22 [2017-04-13]
 
