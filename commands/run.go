@@ -203,7 +203,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	env.MissingHolesFunc = missingHolesStdinFunc()
 
 	if len(env.Fillers) > 0 {
-		logger.Verbosef("default/given holes fillers: %s", sprintProcessedParams(env.Fillers))
+		logger.ExtraVerbosef("default/given holes fillers: %s", sprintProcessedParams(env.Fillers))
 	}
 
 	var err error
