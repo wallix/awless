@@ -194,27 +194,6 @@ func (s *Template) commandDeclarationNodesIterator() (nodes []*ast.DeclarationNo
 	return
 }
 
-func (s *Template) IsSameAs(t2 *Template) bool {
-	if s == t2 {
-		return true
-	}
-	if s == nil || t2 == nil {
-		return false
-	}
-	if len(s.Statements) != len(t2.Statements) {
-		return false
-	}
-	for i := 0; i < len(s.Statements); i++ {
-		s1 := s.Statements[i]
-		s2 := t2.Statements[i]
-		if !s1.Node.Equal(s2.Node) {
-			return false
-		}
-	}
-
-	return true
-}
-
 func MatchStringParamValue(s string) bool {
 	return ast.SimpleStringValue.MatchString(s)
 }

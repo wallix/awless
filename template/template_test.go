@@ -97,21 +97,6 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 	}
 }
 
-func TestIsSameAsAst(t *testing.T) {
-	tcases := []struct{ tpl string }{
-		{tpl: "create instance subnet=@my-subnet count=4"},
-		{tpl: "create vpc name=any\ncreate subnet ip=10.0.0.0\ndelete instance id=i-5d678\nstop instance id=i-5d678"},
-		{tpl: "myvar = create vpc name={my.hole}\ndelete vpc id=$myvar\nid = create instance name=inst"},
-		{tpl: "create vpc array=1,2,3"},
-	}
-	for i, tcase := range tcases {
-		tpl := MustParse(tcase.tpl)
-		if got, want := MustParse(tpl.String()), tpl; !want.IsSameAs(got) {
-			t.Fatalf("%d: got \n%s\n, want \n%s\n", i+1, got, want)
-		}
-	}
-}
-
 func TestRunDriverOnTemplate(t *testing.T) {
 	t.Run("Driver run TWICE multiline statement", func(t *testing.T) {
 		s := &Template{AST: &ast.AST{}}

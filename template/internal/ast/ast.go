@@ -19,7 +19,6 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -28,7 +27,6 @@ import (
 type Node interface {
 	clone() Node
 	String() string
-	Equal(Node) bool
 }
 
 type AST struct {
@@ -46,10 +44,6 @@ type Statement struct {
 type DeclarationNode struct {
 	Ident string
 	Expr  ExpressionNode
-}
-
-func (n *DeclarationNode) Equal(n2 Node) bool {
-	return reflect.DeepEqual(n, n2)
 }
 
 type ExpressionNode interface {
@@ -83,10 +77,6 @@ func (n *CommandNode) Keys() (keys []string) {
 	}
 
 	return
-}
-
-func (n *CommandNode) Equal(n2 Node) bool {
-	return reflect.DeepEqual(n, n2)
 }
 
 func (s *Statement) Clone() *Statement {
