@@ -5,6 +5,7 @@
 - Create and attach role to a user, instance, etc ...
 - [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
 - `awless ssh` now checks the remote host public key before connecting. Check can be disabled with the (insecure) `--disable-strict-host-keychecking` flag.
+- [#74](https://github.com/wallix/awless/issues/74): support of encrypted SSH keys.
 - Create/delete and list Lambda functions
 - List IAM access keys
 - Friendlier (using units: KB, MB, GB) display for storage size (s3objects, volumes, lambda functions)
