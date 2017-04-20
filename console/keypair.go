@@ -57,12 +57,17 @@ func GenerateSSHKeyPair(size int, encryptKey bool) ([]byte, []byte, error) {
 		return nil, nil, err
 	}
 	var pemBlock *pem.Block
+	var passwd []byte
 	if encryptKey {
-		var passwd []byte
 		passwd, err = askPasswordFunc()
 		if err != nil {
 			return nil, nil, err
 		}
+		if len(passwd) == 0 {
+			fmt.Fprintln(os.Stderr, "Empty password given, the keypair will not be encrypted.")
+		}
+	}
+	if len(passwd) != 0 {
 		pemBlock, err = x509.EncryptPEMBlock(rand.Reader, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(key), passwd, x509.PEMCipherAES256)
 		if err != nil {
 			return nil, nil, err
