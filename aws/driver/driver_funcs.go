@@ -324,6 +324,10 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 		"name":            roleName,
 		"instanceprofile": roleName,
 	})
+	if secs, ok := params["sleep-after"].(int); ok {
+		d.logger.Infof("sleeping for %d seconds", secs)
+		time.Sleep(time.Duration(secs) * time.Second)
+	}
 
 	return aws.StringValue(role.Arn), nil
 }

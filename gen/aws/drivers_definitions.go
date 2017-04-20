@@ -604,6 +604,7 @@ var DriversDefs = []driversDef{
 					{TemplateName: "principal-account"},
 					{TemplateName: "principal-user"},
 					{TemplateName: "principal-service"},
+					{TemplateName: "sleep-after"},
 				},
 			},
 			{
