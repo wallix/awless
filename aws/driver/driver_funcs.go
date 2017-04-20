@@ -820,9 +820,15 @@ func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	var encrypted bool
+	var encryptedMsg string
+	if enc, _ := params["encrypted"].(string); enc == "true" {
+		encrypted = true
+		encryptedMsg = " encrypted"
+	}
 
-	d.logger.Info("Generating locally a RSA 4096 bits keypair...")
-	pub, priv, err := console.GenerateSSHKeyPair(4096)
+	d.logger.Infof("Generating locally a%s RSA 4096 bits keypair...", encryptedMsg)
+	pub, priv, err := console.GenerateSSHKeyPair(4096, encrypted)
 	if err != nil {
 		return nil, fmt.Errorf("generating key: %s", err)
 	}
@@ -835,7 +841,7 @@ func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	if err != nil {
 		return nil, fmt.Errorf("saving private key: %s", err)
 	}
-	d.logger.Infof("4096 RSA keypair generated locally and stored in '%s'", privKeyPath)
+	d.logger.Infof("4096 RSA keypair generated locally and stored%s in '%s'", encryptedMsg, privKeyPath)
 	input.PublicKeyMaterial = pub
 
 	output, err := d.ImportKeyPair(input)

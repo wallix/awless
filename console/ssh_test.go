@@ -104,7 +104,7 @@ To get rid of this message, update '%[1]s:2'`, knowHostsFile)},
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, want := string(knownHostContent), knownHostsFileContent+"2.3.4.5 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBFJz/HFJUq6SaXD5FdLe6ddIpmNPFim7E3NkNCSNurDun/h3BOIzNGfuseyMn32n24oQayhjkX8eGqevJIA38E="; got != want {
+	if got, want := string(knownHostContent), knownHostsFileContent+"2.3.4.5 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBFJz/HFJUq6SaXD5FdLe6ddIpmNPFim7E3NkNCSNurDun/h3BOIzNGfuseyMn32n24oQayhjkX8eGqevJIA38E=\n"; got != want {
 		t.Fatalf("got \n%s\nwant\n%s\n", got, want)
 	}
 }

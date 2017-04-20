@@ -193,7 +193,7 @@ func checkHostKey(hostname string, remote net.Addr, key ssh.PublicKey) error {
 				return err
 			}
 			defer f.Close()
-			_, err = f.WriteString(knownhosts.Line([]string{hostname}, key))
+			_, err = f.WriteString(knownhosts.Line([]string{hostname}, key) + "\n")
 			return err
 		} else {
 			return errors.New("Host public key verification failed.")

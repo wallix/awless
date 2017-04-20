@@ -23,7 +23,7 @@ import (
 
 func TestGenerateKeyPair(t *testing.T) {
 	size := 1024
-	pub, private, err := GenerateSSHKeyPair(size)
+	pub, private, err := GenerateSSHKeyPair(size, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,5 +36,23 @@ func TestGenerateKeyPair(t *testing.T) {
 	}
 	if got, want := strings.HasSuffix(string(private), "-----END RSA PRIVATE KEY-----\n"), true; got != want {
 		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	askPasswordFunc = func() ([]byte, error) {
+		return []byte("my$rongP4sswrd"), nil
+	}
+
+	pub, private, err = GenerateSSHKeyPair(size, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := strings.HasPrefix(string(pub), "ssh-rsa"), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	_, err = decryptSSHKey(private, []byte("my$rongP4sswrd"))
+	if err != nil {
+		t.Fatal(err)
 	}
 }

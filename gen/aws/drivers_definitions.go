@@ -357,6 +357,9 @@ var DriversDefs = []driversDef{
 				RequiredParams: []param{
 					{TemplateName: "name"},
 				},
+				ExtraParams: []param{
+					{TemplateName: "encrypted"},
+				},
 			},
 			{
 				Action: "delete", Entity: cloud.Keypair, Input: "DeleteKeyPairInput", Output: "DeleteKeyPairOutput", ApiMethod: "DeleteKeyPair",

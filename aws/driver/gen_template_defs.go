@@ -343,7 +343,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "keypair",
 		Api:            "ec2",
 		RequiredParams: []string{"name"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"encrypted"},
 	},
 	"deletekeypair": {
 		Action:         "delete",
