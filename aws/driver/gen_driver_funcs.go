@@ -58,7 +58,7 @@ func (d *Ec2Driver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 	_, err = d.CreateVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("vpc")
 			// Extra param as tag
 			if v, ok := params["name"]; ok {
@@ -124,7 +124,7 @@ func (d *Ec2Driver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 	_, err = d.DeleteVpc(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("vpc")
 			d.logger.Verbose("dry run: delete vpc ok")
 			return id, nil
@@ -184,7 +184,7 @@ func (d *Ec2Driver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 	_, err = d.CreateSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("subnet")
 			// Extra param as tag
 			if v, ok := params["name"]; ok {
@@ -301,7 +301,7 @@ func (d *Ec2Driver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 	_, err = d.DeleteSubnet(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("subnet")
 			d.logger.Verbose("dry run: delete subnet ok")
 			return id, nil
@@ -403,7 +403,7 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 	_, err = d.RunInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("instance")
 			// Required param as tag
 			_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
@@ -531,7 +531,7 @@ func (d *Ec2Driver) Update_Instance_DryRun(params map[string]interface{}) (inter
 	_, err = d.ModifyInstanceAttribute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("dry run: update instance ok")
 			return id, nil
@@ -593,7 +593,7 @@ func (d *Ec2Driver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 	_, err = d.TerminateInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("dry run: delete instance ok")
 			return id, nil
@@ -641,7 +641,7 @@ func (d *Ec2Driver) Start_Instance_DryRun(params map[string]interface{}) (interf
 	_, err = d.StartInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("dry run: start instance ok")
 			return id, nil
@@ -691,7 +691,7 @@ func (d *Ec2Driver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 	_, err = d.StopInstances(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("instance")
 			d.logger.Verbose("dry run: stop instance ok")
 			return id, nil
@@ -749,7 +749,7 @@ func (d *Ec2Driver) Create_Securitygroup_DryRun(params map[string]interface{}) (
 	_, err = d.CreateSecurityGroup(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("securitygroup")
 			d.logger.Verbose("dry run: create securitygroup ok")
 			return id, nil
@@ -807,7 +807,7 @@ func (d *Ec2Driver) Delete_Securitygroup_DryRun(params map[string]interface{}) (
 	_, err = d.DeleteSecurityGroup(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("securitygroup")
 			d.logger.Verbose("dry run: delete securitygroup ok")
 			return id, nil
@@ -859,7 +859,7 @@ func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 	_, err = d.CreateVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("dry run: create volume ok")
 			return id, nil
@@ -913,7 +913,7 @@ func (d *Ec2Driver) Delete_Volume_DryRun(params map[string]interface{}) (interfa
 	_, err = d.DeleteVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("dry run: delete volume ok")
 			return id, nil
@@ -969,7 +969,7 @@ func (d *Ec2Driver) Attach_Volume_DryRun(params map[string]interface{}) (interfa
 	_, err = d.AttachVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("dry run: attach volume ok")
 			return id, nil
@@ -1043,7 +1043,7 @@ func (d *Ec2Driver) Detach_Volume_DryRun(params map[string]interface{}) (interfa
 	_, err = d.DetachVolume(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("volume")
 			d.logger.Verbose("dry run: detach volume ok")
 			return id, nil
@@ -1103,7 +1103,7 @@ func (d *Ec2Driver) Create_Internetgateway_DryRun(params map[string]interface{})
 	_, err = d.CreateInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("dry run: create internetgateway ok")
 			return id, nil
@@ -1147,7 +1147,7 @@ func (d *Ec2Driver) Delete_Internetgateway_DryRun(params map[string]interface{})
 	_, err = d.DeleteInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("dry run: delete internetgateway ok")
 			return id, nil
@@ -1199,7 +1199,7 @@ func (d *Ec2Driver) Attach_Internetgateway_DryRun(params map[string]interface{})
 	_, err = d.AttachInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("dry run: attach internetgateway ok")
 			return id, nil
@@ -1255,7 +1255,7 @@ func (d *Ec2Driver) Detach_Internetgateway_DryRun(params map[string]interface{})
 	_, err = d.DetachInternetGateway(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("internetgateway")
 			d.logger.Verbose("dry run: detach internetgateway ok")
 			return id, nil
@@ -1307,7 +1307,7 @@ func (d *Ec2Driver) Create_Routetable_DryRun(params map[string]interface{}) (int
 	_, err = d.CreateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("dry run: create routetable ok")
 			return id, nil
@@ -1357,7 +1357,7 @@ func (d *Ec2Driver) Delete_Routetable_DryRun(params map[string]interface{}) (int
 	_, err = d.DeleteRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("dry run: delete routetable ok")
 			return id, nil
@@ -1409,7 +1409,7 @@ func (d *Ec2Driver) Attach_Routetable_DryRun(params map[string]interface{}) (int
 	_, err = d.AssociateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("dry run: attach routetable ok")
 			return id, nil
@@ -1463,7 +1463,7 @@ func (d *Ec2Driver) Detach_Routetable_DryRun(params map[string]interface{}) (int
 	_, err = d.DisassociateRouteTable(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("routetable")
 			d.logger.Verbose("dry run: detach routetable ok")
 			return id, nil
@@ -1519,7 +1519,7 @@ func (d *Ec2Driver) Create_Route_DryRun(params map[string]interface{}) (interfac
 	_, err = d.CreateRoute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("route")
 			d.logger.Verbose("dry run: create route ok")
 			return id, nil
@@ -1579,7 +1579,7 @@ func (d *Ec2Driver) Delete_Route_DryRun(params map[string]interface{}) (interfac
 	_, err = d.DeleteRoute(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("route")
 			d.logger.Verbose("dry run: delete route ok")
 			return id, nil
@@ -1631,7 +1631,7 @@ func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 	_, err = d.DeleteKeyPair(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("keypair")
 			d.logger.Verbose("dry run: delete keypair ok")
 			return id, nil

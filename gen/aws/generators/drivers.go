@@ -225,7 +225,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 	_, err = d.{{ $def.ApiMethod }}(input)
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
-		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("{{ $def.Entity }}")
 			{{- range $i, $field := $def.RequiredParams }}
 				{{- if $field.AsAwsTag }}
