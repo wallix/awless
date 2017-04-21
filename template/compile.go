@@ -24,7 +24,7 @@ func NewEnv() *Env {
 	return &Env{
 		Resolved:         make(map[string]interface{}),
 		AliasFunc:        func(e, k, v string) string { return v },
-		MissingHolesFunc: func(s string) interface{} { return s },
+		MissingHolesFunc: func(s string) interface{} { return "" },
 		Log:              logger.DiscardLogger,
 	}
 }

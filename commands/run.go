@@ -23,10 +23,12 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strings"
 	stdsync "sync"
+	"time"
 
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
@@ -42,12 +44,27 @@ import (
 	"github.com/wallix/awless/template/driver"
 )
 
+var scheduleFlag bool
+var scheduleRunInFlag string
+var scheduleRevertInFlag string
+
 func init() {
 	RootCmd.AddCommand(runCmd)
+	runCmd.Flags().BoolVar(&scheduleFlag, "schedule", false, "Schedule the execution of this template")
+	runCmd.Flags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this template")
+	runCmd.Flags().StringVar(&scheduleRevertInFlag, "revert-in", "", "Schedule the revertion of this template")
+	runCmd.Flags().MarkHidden("schedule")
+	runCmd.Flags().MarkHidden("run-in")
+	runCmd.Flags().MarkHidden("revert-in")
 	for action, entities := range awsdriver.DriverSupportedActions() {
-		RootCmd.AddCommand(
-			createDriverCommands(action, entities),
-		)
+		cmd := createDriverCommands(action, entities)
+		cmd.PersistentFlags().BoolVar(&scheduleFlag, "schedule", false, "Schedule the execution of this command")
+		cmd.PersistentFlags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this command")
+		cmd.PersistentFlags().StringVar(&scheduleRevertInFlag, "revert-in", "", "Schedule the revertion of this command")
+		cmd.PersistentFlags().MarkHidden("schedule")
+		cmd.PersistentFlags().MarkHidden("run-in")
+		cmd.PersistentFlags().MarkHidden("revert-in")
+		RootCmd.AddCommand(cmd)
 	}
 }
 
@@ -235,12 +252,20 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		yesorno = "y"
 	} else {
 		fmt.Println()
-		fmt.Print("Confirm? (y/n): ")
+		if scheduleFlag {
+			fmt.Print("Confirm scheduling? (y/n): ")
+		} else {
+			fmt.Print("Confirm? (y/n): ")
+		}
 		_, err = fmt.Scanln(&yesorno)
 		exitOn(err)
 	}
 
 	if strings.TrimSpace(yesorno) == "y" {
+		if scheduleFlag {
+			exitOn(scheduleTemplate(templ, scheduleRunInFlag, scheduleRevertInFlag))
+			return nil
+		}
 		newTempl, err := templ.Run(awsDriver)
 		if err != nil {
 			logger.Errorf("Running template error: %s", err)
@@ -465,4 +490,37 @@ func isQuoted(s string) bool {
 		return isQuoted(s[1:])
 	}
 	return (strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")) || strings.HasPrefix(s, "'") && strings.HasSuffix(s, "'")
+}
+
+func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
+	urlV := url.Values{}
+	if runIn != "" {
+		_, err := time.ParseDuration(runIn)
+		if err != nil {
+			return fmt.Errorf("invalid 'run-in' duration %s", err)
+		}
+		urlV.Add("run", runIn)
+	}
+	if revertIn != "" {
+		_, err := time.ParseDuration(revertIn)
+		if err != nil {
+			return fmt.Errorf("invalid 'revert-in' duration %s", err)
+		}
+		urlV.Add("revert", revertIn)
+	}
+	u, err := url.Parse("http://localhost:8082/schedulings?" + urlV.Encode())
+	if err != nil {
+		return err
+	}
+	logger.Verbosef("sending template to url %s", u.String())
+	resp, err := http.Post(u.String(), "application/text", strings.NewReader(t.String()))
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode == http.StatusOK {
+		logger.Info("template scheduled successfully")
+		return nil
+	}
+	logger.Errorf("Error %d while scheduling template: %s", resp.StatusCode, resp.Status)
+	return nil
 }
