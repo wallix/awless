@@ -6,6 +6,21 @@ import (
 	"testing"
 )
 
+func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
+	env := NewEnv()
+	tpl := MustParse("create subnet\ncreate instance subnet=@mysubnet name={instance.name}\ncreate instance")
+
+	_, _, err := failOnUnresolvedAlias(tpl, env)
+	if err == nil || !strings.Contains(err.Error(), "unresolved alias") {
+		t.Fatalf("expected err unresolved alias. Got %s", err)
+	}
+
+	_, _, err = failOnUnresolvedHoles(tpl, env)
+	if err == nil || !strings.Contains(err.Error(), "unresolved holes") {
+		t.Fatalf("expected err unresolved holes. Got %s", err)
+	}
+}
+
 func TestCheckReferencesDeclarationPass(t *testing.T) {
 	env := NewEnv()
 	tpl := MustParse(`

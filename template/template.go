@@ -80,13 +80,12 @@ func (s *Template) DryRun(d driver.Driver) error {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
 
-	errs := &Errors{}
-
 	res, err := s.Run(d)
 	if err != nil {
 		return err
 	}
 
+	errs := &Errors{}
 	for _, cmd := range res.CommandNodesIterator() {
 		if cmderr := cmd.Err(); cmderr != nil {
 			errs.add(cmderr)
@@ -207,7 +206,7 @@ type Errors struct {
 }
 
 func (d *Errors) Errors() ([]error, bool) {
-	return d.errs, len(d.errs) == 0
+	return d.errs, len(d.errs) > 0
 }
 
 func (d *Errors) add(err error) {

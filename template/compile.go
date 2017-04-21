@@ -48,6 +48,8 @@ func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
 		resolveHolesPass,
 		resolveMissingHolesPass,
 		resolveAliasPass,
+		failOnUnresolvedHoles,
+		failOnUnresolvedAlias,
 	)
 
 	return pass.compile(tpl, env)
@@ -246,6 +248,38 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 
 	if len(unresolved) > 0 {
 		return tpl, env, fmt.Errorf("cannot resolve aliases: %q", unresolved)
+	}
+
+	return tpl, env, nil
+}
+
+func failOnUnresolvedHoles(tpl *Template, env *Env) (*Template, *Env, error) {
+	var unresolved []string
+	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
+		for _, v := range cmd.Holes {
+			unresolved = append(unresolved, v)
+		}
+	})
+
+	if len(unresolved) > 0 {
+		return tpl, env, fmt.Errorf("template contains unresolved holes: %v", unresolved)
+	}
+
+	return tpl, env, nil
+}
+
+func failOnUnresolvedAlias(tpl *Template, env *Env) (*Template, *Env, error) {
+	var unresolved []string
+	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
+		for _, v := range cmd.Params {
+			if s, ok := v.(string); ok && strings.HasPrefix(s, "@") {
+				unresolved = append(unresolved, s)
+			}
+		}
+	})
+
+	if len(unresolved) > 0 {
+		return tpl, env, fmt.Errorf("template contains unresolved alias: %v", unresolved)
 	}
 
 	return tpl, env, nil
