@@ -217,7 +217,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	env := template.NewEnv()
 	env.Log = logger.DefaultLogger
 	env.AddFillers(fillers...)
-	env.DefLookupFunc = lookupDefinitionsFunc
+	env.DefLookupFunc = awsdriver.AWSLookupDefinitions
 	env.AliasFunc = resolveAliasFunc
 	env.MissingHolesFunc = missingHolesStdinFunc()
 
@@ -326,7 +326,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	}
 
 	for _, entity := range entities {
-		templDef, ok := lookupDefinitionsFunc(fmt.Sprintf("%s%s", action, entity))
+		templDef, ok := awsdriver.AWSLookupDefinitions(fmt.Sprintf("%s%s", action, entity))
 		if !ok {
 			exitOn(errors.New("command unsupported on inline mode"))
 		}
@@ -368,17 +368,12 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func lookupDefinitionsFunc(key string) (t template.Definition, ok bool) {
-	t, ok = awsdriver.AWSTemplatesDefinitions[key]
-	return
-}
-
 func runSyncFor(tpl *template.Template) {
 	if !config.GetAutosync() {
 		return
 	}
 
-	defs := tpl.UniqueDefinitions(lookupDefinitionsFunc)
+	defs := tpl.UniqueDefinitions(awsdriver.AWSLookupDefinitions)
 
 	services := aws.GetCloudServicesForAPIs(defs.Map(
 		func(d template.Definition) string { return d.Api },
