@@ -239,10 +239,14 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 	awsDriver.SetLogger(logger.DefaultLogger)
 
-	errs := templ.DryRun(awsDriver)
-	if len(errs) > 0 {
-		for _, dryRunErr := range errs {
-			logger.Errorf(dryRunErr.Error())
+	if err := templ.DryRun(awsDriver); err != nil {
+		switch t := err.(type) {
+		case *template.Errors:
+			errs, _ := t.Errors()
+			for _, e := range errs {
+				logger.Errorf(e.Error())
+			}
+
 		}
 		exitOn(errors.New("Dryrun failed"))
 	}

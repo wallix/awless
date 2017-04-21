@@ -19,6 +19,7 @@ package template
 import (
 	"crypto/rand"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -75,21 +76,28 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	return current, nil
 }
 
-func (s *Template) DryRun(d driver.Driver) (errors []error) {
+func (s *Template) DryRun(d driver.Driver) error {
 	defer d.SetDryRun(false)
 	d.SetDryRun(true)
 
+	errs := &Errors{}
+
 	res, err := s.Run(d)
 	if err != nil {
-		errors = append(errors, err)
-		return
+		return err
 	}
+
 	for _, cmd := range res.CommandNodesIterator() {
 		if cmderr := cmd.Err(); cmderr != nil {
-			errors = append(errors, cmderr)
+			errs.add(cmderr)
 		}
 	}
-	return
+
+	if _, any := errs.Errors(); any {
+		return errs
+	}
+
+	return nil
 }
 
 func (s *Template) Validate(rules ...Validator) (all []error) {
@@ -192,6 +200,26 @@ func (s *Template) commandDeclarationNodesIterator() (nodes []*ast.DeclarationNo
 		}
 	}
 	return
+}
+
+type Errors struct {
+	errs []error
+}
+
+func (d *Errors) Errors() ([]error, bool) {
+	return d.errs, len(d.errs) == 0
+}
+
+func (d *Errors) add(err error) {
+	d.errs = append(d.errs, err)
+}
+
+func (d *Errors) Error() string {
+	var all []string
+	for _, err := range d.errs {
+		all = append(all, err.Error())
+	}
+	return strings.Join(all, "\n")
 }
 
 func MatchStringParamValue(s string) bool {
