@@ -85,10 +85,10 @@ import (
   {{- end }}
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
-  "github.com/wallix/awless/graph"
+    "github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
-	awsdriver "github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws/driver"
 )
 
 const accessDenied = "Access Denied"

@@ -47,7 +47,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-	awsdriver "github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"

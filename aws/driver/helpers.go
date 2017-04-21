@@ -1,4 +1,4 @@
-package driver
+package awsdriver
 
 import (
 	"fmt"

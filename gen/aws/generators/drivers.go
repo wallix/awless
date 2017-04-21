@@ -99,7 +99,7 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package driver
+package awsdriver
 
 import (
 	"github.com/wallix/awless/template"
@@ -156,7 +156,7 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package driver
+package awsdriver
 
 import (
 	"errors"
@@ -345,7 +345,7 @@ limitations under the License.
 
 // DO NOT EDIT
 // This file was automatically generated with go generate
-package driver
+package awsdriver
 
 import (
 	"strings"
