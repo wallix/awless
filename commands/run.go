@@ -278,7 +278,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		printer.RenderOK = renderGreenFn
 		printer.Print(newTempl)
 
-		if err := database.Execute(func(db *database.DB) error {
+		if err = database.Execute(func(db *database.DB) error {
 			return db.AddTemplate(newTempl)
 		}); err != nil {
 			logger.Errorf("Cannot save executed template in awless logs: %s", err)
@@ -511,6 +511,7 @@ func isQuoted(s string) bool {
 
 func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
 	urlV := url.Values{}
+	urlV.Add("region", config.GetAWSRegion())
 	if runIn != "" {
 		_, err := time.ParseDuration(runIn)
 		if err != nil {
