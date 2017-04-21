@@ -6,6 +6,23 @@ import (
 	"testing"
 )
 
+func TestDefaultEnvWithNilFunc(t *testing.T) {
+	text := "create instance name={instance.name} subnet=@mysubnet"
+	env := NewEnv()
+	tpl := MustParse(text)
+
+	pass := newMultiPass(resolveHolesPass, resolveMissingHolesPass, resolveAliasPass)
+
+	compiled, _, err := pass.compile(tpl, env)
+	if err != nil {
+		t.Fatalf("unexpected error %s", err)
+	}
+
+	if got, want := compiled.String(), text; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
+
 func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
 	env := NewEnv()
 	tpl := MustParse("create subnet\ncreate instance subnet=@mysubnet name={instance.name}\ncreate instance")

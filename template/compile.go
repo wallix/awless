@@ -23,8 +23,8 @@ type Env struct {
 func NewEnv() *Env {
 	return &Env{
 		Resolved:         make(map[string]interface{}),
-		AliasFunc:        func(e, k, v string) string { return v },
-		MissingHolesFunc: func(s string) interface{} { return "" },
+		AliasFunc:        nil,
+		MissingHolesFunc: nil,
 		Log:              logger.DiscardLogger,
 	}
 }
@@ -212,8 +212,10 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 
 	fillers := make(map[string]interface{})
 	for _, k := range sortedHoles {
-		actual := env.MissingHolesFunc(k)
-		fillers[k] = actual
+		if env.MissingHolesFunc != nil {
+			actual := env.MissingHolesFunc(k)
+			fillers[k] = actual
+		}
 	}
 
 	tpl.visitCommandNodes(func(expr *ast.CommandNode) {
@@ -224,16 +226,19 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 }
 
 func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
-	var unresolved []string
+	var emptyResolv []string
 	each := func(cmd *ast.CommandNode) {
 		for k, v := range cmd.Params {
 			if s, ok := v.(string); ok {
 				if strings.HasPrefix(s, "@") {
 					env.Log.ExtraVerbosef("alias resolving: %s for key %s", s, k)
 					alias := strings.TrimPrefix(s, "@")
+					if env.AliasFunc == nil {
+						continue
+					}
 					actual := env.AliasFunc(cmd.Entity, k, alias)
 					if actual == "" {
-						unresolved = append(unresolved, alias)
+						emptyResolv = append(emptyResolv, alias)
 					} else {
 						env.Log.ExtraVerbosef("alias '%s' resolved to '%s' for key %s", alias, actual, k)
 						cmd.Params[k] = actual
@@ -246,8 +251,8 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 
 	tpl.visitCommandNodes(each)
 
-	if len(unresolved) > 0 {
-		return tpl, env, fmt.Errorf("cannot resolve aliases: %q", unresolved)
+	if len(emptyResolv) > 0 {
+		return tpl, env, fmt.Errorf("cannot resolve aliases: %q", emptyResolv)
 	}
 
 	return tpl, env, nil
