@@ -17,6 +17,7 @@ uimitations under the License.
 package commands
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -25,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	stdsync "sync"
@@ -83,7 +85,7 @@ var runCmd = &cobra.Command{
 		content, err := getTemplateText(args[0])
 		exitOn(err)
 
-		logger.Verbosef("Loaded template text:\n\n%s\n", content)
+		logger.Verbosef("Loaded template text:\n\n%s\n", removeComments(content))
 
 		templ, err := template.Parse(string(content))
 		exitOn(err)
@@ -483,6 +485,21 @@ func getTemplateText(path string) ([]byte, error) {
 	}
 
 	return ioutil.ReadFile(path)
+}
+
+func removeComments(b []byte) []byte {
+	scn := bufio.NewScanner(bytes.NewReader(b))
+	var cleaned bytes.Buffer
+	for scn.Scan() {
+		line := scn.Text()
+		if comment, _ := regexp.MatchString(`^\s*#`, line); comment {
+			continue
+		}
+		cleaned.WriteString(line)
+		cleaned.WriteByte('\n')
+	}
+
+	return cleaned.Bytes()
 }
 
 func isQuoted(s string) bool {
