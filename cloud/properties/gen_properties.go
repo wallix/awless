@@ -1,6 +1,22 @@
+/* Copyright 2017 WALLIX
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// DO NOT EDIT
+// This file was automatically generated with go generate
 package properties
 
-// Properties
 const (
 	Actions                   = "Actions"
 	Affinity                  = "Affinity"
@@ -24,6 +40,7 @@ const (
 	CheckProtocol             = "CheckProtocol"
 	CheckTimeout              = "CheckTimeout"
 	CIDR                      = "CIDR"
+	CIDRv6                    = "CIDRv6"
 	CipherSuite               = "CipherSuite"
 	Class                     = "Class"
 	Cluster                   = "Cluster"
@@ -44,9 +61,10 @@ const (
 	Failover                  = "Failover"
 	Fingerprint               = "Fingerprint"
 	GlobalID                  = "GlobalID"
+	GranteeType               = "GranteeType"
 	Grants                    = "Grants"
-	Hash                      = "Hash"
 	Handler                   = "Handler"
+	Hash                      = "Hash"
 	HealthCheck               = "HealthCheck"
 	HealthyThresholdCount     = "HealthyThresholdCount"
 	Host                      = "Host"
@@ -58,6 +76,7 @@ const (
 	IOPS                      = "IOPS"
 	IPType                    = "IPType"
 	Key                       = "Key"
+	KeyPair                   = "KeyPair"
 	LatestRestorableTime      = "LatestRestorableTime"
 	Launched                  = "Launched"
 	License                   = "License"
@@ -80,6 +99,7 @@ const (
 	Path                      = "Path"
 	PlacementGroup            = "PlacementGroup"
 	Port                      = "Port"
+	PortRange                 = "PortRange"
 	PreferredBackupDate       = "PreferredBackupDate"
 	PreferredMaintenanceDate  = "PreferredMaintenanceDate"
 	Private                   = "Private"
@@ -89,8 +109,8 @@ const (
 	Public                    = "Public"
 	PublicDNS                 = "PublicDNS"
 	PublicIP                  = "PublicIP"
-	Records                   = "Records"
 	RecordCount               = "RecordCount"
+	Records                   = "Records"
 	Region                    = "Region"
 	Role                      = "Role"
 	RootDevice                = "RootDevice"
@@ -102,15 +122,14 @@ const (
 	SecurityGroups            = "SecurityGroups"
 	Set                       = "Set"
 	Size                      = "Size"
-	SpotPrice                 = "SpotPrice"
 	SpotInstanceRequestId     = "SpotInstanceRequestId"
-	Timeout                   = "Timeout"
-	KeyPair                   = "KeyPair"
+	SpotPrice                 = "SpotPrice"
 	State                     = "State"
 	Storage                   = "Storage"
 	StorageType               = "StorageType"
 	Subnet                    = "Subnet"
 	Subnets                   = "Subnets"
+	Timeout                   = "Timeout"
 	Timezone                  = "Timezone"
 	Topic                     = "Topic"
 	TrafficPolicyInstance     = "TrafficPolicyInstance"
@@ -118,8 +137,8 @@ const (
 	Type                      = "Type"
 	UnhealthyThresholdCount   = "UnhealthyThresholdCount"
 	Updated                   = "Updated"
-	Username                  = "Username"
 	UserData                  = "UserData"
+	Username                  = "Username"
 	Version                   = "Version"
 	Vpc                       = "Vpc"
 	Vpcs                      = "Vpcs"
