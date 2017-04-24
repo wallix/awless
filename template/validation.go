@@ -52,15 +52,3 @@ func (v *ParamIsSetValidator) Execute(t *Template) (errs []error) {
 	}
 	return
 }
-
-func sliceContains(s string, arrs ...[]string) bool {
-	for _, arr := range arrs {
-		for _, el := range arr {
-			if el == s {
-				return true
-			}
-		}
-	}
-
-	return false
-}

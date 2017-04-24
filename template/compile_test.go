@@ -212,13 +212,8 @@ func TestResolveHolesPass(t *testing.T) {
 }
 
 type params map[string]interface{}
-type paramsPerCommand []params
-
 type holes map[string]string
-type holesPerCommand []holes
-
 type refs map[string]string
-type refsPerCommand []refs
 
 func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
 	for i, cmd := range tpl.CommandNodesIterator() {

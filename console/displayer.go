@@ -22,7 +22,6 @@ import (
 	"io"
 	"os"
 	"reflect"
-	"regexp"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -858,10 +857,6 @@ func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
 		}
 	}
 	return max
-}
-
-func get_words_from(text string) []string {
-	return regexp.MustCompile("(\\b[^\\s]+\\b)").FindAllString(text, -1)
 }
 
 func nameOrID(res *graph.Resource) string {

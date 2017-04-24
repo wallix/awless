@@ -36,8 +36,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const awlessKnownHostsFile = "known_hosts"
-
 type Credentials struct {
 	IP      string
 	User    string

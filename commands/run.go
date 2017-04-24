@@ -394,30 +394,6 @@ func runSyncFor(tpl *template.Template) {
 	}
 }
 
-func printReport(t *template.Template) {
-	for _, done := range t.CommandNodesIterator() {
-		var line bytes.Buffer
-		if done.CmdResult != "" {
-			line.WriteString(fmt.Sprintf("%s %s ", done.CmdResult, renderGreenFn("<-")))
-		}
-		line.WriteString(fmt.Sprintf("%s", done.String()))
-
-		if done.CmdErr != nil {
-			line.WriteString(fmt.Sprintf("\n\terror: %s", done.CmdErr))
-		}
-
-		if done.CmdErr == nil {
-			logger.Info(line.String())
-		} else {
-			logger.Error(line.String())
-		}
-	}
-
-	if template.IsRevertible(t) {
-		logger.Infof("revert this template with `awless revert %s`", t.ID)
-	}
-}
-
 func resolveAliasFunc(entity, key, alias string) string {
 	gph := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[entity])
 	resType := key

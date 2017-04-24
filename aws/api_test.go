@@ -17,10 +17,8 @@ limitations under the License.
 package aws
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
-	"strings"
 	"testing"
 	"time"
 
@@ -516,23 +514,6 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	if result != expectG.MustMarshal() {
 		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
 	}
-}
-
-func diffText(actual, expected string) error {
-	actuals := strings.Split(actual, "\n")
-	expecteds := strings.Split(expected, "\n")
-
-	if len(actuals) != len(expecteds) {
-		return fmt.Errorf("text diff: not same number of lines:\ngot \n%s\n\nwant\n%s\n", actual, expected)
-	}
-
-	for i := 0; i < len(actuals); i++ {
-		if actuals[i] != expecteds[i] {
-			return fmt.Errorf("text diff: diff at line %d\ngot:\n%q\nwant:\n%q", i+1, actuals[i], expecteds[i])
-		}
-	}
-
-	return nil
 }
 
 func mustGetChildrenId(g *graph.Graph, res *graph.Resource) []string {

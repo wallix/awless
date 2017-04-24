@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	salt             = "bg6B8yTTq8chwkN0BqWnEzlP4OkpcQDhO45jUOuXm1zsNGDLj3"
 	databaseFilename = "awless.db"
 )
 
