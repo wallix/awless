@@ -41,8 +41,18 @@ func (e *Env) AddFillers(fills ...map[string]interface{}) {
 	}
 }
 
-func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
-	pass := newMultiPass(
+type Mode []compileFunc
+
+var (
+	LenientCompileMode = []compileFunc{
+		resolveAgainstDefinitions,
+		checkReferencesDeclaration,
+		resolveHolesPass,
+		resolveMissingHolesPass,
+		resolveAliasPass,
+	}
+
+	NormalCompileMode = []compileFunc{
 		resolveAgainstDefinitions,
 		checkReferencesDeclaration,
 		resolveHolesPass,
@@ -50,7 +60,17 @@ func Compile(tpl *Template, env *Env) (*Template, *Env, error) {
 		resolveAliasPass,
 		failOnUnresolvedHoles,
 		failOnUnresolvedAlias,
-	)
+	}
+)
+
+func Compile(tpl *Template, env *Env, mode ...Mode) (*Template, *Env, error) {
+	var pass *multiPass
+
+	if len(mode) > 0 {
+		pass = newMultiPass(mode[0]...)
+	} else {
+		pass = newMultiPass(NormalCompileMode...)
+	}
 
 	return pass.compile(tpl, env)
 }
