@@ -132,7 +132,7 @@ var sshCmd = &cobra.Command{
 			cred.User = user
 			client, err = console.NewSSHClient(cred, disableStrictHostKeyCheckingFlag)
 			if err != nil {
-				checkInstanceAccessible(resourcesGraph, inst, ip)
+				checkInstanceAccessible(resourcesGraph, inst, ip, err)
 				exitOn(err)
 			}
 			exitOn(sshConnect(instanceID, client, cred))
@@ -145,7 +145,7 @@ var sshCmd = &cobra.Command{
 					continue
 				}
 				if err != nil {
-					checkInstanceAccessible(resourcesGraph, inst, ip)
+					checkInstanceAccessible(resourcesGraph, inst, ip, err)
 					exitOn(err)
 				}
 				exitOn(sshConnect(instanceID, client, cred))
@@ -285,12 +285,12 @@ func fetchConnectionInfo() (*graph.Graph, net.IP) {
 
 }
 
-func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP) {
+func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP, err error) {
 	state, ok := inst.Properties[properties.State]
 	if st := fmt.Sprint(state); ok && st != "running" {
-		logger.Warningf("This instance is '%s' (cannot ssh to a non running state)", st)
+		logger.Warningf("this instance is '%s' (cannot ssh to a non running state)", st)
 		if st == "stopped" {
-			logger.Warningf("You can start it with `awless -f start instance id=%s`", inst.Id())
+			logger.Warningf("you can start it with `awless -f start instance id=%s`", inst.Id())
 		}
 		return
 	}
@@ -318,16 +318,20 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP) 
 		}
 
 		if !sshPortOpen {
-			logger.Warning("Port 22 is not open on this instance")
+			logger.Warning("port 22 is not open on this instance")
 		}
 		if !myIPAllowed && myip != nil {
-			logger.Warningf("Your ip %s is not authorized for this instance. You might want to update the securitygroup with:", myip)
+			logger.Warningf("your ip %s is not authorized for this instance. You might want to update the securitygroup with:", myip)
 			var group = "mygroup"
 			if len(sgroups) == 1 {
 				group = sgroups[0]
 			}
 			logger.Warningf("`awless update securitygroup id=%s inbound=authorize protocol=tcp cidr=%s/32 portrange=22`", group, myip)
 		}
+	}
+
+	if err != nil && strings.Contains(err.Error(), "connection refused") {
+		logger.Warning("cannot connect to this instance, maybe the system is still starting up?")
 	}
 }
 
