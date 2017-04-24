@@ -10,6 +10,12 @@ import (
 	"github.com/wallix/awless/template/driver"
 )
 
+func DefaultTemplateEnv() *template.Env {
+	env := template.NewEnv()
+	env.DefLookupFunc = AWSLookupDefinitions
+	return env
+}
+
 func AWSLookupDefinitions(key string) (t template.Definition, ok bool) {
 	t, ok = AWSTemplatesDefinitions[key]
 	return
