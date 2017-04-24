@@ -353,6 +353,13 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		if ext := strings.Join(templDef.Extra(), ", "); ext != "" {
 			extraStr = fmt.Sprintf("\n\tExtra params: %s", ext)
 		}
+		var validArgs []string
+		for _, param := range templDef.Required() {
+			validArgs = append(validArgs, param+"=")
+		}
+		for _, param := range templDef.Extra() {
+			validArgs = append(validArgs, param+"=")
+		}
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:               templDef.Entity,
@@ -361,6 +368,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
 				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr, extraStr),
 				RunE:              run(templDef),
+				ValidArgs:         validArgs,
 			},
 		)
 	}
