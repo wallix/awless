@@ -27,6 +27,8 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -81,6 +83,7 @@ var ResourceTypes = []string{
 	"listener",
 	"database",
 	"dbsubnetgroup",
+	"launchconfiguration",
 	"user",
 	"group",
 	"role",
@@ -97,76 +100,79 @@ var ResourceTypes = []string{
 }
 
 var ServicePerAPI = map[string]string{
-	"ec2":     "infra",
-	"elbv2":   "infra",
-	"rds":     "infra",
-	"iam":     "access",
-	"sts":     "access",
-	"s3":      "storage",
-	"sns":     "notification",
-	"sqs":     "queue",
-	"route53": "dns",
-	"lambda":  "lambda",
+	"ec2":         "infra",
+	"elbv2":       "infra",
+	"rds":         "infra",
+	"autoscaling": "infra",
+	"iam":         "access",
+	"sts":         "access",
+	"s3":          "storage",
+	"sns":         "notification",
+	"sqs":         "queue",
+	"route53":     "dns",
+	"lambda":      "lambda",
 }
 
 var ServicePerResourceType = map[string]string{
-	"instance":         "infra",
-	"subnet":           "infra",
-	"vpc":              "infra",
-	"keypair":          "infra",
-	"securitygroup":    "infra",
-	"volume":           "infra",
-	"internetgateway":  "infra",
-	"routetable":       "infra",
-	"availabilityzone": "infra",
-	"loadbalancer":     "infra",
-	"targetgroup":      "infra",
-	"listener":         "infra",
-	"database":         "infra",
-	"dbsubnetgroup":    "infra",
-	"user":             "access",
-	"group":            "access",
-	"role":             "access",
-	"policy":           "access",
-	"accesskey":        "access",
-	"bucket":           "storage",
-	"s3object":         "storage",
-	"subscription":     "notification",
-	"topic":            "notification",
-	"queue":            "queue",
-	"zone":             "dns",
-	"record":           "dns",
-	"function":         "lambda",
+	"instance":            "infra",
+	"subnet":              "infra",
+	"vpc":                 "infra",
+	"keypair":             "infra",
+	"securitygroup":       "infra",
+	"volume":              "infra",
+	"internetgateway":     "infra",
+	"routetable":          "infra",
+	"availabilityzone":    "infra",
+	"loadbalancer":        "infra",
+	"targetgroup":         "infra",
+	"listener":            "infra",
+	"database":            "infra",
+	"dbsubnetgroup":       "infra",
+	"launchconfiguration": "infra",
+	"user":                "access",
+	"group":               "access",
+	"role":                "access",
+	"policy":              "access",
+	"accesskey":           "access",
+	"bucket":              "storage",
+	"s3object":            "storage",
+	"subscription":        "notification",
+	"topic":               "notification",
+	"queue":               "queue",
+	"zone":                "dns",
+	"record":              "dns",
+	"function":            "lambda",
 }
 
 var APIPerResourceType = map[string]string{
-	"instance":         "ec2",
-	"subnet":           "ec2",
-	"vpc":              "ec2",
-	"keypair":          "ec2",
-	"securitygroup":    "ec2",
-	"volume":           "ec2",
-	"internetgateway":  "ec2",
-	"routetable":       "ec2",
-	"availabilityzone": "ec2",
-	"loadbalancer":     "elbv2",
-	"targetgroup":      "elbv2",
-	"listener":         "elbv2",
-	"database":         "rds",
-	"dbsubnetgroup":    "rds",
-	"user":             "iam",
-	"group":            "iam",
-	"role":             "iam",
-	"policy":           "iam",
-	"accesskey":        "iam",
-	"bucket":           "s3",
-	"s3object":         "s3",
-	"subscription":     "sns",
-	"topic":            "sns",
-	"queue":            "sqs",
-	"zone":             "route53",
-	"record":           "route53",
-	"function":         "lambda",
+	"instance":            "ec2",
+	"subnet":              "ec2",
+	"vpc":                 "ec2",
+	"keypair":             "ec2",
+	"securitygroup":       "ec2",
+	"volume":              "ec2",
+	"internetgateway":     "ec2",
+	"routetable":          "ec2",
+	"availabilityzone":    "ec2",
+	"loadbalancer":        "elbv2",
+	"targetgroup":         "elbv2",
+	"listener":            "elbv2",
+	"database":            "rds",
+	"dbsubnetgroup":       "rds",
+	"launchconfiguration": "autoscaling",
+	"user":                "iam",
+	"group":               "iam",
+	"role":                "iam",
+	"policy":              "iam",
+	"accesskey":           "iam",
+	"bucket":              "s3",
+	"s3object":            "s3",
+	"subscription":        "sns",
+	"topic":               "sns",
+	"queue":               "sqs",
+	"zone":                "route53",
+	"record":              "route53",
+	"function":            "lambda",
 }
 
 type Infra struct {
@@ -177,17 +183,19 @@ type Infra struct {
 	ec2iface.EC2API
 	elbv2iface.ELBV2API
 	rdsiface.RDSAPI
+	autoscalingiface.AutoScalingAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
 	return &Infra{
-		EC2API:   ec2.New(sess),
-		ELBV2API: elbv2.New(sess),
-		RDSAPI:   rds.New(sess),
-		config:   awsconf,
-		region:   region,
-		log:      log,
+		EC2API:         ec2.New(sess),
+		ELBV2API:       elbv2.New(sess),
+		RDSAPI:         rds.New(sess),
+		AutoScalingAPI: autoscaling.New(sess),
+		config:         awsconf,
+		region:         region,
+		log:            log,
 	}
 }
 
@@ -200,6 +208,7 @@ func (s *Infra) Drivers() []driver.Driver {
 		awsdriver.NewEc2Driver(s.EC2API),
 		awsdriver.NewElbv2Driver(s.ELBV2API),
 		awsdriver.NewRdsDriver(s.RDSAPI),
+		awsdriver.NewAutoscalingDriver(s.AutoScalingAPI),
 	}
 }
 
@@ -219,6 +228,7 @@ func (s *Infra) ResourceTypes() []string {
 		"listener",
 		"database",
 		"dbsubnetgroup",
+		"launchconfiguration",
 	}
 }
 
@@ -246,6 +256,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var listenerList []*elbv2.Listener
 	var databaseList []*rds.DBInstance
 	var dbsubnetgroupList []*rds.DBSubnetGroup
+	var launchconfigurationList []*autoscaling.LaunchConfiguration
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -473,6 +484,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[dbsubnetgroup]")
+	}
+	if s.config.getBool("aws.infra.launchconfiguration.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, launchconfigurationList, err = s.fetch_all_launchconfiguration_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[launchconfiguration]")
 	}
 
 	go func() {
@@ -707,6 +734,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.launchconfiguration.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range launchconfigurationList {
+				for _, fn := range addParentsFns["launchconfiguration"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -765,6 +807,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "dbsubnetgroup":
 		graph, _, err := s.fetch_all_dbsubnetgroup_graph()
+		return graph, err
+	case "launchconfiguration":
+		graph, _, err := s.fetch_all_launchconfiguration_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -1082,6 +1127,31 @@ func (s *Infra) fetch_all_dbsubnetgroup_graph() (*graph.Graph, []*rds.DBSubnetGr
 				}
 			}
 			return out.Marker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Infra) fetch_all_launchconfiguration_graph() (*graph.Graph, []*autoscaling.LaunchConfiguration, error) {
+	g := graph.NewGraph()
+	var cloudResources []*autoscaling.LaunchConfiguration
+	var badResErr error
+	err := s.DescribeLaunchConfigurationsPages(&autoscaling.DescribeLaunchConfigurationsInput{},
+		func(out *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.LaunchConfigurations {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
 		})
 	if err != nil {
 		return g, cloudResources, err

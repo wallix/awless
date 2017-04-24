@@ -146,7 +146,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Port},
 		StringColumnDefinition{Prop: properties.Username},
 		ColoredValueColumnDefinition{
-			StringColumnDefinition: StringColumnDefinition{Prop: properties.Public, Friendly: "Public"},
+			StringColumnDefinition: StringColumnDefinition{Prop: properties.Public},
 			ColoredValues:          map[string]color.Attribute{"true": color.FgYellow}},
 		StringColumnDefinition{Prop: properties.Engine},
 		StringColumnDefinition{Prop: properties.EngineVersion, Friendly: "Version"},
@@ -158,6 +158,13 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Vpc},
 		StringColumnDefinition{Prop: properties.Subnets, DisableTruncate: true},
 		StringColumnDefinition{Prop: properties.Description},
+	},
+	//Autoscaling
+	cloud.LaunchConfiguration: {
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Type},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+		StringColumnDefinition{Prop: properties.KeyPair},
 	},
 	//IAM
 	cloud.User: {

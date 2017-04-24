@@ -2,75 +2,38 @@ package ast
 
 type Entity string
 
-const (
-	UnknownEntity Entity = "unknown"
-	NoneEntity    Entity = "none"
-
-	Vpc             Entity = "vpc"
-	Subnet          Entity = "subnet"
-	Instance        Entity = "instance"
-	Volume          Entity = "volume"
-	Tag             Entity = "tag"
-	Securitygroup   Entity = "securitygroup"
-	Keypair         Entity = "keypair"
-	Internetgateway Entity = "internetgateway"
-	Routetable      Entity = "routetable"
-	Route           Entity = "route"
-	Loadbalancer    Entity = "loadbalancer"
-	Listener        Entity = "listener"
-	Targetgroup     Entity = "targetgroup"
-	Database        Entity = "database"
-	Dbsubnetgroup   Entity = "dbsubnetgroup"
-
-	Zone   Entity = "zone"
-	Record Entity = "record"
-
-	User      Entity = "user"
-	Group     Entity = "group"
-	Role      Entity = "role"
-	Policy    Entity = "policy"
-	Accesskey Entity = "accesskey"
-
-	Bucket   Entity = "bucket"
-	S3object Entity = "s3object"
-
-	Subscription Entity = "subscription"
-	Topic        Entity = "topic"
-	Queue        Entity = "queue"
-
-	Function Entity = "function"
-)
-
 var entities = map[Entity]struct{}{
-	NoneEntity:      {},
-	Vpc:             {},
-	Subnet:          {},
-	Instance:        {},
-	Volume:          {},
-	Tag:             {},
-	Securitygroup:   {},
-	Keypair:         {},
-	Internetgateway: {},
-	Routetable:      {},
-	Route:           {},
-	Loadbalancer:    {},
-	Listener:        {},
-	Targetgroup:     {},
-	Database:        {},
-	Dbsubnetgroup:   {},
-	Zone:            {},
-	Record:          {},
-	User:            {},
-	Group:           {},
-	Role:            {},
-	Policy:          {},
-	Accesskey:       {},
-	Bucket:          {},
-	S3object:        {},
-	Subscription:    {},
-	Topic:           {},
-	Queue:           {},
-	Function:        {},
+	"none": {},
+
+	"accesskey":           {},
+	"bucket":              {},
+	"database":            {},
+	"dbsubnetgroup":       {},
+	"function":            {},
+	"group":               {},
+	"instance":            {},
+	"internetgateway":     {},
+	"keypair":             {},
+	"launchconfiguration": {},
+	"listener":            {},
+	"loadbalancer":        {},
+	"policy":              {},
+	"queue":               {},
+	"record":              {},
+	"role":                {},
+	"route":               {},
+	"routetable":          {},
+	"s3object":            {},
+	"securitygroup":       {},
+	"subnet":              {},
+	"subscription":        {},
+	"tag":                 {},
+	"targetgroup":         {},
+	"topic":               {},
+	"user":                {},
+	"volume":              {},
+	"vpc":                 {},
+	"zone":                {},
 }
 
 func IsInvalidEntity(s string) bool {

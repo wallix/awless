@@ -28,6 +28,7 @@ import (
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -76,6 +77,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Database, awssdk.StringValue(ss.DBInstanceIdentifier))
 	case *rds.DBSubnetGroup:
 		res = graph.InitResource(cloud.DbSubnetGroup, awssdk.StringValue(ss.DBSubnetGroupName))
+		// Autoscaling
+	case *autoscaling.LaunchConfiguration:
+		res = graph.InitResource(cloud.LaunchConfiguration, awssdk.StringValue(ss.LaunchConfigurationARN))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))

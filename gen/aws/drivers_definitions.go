@@ -466,6 +466,34 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
+		Api:          "autoscaling",
+		ApiInterface: "AutoScalingAPI",
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.LaunchConfiguration, ApiMethod: "CreateLaunchConfiguration", Input: "CreateLaunchConfigurationInput", Output: "CreateLaunchConfigurationOutput", DryRunUnsupported: true, OutputExtractor: "params[\"name\"]",
+				RequiredParams: []param{
+					{AwsField: "ImageId", TemplateName: "image", AwsType: "awsstr"},
+					{AwsField: "InstanceType", TemplateName: "type", AwsType: "awsstr"},
+					{AwsField: "LaunchConfigurationName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "AssociatePublicIpAddress", TemplateName: "public", AwsType: "awsbool"},
+					{AwsField: "KeyName", TemplateName: "keypair", AwsType: "awsstr"},
+					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
+					{AwsField: "SecurityGroups", TemplateName: "securitygroup", AwsType: "awsstringslice"},
+					{AwsField: "IamInstanceProfile", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "SpotPrice", TemplateName: "spotprice", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.LaunchConfiguration, ApiMethod: "DeleteLaunchConfiguration", Input: "DeleteLaunchConfigurationInput", Output: "DeleteLaunchConfigurationOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "LaunchConfigurationName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+		},
+	},
+	{
 		Api: "rds",
 		Drivers: []driver{
 			// LoadBalancer

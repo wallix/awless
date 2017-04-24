@@ -20,6 +20,7 @@ package awsdriver
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -332,6 +333,38 @@ func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err e
 			return d.Detach_Instance_DryRun, nil
 		}
 		return d.Detach_Instance, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type AutoscalingDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	autoscalingiface.AutoScalingAPI
+}
+
+func (d *AutoscalingDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *AutoscalingDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewAutoscalingDriver(api autoscalingiface.AutoScalingAPI) driver.Driver {
+	return &AutoscalingDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *AutoscalingDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
+
+	case "createlaunchconfiguration":
+		if d.dryRun {
+			return d.Create_Launchconfiguration_DryRun, nil
+		}
+		return d.Create_Launchconfiguration, nil
+
+	case "deletelaunchconfiguration":
+		if d.dryRun {
+			return d.Delete_Launchconfiguration_DryRun, nil
+		}
+		return d.Delete_Launchconfiguration, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

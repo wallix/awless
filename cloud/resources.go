@@ -42,4 +42,6 @@ const (
 	Record string = "record"
 	//lambda
 	Function string = "function"
+	//autoscaling
+	LaunchConfiguration string = "launchconfiguration"
 )

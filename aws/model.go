@@ -183,6 +183,19 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Subnets:     {name: "Subnets", transform: extractStringSliceValues("SubnetIdentifier")},
 		properties.Vpc:         {name: "VpcId", transform: extractValueFn},
 	},
+	//Autoscaling
+	cloud.LaunchConfiguration: {
+		properties.Name:           {name: "LaunchConfigurationName", transform: extractValueFn},
+		properties.Public:         {name: "AssociatePublicIpAddress", transform: extractValueFn},
+		properties.Created:        {name: "CreatedTime", transform: extractValueFn},
+		properties.Profile:        {name: "IamInstanceProfile", transform: extractValueFn},
+		properties.Image:          {name: "ImageId", transform: extractValueFn},
+		properties.Type:           {name: "InstanceType", transform: extractValueFn},
+		properties.KeyPair:        {name: "KeyName", transform: extractValueFn},
+		properties.SecurityGroups: {name: "SecurityGroups", transform: extractStringSliceValues("GroupId")},
+		properties.SpotPrice:      {name: "SpotPrice", transform: extractValueFn},
+		properties.UserData:       {name: "Userdata", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

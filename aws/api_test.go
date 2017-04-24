@@ -273,7 +273,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
 	mockLb := &mockELB{loadBalancerPages: lbPages, targetGroups: targetGroups, listeners: listeners, targetHealths: targetHealths}
-	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, region: "eu-west-1"}
+	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{}, region: "eu-west-1"}
 	InfraService = &infra
 
 	g, err := infra.FetchResources()
@@ -505,7 +505,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
 	}
 
-	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockELB{}, RDSAPI: &mockRDS{}, region: "eu-west-1"}
+	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockELB{}, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{}, region: "eu-west-1"}
 
 	g, err = infra.FetchResources()
 	if err != nil {

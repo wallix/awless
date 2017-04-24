@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -116,6 +118,15 @@ func (m *mockRDS) DescribeDBInstancesPages(input *rds.DescribeDBInstancesInput, 
 
 func (m *mockRDS) DescribeDBSubnetGroupsPages(input *rds.DescribeDBSubnetGroupsInput, fn func(p *rds.DescribeDBSubnetGroupsOutput, lastPage bool) (shouldContinue bool)) error {
 	fn(&rds.DescribeDBSubnetGroupsOutput{}, true)
+	return nil
+}
+
+type mockAutoScaling struct {
+	autoscalingiface.AutoScalingAPI
+}
+
+func (m *mockAutoScaling) DescribeLaunchConfigurationsPages(input *autoscaling.DescribeLaunchConfigurationsInput, fn func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&autoscaling.DescribeLaunchConfigurationsOutput{}, true)
 	return nil
 }
 

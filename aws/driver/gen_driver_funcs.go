@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -2103,6 +2104,128 @@ func (d *Elbv2Driver) Detach_Instance(params map[string]interface{}) (interface{
 	}
 	d.logger.ExtraVerbosef("elbv2.DeregisterTargets call took %s", time.Since(start))
 	d.logger.Info("detach instance done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Create_Launchconfiguration_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["image"]; !ok {
+		return nil, errors.New("create launchconfiguration: missing required params 'image'")
+	}
+
+	if _, ok := params["type"]; !ok {
+		return nil, errors.New("create launchconfiguration: missing required params 'type'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create launchconfiguration: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create launchconfiguration ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Create_Launchconfiguration(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.CreateLaunchConfigurationInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["image"], input, "ImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "LaunchConfigurationName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["public"]; ok {
+		err = setFieldWithType(params["public"], input, "AssociatePublicIpAddress", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["keypair"]; ok {
+		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["userdata"]; ok {
+		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["securitygroup"]; ok {
+		err = setFieldWithType(params["securitygroup"], input, "SecurityGroups", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "IamInstanceProfile", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["spotprice"]; ok {
+		err = setFieldWithType(params["spotprice"], input, "SpotPrice", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *autoscaling.CreateLaunchConfigurationOutput
+	output, err = d.CreateLaunchConfiguration(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create launchconfiguration: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.CreateLaunchConfiguration call took %s", time.Since(start))
+	id := params["name"]
+
+	d.logger.Infof("create launchconfiguration '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Delete_Launchconfiguration_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete launchconfiguration: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete launchconfiguration ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Delete_Launchconfiguration(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.DeleteLaunchConfigurationInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "LaunchConfigurationName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *autoscaling.DeleteLaunchConfigurationOutput
+	output, err = d.DeleteLaunchConfiguration(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete launchconfiguration: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.DeleteLaunchConfiguration call took %s", time.Since(start))
+	d.logger.Info("delete launchconfiguration done")
 	return output, nil
 }
 

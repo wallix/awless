@@ -170,6 +170,7 @@ var (
 	Set                       = fmt.Sprintf("%s:set", CloudNS)
 	Size                      = fmt.Sprintf("%s:size", CloudNS)
 	SpotInstanceRequestId     = fmt.Sprintf("%s:spotInstanceRequestId", CloudNS)
+	SpotPrice                 = fmt.Sprintf("%s:spotPrice", CloudNS)
 	KeyPair                   = fmt.Sprintf("%s:keyPair", CloudNS)
 	State                     = fmt.Sprintf("%s:state", CloudNS)
 	Storage                   = fmt.Sprintf("%s:storage", CloudNS)
@@ -185,6 +186,7 @@ var (
 	UnhealthyThresholdCount   = fmt.Sprintf("%s:unhealthyThresholdCount", CloudNS)
 	Updated                   = fmt.Sprintf("%s:updated", CloudNS)
 	Username                  = fmt.Sprintf("%s:username", CloudNS)
+	UserData                  = fmt.Sprintf("%s:userData", CloudNS)
 	Version                   = fmt.Sprintf("%s:version", CloudNS)
 	Vpc                       = fmt.Sprintf("%s:vpc", CloudNS)
 	Vpcs                      = fmt.Sprintf("%s:vpcs", CloudNS)
@@ -294,6 +296,7 @@ var Labels = map[string]string{
 	properties.Set:                       Set,
 	properties.Size:                      Size,
 	properties.SpotInstanceRequestId:     SpotInstanceRequestId,
+	properties.SpotPrice:                 SpotPrice,
 	properties.KeyPair:                   KeyPair,
 	properties.State:                     State,
 	properties.Storage:                   Storage,
@@ -309,6 +312,7 @@ var Labels = map[string]string{
 	properties.UnhealthyThresholdCount:   UnhealthyThresholdCount,
 	properties.Updated:                   Updated,
 	properties.Username:                  Username,
+	properties.UserData:                  UserData,
 	properties.Version:                   Version,
 	properties.Vpc:                       Vpc,
 	properties.Vpcs:                      Vpcs,
@@ -418,6 +422,7 @@ var RdfProperties = map[string]rdfProp{
 	Set:                       {ID: Set, RdfType: RdfProperty, RdfsLabel: properties.Set, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Size:                      {ID: Size, RdfType: RdfProperty, RdfsLabel: properties.Size, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	SpotInstanceRequestId: {ID: SpotInstanceRequestId, RdfType: RdfProperty, RdfsLabel: properties.SpotInstanceRequestId, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
+	SpotPrice:             {ID: SpotPrice, RdfType: RdfProperty, RdfsLabel: properties.SpotPrice, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	KeyPair:               {ID: KeyPair, RdfType: RdfProperty, RdfsLabel: properties.KeyPair, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	State:                 {ID: State, RdfType: RdfProperty, RdfsLabel: properties.State, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Storage:               {ID: Storage, RdfType: RdfProperty, RdfsLabel: properties.Storage, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
@@ -433,6 +438,7 @@ var RdfProperties = map[string]rdfProp{
 	UnhealthyThresholdCount: {ID: UnhealthyThresholdCount, RdfType: RdfProperty, RdfsLabel: properties.UnhealthyThresholdCount, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdInt},
 	Updated:                 {ID: Updated, RdfType: RdfProperty, RdfsLabel: properties.Updated, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Username:                {ID: Username, RdfType: RdfProperty, RdfsLabel: properties.Username, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
+	UserData:                {ID: UserData, RdfType: RdfProperty, RdfsLabel: properties.UserData, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Version:                 {ID: Version, RdfType: RdfProperty, RdfsLabel: properties.Version, RdfsDefinedBy: RdfsLiteral, RdfsDataType: XsdString},
 	Vpc:                     {ID: Vpc, RdfType: RdfProperty, RdfsLabel: properties.Vpc, RdfsDefinedBy: RdfsClass, RdfsDataType: XsdString},
 	Vpcs:                    {ID: Vpcs, RdfType: RdfProperty, RdfsLabel: properties.Vpcs, RdfsDefinedBy: RdfsList, RdfsDataType: RdfsClass},
