@@ -9,7 +9,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/wallix/awless/aws"
-	awsconfig "github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/logger"
