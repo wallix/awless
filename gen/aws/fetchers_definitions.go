@@ -59,6 +59,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "rds", ResourceType: cloud.Database, AWSType: "rds.DBInstance", ApiMethod: "DescribeDBInstancesPages", Input: "rds.DescribeDBInstancesInput{}", Output: "rds.DescribeDBInstancesOutput", OutputsExtractor: "DBInstances", Multipage: true, NextPageMarker: "Marker"},
 			{Api: "rds", ResourceType: cloud.DbSubnetGroup, AWSType: "rds.DBSubnetGroup", ApiMethod: "DescribeDBSubnetGroupsPages", Input: "rds.DescribeDBSubnetGroupsInput{}", Output: "rds.DescribeDBSubnetGroupsOutput", OutputsExtractor: "DBSubnetGroups", Multipage: true, NextPageMarker: "Marker"},
 			{Api: "autoscaling", ResourceType: cloud.LaunchConfiguration, AWSType: "autoscaling.LaunchConfiguration", ApiMethod: "DescribeLaunchConfigurationsPages", Input: "autoscaling.DescribeLaunchConfigurationsInput{}", Output: "autoscaling.DescribeLaunchConfigurationsOutput", OutputsExtractor: "LaunchConfigurations", Multipage: true, NextPageMarker: "NextToken"},
+			{Api: "autoscaling", ResourceType: cloud.AutoScalingGroup, AWSType: "autoscaling.Group", ApiMethod: "DescribeAutoScalingGroupsPages", Input: "autoscaling.DescribeAutoScalingGroupsInput{}", Output: "autoscaling.DescribeAutoScalingGroupsOutput", OutputsExtractor: "AutoScalingGroups", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
 	{

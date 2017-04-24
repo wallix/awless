@@ -480,7 +480,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "AssociatePublicIpAddress", TemplateName: "public", AwsType: "awsbool"},
 					{AwsField: "KeyName", TemplateName: "keypair", AwsType: "awsstr"},
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
-					{AwsField: "SecurityGroups", TemplateName: "securitygroup", AwsType: "awsstringslice"},
+					{AwsField: "SecurityGroups", TemplateName: "securitygroups", AwsType: "awsstringslice"},
 					{AwsField: "IamInstanceProfile", TemplateName: "role", AwsType: "awsstr"},
 					{AwsField: "SpotPrice", TemplateName: "spotprice", AwsType: "awsstr"},
 				},
@@ -489,6 +489,33 @@ var DriversDefs = []driversDef{
 				Action: "delete", Entity: cloud.LaunchConfiguration, ApiMethod: "DeleteLaunchConfiguration", Input: "DeleteLaunchConfigurationInput", Output: "DeleteLaunchConfigurationOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "LaunchConfigurationName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "create", Entity: cloud.AutoScalingGroup, ApiMethod: "CreateAutoScalingGroup", Input: "CreateAutoScalingGroupInput", Output: "CreateAutoScalingGroupOutput", DryRunUnsupported: true, OutputExtractor: "params[\"name\"]",
+				RequiredParams: []param{
+					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "LaunchConfigurationName", TemplateName: "launchconfiguration", AwsType: "awsstr"},
+					{AwsField: "MaxSize", TemplateName: "max-size", AwsType: "awsint64"},
+					{AwsField: "MinSize", TemplateName: "min-size", AwsType: "awsint64"},
+					{AwsField: "VPCZoneIdentifier", TemplateName: "subnets", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "DefaultCooldown", TemplateName: "cooldown", AwsType: "awsint64"},
+					{AwsField: "DesiredCapacity", TemplateName: "desired-capacity", AwsType: "awsint64"},
+					{AwsField: "HealthCheckGracePeriod", TemplateName: "healthcheck-grace-period", AwsType: "awsint64"},
+					{AwsField: "HealthCheckType", TemplateName: "healthcheck-type", AwsType: "awsstr"},
+					{AwsField: "NewInstancesProtectedFromScaleIn", TemplateName: "new-instances-protected", AwsType: "awsbool"},
+					{AwsField: "TargetGroupARNs", TemplateName: "targetgroups", AwsType: "awsstringslice"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.AutoScalingGroup, ApiMethod: "DeleteAutoScalingGroup", Input: "DeleteAutoScalingGroupInput", Output: "DeleteAutoScalingGroupOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "ForceDelete", TemplateName: "force", AwsType: "awsbool"},
 				},
 			},
 		},
@@ -514,7 +541,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "DBClusterIdentifier", TemplateName: "cluster", AwsType: "awsstr"},
 					{AwsField: "DBName", TemplateName: "dbname", AwsType: "awsstr"},
 					{AwsField: "DBParameterGroupName", TemplateName: "parametergroup", AwsType: "awsstr"},
-					{AwsField: "DBSecurityGroups", TemplateName: "dbsecuritygroup", AwsType: "awsstringslice"},
+					{AwsField: "DBSecurityGroups", TemplateName: "dbsecuritygroups", AwsType: "awsstringslice"},
 					{AwsField: "DBSubnetGroupName", TemplateName: "subnetgroup", AwsType: "awsstr"},
 					{AwsField: "Domain", TemplateName: "domain", AwsType: "awsstr"},
 					{AwsField: "DomainIAMRoleName", TemplateName: "iamrole", AwsType: "awsstr"},
@@ -530,7 +557,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "StorageEncrypted", TemplateName: "encrypted", AwsType: "awsbool"},
 					{AwsField: "StorageType", TemplateName: "storagetype", AwsType: "awsstr"},
 					{AwsField: "Timezone", TemplateName: "timezone", AwsType: "awsstr"},
-					{AwsField: "VpcSecurityGroupIds", TemplateName: "vpcsecuritygroup", AwsType: "awsstringslice"},
+					{AwsField: "VpcSecurityGroupIds", TemplateName: "vpcsecuritygroups", AwsType: "awsstringslice"},
 				},
 			},
 			{

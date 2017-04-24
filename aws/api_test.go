@@ -23,6 +23,7 @@ import (
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -269,16 +270,25 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"tg_2": {{Target: &elbv2.TargetDescription{Id: awssdk.String("inst_2"), Port: awssdk.Int64(80)}}, {Target: &elbv2.TargetDescription{Id: awssdk.String("inst_3"), Port: awssdk.Int64(80)}}},
 	}
 
+	//Autoscaling
+	launchConfigs := []*autoscaling.LaunchConfiguration{
+		{LaunchConfigurationARN: awssdk.String("launchconfig_arn"), LaunchConfigurationName: awssdk.String("launchconfig_name"), KeyName: awssdk.String("my_key")},
+	}
+	autoscalingGroups := []*autoscaling.Group{
+		{AutoScalingGroupARN: awssdk.String("asg_arn_1"), AutoScalingGroupName: awssdk.String("asg_name_1"), Instances: []*autoscaling.Instance{{InstanceId: awssdk.String("inst_1")}, {InstanceId: awssdk.String("inst_3")}}, VPCZoneIdentifier: awssdk.String("sub_1,sub_2"), LaunchConfigurationName: awssdk.String("launchconfig_name")},
+		{AutoScalingGroupARN: awssdk.String("asg_arn_2"), AutoScalingGroupName: awssdk.String("asg_name_2"), LaunchConfigurationName: awssdk.String("launchconfig_name"), TargetGroupARNs: []*string{awssdk.String("tg_1"), awssdk.String("tg_2")}},
+	}
+
 	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
 	mockLb := &mockELB{loadBalancerPages: lbPages, targetGroups: targetGroups, listeners: listeners, targetHealths: targetHealths}
-	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{}, region: "eu-west-1"}
+	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{configs: launchConfigs, groups: autoscalingGroups}, region: "eu-west-1"}
 	InfraService = &infra
 
 	g, err := infra.FetchResources()
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "autoscalinggroup")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,36 +304,39 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expected := map[string]*graph.Resource{
-		"eu-west-1":       resourcetest.Region("eu-west-1").Build(),
-		"inst_1":          resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
-		"inst_2":          resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Build(),
-		"inst_3":          resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"inst_4":          resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.KeyPair, "my_key").Build(),
-		"inst_5":          resourcetest.Instance("inst_5").Prop(p.KeyPair, "unexisting_key").Build(),
-		"vpc_1":           resourcetest.VPC("vpc_1").Build(),
-		"vpc_2":           resourcetest.VPC("vpc_2").Build(),
-		"securitygroup_1": resourcetest.SecurityGroup("securitygroup_1").Prop(p.Name, "my_securitygroup").Prop(p.Vpc, "vpc_1").Build(),
-		"securitygroup_2": resourcetest.SecurityGroup("securitygroup_2").Prop(p.Vpc, "vpc_1").Build(),
-		"sub_1":           resourcetest.Subnet("sub_1").Prop(p.Vpc, "vpc_1").Build(),
-		"sub_2":           resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
-		"sub_3":           resourcetest.Subnet("sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"sub_4":           resourcetest.Subnet("sub_4").Build(),
-		"my_key":          resourcetest.KeyPair("my_key").Build(),
-		"igw_1":           resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
-		"rt_1":            resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
-		"lb_1":            resourcetest.LoadBalancer("lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
-		"lb_2":            resourcetest.LoadBalancer("lb_2").Prop(p.Vpc, "vpc_2").Build(),
-		"lb_3":            resourcetest.LoadBalancer("lb_3").Prop(p.Vpc, "vpc_1").Build(),
-		"tg_1":            resourcetest.TargetGroup("tg_1").Prop(p.Vpc, "vpc_1").Build(),
-		"tg_2":            resourcetest.TargetGroup("tg_2").Prop(p.Vpc, "vpc_2").Build(),
-		"list_1":          resourcetest.Listener("list_1").Prop(p.LoadBalancer, "lb_1").Build(),
-		"list_1.2":        resourcetest.Listener("list_1.2").Prop(p.LoadBalancer, "lb_1").Build(),
-		"list_2":          resourcetest.Listener("list_2").Prop(p.LoadBalancer, "lb_2").Build(),
-		"list_3":          resourcetest.Listener("list_3").Prop(p.LoadBalancer, "lb_3").Build(),
+		"eu-west-1":        resourcetest.Region("eu-west-1").Build(),
+		"inst_1":           resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
+		"inst_2":           resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Build(),
+		"inst_3":           resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"inst_4":           resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.KeyPair, "my_key").Build(),
+		"inst_5":           resourcetest.Instance("inst_5").Prop(p.KeyPair, "unexisting_key").Build(),
+		"vpc_1":            resourcetest.VPC("vpc_1").Build(),
+		"vpc_2":            resourcetest.VPC("vpc_2").Build(),
+		"securitygroup_1":  resourcetest.SecurityGroup("securitygroup_1").Prop(p.Name, "my_securitygroup").Prop(p.Vpc, "vpc_1").Build(),
+		"securitygroup_2":  resourcetest.SecurityGroup("securitygroup_2").Prop(p.Vpc, "vpc_1").Build(),
+		"sub_1":            resourcetest.Subnet("sub_1").Prop(p.Vpc, "vpc_1").Build(),
+		"sub_2":            resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
+		"sub_3":            resourcetest.Subnet("sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"sub_4":            resourcetest.Subnet("sub_4").Build(),
+		"my_key":           resourcetest.KeyPair("my_key").Build(),
+		"igw_1":            resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
+		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
+		"lb_1":             resourcetest.LoadBalancer("lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
+		"lb_2":             resourcetest.LoadBalancer("lb_2").Prop(p.Vpc, "vpc_2").Build(),
+		"lb_3":             resourcetest.LoadBalancer("lb_3").Prop(p.Vpc, "vpc_1").Build(),
+		"tg_1":             resourcetest.TargetGroup("tg_1").Prop(p.Vpc, "vpc_1").Build(),
+		"tg_2":             resourcetest.TargetGroup("tg_2").Prop(p.Vpc, "vpc_2").Build(),
+		"list_1":           resourcetest.Listener("list_1").Prop(p.LoadBalancer, "lb_1").Build(),
+		"list_1.2":         resourcetest.Listener("list_1.2").Prop(p.LoadBalancer, "lb_1").Build(),
+		"list_2":           resourcetest.Listener("list_2").Prop(p.LoadBalancer, "lb_2").Build(),
+		"list_3":           resourcetest.Listener("list_3").Prop(p.LoadBalancer, "lb_3").Build(),
+		"launchconfig_arn": resourcetest.LaunchConfig("launchconfig_arn").Prop(p.Name, "launchconfig_name").Prop(p.KeyPair, "my_key").Build(),
+		"asg_arn_1":        resourcetest.AutoscalingGroup("asg_arn_1").Prop(p.Name, "asg_name_1").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
+		"asg_arn_2":        resourcetest.AutoscalingGroup("asg_arn_2").Prop(p.Name, "asg_name_2").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"igw_1", "my_key", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "launchconfig_arn", "my_key", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
@@ -339,12 +352,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"lb_1":            {"tg_1"},
 		"lb_2":            {"tg_2"},
 		"lb_3":            {"tg_1"},
-		"my_key":          {"inst_4"},
+		"my_key":          {"inst_4", "launchconfig_arn"},
 		"rt_1":            {"sub_1"},
 		"securitygroup_1": {"inst_2", "inst_4", "lb_3"},
 		"securitygroup_2": {"inst_4", "lb_3"},
 		"tg_1":            {"inst_1"},
 		"tg_2":            {"inst_2", "inst_3"},
+		"asg_arn_1":       {"inst_1", "inst_3", "sub_1", "sub_2"},
+		"asg_arn_2":       {"tg_1", "tg_2"},
 	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)

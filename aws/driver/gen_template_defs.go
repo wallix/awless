@@ -68,6 +68,8 @@ var APIPerTemplateDefName = map[string]string{
 	"detachinstance":            "elbv2",
 	"createlaunchconfiguration": "autoscaling",
 	"deletelaunchconfiguration": "autoscaling",
+	"createautoscalinggroup":    "autoscaling",
+	"deleteautoscalinggroup":    "autoscaling",
 	"createdatabase":            "rds",
 	"deletedatabase":            "rds",
 	"createdbsubnetgroup":       "rds",
@@ -422,7 +424,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "launchconfiguration",
 		Api:            "autoscaling",
 		RequiredParams: []string{"image", "name", "type"},
-		ExtraParams:    []string{"keypair", "public", "role", "securitygroup", "spotprice", "userdata"},
+		ExtraParams:    []string{"keypair", "public", "role", "securitygroups", "spotprice", "userdata"},
 	},
 	"deletelaunchconfiguration": {
 		Action:         "delete",
@@ -431,12 +433,26 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
+	"createautoscalinggroup": {
+		Action:         "create",
+		Entity:         "autoscalinggroup",
+		Api:            "autoscaling",
+		RequiredParams: []string{"launchconfiguration", "max-size", "min-size", "name", "subnets"},
+		ExtraParams:    []string{"cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "new-instances-protected", "targetgroups"},
+	},
+	"deleteautoscalinggroup": {
+		Action:         "delete",
+		Entity:         "autoscalinggroup",
+		Api:            "autoscaling",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{"force"},
+	},
 	"createdatabase": {
 		Action:         "create",
 		Entity:         "database",
 		Api:            "rds",
 		RequiredParams: []string{"engine", "id", "password", "size", "type", "username"},
-		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecuritygroup", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecuritygroup"},
+		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecuritygroups", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecuritygroups"},
 	},
 	"deletedatabase": {
 		Action:         "delete",
@@ -747,6 +763,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["detach"] = append(supported["detach"], "instance")
 	supported["create"] = append(supported["create"], "launchconfiguration")
 	supported["delete"] = append(supported["delete"], "launchconfiguration")
+	supported["create"] = append(supported["create"], "autoscalinggroup")
+	supported["delete"] = append(supported["delete"], "autoscalinggroup")
 	supported["create"] = append(supported["create"], "database")
 	supported["delete"] = append(supported["delete"], "database")
 	supported["create"] = append(supported["create"], "dbsubnetgroup")

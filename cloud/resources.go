@@ -44,4 +44,5 @@ const (
 	Function string = "function"
 	//autoscaling
 	LaunchConfiguration string = "launchconfiguration"
+	AutoScalingGroup    string = "autoscalinggroup"
 )

@@ -74,7 +74,12 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 	}
 	switch destType {
 	case awsstr:
-		v = fmt.Sprint(v)
+		switch vv := v.(type) {
+		case []string:
+			v = strings.Join(vv, ",")
+		default:
+			v = fmt.Sprint(v)
+		}
 	case awsint64:
 		v, err = castInt64(v)
 		if err != nil {

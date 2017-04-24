@@ -54,8 +54,10 @@ const (
 	DBSecurityGroups          = "cloud:dbSecurityGroups"
 	DBSubnetGroup             = "cloud:dbSubnetGroup"
 	Default                   = "cloud:default"
+	DefaultCooldown           = "cloud:defaultCooldown"
 	Delay                     = "cloud:delaySeconds"
 	Description               = "cloud:description"
+	DesiredCapacity           = "cloud:desiredCapacity"
 	Encrypted                 = "cloud:encrypted"
 	Endpoint                  = "cloud:endpoint"
 	Engine                    = "cloud:engine"
@@ -68,6 +70,8 @@ const (
 	Handler                   = "cloud:handler"
 	Hash                      = "cloud:hash"
 	HealthCheck               = "cloud:healthCheck"
+	HealthCheckType           = "cloud:healthCheckType"
+	HealthCheckGracePeriod    = "cloud:healthCheckGracePeriod"
 	HealthyThresholdCount     = "cloud:healthyThresholdCount"
 	Host                      = "cloud:host"
 	Hypervisor                = "cloud:hypervisor"
@@ -81,17 +85,21 @@ const (
 	KeyPair                   = "cloud:keyPair"
 	LatestRestorableTime      = "cloud:latestRestorableTime"
 	Launched                  = "cloud:launched"
+	LaunchConfigurationName   = "cloud:launchConfigurationName"
 	License                   = "cloud:license"
 	Lifecycle                 = "cloud:lifecycle"
 	LoadBalancer              = "cloud:loadBalancer"
 	Main                      = "cloud:main"
+	MaxSize                   = "cloud:maxSize"
 	Memory                    = "cloud:memory"
 	Messages                  = "cloud:messages"
+	MinSize                   = "cloud:minSize"
 	Modified                  = "cloud:modified"
 	MonitoringInterval        = "cloud:monitoringInterval"
 	MonitoringRole            = "cloud:monitoringRole"
 	MultiAZ                   = "cloud:multiAZ"
 	Name                      = "cloud:name"
+	NewInstancesProtected     = "cloud:newInstancesProtected"
 	NetworkInterfaces         = "cloud:networkInterfaces"
 	OptionGroups              = "cloud:optionGroups"
 	OutboundRules             = "net:outboundRules"
@@ -183,8 +191,10 @@ var Labels = map[string]string{
 	properties.DBSecurityGroups:          DBSecurityGroups,
 	properties.DBSubnetGroup:             DBSubnetGroup,
 	properties.Default:                   Default,
+	properties.DefaultCooldown:           DefaultCooldown,
 	properties.Delay:                     Delay,
 	properties.Description:               Description,
+	properties.DesiredCapacity:           DesiredCapacity,
 	properties.Encrypted:                 Encrypted,
 	properties.Endpoint:                  Endpoint,
 	properties.Engine:                    Engine,
@@ -197,6 +207,8 @@ var Labels = map[string]string{
 	properties.Handler:                   Handler,
 	properties.Hash:                      Hash,
 	properties.HealthCheck:               HealthCheck,
+	properties.HealthCheckType:           HealthCheckType,
+	properties.HealthCheckGracePeriod:    HealthCheckGracePeriod,
 	properties.HealthyThresholdCount:     HealthyThresholdCount,
 	properties.Host:                      Host,
 	properties.Hypervisor:                Hypervisor,
@@ -210,17 +222,21 @@ var Labels = map[string]string{
 	properties.KeyPair:                   KeyPair,
 	properties.LatestRestorableTime:      LatestRestorableTime,
 	properties.Launched:                  Launched,
+	properties.LaunchConfigurationName:   LaunchConfigurationName,
 	properties.License:                   License,
 	properties.Lifecycle:                 Lifecycle,
 	properties.LoadBalancer:              LoadBalancer,
 	properties.Main:                      Main,
+	properties.MaxSize:                   MaxSize,
 	properties.Memory:                    Memory,
 	properties.Messages:                  Messages,
+	properties.MinSize:                   MinSize,
 	properties.Modified:                  Modified,
 	properties.MonitoringInterval:        MonitoringInterval,
 	properties.MonitoringRole:            MonitoringRole,
 	properties.MultiAZ:                   MultiAZ,
 	properties.Name:                      Name,
+	properties.NewInstancesProtected:     NewInstancesProtected,
 	properties.NetworkInterfaces:         NetworkInterfaces,
 	properties.OptionGroups:              OptionGroups,
 	properties.OutboundRules:             OutboundRules,
@@ -312,8 +328,10 @@ var RdfProperties = map[string]rdfProp{
 	DBSecurityGroups:        {ID: DBSecurityGroups, RdfType: "rdf:Property", RdfsLabel: "DBSecurityGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	DBSubnetGroup:           {ID: DBSubnetGroup, RdfType: "rdf:Property", RdfsLabel: "DBSubnetGroup", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Default:                 {ID: Default, RdfType: "rdf:Property", RdfsLabel: "Default", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	DefaultCooldown:         {ID: DefaultCooldown, RdfType: "rdf:Property", RdfsLabel: "DefaultCooldown", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Delay:                   {ID: Delay, RdfType: "rdf:Property", RdfsLabel: "Delay", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Description:             {ID: Description, RdfType: "rdf:Property", RdfsLabel: "Description", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	DesiredCapacity:         {ID: DesiredCapacity, RdfType: "rdf:Property", RdfsLabel: "DesiredCapacity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Encrypted:               {ID: Encrypted, RdfType: "rdf:Property", RdfsLabel: "Encrypted", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Endpoint:                {ID: Endpoint, RdfType: "rdf:Property", RdfsLabel: "Endpoint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Engine:                  {ID: Engine, RdfType: "rdf:Property", RdfsLabel: "Engine", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -326,30 +344,36 @@ var RdfProperties = map[string]rdfProp{
 	Handler:                 {ID: Handler, RdfType: "rdf:Property", RdfsLabel: "Handler", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Hash:                    {ID: Hash, RdfType: "rdf:Property", RdfsLabel: "Hash", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	HealthCheck:             {ID: HealthCheck, RdfType: "rdf:Property", RdfsLabel: "HealthCheck", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	HealthCheckType:         {ID: HealthCheckType, RdfType: "rdf:Property", RdfsLabel: "HealthCheckType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	HealthCheckGracePeriod:  {ID: HealthCheckGracePeriod, RdfType: "rdf:Property", RdfsLabel: "HealthCheckGracePeriod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	HealthyThresholdCount:   {ID: HealthyThresholdCount, RdfType: "rdf:Property", RdfsLabel: "HealthyThresholdCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Host:                     {ID: Host, RdfType: "rdf:Property", RdfsLabel: "Host", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Hypervisor:               {ID: Hypervisor, RdfType: "rdf:Property", RdfsLabel: "Hypervisor", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	ID:                       {ID: ID, RdfType: "rdf:Property", RdfsLabel: "ID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Image:                    {ID: Image, RdfType: "rdf:Property", RdfsLabel: "Image", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	InboundRules:             {ID: InboundRules, RdfType: "rdf:Property", RdfsLabel: "InboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
-	InlinePolicies:           {ID: InlinePolicies, RdfType: "rdf:Property", RdfsLabel: "InlinePolicies", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
-	IOPS:                     {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	IPType:                   {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Key:                      {ID: Key, RdfType: "rdf:Property", RdfsLabel: "Key", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	KeyPair:                  {ID: KeyPair, RdfType: "rdf:Property", RdfsLabel: "KeyPair", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
-	LatestRestorableTime:     {ID: LatestRestorableTime, RdfType: "rdf:Property", RdfsLabel: "LatestRestorableTime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
-	Launched:                 {ID: Launched, RdfType: "rdf:Property", RdfsLabel: "Launched", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
-	License:                  {ID: License, RdfType: "rdf:Property", RdfsLabel: "License", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Lifecycle:                {ID: Lifecycle, RdfType: "rdf:Property", RdfsLabel: "Lifecycle", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	LoadBalancer:             {ID: LoadBalancer, RdfType: "rdf:Property", RdfsLabel: "LoadBalancer", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
-	Main:                     {ID: Main, RdfType: "rdf:Property", RdfsLabel: "Main", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
-	Memory:                   {ID: Memory, RdfType: "rdf:Property", RdfsLabel: "Memory", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Messages:                 {ID: Messages, RdfType: "rdf:Property", RdfsLabel: "Messages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
-	Modified:                 {ID: Modified, RdfType: "rdf:Property", RdfsLabel: "Modified", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
-	MonitoringInterval:       {ID: MonitoringInterval, RdfType: "rdf:Property", RdfsLabel: "MonitoringInterval", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	MonitoringRole:           {ID: MonitoringRole, RdfType: "rdf:Property", RdfsLabel: "MonitoringRole", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	MultiAZ:                  {ID: MultiAZ, RdfType: "rdf:Property", RdfsLabel: "MultiAZ", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Name:                     {ID: Name, RdfType: "rdf:Property", RdfsLabel: "Name", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Host:                    {ID: Host, RdfType: "rdf:Property", RdfsLabel: "Host", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Hypervisor:              {ID: Hypervisor, RdfType: "rdf:Property", RdfsLabel: "Hypervisor", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ID:                      {ID: ID, RdfType: "rdf:Property", RdfsLabel: "ID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Image:                   {ID: Image, RdfType: "rdf:Property", RdfsLabel: "Image", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	InboundRules:            {ID: InboundRules, RdfType: "rdf:Property", RdfsLabel: "InboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
+	InlinePolicies:          {ID: InlinePolicies, RdfType: "rdf:Property", RdfsLabel: "InlinePolicies", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	IOPS:                    {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	IPType:                  {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Key:                     {ID: Key, RdfType: "rdf:Property", RdfsLabel: "Key", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	KeyPair:                 {ID: KeyPair, RdfType: "rdf:Property", RdfsLabel: "KeyPair", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	LatestRestorableTime:    {ID: LatestRestorableTime, RdfType: "rdf:Property", RdfsLabel: "LatestRestorableTime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
+	Launched:                {ID: Launched, RdfType: "rdf:Property", RdfsLabel: "Launched", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
+	LaunchConfigurationName: {ID: LaunchConfigurationName, RdfType: "rdf:Property", RdfsLabel: "LaunchConfigurationName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	License:                 {ID: License, RdfType: "rdf:Property", RdfsLabel: "License", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Lifecycle:               {ID: Lifecycle, RdfType: "rdf:Property", RdfsLabel: "Lifecycle", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	LoadBalancer:            {ID: LoadBalancer, RdfType: "rdf:Property", RdfsLabel: "LoadBalancer", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	Main:                    {ID: Main, RdfType: "rdf:Property", RdfsLabel: "Main", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	MaxSize:                 {ID: MaxSize, RdfType: "rdf:Property", RdfsLabel: "MaxSize", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Memory:                  {ID: Memory, RdfType: "rdf:Property", RdfsLabel: "Memory", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Messages:                {ID: Messages, RdfType: "rdf:Property", RdfsLabel: "Messages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	MinSize:                 {ID: MinSize, RdfType: "rdf:Property", RdfsLabel: "MinSize", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Modified:                {ID: Modified, RdfType: "rdf:Property", RdfsLabel: "Modified", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
+	MonitoringInterval:      {ID: MonitoringInterval, RdfType: "rdf:Property", RdfsLabel: "MonitoringInterval", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	MonitoringRole:          {ID: MonitoringRole, RdfType: "rdf:Property", RdfsLabel: "MonitoringRole", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	MultiAZ:                 {ID: MultiAZ, RdfType: "rdf:Property", RdfsLabel: "MultiAZ", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Name:                    {ID: Name, RdfType: "rdf:Property", RdfsLabel: "Name", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	NewInstancesProtected:    {ID: NewInstancesProtected, RdfType: "rdf:Property", RdfsLabel: "NewInstancesProtected", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	NetworkInterfaces:        {ID: NetworkInterfaces, RdfType: "rdf:Property", RdfsLabel: "NetworkInterfaces", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OptionGroups:             {ID: OptionGroups, RdfType: "rdf:Property", RdfsLabel: "OptionGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OutboundRules:            {ID: OutboundRules, RdfType: "rdf:Property", RdfsLabel: "OutboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},

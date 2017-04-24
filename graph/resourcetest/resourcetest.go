@@ -89,6 +89,14 @@ func Record(id string) *rBuilder {
 	return new("record", id).Prop(properties.ID, id)
 }
 
+func AutoscalingGroup(id string) *rBuilder {
+	return new("autoscalinggroup", id).Prop(properties.ID, id)
+}
+
+func LaunchConfig(id string) *rBuilder {
+	return new("launchconfiguration", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

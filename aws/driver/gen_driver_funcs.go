@@ -2163,8 +2163,8 @@ func (d *AutoscalingDriver) Create_Launchconfiguration(params map[string]interfa
 			return nil, err
 		}
 	}
-	if _, ok := params["securitygroup"]; ok {
-		err = setFieldWithType(params["securitygroup"], input, "SecurityGroups", awsstringslice)
+	if _, ok := params["securitygroups"]; ok {
+		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
@@ -2226,6 +2226,152 @@ func (d *AutoscalingDriver) Delete_Launchconfiguration(params map[string]interfa
 	}
 	d.logger.ExtraVerbosef("autoscaling.DeleteLaunchConfiguration call took %s", time.Since(start))
 	d.logger.Info("delete launchconfiguration done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Create_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create autoscalinggroup: missing required params 'name'")
+	}
+
+	if _, ok := params["launchconfiguration"]; !ok {
+		return nil, errors.New("create autoscalinggroup: missing required params 'launchconfiguration'")
+	}
+
+	if _, ok := params["max-size"]; !ok {
+		return nil, errors.New("create autoscalinggroup: missing required params 'max-size'")
+	}
+
+	if _, ok := params["min-size"]; !ok {
+		return nil, errors.New("create autoscalinggroup: missing required params 'min-size'")
+	}
+
+	if _, ok := params["subnets"]; !ok {
+		return nil, errors.New("create autoscalinggroup: missing required params 'subnets'")
+	}
+
+	d.logger.Verbose("params dry run: create autoscalinggroup ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Create_Autoscalinggroup(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.CreateAutoScalingGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["launchconfiguration"], input, "LaunchConfigurationName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["max-size"], input, "MaxSize", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["min-size"], input, "MinSize", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["cooldown"]; ok {
+		err = setFieldWithType(params["cooldown"], input, "DefaultCooldown", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["desired-capacity"]; ok {
+		err = setFieldWithType(params["desired-capacity"], input, "DesiredCapacity", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["healthcheck-grace-period"]; ok {
+		err = setFieldWithType(params["healthcheck-grace-period"], input, "HealthCheckGracePeriod", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["healthcheck-type"]; ok {
+		err = setFieldWithType(params["healthcheck-type"], input, "HealthCheckType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["new-instances-protected"]; ok {
+		err = setFieldWithType(params["new-instances-protected"], input, "NewInstancesProtectedFromScaleIn", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["targetgroups"]; ok {
+		err = setFieldWithType(params["targetgroups"], input, "TargetGroupARNs", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *autoscaling.CreateAutoScalingGroupOutput
+	output, err = d.CreateAutoScalingGroup(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create autoscalinggroup: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.CreateAutoScalingGroup call took %s", time.Since(start))
+	id := params["name"]
+
+	d.logger.Infof("create autoscalinggroup '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Delete_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete autoscalinggroup: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete autoscalinggroup ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Delete_Autoscalinggroup(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.DeleteAutoScalingGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["force"]; ok {
+		err = setFieldWithType(params["force"], input, "ForceDelete", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *autoscaling.DeleteAutoScalingGroupOutput
+	output, err = d.DeleteAutoScalingGroup(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete autoscalinggroup: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.DeleteAutoScalingGroup call took %s", time.Since(start))
+	d.logger.Info("delete autoscalinggroup done")
 	return output, nil
 }
 
@@ -2327,8 +2473,8 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 			return nil, err
 		}
 	}
-	if _, ok := params["dbsecuritygroup"]; ok {
-		err = setFieldWithType(params["dbsecuritygroup"], input, "DBSecurityGroups", awsstringslice)
+	if _, ok := params["dbsecuritygroups"]; ok {
+		err = setFieldWithType(params["dbsecuritygroups"], input, "DBSecurityGroups", awsstringslice)
 		if err != nil {
 			return nil, err
 		}
@@ -2423,8 +2569,8 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 			return nil, err
 		}
 	}
-	if _, ok := params["vpcsecuritygroup"]; ok {
-		err = setFieldWithType(params["vpcsecuritygroup"], input, "VpcSecurityGroupIds", awsstringslice)
+	if _, ok := params["vpcsecuritygroups"]; ok {
+		err = setFieldWithType(params["vpcsecuritygroups"], input, "VpcSecurityGroupIds", awsstringslice)
 		if err != nil {
 			return nil, err
 		}

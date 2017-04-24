@@ -6,6 +6,7 @@ var entities = map[Entity]struct{}{
 	"none": {},
 
 	"accesskey":           {},
+	"autoscalinggroup":    {},
 	"bucket":              {},
 	"database":            {},
 	"dbsubnetgroup":       {},

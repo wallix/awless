@@ -287,6 +287,13 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	if got, want := *any.StructAttribute.Str, "fieldValue"; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
+	err = setFieldWithType([]string{"one", "two", "three"}, &any, "StructAttribute.Str", awsstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.StructAttribute.Str, "one,two,three"; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
 	err = setFieldWithType("true", &any, "StructAttribute.Bool", awsbool)
 	if err != nil {
 		t.Fatal(err)

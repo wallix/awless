@@ -196,6 +196,19 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.SpotPrice:      {name: "SpotPrice", transform: extractValueFn},
 		properties.UserData:       {name: "Userdata", transform: extractValueFn},
 	},
+	cloud.AutoScalingGroup: {
+		properties.Name:                    {name: "AutoScalingGroupName", transform: extractValueFn},
+		properties.Created:                 {name: "CreatedTime", transform: extractValueFn},
+		properties.DefaultCooldown:         {name: "DefaultCooldown", transform: extractValueFn},
+		properties.DesiredCapacity:         {name: "DesiredCapacity", transform: extractValueFn},
+		properties.HealthCheckGracePeriod:  {name: "HealthCheckGracePeriod", transform: extractValueFn},
+		properties.HealthCheckType:         {name: "HealthCheckType", transform: extractValueFn},
+		properties.LaunchConfigurationName: {name: "LaunchConfigurationName", transform: extractValueFn},
+		properties.MaxSize:                 {name: "MaxSize", transform: extractValueFn},
+		properties.MinSize:                 {name: "MinSize", transform: extractValueFn},
+		properties.NewInstancesProtected:   {name: "NewInstancesProtectedFromScaleIn", transform: extractValueFn},
+		properties.State:                   {name: "Status", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

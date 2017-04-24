@@ -123,15 +123,17 @@ func (m *mockRDS) DescribeDBSubnetGroupsPages(input *rds.DescribeDBSubnetGroupsI
 
 type mockAutoScaling struct {
 	autoscalingiface.AutoScalingAPI
+	configs []*autoscaling.LaunchConfiguration
+	groups  []*autoscaling.Group
 }
 
 func (m *mockAutoScaling) DescribeLaunchConfigurationsPages(input *autoscaling.DescribeLaunchConfigurationsInput, fn func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) (shouldContinue bool)) error {
-	fn(&autoscaling.DescribeLaunchConfigurationsOutput{}, true)
+	fn(&autoscaling.DescribeLaunchConfigurationsOutput{LaunchConfigurations: m.configs}, true)
 	return nil
 }
 
 func (m *mockAutoScaling) DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool)) error {
-	fn(&autoscaling.DescribeAutoScalingGroupsOutput{}, true)
+	fn(&autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: m.groups}, true)
 	return nil
 }
 

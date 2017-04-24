@@ -21,8 +21,10 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/cloud"
@@ -87,6 +89,18 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Database: {
 		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
 		funcBuilder{parent: cloud.SecurityGroup, listName: "VpcSecurityGroups", fieldName: "VpcSecurityGroupId", relation: APPLIES_ON}.build(),
+	},
+	// Autoscaling
+	cloud.LaunchConfiguration: {
+		addRegionParent,
+		funcBuilder{parent: cloud.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
+	},
+	cloud.AutoScalingGroup: {
+		addRegionParent,
+		funcBuilder{parent: cloud.AvailabilityZone, stringListName: "AvailabilityZones", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", listName: "Instances", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.TargetGroup, stringListName: "TargetGroupARNs", relation: DEPENDING_ON}.build(),
+		addAutoscalingGroupSubnets,
 	},
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},
@@ -351,7 +365,32 @@ func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
 
 	for _, t := range targets.TargetHealthDescriptions {
 		n := graph.InitResource(cloud.Instance, awssdk.StringValue(t.Target.Id))
-		g.AddAppliesOnRelation(parent, n)
+		err = g.AddAppliesOnRelation(parent, n)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func addAutoscalingGroupSubnets(g *graph.Graph, i interface{}) error {
+	group, ok := i.(*autoscaling.Group)
+	if !ok {
+		return fmt.Errorf("add autoscaling group relation: not a autoscaling group group, but a %T", i)
+	}
+	parent, err := initResource(group)
+	if err != nil {
+		return err
+	}
+	if subnets := awssdk.StringValue(group.VPCZoneIdentifier); subnets != "" {
+		splits := strings.Split(subnets, ",")
+		for _, split := range splits {
+			n := graph.InitResource(cloud.Subnet, split)
+			err = g.AddAppliesOnRelation(parent, n)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
