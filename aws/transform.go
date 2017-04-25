@@ -125,6 +125,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 	if err != nil {
 		return res, err
 	}
+	res.Properties[properties.ID] = res.Id()
 
 	value := reflect.ValueOf(source)
 	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
@@ -132,11 +133,15 @@ func newResource(source interface{}) (*graph.Resource, error) {
 	}
 	nodeV := value.Elem()
 
-	resultc := make(chan graph.Property)
-	errc := make(chan error)
-	var wg sync.WaitGroup
-	res.Properties[properties.ID] = res.Id()
+	type keyValResult struct {
+		key string
+		val interface{}
+	}
 
+	resultc := make(chan keyValResult)
+	errc := make(chan error)
+
+	var wg sync.WaitGroup
 	for prop, trans := range awsResourcesDef[res.Type()] {
 		wg.Add(1)
 		go func(p string, t *propertyTransform) {
@@ -151,8 +156,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 					if err != nil {
 						errc <- err
 					}
-					p := graph.Property{Key: p, Value: val}
-					resultc <- p
+					resultc <- keyValResult{p, val}
 				}
 			}
 			if t.fetch != nil {
@@ -160,8 +164,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 				if err != nil {
 					errc <- err
 				}
-				p := graph.Property{Key: p, Value: val}
-				resultc <- p
+				resultc <- keyValResult{p, val}
 			}
 		}(prop, trans)
 	}
@@ -178,11 +181,11 @@ func newResource(source interface{}) (*graph.Resource, error) {
 			if e != nil {
 				return res, e
 			}
-		case p, ok := <-resultc:
+		case keyVal, ok := <-resultc:
 			if !ok {
 				return res, nil
 			}
-			res.Properties[p.Key] = p.Value
+			res.Properties[keyVal.key] = keyVal.val
 		}
 	}
 
