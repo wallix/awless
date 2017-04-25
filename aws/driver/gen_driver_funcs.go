@@ -2335,6 +2335,95 @@ func (d *AutoscalingDriver) Create_Autoscalinggroup(params map[string]interface{
 }
 
 // This function was auto generated
+func (d *AutoscalingDriver) Update_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("update autoscalinggroup: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: update autoscalinggroup ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Update_Autoscalinggroup(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.UpdateAutoScalingGroupInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["cooldown"]; ok {
+		err = setFieldWithType(params["cooldown"], input, "DefaultCooldown", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["desired-capacity"]; ok {
+		err = setFieldWithType(params["desired-capacity"], input, "DesiredCapacity", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["healthcheck-grace-period"]; ok {
+		err = setFieldWithType(params["healthcheck-grace-period"], input, "HealthCheckGracePeriod", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["healthcheck-type"]; ok {
+		err = setFieldWithType(params["healthcheck-type"], input, "HealthCheckType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["launchconfiguration"]; ok {
+		err = setFieldWithType(params["launchconfiguration"], input, "LaunchConfigurationName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["max-size"]; ok {
+		err = setFieldWithType(params["max-size"], input, "MaxSize", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["min-size"]; ok {
+		err = setFieldWithType(params["min-size"], input, "MinSize", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["new-instances-protected"]; ok {
+		err = setFieldWithType(params["new-instances-protected"], input, "NewInstancesProtectedFromScaleIn", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["subnets"]; ok {
+		err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *autoscaling.UpdateAutoScalingGroupOutput
+	output, err = d.UpdateAutoScalingGroup(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("update autoscalinggroup: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.UpdateAutoScalingGroup call took %s", time.Since(start))
+	d.logger.Info("update autoscalinggroup done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *AutoscalingDriver) Delete_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete autoscalinggroup: missing required params 'name'")

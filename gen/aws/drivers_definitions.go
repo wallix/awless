@@ -510,6 +510,23 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "update", Entity: cloud.AutoScalingGroup, ApiMethod: "UpdateAutoScalingGroup", Input: "UpdateAutoScalingGroupInput", Output: "UpdateAutoScalingGroupOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "DefaultCooldown", TemplateName: "cooldown", AwsType: "awsint64"},
+					{AwsField: "DesiredCapacity", TemplateName: "desired-capacity", AwsType: "awsint64"},
+					{AwsField: "HealthCheckGracePeriod", TemplateName: "healthcheck-grace-period", AwsType: "awsint64"},
+					{AwsField: "HealthCheckType", TemplateName: "healthcheck-type", AwsType: "awsstr"},
+					{AwsField: "LaunchConfigurationName", TemplateName: "launchconfiguration", AwsType: "awsstr"},
+					{AwsField: "MaxSize", TemplateName: "max-size", AwsType: "awsint64"},
+					{AwsField: "MinSize", TemplateName: "min-size", AwsType: "awsint64"},
+					{AwsField: "NewInstancesProtectedFromScaleIn", TemplateName: "new-instances-protected", AwsType: "awsbool"},
+					{AwsField: "VPCZoneIdentifier", TemplateName: "subnets", AwsType: "awsstr"},
+				},
+			},
+			{
 				Action: "delete", Entity: cloud.AutoScalingGroup, ApiMethod: "DeleteAutoScalingGroup", Input: "DeleteAutoScalingGroupInput", Output: "DeleteAutoScalingGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},

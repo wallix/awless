@@ -372,6 +372,12 @@ func (d *AutoscalingDriver) Lookup(lookups ...string) (driverFn driver.DriverFn,
 		}
 		return d.Create_Autoscalinggroup, nil
 
+	case "updateautoscalinggroup":
+		if d.dryRun {
+			return d.Update_Autoscalinggroup_DryRun, nil
+		}
+		return d.Update_Autoscalinggroup, nil
+
 	case "deleteautoscalinggroup":
 		if d.dryRun {
 			return d.Delete_Autoscalinggroup_DryRun, nil
