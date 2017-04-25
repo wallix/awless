@@ -4,14 +4,14 @@ import "testing"
 
 func TestAllLabelsHaveProperties(t *testing.T) {
 	for prop, label := range Labels {
-		if _, ok := RdfProperties[label]; !ok {
+		if _, ok := Properties[label]; !ok {
 			t.Fatalf("prop '%s' with label '%s' has no corresponding property", prop, label)
 		}
 	}
 }
 
 func TestAllPropertiesHaveLabel(t *testing.T) {
-	for label, rdf := range RdfProperties {
+	for label, rdf := range Properties {
 		found := false
 		for _, v := range Labels {
 			if label == v {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/wallix/awless/cloud/properties"
-	cloudrdf "github.com/wallix/awless/cloud/rdf"
+	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
 
@@ -31,13 +31,13 @@ func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 	if r.Value == nil {
 		return resources, nil
 	}
-	rdfpropLabel, ok := cloudrdf.Labels[r.Key]
+	rdfpropLabel, ok := rdf.Labels[r.Key]
 	if !ok {
 		return resources, fmt.Errorf("resolve by property: undefined property label '%s'", r.Key)
 	}
-	rdfProp, ok := cloudrdf.RdfProperties[rdfpropLabel]
-	if !ok {
-		return resources, fmt.Errorf("resolve by property: undefined property definition '%s'", rdfpropLabel)
+	rdfProp, err := rdf.Properties.Get(rdfpropLabel)
+	if err != nil {
+		return resources, fmt.Errorf("resolve by property: %s", err)
 	}
 	obj, err := marshalToRdfObject(r.Value, rdfProp.RdfsDefinedBy, rdfProp.RdfsDataType)
 	if err != nil {
@@ -98,7 +98,7 @@ func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
 	var resources []*Resource
 	snap := g.store.Snapshot()
 	typ := namespacedResourceType(r.Typ)
-	for _, t := range snap.WithPredObj(cloudrdf.RdfType, tstore.Resource(typ)) {
+	for _, t := range snap.WithPredObj(rdf.RdfType, tstore.Resource(typ)) {
 		r := InitResource(r.Typ, t.Subject())
 		err := r.unmarshalFullRdf(snap)
 		if err != nil {

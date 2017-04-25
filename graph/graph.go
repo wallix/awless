@@ -22,7 +22,7 @@ import (
 	"io"
 	"os"
 
-	cloudrdf "github.com/wallix/awless/cloud/rdf"
+	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
 
@@ -65,11 +65,11 @@ func (g *Graph) AddGraph(other *Graph) {
 }
 
 func (g *Graph) AddParentRelation(parent, child *Resource) error {
-	return g.addRelation(parent, child, cloudrdf.ParentOf)
+	return g.addRelation(parent, child, rdf.ParentOf)
 }
 
 func (g *Graph) AddAppliesOnRelation(parent, child *Resource) error {
-	return g.addRelation(parent, child, cloudrdf.ApplyOn)
+	return g.addRelation(parent, child, rdf.ApplyOn)
 }
 
 func (g *Graph) GetResource(t string, id string) (*Resource, error) {
@@ -128,7 +128,7 @@ func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
 	var resources []*Resource
 
 	snap := g.store.Snapshot()
-	for _, tri := range snap.WithPredObj(cloudrdf.ApplyOn, tstore.Resource(start.Id())) {
+	for _, tri := range snap.WithPredObj(rdf.ApplyOn, tstore.Resource(start.Id())) {
 		id := tri.Subject()
 		rT, err := resolveResourceType(snap, id)
 		if err != nil {
@@ -152,10 +152,10 @@ func (g *Graph) ListResourcesAppliedOn(start *Resource) ([]*Resource, error) {
 
 	snap := g.store.Snapshot()
 
-	for _, tri := range snap.WithSubjPred(start.Id(), cloudrdf.ApplyOn) {
+	for _, tri := range snap.WithSubjPred(start.Id(), rdf.ApplyOn) {
 		id, ok := tri.Object().Resource()
 		if !ok {
-			return resources, fmt.Errorf("triple %s %s: object is not a resource identifier", start.Id(), cloudrdf.ApplyOn)
+			return resources, fmt.Errorf("triple %s %s: object is not a resource identifier", start.Id(), rdf.ApplyOn)
 		}
 		rT, err := resolveResourceType(snap, id)
 		if err != nil {

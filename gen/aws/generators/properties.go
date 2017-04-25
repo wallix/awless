@@ -117,7 +117,7 @@ var Labels = map[string]string{
   {{- end }}
 }
 
-var RdfProperties = map[string]rdfProp{
+var Properties = RDFProperties{
   {{- range $, $prop := . }}
   {{ $prop.AwlessLabel }}: {ID: {{ $prop.AwlessLabel }}, RdfType: "{{ $prop.RDFType }}", RdfsLabel: "{{ $prop.AwlessLabel }}", RdfsDefinedBy: "{{ $prop.RdfsDefinedBy }}", RdfsDataType: "{{ $prop.RdfsDataType }}"},
   {{- end }}

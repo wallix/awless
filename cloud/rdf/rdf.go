@@ -2,10 +2,6 @@ package rdf
 
 import "fmt"
 
-type rdfProp struct {
-	ID, RdfType, RdfsLabel, RdfsDefinedBy, RdfsDataType string
-}
-
 // Namespaces
 const (
 	RdfsNS     = "rdfs"
@@ -59,3 +55,73 @@ var (
 	ParentOf = fmt.Sprintf("%s:parentOf", CloudRelNS)
 	ApplyOn  = fmt.Sprintf("%s:applyOn", CloudRelNS)
 )
+
+type rdfProp struct {
+	ID, RdfType, RdfsLabel, RdfsDefinedBy, RdfsDataType string
+}
+
+type RDFProperties map[string]rdfProp
+
+func (r RDFProperties) Get(prop string) (rdfProp, error) {
+	p, ok := r[prop]
+	if !ok {
+		return rdfProp{}, fmt.Errorf("property '%s' not found", p)
+	}
+	return p, nil
+}
+
+func (r RDFProperties) IsRDFProperty(id string) bool {
+	prop, ok := r[id]
+	if !ok {
+		return false
+	}
+	return prop.RdfType == RdfProperty
+}
+
+func (r RDFProperties) IsRDFSubProperty(id string) bool {
+	prop, ok := r[id]
+	if !ok {
+		return false
+	}
+	return prop.RdfType == RdfsSubProperty
+}
+
+func (r RDFProperties) IsRDFList(prop string) bool {
+	p, ok := r[prop]
+	if !ok {
+		return false
+	}
+	return p.RdfsDefinedBy == RdfsList
+}
+
+func (r RDFProperties) GetRDFId(label string) (string, error) {
+	propId, ok := Labels[label]
+	if !ok {
+		return "", fmt.Errorf("get property id: label '%s' not found", label)
+	}
+	return propId, nil
+}
+
+func (r RDFProperties) GetDataType(prop string) (string, error) {
+	p, ok := r[prop]
+	if !ok {
+		return "", fmt.Errorf("property '%s' not found", p)
+	}
+	return p.RdfsDataType, nil
+}
+
+func (r RDFProperties) GetLabel(prop string) (string, error) {
+	p, ok := r[prop]
+	if !ok {
+		return "", fmt.Errorf("property '%s' not found", p)
+	}
+	return p.RdfsLabel, nil
+}
+
+func (r RDFProperties) GetDefinedBy(prop string) (string, error) {
+	p, ok := r[prop]
+	if !ok {
+		return "", fmt.Errorf("property '%s' not found", p)
+	}
+	return p.RdfsDefinedBy, nil
+}

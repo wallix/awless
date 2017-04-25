@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	cloudrdf "github.com/wallix/awless/cloud/rdf"
+	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
 
@@ -62,13 +62,13 @@ func (r *FirewallRule) String() string {
 
 func (r *FirewallRule) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.NetFirewallRule))
+	triples = append(triples, tstore.SubjPred(id, rdf.RdfType).Resource(rdf.NetFirewallRule))
 	triples = append(triples, tstore.TriplesFromStruct(id, r)...)
 	return triples
 }
 
 func (r *FirewallRule) unmarshalFromTriples(g tstore.RDFGraph, id string) error {
-	portRangeTs := g.WithSubjPred(id, cloudrdf.PortRange)
+	portRangeTs := g.WithSubjPred(id, rdf.PortRange)
 	ports, err := extractUniqueLiteralTextFromTriples(portRangeTs)
 	if err != nil {
 		return fmt.Errorf("unmarshal firewall rule: port range: %s", err)
@@ -79,14 +79,14 @@ func (r *FirewallRule) unmarshalFromTriples(g tstore.RDFGraph, id string) error 
 	}
 	r.PortRange = pr
 
-	protocolTs := g.WithSubjPred(id, cloudrdf.Protocol)
+	protocolTs := g.WithSubjPred(id, rdf.Protocol)
 	protocol, err := extractUniqueLiteralTextFromTriples(protocolTs)
 	if err != nil {
 		return fmt.Errorf("unmarshal firewall rule: protocol: %s", err)
 	}
 	r.Protocol = protocol
 
-	cidrTs := g.WithSubjPred(id, cloudrdf.CIDR)
+	cidrTs := g.WithSubjPred(id, rdf.CIDR)
 	for _, cidrT := range cidrTs {
 		cidrTxt, err := tstore.ParseString(cidrT.Object())
 		if err != nil {
@@ -212,13 +212,13 @@ func (r *Route) String() string {
 
 func (r *Route) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.NetRoute))
+	triples = append(triples, tstore.SubjPred(id, rdf.RdfType).Resource(rdf.NetRoute))
 	triples = append(triples, tstore.TriplesFromStruct(id, r)...)
 	return triples
 }
 
 func (r *Route) unmarshalFromTriples(g tstore.RDFGraph, id string) error {
-	routeDestTs := g.WithSubjPred(id, cloudrdf.CIDR)
+	routeDestTs := g.WithSubjPred(id, rdf.CIDR)
 	if len(routeDestTs) > 0 {
 		dest, err := extractUniqueLiteralTextFromTriples(routeDestTs)
 		if err != nil {
@@ -230,7 +230,7 @@ func (r *Route) unmarshalFromTriples(g tstore.RDFGraph, id string) error {
 		}
 	}
 
-	routeDestv6Ts := g.WithSubjPred(id, cloudrdf.CIDRv6)
+	routeDestv6Ts := g.WithSubjPred(id, rdf.CIDRv6)
 
 	if len(routeDestv6Ts) > 0 {
 		destv6, err := extractUniqueLiteralTextFromTriples(routeDestv6Ts)
@@ -243,7 +243,7 @@ func (r *Route) unmarshalFromTriples(g tstore.RDFGraph, id string) error {
 		}
 	}
 
-	destPrefixTs := g.WithSubjPred(id, cloudrdf.NetDestinationPrefixList)
+	destPrefixTs := g.WithSubjPred(id, rdf.NetDestinationPrefixList)
 	if len(destPrefixTs) > 0 {
 		var err error
 		r.DestinationPrefixListId, err = extractUniqueLiteralTextFromTriples(destPrefixTs)
@@ -252,7 +252,7 @@ func (r *Route) unmarshalFromTriples(g tstore.RDFGraph, id string) error {
 		}
 	}
 
-	targetTs := g.WithSubjPred(id, cloudrdf.NetRouteTargets)
+	targetTs := g.WithSubjPred(id, rdf.NetRouteTargets)
 	for _, targetT := range targetTs {
 		litText, err := tstore.ParseString(targetT.Object())
 		if err != nil {
@@ -293,20 +293,20 @@ func (g *Grant) String() string {
 func (g *Grant) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
 
-	triples = append(triples, tstore.SubjPred(id, cloudrdf.RdfType).Resource(cloudrdf.Grant))
+	triples = append(triples, tstore.SubjPred(id, rdf.RdfType).Resource(rdf.Grant))
 	triples = append(triples, tstore.TriplesFromStruct(id, g)...)
 
 	return triples
 }
 
 func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
-	permissionTs := gph.WithSubjPred(id, cloudrdf.Permission)
+	permissionTs := gph.WithSubjPred(id, rdf.Permission)
 	var err error
 	g.Permission, err = extractUniqueLiteralTextFromTriples(permissionTs)
 	if err != nil {
 		return fmt.Errorf("unmarshal grant: permission: %s", err)
 	}
-	granteeTs := gph.WithSubjPred(id, cloudrdf.Grantee)
+	granteeTs := gph.WithSubjPred(id, rdf.Grantee)
 	if len(granteeTs) != 1 {
 		return fmt.Errorf("unmarshal grant: expect 1 grantee got: %d", len(granteeTs))
 	}
@@ -314,14 +314,14 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 	if !ok {
 		return fmt.Errorf("unmarshal grant: grantee does not contain a resource identifier")
 	}
-	granteeIdTs := gph.WithSubjPred(granteeNode, cloudrdf.ID)
+	granteeIdTs := gph.WithSubjPred(granteeNode, rdf.ID)
 	if len(granteeIdTs) > 0 {
 		g.Grantee.GranteeID, err = extractUniqueLiteralTextFromTriples(granteeIdTs)
 		if err != nil {
 			return fmt.Errorf("unmarshal grant: grantee id: %s", err)
 		}
 	}
-	granteeNameTs := gph.WithSubjPred(granteeNode, cloudrdf.Name)
+	granteeNameTs := gph.WithSubjPred(granteeNode, rdf.Name)
 	if len(granteeNameTs) > 0 {
 		g.Grantee.GranteeDisplayName, err = extractUniqueLiteralTextFromTriples(granteeNameTs)
 		if err != nil {
@@ -329,7 +329,7 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 		}
 	}
 
-	granteeTypeTs := gph.WithSubjPred(granteeNode, cloudrdf.GranteeType)
+	granteeTypeTs := gph.WithSubjPred(granteeNode, rdf.GranteeType)
 	if len(granteeTypeTs) > 0 {
 		g.Grantee.GranteeType, err = extractUniqueLiteralTextFromTriples(granteeTypeTs)
 		if err != nil {

@@ -4,77 +4,22 @@ import (
 	"fmt"
 	"math/rand"
 
-	cloudrdf "github.com/wallix/awless/cloud/rdf"
+	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
 
-func isRDFProperty(id string) bool {
-	rdfProp, ok := cloudrdf.RdfProperties[id]
-	if !ok {
-		return false
-	}
-	return rdfProp.RdfType == cloudrdf.RdfProperty
-}
-
-func isRDFSubProperty(id string) bool {
-	rdfProp, ok := cloudrdf.RdfProperties[id]
-	if !ok {
-		return false
-	}
-	return rdfProp.RdfType == cloudrdf.RdfsSubProperty
-}
-
-func isRDFList(prop string) bool {
-	rdfProp, ok := cloudrdf.RdfProperties[prop]
-	if !ok {
-		return false
-	}
-	return rdfProp.RdfsDefinedBy == cloudrdf.RdfsList
-}
-
-func getPropertyRDFId(label string) (string, error) {
-	propId, ok := cloudrdf.Labels[label]
-	if !ok {
-		return "", fmt.Errorf("get property id: label '%s' not found", label)
-	}
-	return propId, nil
-}
-
-func getPropertyDataType(prop string) (string, error) {
-	rdfProp, ok := cloudrdf.RdfProperties[prop]
-	if !ok {
-		return "", fmt.Errorf("property '%s' not found", prop)
-	}
-	return rdfProp.RdfsDataType, nil
-}
-
-func getPropertyLabel(prop string) (string, error) {
-	rdfProp, ok := cloudrdf.RdfProperties[prop]
-	if !ok {
-		return "", fmt.Errorf("property '%s' not found", prop)
-	}
-	return rdfProp.RdfsLabel, nil
-}
-
-func getPropertyDefinedBy(prop string) (string, error) {
-	rdfProp, ok := cloudrdf.RdfProperties[prop]
-	if !ok {
-		return "", fmt.Errorf("property '%s' not found", prop)
-	}
-	return rdfProp.RdfsDefinedBy, nil
-}
-
 func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (interface{}, error) {
-	rdfProp, ok := cloudrdf.RdfProperties[prop]
-	if !ok {
-		return "", fmt.Errorf("property '%s' not found", prop)
+	rdfProp, err := rdf.Properties.Get(prop)
+	if err != nil {
+		return "", err
 	}
+
 	definedBy := rdfProp.RdfsDefinedBy
 	dataType := rdfProp.RdfsDataType
 	switch {
-	case definedBy == cloudrdf.RdfsLiteral, (definedBy == cloudrdf.RdfsList) && (dataType == cloudrdf.XsdString):
+	case definedBy == rdf.RdfsLiteral, (definedBy == rdf.RdfsList) && (dataType == rdf.XsdString):
 		return tstore.ParseLiteral(propObj)
-	case definedBy == cloudrdf.RdfsList && dataType == cloudrdf.NetFirewallRule:
+	case definedBy == rdf.RdfsList && dataType == rdf.NetFirewallRule:
 		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
@@ -85,13 +30,13 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 			return nil, err
 		}
 		return rule, nil
-	case definedBy == cloudrdf.RdfsClass, dataType == cloudrdf.RdfsClass:
+	case definedBy == rdf.RdfsClass, dataType == rdf.RdfsClass:
 		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
 		}
 		return id, nil
-	case definedBy == cloudrdf.RdfsList && dataType == cloudrdf.NetRoute:
+	case definedBy == rdf.RdfsList && dataType == rdf.NetRoute:
 		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
@@ -102,7 +47,7 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 			return nil, err
 		}
 		return route, nil
-	case definedBy == cloudrdf.RdfsList && dataType == cloudrdf.Grant:
+	case definedBy == rdf.RdfsList && dataType == rdf.Grant:
 		id, ok := propObj.Resource()
 		if !ok {
 			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
