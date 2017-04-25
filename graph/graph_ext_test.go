@@ -38,7 +38,7 @@ func TestGetResource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := graph.Properties{properties.ID: "inst_1", properties.Type: "t2.micro", properties.PublicIP: "1.2.3.4",
+	expected := map[string]interface{}{properties.ID: "inst_1", properties.Type: "t2.micro", properties.PublicIP: "1.2.3.4",
 		properties.State: "running",
 		properties.Name:  "redis",
 	}

@@ -29,18 +29,18 @@ import (
 type Resource struct {
 	kind, id string
 
-	Properties Properties
-	Meta       Properties
+	Properties map[string]interface{}
+	Meta       map[string]interface{}
 }
 
 const notFoundResourceType = "notfound"
 
 func NotFoundResource(id string) *Resource {
-	return &Resource{id: id, kind: notFoundResourceType, Properties: make(Properties), Meta: make(Properties)}
+	return &Resource{id: id, kind: notFoundResourceType, Properties: make(map[string]interface{}), Meta: make(map[string]interface{})}
 }
 
 func InitResource(kind, id string) *Resource {
-	return &Resource{id: id, kind: kind, Properties: make(Properties), Meta: make(Properties)}
+	return &Resource{id: id, kind: kind, Properties: make(map[string]interface{}), Meta: make(map[string]interface{})}
 }
 
 func (res *Resource) String() string {
@@ -273,12 +273,10 @@ func (res Resources) Map(f func(*Resource) string) (out []string) {
 	return
 }
 
-type Properties map[string]interface{}
+func Subtract(one, other map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
 
-func (props Properties) Subtract(other Properties) Properties {
-	sub := make(Properties)
-
-	for propK, propV := range props {
+	for propK, propV := range one {
 		var found bool
 		if otherV, ok := other[propK]; ok {
 			if reflect.DeepEqual(propV, otherV) {
@@ -286,11 +284,11 @@ func (props Properties) Subtract(other Properties) Properties {
 			}
 		}
 		if !found {
-			sub[propK] = propV
+			result[propK] = propV
 		}
 	}
 
-	return sub
+	return result
 }
 
 var errTypeNotFound = errors.New("resource type not found")

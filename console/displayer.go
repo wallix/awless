@@ -367,7 +367,7 @@ func (d *jsonDisplayer) Print(w io.Writer) error {
 
 	sort.Sort(graph.ResourceById(resources))
 
-	var props []graph.Properties
+	var props []map[string]interface{}
 	for _, res := range resources {
 		props = append(props, res.Properties)
 	}
@@ -580,7 +580,7 @@ func (d *multiResourcesJSONDisplayer) Print(w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		var props []graph.Properties
+		var props []map[string]interface{}
 		for _, res := range resources {
 			props = append(props, res.Properties)
 		}
@@ -650,14 +650,14 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		naming := nameOrID(common)
 
 		if rem, ok := toCommons[common.Id()]; ok {
-			added := rem.Properties.Subtract(common.Properties)
+			added := graph.Subtract(rem.Properties, common.Properties)
 			for k, v := range added {
 				values = append(values, []interface{}{
 					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
 				})
 			}
 
-			deleted := common.Properties.Subtract(rem.Properties)
+			deleted := graph.Subtract(common.Properties, rem.Properties)
 			for k, v := range deleted {
 				values = append(values, []interface{}{
 					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
