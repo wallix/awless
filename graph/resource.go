@@ -313,17 +313,6 @@ func unmarshalResourceType(obj tstore.Object) (string, error) {
 	return strings.ToLower(trimNS(node)), nil
 }
 
-type Property struct {
-	Key   string
-	Value interface{}
-}
-
-type ResourceById []*Resource
-
-func (r ResourceById) Len() int           { return len(r) }
-func (r ResourceById) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
-func (r ResourceById) Less(i, j int) bool { return r[i].Id() < r[j].Id() }
-
 func trimNS(s string) string {
 	spl := strings.Split(s, ":")
 	if len(spl) == 0 {

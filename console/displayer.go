@@ -365,7 +365,7 @@ func (d *jsonDisplayer) Print(w io.Writer) error {
 		return err
 	}
 
-	sort.Sort(graph.ResourceById(resources))
+	sort.Slice(resources, func(i, j int) bool { return resources[i].Id() < resources[j].Id() })
 
 	var props []map[string]interface{}
 	for _, res := range resources {

@@ -29,24 +29,6 @@ import (
 	"github.com/wallix/awless/cloud/properties"
 )
 
-func TestSortResource(t *testing.T) {
-	resources := []*Resource{{id: "b"}, {id: "c"}, {id: "a"}}
-	sort.Sort(ResourceById(resources))
-
-	if got, want := len(resources), 3; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	if got, want := resources[0].Id(), "a"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := resources[1].Id(), "b"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-	if got, want := resources[2].Id(), "c"; got != want {
-		t.Fatalf("got %s, want %s", got, want)
-	}
-}
-
 func TestEqualResources(t *testing.T) {
 	i1 := &Resource{id: "inst_1", kind: "instance"}
 	i2 := &Resource{id: "inst_2", kind: "instance"}
