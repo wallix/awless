@@ -72,9 +72,9 @@ const (
 	//autoscaling
 	LaunchConfiguration string = "launchconfiguration"
 	AutoScalingGroup    string = "autoscalinggroup"
-
 	//monitoring
 	Metric string = "metric"
+	Alarm  string = "alarm"
 )
 
 type Service interface {

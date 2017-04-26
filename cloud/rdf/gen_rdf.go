@@ -21,7 +21,9 @@ import "github.com/wallix/awless/cloud/properties"
 
 const (
 	Actions                   = "cloud:actions"
+	ActionsEnabled            = "cloud:actionsEnabled"
 	Affinity                  = "cloud:affinity"
+	AlarmActions              = "cloud:alarmActions"
 	ApproximateMessageCount   = "cloud:approximateMessageCount"
 	Architecture              = "cloud:architecture"
 	Arn                       = "cloud:arn"
@@ -80,6 +82,7 @@ const (
 	Image                     = "cloud:image"
 	InboundRules              = "net:inboundRules"
 	InlinePolicies            = "cloud:inlinePolicies"
+	InsufficientDataActions   = "cloud:insufficientDataActions"
 	IOPS                      = "cloud:iops"
 	IPType                    = "net:ipType"
 	Key                       = "cloud:key"
@@ -95,6 +98,7 @@ const (
 	MaxSize                   = "cloud:maxSize"
 	Memory                    = "cloud:memory"
 	Messages                  = "cloud:messages"
+	MetricName                = "cloud:metricName"
 	MinSize                   = "cloud:minSize"
 	Modified                  = "cloud:modified"
 	MonitoringInterval        = "cloud:monitoringInterval"
@@ -104,6 +108,7 @@ const (
 	Namespace                 = "cloud:namemespace"
 	NewInstancesProtected     = "cloud:newInstancesProtected"
 	NetworkInterfaces         = "cloud:networkInterfaces"
+	OKActions                 = "cloud:okActions"
 	OptionGroups              = "cloud:optionGroups"
 	OutboundRules             = "net:outboundRules"
 	Owner                     = "cloud:owner"
@@ -163,7 +168,9 @@ const (
 
 var Labels = map[string]string{
 	properties.Actions:                   Actions,
+	properties.ActionsEnabled:            ActionsEnabled,
 	properties.Affinity:                  Affinity,
+	properties.AlarmActions:              AlarmActions,
 	properties.ApproximateMessageCount:   ApproximateMessageCount,
 	properties.Architecture:              Architecture,
 	properties.Arn:                       Arn,
@@ -222,6 +229,7 @@ var Labels = map[string]string{
 	properties.Image:                     Image,
 	properties.InboundRules:              InboundRules,
 	properties.InlinePolicies:            InlinePolicies,
+	properties.InsufficientDataActions:   InsufficientDataActions,
 	properties.IOPS:                      IOPS,
 	properties.IPType:                    IPType,
 	properties.Key:                       Key,
@@ -237,6 +245,7 @@ var Labels = map[string]string{
 	properties.MaxSize:                   MaxSize,
 	properties.Memory:                    Memory,
 	properties.Messages:                  Messages,
+	properties.MetricName:                MetricName,
 	properties.MinSize:                   MinSize,
 	properties.Modified:                  Modified,
 	properties.MonitoringInterval:        MonitoringInterval,
@@ -246,6 +255,7 @@ var Labels = map[string]string{
 	properties.Namespace:                 Namespace,
 	properties.NewInstancesProtected:     NewInstancesProtected,
 	properties.NetworkInterfaces:         NetworkInterfaces,
+	properties.OKActions:                 OKActions,
 	properties.OptionGroups:              OptionGroups,
 	properties.OutboundRules:             OutboundRules,
 	properties.Owner:                     Owner,
@@ -305,7 +315,9 @@ var Labels = map[string]string{
 
 var Properties = RDFProperties{
 	Actions:                 {ID: Actions, RdfType: "rdf:Property", RdfsLabel: "Actions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	ActionsEnabled:          {ID: ActionsEnabled, RdfType: "rdf:Property", RdfsLabel: "ActionsEnabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Affinity:                {ID: Affinity, RdfType: "rdf:Property", RdfsLabel: "Affinity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	AlarmActions:            {ID: AlarmActions, RdfType: "rdf:Property", RdfsLabel: "AlarmActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ApproximateMessageCount: {ID: ApproximateMessageCount, RdfType: "rdf:Property", RdfsLabel: "ApproximateMessageCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Arn:                     {ID: Arn, RdfType: "rdf:Property", RdfsLabel: "Arn", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -358,12 +370,13 @@ var Properties = RDFProperties{
 	HealthCheckType:         {ID: HealthCheckType, RdfType: "rdf:Property", RdfsLabel: "HealthCheckType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	HealthCheckGracePeriod:  {ID: HealthCheckGracePeriod, RdfType: "rdf:Property", RdfsLabel: "HealthCheckGracePeriod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	HealthyThresholdCount:   {ID: HealthyThresholdCount, RdfType: "rdf:Property", RdfsLabel: "HealthyThresholdCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Host:                     {ID: Host, RdfType: "rdf:Property", RdfsLabel: "Host", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Hypervisor:               {ID: Hypervisor, RdfType: "rdf:Property", RdfsLabel: "Hypervisor", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	ID:                       {ID: ID, RdfType: "rdf:Property", RdfsLabel: "ID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Image:                    {ID: Image, RdfType: "rdf:Property", RdfsLabel: "Image", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	InboundRules:             {ID: InboundRules, RdfType: "rdf:Property", RdfsLabel: "InboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
-	InlinePolicies:           {ID: InlinePolicies, RdfType: "rdf:Property", RdfsLabel: "InlinePolicies", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	Host:                    {ID: Host, RdfType: "rdf:Property", RdfsLabel: "Host", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Hypervisor:              {ID: Hypervisor, RdfType: "rdf:Property", RdfsLabel: "Hypervisor", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ID:                      {ID: ID, RdfType: "rdf:Property", RdfsLabel: "ID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Image:                   {ID: Image, RdfType: "rdf:Property", RdfsLabel: "Image", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	InboundRules:            {ID: InboundRules, RdfType: "rdf:Property", RdfsLabel: "InboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
+	InlinePolicies:          {ID: InlinePolicies, RdfType: "rdf:Property", RdfsLabel: "InlinePolicies", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	InsufficientDataActions: {ID: InsufficientDataActions, RdfType: "rdf:Property", RdfsLabel: "InsufficientDataActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	IOPS:                     {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	IPType:                   {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Key:                      {ID: Key, RdfType: "rdf:Property", RdfsLabel: "Key", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -379,6 +392,7 @@ var Properties = RDFProperties{
 	MaxSize:                  {ID: MaxSize, RdfType: "rdf:Property", RdfsLabel: "MaxSize", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Memory:                   {ID: Memory, RdfType: "rdf:Property", RdfsLabel: "Memory", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Messages:                 {ID: Messages, RdfType: "rdf:Property", RdfsLabel: "Messages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	MetricName:               {ID: MetricName, RdfType: "rdf:Property", RdfsLabel: "MetricName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	MinSize:                  {ID: MinSize, RdfType: "rdf:Property", RdfsLabel: "MinSize", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Modified:                 {ID: Modified, RdfType: "rdf:Property", RdfsLabel: "Modified", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	MonitoringInterval:       {ID: MonitoringInterval, RdfType: "rdf:Property", RdfsLabel: "MonitoringInterval", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -388,6 +402,7 @@ var Properties = RDFProperties{
 	Namespace:                {ID: Namespace, RdfType: "rdf:Property", RdfsLabel: "Namespace", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	NewInstancesProtected:    {ID: NewInstancesProtected, RdfType: "rdf:Property", RdfsLabel: "NewInstancesProtected", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	NetworkInterfaces:        {ID: NetworkInterfaces, RdfType: "rdf:Property", RdfsLabel: "NetworkInterfaces", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	OKActions:                {ID: OKActions, RdfType: "rdf:Property", RdfsLabel: "OKActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OptionGroups:             {ID: OptionGroups, RdfType: "rdf:Property", RdfsLabel: "OptionGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OutboundRules:            {ID: OutboundRules, RdfType: "rdf:Property", RdfsLabel: "OutboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
 	Owner:                    {ID: Owner, RdfType: "rdf:Property", RdfsLabel: "Owner", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

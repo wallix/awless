@@ -103,6 +103,7 @@ var ResourceTypes = []string{
 	"record",
 	"function",
 	"metric",
+	"alarm",
 }
 
 var ServicePerAPI = map[string]string{
@@ -152,6 +153,7 @@ var ServicePerResourceType = map[string]string{
 	"record":              "dns",
 	"function":            "lambda",
 	"metric":              "monitoring",
+	"alarm":               "monitoring",
 }
 
 var APIPerResourceType = map[string]string{
@@ -186,6 +188,7 @@ var APIPerResourceType = map[string]string{
 	"record":              "route53",
 	"function":            "lambda",
 	"metric":              "cloudwatch",
+	"alarm":               "cloudwatch",
 }
 
 type Infra struct {
@@ -2576,6 +2579,7 @@ func (s *Monitoring) Drivers() []driver.Driver {
 func (s *Monitoring) ResourceTypes() []string {
 	return []string{
 		"metric",
+		"alarm",
 	}
 }
 
@@ -2590,6 +2594,7 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 		return g, err
 	}
 	var metricList []*cloudwatch.Metric
+	var alarmList []*cloudwatch.MetricAlarm
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -2609,6 +2614,22 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource monitoring[metric]")
+	}
+	if s.config.getBool("aws.monitoring.alarm.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, alarmList, err = s.fetch_all_alarm_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource monitoring[alarm]")
 	}
 
 	go func() {
@@ -2648,6 +2669,21 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.monitoring.alarm.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range alarmList {
+				for _, fn := range addParentsFns["alarm"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -2668,6 +2704,9 @@ func (s *Monitoring) FetchByType(t string) (*graph.Graph, error) {
 	case "metric":
 		graph, _, err := s.fetch_all_metric_graph()
 		return graph, err
+	case "alarm":
+		graph, _, err := s.fetch_all_alarm_graph()
+		return graph, err
 	default:
 		return nil, fmt.Errorf("aws monitoring: unsupported fetch for type %s", t)
 	}
@@ -2680,6 +2719,31 @@ func (s *Monitoring) fetch_all_metric_graph() (*graph.Graph, []*cloudwatch.Metri
 	err := s.ListMetricsPages(&cloudwatch.ListMetricsInput{},
 		func(out *cloudwatch.ListMetricsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Metrics {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Monitoring) fetch_all_alarm_graph() (*graph.Graph, []*cloudwatch.MetricAlarm, error) {
+	g := graph.NewGraph()
+	var cloudResources []*cloudwatch.MetricAlarm
+	var badResErr error
+	err := s.DescribeAlarmsPages(&cloudwatch.DescribeAlarmsInput{},
+		func(out *cloudwatch.DescribeAlarmsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.MetricAlarms {
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {

@@ -953,6 +953,35 @@ var DriversDefs = []driversDef{
 	{
 		Api:          "cloudwatch",
 		ApiInterface: "CloudWatchAPI",
-		Drivers:      []driver{},
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.Alarm, DryRunUnsupported: true, ApiMethod: "PutMetricAlarm", Input: "PutMetricAlarmInput", Output: "PutMetricAlarmOutput", OutputExtractor: "params[\"name\"]",
+				RequiredParams: []param{
+					{AwsField: "AlarmName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "ComparisonOperator", TemplateName: "operator", AwsType: "awsstr"}, // [GreaterThanThreshold, LessThanThreshold, LessThanOrEqualToThreshold, GreaterThanOrEqualToThreshold]
+					{AwsField: "MetricName", TemplateName: "metric", AwsType: "awsstr"},
+					{AwsField: "Namespace", TemplateName: "namespace", AwsType: "awsstr"},
+					{AwsField: "EvaluationPeriods", TemplateName: "evaluation-periods", AwsType: "awsint64"},
+					{AwsField: "Period", TemplateName: "period", AwsType: "awsint64"},
+					{AwsField: "Statistic", TemplateName: "statistic-function", AwsType: "awsstr"}, // Minimum, Maximum, Sum, Average, SampleCount, pNN.NN
+					{AwsField: "Threshold", TemplateName: "threshold", AwsType: "awsfloat"},
+				},
+				ExtraParams: []param{
+					{AwsField: "ActionsEnabled", TemplateName: "enabled", AwsType: "awsbool"},
+					{AwsField: "AlarmActions", TemplateName: "alarm-actions", AwsType: "awsstringslice"},
+					{AwsField: "InsufficientDataActions", TemplateName: "insufficientdata-actions", AwsType: "awsstringslice"},
+					{AwsField: "OKActions", TemplateName: "ok-actions", AwsType: "awsstringslice"},
+					{AwsField: "AlarmDescription", TemplateName: "description", AwsType: "awsstr"},
+					{AwsField: "Dimensions", TemplateName: "dimensions", AwsType: "awsdimensionslice"},
+					{AwsField: "Unit", TemplateName: "unit", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Alarm, DryRunUnsupported: true, ApiMethod: "DeleteAlarms", Input: "DeleteAlarmsInput", Output: "DeleteAlarmsOutput",
+				RequiredParams: []param{
+					{AwsField: "AlarmNames", TemplateName: "name", AwsType: "awsstringslice"},
+				},
+			},
+		},
 	},
 }

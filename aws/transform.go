@@ -123,6 +123,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *cloudwatch.Metric:
 		id := hashFields(awssdk.StringValue(ss.Namespace), awssdk.StringValue(ss.MetricName))
 		res = graph.InitResource(cloud.Metric, id)
+	case *cloudwatch.MetricAlarm:
+		res = graph.InitResource(cloud.Alarm, awssdk.StringValue(ss.AlarmArn))
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -354,6 +356,14 @@ var extractTagFn = func(key string) transformFn {
 
 		return nil, ErrTagNotFound
 	}
+}
+
+var extractStringPointerSliceValues = func(i interface{}) (interface{}, error) {
+	pointers, ok := i.([]*string)
+	if !ok {
+		return nil, fmt.Errorf("extract string pointer: not a string pointer slice but a %T", i)
+	}
+	return awssdk.StringValueSlice(pointers), nil
 }
 
 var extractStringSliceValues = func(key string) transformFn {

@@ -139,7 +139,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	cloud.Listener: {
 		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
-		StringColumnDefinition{Prop: properties.Actions},
+		StringColumnDefinition{Prop: properties.AlarmActions},
 		StringColumnDefinition{Prop: properties.LoadBalancer},
 		StringColumnDefinition{Prop: properties.Port},
 		StringColumnDefinition{Prop: properties.Protocol},
@@ -238,7 +238,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Owner},
 	},
 	cloud.Topic: {
-		StringColumnDefinition{Prop: properties.Topic, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
 	},
 	//Queue
 	cloud.Queue: {
@@ -279,6 +279,16 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
 		StringColumnDefinition{Prop: properties.Namespace},
+		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Dimensions}},
+	},
+	cloud.Alarm: {
+		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Namespace},
+		StringColumnDefinition{Prop: properties.MetricName},
+		StringColumnDefinition{Prop: properties.Description},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.State},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Updated}},
 		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Dimensions}},
 	},
 }

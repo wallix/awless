@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/lambda"
 )
@@ -101,15 +102,17 @@ func TestSetFieldsOnAwsStruct(t *testing.T) {
 
 func TestSetFieldWithMultiType(t *testing.T) {
 	any := struct {
-		Field             string
-		IntField          int
-		BoolPointerField  *bool
-		BoolField         bool
-		StringArrayField  []*string
-		Int64ArrayField   []*int64
-		BooleanValueField *ec2.AttributeBooleanValue
-		StringValueField  *ec2.AttributeValue
-		StructAttribute   struct {
+		Field               string
+		IntField            int
+		FloatField          *float64
+		BoolPointerField    *bool
+		BoolField           bool
+		StringArrayField    []*string
+		Int64ArrayField     []*int64
+		BooleanValueField   *ec2.AttributeBooleanValue
+		StringValueField    *ec2.AttributeValue
+		DimensionSliceField []*cloudwatch.Dimension
+		StructAttribute     struct {
 			Str  *string
 			Bool *bool
 		}
@@ -131,6 +134,14 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, want := any.IntField, 5; got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+
+	err = setFieldWithType(42.21, &any, "FloatField", awsfloat)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.FloatField, 42.21; got != want {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 
@@ -353,6 +364,38 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 	if got, want := *any.SliceStructPointerAttribute[0].Str2, "toto"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType("key:value", &any, "DimensionSliceField", awsdimensionslice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.DimensionSliceField), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.DimensionSliceField[0].Name, "key"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.DimensionSliceField[0].Value, "value"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType([]string{"key:value", "key1:value1:with:"}, &any, "DimensionSliceField", awsdimensionslice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.DimensionSliceField), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.DimensionSliceField[0].Name, "key"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.DimensionSliceField[0].Value, "value"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.DimensionSliceField[1].Name, "key1"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.DimensionSliceField[1].Value, "value1:with:"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }

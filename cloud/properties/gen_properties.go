@@ -19,7 +19,9 @@ package properties
 
 const (
 	Actions                   = "Actions"
+	ActionsEnabled            = "ActionsEnabled"
 	Affinity                  = "Affinity"
+	AlarmActions              = "AlarmActions"
 	ApproximateMessageCount   = "ApproximateMessageCount"
 	Architecture              = "Architecture"
 	Arn                       = "Arn"
@@ -78,6 +80,7 @@ const (
 	Image                     = "Image"
 	InboundRules              = "InboundRules"
 	InlinePolicies            = "InlinePolicies"
+	InsufficientDataActions   = "InsufficientDataActions"
 	IOPS                      = "IOPS"
 	IPType                    = "IPType"
 	Key                       = "Key"
@@ -93,6 +96,7 @@ const (
 	MaxSize                   = "MaxSize"
 	Memory                    = "Memory"
 	Messages                  = "Messages"
+	MetricName                = "MetricName"
 	MinSize                   = "MinSize"
 	Modified                  = "Modified"
 	MonitoringInterval        = "MonitoringInterval"
@@ -102,6 +106,7 @@ const (
 	Namespace                 = "Namespace"
 	NewInstancesProtected     = "NewInstancesProtected"
 	NetworkInterfaces         = "NetworkInterfaces"
+	OKActions                 = "OKActions"
 	OptionGroups              = "OptionGroups"
 	OutboundRules             = "OutboundRules"
 	Owner                     = "Owner"

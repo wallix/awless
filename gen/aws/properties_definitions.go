@@ -16,7 +16,9 @@ type property struct {
 
 var PropertiesDefinitions = []property{
 	{AwlessLabel: "Actions", RDFLabel: fmt.Sprintf("%s:actions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "ActionsEnabled", RDFLabel: fmt.Sprintf("%s:actionsEnabled", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Affinity", RDFLabel: fmt.Sprintf("%s:affinity", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "AlarmActions", RDFLabel: fmt.Sprintf("%s:alarmActions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "ApproximateMessageCount", RDFLabel: fmt.Sprintf("%s:approximateMessageCount", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Architecture", RDFLabel: fmt.Sprintf("%s:architecture", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Arn", RDFLabel: fmt.Sprintf("%s:arn", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
@@ -75,6 +77,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Image", RDFLabel: fmt.Sprintf("%s:image", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "InboundRules", RDFLabel: fmt.Sprintf("%s:inboundRules", rdf.NetNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.NetFirewallRule},
 	{AwlessLabel: "InlinePolicies", RDFLabel: fmt.Sprintf("%s:inlinePolicies", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.RdfsClass},
+	{AwlessLabel: "InsufficientDataActions", RDFLabel: fmt.Sprintf("%s:insufficientDataActions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "IOPS", RDFLabel: fmt.Sprintf("%s:iops", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "IPType", RDFLabel: fmt.Sprintf("%s:ipType", rdf.NetNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Key", RDFLabel: fmt.Sprintf("%s:key", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
@@ -90,6 +93,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "MaxSize", RDFLabel: fmt.Sprintf("%s:maxSize", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Memory", RDFLabel: fmt.Sprintf("%s:memory", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Messages", RDFLabel: fmt.Sprintf("%s:messages", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "MetricName", RDFLabel: fmt.Sprintf("%s:metricName", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "MinSize", RDFLabel: fmt.Sprintf("%s:minSize", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Modified", RDFLabel: fmt.Sprintf("%s:modified", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdDateTime},
 	{AwlessLabel: "MonitoringInterval", RDFLabel: fmt.Sprintf("%s:monitoringInterval", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
@@ -99,6 +103,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Namespace", RDFLabel: fmt.Sprintf("%s:namemespace", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "NewInstancesProtected", RDFLabel: fmt.Sprintf("%s:newInstancesProtected", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "NetworkInterfaces", RDFLabel: fmt.Sprintf("%s:networkInterfaces", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "OKActions", RDFLabel: fmt.Sprintf("%s:okActions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "OptionGroups", RDFLabel: fmt.Sprintf("%s:optionGroups", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "OutboundRules", RDFLabel: fmt.Sprintf("%s:outboundRules", rdf.NetNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.NetFirewallRule},
 	{AwlessLabel: "Owner", RDFLabel: fmt.Sprintf("%s:owner", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

@@ -29,6 +29,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/wallix/awless/logger"
 )
@@ -37,6 +38,7 @@ const (
 	awsstr = iota
 	awsint
 	awsint64
+	awsfloat
 	awsbool
 	awsboolattribute
 	awsstringattribute
@@ -46,6 +48,7 @@ const (
 	awsslicestruct
 	awsfiletobase64
 	awsfiletostring
+	awsdimensionslice
 )
 
 var (
@@ -90,6 +93,11 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 		if err != nil {
 			return
 		}
+	case awsfloat:
+		v, err = castFloat(v)
+		if err != nil {
+			return
+		}
 	case awsbool:
 		v, err = castBool(v)
 		if err != nil {
@@ -109,6 +117,29 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			str := fmt.Sprint(v)
 			v = []*string{&str}
 		}
+	case awsdimensionslice:
+		var sl []string
+		switch vv := v.(type) {
+		case string:
+			sl = []string{vv}
+		case *string:
+			sl = []string{*vv}
+		case []*string:
+			sl = aws.StringValueSlice(vv)
+		case []string:
+			sl = vv
+		default:
+			sl = []string{fmt.Sprint(v)}
+		}
+		var dimensions []*cloudwatch.Dimension
+		for _, s := range sl {
+			splits := strings.SplitN(s, ":", 2)
+			if len(splits) != 2 {
+				return fmt.Errorf("invalid dimension '%s', expected 'key:value'", s)
+			}
+			dimensions = append(dimensions, &cloudwatch.Dimension{Name: aws.String(splits[0]), Value: aws.String(splits[1])})
+		}
+		v = dimensions
 	case awsfiletobase64:
 		v, err = fileOrRemoteFileAsBase64(v)
 		if err != nil {
@@ -191,6 +222,23 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 	}
 	awsutil.SetValueAtPath(i, fieldPath, v)
 	return nil
+}
+
+func castFloat(v interface{}) (float64, error) {
+	switch vv := v.(type) {
+	case string:
+		return strconv.ParseFloat(vv, 64)
+	case float32:
+		return float64(vv), nil
+	case float64:
+		return vv, nil
+	case int:
+		return float64(vv), nil
+	case int64:
+		return float64(vv), nil
+	default:
+		return 0, fmt.Errorf("cannot cast %T to float64", v)
+	}
 }
 
 func castInt(v interface{}) (int, error) {

@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -3964,5 +3965,173 @@ func (d *LambdaDriver) Delete_Function(params map[string]interface{}) (interface
 	}
 	d.logger.ExtraVerbosef("lambda.DeleteFunction call took %s", time.Since(start))
 	d.logger.Info("delete function done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Create_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'name'")
+	}
+
+	if _, ok := params["operator"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'operator'")
+	}
+
+	if _, ok := params["metric"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'metric'")
+	}
+
+	if _, ok := params["namespace"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'namespace'")
+	}
+
+	if _, ok := params["evaluation-periods"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'evaluation-periods'")
+	}
+
+	if _, ok := params["period"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'period'")
+	}
+
+	if _, ok := params["statistic-function"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'statistic-function'")
+	}
+
+	if _, ok := params["threshold"]; !ok {
+		return nil, errors.New("create alarm: missing required params 'threshold'")
+	}
+
+	d.logger.Verbose("params dry run: create alarm ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Create_Alarm(params map[string]interface{}) (interface{}, error) {
+	input := &cloudwatch.PutMetricAlarmInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "AlarmName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["operator"], input, "ComparisonOperator", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["metric"], input, "MetricName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["namespace"], input, "Namespace", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["evaluation-periods"], input, "EvaluationPeriods", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["period"], input, "Period", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["statistic-function"], input, "Statistic", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["threshold"], input, "Threshold", awsfloat)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["enabled"]; ok {
+		err = setFieldWithType(params["enabled"], input, "ActionsEnabled", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["alarm-actions"]; ok {
+		err = setFieldWithType(params["alarm-actions"], input, "AlarmActions", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["insufficientdata-actions"]; ok {
+		err = setFieldWithType(params["insufficientdata-actions"], input, "InsufficientDataActions", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["ok-actions"]; ok {
+		err = setFieldWithType(params["ok-actions"], input, "OKActions", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "AlarmDescription", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["dimensions"]; ok {
+		err = setFieldWithType(params["dimensions"], input, "Dimensions", awsdimensionslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["unit"]; ok {
+		err = setFieldWithType(params["unit"], input, "Unit", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *cloudwatch.PutMetricAlarmOutput
+	output, err = d.PutMetricAlarm(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create alarm: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudwatch.PutMetricAlarm call took %s", time.Since(start))
+	id := params["name"]
+
+	d.logger.Infof("create alarm '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Delete_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete alarm: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete alarm ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Delete_Alarm(params map[string]interface{}) (interface{}, error) {
+	input := &cloudwatch.DeleteAlarmsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "AlarmNames", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *cloudwatch.DeleteAlarmsOutput
+	output, err = d.DeleteAlarms(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete alarm: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudwatch.DeleteAlarms call took %s", time.Since(start))
+	d.logger.Info("delete alarm done")
 	return output, nil
 }

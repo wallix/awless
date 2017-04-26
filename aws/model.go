@@ -323,6 +323,20 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Namespace:  {name: "Namespace", transform: extractValueFn},
 		properties.Dimensions: {name: "Dimensions", transform: extractNameValueFn},
 	},
+	cloud.Alarm: {
+		properties.Name:                    {name: "AlarmName", transform: extractValueFn},
+		properties.ActionsEnabled:          {name: "ActionsEnabled", transform: extractValueFn},
+		properties.AlarmActions:            {name: "AlarmActions", transform: extractStringPointerSliceValues},
+		properties.InsufficientDataActions: {name: "InsufficientDataActions", transform: extractStringPointerSliceValues},
+		properties.OKActions:               {name: "OKActions", transform: extractStringPointerSliceValues},
+		properties.Arn:                     {name: "AlarmArn", transform: extractValueFn},
+		properties.Description:             {name: "AlarmDescription", transform: extractValueFn},
+		properties.Dimensions:              {name: "Dimensions", transform: extractNameValueFn},
+		properties.MetricName:              {name: "MetricName", transform: extractValueFn},
+		properties.Namespace:               {name: "Namespace", transform: extractValueFn},
+		properties.Updated:                 {name: "StateUpdatedTimestamp", transform: extractValueFn},
+		properties.State:                   {name: "StateValue", transform: extractValueFn},
+	},
 	//Queue
 	cloud.Queue: {}, //Manually set
 }

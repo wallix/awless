@@ -799,6 +799,18 @@ func NewCloudwatchDriver(api cloudwatchiface.CloudWatchAPI) driver.Driver {
 func (d *CloudwatchDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createalarm":
+		if d.dryRun {
+			return d.Create_Alarm_DryRun, nil
+		}
+		return d.Create_Alarm, nil
+
+	case "deletealarm":
+		if d.dryRun {
+			return d.Delete_Alarm_DryRun, nil
+		}
+		return d.Delete_Alarm, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

@@ -110,6 +110,8 @@ var APIPerTemplateDefName = map[string]string{
 	"deleterecord":              "route53",
 	"createfunction":            "lambda",
 	"deletefunction":            "lambda",
+	"createalarm":               "cloudwatch",
+	"deletealarm":               "cloudwatch",
 }
 
 var AWSTemplatesDefinitions = map[string]template.Definition{
@@ -729,6 +731,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"version"},
 	},
+	"createalarm": {
+		Action:         "create",
+		Entity:         "alarm",
+		Api:            "cloudwatch",
+		RequiredParams: []string{"evaluation-periods", "metric", "name", "namespace", "operator", "period", "statistic-function", "threshold"},
+		ExtraParams:    []string{"alarm-actions", "description", "dimensions", "enabled", "insufficientdata-actions", "ok-actions", "unit"},
+	},
+	"deletealarm": {
+		Action:         "delete",
+		Entity:         "alarm",
+		Api:            "cloudwatch",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{},
+	},
 }
 
 func DriverSupportedActions() map[string][]string {
@@ -821,5 +837,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "record")
 	supported["create"] = append(supported["create"], "function")
 	supported["delete"] = append(supported["delete"], "function")
+	supported["create"] = append(supported["create"], "alarm")
+	supported["delete"] = append(supported["delete"], "alarm")
 	return supported
 }
