@@ -17,6 +17,8 @@ const (
 
 	Attach Action = "attach"
 	Detach Action = "detach"
+
+	Copy Action = "copy"
 )
 
 var actions = map[Action]struct{}{
@@ -29,6 +31,7 @@ var actions = map[Action]struct{}{
 	Stop:       {},
 	Attach:     {},
 	Detach:     {},
+	Copy:       {},
 }
 
 func IsInvalidAction(s string) bool {

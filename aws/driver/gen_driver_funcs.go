@@ -842,6 +842,100 @@ func (d *Ec2Driver) Delete_Securitygroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Copy_Image_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CopyImageInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["source-id"], input, "SourceImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["encrypted"]; ok {
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.CopyImage(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("image")
+			d.logger.Verbose("dry run: copy image ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: copy image: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Copy_Image(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CopyImageInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["source-id"], input, "SourceImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["encrypted"]; ok {
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.CopyImageOutput
+	output, err = d.CopyImage(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("copy image: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.CopyImage call took %s", time.Since(start))
+	id := aws.StringValue(output.ImageId)
+
+	d.logger.Infof("copy image '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
 func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	input.DryRun = aws.Bool(true)

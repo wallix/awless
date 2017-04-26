@@ -91,6 +91,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	cloud.Image: {
 		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.State},
 		StringColumnDefinition{Prop: properties.Location},
 		StringColumnDefinition{Prop: properties.Public},

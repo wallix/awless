@@ -83,6 +83,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.AvailabilityZone: {name: "AvailabilityZone", transform: extractValueFn},
 	},
 	cloud.Image: {
+		properties.Name:           {name: "Name", transform: extractValueFn},
 		properties.Architecture:   {name: "Architecture", transform: extractValueFn},
 		properties.Hypervisor:     {name: "Hypervisor", transform: extractValueFn},
 		properties.Location:       {name: "ImageLocation", transform: extractValueFn},

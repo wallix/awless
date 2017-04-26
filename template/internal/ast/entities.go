@@ -13,6 +13,7 @@ var entities = map[Entity]struct{}{
 	"function":            {},
 	"group":               {},
 	"instance":            {},
+	"image":               {},
 	"internetgateway":     {},
 	"keypair":             {},
 	"launchconfiguration": {},

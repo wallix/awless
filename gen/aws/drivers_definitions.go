@@ -234,6 +234,19 @@ var DriversDefs = []driversDef{
 					{TemplateName: "instance"},
 				},
 			},
+			// IMAGES
+			{
+				Action: "copy", Entity: cloud.Image, Input: "CopyImageInput", Output: "CopyImageOutput", ApiMethod: "CopyImage", OutputExtractor: "aws.StringValue(output.ImageId)",
+				RequiredParams: []param{
+					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "SourceImageId", TemplateName: "source-id", AwsType: "awsstr"},
+					{AwsField: "SourceRegion", TemplateName: "source-region", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Encrypted", TemplateName: "encrypted", AwsType: "awsbool"},
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+				},
+			},
 
 			// VOLUME
 			{
