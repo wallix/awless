@@ -1,4 +1,4 @@
-//go:generate go run $GOFILE drivers.go fetchers.go properties.go
+//go:generate go run $GOFILE drivers.go fetchers.go properties.go paramsdoc.go
 //go:generate gofmt -s -w ../../../aws
 //go:generate goimports -w ../../../aws
 //go:generate gofmt -s -w ../../../aws/driver
@@ -10,18 +10,24 @@
 
 package main
 
-import "path/filepath"
+import (
+	"flag"
+	"path/filepath"
+)
 
 var (
 	ROOT_DIR = filepath.Join("..", "..", "..")
 
 	FETCHERS_DIR         = filepath.Join(ROOT_DIR, "aws")
 	DRIVERS_DIR          = filepath.Join(ROOT_DIR, "aws", "driver")
+	DOC_DIR              = filepath.Join(ROOT_DIR, "aws", "doc")
 	CLOUD_PROPERTIES_DIR = filepath.Join(ROOT_DIR, "cloud", "properties")
 	CLOUD_RDF_DIR        = filepath.Join(ROOT_DIR, "cloud", "rdf")
 )
 
 func main() {
+	flag.Parse()
+
 	// fetchers
 	generateFetcherFuncs()
 
@@ -33,4 +39,9 @@ func main() {
 	// properties
 	generateProperties()
 	generateRDFProperties()
+
+	// doc
+	if false {
+		generateParamsDocLookup()
+	}
 }

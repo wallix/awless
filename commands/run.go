@@ -36,6 +36,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws/doc"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -345,14 +346,24 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		if api, ok := awsdriver.APIPerTemplateDefName[templDef.Name()]; ok {
 			apiStr = fmt.Sprint(strings.ToUpper(api) + " ")
 		}
-		var requiredStr string
-		if req := strings.Join(templDef.Required(), ", "); req != "" {
-			requiredStr = fmt.Sprintf("\n\tRequired params: %s", req)
+		var requiredStr bytes.Buffer
+		requiredStr.WriteString("\n\tRequired params:")
+		for _, req := range templDef.Required() {
+			requiredStr.WriteString(fmt.Sprintf("\n\t\t- %s", req))
+			if d, ok := awsdoc.TemplateParamsDoc[templDef.Name()][req]; ok {
+				requiredStr.WriteString(fmt.Sprintf(": %s", d))
+			}
 		}
-		var extraStr string
-		if ext := strings.Join(templDef.Extra(), ", "); ext != "" {
-			extraStr = fmt.Sprintf("\n\tExtra params: %s", ext)
+
+		var extraStr bytes.Buffer
+		extraStr.WriteString("\n\tExtra params:")
+		for _, ext := range templDef.Extra() {
+			extraStr.WriteString(fmt.Sprintf("\n\t\t- %s", ext))
+			if d, ok := awsdoc.TemplateParamsDoc[templDef.Name()][ext]; ok {
+				extraStr.WriteString(fmt.Sprintf(": %s", d))
+			}
 		}
+
 		var validArgs []string
 		for _, param := range templDef.Required() {
 			validArgs = append(validArgs, param+"=")
@@ -366,7 +377,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
 				PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
-				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr, extraStr),
+				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr.String(), extraStr.String()),
 				RunE:              run(templDef),
 				ValidArgs:         validArgs,
 			},
