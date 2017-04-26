@@ -59,6 +59,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Keypair, awssdk.StringValue(ss.KeyName))
 	case *ec2.Volume:
 		res = graph.InitResource(cloud.Volume, awssdk.StringValue(ss.VolumeId))
+	case *ec2.Image:
+		res = graph.InitResource(cloud.Image, awssdk.StringValue(ss.ImageId))
 	case *ec2.InternetGateway:
 		res = graph.InitResource(cloud.InternetGateway, awssdk.StringValue(ss.InternetGatewayId))
 	case *ec2.RouteTable:
@@ -228,6 +230,24 @@ var extractTimeFn = func(i interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return t.UTC(), nil
+	}
+	return nil, fmt.Errorf("extract time: expected time pointer, got: %T", i)
+}
+
+// Extract time that have a Z directly after the time without a space which means UTC
+// (https://en.wikipedia.org/wiki/ISO_8601#UTC)
+var extractTimeWithZSuffixFn = func(i interface{}) (interface{}, error) {
+	t, ok := i.(*time.Time)
+	if ok {
+		return t.UTC(), nil
+	}
+	s, ok := i.(*string)
+	if ok {
+		t, err := time.Parse("2006-01-02T15:04:05.000Z", awssdk.StringValue(s))
+		if err != nil {
+			return nil, err
+		}
+		return t, nil
 	}
 	return nil, fmt.Errorf("extract time: expected time pointer, got: %T", i)
 }

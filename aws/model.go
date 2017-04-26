@@ -82,6 +82,17 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Created:          {name: "CreateTime", transform: extractTimeFn},
 		properties.AvailabilityZone: {name: "AvailabilityZone", transform: extractValueFn},
 	},
+	cloud.Image: {
+		properties.Architecture:   {name: "Architecture", transform: extractValueFn},
+		properties.Hypervisor:     {name: "Hypervisor", transform: extractValueFn},
+		properties.Location:       {name: "ImageLocation", transform: extractValueFn},
+		properties.Description:    {name: "Description", transform: extractValueFn},
+		properties.Type:           {name: "ImageType", transform: extractValueFn},
+		properties.Public:         {name: "Public", transform: extractValueFn},
+		properties.State:          {name: "State", transform: extractValueFn},
+		properties.Created:        {name: "CreationDate", transform: extractTimeWithZSuffixFn},
+		properties.Virtualization: {name: "VirtualizationType", transform: extractValueFn},
+	},
 	cloud.InternetGateway: {
 		properties.Name: {name: "Tags", transform: extractTagFn("Name")},
 		properties.Vpcs: {name: "Attachments", transform: extractStringSliceValues("VpcId")},

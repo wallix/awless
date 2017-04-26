@@ -89,6 +89,7 @@ const (
 	License                   = "cloud:license"
 	Lifecycle                 = "cloud:lifecycle"
 	LoadBalancer              = "cloud:loadBalancer"
+	Location                  = "cloud:location"
 	Main                      = "cloud:main"
 	MaxSize                   = "cloud:maxSize"
 	Memory                    = "cloud:memory"
@@ -150,6 +151,7 @@ const (
 	UserData                  = "cloud:userData"
 	Username                  = "cloud:username"
 	Version                   = "cloud:version"
+	Virtualization            = "cloud:virtualization"
 	Vpc                       = "cloud:vpc"
 	Vpcs                      = "cloud:vpcs"
 	Weight                    = "cloud:weight"
@@ -226,6 +228,7 @@ var Labels = map[string]string{
 	properties.License:                   License,
 	properties.Lifecycle:                 Lifecycle,
 	properties.LoadBalancer:              LoadBalancer,
+	properties.Location:                  Location,
 	properties.Main:                      Main,
 	properties.MaxSize:                   MaxSize,
 	properties.Memory:                    Memory,
@@ -287,6 +290,7 @@ var Labels = map[string]string{
 	properties.UserData:                  UserData,
 	properties.Username:                  Username,
 	properties.Version:                   Version,
+	properties.Virtualization:            Virtualization,
 	properties.Vpc:                       Vpc,
 	properties.Vpcs:                      Vpcs,
 	properties.Weight:                    Weight,
@@ -363,6 +367,7 @@ var Properties = RDFProperties{
 	License:                 {ID: License, RdfType: "rdf:Property", RdfsLabel: "License", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Lifecycle:               {ID: Lifecycle, RdfType: "rdf:Property", RdfsLabel: "Lifecycle", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	LoadBalancer:            {ID: LoadBalancer, RdfType: "rdf:Property", RdfsLabel: "LoadBalancer", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	Location:                {ID: Location, RdfType: "rdf:Property", RdfsLabel: "Location", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Main:                    {ID: Main, RdfType: "rdf:Property", RdfsLabel: "Main", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	MaxSize:                 {ID: MaxSize, RdfType: "rdf:Property", RdfsLabel: "MaxSize", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Memory:                  {ID: Memory, RdfType: "rdf:Property", RdfsLabel: "Memory", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
@@ -424,6 +429,7 @@ var Properties = RDFProperties{
 	UserData:                {ID: UserData, RdfType: "rdf:Property", RdfsLabel: "UserData", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Username:                {ID: Username, RdfType: "rdf:Property", RdfsLabel: "Username", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Version:                 {ID: Version, RdfType: "rdf:Property", RdfsLabel: "Version", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Virtualization:          {ID: Virtualization, RdfType: "rdf:Property", RdfsLabel: "Virtualization", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Vpc:                     {ID: Vpc, RdfType: "rdf:Property", RdfsLabel: "Vpc", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Vpcs:                    {ID: Vpcs, RdfType: "rdf:Property", RdfsLabel: "Vpcs", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	Weight:                  {ID: Weight, RdfType: "rdf:Property", RdfsLabel: "Weight", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

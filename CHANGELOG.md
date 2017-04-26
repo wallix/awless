@@ -8,7 +8,8 @@
 - [#74](https://github.com/wallix/awless/issues/74): support of encrypted SSH keys for generation `awless create keypair encrypted=true` and in `awless ssh`.
 - Create/delete and list Lambda functions
 - Create/delete and list autoscaling launch configurations and autoscaling groups
-- List IAM access keys
+- List EC2 images (AMIs) of which you are the owner: `awless list images`
+- List your IAM access keys: `awless list accesskeys`
 - Friendlier (using units: KB, MB, GB) display for storage size (s3objects, volumes, lambda functions)
 
 ### Bugfixes

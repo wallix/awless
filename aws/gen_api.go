@@ -78,6 +78,7 @@ var ResourceTypes = []string{
 	"internetgateway",
 	"routetable",
 	"availabilityzone",
+	"image",
 	"loadbalancer",
 	"targetgroup",
 	"listener",
@@ -124,6 +125,7 @@ var ServicePerResourceType = map[string]string{
 	"internetgateway":     "infra",
 	"routetable":          "infra",
 	"availabilityzone":    "infra",
+	"image":               "infra",
 	"loadbalancer":        "infra",
 	"targetgroup":         "infra",
 	"listener":            "infra",
@@ -156,6 +158,7 @@ var APIPerResourceType = map[string]string{
 	"internetgateway":     "ec2",
 	"routetable":          "ec2",
 	"availabilityzone":    "ec2",
+	"image":               "ec2",
 	"loadbalancer":        "elbv2",
 	"targetgroup":         "elbv2",
 	"listener":            "elbv2",
@@ -226,6 +229,7 @@ func (s *Infra) ResourceTypes() []string {
 		"internetgateway",
 		"routetable",
 		"availabilityzone",
+		"image",
 		"loadbalancer",
 		"targetgroup",
 		"listener",
@@ -255,6 +259,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var internetgatewayList []*ec2.InternetGateway
 	var routetableList []*ec2.RouteTable
 	var availabilityzoneList []*ec2.AvailabilityZone
+	var imageList []*ec2.Image
 	var loadbalancerList []*elbv2.LoadBalancer
 	var targetgroupList []*elbv2.TargetGroup
 	var listenerList []*elbv2.Listener
@@ -409,6 +414,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[availabilityzone]")
+	}
+	if s.config.getBool("aws.infra.image.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, imageList, err = s.fetch_all_image_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[image]")
 	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
 		wg.Add(1)
@@ -680,6 +701,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.image.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range imageList {
+				for _, fn := range addParentsFns["image"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
 		wg.Add(1)
 		go func() {
@@ -828,6 +864,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "availabilityzone":
 		graph, _, err := s.fetch_all_availabilityzone_graph()
+		return graph, err
+	case "image":
+		graph, _, err := s.fetch_all_image_graph()
 		return graph, err
 	case "loadbalancer":
 		graph, _, err := s.fetch_all_loadbalancer_graph()
@@ -1061,6 +1100,30 @@ func (s *Infra) fetch_all_availabilityzone_graph() (*graph.Graph, []*ec2.Availab
 	}
 
 	for _, output := range out.AvailabilityZones {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
+	}
+
+	return g, cloudResources, nil
+
+}
+
+func (s *Infra) fetch_all_image_graph() (*graph.Graph, []*ec2.Image, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ec2.Image
+
+	out, err := s.DescribeImages(&ec2.DescribeImagesInput{Owners: []*string{awssdk.String("self")}})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.Images {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

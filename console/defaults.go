@@ -89,6 +89,17 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Fingerprint, DisableTruncate: true},
 	},
+	cloud.Image: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Location},
+		StringColumnDefinition{Prop: properties.Public},
+		StringColumnDefinition{Prop: properties.Type},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
+		StringColumnDefinition{Prop: properties.Architecture, Friendly: "Arch"},
+		StringColumnDefinition{Prop: properties.Hypervisor, Friendly: "Hyperv"},
+		StringColumnDefinition{Prop: properties.Virtualization, Friendly: "Virt"},
+	},
 	cloud.Volume: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
