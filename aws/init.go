@@ -32,7 +32,7 @@ import (
 )
 
 var (
-	AccessService, InfraService, StorageService, NotificationService, QueueService, DnsService, LambdaService cloud.Service
+	AccessService, InfraService, StorageService, NotificationService, QueueService, DnsService, LambdaService, MonitoringService cloud.Service
 )
 
 func InitServices(conf map[string]interface{}, log *logger.Logger) error {
@@ -54,6 +54,7 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	QueueService = NewQueue(sess, awsconf, log)
 	DnsService = NewDns(sess, awsconf, log)
 	LambdaService = NewLambda(sess, awsconf, log)
+	MonitoringService = NewMonitoring(sess, awsconf, log)
 
 	cloud.ServiceRegistry[InfraService.Name()] = InfraService
 	cloud.ServiceRegistry[AccessService.Name()] = AccessService
@@ -62,6 +63,7 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	cloud.ServiceRegistry[QueueService.Name()] = QueueService
 	cloud.ServiceRegistry[DnsService.Name()] = DnsService
 	cloud.ServiceRegistry[LambdaService.Name()] = LambdaService
+	cloud.ServiceRegistry[MonitoringService.Name()] = MonitoringService
 
 	return nil
 }
@@ -93,6 +95,7 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 	drivers = append(drivers, NewQueue(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewDns(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewLambda(sess, awsconf, drivLog).Drivers()...)
+	drivers = append(drivers, NewMonitoring(sess, awsconf, drivLog).Drivers()...)
 
 	return driver.NewMultiDriver(drivers...), nil
 }

@@ -317,6 +317,12 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Timeout:     {name: "Timeout", transform: extractValueFn},
 		properties.Version:     {name: "Version", transform: extractValueFn},
 	},
+	// Monitoring
+	cloud.Metric: {
+		properties.Name:       {name: "MetricName", transform: extractValueFn},
+		properties.Namespace:  {name: "Namespace", transform: extractValueFn},
+		properties.Dimensions: {name: "Dimensions", transform: extractNameValueFn},
+	},
 	//Queue
 	cloud.Queue: {}, //Manually set
 }

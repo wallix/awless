@@ -239,6 +239,18 @@
 			"revisionTime": "2017-04-21T18:31:29Z"
 		},
 		{
+			"checksumSHA1": "aGx2atOHEXSowjXUQ3UoJ/t2LSI=",
+			"path": "github.com/aws/aws-sdk-go/service/cloudwatch",
+			"revision": "fe4c33d5e201f595b450d08d9d7e36fedb2cbcf8",
+			"revisionTime": "2017-04-25T16:20:50Z"
+		},
+		{
+			"checksumSHA1": "kSXrrHPfK1VaFSAxeNDOkwu7X2U=",
+			"path": "github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface",
+			"revision": "fe4c33d5e201f595b450d08d9d7e36fedb2cbcf8",
+			"revisionTime": "2017-04-25T16:20:50Z"
+		},
+		{
 			"checksumSHA1": "2PIG7uhrvvDAjiNZINBVCgW/Uds=",
 			"path": "github.com/aws/aws-sdk-go/service/ec2",
 			"revision": "200fde3f632bb9f036ec0b8cb29fbc8588155ea5",

@@ -339,3 +339,39 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 
 	return nil
 }
+
+type KeyValue struct {
+	KeyName string `predicate:"cloud:name"`
+	Value   string `predicate:"cloud:value"`
+}
+
+func (kv *KeyValue) marshalToTriples(id string) []tstore.Triple {
+	var triples []tstore.Triple
+
+	triples = append(triples, tstore.SubjPred(id, rdf.RdfType).Resource(rdf.KeyValue))
+	triples = append(triples, tstore.TriplesFromStruct(id, kv)...)
+
+	return triples
+}
+
+func (kv *KeyValue) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
+	keyTs := gph.WithSubjPred(id, rdf.Name)
+	if len(keyTs) != 1 {
+		return fmt.Errorf("unmarshal keyvalue: expect 1 key got: %d", len(keyTs))
+	}
+	var err error
+	kv.KeyName, err = extractUniqueLiteralTextFromTriples(keyTs)
+	if err != nil {
+		return fmt.Errorf("unmarshal keyvalue: key name: %s", err)
+	}
+	valTs := gph.WithSubjPred(id, rdf.Value)
+	if len(valTs) != 1 {
+		return fmt.Errorf("unmarshal keyvalue: expect 1 key got: %d", len(valTs))
+	}
+
+	kv.Value, err = extractUniqueLiteralTextFromTriples(valTs)
+	if err != nil {
+		return fmt.Errorf("unmarshal keyvalue: key name: %s", err)
+	}
+	return nil
+}

@@ -115,4 +115,12 @@ var FetchersDefs = []fetchersDef{
 			{Api: "lambda", ResourceType: cloud.Function, AWSType: "lambda.FunctionConfiguration", ApiMethod: "ListFunctionsPages", Input: "lambda.ListFunctionsInput{}", Output: "lambda.ListFunctionsOutput", OutputsExtractor: "Functions", Multipage: true, NextPageMarker: "NextMarker"},
 		},
 	},
+	{
+		Name:          "monitoring",
+		Api:           []string{"cloudwatch"},
+		ApiInterfaces: map[string]string{"cloudwatch": "CloudWatchAPI"},
+		Fetchers: []fetcher{
+			{Api: "cloudwatch", ResourceType: cloud.Metric, AWSType: "cloudwatch.Metric", ApiMethod: "ListMetricsPages", Input: "cloudwatch.ListMetricsInput{}", Output: "cloudwatch.ListMetricsOutput", OutputsExtractor: "Metrics", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
 }

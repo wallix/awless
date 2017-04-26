@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -66,6 +68,7 @@ var ServiceNames = []string{
 	"queue",
 	"dns",
 	"lambda",
+	"monitoring",
 }
 
 var ResourceTypes = []string{
@@ -99,6 +102,7 @@ var ResourceTypes = []string{
 	"zone",
 	"record",
 	"function",
+	"metric",
 }
 
 var ServicePerAPI = map[string]string{
@@ -113,6 +117,7 @@ var ServicePerAPI = map[string]string{
 	"sqs":         "queue",
 	"route53":     "dns",
 	"lambda":      "lambda",
+	"cloudwatch":  "monitoring",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -146,6 +151,7 @@ var ServicePerResourceType = map[string]string{
 	"zone":                "dns",
 	"record":              "dns",
 	"function":            "lambda",
+	"metric":              "monitoring",
 }
 
 var APIPerResourceType = map[string]string{
@@ -179,6 +185,7 @@ var APIPerResourceType = map[string]string{
 	"zone":                "route53",
 	"record":              "route53",
 	"function":            "lambda",
+	"metric":              "cloudwatch",
 }
 
 type Infra struct {
@@ -2536,4 +2543,161 @@ func (s *Lambda) fetch_all_function_graph() (*graph.Graph, []*lambda.FunctionCon
 
 func (s *Lambda) IsSyncDisabled() bool {
 	return !s.config.getBool("aws.lambda.sync", true)
+}
+
+type Monitoring struct {
+	once   oncer
+	region string
+	config config
+	log    *logger.Logger
+	cloudwatchiface.CloudWatchAPI
+}
+
+func NewMonitoring(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Monitoring{
+		CloudWatchAPI: cloudwatch.New(sess),
+		config:        awsconf,
+		region:        region,
+		log:           log,
+	}
+}
+
+func (s *Monitoring) Name() string {
+	return "monitoring"
+}
+
+func (s *Monitoring) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewCloudwatchDriver(s.CloudWatchAPI),
+	}
+}
+
+func (s *Monitoring) ResourceTypes() []string {
+	return []string{
+		"metric",
+	}
+}
+
+func (s *Monitoring) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
+	var metricList []*cloudwatch.Metric
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	if s.config.getBool("aws.monitoring.metric.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, metricList, err = s.fetch_all_metric_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource monitoring[metric]")
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case accessDenied:
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	if s.config.getBool("aws.monitoring.metric.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range metricList {
+				for _, fn := range addParentsFns["metric"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Monitoring) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "metric":
+		graph, _, err := s.fetch_all_metric_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws monitoring: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Monitoring) fetch_all_metric_graph() (*graph.Graph, []*cloudwatch.Metric, error) {
+	g := graph.NewGraph()
+	var cloudResources []*cloudwatch.Metric
+	var badResErr error
+	err := s.ListMetricsPages(&cloudwatch.ListMetricsInput{},
+		func(out *cloudwatch.ListMetricsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Metrics {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Monitoring) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.monitoring.sync", true)
 }

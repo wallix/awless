@@ -98,10 +98,11 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resou
 		if graphdiff.HasDiff() {
 			fmt.Println("▶", cloudService, "properties, from", fromRevision,
 				"to", diff.To.Id[:7], "on", diff.To.Date.Format("Monday January 2, 15:04"))
-			displayer := console.BuildOptions(
+			displayer, err := console.BuildOptions(
 				console.WithFormat("table"),
 				console.WithRootNode(root),
 			).SetSource(graphdiff).Build()
+			exitOn(err)
 			exitOn(displayer.Print(os.Stdout))
 			fmt.Println()
 		} else if verbose {
@@ -113,10 +114,11 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resou
 		if graphdiff.HasDiff() {
 			fmt.Println("▶", cloudService, "resources, from", fromRevision,
 				"to", diff.To.Id[:7], "on", diff.To.Date.Format("Monday January 2, 15:04"))
-			displayer := console.BuildOptions(
+			displayer, err := console.BuildOptions(
 				console.WithFormat("tree"),
 				console.WithRootNode(root),
 			).SetSource(graphdiff).Build()
+			exitOn(err)
 			exitOn(displayer.Print(os.Stdout))
 			fmt.Println()
 		} else if verbose {

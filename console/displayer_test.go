@@ -36,7 +36,7 @@ func TestJSONDisplays(t *testing.T) {
 	var w bytes.Buffer
 
 	t.Run("Single resource", func(t *testing.T) {
-		displayer := BuildOptions(
+		displayer, _ := BuildOptions(
 			WithRdfType("instance"),
 			WithFormat("json"),
 		).SetSource(g).Build()
@@ -55,7 +55,7 @@ func TestJSONDisplays(t *testing.T) {
 	t.Run("Multi resource", func(t *testing.T) {
 		t.Skip("Comparison fail: until we can order what is inside each resource")
 
-		displayer := BuildOptions(
+		displayer, _ := BuildOptions(
 			WithFormat("json"),
 		).SetSource(g).Build()
 
@@ -88,7 +88,7 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("csv"),
@@ -106,7 +106,7 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("csv"),
@@ -137,7 +137,7 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 	).SetSource(g).Build()
@@ -156,7 +156,7 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "id"),
@@ -176,7 +176,7 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "name"),
@@ -201,7 +201,7 @@ func TestTabularDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "Name"},
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("porcelain"),
@@ -226,7 +226,7 @@ apache`
 func TestMultiResourcesDisplays(t *testing.T) {
 	g := createInfraGraph()
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithFormat("table"),
 	).SetSource(g).Build()
 
@@ -262,7 +262,7 @@ func TestMultiResourcesDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders([]ColumnDefinition{StringColumnDefinition{Prop: "ID"}}),
 		WithFormat("porcelain"),
 	).SetSource(g).Build()
@@ -283,7 +283,7 @@ vpc_2`
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithFormat("porcelain"),
 		WithIDsOnly(true),
 	).SetSource(g).Build()
@@ -317,7 +317,7 @@ func TestDiffDisplay(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithFormat("table"),
 		WithRootNode(rootNode),
 	).SetSource(diff).Build()
@@ -341,7 +341,7 @@ func TestDiffDisplay(t *testing.T) {
 		t.Errorf("got \n%s\n\nwant \n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithFormat("tree"),
 		WithRootNode(rootNode),
 	).SetSource(diff).Build()
@@ -378,7 +378,7 @@ func TestDateLists(t *testing.T) {
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsed"}, Format: Short},
 	}
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("user"),
 	).SetSource(g).Build()
@@ -397,7 +397,7 @@ func TestDateLists(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("user"),
 		WithSortBy("passwordlastused"),
@@ -428,7 +428,7 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "name"),
@@ -456,7 +456,7 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP", DisableTruncate: true},
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "name"),
@@ -484,7 +484,7 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "P", TruncateSize: 5},
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("s", "n"),
@@ -504,7 +504,7 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("s", "n"),
@@ -519,7 +519,7 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("s", "n"),
@@ -552,7 +552,7 @@ func TestFilter(t *testing.T) {
 
 	t.Run("No filter", func(t *testing.T) {
 		var w bytes.Buffer
-		displayer := BuildOptions(
+		displayer, _ := BuildOptions(
 			WithRdfType("subnet"),
 			WithFormat("json"),
 		).SetSource(g).Build()
@@ -566,7 +566,7 @@ func TestFilter(t *testing.T) {
 	})
 	t.Run("Filter column name", func(t *testing.T) {
 		var w bytes.Buffer
-		displayer := BuildOptions(
+		displayer, _ := BuildOptions(
 			WithRdfType("subnet"),
 			WithFormat("json"),
 			WithFilters([]string{"Vpc=vpc_1"}),
@@ -580,7 +580,7 @@ func TestFilter(t *testing.T) {
 	})
 	t.Run("Filter friendly name", func(t *testing.T) {
 		var w bytes.Buffer
-		displayer := BuildOptions(
+		displayer, _ := BuildOptions(
 			WithRdfType("subnet"),
 			WithFormat("json"),
 			WithFilters([]string{"public=false"}),
@@ -688,7 +688,7 @@ func TestEmotyDisplays(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("csv"),
@@ -703,7 +703,7 @@ func TestEmotyDisplays(t *testing.T) {
 		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("table"),
@@ -722,7 +722,7 @@ func TestEmotyDisplays(t *testing.T) {
 	headers = []ColumnDefinition{}
 	DefaultsColumnDefinitions = make(map[string][]ColumnDefinition)
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("csv"),
@@ -737,7 +737,7 @@ func TestEmotyDisplays(t *testing.T) {
 		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
 	}
 
-	displayer = BuildOptions(
+	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithFormat("table"),

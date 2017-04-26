@@ -47,7 +47,7 @@ func TestResourceDisplay(t *testing.T) {
 		StringColumnDefinition{Prop: "Name"},
 	}
 
-	displayer := BuildOptions(
+	displayer, _ := BuildOptions(
 		WithHeaders(headers),
 		WithFormat("table"),
 	).SetSource(r).Build()

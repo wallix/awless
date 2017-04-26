@@ -76,86 +76,89 @@ func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn) {
 	return
 }
 
-func (b *Builder) Build() Displayer {
+func (b *Builder) Build() (Displayer, error) {
 	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
 
 	switch b.dataSource.(type) {
 	case *graph.Graph:
 		gph := b.dataSource.(*graph.Graph)
-		filteredGraph, _ := gph.Filter(b.rdfType, b.buildGraphFilters()...)
+		filteredGraph, err := gph.Filter(b.rdfType, b.buildGraphFilters()...)
+		if err != nil {
+			return nil, err
+		}
 
 		if b.rdfType == "" {
 			switch b.format {
 			case "table":
 				dis := &multiResourcesTableDisplayer{base}
 				dis.setGraph(gph)
-				return dis
+				return dis, nil
 			case "json":
 				dis := &multiResourcesJSONDisplayer{base}
 				dis.setGraph(gph)
-				return dis
+				return dis, nil
 			case "porcelain":
 				dis := &porcelainDisplayer{base}
 				dis.setGraph(gph)
-				return dis
+				return dis, nil
 			default:
 				fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
 				dis := &multiResourcesTableDisplayer{base}
 				dis.setGraph(gph)
-				return dis
+				return dis, nil
 			}
 		}
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}
 			dis.setGraph(filteredGraph)
-			return dis
+			return dis, nil
 		case "tsv":
 			dis := &tsvDisplayer{base}
 			dis.setGraph(filteredGraph)
-			return dis
+			return dis, nil
 		case "json":
 			dis := &jsonDisplayer{base}
 			dis.setGraph(filteredGraph)
-			return dis
+			return dis, nil
 		case "porcelain":
 			dis := &porcelainDisplayer{base}
 			dis.setGraph(filteredGraph)
-			return dis
+			return dis, nil
 		case "table":
 			dis := &tableDisplayer{base}
 			dis.setGraph(filteredGraph)
-			return dis
+			return dis, nil
 		default:
 			fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'table'\n", b.format)
 			dis := &tableDisplayer{base}
 			dis.setGraph(filteredGraph)
-			return dis
+			return dis, nil
 		}
 	case *graph.Resource:
 		dis := &tableResourceDisplayer{headers: b.headers}
 		dis.SetResource(b.dataSource.(*graph.Resource))
-		return dis
+		return dis, nil
 	case *graph.Diff:
 		base := fromDiffDisplayer{root: b.root}
 		switch b.format {
 		case "tree":
 			dis := &diffTreeDisplayer{&base}
 			dis.SetDiff(b.dataSource.(*graph.Diff))
-			return dis
+			return dis, nil
 		case "table":
 			dis := &diffTableDisplayer{&base}
 			dis.SetDiff(b.dataSource.(*graph.Diff))
-			return dis
+			return dis, nil
 		default:
 			fmt.Fprintf(os.Stderr, "unknown format '%s', display as 'tree'\n", b.format)
 			dis := &diffTreeDisplayer{&base}
 			dis.SetDiff(b.dataSource.(*graph.Diff))
-			return dis
+			return dis, nil
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 type optsFn func(b *Builder) *Builder

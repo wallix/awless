@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -777,6 +778,26 @@ func (d *LambdaDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err 
 			return d.Delete_Function_DryRun, nil
 		}
 		return d.Delete_Function, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type CloudwatchDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	cloudwatchiface.CloudWatchAPI
+}
+
+func (d *CloudwatchDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *CloudwatchDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewCloudwatchDriver(api cloudwatchiface.CloudWatchAPI) driver.Driver {
+	return &CloudwatchDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *CloudwatchDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

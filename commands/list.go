@@ -106,17 +106,18 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			g := sync.LoadCurrentLocalGraph(srvName)
-			displayer := console.BuildOptions(
+			displayer, err := console.BuildOptions(
 				console.WithFormat(listingFormat),
 				console.WithIDsOnly(listOnlyIDs),
 			).SetSource(g).Build()
+			exitOn(err)
 			exitOn(displayer.Print(os.Stdout))
 		},
 	}
 }
 
 func printResources(g *graph.Graph, resType string) {
-	displayer := console.BuildOptions(
+	displayer, err := console.BuildOptions(
 		console.WithRdfType(resType),
 		console.WithHeaders(console.DefaultsColumnDefinitions[resType]),
 		console.WithFilters(listingFiltersFlag),
@@ -125,6 +126,7 @@ func printResources(g *graph.Graph, resType string) {
 		console.WithIDsOnly(listOnlyIDs),
 		console.WithSortBy(sortBy...),
 	).SetSource(g).Build()
+	exitOn(err)
 
 	exitOn(displayer.Print(os.Stdout))
 }

@@ -950,4 +950,9 @@ var DriversDefs = []driversDef{
 			},
 		},
 	},
+	{
+		Api:          "cloudwatch",
+		ApiInterface: "CloudWatchAPI",
+		Drivers:      []driver{},
+	},
 }

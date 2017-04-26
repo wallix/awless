@@ -42,6 +42,7 @@ var (
 	NetFirewallRule = fmt.Sprintf("%s:FirewallRule", NetowlNS)
 	NetRoute        = fmt.Sprintf("%s:Route", NetowlNS)
 	CloudGrantee    = fmt.Sprintf("%s:Grantee", CloudOwlNS)
+	KeyValue        = fmt.Sprintf("%s:KeyValue", CloudOwlNS)
 
 	Permission = fmt.Sprintf("%s:permission", CloudNS)
 	Grantee    = fmt.Sprintf("%s:grantee", CloudNS)

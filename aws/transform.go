@@ -29,6 +29,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -118,6 +119,10 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		// Lambda
 	case *lambda.FunctionConfiguration:
 		res = graph.InitResource(cloud.Function, awssdk.StringValue(ss.FunctionArn))
+		// Monitoring
+	case *cloudwatch.Metric:
+		id := hashFields(awssdk.StringValue(ss.Namespace), awssdk.StringValue(ss.MetricName))
+		res = graph.InitResource(cloud.Metric, id)
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -297,6 +302,20 @@ var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {
 		rules = append(rules, rule)
 	}
 	return rules, nil
+
+}
+
+var extractNameValueFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*cloudwatch.Dimension); !ok {
+		return nil, fmt.Errorf("extract ip namevalue: not a dimension slice but a %T", i)
+	}
+	var nameValues []*graph.KeyValue
+	for _, dimension := range i.([]*cloudwatch.Dimension) {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(dimension.Name), Value: awssdk.StringValue(dimension.Value)}
+
+		nameValues = append(nameValues, keyval)
+	}
+	return nameValues, nil
 
 }
 

@@ -274,4 +274,11 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified}},
 		StringColumnDefinition{Prop: properties.Description},
 	},
+	//Monitoring
+	cloud.Metric: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Namespace},
+		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Dimensions}},
+	},
 }

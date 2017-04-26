@@ -58,6 +58,17 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 			return nil, err
 		}
 		return grant, nil
+	case definedBy == rdf.RdfsList && dataType == rdf.KeyValue:
+		id, ok := propObj.Resource()
+		if !ok {
+			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
+		}
+		kv := &KeyValue{}
+		err := kv.unmarshalFromTriples(gph, id)
+		if err != nil {
+			return nil, err
+		}
+		return kv, nil
 	default:
 		return "", fmt.Errorf("get property value: %s is neither literal nor class, nor list", definedBy)
 	}

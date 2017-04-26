@@ -97,15 +97,16 @@ var showCmd = &cobra.Command{
 }
 
 func showResource(resource *graph.Resource, gph *graph.Graph) {
-	displayer := console.BuildOptions(
+	displayer, err := console.BuildOptions(
 		console.WithHeaders(console.DefaultsColumnDefinitions[resource.Type()]),
 		console.WithFormat(listingFormat),
 	).SetSource(resource).Build()
+	exitOn(err)
 
 	exitOn(displayer.Print(os.Stdout))
 
 	var parents []*graph.Resource
-	err := gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
+	err = gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
 	exitOn(err)
 
 	var parentsW bytes.Buffer
