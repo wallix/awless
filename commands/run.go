@@ -509,7 +509,7 @@ func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
 		}
 		urlV.Add("revert", revertIn)
 	}
-	u, err := url.Parse("http://localhost:8082/schedulings?" + urlV.Encode())
+	u, err := url.Parse("http://localhost:8082/tasks?" + urlV.Encode())
 	if err != nil {
 		return err
 	}
