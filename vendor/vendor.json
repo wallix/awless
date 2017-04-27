@@ -541,6 +541,12 @@
 			"revisionTime": "2016-10-26T10:01:55Z"
 		},
 		{
+			"checksumSHA1": "LotmoKyrHs4Vk5L4IG7PCa/37uk=",
+			"path": "github.com/wallix/awless-scheduler/client",
+			"revision": "eba1733c6e7b09444f8dc1bc07b5cbfa8e58a5a6",
+			"revisionTime": "2017-04-27T14:03:01Z"
+		},
+		{
 			"checksumSHA1": "McKGeCPI7qSFsDjEM79NiMGhgfM=",
 			"path": "github.com/wallix/triplestore",
 			"revision": "fea413192e067da09439ec44daf6aebd955451dd",

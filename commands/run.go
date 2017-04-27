@@ -24,16 +24,15 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"sort"
 	"strings"
 	stdsync "sync"
-	"time"
 
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless-scheduler/client"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/doc"
 	"github.com/wallix/awless/aws/driver"
@@ -509,35 +508,20 @@ func isQuoted(s string) bool {
 }
 
 func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
-	urlV := url.Values{}
-	urlV.Add("region", config.GetAWSRegion())
-	if runIn != "" {
-		_, err := time.ParseDuration(runIn)
-		if err != nil {
-			return fmt.Errorf("invalid 'run-in' duration %s", err)
-		}
-		urlV.Add("run", runIn)
+	schedClient := client.LocalClient()
+
+	logger.Verbosef("sending template to scheduler %s", schedClient.ServiceURL)
+
+	if err := schedClient.Post(client.Form{
+		Region:   config.GetAWSRegion(),
+		RunIn:    runIn,
+		RevertIn: revertIn,
+		Template: t.String(),
+	}); err != nil {
+		return fmt.Errorf("Cannot schedule template: %s", err)
 	}
-	if revertIn != "" {
-		_, err := time.ParseDuration(revertIn)
-		if err != nil {
-			return fmt.Errorf("invalid 'revert-in' duration %s", err)
-		}
-		urlV.Add("revert", revertIn)
-	}
-	u, err := url.Parse("http://localhost:8082/tasks?" + urlV.Encode())
-	if err != nil {
-		return err
-	}
-	logger.Verbosef("sending template to url %s", u.String())
-	resp, err := http.Post(u.String(), "application/text", strings.NewReader(t.String()))
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode == http.StatusOK {
-		logger.Info("template scheduled successfully")
-		return nil
-	}
-	logger.Errorf("Error %d while scheduling template: %s", resp.StatusCode, resp.Status)
+
+	logger.Info("template scheduled successfully")
+
 	return nil
 }
