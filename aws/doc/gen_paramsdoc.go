@@ -17,7 +17,7 @@ limitations under the License.
 // This file was automatically generated with go generate
 package awsdoc
 
-var TemplateParamsDoc = map[string]map[string]string{
+var generatedParamsDoc = map[string]map[string]string{
 	"attachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},

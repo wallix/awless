@@ -35,8 +35,8 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
-	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/aws/doc"
+	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -346,21 +346,26 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		if api, ok := awsdriver.APIPerTemplateDefName[templDef.Name()]; ok {
 			apiStr = fmt.Sprint(strings.ToUpper(api) + " ")
 		}
+
 		var requiredStr bytes.Buffer
-		requiredStr.WriteString("\n\tRequired params:")
-		for _, req := range templDef.Required() {
-			requiredStr.WriteString(fmt.Sprintf("\n\t\t- %s", req))
-			if d, ok := awsdoc.TemplateParamsDoc[templDef.Name()][req]; ok {
-				requiredStr.WriteString(fmt.Sprintf(": %s", d))
+		if len(templDef.Required()) > 0 {
+			requiredStr.WriteString("\n\tRequired params:")
+			for _, req := range templDef.Required() {
+				requiredStr.WriteString(fmt.Sprintf("\n\t\t- %s", req))
+				if d, ok := awsdoc.TemplateParamsDoc(templDef.Name(), req); ok {
+					requiredStr.WriteString(fmt.Sprintf(": %s", d))
+				}
 			}
 		}
 
 		var extraStr bytes.Buffer
-		extraStr.WriteString("\n\tExtra params:")
-		for _, ext := range templDef.Extra() {
-			extraStr.WriteString(fmt.Sprintf("\n\t\t- %s", ext))
-			if d, ok := awsdoc.TemplateParamsDoc[templDef.Name()][ext]; ok {
-				extraStr.WriteString(fmt.Sprintf(": %s", d))
+		if len(templDef.Extra()) > 0 {
+			extraStr.WriteString("\n\tExtra params:")
+			for _, ext := range templDef.Extra() {
+				extraStr.WriteString(fmt.Sprintf("\n\t\t- %s", ext))
+				if d, ok := awsdoc.TemplateParamsDoc(templDef.Name(), ext); ok {
+					extraStr.WriteString(fmt.Sprintf(": %s", d))
+				}
 			}
 		}
 

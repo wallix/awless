@@ -164,7 +164,7 @@ limitations under the License.
 // This file was automatically generated with go generate
 package awsdoc
 
-var TemplateParamsDoc = map[string]map[string]string{
+var generatedParamsDoc = map[string]map[string]string{
   {{- range $tplKey, $paramsDoc := . }}
   "{{ $tplKey }}": map[string]string {
     {{- range $param, $doc := $paramsDoc }}
