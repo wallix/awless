@@ -982,6 +982,18 @@ var DriversDefs = []driversDef{
 					{AwsField: "AlarmNames", TemplateName: "name", AwsType: "awsstringslice"},
 				},
 			},
+			{
+				Action: "start", Entity: cloud.Alarm, DryRunUnsupported: true, ApiMethod: "EnableAlarmActions", Input: "EnableAlarmActionsInput", Output: "EnableAlarmActionsOutput",
+				RequiredParams: []param{
+					{AwsField: "AlarmNames", TemplateName: "names", AwsType: "awsstringslice"},
+				},
+			},
+			{
+				Action: "stop", Entity: cloud.Alarm, DryRunUnsupported: true, ApiMethod: "DisableAlarmActions", Input: "DisableAlarmActionsInput", Output: "DisableAlarmActionsOutput",
+				RequiredParams: []param{
+					{AwsField: "AlarmNames", TemplateName: "names", AwsType: "awsstringslice"},
+				},
+			},
 		},
 	},
 }

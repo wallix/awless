@@ -4135,3 +4135,69 @@ func (d *CloudwatchDriver) Delete_Alarm(params map[string]interface{}) (interfac
 	d.logger.Info("delete alarm done")
 	return output, nil
 }
+
+// This function was auto generated
+func (d *CloudwatchDriver) Start_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["names"]; !ok {
+		return nil, errors.New("start alarm: missing required params 'names'")
+	}
+
+	d.logger.Verbose("params dry run: start alarm ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Start_Alarm(params map[string]interface{}) (interface{}, error) {
+	input := &cloudwatch.EnableAlarmActionsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["names"], input, "AlarmNames", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *cloudwatch.EnableAlarmActionsOutput
+	output, err = d.EnableAlarmActions(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("start alarm: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudwatch.EnableAlarmActions call took %s", time.Since(start))
+	d.logger.Info("start alarm done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Stop_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["names"]; !ok {
+		return nil, errors.New("stop alarm: missing required params 'names'")
+	}
+
+	d.logger.Verbose("params dry run: stop alarm ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *CloudwatchDriver) Stop_Alarm(params map[string]interface{}) (interface{}, error) {
+	input := &cloudwatch.DisableAlarmActionsInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["names"], input, "AlarmNames", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *cloudwatch.DisableAlarmActionsOutput
+	output, err = d.DisableAlarmActions(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("stop alarm: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudwatch.DisableAlarmActions call took %s", time.Since(start))
+	d.logger.Info("stop alarm done")
+	return output, nil
+}
