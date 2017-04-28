@@ -1014,6 +1014,20 @@ var DriversDefs = []driversDef{
 					{AwsField: "AlarmNames", TemplateName: "names", AwsType: "awsstringslice"},
 				},
 			},
+			{
+				Action: "attach", Entity: cloud.Alarm, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+					{TemplateName: "action-arn"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.Alarm, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+					{TemplateName: "action-arn"},
+				},
+			},
 		},
 	},
 }

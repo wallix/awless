@@ -30,6 +30,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -1268,6 +1269,131 @@ func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermi
 	}
 
 	return []*ec2.IpPermission{ipPerm}, nil
+}
+
+func (d *CloudwatchDriver) Attach_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"].(string); !ok {
+		return nil, errors.New("attach alarm: dry run: missing required params 'name'")
+	}
+
+	_, arn := params["action-arn"].(string)
+
+	if !arn {
+		return nil, errors.New("attach alarm: dry run: missing 'arn' param")
+	}
+
+	d.logger.Verbose("params dry run: attach alarm ok")
+	return nil, nil
+}
+
+func (d *CloudwatchDriver) Attach_Alarm(params map[string]interface{}) (interface{}, error) {
+	alarm, err := d.getAlarm(params)
+	if err != nil {
+		return nil, fmt.Errorf("attach alarm: %s", err)
+	}
+	alarm.AlarmActions = append(alarm.AlarmActions, aws.String(params["action-arn"].(string)))
+
+	_, err = d.PutMetricAlarm(&cloudwatch.PutMetricAlarmInput{
+		ActionsEnabled:                   alarm.ActionsEnabled,
+		AlarmActions:                     alarm.AlarmActions,
+		AlarmDescription:                 alarm.AlarmDescription,
+		AlarmName:                        alarm.AlarmName,
+		ComparisonOperator:               alarm.ComparisonOperator,
+		Dimensions:                       alarm.Dimensions,
+		EvaluateLowSampleCountPercentile: alarm.EvaluateLowSampleCountPercentile,
+		EvaluationPeriods:                alarm.EvaluationPeriods,
+		ExtendedStatistic:                alarm.ExtendedStatistic,
+		InsufficientDataActions:          alarm.InsufficientDataActions,
+		MetricName:                       alarm.MetricName,
+		Namespace:                        alarm.Namespace,
+		OKActions:                        alarm.OKActions,
+		Period:                           alarm.Period,
+		Statistic:                        alarm.Statistic,
+		Threshold:                        alarm.Threshold,
+		TreatMissingData:                 alarm.TreatMissingData,
+		Unit:                             alarm.Unit,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("attach alarm: %s", err)
+	}
+	return nil, nil
+}
+
+func (d *CloudwatchDriver) Detach_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"].(string); !ok {
+		return nil, errors.New("detach alarm: dry run: missing required params 'name'")
+	}
+
+	_, arn := params["action-arn"].(string)
+
+	if !arn {
+		return nil, errors.New("detach alarm: dry run: missing 'arn' param")
+	}
+
+	d.logger.Verbose("params dry run: detach alarm ok")
+	return nil, nil
+}
+
+func (d *CloudwatchDriver) Detach_Alarm(params map[string]interface{}) (interface{}, error) {
+	alarm, err := d.getAlarm(params)
+	if err != nil {
+		return nil, fmt.Errorf("detach alarm: %s", err)
+	}
+	actionArn := params["action-arn"].(string)
+	var found bool
+	var updatedActions []*string
+	for _, action := range alarm.AlarmActions {
+		if aws.StringValue(action) == actionArn {
+			found = true
+		} else {
+			updatedActions = append(updatedActions, action)
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("detach alarm: action '%s' is not attached to alarm actions of alarm %s", actionArn, aws.StringValue(alarm.AlarmName))
+	}
+
+	_, err = d.PutMetricAlarm(&cloudwatch.PutMetricAlarmInput{
+		ActionsEnabled:                   alarm.ActionsEnabled,
+		AlarmActions:                     updatedActions,
+		AlarmDescription:                 alarm.AlarmDescription,
+		AlarmName:                        alarm.AlarmName,
+		ComparisonOperator:               alarm.ComparisonOperator,
+		Dimensions:                       alarm.Dimensions,
+		EvaluateLowSampleCountPercentile: alarm.EvaluateLowSampleCountPercentile,
+		EvaluationPeriods:                alarm.EvaluationPeriods,
+		ExtendedStatistic:                alarm.ExtendedStatistic,
+		InsufficientDataActions:          alarm.InsufficientDataActions,
+		MetricName:                       alarm.MetricName,
+		Namespace:                        alarm.Namespace,
+		OKActions:                        alarm.OKActions,
+		Period:                           alarm.Period,
+		Statistic:                        alarm.Statistic,
+		Threshold:                        alarm.Threshold,
+		TreatMissingData:                 alarm.TreatMissingData,
+		Unit:                             alarm.Unit,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("detach alarm: %s", err)
+	}
+	return nil, nil
+}
+
+func (d *CloudwatchDriver) getAlarm(params map[string]interface{}) (*cloudwatch.MetricAlarm, error) {
+	alarm, ok := params["name"].(string)
+	if !ok {
+		return nil, errors.New("missing required params 'name'")
+	}
+	out, err := d.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{AlarmNames: []*string{aws.String(alarm)}})
+	if err != nil {
+		return nil, err
+	}
+	if l := len(out.MetricAlarms); l == 0 {
+		return nil, fmt.Errorf("alarm '%s' not found", alarm)
+	} else if l > 1 {
+		return nil, fmt.Errorf("%d alarms found with name '%s'", l, alarm)
+	}
+	return out.MetricAlarms[0], nil
 }
 
 func fakeDryRunId(entity string) string {

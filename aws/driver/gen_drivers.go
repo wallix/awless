@@ -835,6 +835,18 @@ func (d *CloudwatchDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, 
 		}
 		return d.Stop_Alarm, nil
 
+	case "attachalarm":
+		if d.dryRun {
+			return d.Attach_Alarm_DryRun, nil
+		}
+		return d.Attach_Alarm, nil
+
+	case "detachalarm":
+		if d.dryRun {
+			return d.Detach_Alarm_DryRun, nil
+		}
+		return d.Detach_Alarm, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

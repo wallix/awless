@@ -295,7 +295,6 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.MetricName},
 		StringColumnDefinition{Prop: properties.Description},
 		StringColumnDefinition{Prop: properties.State},
-		StringColumnDefinition{Prop: properties.State},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Updated}},
 		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Dimensions}},
 	},
