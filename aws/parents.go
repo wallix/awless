@@ -95,12 +95,12 @@ var addParentsFns = map[string][]addParentFn{
 		addRegionParent,
 		funcBuilder{parent: cloud.Keypair, fieldName: "KeyName", relation: APPLIES_ON}.build(),
 	},
-	cloud.AutoScalingGroup: {
+	cloud.ScalingGroup: {
 		addRegionParent,
 		funcBuilder{parent: cloud.AvailabilityZone, stringListName: "AvailabilityZones", relation: APPLIES_ON}.build(),
 		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", listName: "Instances", relation: DEPENDING_ON}.build(),
 		funcBuilder{parent: cloud.TargetGroup, stringListName: "TargetGroupARNs", relation: DEPENDING_ON}.build(),
-		addAutoscalingGroupSubnets,
+		addScalingGroupSubnets,
 	},
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},
@@ -374,7 +374,7 @@ func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
 	return nil
 }
 
-func addAutoscalingGroupSubnets(g *graph.Graph, i interface{}) error {
+func addScalingGroupSubnets(g *graph.Graph, i interface{}) error {
 	group, ok := i.(*autoscaling.Group)
 	if !ok {
 		return fmt.Errorf("add autoscaling group relation: not a autoscaling group group, but a %T", i)

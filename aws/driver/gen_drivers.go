@@ -373,23 +373,23 @@ func (d *AutoscalingDriver) Lookup(lookups ...string) (driverFn driver.DriverFn,
 		}
 		return d.Delete_Launchconfiguration, nil
 
-	case "createautoscalinggroup":
+	case "createscalinggroup":
 		if d.dryRun {
-			return d.Create_Autoscalinggroup_DryRun, nil
+			return d.Create_Scalinggroup_DryRun, nil
 		}
-		return d.Create_Autoscalinggroup, nil
+		return d.Create_Scalinggroup, nil
 
-	case "updateautoscalinggroup":
+	case "updatescalinggroup":
 		if d.dryRun {
-			return d.Update_Autoscalinggroup_DryRun, nil
+			return d.Update_Scalinggroup_DryRun, nil
 		}
-		return d.Update_Autoscalinggroup, nil
+		return d.Update_Scalinggroup, nil
 
-	case "deleteautoscalinggroup":
+	case "deletescalinggroup":
 		if d.dryRun {
-			return d.Delete_Autoscalinggroup_DryRun, nil
+			return d.Delete_Scalinggroup_DryRun, nil
 		}
-		return d.Delete_Autoscalinggroup, nil
+		return d.Delete_Scalinggroup, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

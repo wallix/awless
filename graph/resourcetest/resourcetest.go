@@ -89,8 +89,8 @@ func Record(id string) *rBuilder {
 	return new("record", id).Prop(properties.ID, id)
 }
 
-func AutoscalingGroup(id string) *rBuilder {
-	return new("autoscalinggroup", id).Prop(properties.ID, id)
+func ScalingGroup(id string) *rBuilder {
+	return new("scalinggroup", id).Prop(properties.ID, id)
 }
 
 func LaunchConfig(id string) *rBuilder {

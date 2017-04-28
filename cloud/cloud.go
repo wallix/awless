@@ -71,7 +71,7 @@ const (
 	Function string = "function"
 	//autoscaling
 	LaunchConfiguration string = "launchconfiguration"
-	AutoScalingGroup    string = "autoscalinggroup"
+	ScalingGroup        string = "scalinggroup"
 	//monitoring
 	Metric string = "metric"
 	Alarm  string = "alarm"

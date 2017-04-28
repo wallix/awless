@@ -505,7 +505,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "create", Entity: cloud.AutoScalingGroup, ApiMethod: "CreateAutoScalingGroup", Input: "CreateAutoScalingGroupInput", Output: "CreateAutoScalingGroupOutput", DryRunUnsupported: true, OutputExtractor: "params[\"name\"]",
+				Action: "create", Entity: cloud.ScalingGroup, ApiMethod: "CreateAutoScalingGroup", Input: "CreateAutoScalingGroupInput", Output: "CreateAutoScalingGroupOutput", DryRunUnsupported: true, OutputExtractor: "params[\"name\"]",
 				RequiredParams: []param{
 					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "LaunchConfigurationName", TemplateName: "launchconfiguration", AwsType: "awsstr"},
@@ -523,7 +523,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "update", Entity: cloud.AutoScalingGroup, ApiMethod: "UpdateAutoScalingGroup", Input: "UpdateAutoScalingGroupInput", Output: "UpdateAutoScalingGroupOutput", DryRunUnsupported: true,
+				Action: "update", Entity: cloud.ScalingGroup, ApiMethod: "UpdateAutoScalingGroup", Input: "UpdateAutoScalingGroupInput", Output: "UpdateAutoScalingGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},
 				},
@@ -540,7 +540,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.AutoScalingGroup, ApiMethod: "DeleteAutoScalingGroup", Input: "DeleteAutoScalingGroupInput", Output: "DeleteAutoScalingGroupOutput", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.ScalingGroup, ApiMethod: "DeleteAutoScalingGroup", Input: "DeleteAutoScalingGroupInput", Output: "DeleteAutoScalingGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "AutoScalingGroupName", TemplateName: "name", AwsType: "awsstr"},
 				},

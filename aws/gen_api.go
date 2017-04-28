@@ -88,7 +88,7 @@ var ResourceTypes = []string{
 	"database",
 	"dbsubnetgroup",
 	"launchconfiguration",
-	"autoscalinggroup",
+	"scalinggroup",
 	"user",
 	"group",
 	"role",
@@ -138,7 +138,7 @@ var ServicePerResourceType = map[string]string{
 	"database":            "infra",
 	"dbsubnetgroup":       "infra",
 	"launchconfiguration": "infra",
-	"autoscalinggroup":    "infra",
+	"scalinggroup":        "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -173,7 +173,7 @@ var APIPerResourceType = map[string]string{
 	"database":            "rds",
 	"dbsubnetgroup":       "rds",
 	"launchconfiguration": "autoscaling",
-	"autoscalinggroup":    "autoscaling",
+	"scalinggroup":        "autoscaling",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -246,7 +246,7 @@ func (s *Infra) ResourceTypes() []string {
 		"database",
 		"dbsubnetgroup",
 		"launchconfiguration",
-		"autoscalinggroup",
+		"scalinggroup",
 	}
 }
 
@@ -276,7 +276,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var databaseList []*rds.DBInstance
 	var dbsubnetgroupList []*rds.DBSubnetGroup
 	var launchconfigurationList []*autoscaling.LaunchConfiguration
-	var autoscalinggroupList []*autoscaling.Group
+	var scalinggroupList []*autoscaling.Group
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -537,13 +537,13 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[launchconfiguration]")
 	}
-	if s.config.getBool("aws.infra.autoscalinggroup.sync", true) {
+	if s.config.getBool("aws.infra.scalinggroup.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			var resGraph *graph.Graph
 			var err error
-			resGraph, autoscalinggroupList, err = s.fetch_all_autoscalinggroup_graph()
+			resGraph, scalinggroupList, err = s.fetch_all_scalinggroup_graph()
 			if err != nil {
 				errc <- err
 				return
@@ -551,7 +551,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource infra[autoscalinggroup]")
+		s.log.Verbose("sync: *disabled* for resource infra[scalinggroup]")
 	}
 
 	go func() {
@@ -816,12 +816,12 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-	if s.config.getBool("aws.infra.autoscalinggroup.sync", true) {
+	if s.config.getBool("aws.infra.scalinggroup.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for _, r := range autoscalinggroupList {
-				for _, fn := range addParentsFns["autoscalinggroup"] {
+			for _, r := range scalinggroupList {
+				for _, fn := range addParentsFns["scalinggroup"] {
 					err := fn(g, r)
 					if err != nil {
 						errc <- err
@@ -896,8 +896,8 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	case "launchconfiguration":
 		graph, _, err := s.fetch_all_launchconfiguration_graph()
 		return graph, err
-	case "autoscalinggroup":
-		graph, _, err := s.fetch_all_autoscalinggroup_graph()
+	case "scalinggroup":
+		graph, _, err := s.fetch_all_scalinggroup_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -1272,7 +1272,7 @@ func (s *Infra) fetch_all_launchconfiguration_graph() (*graph.Graph, []*autoscal
 	return g, cloudResources, badResErr
 }
 
-func (s *Infra) fetch_all_autoscalinggroup_graph() (*graph.Graph, []*autoscaling.Group, error) {
+func (s *Infra) fetch_all_scalinggroup_graph() (*graph.Graph, []*autoscaling.Group, error) {
 	g := graph.NewGraph()
 	var cloudResources []*autoscaling.Group
 	var badResErr error

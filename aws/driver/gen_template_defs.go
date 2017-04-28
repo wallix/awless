@@ -69,9 +69,9 @@ var APIPerTemplateDefName = map[string]string{
 	"detachinstance":            "elbv2",
 	"createlaunchconfiguration": "autoscaling",
 	"deletelaunchconfiguration": "autoscaling",
-	"createautoscalinggroup":    "autoscaling",
-	"updateautoscalinggroup":    "autoscaling",
-	"deleteautoscalinggroup":    "autoscaling",
+	"createscalinggroup":        "autoscaling",
+	"updatescalinggroup":        "autoscaling",
+	"deletescalinggroup":        "autoscaling",
 	"createdatabase":            "rds",
 	"deletedatabase":            "rds",
 	"createdbsubnetgroup":       "rds",
@@ -446,23 +446,23 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
-	"createautoscalinggroup": {
+	"createscalinggroup": {
 		Action:         "create",
-		Entity:         "autoscalinggroup",
+		Entity:         "scalinggroup",
 		Api:            "autoscaling",
 		RequiredParams: []string{"launchconfiguration", "max-size", "min-size", "name", "subnets"},
 		ExtraParams:    []string{"cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "new-instances-protected", "targetgroups"},
 	},
-	"updateautoscalinggroup": {
+	"updatescalinggroup": {
 		Action:         "update",
-		Entity:         "autoscalinggroup",
+		Entity:         "scalinggroup",
 		Api:            "autoscaling",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{"cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "launchconfiguration", "max-size", "min-size", "new-instances-protected", "subnets"},
 	},
-	"deleteautoscalinggroup": {
+	"deletescalinggroup": {
 		Action:         "delete",
-		Entity:         "autoscalinggroup",
+		Entity:         "scalinggroup",
 		Api:            "autoscaling",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{"force"},
@@ -812,9 +812,9 @@ func DriverSupportedActions() map[string][]string {
 	supported["detach"] = append(supported["detach"], "instance")
 	supported["create"] = append(supported["create"], "launchconfiguration")
 	supported["delete"] = append(supported["delete"], "launchconfiguration")
-	supported["create"] = append(supported["create"], "autoscalinggroup")
-	supported["update"] = append(supported["update"], "autoscalinggroup")
-	supported["delete"] = append(supported["delete"], "autoscalinggroup")
+	supported["create"] = append(supported["create"], "scalinggroup")
+	supported["update"] = append(supported["update"], "scalinggroup")
+	supported["delete"] = append(supported["delete"], "scalinggroup")
 	supported["create"] = append(supported["create"], "database")
 	supported["delete"] = append(supported["delete"], "database")
 	supported["create"] = append(supported["create"], "dbsubnetgroup")

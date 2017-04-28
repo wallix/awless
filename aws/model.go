@@ -208,7 +208,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.SpotPrice:      {name: "SpotPrice", transform: extractValueFn},
 		properties.UserData:       {name: "Userdata", transform: extractValueFn},
 	},
-	cloud.AutoScalingGroup: {
+	cloud.ScalingGroup: {
 		properties.Name:                    {name: "AutoScalingGroupName", transform: extractValueFn},
 		properties.Created:                 {name: "CreatedTime", transform: extractValueFn},
 		properties.DefaultCooldown:         {name: "DefaultCooldown", transform: extractValueFn},

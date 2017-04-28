@@ -2325,33 +2325,33 @@ func (d *AutoscalingDriver) Delete_Launchconfiguration(params map[string]interfa
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("create autoscalinggroup: missing required params 'name'")
+		return nil, errors.New("create scalinggroup: missing required params 'name'")
 	}
 
 	if _, ok := params["launchconfiguration"]; !ok {
-		return nil, errors.New("create autoscalinggroup: missing required params 'launchconfiguration'")
+		return nil, errors.New("create scalinggroup: missing required params 'launchconfiguration'")
 	}
 
 	if _, ok := params["max-size"]; !ok {
-		return nil, errors.New("create autoscalinggroup: missing required params 'max-size'")
+		return nil, errors.New("create scalinggroup: missing required params 'max-size'")
 	}
 
 	if _, ok := params["min-size"]; !ok {
-		return nil, errors.New("create autoscalinggroup: missing required params 'min-size'")
+		return nil, errors.New("create scalinggroup: missing required params 'min-size'")
 	}
 
 	if _, ok := params["subnets"]; !ok {
-		return nil, errors.New("create autoscalinggroup: missing required params 'subnets'")
+		return nil, errors.New("create scalinggroup: missing required params 'subnets'")
 	}
 
-	d.logger.Verbose("params dry run: create autoscalinggroup ok")
+	d.logger.Verbose("params dry run: create scalinggroup ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Autoscalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Scalinggroup(params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.CreateAutoScalingGroupInput{}
 	var err error
 
@@ -2420,27 +2420,27 @@ func (d *AutoscalingDriver) Create_Autoscalinggroup(params map[string]interface{
 	output, err = d.CreateAutoScalingGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("create autoscalinggroup: %s", err)
+		return nil, fmt.Errorf("create scalinggroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("autoscaling.CreateAutoScalingGroup call took %s", time.Since(start))
 	id := params["name"]
 
-	d.logger.Infof("create autoscalinggroup '%s' done", id)
+	d.logger.Infof("create scalinggroup '%s' done", id)
 	return id, nil
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Update_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Update_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("update autoscalinggroup: missing required params 'name'")
+		return nil, errors.New("update scalinggroup: missing required params 'name'")
 	}
 
-	d.logger.Verbose("params dry run: update autoscalinggroup ok")
+	d.logger.Verbose("params dry run: update scalinggroup ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Update_Autoscalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Update_Scalinggroup(params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.UpdateAutoScalingGroupInput{}
 	var err error
 
@@ -2511,25 +2511,25 @@ func (d *AutoscalingDriver) Update_Autoscalinggroup(params map[string]interface{
 	output, err = d.UpdateAutoScalingGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("update autoscalinggroup: %s", err)
+		return nil, fmt.Errorf("update scalinggroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("autoscaling.UpdateAutoScalingGroup call took %s", time.Since(start))
-	d.logger.Info("update autoscalinggroup done")
+	d.logger.Info("update scalinggroup done")
 	return output, nil
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Autoscalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("delete autoscalinggroup: missing required params 'name'")
+		return nil, errors.New("delete scalinggroup: missing required params 'name'")
 	}
 
-	d.logger.Verbose("params dry run: delete autoscalinggroup ok")
+	d.logger.Verbose("params dry run: delete scalinggroup ok")
 	return nil, nil
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Autoscalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Scalinggroup(params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.DeleteAutoScalingGroupInput{}
 	var err error
 
@@ -2552,10 +2552,10 @@ func (d *AutoscalingDriver) Delete_Autoscalinggroup(params map[string]interface{
 	output, err = d.DeleteAutoScalingGroup(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete autoscalinggroup: %s", err)
+		return nil, fmt.Errorf("delete scalinggroup: %s", err)
 	}
 	d.logger.ExtraVerbosef("autoscaling.DeleteAutoScalingGroup call took %s", time.Since(start))
-	d.logger.Info("delete autoscalinggroup done")
+	d.logger.Info("delete scalinggroup done")
 	return output, nil
 }
 

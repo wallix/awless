@@ -274,14 +274,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	launchConfigs := []*autoscaling.LaunchConfiguration{
 		{LaunchConfigurationARN: awssdk.String("launchconfig_arn"), LaunchConfigurationName: awssdk.String("launchconfig_name"), KeyName: awssdk.String("my_key")},
 	}
-	autoscalingGroups := []*autoscaling.Group{
+	scalingGroups := []*autoscaling.Group{
 		{AutoScalingGroupARN: awssdk.String("asg_arn_1"), AutoScalingGroupName: awssdk.String("asg_name_1"), Instances: []*autoscaling.Instance{{InstanceId: awssdk.String("inst_1")}, {InstanceId: awssdk.String("inst_3")}}, VPCZoneIdentifier: awssdk.String("sub_1,sub_2"), LaunchConfigurationName: awssdk.String("launchconfig_name")},
 		{AutoScalingGroupARN: awssdk.String("asg_arn_2"), AutoScalingGroupName: awssdk.String("asg_name_2"), LaunchConfigurationName: awssdk.String("launchconfig_name"), TargetGroupARNs: []*string{awssdk.String("tg_1"), awssdk.String("tg_2")}},
 	}
 
 	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
 	mockLb := &mockELB{loadBalancerPages: lbPages, targetGroups: targetGroups, listeners: listeners, targetHealths: targetHealths}
-	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{configs: launchConfigs, groups: autoscalingGroups}, region: "eu-west-1"}
+	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{configs: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
 	InfraService = &infra
 
 	g, err := infra.FetchResources()
@@ -331,8 +331,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"list_2":           resourcetest.Listener("list_2").Prop(p.LoadBalancer, "lb_2").Build(),
 		"list_3":           resourcetest.Listener("list_3").Prop(p.LoadBalancer, "lb_3").Build(),
 		"launchconfig_arn": resourcetest.LaunchConfig("launchconfig_arn").Prop(p.Name, "launchconfig_name").Prop(p.KeyPair, "my_key").Build(),
-		"asg_arn_1":        resourcetest.AutoscalingGroup("asg_arn_1").Prop(p.Name, "asg_name_1").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
-		"asg_arn_2":        resourcetest.AutoscalingGroup("asg_arn_2").Prop(p.Name, "asg_name_2").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
+		"asg_arn_1":        resourcetest.ScalingGroup("asg_arn_1").Prop(p.Name, "asg_name_1").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
+		"asg_arn_2":        resourcetest.ScalingGroup("asg_arn_2").Prop(p.Name, "asg_name_2").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
 	}
 
 	expectedChildren := map[string][]string{
