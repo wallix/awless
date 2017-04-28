@@ -254,7 +254,7 @@ func (d *Ec2Driver) Update_Subnet_DryRun(params map[string]interface{}) (interfa
 	}
 
 	d.logger.Verbose("params dry run: update subnet ok")
-	return nil, nil
+	return fakeDryRunId("subnet"), nil
 }
 
 // This function was auto generated
@@ -1771,7 +1771,7 @@ func (d *Elbv2Driver) Create_Loadbalancer_DryRun(params map[string]interface{}) 
 	}
 
 	d.logger.Verbose("params dry run: create loadbalancer ok")
-	return nil, nil
+	return fakeDryRunId("loadbalancer"), nil
 }
 
 // This function was auto generated
@@ -1830,7 +1830,7 @@ func (d *Elbv2Driver) Delete_Loadbalancer_DryRun(params map[string]interface{}) 
 	}
 
 	d.logger.Verbose("params dry run: delete loadbalancer ok")
-	return nil, nil
+	return fakeDryRunId("loadbalancer"), nil
 }
 
 // This function was auto generated
@@ -1879,7 +1879,7 @@ func (d *Elbv2Driver) Create_Listener_DryRun(params map[string]interface{}) (int
 	}
 
 	d.logger.Verbose("params dry run: create listener ok")
-	return nil, nil
+	return fakeDryRunId("listener"), nil
 }
 
 // This function was auto generated
@@ -1944,7 +1944,7 @@ func (d *Elbv2Driver) Delete_Listener_DryRun(params map[string]interface{}) (int
 	}
 
 	d.logger.Verbose("params dry run: delete listener ok")
-	return nil, nil
+	return fakeDryRunId("listener"), nil
 }
 
 // This function was auto generated
@@ -1989,7 +1989,7 @@ func (d *Elbv2Driver) Create_Targetgroup_DryRun(params map[string]interface{}) (
 	}
 
 	d.logger.Verbose("params dry run: create targetgroup ok")
-	return nil, nil
+	return fakeDryRunId("targetgroup"), nil
 }
 
 // This function was auto generated
@@ -2086,7 +2086,7 @@ func (d *Elbv2Driver) Delete_Targetgroup_DryRun(params map[string]interface{}) (
 	}
 
 	d.logger.Verbose("params dry run: delete targetgroup ok")
-	return nil, nil
+	return fakeDryRunId("targetgroup"), nil
 }
 
 // This function was auto generated
@@ -2123,7 +2123,7 @@ func (d *Elbv2Driver) Attach_Instance_DryRun(params map[string]interface{}) (int
 	}
 
 	d.logger.Verbose("params dry run: attach instance ok")
-	return nil, nil
+	return fakeDryRunId("instance"), nil
 }
 
 // This function was auto generated
@@ -2172,7 +2172,7 @@ func (d *Elbv2Driver) Detach_Instance_DryRun(params map[string]interface{}) (int
 	}
 
 	d.logger.Verbose("params dry run: detach instance ok")
-	return nil, nil
+	return fakeDryRunId("instance"), nil
 }
 
 // This function was auto generated
@@ -2217,7 +2217,7 @@ func (d *AutoscalingDriver) Create_Launchconfiguration_DryRun(params map[string]
 	}
 
 	d.logger.Verbose("params dry run: create launchconfiguration ok")
-	return nil, nil
+	return fakeDryRunId("launchconfiguration"), nil
 }
 
 // This function was auto generated
@@ -2298,7 +2298,7 @@ func (d *AutoscalingDriver) Delete_Launchconfiguration_DryRun(params map[string]
 	}
 
 	d.logger.Verbose("params dry run: delete launchconfiguration ok")
-	return nil, nil
+	return fakeDryRunId("launchconfiguration"), nil
 }
 
 // This function was auto generated
@@ -2347,7 +2347,7 @@ func (d *AutoscalingDriver) Create_Scalinggroup_DryRun(params map[string]interfa
 	}
 
 	d.logger.Verbose("params dry run: create scalinggroup ok")
-	return nil, nil
+	return fakeDryRunId("scalinggroup"), nil
 }
 
 // This function was auto generated
@@ -2436,7 +2436,7 @@ func (d *AutoscalingDriver) Update_Scalinggroup_DryRun(params map[string]interfa
 	}
 
 	d.logger.Verbose("params dry run: update scalinggroup ok")
-	return nil, nil
+	return fakeDryRunId("scalinggroup"), nil
 }
 
 // This function was auto generated
@@ -2525,7 +2525,7 @@ func (d *AutoscalingDriver) Delete_Scalinggroup_DryRun(params map[string]interfa
 	}
 
 	d.logger.Verbose("params dry run: delete scalinggroup ok")
-	return nil, nil
+	return fakeDryRunId("scalinggroup"), nil
 }
 
 // This function was auto generated
@@ -2578,7 +2578,7 @@ func (d *AutoscalingDriver) Create_Scalingpolicy_DryRun(params map[string]interf
 	}
 
 	d.logger.Verbose("params dry run: create scalingpolicy ok")
-	return nil, nil
+	return fakeDryRunId("scalingpolicy"), nil
 }
 
 // This function was auto generated
@@ -2645,7 +2645,7 @@ func (d *AutoscalingDriver) Delete_Scalingpolicy_DryRun(params map[string]interf
 	}
 
 	d.logger.Verbose("params dry run: delete scalingpolicy ok")
-	return nil, nil
+	return fakeDryRunId("scalingpolicy"), nil
 }
 
 // This function was auto generated
@@ -2698,7 +2698,7 @@ func (d *RdsDriver) Create_Database_DryRun(params map[string]interface{}) (inter
 	}
 
 	d.logger.Verbose("params dry run: create database ok")
-	return nil, nil
+	return fakeDryRunId("database"), nil
 }
 
 // This function was auto generated
@@ -2893,7 +2893,7 @@ func (d *RdsDriver) Delete_Database_DryRun(params map[string]interface{}) (inter
 	}
 
 	d.logger.Verbose("params dry run: delete database ok")
-	return nil, nil
+	return fakeDryRunId("database"), nil
 }
 
 // This function was auto generated
@@ -2948,7 +2948,7 @@ func (d *RdsDriver) Create_Dbsubnetgroup_DryRun(params map[string]interface{}) (
 	}
 
 	d.logger.Verbose("params dry run: create dbsubnetgroup ok")
-	return nil, nil
+	return fakeDryRunId("dbsubnetgroup"), nil
 }
 
 // This function was auto generated
@@ -2991,7 +2991,7 @@ func (d *RdsDriver) Delete_Dbsubnetgroup_DryRun(params map[string]interface{}) (
 	}
 
 	d.logger.Verbose("params dry run: delete dbsubnetgroup ok")
-	return nil, nil
+	return fakeDryRunId("dbsubnetgroup"), nil
 }
 
 // This function was auto generated
@@ -3024,7 +3024,7 @@ func (d *IamDriver) Create_User_DryRun(params map[string]interface{}) (interface
 	}
 
 	d.logger.Verbose("params dry run: create user ok")
-	return nil, nil
+	return fakeDryRunId("user"), nil
 }
 
 // This function was auto generated
@@ -3059,7 +3059,7 @@ func (d *IamDriver) Delete_User_DryRun(params map[string]interface{}) (interface
 	}
 
 	d.logger.Verbose("params dry run: delete user ok")
-	return nil, nil
+	return fakeDryRunId("user"), nil
 }
 
 // This function was auto generated
@@ -3096,7 +3096,7 @@ func (d *IamDriver) Attach_User_DryRun(params map[string]interface{}) (interface
 	}
 
 	d.logger.Verbose("params dry run: attach user ok")
-	return nil, nil
+	return fakeDryRunId("user"), nil
 }
 
 // This function was auto generated
@@ -3137,7 +3137,7 @@ func (d *IamDriver) Detach_User_DryRun(params map[string]interface{}) (interface
 	}
 
 	d.logger.Verbose("params dry run: detach user ok")
-	return nil, nil
+	return fakeDryRunId("user"), nil
 }
 
 // This function was auto generated
@@ -3174,7 +3174,7 @@ func (d *IamDriver) Delete_Accesskey_DryRun(params map[string]interface{}) (inte
 	}
 
 	d.logger.Verbose("params dry run: delete accesskey ok")
-	return nil, nil
+	return fakeDryRunId("accesskey"), nil
 }
 
 // This function was auto generated
@@ -3207,7 +3207,7 @@ func (d *IamDriver) Create_Group_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: create group ok")
-	return nil, nil
+	return fakeDryRunId("group"), nil
 }
 
 // This function was auto generated
@@ -3242,7 +3242,7 @@ func (d *IamDriver) Delete_Group_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: delete group ok")
-	return nil, nil
+	return fakeDryRunId("group"), nil
 }
 
 // This function was auto generated
@@ -3279,7 +3279,7 @@ func (d *IamDriver) Attach_Role_DryRun(params map[string]interface{}) (interface
 	}
 
 	d.logger.Verbose("params dry run: attach role ok")
-	return nil, nil
+	return fakeDryRunId("role"), nil
 }
 
 // This function was auto generated
@@ -3320,7 +3320,7 @@ func (d *IamDriver) Detach_Role_DryRun(params map[string]interface{}) (interface
 	}
 
 	d.logger.Verbose("params dry run: detach role ok")
-	return nil, nil
+	return fakeDryRunId("role"), nil
 }
 
 // This function was auto generated
@@ -3357,7 +3357,7 @@ func (d *IamDriver) Create_Instanceprofile_DryRun(params map[string]interface{})
 	}
 
 	d.logger.Verbose("params dry run: create instanceprofile ok")
-	return nil, nil
+	return fakeDryRunId("instanceprofile"), nil
 }
 
 // This function was auto generated
@@ -3390,7 +3390,7 @@ func (d *IamDriver) Delete_Instanceprofile_DryRun(params map[string]interface{})
 	}
 
 	d.logger.Verbose("params dry run: delete instanceprofile ok")
-	return nil, nil
+	return fakeDryRunId("instanceprofile"), nil
 }
 
 // This function was auto generated
@@ -3423,7 +3423,7 @@ func (d *IamDriver) Delete_Policy_DryRun(params map[string]interface{}) (interfa
 	}
 
 	d.logger.Verbose("params dry run: delete policy ok")
-	return nil, nil
+	return fakeDryRunId("policy"), nil
 }
 
 // This function was auto generated
@@ -3456,7 +3456,7 @@ func (d *S3Driver) Create_Bucket_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: create bucket ok")
-	return nil, nil
+	return fakeDryRunId("bucket"), nil
 }
 
 // This function was auto generated
@@ -3491,7 +3491,7 @@ func (d *S3Driver) Delete_Bucket_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: delete bucket ok")
-	return nil, nil
+	return fakeDryRunId("bucket"), nil
 }
 
 // This function was auto generated
@@ -3528,7 +3528,7 @@ func (d *S3Driver) Delete_S3object_DryRun(params map[string]interface{}) (interf
 	}
 
 	d.logger.Verbose("params dry run: delete s3object ok")
-	return nil, nil
+	return fakeDryRunId("s3object"), nil
 }
 
 // This function was auto generated
@@ -3565,7 +3565,7 @@ func (d *SnsDriver) Create_Topic_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: create topic ok")
-	return nil, nil
+	return fakeDryRunId("topic"), nil
 }
 
 // This function was auto generated
@@ -3600,7 +3600,7 @@ func (d *SnsDriver) Delete_Topic_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: delete topic ok")
-	return nil, nil
+	return fakeDryRunId("topic"), nil
 }
 
 // This function was auto generated
@@ -3641,7 +3641,7 @@ func (d *SnsDriver) Create_Subscription_DryRun(params map[string]interface{}) (i
 	}
 
 	d.logger.Verbose("params dry run: create subscription ok")
-	return nil, nil
+	return fakeDryRunId("subscription"), nil
 }
 
 // This function was auto generated
@@ -3684,7 +3684,7 @@ func (d *SnsDriver) Delete_Subscription_DryRun(params map[string]interface{}) (i
 	}
 
 	d.logger.Verbose("params dry run: delete subscription ok")
-	return nil, nil
+	return fakeDryRunId("subscription"), nil
 }
 
 // This function was auto generated
@@ -3717,7 +3717,7 @@ func (d *SqsDriver) Create_Queue_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: create queue ok")
-	return nil, nil
+	return fakeDryRunId("queue"), nil
 }
 
 // This function was auto generated
@@ -3796,7 +3796,7 @@ func (d *SqsDriver) Delete_Queue_DryRun(params map[string]interface{}) (interfac
 	}
 
 	d.logger.Verbose("params dry run: delete queue ok")
-	return nil, nil
+	return fakeDryRunId("queue"), nil
 }
 
 // This function was auto generated
@@ -3833,7 +3833,7 @@ func (d *Route53Driver) Create_Zone_DryRun(params map[string]interface{}) (inter
 	}
 
 	d.logger.Verbose("params dry run: create zone ok")
-	return nil, nil
+	return fakeDryRunId("zone"), nil
 }
 
 // This function was auto generated
@@ -3904,7 +3904,7 @@ func (d *Route53Driver) Delete_Zone_DryRun(params map[string]interface{}) (inter
 	}
 
 	d.logger.Verbose("params dry run: delete zone ok")
-	return nil, nil
+	return fakeDryRunId("zone"), nil
 }
 
 // This function was auto generated
@@ -3949,7 +3949,7 @@ func (d *LambdaDriver) Create_Function_DryRun(params map[string]interface{}) (in
 	}
 
 	d.logger.Verbose("params dry run: create function ok")
-	return nil, nil
+	return fakeDryRunId("function"), nil
 }
 
 // This function was auto generated
@@ -4046,7 +4046,7 @@ func (d *LambdaDriver) Delete_Function_DryRun(params map[string]interface{}) (in
 	}
 
 	d.logger.Verbose("params dry run: delete function ok")
-	return nil, nil
+	return fakeDryRunId("function"), nil
 }
 
 // This function was auto generated
@@ -4115,7 +4115,7 @@ func (d *CloudwatchDriver) Create_Alarm_DryRun(params map[string]interface{}) (i
 	}
 
 	d.logger.Verbose("params dry run: create alarm ok")
-	return nil, nil
+	return fakeDryRunId("alarm"), nil
 }
 
 // This function was auto generated
@@ -4222,7 +4222,7 @@ func (d *CloudwatchDriver) Delete_Alarm_DryRun(params map[string]interface{}) (i
 	}
 
 	d.logger.Verbose("params dry run: delete alarm ok")
-	return nil, nil
+	return fakeDryRunId("alarm"), nil
 }
 
 // This function was auto generated
@@ -4255,7 +4255,7 @@ func (d *CloudwatchDriver) Start_Alarm_DryRun(params map[string]interface{}) (in
 	}
 
 	d.logger.Verbose("params dry run: start alarm ok")
-	return nil, nil
+	return fakeDryRunId("alarm"), nil
 }
 
 // This function was auto generated
@@ -4288,7 +4288,7 @@ func (d *CloudwatchDriver) Stop_Alarm_DryRun(params map[string]interface{}) (int
 	}
 
 	d.logger.Verbose("params dry run: stop alarm ok")
-	return nil, nil
+	return fakeDryRunId("alarm"), nil
 }
 
 // This function was auto generated

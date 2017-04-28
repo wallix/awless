@@ -189,7 +189,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 	}
 	{{ end }}
 	d.logger.Verbose("params dry run: {{ $def.Action }} {{ $def.Entity }} ok")
-	return nil, nil
+	return fakeDryRunId("{{ $def.Entity }}"), nil
 }
 {{ else }}
 // This function was auto generated

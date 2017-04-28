@@ -1279,7 +1279,7 @@ func (d *CloudwatchDriver) Attach_Alarm_DryRun(params map[string]interface{}) (i
 	_, arn := params["action-arn"].(string)
 
 	if !arn {
-		return nil, errors.New("attach alarm: dry run: missing 'arn' param")
+		return nil, errors.New("attach alarm: dry run: missing 'action-arn' param")
 	}
 
 	d.logger.Verbose("params dry run: attach alarm ok")
@@ -1327,7 +1327,7 @@ func (d *CloudwatchDriver) Detach_Alarm_DryRun(params map[string]interface{}) (i
 	_, arn := params["action-arn"].(string)
 
 	if !arn {
-		return nil, errors.New("detach alarm: dry run: missing 'arn' param")
+		return nil, errors.New("detach alarm: dry run: missing 'action-arn' param")
 	}
 
 	d.logger.Verbose("params dry run: detach alarm ok")

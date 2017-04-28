@@ -72,6 +72,9 @@ func (te *Template) Revert() (*Template, error) {
 			if cmd.Action == "create" && cmd.Entity == "securitygroup" {
 				lines = append(lines, fmt.Sprintf("check securitygroup id=%s state=unused timeout=180", cmd.CmdResult))
 			}
+			if cmd.Action == "create" && cmd.Entity == "scalinggroup" {
+				lines = append(lines, fmt.Sprintf("update scalinggroup name=%s max-size=0 min-size=0", cmd.CmdResult))
+			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
 
