@@ -186,6 +186,14 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		StringColumnDefinition{Prop: properties.NewInstancesProtected},
 	},
+	cloud.ScalingPolicy: {
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Type},
+		StringColumnDefinition{Prop: properties.ScalingGroupName},
+		StringColumnDefinition{Prop: properties.AlarmNames},
+		StringColumnDefinition{Prop: properties.AdjustmentType},
+		StringColumnDefinition{Prop: properties.ScalingAdjustment},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: properties.ID},

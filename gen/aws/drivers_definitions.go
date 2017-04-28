@@ -548,6 +548,26 @@ var DriversDefs = []driversDef{
 					{AwsField: "ForceDelete", TemplateName: "force", AwsType: "awsbool"},
 				},
 			},
+			{
+				Action: "create", Entity: cloud.ScalingPolicy, ApiMethod: "PutScalingPolicy", Input: "PutScalingPolicyInput", Output: "PutScalingPolicyOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.PolicyARN)",
+				RequiredParams: []param{
+					{AwsField: "AdjustmentType", TemplateName: "adjustment-type", AwsType: "awsstr"},
+					{AwsField: "AutoScalingGroupName", TemplateName: "scalinggroup", AwsType: "awsstr"},
+					{AwsField: "PolicyName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "ScalingAdjustment", TemplateName: "adjustment-scaling", AwsType: "awsint64"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Cooldown", TemplateName: "cooldown", AwsType: "awsint64"},
+					{AwsField: "MetricAggregationType", TemplateName: "metric-aggregation", AwsType: "awsstr"},
+					{AwsField: "MinAdjustmentMagnitude", TemplateName: "adjustment-magnitude", AwsType: "awsint64"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.ScalingPolicy, ApiMethod: "DeletePolicy", Input: "DeletePolicyInput", Output: "DeletePolicyOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "PolicyName", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
 		},
 	},
 	{

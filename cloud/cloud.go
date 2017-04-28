@@ -72,6 +72,7 @@ const (
 	//autoscaling
 	LaunchConfiguration string = "launchconfiguration"
 	ScalingGroup        string = "scalinggroup"
+	ScalingPolicy       string = "scalingpolicy"
 	//monitoring
 	Metric string = "metric"
 	Alarm  string = "alarm"

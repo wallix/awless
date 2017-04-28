@@ -72,6 +72,8 @@ var APIPerTemplateDefName = map[string]string{
 	"createscalinggroup":        "autoscaling",
 	"updatescalinggroup":        "autoscaling",
 	"deletescalinggroup":        "autoscaling",
+	"createscalingpolicy":       "autoscaling",
+	"deletescalingpolicy":       "autoscaling",
 	"createdatabase":            "rds",
 	"deletedatabase":            "rds",
 	"createdbsubnetgroup":       "rds",
@@ -467,6 +469,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{"force"},
 	},
+	"createscalingpolicy": {
+		Action:         "create",
+		Entity:         "scalingpolicy",
+		Api:            "autoscaling",
+		RequiredParams: []string{"adjustment-scaling", "adjustment-type", "name", "scalinggroup"},
+		ExtraParams:    []string{"adjustment-magnitude", "cooldown", "metric-aggregation"},
+	},
+	"deletescalingpolicy": {
+		Action:         "delete",
+		Entity:         "scalingpolicy",
+		Api:            "autoscaling",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
 	"createdatabase": {
 		Action:         "create",
 		Entity:         "database",
@@ -815,6 +831,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["create"] = append(supported["create"], "scalinggroup")
 	supported["update"] = append(supported["update"], "scalinggroup")
 	supported["delete"] = append(supported["delete"], "scalinggroup")
+	supported["create"] = append(supported["create"], "scalingpolicy")
+	supported["delete"] = append(supported["delete"], "scalingpolicy")
 	supported["create"] = append(supported["create"], "database")
 	supported["delete"] = append(supported["delete"], "database")
 	supported["create"] = append(supported["create"], "dbsubnetgroup")

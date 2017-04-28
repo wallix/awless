@@ -7,7 +7,7 @@
 - `awless ssh` now checks the remote host public key before connecting. Check can be disabled with the (insecure) `--disable-strict-host-keychecking` flag.
 - [#74](https://github.com/wallix/awless/issues/74): support of encrypted SSH keys for generation `awless create keypair encrypted=true` and in `awless ssh`.
 - Create/delete and list Lambda functions
-- Create/delete and list autoscaling launch configurations and scaling groups
+- Create/delete and list autoscaling launch configurations, scaling policies and scaling groups
 - Create/delete/start/stop and list cloudwatch alarms. List cloudwatch metrics.
 - List EC2 images (AMIs) of which you are the owner: `awless list images`
 - Copy an EC2 image from a given region to the current region: `awless copy image name=... source-id=... source-region=...`

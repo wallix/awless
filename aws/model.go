@@ -221,6 +221,15 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.NewInstancesProtected:   {name: "NewInstancesProtectedFromScaleIn", transform: extractValueFn},
 		properties.State:                   {name: "Status", transform: extractValueFn},
 	},
+	cloud.ScalingPolicy: {
+		properties.Name:              {name: "PolicyName", transform: extractValueFn},
+		properties.AdjustmentType:    {name: "AdjustmentType", transform: extractValueFn},
+		properties.AlarmNames:        {name: "Alarms", transform: extractStringSliceValues("AlarmName")},
+		properties.ScalingGroupName:  {name: "AutoScalingGroupName", transform: extractValueFn},
+		properties.Cooldown:          {name: "AutoScalingGroupName", transform: extractValueFn},
+		properties.Type:              {name: "PolicyType", transform: extractValueFn},
+		properties.ScalingAdjustment: {name: "ScalingAdjustment", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

@@ -288,7 +288,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "autoscalinggroup")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup")
 	if err != nil {
 		t.Fatal(err)
 	}

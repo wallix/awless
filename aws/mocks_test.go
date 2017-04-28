@@ -140,6 +140,11 @@ func (m *mockAutoScaling) DescribeAutoScalingGroupsPages(input *autoscaling.Desc
 	return nil
 }
 
+func (m *mockAutoScaling) DescribePoliciesPages(input *autoscaling.DescribePoliciesInput, fn func(p *autoscaling.DescribePoliciesOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&autoscaling.DescribePoliciesOutput{}, true)
+	return nil
+}
+
 type mockRoute53 struct {
 	route53iface.Route53API
 	zonePages   [][]*route53.HostedZone

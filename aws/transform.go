@@ -85,6 +85,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.LaunchConfiguration, awssdk.StringValue(ss.LaunchConfigurationARN))
 	case *autoscaling.Group:
 		res = graph.InitResource(cloud.ScalingGroup, awssdk.StringValue(ss.AutoScalingGroupARN))
+	case *autoscaling.ScalingPolicy:
+		res = graph.InitResource(cloud.ScalingPolicy, awssdk.StringValue(ss.PolicyARN))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))

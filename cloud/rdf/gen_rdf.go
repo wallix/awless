@@ -22,13 +22,16 @@ import "github.com/wallix/awless/cloud/properties"
 const (
 	Actions                   = "cloud:actions"
 	ActionsEnabled            = "cloud:actionsEnabled"
+	AdjustmentType            = "cloud:adjustmentType"
 	Affinity                  = "cloud:affinity"
+	AlarmNames                = "cloud:alarmNames"
 	AlarmActions              = "cloud:alarmActions"
 	ApproximateMessageCount   = "cloud:approximateMessageCount"
 	Architecture              = "cloud:architecture"
 	Arn                       = "cloud:arn"
 	Attachable                = "cloud:attachable"
 	AutoUpgrade               = "cloud:autoUpgrade"
+	ScalingGroupName          = "cloud:scalingGroupName"
 	AvailabilityZone          = "cloud:availabilityZone"
 	AvailabilityZones         = "cloud:availabilityZones"
 	BackupRetentionPeriod     = "cloud:backupRetentionPeriod"
@@ -50,6 +53,7 @@ const (
 	Cluster                   = "cloud:cluster"
 	Comment                   = "rdfs:comment"
 	Continent                 = "cloud:continent"
+	Cooldown                  = "cloud:cooldown"
 	CopyTagsToSnapshot        = "cloud:copyTagsToSnapshot"
 	Country                   = "cloud:country"
 	Created                   = "cloud:created"
@@ -135,6 +139,7 @@ const (
 	RootDeviceType            = "cloud:rootDevice"
 	Routes                    = "net:routes"
 	Runtime                   = "cloud:runtime"
+	ScalingAdjustment         = "cloud:scalingAdjustment"
 	Scheme                    = "net:scheme"
 	SecondaryAvailabilityZone = "cloud:secondaryAvailabilityZone"
 	SecurityGroups            = "cloud:securityGroups"
@@ -169,13 +174,16 @@ const (
 var Labels = map[string]string{
 	properties.Actions:                   Actions,
 	properties.ActionsEnabled:            ActionsEnabled,
+	properties.AdjustmentType:            AdjustmentType,
 	properties.Affinity:                  Affinity,
+	properties.AlarmNames:                AlarmNames,
 	properties.AlarmActions:              AlarmActions,
 	properties.ApproximateMessageCount:   ApproximateMessageCount,
 	properties.Architecture:              Architecture,
 	properties.Arn:                       Arn,
 	properties.Attachable:                Attachable,
 	properties.AutoUpgrade:               AutoUpgrade,
+	properties.ScalingGroupName:          ScalingGroupName,
 	properties.AvailabilityZone:          AvailabilityZone,
 	properties.AvailabilityZones:         AvailabilityZones,
 	properties.BackupRetentionPeriod:     BackupRetentionPeriod,
@@ -197,6 +205,7 @@ var Labels = map[string]string{
 	properties.Cluster:                   Cluster,
 	properties.Comment:                   Comment,
 	properties.Continent:                 Continent,
+	properties.Cooldown:                  Cooldown,
 	properties.CopyTagsToSnapshot:        CopyTagsToSnapshot,
 	properties.Country:                   Country,
 	properties.Created:                   Created,
@@ -282,6 +291,7 @@ var Labels = map[string]string{
 	properties.RootDeviceType:            RootDeviceType,
 	properties.Routes:                    Routes,
 	properties.Runtime:                   Runtime,
+	properties.ScalingAdjustment:         ScalingAdjustment,
 	properties.Scheme:                    Scheme,
 	properties.SecondaryAvailabilityZone: SecondaryAvailabilityZone,
 	properties.SecurityGroups:            SecurityGroups,
@@ -316,13 +326,16 @@ var Labels = map[string]string{
 var Properties = RDFProperties{
 	Actions:                 {ID: Actions, RdfType: "rdf:Property", RdfsLabel: "Actions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ActionsEnabled:          {ID: ActionsEnabled, RdfType: "rdf:Property", RdfsLabel: "ActionsEnabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	AdjustmentType:          {ID: AdjustmentType, RdfType: "rdf:Property", RdfsLabel: "AdjustmentType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Affinity:                {ID: Affinity, RdfType: "rdf:Property", RdfsLabel: "Affinity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	AlarmNames:              {ID: AlarmNames, RdfType: "rdf:Property", RdfsLabel: "AlarmNames", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	AlarmActions:            {ID: AlarmActions, RdfType: "rdf:Property", RdfsLabel: "AlarmActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ApproximateMessageCount: {ID: ApproximateMessageCount, RdfType: "rdf:Property", RdfsLabel: "ApproximateMessageCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Arn:                     {ID: Arn, RdfType: "rdf:Property", RdfsLabel: "Arn", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Attachable:              {ID: Attachable, RdfType: "rdf:Property", RdfsLabel: "Attachable", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	AutoUpgrade:             {ID: AutoUpgrade, RdfType: "rdf:Property", RdfsLabel: "AutoUpgrade", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	ScalingGroupName:        {ID: ScalingGroupName, RdfType: "rdf:Property", RdfsLabel: "ScalingGroupName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AvailabilityZone:        {ID: AvailabilityZone, RdfType: "rdf:Property", RdfsLabel: "AvailabilityZone", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	AvailabilityZones:       {ID: AvailabilityZones, RdfType: "rdf:Property", RdfsLabel: "AvailabilityZones", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	BackupRetentionPeriod:   {ID: BackupRetentionPeriod, RdfType: "rdf:Property", RdfsLabel: "BackupRetentionPeriod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
@@ -344,6 +357,7 @@ var Properties = RDFProperties{
 	Cluster:                 {ID: Cluster, RdfType: "rdf:Property", RdfsLabel: "Cluster", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Comment:                 {ID: Comment, RdfType: "rdf:Property", RdfsLabel: "Comment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Continent:               {ID: Continent, RdfType: "rdf:Property", RdfsLabel: "Continent", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Cooldown:                {ID: Cooldown, RdfType: "rdf:Property", RdfsLabel: "Cooldown", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	CopyTagsToSnapshot:      {ID: CopyTagsToSnapshot, RdfType: "rdf:Property", RdfsLabel: "CopyTagsToSnapshot", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Country:                 {ID: Country, RdfType: "rdf:Property", RdfsLabel: "Country", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Created:                 {ID: Created, RdfType: "rdf:Property", RdfsLabel: "Created", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
@@ -429,6 +443,7 @@ var Properties = RDFProperties{
 	RootDeviceType:           {ID: RootDeviceType, RdfType: "rdf:Property", RdfsLabel: "RootDeviceType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Routes:                   {ID: Routes, RdfType: "rdf:Property", RdfsLabel: "Routes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:Route"},
 	Runtime:                  {ID: Runtime, RdfType: "rdf:Property", RdfsLabel: "Runtime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ScalingAdjustment:        {ID: ScalingAdjustment, RdfType: "rdf:Property", RdfsLabel: "ScalingAdjustment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Scheme:                   {ID: Scheme, RdfType: "rdf:Property", RdfsLabel: "Scheme", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SecondaryAvailabilityZone: {ID: SecondaryAvailabilityZone, RdfType: "rdf:Property", RdfsLabel: "SecondaryAvailabilityZone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SecurityGroups:            {ID: SecurityGroups, RdfType: "rdf:Property", RdfsLabel: "SecurityGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},

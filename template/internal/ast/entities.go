@@ -27,6 +27,7 @@ var entities = map[Entity]struct{}{
 	"route":               {},
 	"routetable":          {},
 	"s3object":            {},
+	"scalingpolicy":       {},
 	"securitygroup":       {},
 	"subnet":              {},
 	"subscription":        {},

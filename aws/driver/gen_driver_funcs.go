@@ -2560,6 +2560,118 @@ func (d *AutoscalingDriver) Delete_Scalinggroup(params map[string]interface{}) (
 }
 
 // This function was auto generated
+func (d *AutoscalingDriver) Create_Scalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["adjustment-type"]; !ok {
+		return nil, errors.New("create scalingpolicy: missing required params 'adjustment-type'")
+	}
+
+	if _, ok := params["scalinggroup"]; !ok {
+		return nil, errors.New("create scalingpolicy: missing required params 'scalinggroup'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create scalingpolicy: missing required params 'name'")
+	}
+
+	if _, ok := params["adjustment-scaling"]; !ok {
+		return nil, errors.New("create scalingpolicy: missing required params 'adjustment-scaling'")
+	}
+
+	d.logger.Verbose("params dry run: create scalingpolicy ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Create_Scalingpolicy(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.PutScalingPolicyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["adjustment-type"], input, "AdjustmentType", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["scalinggroup"], input, "AutoScalingGroupName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "PolicyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["adjustment-scaling"], input, "ScalingAdjustment", awsint64)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["cooldown"]; ok {
+		err = setFieldWithType(params["cooldown"], input, "Cooldown", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["metric-aggregation"]; ok {
+		err = setFieldWithType(params["metric-aggregation"], input, "MetricAggregationType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["adjustment-magnitude"]; ok {
+		err = setFieldWithType(params["adjustment-magnitude"], input, "MinAdjustmentMagnitude", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *autoscaling.PutScalingPolicyOutput
+	output, err = d.PutScalingPolicy(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create scalingpolicy: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.PutScalingPolicy call took %s", time.Since(start))
+	id := aws.StringValue(output.PolicyARN)
+
+	d.logger.Infof("create scalingpolicy '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Delete_Scalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete scalingpolicy: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete scalingpolicy ok")
+	return nil, nil
+}
+
+// This function was auto generated
+func (d *AutoscalingDriver) Delete_Scalingpolicy(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.DeletePolicyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "PolicyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *autoscaling.DeletePolicyOutput
+	output, err = d.DeletePolicy(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete scalingpolicy: %s", err)
+	}
+	d.logger.ExtraVerbosef("autoscaling.DeletePolicy call took %s", time.Since(start))
+	d.logger.Info("delete scalingpolicy done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *RdsDriver) Create_Database_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["type"]; !ok {
 		return nil, errors.New("create database: missing required params 'type'")
