@@ -114,7 +114,7 @@ func isRevertible(cmd *ast.CommandNode) bool {
 		return false
 	}
 
-	if cmd.Action == "check" {
+	if cmd.Action == "check" || cmd.Action == "copy" {
 		return false
 	}
 	if cmd.Entity == "record" && (cmd.Action == "create" || cmd.Action == "delete") {
