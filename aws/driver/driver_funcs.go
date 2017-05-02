@@ -179,12 +179,26 @@ func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interfa
 
 func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, error) {
 	effect, _ := params["effect"].(string)
-	action, _ := params["action"].(string)
 	resource, _ := params["resource"].(string)
+	actions, multipleAction := params["action"].([]string)
+	action, singleAction := params["action"].(string)
+
+	if resource == "all" {
+		resource = "*"
+	}
+
+	stat := policyStatement{Effect: strings.Title(effect), Resource: resource}
+
+	if multipleAction {
+		stat.Actions = actions
+	}
+	if singleAction {
+		stat.Action = action
+	}
 
 	policy := &policyBody{
 		Version:   "2012-10-17",
-		Statement: []policyStatement{{Effect: effect, Action: action, Resource: resource}},
+		Statement: []policyStatement{stat},
 	}
 
 	b, err := json.MarshalIndent(policy, "", " ")
@@ -267,6 +281,7 @@ type principal struct {
 type policyStatement struct {
 	Effect    string     `json:",omitempty"`
 	Action    string     `json:",omitempty"`
+	Actions   []string   `json:"Action,omitempty"`
 	Resource  string     `json:",omitempty"`
 	Principal *principal `json:",omitempty"`
 }
