@@ -193,7 +193,7 @@ func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, e
 		stat.Actions = actions
 	}
 	if singleAction {
-		stat.Action = action
+		stat.Actions = []string{action}
 	}
 
 	policy := &policyBody{
@@ -280,7 +280,6 @@ type principal struct {
 
 type policyStatement struct {
 	Effect    string     `json:",omitempty"`
-	Action    string     `json:",omitempty"`
 	Actions   []string   `json:"Action,omitempty"`
 	Resource  string     `json:",omitempty"`
 	Principal *principal `json:",omitempty"`
@@ -307,7 +306,7 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 
 	trust := &policyBody{
 		Version:   "2012-10-17",
-		Statement: []policyStatement{{Effect: "Allow", Action: "sts:AssumeRole", Principal: princ}},
+		Statement: []policyStatement{{Effect: "Allow", Actions: []string{"sts:AssumeRole"}, Principal: princ}},
 	}
 
 	b, err := json.MarshalIndent(trust, "", " ")
