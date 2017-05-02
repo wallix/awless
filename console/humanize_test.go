@@ -55,14 +55,14 @@ func TestHumanizeStorage(t *testing.T) {
 	}{
 		{from: 3, unit: b, expect: "3B"},
 		{from: 300, unit: b, expect: "300B"},
-		{from: 3072, unit: b, expect: "3KB"},
-		{from: 31457280, unit: b, expect: "30MB"},
-		{from: 31457285, unit: b, expect: "~30MB"},
-		{from: 2, unit: kb, expect: "2KB"},
-		{from: 20, unit: kb, expect: "20KB"},
-		{from: 2048, unit: kb, expect: "2MB"},
-		{from: 2070, unit: kb, expect: "~2MB"},
-		{from: 4096, unit: mb, expect: "4GB"},
+		{from: 3072, unit: b, expect: "3K"},
+		{from: 31457280, unit: b, expect: "30M"},
+		{from: 31457285, unit: b, expect: "~30M"},
+		{from: 2, unit: kb, expect: "2K"},
+		{from: 20, unit: kb, expect: "20K"},
+		{from: 2048, unit: kb, expect: "2M"},
+		{from: 2070, unit: kb, expect: "~2M"},
+		{from: 4096, unit: mb, expect: "4G"},
 	}
 
 	for _, tcase := range tcases {

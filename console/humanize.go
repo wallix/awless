@@ -70,11 +70,11 @@ func HumanizeStorage(nb uint64, unit storageUnit) string {
 	case nbBytes < 1024:
 		return fmt.Sprintf("%dB", nbBytes)
 	case nbBytes < 1024*1024:
-		return fmt.Sprintf("%sKB", divideValue(nbBytes, 1024))
+		return fmt.Sprintf("%sK", divideValue(nbBytes, 1024))
 	case nbBytes < 1024*1024*1024:
-		return fmt.Sprintf("%sMB", divideValue(nbBytes, 1024*1024))
+		return fmt.Sprintf("%sM", divideValue(nbBytes, 1024*1024))
 	default:
-		return fmt.Sprintf("%sGB", divideValue(nbBytes, 1024*1024*1024))
+		return fmt.Sprintf("%sG", divideValue(nbBytes, 1024*1024*1024))
 	}
 }
 
