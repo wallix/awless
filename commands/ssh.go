@@ -331,7 +331,7 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP, 
 	}
 
 	if err != nil && strings.Contains(err.Error(), "connection refused") {
-		logger.Warning("cannot connect to this instance, maybe the system is still starting up?")
+		logger.Warning("cannot connect to this instance, maybe the system is still booting?")
 	}
 }
 

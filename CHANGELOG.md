@@ -6,6 +6,7 @@
 - [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
 - `awless ssh` now checks the remote host public key before connecting. Check can be disabled with the (insecure) `--disable-strict-host-keychecking` flag.
 - [#74](https://github.com/wallix/awless/issues/74): support of encrypted SSH keys for generation `awless create keypair encrypted=true` and in `awless ssh`.
+- Listing templates available at `https://github.com/wallix/awless-templates` with `awless run --list`.
 - Create/delete and list Lambda functions
 - Create/delete and list autoscaling launch configurations, scaling policies and scaling groups
 - Create/delete/start/stop/attach/detach and list cloudwatch alarms. List cloudwatch metrics.

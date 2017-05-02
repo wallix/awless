@@ -19,6 +19,7 @@ package commands
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -29,6 +30,7 @@ import (
 	"sort"
 	"strings"
 	stdsync "sync"
+	"text/tabwriter"
 
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
@@ -49,9 +51,11 @@ import (
 var scheduleFlag bool
 var scheduleRunInFlag string
 var scheduleRevertInFlag string
+var listRemoteTemplatesFlag bool
 
 func init() {
 	RootCmd.AddCommand(runCmd)
+	runCmd.Flags().BoolVar(&listRemoteTemplatesFlag, "list", false, "List templates available at https://github.com/wallix/awless-templates")
 	runCmd.Flags().BoolVar(&scheduleFlag, "schedule", false, "Schedule the execution of this template")
 	runCmd.Flags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this template")
 	runCmd.Flags().StringVar(&scheduleRevertInFlag, "revert-in", "", "Schedule the revertion of this template")
@@ -78,6 +82,10 @@ var runCmd = &cobra.Command{
 	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if listRemoteTemplatesFlag {
+			exitOn(listRemoteTemplates())
+			return nil
+		}
 		if len(args) < 1 {
 			return errors.New("missing PATH arg (filepath or url)")
 		}
@@ -239,14 +247,13 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 	awsDriver.SetLogger(logger.DefaultLogger)
 
-	if err := templ.DryRun(awsDriver); err != nil {
+	if err = templ.DryRun(awsDriver); err != nil {
 		switch t := err.(type) {
 		case *template.Errors:
 			errs, _ := t.Errors()
 			for _, e := range errs {
 				logger.Errorf(e.Error())
 			}
-
 		}
 		exitOn(errors.New("Dryrun failed"))
 	}
@@ -461,6 +468,11 @@ const (
 	FILE_EXT            = ".aws"
 )
 
+type templateMetadata struct {
+	Title, Name string
+	Tags        []string
+}
+
 func getTemplateText(path string) ([]byte, error) {
 	if strings.HasPrefix(path, "repo:") {
 		path = fmt.Sprintf("%s/%s", DEFAULT_REPO_PREFIX, strings.TrimPrefix(path[5:], "/"))
@@ -469,19 +481,8 @@ func getTemplateText(path string) ([]byte, error) {
 
 	if strings.HasPrefix(path, "http") {
 		logger.ExtraVerbosef("fetching remote template at '%s'", path)
-		resp, err := http.Get(path)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("'%s' when fetching template at '%s'", resp.Status, path)
-		}
-
-		return ioutil.ReadAll(resp.Body)
+		return readHttpContent(path)
 	}
-
 	return ioutil.ReadFile(path)
 }
 
@@ -498,6 +499,39 @@ func removeComments(b []byte) []byte {
 	}
 
 	return cleaned.Bytes()
+}
+
+func listRemoteTemplates() error {
+	manifestFile, err := readHttpContent(DEFAULT_REPO_PREFIX + "/manifest.json")
+	if err != nil {
+		return err
+	}
+	var remoteTemplates []*templateMetadata
+	if err = json.Unmarshal(manifestFile, &remoteTemplates); err != nil {
+		return err
+	}
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
+	fmt.Fprintln(w, "Title\tTags\tRun it with")
+	fmt.Fprintln(w, "-----\t----\t-----------")
+	for _, tpl := range remoteTemplates {
+		fmt.Fprintln(w, fmt.Sprintf("%s\t%s\tawless run repo:%s -v", tpl.Title, strings.Join(tpl.Tags, ","), tpl.Name))
+	}
+	w.Flush()
+	return nil
+}
+
+func readHttpContent(path string) ([]byte, error) {
+	resp, err := http.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("'%s' when fetching '%s'", resp.Status, path)
+	}
+
+	return ioutil.ReadAll(resp.Body)
 }
 
 func isQuoted(s string) bool {
