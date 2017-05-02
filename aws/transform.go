@@ -167,7 +167,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 						return
 					}
 					if err != nil {
-						errc <- err
+						errc <- fmt.Errorf("type [%s]: prop '%v': %s", res.Type(), p, err)
 					}
 					resultc <- keyValResult{p, val}
 				}
@@ -175,7 +175,7 @@ func newResource(source interface{}) (*graph.Resource, error) {
 			if t.fetch != nil {
 				val, err := t.fetch(source)
 				if err != nil {
-					errc <- err
+					errc <- fmt.Errorf("type [%s]: prop '%v': %s", res.Type(), p, err)
 				}
 				resultc <- keyValResult{p, val}
 			}
@@ -327,11 +327,11 @@ var extractFieldFn = func(field string) transformFn {
 	return func(i interface{}) (interface{}, error) {
 		value := reflect.ValueOf(i)
 		if value.Kind() != reflect.Ptr {
-			return nil, fmt.Errorf("extract field: not a pointer but a %T", i)
+			return nil, fmt.Errorf("extract field '%s': not a pointer but a %T", field, i)
 		}
 		struc := value.Elem()
 		if struc.Kind() != reflect.Struct {
-			return nil, fmt.Errorf("extract field: not a struct pointer but a %T", i)
+			return nil, fmt.Errorf("extract field '%s': not a struct pointer but a %T", field, i)
 		}
 
 		structField := struc.FieldByName(field)

@@ -204,7 +204,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Image:          {name: "ImageId", transform: extractValueFn},
 		properties.Type:           {name: "InstanceType", transform: extractValueFn},
 		properties.KeyPair:        {name: "KeyName", transform: extractValueFn},
-		properties.SecurityGroups: {name: "SecurityGroups", transform: extractStringSliceValues("GroupId")},
+		properties.SecurityGroups: {name: "SecurityGroups", transform: extractStringPointerSliceValues},
 		properties.SpotPrice:      {name: "SpotPrice", transform: extractValueFn},
 		properties.UserData:       {name: "Userdata", transform: extractValueFn},
 	},
