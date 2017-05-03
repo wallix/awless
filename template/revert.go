@@ -32,7 +32,16 @@ func (te *Template) Revert() (*Template, error) {
 			}
 
 			switch cmd.Action {
-			case "start", "stop", "attach", "detach":
+			case "attach":
+				switch cmd.Entity {
+				case "routetable", "elasticip":
+					params = append(params, fmt.Sprintf("association=%s", cmd.CmdResult))
+				default:
+					for k, v := range cmd.Params {
+						params = append(params, fmt.Sprintf("%s=%v", k, v))
+					}
+				}
+			case "start", "stop", "detach":
 				switch cmd.Entity {
 				case "routetable":
 					params = append(params, fmt.Sprintf("association=%s", cmd.CmdResult))
@@ -56,8 +65,6 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"]))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm":
 					params = append(params, fmt.Sprintf("name=%s", cmd.CmdResult))
-				case "elasticip":
-					params = append(params, fmt.Sprintf("allocation=%s", cmd.CmdResult))
 				default:
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 				}
@@ -116,7 +123,7 @@ func isRevertible(cmd *ast.CommandNode) bool {
 		return false
 	}
 
-	if cmd.Action == "check" || cmd.Action == "copy" {
+	if cmd.Action == "check" {
 		return false
 	}
 	if cmd.Entity == "record" && (cmd.Action == "create" || cmd.Action == "delete") {

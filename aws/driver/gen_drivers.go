@@ -279,6 +279,18 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Elasticip, nil
 
+	case "attachelasticip":
+		if d.dryRun {
+			return d.Attach_Elasticip_DryRun, nil
+		}
+		return d.Attach_Elasticip, nil
+
+	case "detachelasticip":
+		if d.dryRun {
+			return d.Detach_Elasticip_DryRun, nil
+		}
+		return d.Detach_Elasticip, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

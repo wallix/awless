@@ -1817,8 +1817,8 @@ func (d *Ec2Driver) Delete_Elasticip_DryRun(params map[string]interface{}) (inte
 	var err error
 
 	// Extra params
-	if _, ok := params["allocation"]; ok {
-		err = setFieldWithType(params["allocation"], input, "AllocationId", awsstr)
+	if _, ok := params["id"]; ok {
+		err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -1849,8 +1849,8 @@ func (d *Ec2Driver) Delete_Elasticip(params map[string]interface{}) (interface{}
 	var err error
 
 	// Extra params
-	if _, ok := params["allocation"]; ok {
-		err = setFieldWithType(params["allocation"], input, "AllocationId", awsstr)
+	if _, ok := params["id"]; ok {
+		err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -1871,6 +1871,156 @@ func (d *Ec2Driver) Delete_Elasticip(params map[string]interface{}) (interface{}
 	}
 	d.logger.ExtraVerbosef("ec2.ReleaseAddress call took %s", time.Since(start))
 	d.logger.Info("delete elasticip done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Attach_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AssociateAddressInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["instance"]; ok {
+		err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["networkinterface"]; ok {
+		err = setFieldWithType(params["networkinterface"], input, "NetworkInterfaceId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["privateip"]; ok {
+		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["allow-reassociation"]; ok {
+		err = setFieldWithType(params["allow-reassociation"], input, "AllowReassociation", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.AssociateAddress(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("elasticip")
+			d.logger.Verbose("dry run: attach elasticip ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: attach elasticip: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Attach_Elasticip(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AssociateAddressInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["instance"]; ok {
+		err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["networkinterface"]; ok {
+		err = setFieldWithType(params["networkinterface"], input, "NetworkInterfaceId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["privateip"]; ok {
+		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["allow-reassociation"]; ok {
+		err = setFieldWithType(params["allow-reassociation"], input, "AllowReassociation", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.AssociateAddressOutput
+	output, err = d.AssociateAddress(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("attach elasticip: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.AssociateAddress call took %s", time.Since(start))
+	id := aws.StringValue(output.AssociationId)
+
+	d.logger.Infof("attach elasticip '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Detach_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DisassociateAddressInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.DisassociateAddress(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("elasticip")
+			d.logger.Verbose("dry run: detach elasticip ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: detach elasticip: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Detach_Elasticip(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DisassociateAddressInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.DisassociateAddressOutput
+	output, err = d.DisassociateAddress(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("detach elasticip: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DisassociateAddress call took %s", time.Since(start))
+	d.logger.Info("detach elasticip done")
 	return output, nil
 }
 

@@ -69,7 +69,11 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *ec2.AvailabilityZone:
 		res = graph.InitResource(cloud.AvailabilityZone, awssdk.StringValue(ss.ZoneName))
 	case *ec2.Address:
-		res = graph.InitResource(cloud.ElasticIP, awssdk.StringValue(ss.PublicIp))
+		if awssdk.StringValue(ss.AllocationId) != "" {
+			res = graph.InitResource(cloud.ElasticIP, awssdk.StringValue(ss.AllocationId))
+		} else {
+			res = graph.InitResource(cloud.ElasticIP, awssdk.StringValue(ss.PublicIp))
+		}
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
 		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))

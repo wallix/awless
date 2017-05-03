@@ -60,6 +60,8 @@ var APIPerTemplateDefName = map[string]string{
 	"deletekeypair":             "ec2",
 	"createelasticip":           "ec2",
 	"deleteelasticip":           "ec2",
+	"attachelasticip":           "ec2",
+	"detachelasticip":           "ec2",
 	"createloadbalancer":        "elbv2",
 	"deleteloadbalancer":        "elbv2",
 	"checkloadbalancer":         "elbv2",
@@ -387,7 +389,21 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "elasticip",
 		Api:            "ec2",
 		RequiredParams: []string{},
-		ExtraParams:    []string{"allocation", "ip"},
+		ExtraParams:    []string{"id", "ip"},
+	},
+	"attachelasticip": {
+		Action:         "attach",
+		Entity:         "elasticip",
+		Api:            "ec2",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{"allow-reassociation", "instance", "networkinterface", "privateip"},
+	},
+	"detachelasticip": {
+		Action:         "detach",
+		Entity:         "elasticip",
+		Api:            "ec2",
+		RequiredParams: []string{"association"},
+		ExtraParams:    []string{},
 	},
 	"createloadbalancer": {
 		Action:         "create",
@@ -851,6 +867,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "keypair")
 	supported["create"] = append(supported["create"], "elasticip")
 	supported["delete"] = append(supported["delete"], "elasticip")
+	supported["attach"] = append(supported["attach"], "elasticip")
+	supported["detach"] = append(supported["detach"], "elasticip")
 	supported["create"] = append(supported["create"], "loadbalancer")
 	supported["delete"] = append(supported["delete"], "loadbalancer")
 	supported["check"] = append(supported["check"], "loadbalancer")

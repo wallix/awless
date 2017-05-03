@@ -118,9 +118,10 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Messages},
 	},
 	cloud.ElasticIP: {
+		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.PublicIP},
 		StringColumnDefinition{Prop: properties.PrivateIP},
-		StringColumnDefinition{Prop: properties.Allocation},
+		StringColumnDefinition{Prop: properties.Association},
 	},
 	// Loadbalancer
 	cloud.LoadBalancer: {

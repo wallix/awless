@@ -392,8 +392,26 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.ElasticIP, ApiMethod: "ReleaseAddress", Input: "ReleaseAddressInput", Output: "ReleaseAddressOutput",
 				ExtraParams: []param{
-					{AwsField: "AllocationId", TemplateName: "allocation", AwsType: "awsstr"},
+					{AwsField: "AllocationId", TemplateName: "id", AwsType: "awsstr"},
 					{AwsField: "PublicIp", TemplateName: "ip", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "attach", Entity: cloud.ElasticIP, ApiMethod: "AssociateAddress", Input: "AssociateAddressInput", Output: "AssociateAddressOutput", OutputExtractor: "aws.StringValue(output.AssociationId)",
+				RequiredParams: []param{
+					{AwsField: "AllocationId", TemplateName: "id", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
+					{AwsField: "NetworkInterfaceId", TemplateName: "networkinterface", AwsType: "awsstr"},
+					{AwsField: "PrivateIpAddress", TemplateName: "privateip", AwsType: "awsstr"},
+					{AwsField: "AllowReassociation", TemplateName: "allow-reassociation", AwsType: "awsbool"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.ElasticIP, ApiMethod: "DisassociateAddress", Input: "DisassociateAddressInput", Output: "DisassociateAddressOutput",
+				RequiredParams: []param{
+					{AwsField: "AssociationId", TemplateName: "association", AwsType: "awsstr"},
 				},
 			},
 		},
