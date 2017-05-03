@@ -83,6 +83,7 @@ var ResourceTypes = []string{
 	"availabilityzone",
 	"image",
 	"elasticip",
+	"snapshot",
 	"loadbalancer",
 	"targetgroup",
 	"listener",
@@ -135,6 +136,7 @@ var ServicePerResourceType = map[string]string{
 	"availabilityzone":    "infra",
 	"image":               "infra",
 	"elasticip":           "infra",
+	"snapshot":            "infra",
 	"loadbalancer":        "infra",
 	"targetgroup":         "infra",
 	"listener":            "infra",
@@ -172,6 +174,7 @@ var APIPerResourceType = map[string]string{
 	"availabilityzone":    "ec2",
 	"image":               "ec2",
 	"elasticip":           "ec2",
+	"snapshot":            "ec2",
 	"loadbalancer":        "elbv2",
 	"targetgroup":         "elbv2",
 	"listener":            "elbv2",
@@ -247,6 +250,7 @@ func (s *Infra) ResourceTypes() []string {
 		"availabilityzone",
 		"image",
 		"elasticip",
+		"snapshot",
 		"loadbalancer",
 		"targetgroup",
 		"listener",
@@ -279,6 +283,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var availabilityzoneList []*ec2.AvailabilityZone
 	var imageList []*ec2.Image
 	var elasticipList []*ec2.Address
+	var snapshotList []*ec2.Snapshot
 	var loadbalancerList []*elbv2.LoadBalancer
 	var targetgroupList []*elbv2.TargetGroup
 	var listenerList []*elbv2.Listener
@@ -466,6 +471,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[elasticip]")
+	}
+	if s.config.getBool("aws.infra.snapshot.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, snapshotList, err = s.fetch_all_snapshot_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[snapshot]")
 	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
 		wg.Add(1)
@@ -783,6 +804,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.snapshot.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range snapshotList {
+				for _, fn := range addParentsFns["snapshot"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
 		wg.Add(1)
 		go func() {
@@ -952,6 +988,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "elasticip":
 		graph, _, err := s.fetch_all_elasticip_graph()
+		return graph, err
+	case "snapshot":
+		graph, _, err := s.fetch_all_snapshot_graph()
 		return graph, err
 	case "loadbalancer":
 		graph, _, err := s.fetch_all_loadbalancer_graph()
@@ -1248,6 +1287,31 @@ func (s *Infra) fetch_all_elasticip_graph() (*graph.Graph, []*ec2.Address, error
 
 	return g, cloudResources, nil
 
+}
+
+func (s *Infra) fetch_all_snapshot_graph() (*graph.Graph, []*ec2.Snapshot, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ec2.Snapshot
+	var badResErr error
+	err := s.DescribeSnapshotsPages(&ec2.DescribeSnapshotsInput{OwnerIds: []*string{awssdk.String("self")}},
+		func(out *ec2.DescribeSnapshotsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Snapshots {
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
 }
 
 func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalancer, error) {

@@ -30,6 +30,7 @@ var entities = map[Entity]struct{}{
 	"s3object":            {},
 	"scalingpolicy":       {},
 	"securitygroup":       {},
+	"snapshot":            {},
 	"subnet":              {},
 	"subscription":        {},
 	"tag":                 {},

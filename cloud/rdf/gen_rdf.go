@@ -87,6 +87,7 @@ const (
 	Image                     = "cloud:image"
 	InboundRules              = "net:inboundRules"
 	InlinePolicies            = "cloud:inlinePolicies"
+	Instances                 = "cloud:instances"
 	InsufficientDataActions   = "cloud:insufficientDataActions"
 	IOPS                      = "cloud:iops"
 	IPType                    = "net:ipType"
@@ -128,6 +129,7 @@ const (
 	Private                   = "cloud:private"
 	PrivateIP                 = "net:privateIP"
 	Profile                   = "cloud:profile"
+	Progress                  = "cloud:progress"
 	Protocol                  = "net:protocol"
 	Public                    = "cloud:public"
 	PublicDNS                 = "cloud:publicDNS"
@@ -166,6 +168,7 @@ const (
 	Value                     = "cloud:value"
 	Version                   = "cloud:version"
 	Virtualization            = "cloud:virtualization"
+	Volume                    = "cloud:volume"
 	Vpc                       = "cloud:vpc"
 	Vpcs                      = "cloud:vpcs"
 	Weight                    = "cloud:weight"
@@ -240,6 +243,7 @@ var Labels = map[string]string{
 	properties.Image:                     Image,
 	properties.InboundRules:              InboundRules,
 	properties.InlinePolicies:            InlinePolicies,
+	properties.Instances:                 Instances,
 	properties.InsufficientDataActions:   InsufficientDataActions,
 	properties.IOPS:                      IOPS,
 	properties.IPType:                    IPType,
@@ -281,6 +285,7 @@ var Labels = map[string]string{
 	properties.Private:                   Private,
 	properties.PrivateIP:                 PrivateIP,
 	properties.Profile:                   Profile,
+	properties.Progress:                  Progress,
 	properties.Protocol:                  Protocol,
 	properties.Public:                    Public,
 	properties.PublicDNS:                 PublicDNS,
@@ -319,6 +324,7 @@ var Labels = map[string]string{
 	properties.Value:                     Value,
 	properties.Version:                   Version,
 	properties.Virtualization:            Virtualization,
+	properties.Volume:                    Volume,
 	properties.Vpc:                       Vpc,
 	properties.Vpcs:                      Vpcs,
 	properties.Weight:                    Weight,
@@ -393,6 +399,7 @@ var Properties = RDFProperties{
 	Image:                   {ID: Image, RdfType: "rdf:Property", RdfsLabel: "Image", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	InboundRules:            {ID: InboundRules, RdfType: "rdf:Property", RdfsLabel: "InboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
 	InlinePolicies:          {ID: InlinePolicies, RdfType: "rdf:Property", RdfsLabel: "InlinePolicies", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	Instances:               {ID: Instances, RdfType: "rdf:Property", RdfsLabel: "Instances", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	InsufficientDataActions: {ID: InsufficientDataActions, RdfType: "rdf:Property", RdfsLabel: "InsufficientDataActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	IOPS:                     {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	IPType:                   {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -434,6 +441,7 @@ var Properties = RDFProperties{
 	Private:                  {ID: Private, RdfType: "rdf:Property", RdfsLabel: "Private", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PrivateIP:                {ID: PrivateIP, RdfType: "rdf:Property", RdfsLabel: "PrivateIP", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Profile:                  {ID: Profile, RdfType: "rdf:Property", RdfsLabel: "Profile", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Progress:                 {ID: Progress, RdfType: "rdf:Property", RdfsLabel: "Progress", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Protocol:                 {ID: Protocol, RdfType: "rdf:Property", RdfsLabel: "Protocol", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Public:                   {ID: Public, RdfType: "rdf:Property", RdfsLabel: "Public", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	PublicDNS:                {ID: PublicDNS, RdfType: "rdf:Property", RdfsLabel: "PublicDNS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -472,6 +480,7 @@ var Properties = RDFProperties{
 	Value:                   {ID: Value, RdfType: "rdf:Property", RdfsLabel: "Value", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Version:                 {ID: Version, RdfType: "rdf:Property", RdfsLabel: "Version", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Virtualization:          {ID: Virtualization, RdfType: "rdf:Property", RdfsLabel: "Virtualization", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Volume:                  {ID: Volume, RdfType: "rdf:Property", RdfsLabel: "Volume", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Vpc:                     {ID: Vpc, RdfType: "rdf:Property", RdfsLabel: "Vpc", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Vpcs:                    {ID: Vpcs, RdfType: "rdf:Property", RdfsLabel: "Vpcs", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	Weight:                  {ID: Weight, RdfType: "rdf:Property", RdfsLabel: "Weight", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

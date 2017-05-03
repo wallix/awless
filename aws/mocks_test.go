@@ -76,6 +76,10 @@ func (m *mockEc2) DescribeVolumesPages(input *ec2.DescribeVolumesInput, fn func(
 	fn(&ec2.DescribeVolumesOutput{}, true)
 	return nil
 }
+func (m *mockEc2) DescribeSnapshotsPages(input *ec2.DescribeSnapshotsInput, fn func(p *ec2.DescribeSnapshotsOutput, lastPage bool) (shouldContinue bool)) error {
+	fn(&ec2.DescribeSnapshotsOutput{}, true)
+	return nil
+}
 func (m *mockEc2) DescribeAvailabilityZones(input *ec2.DescribeAvailabilityZonesInput) (*ec2.DescribeAvailabilityZonesOutput, error) {
 	return &ec2.DescribeAvailabilityZonesOutput{}, nil
 }

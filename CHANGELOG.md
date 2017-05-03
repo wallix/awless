@@ -9,6 +9,7 @@
 - Listing templates available at `https://github.com/wallix/awless-templates` with `awless run --list`.
 - Create/delete and list Lambda functions: `awless list functions` / `awless create/delete function`
 - Create/delete/attach/detach and list elastic IPs: `awless list elasticips` / `awless create/delete/attach/detach elasticip`
+- Create/delete and list volume snapshots: `awless list snapshots` / `awless create/delete snapshot`
 - Create/delete and list autoscaling launch configurations, scaling policies and scaling groups
 - Create/delete/start/stop/attach/detach and list cloudwatch alarms. List cloudwatch metrics.
 - List EC2 images (AMIs) of which you are the owner: `awless list images`

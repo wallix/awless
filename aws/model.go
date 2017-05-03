@@ -81,6 +81,17 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Encrypted:        {name: "Encrypted", transform: extractValueFn},
 		properties.Created:          {name: "CreateTime", transform: extractTimeFn},
 		properties.AvailabilityZone: {name: "AvailabilityZone", transform: extractValueFn},
+		properties.Instances:        {name: "Attachments", transform: extractStringSliceValues("InstanceId")},
+	},
+	cloud.Snapshot: {
+		properties.Description: {name: "Description", transform: extractValueFn},
+		properties.Encrypted:   {name: "Encrypted", transform: extractValueFn},
+		properties.Owner:       {name: "OwnerId", transform: extractValueFn},
+		properties.Progress:    {name: "Progress", transform: extractValueFn},
+		properties.Created:     {name: "StartTime", transform: extractValueFn},
+		properties.State:       {name: "State", transform: extractValueFn},
+		properties.Size:        {name: "VolumeSize", transform: extractValueFn},
+		properties.Volume:      {name: "VolumeId", transform: extractValueFn},
 	},
 	cloud.Image: {
 		properties.Name:           {name: "Name", transform: extractValueFn},

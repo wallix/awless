@@ -74,6 +74,10 @@ var addParentsFns = map[string][]addParentFn{
 		addRegionParent,
 		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", relation: DEPENDING_ON}.build(),
 	},
+	cloud.Snapshot: {
+		addRegionParent,
+		funcBuilder{parent: cloud.Volume, fieldName: "VolumeId", relation: DEPENDING_ON}.build(),
+	},
 	// Loadbalancer
 	cloud.LoadBalancer: {
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),

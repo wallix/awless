@@ -43,6 +43,7 @@ const (
 	InternetGateway  string = "internetgateway"
 	RouteTable       string = "routetable"
 	ElasticIP        string = "elasticip"
+	Snapshot         string = "snapshot"
 	//loadbalancer
 	LoadBalancer string = "loadbalancer"
 	TargetGroup  string = "targetgroup"

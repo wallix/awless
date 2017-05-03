@@ -108,8 +108,9 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.State},
 		StorageColumnDefinition{Unit: gb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 		StringColumnDefinition{Prop: properties.Encrypted},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		StringColumnDefinition{Prop: properties.AvailabilityZone, Friendly: "Zone"},
+		StringColumnDefinition{Prop: properties.Instances},
 	},
 	cloud.AvailabilityZone: {
 		StringColumnDefinition{Prop: properties.Name},
@@ -122,6 +123,16 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.PublicIP},
 		StringColumnDefinition{Prop: properties.PrivateIP},
 		StringColumnDefinition{Prop: properties.Association},
+	},
+	cloud.Snapshot: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Volume},
+		StringColumnDefinition{Prop: properties.Encrypted},
+		StringColumnDefinition{Prop: properties.Owner},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Progress},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+		StorageColumnDefinition{Unit: gb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 	},
 	// Loadbalancer
 	cloud.LoadBalancer: {

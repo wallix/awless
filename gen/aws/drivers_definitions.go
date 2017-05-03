@@ -281,6 +281,22 @@ var DriversDefs = []driversDef{
 					{AwsField: "Force", TemplateName: "force", AwsType: "awsbool"},
 				},
 			},
+			// Snapshot
+			{
+				Action: "create", Entity: cloud.Snapshot, ApiMethod: "CreateSnapshot", Input: "CreateSnapshotInput", Output: "Snapshot", OutputExtractor: "aws.StringValue(output.SnapshotId)",
+				RequiredParams: []param{
+					{AwsField: "VolumeId", TemplateName: "volume", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Snapshot, ApiMethod: "DeleteSnapshot", Input: "DeleteSnapshotInput", Output: "DeleteSnapshotOutput",
+				RequiredParams: []param{
+					{AwsField: "SnapshotId", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
 			// INTERNET GATEWAYS
 			{
 				Action: "create", Entity: cloud.InternetGateway, Input: "CreateInternetGatewayInput", Output: "CreateInternetGatewayOutput", ApiMethod: "CreateInternetGateway", OutputExtractor: "aws.StringValue(output.InternetGateway.InternetGatewayId)",

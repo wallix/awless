@@ -74,6 +74,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		} else {
 			res = graph.InitResource(cloud.ElasticIP, awssdk.StringValue(ss.PublicIp))
 		}
+	case *ec2.Snapshot:
+		res = graph.InitResource(cloud.Snapshot, awssdk.StringValue(ss.SnapshotId))
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
 		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))

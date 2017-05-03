@@ -1191,6 +1191,120 @@ func (d *Ec2Driver) Detach_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Create_Snapshot_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateSnapshotInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["volume"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.CreateSnapshot(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("snapshot")
+			d.logger.Verbose("dry run: create snapshot ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: create snapshot: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Create_Snapshot(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateSnapshotInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["volume"], input, "VolumeId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.Snapshot
+	output, err = d.CreateSnapshot(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create snapshot: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.CreateSnapshot call took %s", time.Since(start))
+	id := aws.StringValue(output.SnapshotId)
+
+	d.logger.Infof("create snapshot '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Snapshot_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteSnapshotInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "SnapshotId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.DeleteSnapshot(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("snapshot")
+			d.logger.Verbose("dry run: delete snapshot ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: delete snapshot: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Snapshot(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteSnapshotInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "SnapshotId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.DeleteSnapshotOutput
+	output, err = d.DeleteSnapshot(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete snapshot: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DeleteSnapshot call took %s", time.Since(start))
+	d.logger.Info("delete snapshot done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *Ec2Driver) Create_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)

@@ -183,6 +183,18 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Detach_Volume, nil
 
+	case "createsnapshot":
+		if d.dryRun {
+			return d.Create_Snapshot_DryRun, nil
+		}
+		return d.Create_Snapshot, nil
+
+	case "deletesnapshot":
+		if d.dryRun {
+			return d.Delete_Snapshot_DryRun, nil
+		}
+		return d.Delete_Snapshot, nil
+
 	case "createinternetgateway":
 		if d.dryRun {
 			return d.Create_Internetgateway_DryRun, nil

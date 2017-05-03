@@ -44,6 +44,8 @@ var APIPerTemplateDefName = map[string]string{
 	"deletevolume":              "ec2",
 	"attachvolume":              "ec2",
 	"detachvolume":              "ec2",
+	"createsnapshot":            "ec2",
+	"deletesnapshot":            "ec2",
 	"createinternetgateway":     "ec2",
 	"deleteinternetgateway":     "ec2",
 	"attachinternetgateway":     "ec2",
@@ -279,6 +281,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Api:            "ec2",
 		RequiredParams: []string{"device", "id", "instance"},
 		ExtraParams:    []string{"force"},
+	},
+	"createsnapshot": {
+		Action:         "create",
+		Entity:         "snapshot",
+		Api:            "ec2",
+		RequiredParams: []string{"volume"},
+		ExtraParams:    []string{"description"},
+	},
+	"deletesnapshot": {
+		Action:         "delete",
+		Entity:         "snapshot",
+		Api:            "ec2",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
 	},
 	"createinternetgateway": {
 		Action:         "create",
@@ -859,6 +875,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")
 	supported["detach"] = append(supported["detach"], "volume")
+	supported["create"] = append(supported["create"], "snapshot")
+	supported["delete"] = append(supported["delete"], "snapshot")
 	supported["create"] = append(supported["create"], "internetgateway")
 	supported["delete"] = append(supported["delete"], "internetgateway")
 	supported["attach"] = append(supported["attach"], "internetgateway")
