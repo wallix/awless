@@ -110,6 +110,11 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Region:   {name: "RegionName", transform: extractValueFn},
 		properties.Messages: {name: "Messages", transform: extractStringSliceValues("Message")},
 	},
+	cloud.ElasticIP: {
+		properties.PublicIP:   {name: "PublicIp", transform: extractValueFn},
+		properties.PrivateIP:  {name: "PrivateIpAddress", transform: extractValueFn},
+		properties.Allocation: {name: "AllocationId", transform: extractValueFn},
+	},
 	// LoadBalancer
 	cloud.LoadBalancer: {
 		properties.Name:              {name: "LoadBalancerName", transform: extractValueFn},

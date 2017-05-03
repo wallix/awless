@@ -26,6 +26,7 @@ const (
 	Affinity                  = "cloud:affinity"
 	AlarmNames                = "cloud:alarmNames"
 	AlarmActions              = "cloud:alarmActions"
+	Allocation                = "cloud:allocation"
 	ApproximateMessageCount   = "cloud:approximateMessageCount"
 	Architecture              = "cloud:architecture"
 	Arn                       = "cloud:arn"
@@ -178,6 +179,7 @@ var Labels = map[string]string{
 	properties.Affinity:                  Affinity,
 	properties.AlarmNames:                AlarmNames,
 	properties.AlarmActions:              AlarmActions,
+	properties.Allocation:                Allocation,
 	properties.ApproximateMessageCount:   ApproximateMessageCount,
 	properties.Architecture:              Architecture,
 	properties.Arn:                       Arn,
@@ -330,6 +332,7 @@ var Properties = RDFProperties{
 	Affinity:                {ID: Affinity, RdfType: "rdf:Property", RdfsLabel: "Affinity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AlarmNames:              {ID: AlarmNames, RdfType: "rdf:Property", RdfsLabel: "AlarmNames", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	AlarmActions:            {ID: AlarmActions, RdfType: "rdf:Property", RdfsLabel: "AlarmActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	Allocation:              {ID: Allocation, RdfType: "rdf:Property", RdfsLabel: "Allocation", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	ApproximateMessageCount: {ID: ApproximateMessageCount, RdfType: "rdf:Property", RdfsLabel: "ApproximateMessageCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Arn:                     {ID: Arn, RdfType: "rdf:Property", RdfsLabel: "Arn", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

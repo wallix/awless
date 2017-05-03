@@ -21,6 +21,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Affinity", RDFLabel: fmt.Sprintf("%s:affinity", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "AlarmNames", RDFLabel: fmt.Sprintf("%s:alarmNames", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "AlarmActions", RDFLabel: fmt.Sprintf("%s:alarmActions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "Allocation", RDFLabel: fmt.Sprintf("%s:allocation", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "ApproximateMessageCount", RDFLabel: fmt.Sprintf("%s:approximateMessageCount", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Architecture", RDFLabel: fmt.Sprintf("%s:architecture", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Arn", RDFLabel: fmt.Sprintf("%s:arn", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

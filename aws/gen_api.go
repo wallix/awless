@@ -82,6 +82,7 @@ var ResourceTypes = []string{
 	"routetable",
 	"availabilityzone",
 	"image",
+	"elasticip",
 	"loadbalancer",
 	"targetgroup",
 	"listener",
@@ -133,6 +134,7 @@ var ServicePerResourceType = map[string]string{
 	"routetable":          "infra",
 	"availabilityzone":    "infra",
 	"image":               "infra",
+	"elasticip":           "infra",
 	"loadbalancer":        "infra",
 	"targetgroup":         "infra",
 	"listener":            "infra",
@@ -169,6 +171,7 @@ var APIPerResourceType = map[string]string{
 	"routetable":          "ec2",
 	"availabilityzone":    "ec2",
 	"image":               "ec2",
+	"elasticip":           "ec2",
 	"loadbalancer":        "elbv2",
 	"targetgroup":         "elbv2",
 	"listener":            "elbv2",
@@ -243,6 +246,7 @@ func (s *Infra) ResourceTypes() []string {
 		"routetable",
 		"availabilityzone",
 		"image",
+		"elasticip",
 		"loadbalancer",
 		"targetgroup",
 		"listener",
@@ -274,6 +278,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var routetableList []*ec2.RouteTable
 	var availabilityzoneList []*ec2.AvailabilityZone
 	var imageList []*ec2.Image
+	var elasticipList []*ec2.Address
 	var loadbalancerList []*elbv2.LoadBalancer
 	var targetgroupList []*elbv2.TargetGroup
 	var listenerList []*elbv2.Listener
@@ -445,6 +450,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[image]")
+	}
+	if s.config.getBool("aws.infra.elasticip.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, elasticipList, err = s.fetch_all_elasticip_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[elasticip]")
 	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
 		wg.Add(1)
@@ -747,6 +768,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.elasticip.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range elasticipList {
+				for _, fn := range addParentsFns["elasticip"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
 		wg.Add(1)
 		go func() {
@@ -913,6 +949,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "image":
 		graph, _, err := s.fetch_all_image_graph()
+		return graph, err
+	case "elasticip":
+		graph, _, err := s.fetch_all_elasticip_graph()
 		return graph, err
 	case "loadbalancer":
 		graph, _, err := s.fetch_all_loadbalancer_graph()
@@ -1173,6 +1212,30 @@ func (s *Infra) fetch_all_image_graph() (*graph.Graph, []*ec2.Image, error) {
 	}
 
 	for _, output := range out.Images {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
+	}
+
+	return g, cloudResources, nil
+
+}
+
+func (s *Infra) fetch_all_elasticip_graph() (*graph.Graph, []*ec2.Address, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ec2.Address
+
+	out, err := s.DescribeAddresses(&ec2.DescribeAddressesInput{})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.Addresses {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

@@ -68,6 +68,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.RouteTable, awssdk.StringValue(ss.RouteTableId))
 	case *ec2.AvailabilityZone:
 		res = graph.InitResource(cloud.AvailabilityZone, awssdk.StringValue(ss.ZoneName))
+	case *ec2.Address:
+		res = graph.InitResource(cloud.ElasticIP, awssdk.StringValue(ss.PublicIp))
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
 		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))

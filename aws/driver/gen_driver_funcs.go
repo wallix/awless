@@ -1761,6 +1761,120 @@ func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Create_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AllocateAddressInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["domain"], input, "Domain", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.AllocateAddress(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("elasticip")
+			d.logger.Verbose("dry run: create elasticip ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: create elasticip: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Create_Elasticip(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AllocateAddressInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["domain"], input, "Domain", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.AllocateAddressOutput
+	output, err = d.AllocateAddress(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create elasticip: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.AllocateAddress call took %s", time.Since(start))
+	id := aws.StringValue(output.AllocationId)
+
+	d.logger.Infof("create elasticip '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ReleaseAddressInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Extra params
+	if _, ok := params["allocation"]; ok {
+		err = setFieldWithType(params["allocation"], input, "AllocationId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["ip"]; ok {
+		err = setFieldWithType(params["ip"], input, "PublicIp", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.ReleaseAddress(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("elasticip")
+			d.logger.Verbose("dry run: delete elasticip ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: delete elasticip: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Elasticip(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ReleaseAddressInput{}
+	var err error
+
+	// Extra params
+	if _, ok := params["allocation"]; ok {
+		err = setFieldWithType(params["allocation"], input, "AllocationId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["ip"]; ok {
+		err = setFieldWithType(params["ip"], input, "PublicIp", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.ReleaseAddressOutput
+	output, err = d.ReleaseAddress(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete elasticip: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.ReleaseAddress call took %s", time.Since(start))
+	d.logger.Info("delete elasticip done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *Elbv2Driver) Create_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create loadbalancer: missing required params 'name'")

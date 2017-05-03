@@ -70,6 +70,10 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "AvailabilityZone"}.build(),
 		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
+	cloud.ElasticIP: {
+		addRegionParent,
+		funcBuilder{parent: cloud.Instance, fieldName: "InstanceId", relation: DEPENDING_ON}.build(),
+	},
 	// Loadbalancer
 	cloud.LoadBalancer: {
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),

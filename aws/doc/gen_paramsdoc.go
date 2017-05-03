@@ -18,6 +18,7 @@ limitations under the License.
 package awsdoc
 
 var generatedParamsDoc = map[string]map[string]string{
+	"attachalarm": {},
 	"attachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
@@ -72,12 +73,14 @@ var generatedParamsDoc = map[string]map[string]string{
 		"threshold":                "The value against which the specified statistic is compared",
 		"unit":                     "The unit of measure for the statistic",
 	},
-	"createautoscalinggroup": {},
 	"createbucket": {
 		"name": "",
 	},
 	"createdatabase":      {},
 	"createdbsubnetgroup": {},
+	"createelasticip": {
+		"domain": "Set to vpc to allocate the address for use with instances in a VPC",
+	},
 	"createfunction": {
 		"description": "A short, user-defined function description",
 		"handler":     "The function within your code that Lambda calls to begin execution",
@@ -135,7 +138,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	"createroutetable": {
 		"vpc": "The ID of the VPC",
 	},
-	"creates3object": {},
+	"creates3object":      {},
+	"createscalinggroup":  {},
+	"createscalingpolicy": {},
 	"createsecuritygroup": {
 		"description": "A description for the security group",
 		"name":        "The name of the security group",
@@ -189,12 +194,15 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletealarm": {
 		"name": "The alarms to be deleted",
 	},
-	"deleteautoscalinggroup": {},
 	"deletebucket": {
 		"name": "",
 	},
 	"deletedatabase":      {},
 	"deletedbsubnetgroup": {},
+	"deleteelasticip": {
+		"allocation": "[EC2-VPC] The allocation ID",
+		"ip":         "[EC2-Classic] The Elastic IP address",
+	},
 	"deletefunction": {
 		"id":      "The Lambda function to delete",
 		"version": "Using this optional parameter you can specify a function version (but not the $LATEST version) to direct AWS Lambda to delete a specific function version",
@@ -240,6 +248,8 @@ var generatedParamsDoc = map[string]map[string]string{
 		"bucket": "",
 		"name":   "",
 	},
+	"deletescalinggroup":  {},
+	"deletescalingpolicy": {},
 	"deletesecuritygroup": {
 		"id": "The ID of the security group",
 	},
@@ -268,6 +278,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletezone": {
 		"id": "The ID of the hosted zone you want to delete",
 	},
+	"detachalarm": {},
 	"detachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
@@ -294,18 +305,24 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":       "The ID of the volume",
 		"instance": "The ID of the instance",
 	},
+	"startalarm": {
+		"names": "The names of the alarms",
+	},
 	"startinstance": {
 		"id": "One or more instance IDs",
+	},
+	"stopalarm": {
+		"names": "The names of the alarms",
 	},
 	"stopinstance": {
 		"id": "One or more instance IDs",
 	},
-	"updateautoscalinggroup": {},
 	"updateinstance": {
 		"id":   "The ID of the instance",
 		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",
 		"type": "Changes the instance type to the specified value",
 	},
+	"updatescalinggroup":  {},
 	"updatesecuritygroup": {},
 	"updatesubnet": {
 		"id":     "The ID of the subnet",

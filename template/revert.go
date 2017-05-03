@@ -56,6 +56,8 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"]))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm":
 					params = append(params, fmt.Sprintf("name=%s", cmd.CmdResult))
+				case "elasticip":
+					params = append(params, fmt.Sprintf("allocation=%s", cmd.CmdResult))
 				default:
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 				}

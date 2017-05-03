@@ -62,6 +62,7 @@ var defaultsDefinitions = map[string]*Definition{
 	instanceCountDefaultsKey:   {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
 	instanceTimeoutDefaultsKey: {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
 	volumeDeviceDefaultsKey:    {defaultValue: "/dev/sdh", help: "Device name to expose to an EC2 instance"},
+	"elasticip.domain":         {defaultValue: "vpc", help: "The domain of elastic IP addresses (standard or vpc)"},
 }
 
 var deprecated = map[string]string{

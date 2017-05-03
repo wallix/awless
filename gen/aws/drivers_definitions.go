@@ -380,6 +380,22 @@ var DriversDefs = []driversDef{
 					{AwsField: "KeyName", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
+
+			// Allocate address
+			{
+				Action: "create", Entity: cloud.ElasticIP, ApiMethod: "AllocateAddress", Input: "AllocateAddressInput", Output: "AllocateAddressOutput", OutputExtractor: "aws.StringValue(output.AllocationId)", // should return PublicIp if params["domain"] == "standard"
+				RequiredParams: []param{
+					{AwsField: "Domain", TemplateName: "domain", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{},
+			},
+			{
+				Action: "delete", Entity: cloud.ElasticIP, ApiMethod: "ReleaseAddress", Input: "ReleaseAddressInput", Output: "ReleaseAddressOutput",
+				ExtraParams: []param{
+					{AwsField: "AllocationId", TemplateName: "allocation", AwsType: "awsstr"},
+					{AwsField: "PublicIp", TemplateName: "ip", AwsType: "awsstr"},
+				},
+			},
 		},
 	},
 	{

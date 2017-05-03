@@ -42,6 +42,7 @@ const (
 	InstanceProfile  string = "instanceprofile"
 	InternetGateway  string = "internetgateway"
 	RouteTable       string = "routetable"
+	ElasticIP        string = "elasticip"
 	//loadbalancer
 	LoadBalancer string = "loadbalancer"
 	TargetGroup  string = "targetgroup"

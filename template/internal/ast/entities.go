@@ -11,6 +11,7 @@ var entities = map[Entity]struct{}{
 	"bucket":              {},
 	"database":            {},
 	"dbsubnetgroup":       {},
+	"elasticip":           {},
 	"function":            {},
 	"group":               {},
 	"instance":            {},

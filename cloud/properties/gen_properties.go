@@ -24,6 +24,7 @@ const (
 	Affinity                  = "Affinity"
 	AlarmNames                = "AlarmNames"
 	AlarmActions              = "AlarmActions"
+	Allocation                = "Allocation"
 	ApproximateMessageCount   = "ApproximateMessageCount"
 	Architecture              = "Architecture"
 	Arn                       = "Arn"
