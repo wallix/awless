@@ -30,6 +30,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -706,6 +707,55 @@ func (d *Elbv2Driver) Check_Loadbalancer(params map[string]interface{}) (interfa
 			return notFoundState, nil
 		},
 		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
+
+func (d *AutoscalingDriver) Check_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"].(string); !ok {
+		return nil, errors.New("check scalinggroup: missing required params 'name'")
+	}
+
+	if _, ok := params["count"]; !ok {
+		return nil, errors.New("check scalinggroup: missing required param 'count'")
+	}
+
+	if _, ok := params["timeout"].(int); !ok {
+		return nil, errors.New("check scalinggroup: missing required int param 'timeout'")
+	}
+
+	d.logger.Verbose("params dry run: check scalinggroup ok")
+	return nil, nil
+}
+
+func (d *AutoscalingDriver) Check_Scalinggroup(params map[string]interface{}) (interface{}, error) {
+	input := &autoscaling.DescribeAutoScalingGroupsInput{}
+
+	// Required params
+	err := setFieldWithType(params["name"], input, "AutoScalingGroupNames", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+	c := &checker{
+		description: fmt.Sprintf("scalinggroup '%s'", params["name"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		checkName:   "count",
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeAutoScalingGroups(input)
+			if err != nil {
+				return "", err
+			}
+			for _, group := range output.AutoScalingGroups {
+				if aws.StringValue(group.AutoScalingGroupName) == params["name"] {
+					count := len(group.Instances) + len(group.LoadBalancerNames) + len(group.TargetGroupARNs)
+					return fmt.Sprint(count), nil
+				}
+			}
+			return "", fmt.Errorf("scalinggroup %s not found", params["name"])
+		},
+		expect: fmt.Sprint(params["count"]),
 		logger: d.logger,
 	}
 	return nil, c.check()
@@ -1437,10 +1487,14 @@ type checker struct {
 	fetchFunc   func() (string, error)
 	expect      string
 	logger      *logger.Logger
+	checkName   string
 }
 
 func (c *checker) check() error {
 	timer := time.NewTimer(c.timeout)
+	if c.checkName == "" {
+		c.checkName = "status"
+	}
 	defer timer.Stop()
 	for {
 		select {
@@ -1450,10 +1504,10 @@ func (c *checker) check() error {
 				return fmt.Errorf("check %s: %s", c.description, err)
 			}
 			if got == c.expect {
-				c.logger.Infof("check %s status '%s' done", c.description, c.expect)
+				c.logger.Infof("check %s %s '%s' done", c.description, c.checkName, c.expect)
 				return nil
 			}
-			c.logger.Infof("%s status '%s', expect '%s', retry in %s (timeout %s).", c.description, got, c.expect, c.frequency, c.timeout)
+			c.logger.Infof("%s %s '%s', expect '%s', retry in %s (timeout %s).", c.description, c.checkName, got, c.expect, c.frequency, c.timeout)
 		case <-timer.C:
 			return fmt.Errorf("timeout of %s expired", c.timeout)
 		}

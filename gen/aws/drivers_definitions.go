@@ -583,6 +583,14 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "check", Entity: cloud.ScalingGroup, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+					{TemplateName: "count"},
+					{TemplateName: "timeout"},
+				},
+			},
+			{
 				Action: "create", Entity: cloud.ScalingPolicy, ApiMethod: "PutScalingPolicy", Input: "PutScalingPolicyInput", Output: "PutScalingPolicyOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.PolicyARN)",
 				RequiredParams: []param{
 					{AwsField: "AdjustmentType", TemplateName: "adjustment-type", AwsType: "awsstr"},
