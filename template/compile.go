@@ -123,7 +123,14 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 				}
 			}
 			if !found {
-				return fmt.Errorf("%s %s: unexpected param key '%s'\n\t- required params: %s\n\t- extra params: %s\n", cmd.Action, cmd.Entity, key, strings.Join(def.Required(), ", "), strings.Join(def.Extra(), ", "))
+				var extraParams, requiredParams string
+				if len(def.Extra()) > 0 {
+					extraParams = fmt.Sprintf("\n\t- extra params: %s", strings.Join(def.Extra(), ", "))
+				}
+				if len(def.Required()) > 0 {
+					requiredParams = fmt.Sprintf("\n\t- required params: %s", strings.Join(def.Required(), ", "))
+				}
+				return fmt.Errorf("%s %s: unexpected param key '%s'%s%s\n", cmd.Action, cmd.Entity, key, requiredParams, extraParams)
 			}
 		}
 
