@@ -18,9 +18,7 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
-	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -260,15 +258,7 @@ func fetchConnectionInfo() (*graph.Graph, net.IP) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		client := &http.Client{
-			Timeout: 2 * time.Second,
-		}
-		resp, err := client.Get("http://checkip.amazonaws.com/")
-		if err == nil {
-			b, _ := ioutil.ReadAll(resp.Body)
-			resp.Body.Close()
-			myip = net.ParseIP(strings.TrimSpace(string(b)))
-		}
+		myip = getMyIP()
 	}()
 	go func() {
 		wg.Wait()

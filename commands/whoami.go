@@ -18,15 +18,23 @@ package commands
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/logger"
 )
 
+var onlyMyIPFlag bool
+
 func init() {
 	RootCmd.AddCommand(whoamiCmd)
+
+	whoamiCmd.Flags().BoolVar(&onlyMyIPFlag, "ip-only", false, "Return your IP address as seen by AWS")
 }
 
 var whoamiCmd = &cobra.Command{
@@ -37,6 +45,11 @@ var whoamiCmd = &cobra.Command{
 	Short:             "Show your account, attached (i.e. managed) and inlined policies",
 
 	Run: func(cmd *cobra.Command, args []string) {
+		if onlyMyIPFlag {
+			fmt.Println(getMyIP())
+			return
+		}
+
 		me, err := aws.AccessService.(*aws.Access).GetIdentity()
 		exitOn(err)
 
@@ -76,4 +89,14 @@ var whoamiCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func getMyIP() net.IP {
+	client := &http.Client{Timeout: 3 * time.Second}
+	if resp, err := client.Get("http://checkip.amazonaws.com/"); err == nil {
+		b, _ := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		return net.ParseIP(strings.TrimSpace(string(b)))
+	}
+	return nil
 }
