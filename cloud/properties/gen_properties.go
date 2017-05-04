@@ -149,6 +149,7 @@ const (
 	SpotInstanceRequestId     = "SpotInstanceRequestId"
 	SpotPrice                 = "SpotPrice"
 	State                     = "State"
+	StateMessage              = "StateMessage"
 	Storage                   = "Storage"
 	StorageType               = "StorageType"
 	Subnet                    = "Subnet"

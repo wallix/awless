@@ -937,6 +937,156 @@ func (d *Ec2Driver) Copy_Image(params map[string]interface{}) (interface{}, erro
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Import_Image_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ImportImageInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Extra params
+	if _, ok := params["architecture"]; ok {
+		err = setFieldWithType(params["architecture"], input, "Architecture", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["license"]; ok {
+		err = setFieldWithType(params["license"], input, "LicenseType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["platform"]; ok {
+		err = setFieldWithType(params["platform"], input, "Platform", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "RoleName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["snapshot"]; ok {
+		err = setFieldWithType(params["snapshot"], input, "DiskContainers[0]SnapshotId", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["url"]; ok {
+		err = setFieldWithType(params["url"], input, "DiskContainers[0]Url", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["bucket"]; ok {
+		err = setFieldWithType(params["bucket"], input, "DiskContainers[0]UserBucket.S3Bucket", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["s3object"]; ok {
+		err = setFieldWithType(params["s3object"], input, "DiskContainers[0]UserBucket.S3Key", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.ImportImage(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("image")
+			d.logger.Verbose("dry run: import image ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: import image: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Import_Image(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.ImportImageInput{}
+	var err error
+
+	// Extra params
+	if _, ok := params["architecture"]; ok {
+		err = setFieldWithType(params["architecture"], input, "Architecture", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["license"]; ok {
+		err = setFieldWithType(params["license"], input, "LicenseType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["platform"]; ok {
+		err = setFieldWithType(params["platform"], input, "Platform", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "RoleName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["snapshot"]; ok {
+		err = setFieldWithType(params["snapshot"], input, "DiskContainers[0]SnapshotId", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["url"]; ok {
+		err = setFieldWithType(params["url"], input, "DiskContainers[0]Url", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["bucket"]; ok {
+		err = setFieldWithType(params["bucket"], input, "DiskContainers[0]UserBucket.S3Bucket", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["s3object"]; ok {
+		err = setFieldWithType(params["s3object"], input, "DiskContainers[0]UserBucket.S3Key", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.ImportImageOutput
+	output, err = d.ImportImage(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("import image: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.ImportImage call took %s", time.Since(start))
+	id := aws.StringValue(output.ImportTaskId)
+
+	d.logger.Infof("import image '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
 func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	input.DryRun = aws.Bool(true)
@@ -1302,6 +1452,92 @@ func (d *Ec2Driver) Delete_Snapshot(params map[string]interface{}) (interface{},
 	d.logger.ExtraVerbosef("ec2.DeleteSnapshot call took %s", time.Since(start))
 	d.logger.Info("delete snapshot done")
 	return output, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Copy_Snapshot_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CopySnapshotInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["source-id"], input, "SourceSnapshotId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["encrypted"]; ok {
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.CopySnapshot(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("snapshot")
+			d.logger.Verbose("dry run: copy snapshot ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: copy snapshot: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Copy_Snapshot(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CopySnapshotInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["source-id"], input, "SourceSnapshotId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["encrypted"]; ok {
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.CopySnapshotOutput
+	output, err = d.CopySnapshot(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("copy snapshot: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.CopySnapshot call took %s", time.Since(start))
+	id := aws.StringValue(output.SnapshotId)
+
+	d.logger.Infof("copy snapshot '%s' done", id)
+	return id, nil
 }
 
 // This function was auto generated

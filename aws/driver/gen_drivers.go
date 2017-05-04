@@ -159,6 +159,18 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Copy_Image, nil
 
+	case "importimage":
+		if d.dryRun {
+			return d.Import_Image_DryRun, nil
+		}
+		return d.Import_Image, nil
+
+	case "deleteimage":
+		if d.dryRun {
+			return d.Delete_Image_DryRun, nil
+		}
+		return d.Delete_Image, nil
+
 	case "createvolume":
 		if d.dryRun {
 			return d.Create_Volume_DryRun, nil
@@ -194,6 +206,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 			return d.Delete_Snapshot_DryRun, nil
 		}
 		return d.Delete_Snapshot, nil
+
+	case "copysnapshot":
+		if d.dryRun {
+			return d.Copy_Snapshot_DryRun, nil
+		}
+		return d.Copy_Snapshot, nil
 
 	case "createinternetgateway":
 		if d.dryRun {

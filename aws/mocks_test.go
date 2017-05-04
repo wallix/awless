@@ -89,6 +89,9 @@ func (m *mockEc2) DescribeImages(input *ec2.DescribeImagesInput) (*ec2.DescribeI
 func (m *mockEc2) DescribeAddresses(input *ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error) {
 	return &ec2.DescribeAddressesOutput{}, nil
 }
+func (m *mockEc2) DescribeImportImageTasks(input *ec2.DescribeImportImageTasksInput) (*ec2.DescribeImportImageTasksOutput, error) {
+	return &ec2.DescribeImportImageTasksOutput{}, nil
+}
 
 type mockELB struct {
 	elbv2iface.ELBV2API

@@ -35,11 +35,7 @@ const (
 	awsCloudPrefix = "aws."
 
 	//Defaults
-	instanceTypeDefaultsKey    = "instance.type"
-	instanceImageDefaultsKey   = "instance.image"
-	instanceCountDefaultsKey   = "instance.count"
-	instanceTimeoutDefaultsKey = "instance.timeout"
-	volumeDeviceDefaultsKey    = "volume.device"
+	instanceImageDefaultsKey = "instance.image"
 )
 
 var configDefinitions = map[string]*Definition{
@@ -57,12 +53,13 @@ var configDefinitions = map[string]*Definition{
 }
 
 var defaultsDefinitions = map[string]*Definition{
-	instanceTypeDefaultsKey:    {defaultValue: "t2.micro", help: "AWS EC2 instance type", stdinParamProviderFn: awsconfig.StdinInstanceTypeSelector, parseParamFn: awsconfig.ParseInstanceType},
-	instanceImageDefaultsKey:   {help: "AWS EC2 AMI"},
-	instanceCountDefaultsKey:   {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
-	instanceTimeoutDefaultsKey: {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
-	volumeDeviceDefaultsKey:    {defaultValue: "/dev/sdh", help: "Device name to expose to an EC2 instance"},
-	"elasticip.domain":         {defaultValue: "vpc", help: "The domain of elastic IP addresses (standard or vpc)"},
+	"instance.type":          {defaultValue: "t2.micro", help: "AWS EC2 instance type", stdinParamProviderFn: awsconfig.StdinInstanceTypeSelector, parseParamFn: awsconfig.ParseInstanceType},
+	instanceImageDefaultsKey: {help: "AWS EC2 AMI"},
+	"instance.count":         {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
+	"instance.timeout":       {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
+	"volume.device":          {defaultValue: "/dev/sdh", help: "Device name to expose to an EC2 instance"},
+	"elasticip.domain":       {defaultValue: "vpc", help: "The domain of elastic IP addresses (standard or vpc)"},
+	"image.delete-snapshots": {defaultValue: "true", help: "Delete linked snapshots when deleting an image"},
 }
 
 var deprecated = map[string]string{
@@ -307,6 +304,16 @@ func displayDefaults() string {
 				fmt.Fprintf(t, "\t%s:\t%v\t(%[2]T)\t# %s\n", k, Defaults[k], def.help)
 			} else {
 				fmt.Fprintf(t, "\t%s:\t%v\t(%[2]T)\n", k, Defaults[k])
+			}
+		}
+	}
+	for k := range defaultsDefinitions {
+		if _, ok := Defaults[k]; !ok {
+			fmt.Fprintf(t, "\t%s:\t \t(UNSET)", k)
+			if def, ok := defaultsDefinitions[k]; ok && def.help != "" {
+				fmt.Fprintf(t, "\t# %s\n", def.help)
+			} else {
+				fmt.Fprintln(t)
 			}
 		}
 	}

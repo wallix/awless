@@ -34,6 +34,7 @@ const (
 	Vpc              string = "vpc"
 	Subnet           string = "subnet"
 	Image            string = "image"
+	ImportImageTask  string = "importimagetask"
 	SecurityGroup    string = "securitygroup"
 	AvailabilityZone string = "availabilityzone"
 	Keypair          string = "keypair"

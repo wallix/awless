@@ -1460,6 +1460,97 @@ func (d *CloudwatchDriver) getAlarm(params map[string]interface{}) (*cloudwatch.
 	return out.MetricAlarms[0], nil
 }
 
+func (d *Ec2Driver) Delete_Image_DryRun(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeregisterImageInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "ImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	if del, ok := params["delete-snapshots"]; ok && fmt.Sprint(del) == "true" {
+		var snaps []string
+		if snaps, err = d.imageSnapshots(aws.StringValue(input.ImageId)); err != nil {
+			return nil, err
+		}
+		if len(snaps) > 0 {
+			d.logger.Infof("deleting image will also delete snapshot %s (prevent that by appending `delete-snapshots=false`)", strings.Join(snaps, ", "))
+		}
+	}
+
+	_, err = d.DeregisterImage(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+			id := fakeDryRunId("image")
+			d.logger.Verbose("dry run: delete image ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: delete image: %s", err)
+}
+
+func (d *Ec2Driver) Delete_Image(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeregisterImageInput{}
+	var err error
+
+	err = setFieldWithType(params["id"], input, "ImageId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	var snaps []string
+	if del, ok := params["delete-snapshots"]; ok && fmt.Sprint(del) == "true" {
+		if snaps, err = d.imageSnapshots(aws.StringValue(input.ImageId)); err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.DeregisterImageOutput
+	output, err = d.DeregisterImage(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete image: deregister: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DeregisterImage call took %s", time.Since(start))
+	d.logger.Info("delete image done")
+
+	if del, ok := params["delete-snapshots"]; ok && fmt.Sprint(del) == "true" {
+		for _, snap := range snaps {
+			snapDelParams := map[string]interface{}{"id": snap}
+			if _, err = d.Delete_Snapshot(snapDelParams); err != nil {
+				return nil, fmt.Errorf("error while deleting snapshot %s: %s", snap, err)
+			}
+		}
+	}
+	return output, nil
+}
+
+func (d *Ec2Driver) imageSnapshots(id string) ([]string, error) {
+	var snapshots []string
+	imgs, err := d.DescribeImages(&ec2.DescribeImagesInput{ImageIds: []*string{aws.String(id)}})
+	if err != nil {
+		return snapshots, err
+	}
+	if len(imgs.Images) == 0 {
+		return snapshots, fmt.Errorf("no image found with id '%s'", id)
+	}
+	if len(imgs.Images) > 1 {
+		return snapshots, fmt.Errorf("multiple images found with id '%s'", id)
+	}
+	for _, dev := range imgs.Images[0].BlockDeviceMappings {
+		if snapshot := aws.StringValue(dev.Ebs.SnapshotId); snapshot != "" {
+			snapshots = append(snapshots, snapshot)
+		}
+	}
+	return snapshots, nil
+}
+
 func fakeDryRunId(entity string) string {
 	suffix := rand.Intn(1e6)
 	switch entity {

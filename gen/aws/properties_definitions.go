@@ -146,6 +146,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "SpotInstanceRequestId", RDFLabel: fmt.Sprintf("%s:spotInstanceRequestId", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "SpotPrice", RDFLabel: fmt.Sprintf("%s:spotPrice", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "State", RDFLabel: fmt.Sprintf("%s:state", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "StateMessage", RDFLabel: fmt.Sprintf("%s:stateMessage", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Storage", RDFLabel: fmt.Sprintf("%s:storage", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "StorageType", RDFLabel: fmt.Sprintf("%s:storageType", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Subnet", RDFLabel: fmt.Sprintf("%s:subnet", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},

@@ -19,6 +19,13 @@ package awsdoc
 
 var generatedParamsDoc = map[string]map[string]string{
 	"attachalarm": {},
+	"attachelasticip": {
+		"allow-reassociation": "[EC2-VPC] For a VPC in an EC2-Classic account, specify true to allow an Elastic IP address that is already associated with an instance or network interface to be reassociated with the specified instance or network interface",
+		"id":               "[EC2-VPC] The allocation ID",
+		"instance":         "The ID of the instance",
+		"networkinterface": "[EC2-VPC] The ID of the network interface",
+		"privateip":        "[EC2-VPC] The primary or secondary private IP address to associate with the Elastic IP address",
+	},
 	"attachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
@@ -47,6 +54,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"checkinstance":      {},
 	"checkloadbalancer":  {},
+	"checkscalinggroup":  {},
 	"checksecuritygroup": {},
 	"copyimage": {
 		"description":   "A description for the new AMI in the destination region",
@@ -54,6 +62,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":          "The name of the new AMI in the destination region",
 		"source-id":     "The ID of the AMI to copy",
 		"source-region": "The name of the region that contains the AMI to copy",
+	},
+	"copysnapshot": {
+		"description":   "A description for the EBS snapshot",
+		"encrypted":     "Specifies whether the destination snapshot should be encrypted",
+		"source-id":     "The ID of the EBS snapshot to copy",
+		"source-region": "The ID of the region that contains the snapshot to be copied",
 	},
 	"createaccesskey": {},
 	"createalarm": {
@@ -146,6 +160,10 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":        "The name of the security group",
 		"vpc":         "[EC2-VPC] The ID of the VPC",
 	},
+	"createsnapshot": {
+		"description": "A description for the snapshot",
+		"volume":      "The ID of the EBS volume",
+	},
 	"createsubnet": {
 		"availabilityzone": "The Availability Zone for the subnet",
 		"cidr":             "The IPv4 network range for the subnet, in CIDR notation",
@@ -200,8 +218,8 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletedatabase":      {},
 	"deletedbsubnetgroup": {},
 	"deleteelasticip": {
-		"allocation": "[EC2-VPC] The allocation ID",
-		"ip":         "[EC2-Classic] The Elastic IP address",
+		"id": "[EC2-VPC] The allocation ID",
+		"ip": "[EC2-Classic] The Elastic IP address",
 	},
 	"deletefunction": {
 		"id":      "The Lambda function to delete",
@@ -253,6 +271,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletesecuritygroup": {
 		"id": "The ID of the security group",
 	},
+	"deletesnapshot": {
+		"id": "The ID of the EBS snapshot",
+	},
 	"deletesubnet": {
 		"id": "The ID of the subnet",
 	},
@@ -279,6 +300,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id": "The ID of the hosted zone you want to delete",
 	},
 	"detachalarm": {},
+	"detachelasticip": {
+		"association": "[EC2-VPC] The association ID",
+	},
 	"detachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
@@ -304,6 +328,13 @@ var generatedParamsDoc = map[string]map[string]string{
 		"force":    "Forces detachment if the previous detachment attempt did not occur cleanly (for example, logging into an instance, unmounting the volume, and detaching normally)",
 		"id":       "The ID of the volume",
 		"instance": "The ID of the instance",
+	},
+	"importimage": {
+		"architecture": "The architecture of the virtual machine",
+		"description":  "A description string for the import image task",
+		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing",
+		"platform":     "The operating system of the virtual machine",
+		"role":         "The name of the role to use when not using the default role, 'vmimport'",
 	},
 	"startalarm": {
 		"names": "The names of the alarms",

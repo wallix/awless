@@ -82,6 +82,7 @@ var ResourceTypes = []string{
 	"routetable",
 	"availabilityzone",
 	"image",
+	"importimagetask",
 	"elasticip",
 	"snapshot",
 	"loadbalancer",
@@ -135,6 +136,7 @@ var ServicePerResourceType = map[string]string{
 	"routetable":          "infra",
 	"availabilityzone":    "infra",
 	"image":               "infra",
+	"importimagetask":     "infra",
 	"elasticip":           "infra",
 	"snapshot":            "infra",
 	"loadbalancer":        "infra",
@@ -173,6 +175,7 @@ var APIPerResourceType = map[string]string{
 	"routetable":          "ec2",
 	"availabilityzone":    "ec2",
 	"image":               "ec2",
+	"importimagetask":     "ec2",
 	"elasticip":           "ec2",
 	"snapshot":            "ec2",
 	"loadbalancer":        "elbv2",
@@ -249,6 +252,7 @@ func (s *Infra) ResourceTypes() []string {
 		"routetable",
 		"availabilityzone",
 		"image",
+		"importimagetask",
 		"elasticip",
 		"snapshot",
 		"loadbalancer",
@@ -282,6 +286,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var routetableList []*ec2.RouteTable
 	var availabilityzoneList []*ec2.AvailabilityZone
 	var imageList []*ec2.Image
+	var importimagetaskList []*ec2.ImportImageTask
 	var elasticipList []*ec2.Address
 	var snapshotList []*ec2.Snapshot
 	var loadbalancerList []*elbv2.LoadBalancer
@@ -455,6 +460,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[image]")
+	}
+	if s.config.getBool("aws.infra.importimagetask.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, importimagetaskList, err = s.fetch_all_importimagetask_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[importimagetask]")
 	}
 	if s.config.getBool("aws.infra.elasticip.sync", true) {
 		wg.Add(1)
@@ -789,6 +810,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.importimagetask.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range importimagetaskList {
+				for _, fn := range addParentsFns["importimagetask"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 	if s.config.getBool("aws.infra.elasticip.sync", true) {
 		wg.Add(1)
 		go func() {
@@ -985,6 +1021,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "image":
 		graph, _, err := s.fetch_all_image_graph()
+		return graph, err
+	case "importimagetask":
+		graph, _, err := s.fetch_all_importimagetask_graph()
 		return graph, err
 	case "elasticip":
 		graph, _, err := s.fetch_all_elasticip_graph()
@@ -1251,6 +1290,30 @@ func (s *Infra) fetch_all_image_graph() (*graph.Graph, []*ec2.Image, error) {
 	}
 
 	for _, output := range out.Images {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
+	}
+
+	return g, cloudResources, nil
+
+}
+
+func (s *Infra) fetch_all_importimagetask_graph() (*graph.Graph, []*ec2.ImportImageTask, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ec2.ImportImageTask
+
+	out, err := s.DescribeImportImageTasks(&ec2.DescribeImportImageTasksInput{})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.ImportImageTasks {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

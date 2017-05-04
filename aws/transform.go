@@ -62,6 +62,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Volume, awssdk.StringValue(ss.VolumeId))
 	case *ec2.Image:
 		res = graph.InitResource(cloud.Image, awssdk.StringValue(ss.ImageId))
+	case *ec2.ImportImageTask:
+		res = graph.InitResource(cloud.ImportImageTask, awssdk.StringValue(ss.ImportTaskId))
 	case *ec2.InternetGateway:
 		res = graph.InitResource(cloud.InternetGateway, awssdk.StringValue(ss.InternetGatewayId))
 	case *ec2.RouteTable:

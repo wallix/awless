@@ -105,6 +105,8 @@ limitations under the License.
 // This file was automatically generated with go generate
 package rdf
 
+import "github.com/wallix/awless/cloud/properties"
+
 const (
   {{- range $, $prop := . }}
   {{ $prop.AwlessLabel }} = "{{ $prop.RDFLabel }}"

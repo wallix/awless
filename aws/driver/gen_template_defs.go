@@ -40,12 +40,15 @@ var APIPerTemplateDefName = map[string]string{
 	"attachsecuritygroup":       "ec2",
 	"detachsecuritygroup":       "ec2",
 	"copyimage":                 "ec2",
+	"importimage":               "ec2",
+	"deleteimage":               "ec2",
 	"createvolume":              "ec2",
 	"deletevolume":              "ec2",
 	"attachvolume":              "ec2",
 	"detachvolume":              "ec2",
 	"createsnapshot":            "ec2",
 	"deletesnapshot":            "ec2",
+	"copysnapshot":              "ec2",
 	"createinternetgateway":     "ec2",
 	"deleteinternetgateway":     "ec2",
 	"attachinternetgateway":     "ec2",
@@ -254,6 +257,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name", "source-id", "source-region"},
 		ExtraParams:    []string{"description", "encrypted"},
 	},
+	"importimage": {
+		Action:         "import",
+		Entity:         "image",
+		Api:            "ec2",
+		RequiredParams: []string{},
+		ExtraParams:    []string{"architecture", "bucket", "description", "license", "platform", "role", "s3object", "snapshot", "url"},
+	},
+	"deleteimage": {
+		Action:         "delete",
+		Entity:         "image",
+		Api:            "ec2",
+		RequiredParams: []string{"delete-snapshots", "id"},
+		ExtraParams:    []string{},
+	},
 	"createvolume": {
 		Action:         "create",
 		Entity:         "volume",
@@ -295,6 +312,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
+	},
+	"copysnapshot": {
+		Action:         "copy",
+		Entity:         "snapshot",
+		Api:            "ec2",
+		RequiredParams: []string{"source-id", "source-region"},
+		ExtraParams:    []string{"description", "encrypted"},
 	},
 	"createinternetgateway": {
 		Action:         "create",
@@ -871,12 +895,15 @@ func DriverSupportedActions() map[string][]string {
 	supported["attach"] = append(supported["attach"], "securitygroup")
 	supported["detach"] = append(supported["detach"], "securitygroup")
 	supported["copy"] = append(supported["copy"], "image")
+	supported["import"] = append(supported["import"], "image")
+	supported["delete"] = append(supported["delete"], "image")
 	supported["create"] = append(supported["create"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")
 	supported["detach"] = append(supported["detach"], "volume")
 	supported["create"] = append(supported["create"], "snapshot")
 	supported["delete"] = append(supported["delete"], "snapshot")
+	supported["copy"] = append(supported["copy"], "snapshot")
 	supported["create"] = append(supported["create"], "internetgateway")
 	supported["delete"] = append(supported["delete"], "internetgateway")
 	supported["attach"] = append(supported["attach"], "internetgateway")

@@ -247,6 +247,28 @@ var DriversDefs = []driversDef{
 					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "import", Entity: cloud.Image, ApiMethod: "ImportImage", Input: "ImportImageInput", Output: "ImportImageOutput", OutputExtractor: "aws.StringValue(output.ImportTaskId)",
+				RequiredParams: []param{},
+				ExtraParams: []param{
+					{AwsField: "Architecture", TemplateName: "architecture", AwsType: "awsstr"},
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+					{AwsField: "LicenseType", TemplateName: "license", AwsType: "awsstr"},
+					{AwsField: "Platform", TemplateName: "platform", AwsType: "awsstr"},
+					{AwsField: "RoleName", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "DiskContainers[0]SnapshotId", TemplateName: "snapshot", AwsType: "awsslicestruct"},
+					{AwsField: "DiskContainers[0]Url", TemplateName: "url", AwsType: "awsslicestruct"},
+					{AwsField: "DiskContainers[0]UserBucket.S3Bucket", TemplateName: "bucket", AwsType: "awsslicestruct"},
+					{AwsField: "DiskContainers[0]UserBucket.S3Key", TemplateName: "s3object", AwsType: "awsslicestruct"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Image, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "delete-snapshots"},
+				},
+			},
 
 			// VOLUME
 			{
@@ -295,6 +317,17 @@ var DriversDefs = []driversDef{
 				Action: "delete", Entity: cloud.Snapshot, ApiMethod: "DeleteSnapshot", Input: "DeleteSnapshotInput", Output: "DeleteSnapshotOutput",
 				RequiredParams: []param{
 					{AwsField: "SnapshotId", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "copy", Entity: cloud.Snapshot, ApiMethod: "CopySnapshot", Input: "CopySnapshotInput", Output: "CopySnapshotOutput", OutputExtractor: "aws.StringValue(output.SnapshotId)",
+				RequiredParams: []param{
+					{AwsField: "SourceSnapshotId", TemplateName: "source-id", AwsType: "awsstr"},
+					{AwsField: "SourceRegion", TemplateName: "source-region", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Encrypted", TemplateName: "encrypted", AwsType: "awsbool"},
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
 				},
 			},
 			// INTERNET GATEWAYS

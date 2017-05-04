@@ -101,6 +101,14 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Hypervisor, Friendly: "Hyperv"},
 		StringColumnDefinition{Prop: properties.Virtualization, Friendly: "Virt"},
 	},
+	cloud.ImportImageTask: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Description, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Image},
+		StringColumnDefinition{Prop: properties.Progress},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.StateMessage},
+	},
 	cloud.Volume: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
@@ -247,7 +255,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	cloud.S3Object: {
-		StringColumnDefinition{Prop: properties.ID, TruncateRight: true, Friendly: "Name"},
+		StringColumnDefinition{Prop: properties.ID, Friendly: "Name", DisableTruncate: true},
 		StringColumnDefinition{Prop: properties.Bucket, Friendly: "Bucket"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified, Friendly: "Modified"}},
 		StringColumnDefinition{Prop: properties.Owner, TruncateRight: true},

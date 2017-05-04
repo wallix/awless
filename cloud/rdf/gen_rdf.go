@@ -151,6 +151,7 @@ const (
 	SpotInstanceRequestId     = "cloud:spotInstanceRequestId"
 	SpotPrice                 = "cloud:spotPrice"
 	State                     = "cloud:state"
+	StateMessage              = "cloud:stateMessage"
 	Storage                   = "cloud:storage"
 	StorageType               = "cloud:storageType"
 	Subnet                    = "cloud:subnet"
@@ -307,6 +308,7 @@ var Labels = map[string]string{
 	properties.SpotInstanceRequestId:     SpotInstanceRequestId,
 	properties.SpotPrice:                 SpotPrice,
 	properties.State:                     State,
+	properties.StateMessage:              StateMessage,
 	properties.Storage:                   Storage,
 	properties.StorageType:               StorageType,
 	properties.Subnet:                    Subnet,
@@ -463,6 +465,7 @@ var Properties = RDFProperties{
 	SpotInstanceRequestId: {ID: SpotInstanceRequestId, RdfType: "rdf:Property", RdfsLabel: "SpotInstanceRequestId", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SpotPrice:             {ID: SpotPrice, RdfType: "rdf:Property", RdfsLabel: "SpotPrice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	State:                 {ID: State, RdfType: "rdf:Property", RdfsLabel: "State", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	StateMessage:          {ID: StateMessage, RdfType: "rdf:Property", RdfsLabel: "StateMessage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Storage:               {ID: Storage, RdfType: "rdf:Property", RdfsLabel: "Storage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	StorageType:           {ID: StorageType, RdfType: "rdf:Property", RdfsLabel: "StorageType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Subnet:                {ID: Subnet, RdfType: "rdf:Property", RdfsLabel: "Subnet", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
