@@ -7,16 +7,17 @@
 - [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
 - `awless ssh` now checks the remote host public key before connecting. Check can be disabled with the (insecure) `--disable-strict-host-keychecking` flag.
 - [#74](https://github.com/wallix/awless/issues/74): support of encrypted SSH keys for generation `awless create keypair encrypted=true` and in `awless ssh`.
-- Listing templates available at `https://github.com/wallix/awless-templates` with `awless run --list`.
+- Better documentation of [awless-templates](https://github.com/wallix/awless-templates); listing remote templates in awless with `awless run --list`.
+- Friendlier (using units: B, K, M, G) display for storage size (s3objects, volumes, lambda functions)
+- Better help for template parameters (ex: `awless create loadbalancer -h`)
 - Create/delete and list Lambda functions: `awless list functions` / `awless create/delete function`
 - Create/delete/attach/detach and list elastic IPs: `awless list elasticips` / `awless create/delete/attach/detach elasticip`
 - Create/delete and list volume snapshots: `awless list snapshots` / `awless create/delete snapshot`
-- Create/delete and list autoscaling launch configurations, scaling policies and scaling groups
-- Create/delete/start/stop/attach/detach and list cloudwatch alarms. List cloudwatch metrics.
+- Create/delete and list autoscaling launch configurations, scaling policies and scaling groups: `awless create/delete launchconfiguration/scalingpolicy/scalinggroup`. See an [example](https://github.com/wallix/awless-templates/#group-of-instances-scaling-with-cpu-consumption)
+- Create/delete/start/stop/attach/detach and list cloudwatch alarms. List cloudwatch metrics: `awless list alarms/metrics`
 - List EC2 images (AMIs) of which you are the owner: `awless list images`
 - Copy an EC2 image from a given region to the current region: `awless copy image name=... source-id=... source-region=...`
 - List your IAM access keys: `awless list accesskeys`
-- Friendlier (using units: B, K, M, G) display for storage size (s3objects, volumes, lambda functions)
 
 ### Bugfixes
 
