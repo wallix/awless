@@ -61,6 +61,9 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, "skipsnapshot=true")
 				case "policy":
 					params = append(params, fmt.Sprintf("arn=%s", cmd.CmdResult))
+				case "s3object":
+					params = append(params, fmt.Sprintf("name=%s", cmd.CmdResult))
+					params = append(params, fmt.Sprintf("bucket=%s", cmd.Params["bucket"]))
 				case "role", "group":
 					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"]))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm":

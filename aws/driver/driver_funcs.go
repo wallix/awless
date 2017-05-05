@@ -1126,13 +1126,13 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 
 	d.logger.Infof("uploading '%s'", fileName)
 
-	output, err := d.PutObject(input)
+	_, err = d.PutObject(input)
 	if err != nil {
 		return nil, fmt.Errorf("create s3object: %s", err)
 	}
 
 	d.logger.Info("create s3object done")
-	return output, nil
+	return fileName, nil
 }
 
 func (d *Route53Driver) Create_Record_DryRun(params map[string]interface{}) (interface{}, error) {
