@@ -2,7 +2,8 @@
 
 ### Features
 
-- Create and attach role to a user, instance, etc ...
+- Create and attach role to a user or resource (instance, ...). See an [example](https://github.com/wallix/awless-templates#role-for-resource)
+- Get my IP as seen by AWS: `awless whoami --ip-only`. Example: `awless create securitygroup ... cidr=$(awless whoami --ip-only)/32 ...`
 - [#86](https://github.com/wallix/awless/issues/86): SSH using private IP with `--private` flag. Thanks @padilo.
 - `awless ssh` now checks the remote host public key before connecting. Check can be disabled with the (insecure) `--disable-strict-host-keychecking` flag.
 - [#74](https://github.com/wallix/awless/issues/74): support of encrypted SSH keys for generation `awless create keypair encrypted=true` and in `awless ssh`.
