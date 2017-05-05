@@ -353,7 +353,7 @@ func TestFetchFunctions(t *testing.T) {
 				{Permission: awssdk.String("Write"), Grantee: &s3.Grantee{ID: awssdk.String("usr_1"), Type: awssdk.String("my_type_2")}},
 			},
 		}
-		StorageService = &mockS3{bucketsACL: bucketsACL}
+		StorageService = &mockS3{grants: bucketsACL}
 
 		bucket1 := &s3.Bucket{Name: awssdk.String("bucket_1")}
 		i, err := fetchAndExtractGrantsFn(bucket1)

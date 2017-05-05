@@ -1,0 +1,159 @@
+/*
+Copyright 2017 WALLIX
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+package aws
+
+import "strings"
+
+type mockDef struct {
+	Api, ApiInterface, Name string
+	Funcs                   []*mockFuncDef
+}
+
+type mockFuncDef struct {
+	FuncType, AWSType, ApiMethod, Input, Output, OutputsExtractor, OutputsContainers string
+	Manual                                                                           bool
+	Multipage                                                                        bool
+	NextPageMarker                                                                   string
+	MockField, MockFieldType                                                         string
+}
+
+var mocksDefs = []*mockDef{
+	{
+		Api: "ec2",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "ec2.Instance", ApiMethod: "DescribeInstancesPages", Input: "ec2.DescribeInstancesInput", Output: "ec2.DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true, NextPageMarker: "NextToken", Manual: true},
+			{FuncType: "list", AWSType: "ec2.Subnet", ApiMethod: "DescribeSubnets", Input: "ec2.DescribeSubnetsInput", Output: "ec2.DescribeSubnetsOutput", OutputsExtractor: "Subnets"},
+			{FuncType: "list", AWSType: "ec2.Vpc", ApiMethod: "DescribeVpcs", Input: "ec2.DescribeVpcsInput", Output: "ec2.DescribeVpcsOutput", OutputsExtractor: "Vpcs"},
+			{FuncType: "list", AWSType: "ec2.KeyPairInfo", ApiMethod: "DescribeKeyPairs", Input: "ec2.DescribeKeyPairsInput", Output: "ec2.DescribeKeyPairsOutput", OutputsExtractor: "KeyPairs"},
+			{FuncType: "list", AWSType: "ec2.SecurityGroup", ApiMethod: "DescribeSecurityGroups", Input: "ec2.DescribeSecurityGroupsInput", Output: "ec2.DescribeSecurityGroupsOutput", OutputsExtractor: "SecurityGroups"},
+			{FuncType: "list", AWSType: "ec2.Volume", ApiMethod: "DescribeVolumesPages", Input: "ec2.DescribeVolumesInput", Output: "ec2.DescribeVolumesOutput", OutputsExtractor: "Volumes", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "ec2.InternetGateway", ApiMethod: "DescribeInternetGateways", Input: "ec2.DescribeInternetGatewaysInput", Output: "ec2.DescribeInternetGatewaysOutput", OutputsExtractor: "InternetGateways"},
+			{FuncType: "list", AWSType: "ec2.RouteTable", ApiMethod: "DescribeRouteTables", Input: "ec2.DescribeRouteTablesInput", Output: "ec2.DescribeRouteTablesOutput", OutputsExtractor: "RouteTables"},
+			{FuncType: "list", AWSType: "ec2.AvailabilityZone", ApiMethod: "DescribeAvailabilityZones", Input: "ec2.DescribeAvailabilityZonesInput", Output: "ec2.DescribeAvailabilityZonesOutput", OutputsExtractor: "AvailabilityZones"},
+			{FuncType: "list", AWSType: "ec2.Image", ApiMethod: "DescribeImages", Input: "ec2.DescribeImagesInput", Output: "ec2.DescribeImagesOutput", OutputsExtractor: "Images"},
+			{FuncType: "list", AWSType: "ec2.ImportImageTask", ApiMethod: "DescribeImportImageTasks", Input: "ec2.DescribeImportImageTasksInput", Output: "ec2.DescribeImportImageTasksOutput", OutputsExtractor: "ImportImageTasks"},
+			{FuncType: "list", AWSType: "ec2.Address", ApiMethod: "DescribeAddresses", Input: "ec2.DescribeAddressesInput", Output: "ec2.DescribeAddressesOutput", OutputsExtractor: "Addresses"},
+			{FuncType: "list", AWSType: "ec2.Snapshot", ApiMethod: "DescribeSnapshotsPages", Input: "ec2.DescribeSnapshotsInput", Output: "ec2.DescribeSnapshotsOutput", OutputsExtractor: "Snapshots", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
+	{
+		Api: "elbv2",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "elbv2.LoadBalancer", ApiMethod: "DescribeLoadBalancersPages", Input: "elbv2.DescribeLoadBalancersInput", Output: "elbv2.DescribeLoadBalancersOutput", OutputsExtractor: "LoadBalancers", Multipage: true, NextPageMarker: "NextMarker"},
+			{FuncType: "list", AWSType: "elbv2.TargetGroup", ApiMethod: "DescribeTargetGroups", Input: "elbv2.DescribeTargetGroupsInput", Output: "elbv2.DescribeTargetGroupsOutput", OutputsExtractor: "TargetGroups"},
+			{FuncType: "list", AWSType: "elbv2.Listener", Manual: true},
+			{FuncType: "list", AWSType: "elbv2.TargetHealthDescription", Manual: true, MockFieldType: "map"},
+		},
+	},
+	{
+		Api: "rds",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "rds.DBInstance", ApiMethod: "DescribeDBInstancesPages", Input: "rds.DescribeDBInstancesInput", Output: "rds.DescribeDBInstancesOutput", OutputsExtractor: "DBInstances", Multipage: true, NextPageMarker: "Marker"},
+			{FuncType: "list", AWSType: "rds.DBSubnetGroup", ApiMethod: "DescribeDBSubnetGroupsPages", Input: "rds.DescribeDBSubnetGroupsInput", Output: "rds.DescribeDBSubnetGroupsOutput", OutputsExtractor: "DBSubnetGroups", Multipage: true, NextPageMarker: "Marker"},
+		},
+	},
+	{
+		Api: "autoscaling",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "autoscaling.LaunchConfiguration", ApiMethod: "DescribeLaunchConfigurationsPages", Input: "autoscaling.DescribeLaunchConfigurationsInput", Output: "autoscaling.DescribeLaunchConfigurationsOutput", OutputsExtractor: "LaunchConfigurations", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "autoscaling.Group", ApiMethod: "DescribeAutoScalingGroupsPages", Input: "autoscaling.DescribeAutoScalingGroupsInput", Output: "autoscaling.DescribeAutoScalingGroupsOutput", OutputsExtractor: "AutoScalingGroups", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "autoscaling.ScalingPolicy", ApiMethod: "DescribePoliciesPages", Input: "autoscaling.DescribePoliciesInput", Output: "autoscaling.DescribePoliciesOutput", OutputsExtractor: "ScalingPolicies", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
+	{
+		Api: "iam",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "iam.UserDetail", Manual: true},
+			{FuncType: "list", AWSType: "iam.GroupDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "GroupDetailList", Multipage: true, NextPageMarker: "Marker", Manual: true},
+			{FuncType: "list", AWSType: "iam.RoleDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "RoleDetailList", Multipage: true, NextPageMarker: "Marker", Manual: true},
+			{FuncType: "list", AWSType: "iam.Policy", ApiMethod: "ListPoliciesPages", Input: "iam.ListPoliciesInput", Output: "iam.ListPoliciesOutput", OutputsExtractor: "Policies", Multipage: true, NextPageMarker: "Marker", Manual: true},
+			{FuncType: "list", AWSType: "iam.AccessKeyMetadata", ApiMethod: "ListAccessKeysPages", Input: "iam.ListAccessKeysInput", Output: "iam.ListAccessKeysOutput", OutputsExtractor: "AccessKeyMetadata", Multipage: true, NextPageMarker: "Marker"},
+			{FuncType: "list", AWSType: "iam.ManagedPolicyDetail", Manual: true},
+			{FuncType: "list", AWSType: "iam.User", Manual: true},
+		},
+	},
+	{
+		Api: "s3",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "s3.Bucket", Manual: true, MockFieldType: "map"},
+			{FuncType: "list", AWSType: "s3.Object", Manual: true, MockFieldType: "map"},
+			{FuncType: "list", AWSType: "s3.Grant", Manual: true, MockFieldType: "map"},
+		},
+	},
+	{
+		Api: "sns",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "sns.Subscription", ApiMethod: "ListSubscriptionsPages", Input: "sns.ListSubscriptionsInput", Output: "sns.ListSubscriptionsOutput", OutputsExtractor: "Subscriptions", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "sns.Topic", ApiMethod: "ListTopicsPages", Input: "sns.ListTopicsInput", Output: "sns.ListTopicsOutput", OutputsExtractor: "Topics", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
+	{
+		Api: "sqs",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "string", Manual: true},
+		},
+	},
+	{
+		Api: "route53",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "route53.HostedZone", ApiMethod: "ListHostedZonesPages", Input: "route53.ListHostedZonesInput", Output: "route53.ListHostedZonesOutput", OutputsExtractor: "HostedZones", Multipage: true, NextPageMarker: "NextMarker"},
+			{FuncType: "list", AWSType: "route53.ResourceRecordSet", Manual: true, MockFieldType: "map"},
+		},
+	},
+	{
+		Api: "lambda",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "lambda.FunctionConfiguration", ApiMethod: "ListFunctionsPages", Input: "lambda.ListFunctionsInput", Output: "lambda.ListFunctionsOutput", OutputsExtractor: "Functions", Multipage: true, NextPageMarker: "NextMarker"},
+		},
+	},
+	{
+		Api: "cloudwatch",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "cloudwatch.Metric", ApiMethod: "ListMetricsPages", Input: "cloudwatch.ListMetricsInput", Output: "cloudwatch.ListMetricsOutput", OutputsExtractor: "Metrics", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "cloudwatch.MetricAlarm", ApiMethod: "DescribeAlarmsPages", Input: "cloudwatch.DescribeAlarmsInput", Output: "cloudwatch.DescribeAlarmsOutput", OutputsExtractor: "MetricAlarms", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
+}
+
+func Mocks() []*mockDef {
+	for _, def := range mocksDefs {
+		def.ApiInterface = apiToInterface(def.Api)
+		def.Name = "mock" + strings.Title(def.Api)
+		for _, f := range def.Funcs {
+			f.MockField = nameFromAwsType(f.AWSType)
+		}
+	}
+	return mocksDefs
+}
+
+func apiToInterface(api string) string {
+	switch api {
+	case "autoscaling":
+		return "AutoScalingAPI"
+	case "cloudwatch":
+		return "CloudWatchAPI"
+	case "route53", "lambda":
+		return strings.Title(api) + "API"
+	default:
+		return strings.ToUpper(api) + "API"
+	}
+
+}
+
+func nameFromAwsType(awstype string) string {
+	splits := strings.Split(awstype, ".")
+	return strings.ToLower(splits[len(splits)-1]) + "s"
+}

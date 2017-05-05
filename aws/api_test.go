@@ -149,7 +149,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		},
 	}
 
-	mock := &mockIam{groups: groups, usersDetails: usersDetails, roles: roles, managedPolicies: managedPolicies, users: users}
+	mock := &mockIam{groupdetails: groups, userdetails: usersDetails, roledetails: roles, managedpolicydetails: managedPolicies, users: users}
 	access := Access{IAMAPI: mock, region: "eu-west-1"}
 
 	g, err := access.FetchResources()
@@ -247,23 +247,19 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	//ELB
-	lbPages := [][]*elbv2.LoadBalancer{
-		{
-			{LoadBalancerArn: awssdk.String("lb_1"), LoadBalancerName: awssdk.String("my_loadbalancer"), VpcId: awssdk.String("vpc_1")},
-			{LoadBalancerArn: awssdk.String("lb_2"), VpcId: awssdk.String("vpc_2")},
-		},
-		{
-			{LoadBalancerArn: awssdk.String("lb_3"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*string{awssdk.String("securitygroup_1"), awssdk.String("securitygroup_2")}},
-		},
+	lbPages := []*elbv2.LoadBalancer{
+		{LoadBalancerArn: awssdk.String("lb_1"), LoadBalancerName: awssdk.String("my_loadbalancer"), VpcId: awssdk.String("vpc_1")},
+		{LoadBalancerArn: awssdk.String("lb_2"), VpcId: awssdk.String("vpc_2")},
+		{LoadBalancerArn: awssdk.String("lb_3"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*string{awssdk.String("securitygroup_1"), awssdk.String("securitygroup_2")}},
 	}
 	targetGroups := []*elbv2.TargetGroup{
 		{TargetGroupArn: awssdk.String("tg_1"), VpcId: awssdk.String("vpc_1"), LoadBalancerArns: []*string{awssdk.String("lb_1"), awssdk.String("lb_3")}},
 		{TargetGroupArn: awssdk.String("tg_2"), VpcId: awssdk.String("vpc_2"), LoadBalancerArns: []*string{awssdk.String("lb_2")}},
 	}
-	listeners := map[string][]*elbv2.Listener{
-		"lb_1": {{ListenerArn: awssdk.String("list_1"), LoadBalancerArn: awssdk.String("lb_1")}, {ListenerArn: awssdk.String("list_1.2"), LoadBalancerArn: awssdk.String("lb_1")}},
-		"lb_2": {{ListenerArn: awssdk.String("list_2"), LoadBalancerArn: awssdk.String("lb_2")}},
-		"lb_3": {{ListenerArn: awssdk.String("list_3"), LoadBalancerArn: awssdk.String("lb_3")}},
+	listeners := []*elbv2.Listener{
+		{ListenerArn: awssdk.String("list_1"), LoadBalancerArn: awssdk.String("lb_1")}, {ListenerArn: awssdk.String("list_1.2"), LoadBalancerArn: awssdk.String("lb_1")},
+		{ListenerArn: awssdk.String("list_2"), LoadBalancerArn: awssdk.String("lb_2")},
+		{ListenerArn: awssdk.String("list_3"), LoadBalancerArn: awssdk.String("lb_3")},
 	}
 	targetHealths := map[string][]*elbv2.TargetHealthDescription{
 		"tg_1": {{HealthCheckPort: awssdk.String("80"), Target: &elbv2.TargetDescription{Id: awssdk.String("inst_1"), Port: awssdk.Int64(443)}}},
@@ -279,9 +275,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{AutoScalingGroupARN: awssdk.String("asg_arn_2"), AutoScalingGroupName: awssdk.String("asg_name_2"), LaunchConfigurationName: awssdk.String("launchconfig_name"), TargetGroupARNs: []*string{awssdk.String("tg_1"), awssdk.String("tg_2")}},
 	}
 
-	mock := &mockEc2{vpcs: vpcs, securityGroups: securityGroups, subnets: subnets, instances: instances, keyPairs: keypairs, internetGateways: igws, routeTables: routeTables}
-	mockLb := &mockELB{loadBalancerPages: lbPages, targetGroups: targetGroups, listeners: listeners, targetHealths: targetHealths}
-	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{configs: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
+	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables}
+	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
+	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
 	InfraService = &infra
 
 	g, err := infra.FetchResources()
@@ -409,7 +405,7 @@ func TestBuildStorageRdfGraph(t *testing.T) {
 		},
 	}
 
-	mocks3 := &mockS3{bucketsPerRegion: buckets, objectsPerBucket: objects, bucketsACL: bucketsACL}
+	mocks3 := &mockS3{buckets: buckets, objects: objects, grants: bucketsACL}
 	StorageService = mocks3
 	storage := Storage{S3API: mocks3, region: "eu-west-1"}
 
@@ -438,31 +434,23 @@ func TestBuildStorageRdfGraph(t *testing.T) {
 }
 
 func TestBuildDnsRdfGraph(t *testing.T) {
-	zonePages := [][]*route53.HostedZone{
-		{
-			{Id: awssdk.String("/hostedzone/12345"), Name: awssdk.String("my.first.domain")},
-			{Id: awssdk.String("/hostedzone/23456"), Name: awssdk.String("my.second.domain")},
-		},
-		{{Id: awssdk.String("/hostedzone/34567"), Name: awssdk.String("my.third.domain")}},
+	zonePages := []*route53.HostedZone{
+		{Id: awssdk.String("/hostedzone/12345"), Name: awssdk.String("my.first.domain")},
+		{Id: awssdk.String("/hostedzone/23456"), Name: awssdk.String("my.second.domain")},
+		{Id: awssdk.String("/hostedzone/34567"), Name: awssdk.String("my.third.domain")},
 	}
-	recordPages := map[string][][]*route53.ResourceRecordSet{
+	recordPages := map[string][]*route53.ResourceRecordSet{
 		"/hostedzone/12345": {
-			{
-				{Type: awssdk.String("A"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain1.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("1.2.3.4")}, {Value: awssdk.String("2.3.4.5")}}},
-				{Type: awssdk.String("A"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain2.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("3.4.5.6")}}},
-			},
-			{
-				{Type: awssdk.String("CNAME"), TTL: awssdk.Int64(60), Name: awssdk.String("subdomain3.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("4.5.6.7")}}},
-			},
+			{Type: awssdk.String("A"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain1.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("1.2.3.4")}, {Value: awssdk.String("2.3.4.5")}}},
+			{Type: awssdk.String("A"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain2.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("3.4.5.6")}}},
+			{Type: awssdk.String("CNAME"), TTL: awssdk.Int64(60), Name: awssdk.String("subdomain3.my.first.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("4.5.6.7")}}},
 		},
 		"/hostedzone/23456": {
-			{
-				{Type: awssdk.String("A"), TTL: awssdk.Int64(30), Name: awssdk.String("subdomain1.my.second.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("5.6.7.8")}}},
-				{Type: awssdk.String("CNAME"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain3.my.second.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("6.7.8.9")}}},
-			},
+			{Type: awssdk.String("A"), TTL: awssdk.Int64(30), Name: awssdk.String("subdomain1.my.second.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("5.6.7.8")}}},
+			{Type: awssdk.String("CNAME"), TTL: awssdk.Int64(10), Name: awssdk.String("subdomain3.my.second.domain"), ResourceRecords: []*route53.ResourceRecord{{Value: awssdk.String("6.7.8.9")}}},
 		},
 	}
-	mockRoute53 := &mockRoute53{zonePages: zonePages, recordPages: recordPages}
+	mockRoute53 := &mockRoute53{hostedzones: zonePages, resourcerecordsets: recordPages}
 
 	dns := Dns{Route53API: mockRoute53, region: "eu-west-1"}
 
@@ -518,7 +506,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
 	}
 
-	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockELB{}, RDSAPI: &mockRDS{}, AutoScalingAPI: &mockAutoScaling{}, region: "eu-west-1"}
+	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockElbv2{}, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{}, region: "eu-west-1"}
 
 	g, err = infra.FetchResources()
 	if err != nil {
