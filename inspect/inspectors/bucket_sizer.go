@@ -26,13 +26,12 @@ import (
 )
 
 type BucketSizer struct {
-	total   float64
+	total   int
 	buckets map[string]*bucket
 }
 
 type bucket struct {
-	objects int
-	size    float64
+	objects, size int
 }
 
 func (*BucketSizer) Name() string {
@@ -48,9 +47,9 @@ func (i *BucketSizer) Inspect(g *graph.Graph) error {
 	}
 
 	for _, obj := range objects {
-		size := obj.Properties["Size"].(float64)
+		size := obj.Properties["Size"].(int)
 		i.total = i.total + size
-		name := obj.Properties["BucketName"].(string)
+		name := obj.Properties["Bucket"].(string)
 		b := i.buckets[name]
 		if b == nil {
 			b = new(bucket)
@@ -70,10 +69,10 @@ func (i *BucketSizer) Print(w io.Writer) {
 	fmt.Fprintln(tabw, "--------\t----------\t-----------------\t")
 
 	for name, bucket := range i.buckets {
-		fmt.Fprintf(tabw, "%s\t%d\t%.4f Gb\t\n", name, bucket.objects, bucket.size/1e9)
+		fmt.Fprintf(tabw, "%s\t%d\t%0.6f Gb\t\n", name, bucket.objects, float64(bucket.size)/1e9)
 	}
 
-	fmt.Fprintf(tabw, "%s\t%s\t%.4f Gb\t\n", "", "", i.total/1e9)
+	fmt.Fprintf(tabw, "%s\t%s\t%0.6f Gb\t\n", "", "", float64(i.total)/1e9)
 
 	tabw.Flush()
 }
