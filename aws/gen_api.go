@@ -1068,6 +1068,9 @@ func (s *Infra) fetch_all_instance_graph() (*graph.Graph, []*ec2.Instance, error
 		func(out *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool) {
 			for _, all := range out.Reservations {
 				for _, output := range all.Instances {
+					if badResErr != nil {
+						return false
+					}
 					cloudResources = append(cloudResources, output)
 					var res *graph.Resource
 					if res, badResErr = newResource(output); badResErr != nil {
@@ -1190,6 +1193,9 @@ func (s *Infra) fetch_all_volume_graph() (*graph.Graph, []*ec2.Volume, error) {
 	err := s.DescribeVolumesPages(&ec2.DescribeVolumesInput{},
 		func(out *ec2.DescribeVolumesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Volumes {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1359,6 +1365,9 @@ func (s *Infra) fetch_all_snapshot_graph() (*graph.Graph, []*ec2.Snapshot, error
 	err := s.DescribeSnapshotsPages(&ec2.DescribeSnapshotsInput{OwnerIds: []*string{awssdk.String("self")}},
 		func(out *ec2.DescribeSnapshotsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Snapshots {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1384,6 +1393,9 @@ func (s *Infra) fetch_all_loadbalancer_graph() (*graph.Graph, []*elbv2.LoadBalan
 	err := s.DescribeLoadBalancersPages(&elbv2.DescribeLoadBalancersInput{},
 		func(out *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.LoadBalancers {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1433,6 +1445,9 @@ func (s *Infra) fetch_all_database_graph() (*graph.Graph, []*rds.DBInstance, err
 	err := s.DescribeDBInstancesPages(&rds.DescribeDBInstancesInput{},
 		func(out *rds.DescribeDBInstancesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.DBInstances {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1458,6 +1473,9 @@ func (s *Infra) fetch_all_dbsubnetgroup_graph() (*graph.Graph, []*rds.DBSubnetGr
 	err := s.DescribeDBSubnetGroupsPages(&rds.DescribeDBSubnetGroupsInput{},
 		func(out *rds.DescribeDBSubnetGroupsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.DBSubnetGroups {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1483,6 +1501,9 @@ func (s *Infra) fetch_all_launchconfiguration_graph() (*graph.Graph, []*autoscal
 	err := s.DescribeLaunchConfigurationsPages(&autoscaling.DescribeLaunchConfigurationsInput{},
 		func(out *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.LaunchConfigurations {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1508,6 +1529,9 @@ func (s *Infra) fetch_all_scalinggroup_graph() (*graph.Graph, []*autoscaling.Gro
 	err := s.DescribeAutoScalingGroupsPages(&autoscaling.DescribeAutoScalingGroupsInput{},
 		func(out *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.AutoScalingGroups {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1533,6 +1557,9 @@ func (s *Infra) fetch_all_scalingpolicy_graph() (*graph.Graph, []*autoscaling.Sc
 	err := s.DescribePoliciesPages(&autoscaling.DescribePoliciesInput{},
 		func(out *autoscaling.DescribePoliciesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.ScalingPolicies {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1837,6 +1864,9 @@ func (s *Access) fetch_all_group_graph() (*graph.Graph, []*iam.GroupDetail, erro
 	err := s.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}},
 		func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.GroupDetailList {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1862,6 +1892,9 @@ func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error)
 	err := s.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}},
 		func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.RoleDetailList {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1887,6 +1920,9 @@ func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
 	err := s.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
 		func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Policies {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -1912,6 +1948,9 @@ func (s *Access) fetch_all_accesskey_graph() (*graph.Graph, []*iam.AccessKeyMeta
 	err := s.ListAccessKeysPages(&iam.ListAccessKeysInput{},
 		func(out *iam.ListAccessKeysOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.AccessKeyMetadata {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -2273,6 +2312,9 @@ func (s *Notification) fetch_all_subscription_graph() (*graph.Graph, []*sns.Subs
 	err := s.ListSubscriptionsPages(&sns.ListSubscriptionsInput{},
 		func(out *sns.ListSubscriptionsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Subscriptions {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -2298,6 +2340,9 @@ func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, erro
 	err := s.ListTopicsPages(&sns.ListTopicsInput{},
 		func(out *sns.ListTopicsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Topics {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -2623,6 +2668,9 @@ func (s *Dns) fetch_all_zone_graph() (*graph.Graph, []*route53.HostedZone, error
 	err := s.ListHostedZonesPages(&route53.ListHostedZonesInput{},
 		func(out *route53.ListHostedZonesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.HostedZones {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -2780,6 +2828,9 @@ func (s *Lambda) fetch_all_function_graph() (*graph.Graph, []*lambda.FunctionCon
 	err := s.ListFunctionsPages(&lambda.ListFunctionsInput{},
 		func(out *lambda.ListFunctionsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Functions {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -2973,6 +3024,9 @@ func (s *Monitoring) fetch_all_metric_graph() (*graph.Graph, []*cloudwatch.Metri
 	err := s.ListMetricsPages(&cloudwatch.ListMetricsInput{},
 		func(out *cloudwatch.ListMetricsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.Metrics {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {
@@ -2998,6 +3052,9 @@ func (s *Monitoring) fetch_all_alarm_graph() (*graph.Graph, []*cloudwatch.Metric
 	err := s.DescribeAlarmsPages(&cloudwatch.DescribeAlarmsInput{},
 		func(out *cloudwatch.DescribeAlarmsOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.MetricAlarms {
+				if badResErr != nil {
+					return false
+				}
 				cloudResources = append(cloudResources, output)
 				var res *graph.Resource
 				if res, badResErr = newResource(output); badResErr != nil {

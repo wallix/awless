@@ -80,8 +80,10 @@ import (
 type {{ $mock.Name }} struct {
 	{{ $mock.Api }}iface.{{ Title $mock.ApiInterface }}
 	{{- range $, $func := $mock.Funcs }}
-	{{- if eq $func.MockFieldType "map" }}
+	{{- if eq $func.MockFieldType "mapslice" }}
 		{{ $func.MockField}} map[string][]*{{ $func.AWSType }}
+	{{- else if eq $func.MockFieldType "map" }}
+			{{ $func.MockField}} map[string]{{ $func.AWSType }}
 	{{- else }}
 		{{ $func.MockField}} []*{{ $func.AWSType }}
 	{{- end }}

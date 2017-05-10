@@ -55,7 +55,7 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "elbv2.LoadBalancer", ApiMethod: "DescribeLoadBalancersPages", Input: "elbv2.DescribeLoadBalancersInput", Output: "elbv2.DescribeLoadBalancersOutput", OutputsExtractor: "LoadBalancers", Multipage: true, NextPageMarker: "NextMarker"},
 			{FuncType: "list", AWSType: "elbv2.TargetGroup", ApiMethod: "DescribeTargetGroups", Input: "elbv2.DescribeTargetGroupsInput", Output: "elbv2.DescribeTargetGroupsOutput", OutputsExtractor: "TargetGroups"},
 			{FuncType: "list", AWSType: "elbv2.Listener", Manual: true},
-			{FuncType: "list", AWSType: "elbv2.TargetHealthDescription", Manual: true, MockFieldType: "map"},
+			{FuncType: "list", AWSType: "elbv2.TargetHealthDescription", Manual: true, MockFieldType: "mapslice"},
 		},
 	},
 	{
@@ -88,9 +88,9 @@ var mocksDefs = []*mockDef{
 	{
 		Api: "s3",
 		Funcs: []*mockFuncDef{
-			{FuncType: "list", AWSType: "s3.Bucket", Manual: true, MockFieldType: "map"},
-			{FuncType: "list", AWSType: "s3.Object", Manual: true, MockFieldType: "map"},
-			{FuncType: "list", AWSType: "s3.Grant", Manual: true, MockFieldType: "map"},
+			{FuncType: "list", AWSType: "s3.Bucket", Manual: true, MockFieldType: "mapslice"},
+			{FuncType: "list", AWSType: "s3.Object", Manual: true, MockFieldType: "mapslice"},
+			{FuncType: "list", AWSType: "s3.Grant", Manual: true, MockFieldType: "mapslice"},
 		},
 	},
 	{
@@ -103,14 +103,15 @@ var mocksDefs = []*mockDef{
 	{
 		Api: "sqs",
 		Funcs: []*mockFuncDef{
-			{FuncType: "list", AWSType: "string", Manual: true},
+			{FuncType: "list", AWSType: "string", ApiMethod: "ListQueues", Input: "sqs.ListQueuesInput", Output: "sqs.ListQueuesOutput", OutputsExtractor: "QueueUrls"},
+			{FuncType: "list", AWSType: "map[string]*string", Manual: true, MockFieldType: "map"},
 		},
 	},
 	{
 		Api: "route53",
 		Funcs: []*mockFuncDef{
 			{FuncType: "list", AWSType: "route53.HostedZone", ApiMethod: "ListHostedZonesPages", Input: "route53.ListHostedZonesInput", Output: "route53.ListHostedZonesOutput", OutputsExtractor: "HostedZones", Multipage: true, NextPageMarker: "NextMarker"},
-			{FuncType: "list", AWSType: "route53.ResourceRecordSet", Manual: true, MockFieldType: "map"},
+			{FuncType: "list", AWSType: "route53.ResourceRecordSet", Manual: true, MockFieldType: "mapslice"},
 		},
 	},
 	{
@@ -154,6 +155,9 @@ func apiToInterface(api string) string {
 }
 
 func nameFromAwsType(awstype string) string {
+	if awstype == "map[string]*string" {
+		return "attributes"
+	}
 	splits := strings.Split(awstype, ".")
 	return strings.ToLower(splits[len(splits)-1]) + "s"
 }

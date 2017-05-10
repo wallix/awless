@@ -110,6 +110,9 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.TargetGroup, stringListName: "TargetGroupARNs", relation: DEPENDING_ON}.build(),
 		addScalingGroupSubnets,
 	},
+	cloud.Subscription: {
+		funcBuilder{parent: cloud.Topic, fieldName: "TopicArn"}.build(),
+	},
 	cloud.Vpc:              {addRegionParent},
 	cloud.AvailabilityZone: {addRegionParent},
 	cloud.Keypair:          {addRegionParent},
@@ -119,6 +122,9 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Group:            {addManagedPoliciesRelations},
 	cloud.Bucket:           {addRegionParent},
 	cloud.Function:         {addRegionParent},
+	cloud.Topic:            {addRegionParent},
+	cloud.Alarm:            {addRegionParent},
+	cloud.Metric:           {addRegionParent},
 }
 
 func (fb funcBuilder) build() addParentFn {

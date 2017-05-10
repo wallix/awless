@@ -340,6 +340,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	// Lambda
 	cloud.Function: {
+		properties.Arn:         {name: "FunctionArn", transform: extractValueFn},
 		properties.Name:        {name: "FunctionName", transform: extractValueFn},
 		properties.Hash:        {name: "CodeSha256", transform: extractValueFn},
 		properties.Size:        {name: "CodeSize", transform: extractValueFn},

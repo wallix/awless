@@ -24,11 +24,14 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/sns"
 	p "github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/graph/resourcetest"
@@ -209,12 +212,36 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 }
 
 func TestBuildInfraRdfGraph(t *testing.T) {
+	now := time.Now().UTC()
 	instances := []*ec2.Instance{
 		{InstanceId: awssdk.String("inst_1"), SubnetId: awssdk.String("sub_1"), VpcId: awssdk.String("vpc_1"), Tags: []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("instance1-name")}}},
 		{InstanceId: awssdk.String("inst_2"), SubnetId: awssdk.String("sub_2"), VpcId: awssdk.String("vpc_1"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("securitygroup_1")}}},
 		{InstanceId: awssdk.String("inst_3"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2")},
 		{InstanceId: awssdk.String("inst_4"), SubnetId: awssdk.String("sub_3"), VpcId: awssdk.String("vpc_2"), SecurityGroups: []*ec2.GroupIdentifier{{GroupId: awssdk.String("securitygroup_1")}, {GroupId: awssdk.String("securitygroup_2")}}, KeyName: awssdk.String("my_key")},
 		{InstanceId: awssdk.String("inst_5"), SubnetId: nil, VpcId: nil, KeyName: awssdk.String("unexisting_key")}, // terminated instance (no vpc, subnet ids)
+		{
+			InstanceId:         awssdk.String("inst_6"),
+			Tags:               []*ec2.Tag{{Key: awssdk.String("Name"), Value: awssdk.String("inst_6_name")}},
+			InstanceType:       awssdk.String("t2.micro"),
+			SubnetId:           awssdk.String("sub_3"),
+			VpcId:              awssdk.String("vpc_2"),
+			PublicIpAddress:    awssdk.String("1.2.3.4"),
+			PrivateIpAddress:   awssdk.String("10.0.0.1"),
+			ImageId:            awssdk.String("ami-1234"),
+			LaunchTime:         awssdk.Time(now),
+			State:              &ec2.InstanceState{Name: awssdk.String("running")},
+			KeyName:            awssdk.String("my_key"),
+			SecurityGroups:     []*ec2.GroupIdentifier{{GroupId: awssdk.String("securitygroup_1")}},
+			Placement:          &ec2.Placement{Affinity: awssdk.String("inst_affinity"), AvailabilityZone: awssdk.String("inst_az"), GroupName: awssdk.String("inst_group"), HostId: awssdk.String("inst_host")},
+			Architecture:       awssdk.String("x86"),
+			Hypervisor:         awssdk.String("xen"),
+			IamInstanceProfile: &ec2.IamInstanceProfile{Arn: awssdk.String("arn:instance:profile")},
+			InstanceLifecycle:  awssdk.String("lifecycle"),
+			NetworkInterfaces:  []*ec2.InstanceNetworkInterface{{NetworkInterfaceId: awssdk.String("my-network-interface")}},
+			PublicDnsName:      awssdk.String("my-instance.dns"),
+			RootDeviceName:     awssdk.String("/dev/xvda"),
+			RootDeviceType:     awssdk.String("ebs"),
+		},
 	}
 
 	vpcs := []*ec2.Vpc{
@@ -300,12 +327,16 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expected := map[string]*graph.Resource{
-		"eu-west-1":        resourcetest.Region("eu-west-1").Build(),
-		"inst_1":           resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
-		"inst_2":           resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Build(),
-		"inst_3":           resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
-		"inst_4":           resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.KeyPair, "my_key").Build(),
-		"inst_5":           resourcetest.Instance("inst_5").Prop(p.KeyPair, "unexisting_key").Build(),
+		"eu-west-1": resourcetest.Region("eu-west-1").Build(),
+		"inst_1":    resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
+		"inst_2":    resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Build(),
+		"inst_3":    resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"inst_4":    resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.KeyPair, "my_key").Build(),
+		"inst_5":    resourcetest.Instance("inst_5").Prop(p.KeyPair, "unexisting_key").Build(),
+		"inst_6": resourcetest.Instance("inst_6").Prop(p.Name, "inst_6_name").Prop(p.Type, "t2.micro").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.PublicIP, "1.2.3.4").Prop(p.PrivateIP, "10.0.0.1").
+			Prop(p.Image, "ami-1234").Prop(p.Launched, now).Prop(p.State, "running").Prop(p.KeyPair, "my_key").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Prop(p.Affinity, "inst_affinity").
+			Prop(p.AvailabilityZone, "inst_az").Prop(p.PlacementGroup, "inst_group").Prop(p.Host, "inst_host").Prop(p.Architecture, "x86").Prop(p.Hypervisor, "xen").Prop(p.Profile, "arn:instance:profile").
+			Prop(p.Lifecycle, "lifecycle").Prop(p.NetworkInterfaces, []string{"my-network-interface"}).Prop(p.PublicDNS, "my-instance.dns").Prop(p.RootDevice, "/dev/xvda").Prop(p.RootDeviceType, "ebs").Build(),
 		"vpc_1":            resourcetest.VPC("vpc_1").Build(),
 		"vpc_2":            resourcetest.VPC("vpc_2").Build(),
 		"securitygroup_1":  resourcetest.SecurityGroup("securitygroup_1").Prop(p.Name, "my_securitygroup").Prop(p.Vpc, "vpc_1").Build(),
@@ -338,7 +369,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"lb_3":      {"list_3"},
 		"sub_1":     {"inst_1"},
 		"sub_2":     {"inst_2"},
-		"sub_3":     {"inst_3", "inst_4"},
+		"sub_3":     {"inst_3", "inst_4", "inst_6"},
 		"vpc_1":     {"lb_1", "lb_3", "rt_1", "securitygroup_1", "securitygroup_2", "sub_1", "sub_2", "tg_1"},
 		"vpc_2":     {"lb_2", "sub_3", "tg_2"},
 	}
@@ -348,9 +379,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"lb_1":            {"tg_1"},
 		"lb_2":            {"tg_2"},
 		"lb_3":            {"tg_1"},
-		"my_key":          {"inst_4", "launchconfig_arn"},
+		"my_key":          {"inst_4", "inst_6", "launchconfig_arn"},
 		"rt_1":            {"sub_1"},
-		"securitygroup_1": {"inst_2", "inst_4", "lb_3"},
+		"securitygroup_1": {"inst_2", "inst_4", "inst_6", "lb_3"},
 		"securitygroup_2": {"inst_4", "lb_3"},
 		"tg_1":            {"inst_1"},
 		"tg_2":            {"inst_2", "inst_3"},
@@ -489,6 +520,221 @@ func TestBuildDnsRdfGraph(t *testing.T) {
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 }
 
+func TestBuildNotificationGraph(t *testing.T) {
+	topics := []*sns.Topic{
+		{TopicArn: awssdk.String("topic_arn_1")},
+		{TopicArn: awssdk.String("topic_arn_2")},
+		{TopicArn: awssdk.String("topic_arn_3")},
+	}
+
+	subscriptions := []*sns.Subscription{
+		{Endpoint: awssdk.String("endpoint_1")},
+		{Endpoint: awssdk.String("endpoint_2"), Owner: awssdk.String("subscr_owner"), Protocol: awssdk.String("subscr_prot"), SubscriptionArn: awssdk.String("subscr_arn"), TopicArn: awssdk.String("topic_arn_2")},
+		{Endpoint: awssdk.String("endpoint_3"), TopicArn: awssdk.String("topic_arn_2")},
+	}
+
+	mock := &mockSns{subscriptions: subscriptions, topics: topics}
+
+	service := Notification{SNSAPI: mock, region: "eu-west-1"}
+
+	g, err := service.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, err := g.GetAllResources("subscription", "topic")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := map[string]*graph.Resource{
+		"endpoint_1":  resourcetest.Subscription("endpoint_1").Prop(p.Endpoint, "endpoint_1").Build(),
+		"endpoint_2":  resourcetest.Subscription("endpoint_2").Prop(p.Endpoint, "endpoint_2").Prop(p.Owner, "subscr_owner").Prop(p.Protocol, "subscr_prot").Prop(p.Arn, "subscr_arn").Prop(p.Topic, "topic_arn_2").Build(),
+		"endpoint_3":  resourcetest.Subscription("endpoint_3").Prop(p.Endpoint, "endpoint_3").Prop(p.Topic, "topic_arn_2").Build(),
+		"topic_arn_1": resourcetest.Topic("topic_arn_1").Prop(p.Arn, "topic_arn_1").Build(),
+		"topic_arn_2": resourcetest.Topic("topic_arn_2").Prop(p.Arn, "topic_arn_2").Build(),
+		"topic_arn_3": resourcetest.Topic("topic_arn_3").Prop(p.Arn, "topic_arn_3").Build(),
+	}
+	expectedChildren := map[string][]string{
+		"eu-west-1":   {"topic_arn_1", "topic_arn_2", "topic_arn_3"},
+		"topic_arn_2": {"endpoint_2", "endpoint_3"},
+	}
+	expectedAppliedOn := map[string][]string{}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+}
+
+func TestBuildQueueGraph(t *testing.T) {
+	queues := []*string{awssdk.String("queue_1"), awssdk.String("queue_2"), awssdk.String("queue_3")}
+	attributes := map[string]map[string]*string{
+		"queue_2": {
+			"ApproximateNumberOfMessages": awssdk.String("4"),
+			"CreatedTimestamp":            awssdk.String("1494419259"),
+			"LastModifiedTimestamp":       awssdk.String("1494332859"),
+			"QueueArn":                    awssdk.String("queue_2_arn"),
+			"DelaySeconds":                awssdk.String("15"),
+		},
+		"queue_3": {
+			"ApproximateNumberOfMessages": awssdk.String("12"),
+		},
+	}
+
+	mock := &mockSqs{strings: queues, attributes: attributes}
+
+	service := Queue{SQSAPI: mock, region: "eu-west-1"}
+
+	g, err := service.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, err := g.GetAllResources("queue")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := map[string]*graph.Resource{
+		"queue_1": resourcetest.Queue("queue_1").Build(),
+		"queue_2": resourcetest.Queue("queue_2").Prop(p.ApproximateMessageCount, 4).Prop(p.Created, time.Unix(1494419259, 0).UTC()).Prop(p.Modified, time.Unix(1494332859, 0).UTC()).Prop(p.Arn, "queue_2_arn").Prop(p.Delay, 15).Build(),
+		"queue_3": resourcetest.Queue("queue_3").Prop(p.ApproximateMessageCount, 12).Build(),
+	}
+	expectedChildren := map[string][]string{}
+	expectedAppliedOn := map[string][]string{}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+}
+
+func TestBuildLambdaGraph(t *testing.T) {
+	functions := []*lambda.FunctionConfiguration{
+		{FunctionArn: awssdk.String("func_1_arn")},
+		{
+			FunctionArn:  awssdk.String("func_2_arn"),
+			FunctionName: awssdk.String("func_2_name"),
+			CodeSha256:   awssdk.String("abcdef123456789"),
+			CodeSize:     awssdk.Int64(1234),
+			Description:  awssdk.String("my function desc"),
+			Handler:      awssdk.String("handl"),
+			LastModified: awssdk.String("2006-01-02T15:04:05.000+0000"),
+			MemorySize:   awssdk.Int64(1234),
+			Role:         awssdk.String("role"),
+			Runtime:      awssdk.String("runtime"),
+			Timeout:      awssdk.Int64(60),
+			Version:      awssdk.String("v2"),
+		},
+		{FunctionArn: awssdk.String("func_3_arn")},
+	}
+
+	mock := &mockLambda{functionconfigurations: functions}
+
+	service := Lambda{LambdaAPI: mock, region: "eu-west-1"}
+
+	g, err := service.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, err := g.GetAllResources("function")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := map[string]*graph.Resource{
+		"func_1_arn": resourcetest.Function("func_1_arn").Prop(p.Arn, "func_1_arn").Build(),
+		"func_2_arn": resourcetest.Function("func_2_arn").Prop(p.Arn, "func_2_arn").Prop(p.Name, "func_2_name").Prop(p.Hash, "abcdef123456789").Prop(p.Size, 1234).
+			Prop(p.Description, "my function desc").Prop(p.Handler, "handl").Prop(p.Modified, time.Unix(1136214245, 0).UTC()).Prop(p.Memory, 1234).Prop(p.Role, "role").
+			Prop(p.Runtime, "runtime").Prop(p.Timeout, 60).Prop(p.Version, "v2").Build(),
+		"func_3_arn": resourcetest.Function("func_3_arn").Prop(p.Arn, "func_3_arn").Build(),
+	}
+
+	expectedChildren := map[string][]string{
+		"eu-west-1": []string{"func_1_arn", "func_2_arn", "func_3_arn"},
+	}
+	expectedAppliedOn := map[string][]string{}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+}
+
+func TestBuildMonitoringGraph(t *testing.T) {
+	now := time.Now().UTC()
+	metrics := []*cloudwatch.Metric{
+		{Namespace: awssdk.String("namespace_1"), MetricName: awssdk.String("metric_1")},
+		{Namespace: awssdk.String("namespace_1"), MetricName: awssdk.String("metric_2"), Dimensions: []*cloudwatch.Dimension{{Name: awssdk.String("first"), Value: awssdk.String("dimension")}, {Name: awssdk.String("second"), Value: awssdk.String("dimension")}}},
+		{Namespace: awssdk.String("namespace_2"), MetricName: awssdk.String("metric_1")},
+		{Namespace: awssdk.String("namespace_2"), MetricName: awssdk.String("metric_2")},
+	}
+	alarms := []*cloudwatch.MetricAlarm{
+		{AlarmArn: awssdk.String("alarm_1")},
+		{AlarmArn: awssdk.String("alarm_2")},
+		{
+			AlarmArn:                awssdk.String("alarm_3"),
+			AlarmName:               awssdk.String("my_alarm"),
+			ActionsEnabled:          awssdk.Bool(true),
+			AlarmActions:            []*string{awssdk.String("action_arn_1"), awssdk.String("action_arn_2"), awssdk.String("action_arn_3")},
+			InsufficientDataActions: []*string{awssdk.String("action_arn_1"), awssdk.String("action_arn_3")},
+			OKActions:               []*string{awssdk.String("action_arn_2")},
+			AlarmDescription:        awssdk.String("my alarm description"),
+			Dimensions:              []*cloudwatch.Dimension{{Name: awssdk.String("first"), Value: awssdk.String("dimension")}, {Name: awssdk.String("second"), Value: awssdk.String("dimension")}},
+			MetricName:              awssdk.String("metric_2"),
+			Namespace:               awssdk.String("namespace_2"),
+			StateUpdatedTimestamp:   awssdk.Time(now),
+			StateValue:              awssdk.String("OK"),
+		},
+	}
+
+	mock := &mockCloudwatch{metrics: metrics, metricalarms: alarms}
+
+	service := Monitoring{CloudWatchAPI: mock, region: "eu-west-1"}
+
+	g, err := service.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, err := g.GetAllResources("metric", "alarm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Sort slice properties in resources
+	for _, res := range resources {
+		if p, ok := res.Properties[p.OKActions].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.AlarmActions].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.InsufficientDataActions].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.Dimensions].([]*graph.KeyValue); ok {
+			sort.Slice(p, func(i, j int) bool {
+				if p[i].KeyName != p[j].KeyName {
+					return p[i].KeyName < p[j].KeyName
+				}
+				return p[i].Value <= p[j].Value
+			})
+		}
+	}
+
+	expected := map[string]*graph.Resource{
+		"awls-4ba90752": resourcetest.Metric("awls-4ba90752").Prop(p.Name, "metric_1").Prop(p.Namespace, "namespace_1").Build(),
+		"awls-4baa0753": resourcetest.Metric("awls-4baa0753").Prop(p.Name, "metric_2").Prop(p.Namespace, "namespace_1").Prop(p.Dimensions, []*graph.KeyValue{{KeyName: "first", Value: "dimension"}, {KeyName: "second", Value: "dimension"}}).Build(),
+		"awls-4bb20753": resourcetest.Metric("awls-4bb20753").Prop(p.Name, "metric_1").Prop(p.Namespace, "namespace_2").Build(),
+		"awls-4bb30754": resourcetest.Metric("awls-4bb30754").Prop(p.Name, "metric_2").Prop(p.Namespace, "namespace_2").Build(),
+		"alarm_1":       resourcetest.Alarm("alarm_1").Prop(p.Arn, "alarm_1").Build(),
+		"alarm_2":       resourcetest.Alarm("alarm_2").Prop(p.Arn, "alarm_2").Build(),
+		"alarm_3": resourcetest.Alarm("alarm_3").Prop(p.Arn, "alarm_3").Prop(p.Name, "my_alarm").Prop(p.ActionsEnabled, true).Prop(p.AlarmActions, []string{"action_arn_1", "action_arn_2", "action_arn_3"}).Prop(p.InsufficientDataActions, []string{"action_arn_1", "action_arn_3"}).
+			Prop(p.OKActions, []string{"action_arn_2"}).Prop(p.Description, "my alarm description").Prop(p.Dimensions, []*graph.KeyValue{{KeyName: "first", Value: "dimension"}, {KeyName: "second", Value: "dimension"}}).Prop(p.MetricName, "metric_2").
+			Prop(p.Namespace, "namespace_2").Prop(p.Updated, now).Prop(p.State, "OK").Build(),
+	}
+
+	expectedChildren := map[string][]string{
+		"eu-west-1": []string{"awls-4ba90752", "awls-4baa0753", "awls-4bb20753", "awls-4bb30754", "alarm_1", "alarm_2", "alarm_3"},
+	}
+	expectedAppliedOn := map[string][]string{}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+}
+
 func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 
 	expectG := graph.NewGraph()
@@ -553,6 +799,10 @@ func compareResources(t *testing.T, g *graph.Graph, resources []*graph.Resource,
 	for _, got := range resources {
 		want := expected[got.Id()]
 		if !reflect.DeepEqual(got, want) {
+			// 	fmt.Println("got:")
+			// 	pretty.Print(got)
+			// 	fmt.Println("\nwant:")
+			// 	pretty.Print(want)
 			t.Fatalf("got \n%#v\nwant\n%#v", got, want)
 		}
 		children := mustGetChildrenId(g, got)

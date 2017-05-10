@@ -42,6 +42,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/graph"
@@ -583,7 +584,8 @@ func (m *mockSns) ListTopicsPages(input *sns.ListTopicsInput, fn func(p *sns.Lis
 
 type mockSqs struct {
 	sqsiface.SQSAPI
-	strings []*string
+	strings    []*string
+	attributes map[string]map[string]*string
 }
 
 func (m *mockSqs) Name() string {
@@ -618,6 +620,10 @@ func (m *mockSqs) IsSyncDisabled() bool {
 
 func (m *mockSqs) FetchByType(t string) (*graph.Graph, error) {
 	return nil, nil
+}
+
+func (m *mockSqs) ListQueues(input *sqs.ListQueuesInput) (*sqs.ListQueuesOutput, error) {
+	return &sqs.ListQueuesOutput{QueueUrls: m.strings}, nil
 }
 
 type mockRoute53 struct {

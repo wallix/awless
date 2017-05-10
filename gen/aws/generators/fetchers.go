@@ -303,6 +303,9 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 			for _, all := range out.{{ $fetcher.OutputsContainers }} {
 			{{- end }}
 				for _, output := range {{ if ne $fetcher.OutputsContainers "" }}all{{ else }}out{{ end }}.{{ $fetcher.OutputsExtractor }} {
+					if badResErr != nil {
+						return false
+					}
 					cloudResources = append(cloudResources, output)
 					var res *graph.Resource
 					if res, badResErr = newResource(output); badResErr != nil {

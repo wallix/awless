@@ -345,6 +345,10 @@ type KeyValue struct {
 	Value   string `predicate:"cloud:value"`
 }
 
+func (kv *KeyValue) String() string {
+	return fmt.Sprintf("[Key:%s,Value:%s]", kv.KeyName, kv.Value)
+}
+
 func (kv *KeyValue) marshalToTriples(id string) []tstore.Triple {
 	var triples []tstore.Triple
 

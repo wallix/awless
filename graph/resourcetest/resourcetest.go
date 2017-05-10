@@ -97,6 +97,30 @@ func LaunchConfig(id string) *rBuilder {
 	return new("launchconfiguration", id).Prop(properties.ID, id)
 }
 
+func Subscription(id string) *rBuilder {
+	return new("subscription", id).Prop(properties.ID, id)
+}
+
+func Topic(id string) *rBuilder {
+	return new("topic", id).Prop(properties.ID, id)
+}
+
+func Queue(id string) *rBuilder {
+	return new("queue", id).Prop(properties.ID, id)
+}
+
+func Function(id string) *rBuilder {
+	return new("function", id).Prop(properties.ID, id)
+}
+
+func Alarm(id string) *rBuilder {
+	return new("alarm", id).Prop(properties.ID, id)
+}
+
+func Metric(id string) *rBuilder {
+	return new("metric", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

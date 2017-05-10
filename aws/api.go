@@ -463,7 +463,11 @@ func (s *Queue) fetch_all_queue_graph() (*graph.Graph, []*string, error) {
 			for k, v := range attrs.Attributes {
 				switch k {
 				case "ApproximateNumberOfMessages":
-					res.Properties[properties.ApproximateMessageCount] = awssdk.StringValue(v)
+					count, err := strconv.Atoi(awssdk.StringValue(v))
+					if err != nil {
+						errc <- err
+					}
+					res.Properties[properties.ApproximateMessageCount] = count
 				case "CreatedTimestamp":
 					if vv := awssdk.StringValue(v); vv != "" {
 						timestamp, err := strconv.ParseInt(vv, 10, 64)
@@ -483,7 +487,11 @@ func (s *Queue) fetch_all_queue_graph() (*graph.Graph, []*string, error) {
 				case "QueueArn":
 					res.Properties[properties.Arn] = awssdk.StringValue(v)
 				case "DelaySeconds":
-					res.Properties[properties.Delay] = awssdk.StringValue(v)
+					delay, err := strconv.Atoi(awssdk.StringValue(v))
+					if err != nil {
+						errc <- err
+					}
+					res.Properties[properties.Delay] = delay
 				}
 
 			}
