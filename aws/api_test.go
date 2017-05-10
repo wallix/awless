@@ -647,7 +647,7 @@ func TestBuildLambdaGraph(t *testing.T) {
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": []string{"func_1_arn", "func_2_arn", "func_3_arn"},
+		"eu-west-1": {"func_1_arn", "func_2_arn", "func_3_arn"},
 	}
 	expectedAppliedOn := map[string][]string{}
 
@@ -728,7 +728,7 @@ func TestBuildMonitoringGraph(t *testing.T) {
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": []string{"awls-4ba90752", "awls-4baa0753", "awls-4bb20753", "awls-4bb30754", "alarm_1", "alarm_2", "alarm_3"},
+		"eu-west-1": {"awls-4ba90752", "awls-4baa0753", "awls-4bb20753", "awls-4bb30754", "alarm_1", "alarm_2", "alarm_3"},
 	}
 	expectedAppliedOn := map[string][]string{}
 

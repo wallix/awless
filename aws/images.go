@@ -196,7 +196,7 @@ var (
 )
 
 func init() {
-	for name, _ := range Platforms {
+	for name := range Platforms {
 		supportedPlatforms = append(supportedPlatforms, name)
 	}
 }
