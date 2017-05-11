@@ -2,7 +2,6 @@ package aws
 
 import (
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -14,11 +13,12 @@ import (
 // Image resolving allows to find AWS AMIs identifiers specifying what you want instead
 // of an id that is specific to a region. The ami query string specification is as follows:
 //
-// OWNER:DISTRO[VARIANT]:ARCH:VIRTUALIZATION:STORE
-// (with everything optional expect for the OWNER)
+// owner:distro:variant:arch:virtualization:store
+//
+// Everything optional expect for the owner.
 //
 // As for now only the main specific owner are taken into account
-// and we deal with bare machine only distribution. Here are some examples:
+// and we deal with bares machines only distribution. Here are some examples:
 //
 // - canonical:ubuntu[trusty]
 //
@@ -37,6 +37,8 @@ type ImageResolver struct {
 	InfraService *Infra
 }
 
+const ImageQuerySpec = "owner:distro:variant:arch:virtualization:store"
+
 type AwsImage struct {
 	Id                 string
 	Owner              string
@@ -50,13 +52,42 @@ type AwsImage struct {
 	Store              string
 }
 
-func (r *ImageResolver) Resolve(query string) ([]*AwsImage, error) {
-	var results []*AwsImage
+type ImageQuery struct {
+	Platform Platform
+	Distro   Distro
+}
 
-	q, err := parseQuery(query)
-	if err != nil {
-		return results, err
-	}
+func (q ImageQuery) String() string {
+	var all []string
+	all = append(all, q.Platform.Name)
+	all = append(all, q.Distro.Name)
+	all = append(all, q.Distro.Variant)
+	all = append(all, q.Distro.Arch)
+	all = append(all, q.Distro.Virt)
+	all = append(all, q.Distro.Store)
+	return strings.Join(all, ":")
+}
+
+type Distro struct {
+	Name, Variant, Arch, Virt, Store string
+}
+
+var (
+	validArchs  = []string{"i386", "x86_64"}
+	validVirts  = []string{"paravirtual", "hvm"}
+	validStores = []string{"ebs", "instance-store"}
+)
+
+type Platform struct {
+	Name          string
+	Id            string
+	DistroName    string
+	LatestVariant string
+	MatchFunc     func(s string, d Distro) bool
+}
+
+func (r *ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
+	results := make([]*AwsImage, 0) // json empty array friendly
 
 	filters := []*ec2.Filter{}
 
@@ -192,85 +223,89 @@ var (
 	defaultVirt  = "hvm"
 	defaultStore = "ebs"
 
-	supportedPlatforms []string
+	SupportedAMIOwners []string
 )
 
 func init() {
 	for name := range Platforms {
-		supportedPlatforms = append(supportedPlatforms, name)
+		SupportedAMIOwners = append(SupportedAMIOwners, name)
 	}
 }
 
-type imageQuery struct {
-	Platform Platform
-	Distro   Distro
-}
+func ParseImageQuery(s string) (ImageQuery, error) {
+	supported := strings.Join(SupportedAMIOwners, ", ")
+	splits := strings.Split(s, ":")
 
-type Distro struct {
-	Name, Variant, Arch, Virt, Store string
-}
+	splitsCount := len(splits)
 
-type Platform struct {
-	Name          string
-	Id            string
-	DistroName    string
-	LatestVariant string
-	MatchFunc     func(s string, d Distro) bool
-}
+	q := ImageQuery{}
 
-var distroVariant = regexp.MustCompile(`\[([^]]*)\]`)
+	if splitsCount < 1 {
+		return q, fmt.Errorf("malformed image query '%s': missing at least one supported owner name: %s", s, supported)
+	}
 
-func parseQuery(s string) (imageQuery, error) {
-	splits := strings.SplitN(s, ":", 5)
-	if len(splits) < 1 {
-		return imageQuery{}, fmt.Errorf("invalid image query: must contains at least the owner name: %s ", strings.Join(supportedPlatforms, ","))
+	if splitsCount > 6 {
+		return q, fmt.Errorf("malformed image query '%s': to many tokens, expecting format: %s", s, ImageQuerySpec)
 	}
 
 	for i, s := range splits {
 		splits[i] = strings.ToLower(s)
 	}
 
-	q := imageQuery{}
-
 	plat, ok := Platforms[splits[0]]
 	if !ok {
-		return imageQuery{}, fmt.Errorf("unsupported owner/platform %s", splits[0])
+		return q, fmt.Errorf("unsupported owner %s. Expecting: ", splits[0], supported)
 	}
 
 	q.Platform = plat
-	q.Distro = Distro{Variant: q.Platform.LatestVariant, Name: q.Platform.DistroName}
 
-	if len(splits) > 1 {
-		distro := splits[1]
-		matches := distroVariant.FindStringSubmatch(distro)
-		if len(matches) == 2 {
-			index := strings.Index(distro, "[")
-			if index != -1 {
-				q.Distro.Name = distro[:index]
-			}
-			q.Distro.Variant = matches[1]
-		} else {
-			q.Distro.Name = distro
-		}
+	if splitsCount > 1 && strings.TrimSpace(splits[1]) != "" {
+		q.Distro.Name = splits[1]
+	} else {
+		q.Distro.Name = q.Platform.DistroName
 	}
 
-	if len(splits) > 2 && strings.TrimSpace(splits[2]) != "" {
-		q.Distro.Arch = splits[2]
+	if splitsCount > 2 && strings.TrimSpace(splits[2]) != "" {
+		q.Distro.Variant = splits[2]
+	} else {
+		q.Distro.Variant = q.Platform.LatestVariant
+	}
+
+	if splitsCount > 3 && strings.TrimSpace(splits[3]) != "" {
+		if !contains(validArchs, splits[3]) {
+			return q, fmt.Errorf("image query: invalid architecture '%s' (expecting: %s)", splits[3], strings.Join(validArchs, ", "))
+		}
+		q.Distro.Arch = splits[3]
 	} else {
 		q.Distro.Arch = defaultArch
 	}
 
-	if len(splits) > 3 && strings.TrimSpace(splits[3]) != "" {
-		q.Distro.Virt = splits[3]
+	if splitsCount > 4 && strings.TrimSpace(splits[4]) != "" {
+		if !contains(validVirts, splits[4]) {
+			return q, fmt.Errorf("image query: invalid virtualization '%s' (expecting: %s)", splits[4], strings.Join(validVirts, ", "))
+		}
+		q.Distro.Virt = splits[4]
 	} else {
 		q.Distro.Virt = defaultVirt
 	}
 
-	if len(splits) > 4 && strings.TrimSpace(splits[4]) != "" {
-		q.Distro.Store = splits[4]
+	if splitsCount > 5 && strings.TrimSpace(splits[5]) != "" {
+		if !contains(validStores, splits[5]) {
+			return q, fmt.Errorf("image query: invalid store '%s' (expecting: %s)", splits[5], strings.Join(validStores, ", "))
+		}
+		q.Distro.Store = splits[5]
 	} else {
 		q.Distro.Store = defaultStore
 	}
 
 	return q, nil
+}
+
+func contains(arr []string, s string) bool {
+	for _, e := range arr {
+		if e == s {
+			return true
+		}
+	}
+	return false
 }

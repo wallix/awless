@@ -18,12 +18,13 @@ package commands
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/logger"
 )
 
@@ -48,19 +49,21 @@ var searchCmd = &cobra.Command{
 var awsImagesCmd = &cobra.Command{
 	Use:              "awsimages",
 	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook),
-	Short:            "Find corresponding images according to an image query",
-	Long:             "Find corresponding images according to an image query. Query string specification:\n\n\t\tOWNER:DISTRO[VARIANT]:ARCH:VIRTUALIZATION:STORE\n\nEverything optional expect for the OWNER",
-	Example:          "  awless search awsimages redhat:rhel[7.2]\n  awless search awsimages canonical --id-only\n  awless search awsimages amazonlinux::::instance-store --ids-only",
+	Short:            fmt.Sprintf("Find corresponding images according to an image query. Supported owners: %s", strings.Join(aws.SupportedAMIOwners, ",")),
+	Long:             fmt.Sprintf("Find corresponding images according to an image query. Query string specification:\n\n\t\t%s\n\nEverything optional expect for the owner.Supported owners: %s", aws.ImageQuerySpec, strings.Join(aws.SupportedAMIOwners, ",")),
+	Example:          "  awless search awsimages redhat:rhel:7.2\n  awless search awsimages canonical --id-only\n  awless search awsimages amazonlinux::::instance-store --ids-only",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
-			exitOn(errors.New("malformed image query string. Expecting: OWNER:DISTRO[VARIANT]:ARCH:VIRTUALIZATION:STORE (with everything optional expect for the OWNER)"))
+			exitOn(fmt.Errorf("expecting image query string. Expecting: %s (with everything optional expect for the owner)", aws.ImageQuerySpec))
 		}
 
 		resolver := &aws.ImageResolver{aws.InfraService.(*aws.Infra)}
 
-		query := args[0]
-		logger.Infof("launching search for image query '%s'", query)
+		query, err := aws.ParseImageQuery(args[0])
+		exitOn(err)
+
+		logger.Infof("launching search for image in '%s' region. Query: '%s'", config.GetAWSRegion(), query)
 		imgs, err := resolver.Resolve(query)
 		exitOn(err)
 
