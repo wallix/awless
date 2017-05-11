@@ -45,11 +45,12 @@ create route cidr=0.0.0.0/0 gateway=\$gateway table=\$rtable
 sgroup = create securitygroup vpc=\$testvpc description="authorize SSH from the Internet" name=ssh-from-internet
 update securitygroup id=\$sgroup inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=22
 testkey = create keypair name=$KEY_NAME
-testinstance = create instance subnet=\$testsubnet image={instance.image} type=t2.nano count={instance.count} keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
+testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count={instance.count} keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
 create tag resource=\$testinstance key=Env value=Testing
 EOF
 
-$BIN run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e -f
+RESOLVED_AMI=$($BIN search images debian::jessie --id-only)
+$BIN run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e -f resolved-image=$RESOLVED_AMI
 
 ALIAS="\@$INSTANCE_NAME"
 eval "$BIN check instance id=$ALIAS state=running timeout=20 -f"
