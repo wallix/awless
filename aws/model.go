@@ -139,6 +139,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	// LoadBalancer
 	cloud.LoadBalancer: {
 		properties.Name:              {name: "LoadBalancerName", transform: extractValueFn},
+		properties.Arn:               {name: "LoadBalancerArn", transform: extractValueFn},
 		properties.AvailabilityZones: {name: "AvailabilityZones", transform: extractStringSliceValues("ZoneName")},
 		properties.Subnets:           {name: "AvailabilityZones", transform: extractStringSliceValues("SubnetId")},
 		properties.Zone:              {name: "CanonicalHostedZoneId", transform: extractValueFn},
@@ -152,6 +153,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	cloud.TargetGroup: {
 		properties.Name:                    {name: "TargetGroupName", transform: extractValueFn},
+		properties.Arn:                     {name: "TargetGroupArn", transform: extractValueFn},
 		properties.CheckInterval:           {name: "HealthCheckIntervalSeconds", transform: extractValueFn},
 		properties.CheckPath:               {name: "HealthCheckPath", transform: extractValueFn},
 		properties.CheckPort:               {name: "HealthCheckPort", transform: extractValueFn},
@@ -165,6 +167,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Vpc:                     {name: "VpcId", transform: extractValueFn},
 	},
 	cloud.Listener: {
+		properties.Arn:          {name: "ListenerArn", transform: extractValueFn},
 		properties.Certificates: {name: "Certificates", transform: extractStringSliceValues("CertificateArn")},
 		properties.Actions:      {name: "DefaultActions", transform: extractStringSliceValues("Type")},
 		properties.LoadBalancer: {name: "LoadBalancerArn", transform: extractValueFn},
@@ -224,6 +227,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	//Autoscaling
 	cloud.LaunchConfiguration: {
 		properties.Name:           {name: "LaunchConfigurationName", transform: extractValueFn},
+		properties.Arn:            {name: "LaunchConfigurationARN", transform: extractValueFn},
 		properties.Public:         {name: "AssociatePublicIpAddress", transform: extractValueFn},
 		properties.Created:        {name: "CreatedTime", transform: extractValueFn},
 		properties.Profile:        {name: "IamInstanceProfile", transform: extractValueFn},
@@ -236,6 +240,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	cloud.ScalingGroup: {
 		properties.Name:                    {name: "AutoScalingGroupName", transform: extractValueFn},
+		properties.Arn:                     {name: "AutoScalingGroupARN", transform: extractValueFn},
 		properties.Created:                 {name: "CreatedTime", transform: extractValueFn},
 		properties.DefaultCooldown:         {name: "DefaultCooldown", transform: extractValueFn},
 		properties.DesiredCapacity:         {name: "DesiredCapacity", transform: extractValueFn},
@@ -249,6 +254,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	cloud.ScalingPolicy: {
 		properties.Name:              {name: "PolicyName", transform: extractValueFn},
+		properties.Arn:               {name: "PolicyARN", transform: extractValueFn},
 		properties.AdjustmentType:    {name: "AdjustmentType", transform: extractValueFn},
 		properties.AlarmNames:        {name: "Alarms", transform: extractStringSliceValues("AlarmName")},
 		properties.ScalingGroupName:  {name: "AutoScalingGroupName", transform: extractValueFn},
