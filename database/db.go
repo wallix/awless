@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	databaseFilename = "awless.db"
+	Filename = "awless.db"
 )
 
 // A DB stores awless config, logs...
@@ -53,7 +53,7 @@ func current() (*DB, error) {
 		return nil, errors.New("database: awless home is not set")
 	}
 
-	path := filepath.Join(awlessHome, databaseFilename)
+	path := filepath.Join(awlessHome, Filename)
 	db, err := open(path)
 	if err != nil {
 		return nil, err

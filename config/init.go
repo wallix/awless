@@ -29,6 +29,7 @@ import (
 
 var (
 	AwlessHome                          = filepath.Join(os.Getenv("HOME"), ".awless")
+	DBPath                              = filepath.Join(AwlessHome, database.Filename)
 	Dir                                 = filepath.Join(AwlessHome, "aws")
 	KeysDir                             = filepath.Join(AwlessHome, "keys")
 	AwlessFirstInstall, AwlessFirstSync bool
@@ -40,7 +41,7 @@ func init() {
 }
 
 func InitAwlessEnv() error {
-	_, err := os.Stat(AwlessHome)
+	_, err := os.Stat(DBPath)
 
 	AwlessFirstInstall = os.IsNotExist(err)
 
