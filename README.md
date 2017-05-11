@@ -35,6 +35,7 @@
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
 - Clean and simple ssh to instances: `awless ssh`
+- Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --id-only`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
@@ -277,6 +278,46 @@ Useful as well, you can also print the SSH config or SSH CLI for any valid insta
 awless ssh my-instance --print-config >> ~/.ssh/config
 # or 
 awless ssh my-instance --print-cli
+```
+
+### Resolving AMIs identifier (`awless search images`)
+
+Amazon Machine Image are region specific. It sometimes becomes impractical to resolve dynamically a specific image distribution or architecture.
+
+To alleviate the issue, the command `awless search images -h` fetches **bares & public & available** AMIs info as JSON against a specific image query.
+
+It is mostly used to render some templates that needs AMI specification agnostic if the region.
+
+The command uses a simple image query string that will be resolve against you current region (i.e. the one from your current CLI session). The image query string format is as follow:
+
+    owner:distro:variant:arch:virtualization:store
+
+With this format:
+
+- only the *owner* field is mandatory. 
+- *owner* value has to be from the list of supported ones (ex: canonical, redhat, debian, amazonlinux, suselinux, microsoftserver). 
+Run the help on the command to know exactly which owners are supported.
+
+Here are some usage examples:
+
+```sh
+# output JSON info on official ubuntu AMIS
+awless search images canonical   
+
+# output the unique AMI id (latest sorted by AMIs creation date) on Ubuntu Trusty 
+awless search images canonical::trusty  --id-only  
+
+# output all the AMIs id of RedHat 6.8 distribution
+awless search images redhat::6.8  --ids-only  
+
+# output all AMIs id for debian with a back storage of instance-store (i.e. not ebs but transient AWS instance storage) 
+awless search images debian:::::instance-store --ids-only
+```
+
+When you want to create instance with a specific distribution and you want your template to be valid accroos region, you can do:
+
+```sh
+awless create instance type=t2.macro image=$(awless search images redhat::7.3 --id-only)
 ```
 
 ### Aliasing
