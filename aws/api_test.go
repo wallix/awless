@@ -730,7 +730,9 @@ func TestBuildMonitoringGraph(t *testing.T) {
 	expectedChildren := map[string][]string{
 		"eu-west-1": {"awls-4ba90752", "awls-4baa0753", "awls-4bb20753", "awls-4bb30754", "alarm_1", "alarm_2", "alarm_3"},
 	}
-	expectedAppliedOn := map[string][]string{}
+	expectedAppliedOn := map[string][]string{
+		"alarm_3": {"awls-4bb30754"},
+	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 }

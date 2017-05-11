@@ -25,6 +25,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/cloud"
@@ -123,7 +124,7 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Bucket:           {addRegionParent},
 	cloud.Function:         {addRegionParent},
 	cloud.Topic:            {addRegionParent},
-	cloud.Alarm:            {addRegionParent},
+	cloud.Alarm:            {addRegionParent, addAlarmMetric},
 	cloud.Metric:           {addRegionParent},
 }
 
@@ -391,7 +392,7 @@ func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
 func addScalingGroupSubnets(g *graph.Graph, i interface{}) error {
 	group, ok := i.(*autoscaling.Group)
 	if !ok {
-		return fmt.Errorf("add autoscaling group relation: not a autoscaling group group, but a %T", i)
+		return fmt.Errorf("add autoscaling group relation: not a autoscaling group, but a %T", i)
 	}
 	parent, err := initResource(group)
 	if err != nil {
@@ -405,6 +406,26 @@ func addScalingGroupSubnets(g *graph.Graph, i interface{}) error {
 			if err != nil {
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+func addAlarmMetric(g *graph.Graph, i interface{}) error {
+	alarm, ok := i.(*cloudwatch.MetricAlarm)
+	if !ok {
+		return fmt.Errorf("add alarm metric relation: not a alarm, but a %T", i)
+	}
+	parent, err := initResource(alarm)
+	if err != nil {
+		return err
+	}
+	if namespace, metric := awssdk.StringValue(alarm.Namespace), awssdk.StringValue(alarm.MetricName); namespace != "" && metric != "" {
+		id := hashFields(namespace, metric)
+		n := graph.InitResource(cloud.Metric, id)
+		err = g.AddAppliesOnRelation(parent, n)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
