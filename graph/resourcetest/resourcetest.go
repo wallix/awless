@@ -121,6 +121,10 @@ func Metric(id string) *rBuilder {
 	return new("metric", id).Prop(properties.ID, id)
 }
 
+func Image(id string) *rBuilder {
+	return new("image", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b
