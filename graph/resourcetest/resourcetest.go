@@ -53,6 +53,10 @@ func LoadBalancer(id string) *rBuilder {
 	return new("loadbalancer", id).Prop(properties.ID, id)
 }
 
+func AvailabilityZone(id string) *rBuilder {
+	return new("availabilityzone", id).Prop(properties.ID, id)
+}
+
 func TargetGroup(id string) *rBuilder {
 	return new("targetgroup", id).Prop(properties.ID, id)
 }

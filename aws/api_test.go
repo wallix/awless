@@ -278,6 +278,10 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{ImageId: awssdk.String("img_2"), Name: awssdk.String("img_2_name"), Architecture: awssdk.String("img_2_arch"), Hypervisor: awssdk.String("img_2_hyper"), CreationDate: awssdk.String("2010-04-01T12:05:01.000Z")},
 	}
 
+	availabilityZones := []*ec2.AvailabilityZone{
+		{ZoneName: awssdk.String("us-west-1a"), State: awssdk.String("available"), RegionName: awssdk.String("us-west-1"), Messages: []*ec2.AvailabilityZoneMessage{{Message: awssdk.String("msg 1")}, {Message: awssdk.String("msg 2")}}},
+		{ZoneName: awssdk.String("us-west-1b")},
+	}
 	//ELB
 	lbPages := []*elbv2.LoadBalancer{
 		{LoadBalancerArn: awssdk.String("lb_1"), LoadBalancerName: awssdk.String("my_loadbalancer"), VpcId: awssdk.String("vpc_1")},
@@ -307,7 +311,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{AutoScalingGroupARN: awssdk.String("asg_arn_2"), AutoScalingGroupName: awssdk.String("asg_name_2"), LaunchConfigurationName: awssdk.String("launchconfig_name"), TargetGroupARNs: []*string{awssdk.String("tg_1"), awssdk.String("tg_2")}},
 	}
 
-	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images}
+	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
 	InfraService = &infra
@@ -316,7 +320,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -350,6 +354,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"sub_2":            resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
 		"sub_3":            resourcetest.Subnet("sub_3").Prop(p.Vpc, "vpc_2").Build(),
 		"sub_4":            resourcetest.Subnet("sub_4").Build(),
+		"us-west-1a":       resourcetest.AvailabilityZone("us-west-1a").Prop(p.Name, "us-west-1a").Prop(p.State, "available").Prop(p.Region, "us-west-1").Prop(p.Messages, []string{"msg 1", "msg 2"}).Build(),
+		"us-west-1b":       resourcetest.AvailabilityZone("us-west-1b").Prop(p.Name, "us-west-1b").Build(),
 		"my_key":           resourcetest.KeyPair("my_key").Build(),
 		"igw_1":            resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
 		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
@@ -370,7 +376,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
