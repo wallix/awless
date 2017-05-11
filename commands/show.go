@@ -100,6 +100,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	displayer, err := console.BuildOptions(
 		console.WithHeaders(console.DefaultsColumnDefinitions[resource.Type()]),
 		console.WithFormat(listingFormat),
+		console.WithMaxWidth(console.GetTerminalWidth()),
 	).SetSource(resource).Build()
 	exitOn(err)
 

@@ -29,8 +29,6 @@ import (
 
 const ascSymbol = " ▲"
 
-const truncateSize = 25
-
 type TimeFormat int
 
 const (
@@ -59,26 +57,12 @@ func (d ColumnDefinitions) resolveKey(name string) string {
 }
 
 type StringColumnDefinition struct {
-	Prop, Friendly  string
-	DisableTruncate bool
-	TruncateRight   bool
-	TruncateSize    int
+	Prop, Friendly string
 }
 
 func (h StringColumnDefinition) format(i interface{}) string {
 	if i == nil {
 		return ""
-	}
-	if !h.DisableTruncate {
-		size := h.TruncateSize
-		if size == 0 {
-			size = truncateSize
-		}
-		if h.TruncateRight {
-			return truncateRight(fmt.Sprint(i), size)
-		} else {
-			return truncateLeft(fmt.Sprint(i), size)
-		}
 	}
 	return fmt.Sprint(i)
 }
@@ -132,6 +116,9 @@ type KeyValuesColumnDefinition struct {
 }
 
 func (h KeyValuesColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
 	ii, ok := i.([]*graph.KeyValue)
 	if !ok {
 		return fmt.Sprintf("invalid keyvalue, got %T", i)

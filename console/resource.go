@@ -26,14 +26,16 @@ import (
 )
 
 type tableResourceDisplayer struct {
-	r       *graph.Resource
-	headers []ColumnDefinition
+	maxwidth int
+	r        *graph.Resource
+	headers  []ColumnDefinition
 }
 
 func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	values := make(table, len(d.r.Properties))
 
 	i := 0
+	propertyNameMaxWith := 13
 	for prop, val := range d.r.Properties {
 		var header ColumnDefinition
 		for _, h := range d.headers {
@@ -42,31 +44,39 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 			}
 		}
 		if header == nil {
-			header = &StringColumnDefinition{Prop: prop, DisableTruncate: true}
-		} else if strheader, ok := header.(StringColumnDefinition); ok {
-			header = &StringColumnDefinition{Prop: strheader.Prop, Friendly: strheader.Friendly, DisableTruncate: true}
+			header = &StringColumnDefinition{Prop: prop}
 		}
 
 		if v := values[i]; v == nil {
 			values[i] = make([]interface{}, 2)
 		}
 		values[i][0] = header.title(false)
+		if l := len(header.title(false)); l > propertyNameMaxWith {
+			propertyNameMaxWith = l
+		}
 		values[i][1] = header.format(val)
 		i++
 	}
 
 	sort.Sort(byCols{table: values, sortBy: []int{0}})
 
+	valueColumnMaxwidth := d.maxwidth - (propertyNameMaxWith + 7) // ( = border + 2 * margin + border + 2 * margin + border)
+	if valueColumnMaxwidth <= 0 {
+		valueColumnMaxwidth = 50
+	}
+
 	table := tablewriter.NewWriter(w)
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetColWidth(70)
+	table.SetColWidth(valueColumnMaxwidth)
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"Property" + ascSymbol, "Value"})
 
+	wraper := autoWraper{maxWidth: valueColumnMaxwidth, wrappingChar: " "}
+
 	for i := range values {
 		if val := fmt.Sprint(values[i][1]); val != "" {
-			table.Append([]string{fmt.Sprint(values[i][0]), val})
+			table.Append([]string{fmt.Sprint(values[i][0]), wraper.Wrap(val)})
 		}
 	}
 

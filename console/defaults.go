@@ -70,24 +70,24 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Vpc},
 		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.InboundRules, Friendly: "Inbound"}},
 		FirewallRulesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.OutboundRules, Friendly: "Outbound"}},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
-		StringColumnDefinition{Prop: properties.Description, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Description},
 	},
 	cloud.InternetGateway: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
-		StringColumnDefinition{Prop: properties.Vpcs, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Vpcs},
 	},
 	cloud.RouteTable: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.Vpc},
 		StringColumnDefinition{Prop: properties.Main},
 		RoutesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Routes}},
 	},
 	cloud.Keypair: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Fingerprint, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Fingerprint},
 	},
 	cloud.Image: {
 		StringColumnDefinition{Prop: properties.ID},
@@ -103,7 +103,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	cloud.ImportImageTask: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Description, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Description},
 		StringColumnDefinition{Prop: properties.Image},
 		StringColumnDefinition{Prop: properties.Progress},
 		StringColumnDefinition{Prop: properties.State},
@@ -111,7 +111,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	cloud.Volume: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.Type},
 		StringColumnDefinition{Prop: properties.State},
 		StorageColumnDefinition{Unit: gb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
@@ -163,7 +163,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.CheckProtocol, Friendly: "HCProtocol"},
 	},
 	cloud.Listener: {
-		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.AlarmActions},
 		StringColumnDefinition{Prop: properties.LoadBalancer},
 		StringColumnDefinition{Prop: properties.Port},
@@ -172,8 +172,8 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	// Database
 	cloud.Database: {
-		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.AvailabilityZone, Friendly: "Zone"},
 		StringColumnDefinition{Prop: properties.Class},
 		ColoredValueColumnDefinition{
@@ -190,10 +190,10 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
 	},
 	cloud.DbSubnetGroup: {
-		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.State, Friendly: "Status"},
 		StringColumnDefinition{Prop: properties.Vpc},
-		StringColumnDefinition{Prop: properties.Subnets, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Subnets},
 		StringColumnDefinition{Prop: properties.Description},
 	},
 	//Autoscaling
@@ -222,43 +222,43 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.PasswordLastUsed, Friendly: "PasswordLastUsed"}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	cloud.Role: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	cloud.Policy: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Updated, Friendly: "Updated"}},
 	},
 	cloud.Group: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	cloud.AccessKey: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.State},
-		StringColumnDefinition{Prop: properties.Username, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Username},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	// S3
 	cloud.Bucket: {
-		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID},
 		GrantsColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Grants}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
 	cloud.S3Object: {
-		StringColumnDefinition{Prop: properties.ID, Friendly: "Name", DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID, Friendly: "Name"},
 		StringColumnDefinition{Prop: properties.Bucket, Friendly: "Bucket"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified, Friendly: "Modified"}},
-		StringColumnDefinition{Prop: properties.Owner, TruncateRight: true},
+		StringColumnDefinition{Prop: properties.Owner},
 		StorageColumnDefinition{Unit: b, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 		StringColumnDefinition{Prop: properties.Class},
 	},
@@ -266,16 +266,16 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	cloud.Subscription: {
 		StringColumnDefinition{Prop: properties.Arn},
 		StringColumnDefinition{Prop: properties.Topic},
-		StringColumnDefinition{Prop: properties.Endpoint, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Endpoint},
 		StringColumnDefinition{Prop: properties.Protocol},
 		StringColumnDefinition{Prop: properties.Owner},
 	},
 	cloud.Topic: {
-		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID},
 	},
 	//Queue
 	cloud.Queue: {
-		StringColumnDefinition{Prop: properties.ID, Friendly: "URL", DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID, Friendly: "URL"},
 		StringColumnDefinition{Prop: properties.ApproximateMessageCount, Friendly: "~NbMsg"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified, Friendly: "LastModif"}},
@@ -283,23 +283,23 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	},
 	// DNS
 	cloud.Zone: {
-		StringColumnDefinition{Prop: properties.ID, DisableTruncate: true},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.Comment},
 		StringColumnDefinition{Prop: properties.Private, Friendly: "Private"},
 		StringColumnDefinition{Prop: properties.RecordCount, Friendly: "Nb Records"},
-		StringColumnDefinition{Prop: properties.CallerReference, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.CallerReference},
 	},
 	cloud.Record: {
-		StringColumnDefinition{Prop: properties.ID, Friendly: "AwlessId", DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.ID, Friendly: "AwlessId"},
 		StringColumnDefinition{Prop: properties.Type},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Records}},
 		StringColumnDefinition{Prop: properties.TTL},
 	},
 	// Lamba
 	cloud.Function: {
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		StorageColumnDefinition{Unit: b, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 		StorageColumnDefinition{Unit: mb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Memory}},
 		StringColumnDefinition{Prop: properties.Runtime},
@@ -310,12 +310,12 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	//Monitoring
 	cloud.Metric: {
 		StringColumnDefinition{Prop: properties.ID},
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.Namespace},
 		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Dimensions}},
 	},
 	cloud.Alarm: {
-		StringColumnDefinition{Prop: properties.Name, DisableTruncate: true},
+		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.Namespace},
 		StringColumnDefinition{Prop: properties.MetricName},
 		StringColumnDefinition{Prop: properties.Description},

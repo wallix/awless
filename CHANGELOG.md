@@ -5,6 +5,8 @@
 - Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`
 - Listing pending import image tasks with `awless list importimagetasks`
 - Deleting images and optionally its related snapshots `awless delete image delete-snapshots=true`
+- Autowrapping results in tables when too long for `awless list`. No longer truncate results in `--format csv/tsv/json`
+- Adjust the width of table columns to the terminal width in `awless show`
 
 ## v0.0.23 [2017-05-05]
 

@@ -33,7 +33,10 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
-const tableMaxColWidthAutowrap = 23
+var (
+	tableColWidth   = 30
+	autowrapMaxSize = 35
+)
 
 type Displayer interface {
 	Print(io.Writer) error
@@ -136,7 +139,7 @@ func (b *Builder) Build() (Displayer, error) {
 			return dis, nil
 		}
 	case *graph.Resource:
-		dis := &tableResourceDisplayer{headers: b.headers}
+		dis := &tableResourceDisplayer{headers: b.headers, maxwidth: b.maxwidth}
 		dis.SetResource(b.dataSource.(*graph.Resource))
 		return dis, nil
 	case *graph.Diff:
@@ -433,17 +436,19 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetColWidth(tableMaxColWidthAutowrap)
+	table.SetColWidth(tableColWidth)
 	var displayHeaders []string
 	for i, h := range columnsToDisplay {
 		displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
 	}
 	table.SetHeader(displayHeaders)
 
+	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
 	for i := range values {
 		var props []string
 		for j, h := range columnsToDisplay {
-			props = append(props, h.format(values[i][j]))
+			val := h.format(values[i][j])
+			props = append(props, wraper.Wrap(val))
 		}
 		table.Append(props)
 	}
@@ -552,14 +557,17 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 	table := tablewriter.NewWriter(w)
 	table.SetAutoMergeCells(true)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetColWidth(tableColWidth)
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 	table.SetHeader([]string{"Type" + ascSymbol, "Name/Id", "Property", "Value"})
 
+	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
+
 	for i := range values {
 		row := make([]string, len(values[i]))
 		for j := range values[i] {
-			row[j] = fmt.Sprint(values[i][j])
+			row[j] = wraper.Wrap(fmt.Sprint(values[i][j]))
 		}
 		table.Append(row)
 	}
@@ -843,15 +851,16 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 
 func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
 	max := tablewriter.DisplayWidth(h.title(hasSortSign))
+	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
 	for i := range t {
-		val := h.format(t[i][j])
+		val := wraper.Wrap(h.format(t[i][j]))
 		valLen := tablewriter.DisplayWidth(val)
-		if valLen > tableMaxColWidthAutowrap {
-			if tableMaxColWidthAutowrap > max {
-				max = tableMaxColWidthAutowrap
+		if valLen > tableColWidth {
+			if tableColWidth > max {
+				max = tableColWidth
 			}
 		}
-		lines, _ := tablewriter.WrapString(val, tableMaxColWidthAutowrap)
+		lines, _ := tablewriter.WrapString(val, tableColWidth)
 		for _, line := range lines {
 			width := tablewriter.DisplayWidth(line)
 			if width > max {

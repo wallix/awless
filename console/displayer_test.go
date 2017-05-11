@@ -449,24 +449,32 @@ func TestMaxWidth(t *testing.T) {
 	}
 
 	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID", TruncateSize: 4, TruncateRight: true},
-		StringColumnDefinition{Prop: "Name", DisableTruncate: true},
-		StringColumnDefinition{Prop: "State", DisableTruncate: true},
-		StringColumnDefinition{Prop: "Type", TruncateSize: 6},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP", DisableTruncate: true},
+		StringColumnDefinition{Prop: "ID"},
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "State"},
+		StringColumnDefinition{Prop: "Type"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
 	}
 
+	autowrapMaxSize = 4
+	tableColWidth = 4
 	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
-	expected = `|  ID  |  NAME  | STATE ▲ |  TYPE  | PUBLIC IP |
-|------|--------|---------|--------|-----------|
-| i... | apache | running | ...rge |           |
-| i... | redis  | running | ...cro | 1.2.3.4   |
-| i... | django | stopped | ...ium |           |
+	expected = `|  ID  | NAME | STATE ▲ | TYPE | PUBLIC IP |
+|------|------|------|------|------|
+| inst | apac | runn | t2.  |      |
+| _3   | he   | ing  | xlar |      |
+|      |      |      | ge   |      |
+| inst | redi | runn | t2.  | 1.2. |
+| _1   | s    | ing  | micr | 3.4  |
+|      |      |      | o    |      |
+| inst | djan | stop | t2.  |      |
+| _2   | go   | ped  | medi |      |
+|      |      |      | um   |      |
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -477,11 +485,11 @@ func TestMaxWidth(t *testing.T) {
 	}
 
 	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID", Friendly: "I", TruncateSize: 5},
-		StringColumnDefinition{Prop: "Name", Friendly: "N", TruncateSize: 5},
-		StringColumnDefinition{Prop: "State", Friendly: "S", TruncateSize: 5},
-		StringColumnDefinition{Prop: "Type", Friendly: "T", TruncateSize: 5},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "P", TruncateSize: 5},
+		StringColumnDefinition{Prop: "ID", Friendly: "I"},
+		StringColumnDefinition{Prop: "Name", Friendly: "N"},
+		StringColumnDefinition{Prop: "State", Friendly: "S"},
+		StringColumnDefinition{Prop: "Type", Friendly: "T"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "P"},
 	}
 
 	displayer, _ = BuildOptions(
@@ -490,11 +498,17 @@ func TestMaxWidth(t *testing.T) {
 		WithSortBy("s", "n"),
 	).SetSource(g).Build()
 
-	expected = `|   I   |   N   |  S ▲  |   T   |   P   |
-|-------|-------|-------|-------|-------|
-| ..._3 | ...he | ...ng | ...ge |       |
-| ..._1 | redis | ...ng | ...ro | ....4 |
-| ..._2 | ...go | ...ed | ...um |       |
+	expected = `|  I   |  N   | S ▲  |  T   |  P   |
+|------|------|------|------|------|
+| inst | apac | runn | t2.  |      |
+| _3   | he   | ing  | xlar |      |
+|      |      |      | ge   |      |
+| inst | redi | runn | t2.  | 1.2. |
+| _1   | s    | ing  | micr | 3.4  |
+|      |      |      | o    |      |
+| inst | djan | stop | t2.  |      |
+| _2   | go   | ped  | medi |      |
+|      |      |      | um   |      |
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -519,6 +533,8 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
+	autowrapMaxSize = 5
+	tableColWidth = 5
 	displayer, _ = BuildOptions(
 		WithHeaders(headers),
 		WithRdfType("instance"),
@@ -528,9 +544,12 @@ func TestMaxWidth(t *testing.T) {
 
 	expected = `|   I   |   N   |  S ▲  |
 |-------|-------|-------|
-| ..._3 | ...he | ...ng |
-| ..._1 | redis | ...ng |
-| ..._2 | ...go | ...ed |
+| inst_ | apach | runni |
+| 3     | e     | ng    |
+| inst_ | redis | runni |
+| 1     |       | ng    |
+| inst_ | djang | stopp |
+| 2     | o     | ed    |
 Columns truncated to fit terminal: 'T', 'P'
 `
 	w.Reset()

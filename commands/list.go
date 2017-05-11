@@ -108,6 +108,7 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 			g := sync.LoadCurrentLocalGraph(srvName)
 			displayer, err := console.BuildOptions(
 				console.WithFormat(listingFormat),
+				console.WithMaxWidth(console.GetTerminalWidth()),
 				console.WithIDsOnly(listOnlyIDs),
 			).SetSource(g).Build()
 			exitOn(err)
