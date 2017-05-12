@@ -49,18 +49,16 @@ var (
 		checkReferencesDeclaration,
 		resolveHolesPass,
 		resolveMissingHolesPass,
+		replaceVariableValuePass,
+		removeValueStatementsPass,
 		resolveAliasPass,
 	}
 
-	NormalCompileMode = []compileFunc{
-		resolveAgainstDefinitions,
-		checkReferencesDeclaration,
-		resolveHolesPass,
-		resolveMissingHolesPass,
-		resolveAliasPass,
+	NormalCompileMode = append(
+		LenientCompileMode,
 		failOnUnresolvedHoles,
 		failOnUnresolvedAlias,
-	}
+	)
 )
 
 func Compile(tpl *Template, env *Env, mode ...Mode) (*Template, *Env, error) {
@@ -99,6 +97,9 @@ func (p *multiPass) compile(tpl *Template, env *Env) (newTpl *Template, newEnv *
 }
 
 func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error) {
+	if env.DefLookupFunc == nil {
+		return tpl, env, fmt.Errorf("definition lookup function is undefined")
+	}
 	each := func(cmd *ast.CommandNode) error {
 		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
 		def, ok := env.DefLookupFunc(key)
@@ -185,21 +186,52 @@ func checkReferencesDeclaration(tpl *Template, env *Env) (*Template, *Env, error
 		}
 	})
 
-	declRefs := make(map[string]struct{})
-	tpl.visitCommandDeclarationNodes(func(decl *ast.DeclarationNode) {
-		declRefs[decl.Ident] = struct{}{}
-	})
+	knownRefs := make(map[string]bool)
+	unusedRefs := make(map[string]bool)
 
-	for r := range usedRefs {
-		if _, ok := declRefs[r]; !ok {
-			return tpl, env, fmt.Errorf("using reference '$%s' but '%s' is undefined in template\n", r, r)
+	var each = func(cmd *ast.CommandNode) error {
+		for _, ref := range cmd.Refs {
+			if _, ok := knownRefs[ref]; !ok {
+				return fmt.Errorf("using reference '$%s' but '%s' is undefined in template\n", ref, ref)
+			}
+			if _, ok := unusedRefs[ref]; ok {
+				delete(unusedRefs, ref)
+			}
+		}
+		return nil
+	}
+
+	for _, st := range tpl.Statements {
+		switch n := st.Node.(type) {
+		case *ast.CommandNode:
+			if err := each(n); err != nil {
+				return tpl, env, err
+			}
+		case *ast.DeclarationNode:
+			expr := st.Node.(*ast.DeclarationNode).Expr
+			switch nn := expr.(type) {
+			case *ast.CommandNode:
+				if err := each(nn); err != nil {
+					return tpl, env, err
+				}
+			}
+		}
+		if decl, isDecl := st.Node.(*ast.DeclarationNode); isDecl {
+			ref := decl.Ident
+			if _, ok := knownRefs[ref]; ok {
+				return tpl, env, fmt.Errorf("using reference '$%s' but '%s' has already been assigned in template\n", ref, ref)
+			}
+			knownRefs[ref] = true
+			unusedRefs[ref] = true
 		}
 	}
 
-	for r := range declRefs {
-		if _, ok := usedRefs[r]; !ok {
-			return tpl, env, fmt.Errorf("unused reference '%s' in template\n", r)
-		}
+	var unused []string
+	for ref := range unusedRefs {
+		unused = append(unused, ref)
+	}
+	if len(unused) > 0 {
+		return tpl, env, fmt.Errorf("unused reference '%s' in template\n", strings.Join(unused, "','"))
 	}
 
 	return tpl, env, nil
@@ -210,24 +242,51 @@ func resolveHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 		env.Resolved = make(map[string]interface{})
 	}
 
-	each := func(cmd *ast.CommandNode) {
-		processed := cmd.ProcessHoles(env.Fillers)
-		for key, v := range processed {
-			env.Resolved[cmd.Entity+"."+key] = v
-		}
-	}
-
-	tpl.visitCommandNodes(each)
+	tpl.visitHoles(func(h ast.WithHoles) {
+		h.ProcessHoles(env.Fillers)
+	})
 
 	env.Log.ExtraVerbosef("holes resolved: %v", env.Resolved)
 
 	return tpl, env, nil
 }
 
+func replaceVariableValuePass(tpl *Template, env *Env) (*Template, *Env, error) {
+	toReplace := make(map[string]interface{})
+
+	tpl.visitDeclarationNodes(func(decl *ast.DeclarationNode) {
+		if value, isValueNode := decl.Expr.(*ast.ValueNode); isValueNode && value.IsResolved() {
+			toReplace[decl.Ident] = decl.Expr.Result()
+		}
+	})
+	tpl.visitCommandNodes(func(n *ast.CommandNode) {
+		n.ProcessRefs(toReplace)
+	})
+
+	env.Log.ExtraVerbosef("variable resolved: %v", toReplace)
+
+	return tpl, env, nil
+}
+
+func removeValueStatementsPass(tpl *Template, env *Env) (*Template, *Env, error) {
+	newTpl := &Template{ID: tpl.ID, AST: tpl.AST.Clone()}
+	newTpl.Statements = []*ast.Statement{}
+	for _, stmt := range tpl.Statements {
+		if dcl, isDeclaration := stmt.Node.(*ast.DeclarationNode); isDeclaration {
+			if value, isValueNode := dcl.Expr.(*ast.ValueNode); isValueNode && value.IsResolved() {
+				continue
+			}
+		}
+		newTpl.Statements = append(newTpl.Statements, stmt)
+	}
+
+	return newTpl, env, nil
+}
+
 func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	uniqueHoles := make(map[string]struct{})
-	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		for _, v := range cmd.Holes {
+	tpl.visitHoles(func(h ast.WithHoles) {
+		for _, v := range h.GetHoles() {
 			uniqueHoles[v] = struct{}{}
 		}
 	})
@@ -236,7 +295,6 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 		sortedHoles = append(sortedHoles, k)
 	}
 	sort.Strings(sortedHoles)
-
 	fillers := make(map[string]interface{})
 	for _, k := range sortedHoles {
 		if env.MissingHolesFunc != nil {
@@ -245,8 +303,8 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 		}
 	}
 
-	tpl.visitCommandNodes(func(expr *ast.CommandNode) {
-		expr.ProcessHoles(fillers)
+	tpl.visitHoles(func(h ast.WithHoles) {
+		h.ProcessHoles(fillers)
 	})
 
 	return tpl, env, nil

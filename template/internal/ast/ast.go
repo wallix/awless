@@ -52,6 +52,11 @@ type ExpressionNode interface {
 	Err() error
 }
 
+type WithHoles interface {
+	ProcessHoles(fills map[string]interface{}) (processed map[string]interface{})
+	GetHoles() []string
+}
+
 type CommandNode struct {
 	CmdResult interface{}
 	CmdErr    error
@@ -76,6 +81,52 @@ func (n *CommandNode) Keys() (keys []string) {
 		keys = append(keys, k)
 	}
 
+	return
+}
+
+type ValueNode struct {
+	Value interface{}
+	Hole  string
+}
+
+func (n *ValueNode) clone() Node {
+	return &ValueNode{
+		Value: n.Value,
+		Hole:  n.Hole,
+	}
+}
+
+func (n *ValueNode) String() string {
+	if n.Hole != "" {
+		return fmt.Sprintf("{%s}", n.Hole)
+	}
+	return printParamValue(n.Value)
+}
+
+func (n *ValueNode) Result() interface{} { return n.Value }
+func (n *ValueNode) Err() error          { return nil }
+
+func (n *ValueNode) IsResolved() bool {
+	return n.Hole == ""
+}
+
+func (n *ValueNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
+	processed := make(map[string]interface{})
+	if n.Hole == "" {
+		return processed
+	}
+	if val, ok := fills[n.Hole]; ok {
+		n.Value = val
+		processed[n.Hole] = val
+		n.Hole = ""
+	}
+	return processed
+}
+
+func (n *ValueNode) GetHoles() (holes []string) {
+	if n.Hole != "" {
+		holes = append(holes, n.Hole)
+	}
 	return
 }
 
@@ -132,17 +183,7 @@ func (n *CommandNode) String() string {
 		all = append(all, fmt.Sprintf("%s=$%s", k, v))
 	}
 	for k, v := range n.Params {
-		switch vv := v.(type) {
-		case nil:
-			continue
-		case []string:
-			all = append(all, fmt.Sprintf("%s=%s", k, strings.Join(vv, ",")))
-		case string:
-			all = append(all, fmt.Sprintf("%s=%s", k, quoteStringIfNeeded(vv)))
-		default:
-			all = append(all, fmt.Sprintf("%s=%v", k, v))
-		}
-
+		all = append(all, fmt.Sprintf("%s=%s", k, printParamValue(v)))
 	}
 	for k, v := range n.Holes {
 		all = append(all, fmt.Sprintf("%s={%s}", k, v))
@@ -159,7 +200,19 @@ func (n *CommandNode) String() string {
 	}
 
 	return buff.String()
+}
 
+func printParamValue(i interface{}) string {
+	switch ii := i.(type) {
+	case nil:
+		return ""
+	case []string:
+		return strings.Join(ii, ",")
+	case string:
+		return quoteStringIfNeeded(ii)
+	default:
+		return fmt.Sprintf("%v", i)
+	}
 }
 
 func (n *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
@@ -170,11 +223,18 @@ func (n *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]inte
 	for key, hole := range n.Holes {
 		if val, ok := fills[hole]; ok {
 			n.Params[key] = val
-			processed[key] = val
+			processed[n.Entity+"."+key] = val
 			delete(n.Holes, key)
 		}
 	}
 	return processed
+}
+
+func (n *CommandNode) GetHoles() (holes []string) {
+	for _, h := range n.Holes {
+		holes = append(holes, h)
+	}
+	return
 }
 
 func (n *CommandNode) ProcessRefs(fills map[string]interface{}) {

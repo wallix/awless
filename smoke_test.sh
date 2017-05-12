@@ -34,7 +34,8 @@ SUBNET_NAME=subnet-$SUFFIX
 KEY_NAME=awless-integ-test-key
 
 /bin/cat > $TMP_FILE <<EOF
-testvpc = create vpc cidr={vpc-cidr} name=$VPC_NAME
+vpcname = $VPC_NAME
+testvpc = create vpc cidr={vpc-cidr} name=\$vpcname
 testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc name=$SUBNET_NAME
 gateway = create internetgateway
 attach internetgateway id=\$gateway vpc=\$testvpc
@@ -42,10 +43,12 @@ update subnet id=\$testsubnet public=true
 rtable = create routetable vpc=\$testvpc
 attach routetable id=\$rtable subnet=\$testsubnet
 create route cidr=0.0.0.0/0 gateway=\$gateway table=\$rtable
-sgroup = create securitygroup vpc=\$testvpc description="authorize SSH from the Internet" name=ssh-from-internet
+sgroupdesc = "authorize SSH from the Internet"
+sgroup = create securitygroup vpc=\$testvpc description=\$sgroupdesc name=ssh-from-internet
 update securitygroup id=\$sgroup inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=22
 testkey = create keypair name=$KEY_NAME
-testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count={instance.count} keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
+instancecount = {instance.count} # testing var assignement from hole
+testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
 create tag resource=\$testinstance key=Env value=Testing
 EOF
 

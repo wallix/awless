@@ -6,13 +6,14 @@ type Peg Peg {
 }
 
 Script   <- (BlankLine* Statement BlankLine*)+ WhiteSpacing EndOfFile
-Statement <- WhiteSpacing (Expr / Declaration / Comment) WhiteSpacing EndOfLine*
+Statement <- WhiteSpacing (CmdExpr / Declaration / Comment) WhiteSpacing EndOfLine*
 Action <- [a-z]+
 Entity <- [a-z0-9]+
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
                Equal
-               Expr
-Expr <- <Action> { p.addAction(text) }
+               ( CmdExpr / ValueExpr )
+ValueExpr <- { p.addValue() } NoRefValue { p.LineDone() }
+CmdExpr <- <Action> { p.addAction(text) }
         MustWhiteSpacing <Entity> { p.addEntity(text) }
         (MustWhiteSpacing Params)? { p.LineDone() }
 
@@ -24,8 +25,7 @@ Param <- <Identifier> { p.addParamKey(text) }
 
 Identifier <- [a-zA-Z0-9-_.]+
 
-Value <- HoleValue {  p.addParamHoleValue(text) }
-        / RefValue {  p.addParamRefValue(text) }
+NoRefValue <- HoleValue {  p.addParamHoleValue(text) }
         / AliasValue {  p.addAliasParam(text) }
         / DoubleQuote CustomTypedValue DoubleQuote
         / SingleQuote CustomTypedValue SingleQuote
@@ -34,6 +34,9 @@ Value <- HoleValue {  p.addParamHoleValue(text) }
         / SingleQuote <SingleQuotedValue> { p.addParamValue(text) } SingleQuote
         / <IntValue> { p.addParamIntValue(text) }
         / <StringValue> { p.addParamValue(text) }
+
+Value <- RefValue {  p.addParamRefValue(text) }
+      / NoRefValue
         
 CustomTypedValue <- <CidrValue> { p.addParamCidrValue(text) }
         / <IpValue> { p.addParamIpValue(text) }

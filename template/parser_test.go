@@ -542,6 +542,37 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 					return err
 				},
 			},
+			{
+				input: `
+			myname  =   "my var-value"
+mysubnet = create subnet vpc=$myvpc name=$myname cidr=10.0.0.0/25
+mysecondvar = {var-hole}
+                       `,
+
+				verifyFn: func(s *Template) error {
+					err := assertVariableDeclarationNode(s.Statements[0].Node, "myname", "my var-value", "")
+					if err != nil {
+						return err
+					}
+
+					err = assertDeclarationNode(s.Statements[1].Node, "mysubnet", "create", "subnet",
+						map[string]string{"vpc": "myvpc", "name": "myname"},
+						map[string]interface{}{"cidr": "10.0.0.0/25"},
+						map[string]string{},
+						map[string]string{},
+					)
+					if err != nil {
+						return err
+					}
+
+					err = assertVariableDeclarationNode(s.Statements[2].Node, "mysecondvar", nil, "var-hole")
+					if err != nil {
+						return err
+					}
+
+					return err
+				},
+			},
 		}
 
 		for _, tcase := range tcases {
@@ -621,6 +652,29 @@ func assertHoles(n ast.Node, expected map[string]string) error {
 
 	cmd := extractCommandNode(n)
 	return compare(cmd.Holes, expected)
+}
+
+func assertVariableDeclarationNode(n ast.Node, expIdent string, value interface{}, hole string) error {
+	if err := isDeclarationNode(n); err != nil {
+		return err
+	}
+
+	decl := n.(*ast.DeclarationNode)
+	if got, want := decl.Ident, expIdent; got != want {
+		return fmt.Errorf("ident: got '%s' want '%s'", got, want)
+	}
+	if err := isValueNode(decl.Expr); err != nil {
+		return err
+	}
+	val := decl.Expr.(*ast.ValueNode)
+	if got, want := val.Value, value; got != want {
+		return fmt.Errorf("value: got '%s' want '%s'", got, want)
+	}
+	if got, want := val.Hole, hole; got != want {
+		return fmt.Errorf("hole: got '%s' want '%s'", got, want)
+	}
+
+	return nil
 }
 
 func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
@@ -704,6 +758,15 @@ func isDeclarationNode(n ast.Node) error {
 	case *ast.DeclarationNode:
 	default:
 		return errors.New("expected declaration node")
+	}
+	return nil
+}
+
+func isValueNode(n ast.Node) error {
+	switch n.(type) {
+	case *ast.ValueNode:
+	default:
+		return errors.New("expected value node")
 	}
 	return nil
 }

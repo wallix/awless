@@ -132,6 +132,14 @@ func (t *Template) UniqueDefinitions(fn DefinitionLookupFunc) (definitions Defin
 	return
 }
 
+func (s *Template) visitHoles(fn func(n ast.WithHoles)) {
+	for _, n := range s.expressionNodesIterator() {
+		if h, ok := n.(ast.WithHoles); ok {
+			fn(h)
+		}
+	}
+}
+
 func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {
 	for _, cmd := range s.CommandNodesIterator() {
 		fn(cmd)
@@ -151,6 +159,12 @@ func (s *Template) visitCommandNodesE(fn func(n *ast.CommandNode) error) error {
 func (s *Template) visitCommandDeclarationNodes(fn func(n *ast.DeclarationNode)) {
 	for _, cmd := range s.commandDeclarationNodesIterator() {
 		fn(cmd)
+	}
+}
+
+func (s *Template) visitDeclarationNodes(fn func(n *ast.DeclarationNode)) {
+	for _, dcl := range s.declarationNodesIterator() {
+		fn(dcl)
 	}
 }
 
@@ -188,14 +202,33 @@ func (s *Template) CmdNodesReverseIterator() (nodes []*ast.CommandNode) {
 }
 
 func (s *Template) commandDeclarationNodesIterator() (nodes []*ast.DeclarationNode) {
+	for _, node := range s.declarationNodesIterator() {
+		expr := node.Expr
+		switch expr.(type) {
+		case *ast.CommandNode:
+			nodes = append(nodes, node)
+		}
+	}
+	return
+}
+
+func (s *Template) declarationNodesIterator() (nodes []*ast.DeclarationNode) {
 	for _, sts := range s.Statements {
-		switch sts.Node.(type) {
+		switch n := sts.Node.(type) {
 		case *ast.DeclarationNode:
-			expr := sts.Node.(*ast.DeclarationNode).Expr
-			switch expr.(type) {
-			case *ast.CommandNode:
-				nodes = append(nodes, sts.Node.(*ast.DeclarationNode))
-			}
+			nodes = append(nodes, n)
+		}
+	}
+	return
+}
+
+func (s *Template) expressionNodesIterator() (nodes []ast.ExpressionNode) {
+	for _, sts := range s.Statements {
+		switch n := sts.Node.(type) {
+		case *ast.DeclarationNode:
+			nodes = append(nodes, n.Expr)
+		case *ast.CommandNode:
+			nodes = append(nodes, n)
 		}
 	}
 	return

@@ -4,7 +4,118 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/wallix/awless/template/internal/ast"
 )
+
+func TestWholeCompilation(t *testing.T) {
+	env := NewEnv()
+
+	env.AddFillers(map[string]interface{}{
+		"instance.type":  "t2.micro",
+		"test.cidr":      "10.0.2.0/24",
+		"instance.count": "42",
+	})
+	env.AliasFunc = func(e, k, v string) string {
+		vals := map[string]string{
+			"vpc": "vpc-1234",
+		}
+		return vals[v]
+	}
+	env.DefLookupFunc = func(in string) (Definition, bool) {
+		t, ok := DefsExample[in]
+		return t, ok
+	}
+
+	tcases := []struct {
+		tpl    string
+		expect string
+	}{
+		{
+			`subnetname = my-subnet
+vpcref=@vpc
+testsubnet = create subnet cidr={test.cidr} vpc=$vpcref name=$subnetname
+update subnet id=$testsubnet public=true
+instancecount = {instance.count}
+create instance subnet=$testsubnet image=ami-12345 count=$instancecount name='my test instance'`,
+			`testsubnet = create subnet cidr=10.0.2.0/24 name=my-subnet vpc=vpc-1234
+update subnet id=$testsubnet public=true
+create instance count=42 image=ami-12345 name='my test instance' subnet=$testsubnet type=t2.micro`,
+		},
+	}
+
+	for i, tcase := range tcases {
+		inTpl := MustParse(tcase.tpl)
+
+		pass := newMultiPass(NormalCompileMode...)
+
+		compiled, _, err := pass.compile(inTpl, env)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err != nil {
+			t.Fatalf("%d: %s", i+1, err)
+		}
+
+		if got, want := compiled.String(), tcase.expect; got != want {
+			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
+		}
+	}
+}
+
+func TestReplaceVariableWithValue(t *testing.T) {
+	env := NewEnv()
+	tcases := []struct {
+		tpl      string
+		expError string
+		expTpl   string
+	}{
+		{"ip = 127.0.0.1\ncreate instance ip=$ip", "", "ip = 127.0.0.1\ncreate instance ip=127.0.0.1"},
+		{"ip = 1.2.3.4\ncreate instance ip=$ip\ncreate subnet cidr=$ip", "", "ip = 1.2.3.4\ncreate instance ip=1.2.3.4\ncreate subnet cidr=1.2.3.4"},
+	}
+
+	for i, tcase := range tcases {
+		inTpl := MustParse(tcase.tpl)
+
+		resolvedTpl, _, err := replaceVariableValuePass(inTpl, env)
+		if tcase.expError != "" {
+			if err == nil {
+				t.Fatalf("%d: expected error, got nil", i+1)
+			}
+			if got, want := err.Error(), tcase.expError; !strings.Contains(got, want) {
+				t.Fatalf("%d: got %s, want %s", i+1, got, want)
+			}
+			continue
+		}
+		if got, want := resolvedTpl.String(), tcase.expTpl; got != want {
+			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
+		}
+	}
+}
+
+func TestRemoveVariablesPass(t *testing.T) {
+	env := NewEnv()
+	tcases := []struct {
+		tpl    string
+		expTpl string
+	}{
+		{"ip = 127.0.0.1\ncreate instance ip=127.0.0.1", "create instance ip=127.0.0.1"},
+		{"ip = 1.2.3.4\ncreate instance ip=1.2.3.4\ncreate subnet cidr=2.3.4.5\nsubnet=2.3.4.5", "create instance ip=1.2.3.4\ncreate subnet cidr=2.3.4.5"},
+		{"ip = {elasticip}\ncreate instance ip=$ip", "ip = {elasticip}\ncreate instance ip=$ip"},
+	}
+
+	for i, tcase := range tcases {
+		inTpl := MustParse(tcase.tpl)
+
+		resolvedTpl, _, err := removeValueStatementsPass(inTpl, env)
+		if err != nil {
+			t.Fatalf("%d: %v", i+1, err)
+		}
+		if got, want := resolvedTpl.String(), tcase.expTpl; got != want {
+			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
+		}
+	}
+}
 
 func TestDefaultEnvWithNilFunc(t *testing.T) {
 	text := "create instance name={instance.name} subnet=@mysubnet"
@@ -39,30 +150,29 @@ func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
 }
 
 func TestCheckReferencesDeclarationPass(t *testing.T) {
-	env := NewEnv()
-	tpl := MustParse(`
-	sub = create subnet
-	inst = create instance subnet=$sub
-	create instance subnet=$inst_2
-	`)
 
-	_, _, err := checkReferencesDeclaration(tpl, env)
-	if err == nil ||
-		!strings.Contains(err.Error(), "undefined") ||
-		!strings.Contains(err.Error(), "inst_2") {
-		t.Fatalf("expected err with specific words. Got %s", err)
+	env := NewEnv()
+	tcases := []struct {
+		tpl    string
+		expErr string
+	}{
+		{"sub = create subnet\ninst = create instance subnet=$sub\nip = 127.0.0.1\ncreate instance subnet=$inst ip=$ip", ""},
+		{"sub = create subnet\ninst = create instance subnet=$sub\ninst = create instance", "'inst' has already been assigned in template"},
+		{"sub = create subnet\ninst = create instance subnet=$sub\ncreate instance subnet=$inst_2", "'inst_2' is undefined in template"},
+		{"sub = create subnet\ncreate vpc cidr=10.0.0.0/4", "unused reference 'sub' in template"},
+		{"create instance subnet=$sub\nsub = create subnet", "'sub' is undefined in template"},
+		{"create instance\nip = 127.0.0.1", "unused reference 'ip'"},
+		{"new_inst = create instance autoref=$new_inst\n", "'new_inst' is undefined in template"},
 	}
 
-	tpl = MustParse(`
-	sub = create subnet
-	create vpc cidr=10.0.0.0/4
-	`)
-
-	_, _, err = checkReferencesDeclaration(tpl, env)
-	if err == nil ||
-		!strings.Contains(err.Error(), "unused") ||
-		!strings.Contains(err.Error(), "sub") {
-		t.Fatalf("expected err with specific words. Got %s", err)
+	for i, tcase := range tcases {
+		_, _, err := checkReferencesDeclaration(MustParse(tcase.tpl), env)
+		if tcase.expErr == "" && err != nil {
+			t.Fatalf("%d: %v", i+1, err)
+		}
+		if tcase.expErr != "" && (err == nil || !strings.Contains(err.Error(), tcase.expErr)) {
+			t.Fatalf("%d: got %v, expected %s", i+1, err, tcase.expErr)
+		}
 	}
 }
 
@@ -91,11 +201,11 @@ func TestResolveAgainstDefinitionsPass(t *testing.T) {
 	})
 
 	t.Run("Err on unexisting templ def", func(t *testing.T) {
-		tpl := MustParse(`create subnet type=t2.micro`)
+		tpl := MustParse(`create none type=t2.micro`)
 
 		_, _, err := resolveAgainstDefinitions(tpl, env)
-		if err == nil || !strings.Contains(err.Error(), "createsubnet") {
-			t.Fatalf("expected err with message containing 'createsubnet'")
+		if err == nil || !strings.Contains(err.Error(), "createnone") {
+			t.Fatalf("expected err with message containing 'createnone'")
 		}
 	})
 
@@ -132,7 +242,8 @@ func TestResolveAgainstDefinitionsPass(t *testing.T) {
 
 func TestResolveMissingHolesPass(t *testing.T) {
 	tpl := MustParse(`
-	create instance subnet={instance.subnet} type={instance.type} name={redis.prod}
+	ip = {instance.elasticip}
+	create instance subnet={instance.subnet} type={instance.type} name={redis.prod} ip=$ip
 	create vpc cidr={vpc.cidr}
 	create instance name={redis.prod} id={redis.prod} count=3`)
 
@@ -147,6 +258,8 @@ func TestResolveMissingHolesPass(t *testing.T) {
 			return "redis-124.32.34.54"
 		case "vpc.cidr":
 			return "10.0.0.0/24"
+		case "instance.elasticip":
+			return "1.2.3.4"
 		default:
 			return ""
 		}
@@ -160,9 +273,13 @@ func TestResolveMissingHolesPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := count, 3; got != want {
+	if got, want := count, 4; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+
+	assertVariableValues(t, tpl,
+		"1.2.3.4",
+	)
 	assertCmdParams(t, tpl,
 		map[string]interface{}{"type": "t2.micro", "name": "redis-124.32.34.54", "subnet": "sub-98765"},
 		map[string]interface{}{"cidr": "10.0.0.0/24"},
@@ -214,6 +331,17 @@ func TestResolveHolesPass(t *testing.T) {
 type params map[string]interface{}
 type holes map[string]string
 type refs map[string]string
+
+func assertVariableValues(t *testing.T, tpl *Template, exp ...interface{}) {
+	for i, decl := range tpl.expressionNodesIterator() {
+		if vn, ok := decl.(*ast.ValueNode); ok {
+			if got, want := vn.Value, exp[i]; !reflect.DeepEqual(got, want) {
+				t.Fatalf("variables value %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
+			}
+		}
+
+	}
+}
 
 func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
 	for i, cmd := range tpl.CommandNodesIterator() {

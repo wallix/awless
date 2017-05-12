@@ -32,7 +32,7 @@ func Parse(text string) (tmpl *Template, err error) {
 		if rerr := recover(); rerr != nil {
 			switch rerr.(type) {
 			case error:
-				err = rerr.(error)
+				err = fmt.Errorf("template parsing: %s", rerr.(error))
 			default:
 				panic(rerr)
 			}
