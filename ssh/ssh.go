@@ -71,6 +71,7 @@ func (c *Client) SetLogger(l *logger.Logger) {
 }
 
 func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
+	var failures int
 	for _, user := range usernames {
 		c.logger.Verbosef("trying with user %s", user)
 		client, err := gossh.Dial("tcp", c.IP+":22", c.buildClientConfig(user))
@@ -80,6 +81,10 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 			break
 		}
 		if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
+			failures++
+			if len(usernames) == failures {
+				return c, fmt.Errorf("with users %q: %s", usernames, err)
+			}
 			continue
 		} else if err != nil {
 			return c, err
@@ -90,16 +95,20 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 }
 
 func (c *Client) Connect() error {
-	defer c.Client.Close()
+	defer func() {
+		if c.Client != nil {
+			c.Client.Close()
+		}
+	}()
 
 	args, installed := c.localExec()
 	if installed {
 		c.logger.Infof("Login as '%s' on '%s', using keypair '%s' with ssh client '%s'\n", c.User, c.IP, c.Keypath, args[0])
 		return syscall.Exec(args[0], args, os.Environ())
-	} else {
-		c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using keypair '%s'\n", c.User, c.IP, c.Keypath)
-		return c.InteractiveTerminalFunc(c.Client)
 	}
+
+	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using keypair '%s'\n", c.User, c.IP, c.Keypath)
+	return c.InteractiveTerminalFunc(c.Client)
 }
 
 func (c *Client) buildClientConfig(username string) *gossh.ClientConfig {
