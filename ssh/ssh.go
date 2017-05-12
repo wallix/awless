@@ -33,17 +33,6 @@ type Client struct {
 	logger                  *logger.Logger
 }
 
-type Credentials struct {
-	IP      string
-	User    string
-	KeyPath string
-}
-
-type privateKey struct {
-	path string
-	body []byte
-}
-
 func InitClient(keypath string, disableStrictHostKeyChecking bool) (*Client, error) {
 	privkey, err := resolvePrivateKey(keypath)
 	if err != nil {
@@ -190,6 +179,11 @@ func resolveSigner(priv privateKey) (gossh.Signer, error) {
 	}
 
 	return signer, err
+}
+
+type privateKey struct {
+	path string
+	body []byte
 }
 
 func resolvePrivateKey(path string) (priv privateKey, err error) {
