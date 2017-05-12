@@ -1,4 +1,4 @@
-package console
+package ssh
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"golang.org/x/crypto/ssh"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 func TestCheckHostKey(t *testing.T) {
@@ -37,24 +37,24 @@ func TestCheckHostKey(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ecdsa1, _, _, _, err := ssh.ParseAuthorizedKey([]byte("1.2.3.4 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBFJz/HFJUq6SaXD5FdLe6ddIpmNPFim7E3NkNCSNurDun/h3BOIzNGfuseyMn32n24oQayhjkX8eGqevJIA38E="))
+	ecdsa1, _, _, _, err := gossh.ParseAuthorizedKey([]byte("1.2.3.4 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBFJz/HFJUq6SaXD5FdLe6ddIpmNPFim7E3NkNCSNurDun/h3BOIzNGfuseyMn32n24oQayhjkX8eGqevJIA38E="))
 	if err != nil {
 		t.Fatalf("error parsing ecdsa1: %s", err)
 	}
-	ecdsa2, _, _, _, err := ssh.ParseAuthorizedKey([]byte("3.4.5.6 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBKl6fXNb/yA0w7brzqNuOCwLJ/aPEMerl7/lsF0Y/1oafD2bxzj+QsEZo4XK/kvwCjqQArFO5nET+Tz015C6Kk="))
+	ecdsa2, _, _, _, err := gossh.ParseAuthorizedKey([]byte("3.4.5.6 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBKl6fXNb/yA0w7brzqNuOCwLJ/aPEMerl7/lsF0Y/1oafD2bxzj+QsEZo4XK/kvwCjqQArFO5nET+Tz015C6Kk="))
 	if err != nil {
 		t.Fatalf("error parsing ecdsa1: %s", err)
 	}
-	knownKeys := make(map[string]ssh.PublicKey)
+	knownKeys := make(map[string]gossh.PublicKey)
 	numberKeysAdded := 0
-	trustKeyFunc = func(hostname string, remote net.Addr, key ssh.PublicKey, _ string) bool {
+	trustKeyFunc = func(hostname string, remote net.Addr, key gossh.PublicKey, _ string) bool {
 		knownKeys[hostname] = key
 		numberKeysAdded++
 		return true
 	}
 	tcases := []struct {
 		ip     string
-		key    ssh.PublicKey
+		key    gossh.PublicKey
 		expErr string
 	}{
 		{"1.2.3.4", ecdsa1, ""},
@@ -90,7 +90,7 @@ To get rid of this message, update '%[1]s:2'`, knowHostsFile)},
 			t.Fatalf("case %d: got '%s', want '%s'", i+1, got, want)
 		}
 	}
-	expectedKnownKeys := map[string]ssh.PublicKey{
+	expectedKnownKeys := map[string]gossh.PublicKey{
 		"2.3.4.5:22": ecdsa1,
 	}
 	if got, want := numberKeysAdded, 1; got != want {

@@ -19,6 +19,8 @@ package console
 import (
 	"strings"
 	"testing"
+
+	"github.com/wallix/awless/ssh"
 )
 
 func TestGenerateKeyPair(t *testing.T) {
@@ -51,7 +53,7 @@ func TestGenerateKeyPair(t *testing.T) {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
-	_, err = decryptSSHKey(private, []byte("my$rongP4sswrd"))
+	_, err = ssh.DecryptSSHKey(private, []byte("my$rongP4sswrd"))
 	if err != nil {
 		t.Fatal(err)
 	}

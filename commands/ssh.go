@@ -19,16 +19,10 @@ package commands
 import (
 	"fmt"
 	"net"
-	"os"
-	"os/exec"
 	"path"
 	"strings"
 	"sync"
-	"syscall"
-	"text/template"
 	"time"
-
-	"golang.org/x/crypto/ssh"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
@@ -39,6 +33,7 @@ import (
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/ssh"
 )
 
 var keyPathFlag string
@@ -46,6 +41,12 @@ var printSSHConfigFlag bool
 var printSSHCLIFlag bool
 var privateIpFlag bool
 var disableStrictHostKeyCheckingFlag bool
+
+type Credentials struct {
+	IP      string
+	User    string
+	KeyPath string
+}
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
@@ -125,32 +126,35 @@ var sshCmd = &cobra.Command{
 		cred, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
 		exitOn(err)
 
-		var client *ssh.Client
-		if user != "" {
-			cred.User = user
-			client, err = console.NewSSHClient(cred, disableStrictHostKeyCheckingFlag)
-			if err != nil {
-				checkInstanceAccessible(resourcesGraph, inst, ip, err)
-				exitOn(err)
-			}
-			exitOn(sshConnect(instanceID, client, cred))
-		} else {
-			for _, user := range awsconfig.DefaultAMIUsers {
-				logger.Verbosef("trying user '%s'", user)
-				cred.User = user
-				client, err = console.NewSSHClient(cred, disableStrictHostKeyCheckingFlag)
-				if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
-					continue
-				}
-				if err != nil {
-					checkInstanceAccessible(resourcesGraph, inst, ip, err)
-					exitOn(err)
-				}
-				exitOn(sshConnect(instanceID, client, cred))
-				return nil
-			}
-		}
+		client, err := ssh.InitClient(cred.KeyPath, disableStrictHostKeyCheckingFlag)
 		exitOn(err)
+
+		client.SetLogger(logger.DefaultLogger)
+		client.InteractiveTerminalFunc = console.InteractiveTerminal
+		client.IP = cred.IP
+
+		if user != "" {
+			client, err = client.DialWithUsers(user)
+		} else {
+			client, err = client.DialWithUsers(awsconfig.DefaultAMIUsers...)
+		}
+
+		if err != nil {
+			checkInstanceAccessible(resourcesGraph, inst, ip, err)
+			exitOn(err)
+		}
+
+		if printSSHConfigFlag {
+			fmt.Println(client.SSHConfigString(instanceID))
+			return nil
+		}
+
+		if printSSHCLIFlag {
+			fmt.Println(client.ConnectString())
+			return nil
+		}
+
+		exitOn(client.Connect())
 		return nil
 	},
 }
@@ -173,7 +177,7 @@ func getIp(inst *graph.Resource) (string, error) {
 	return fmt.Sprint(ip), nil
 }
 
-func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*console.Credentials, error) {
+func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*Credentials, error) {
 	ip, err := getIp(inst)
 	if err != nil {
 		return nil, err
@@ -189,44 +193,7 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathF
 		}
 		keyPath = path.Join(config.KeysDir, fmt.Sprint(keypair))
 	}
-	return &console.Credentials{IP: fmt.Sprint(ip), User: "", KeyPath: keyPath}, nil
-}
-
-func sshConnect(name string, sshClient *ssh.Client, cred *console.Credentials) error {
-	defer sshClient.Close()
-	if printSSHConfigFlag {
-		params := struct {
-			*console.Credentials
-			Name string
-		}{cred, name}
-		return template.Must(template.New("ssh_config").Parse(`
-Host {{ .Name }}
-	Hostname {{ .IP }}
-	User {{ .User }}
-	IdentityFile {{ .KeyPath }}
-`)).Execute(os.Stdout, params)
-	}
-
-	sshPath, sshErr := exec.LookPath("ssh")
-	args := []string{"ssh", "-i", cred.KeyPath, fmt.Sprintf("%s@%s", cred.User, cred.IP)}
-	if disableStrictHostKeyCheckingFlag {
-		args = append(args, "-o", "StrictHostKeychecking=no")
-	}
-	if sshErr == nil {
-		if printSSHCLIFlag {
-			fmt.Println(sshPath + " " + strings.Join(args[1:], " "))
-			return nil
-		}
-		logger.Infof("Login as '%s' on '%s', using keypair '%s' with ssh client at '%s'", cred.User, cred.IP, cred.KeyPath, sshPath)
-		return syscall.Exec(sshPath, args, os.Environ())
-	} else { // Fallback SSH
-		if printSSHCLIFlag {
-			fmt.Println(strings.Join(args, " "))
-			return nil
-		}
-		logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using keypair '%s'", cred.User, cred.IP, cred.KeyPath)
-		return console.InteractiveTerminal(sshClient)
-	}
+	return &Credentials{IP: fmt.Sprint(ip), User: "", KeyPath: keyPath}, nil
 }
 
 func fetchConnectionInfo() (*graph.Graph, net.IP) {
