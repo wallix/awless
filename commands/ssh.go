@@ -39,21 +39,15 @@ import (
 var keyPathFlag string
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
-var privateIpFlag bool
+var privateIPFlag bool
 var disableStrictHostKeyCheckingFlag bool
-
-type Credentials struct {
-	IP      string
-	User    string
-	KeyPath string
-}
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path toward the identity (key file) to use to connect through SSH")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
-	sshCmd.Flags().BoolVar(&privateIpFlag, "private", false, "Use private ip to connect to host")
+	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
 	sshCmd.Flags().BoolVar(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
 }
 
@@ -123,15 +117,15 @@ var sshCmd = &cobra.Command{
 			}
 		}
 
-		cred, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
+		keypath, IP, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
 		exitOn(err)
 
-		client, err := ssh.InitClient(cred.KeyPath, disableStrictHostKeyCheckingFlag)
+		client, err := ssh.InitClient(keypath, disableStrictHostKeyCheckingFlag)
 		exitOn(err)
 
 		client.SetLogger(logger.DefaultLogger)
 		client.InteractiveTerminalFunc = console.InteractiveTerminal
-		client.IP = cred.IP
+		client.IP = IP
 
 		if user != "" {
 			client, err = client.DialWithUsers(user)
@@ -159,10 +153,29 @@ var sshCmd = &cobra.Command{
 	},
 }
 
-func getIp(inst *graph.Resource) (string, error) {
+func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyFlag string) (keypath string, ip string, err error) {
+	if ip, err = getIP(inst); err != nil {
+		return
+	}
+
+	if keyFlag != "" {
+		keypath = keyFlag
+	} else {
+		keypair, ok := inst.Properties[properties.KeyPair]
+		if !ok {
+			err = fmt.Errorf("no access key set for instance %s", inst.Id())
+			return
+		}
+		keypath = path.Join(config.KeysDir, fmt.Sprint(keypair))
+	}
+
+	return
+}
+
+func getIP(inst *graph.Resource) (string, error) {
 	var ipKeyType string
 
-	if privateIpFlag {
+	if privateIPFlag {
 		ipKeyType = properties.PrivateIP
 	} else {
 		ipKeyType = properties.PublicIP
@@ -175,25 +188,6 @@ func getIp(inst *graph.Resource) (string, error) {
 	}
 
 	return fmt.Sprint(ip), nil
-}
-
-func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyPathFlag string) (*Credentials, error) {
-	ip, err := getIp(inst)
-	if err != nil {
-		return nil, err
-	}
-
-	var keyPath string
-	if keyPathFlag != "" {
-		keyPath = keyPathFlag
-	} else {
-		keypair, ok := inst.Properties[properties.KeyPair]
-		if !ok {
-			return nil, fmt.Errorf("no access key set for instance %s", inst.Id())
-		}
-		keyPath = path.Join(config.KeysDir, fmt.Sprint(keypair))
-	}
-	return &Credentials{IP: fmt.Sprint(ip), User: "", KeyPath: keyPath}, nil
 }
 
 func fetchConnectionInfo() (*graph.Graph, net.IP) {
