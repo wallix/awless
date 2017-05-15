@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/database"
@@ -75,14 +76,23 @@ func InitAwlessEnv() error {
 
 func overwriteDefaults() (string, error) {
 	var region, ami string
+	var sess *session.Session
+	var err error
 
-	if sess, err := session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}); err == nil {
+	if sess, err = session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}); err == nil {
 		region = awssdk.StringValue(sess.Config.Region)
 	}
 
 	if awsconfig.IsValidRegion(region) {
 		fmt.Printf("Found existing AWS region '%s'. Setting it as your default region.\n", region)
-	} else {
+	} else if sess != nil {
+		if r, err := ec2metadata.New(sess).Region(); err == nil {
+			fmt.Printf("Found AWS region '%s' from local EC2 instance metadata. Setting it as your default region.\n", region)
+			region = r
+		}
+	}
+
+	if region == "" {
 		fmt.Println("Could not find any AWS region in your environment. Please choose one region:")
 		region = awsconfig.StdinRegionSelector()
 	}
