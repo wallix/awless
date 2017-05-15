@@ -333,6 +333,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		if p, ok := res.Properties[p.Vpcs].([]string); ok {
 			sort.Strings(p)
 		}
+		if p, ok := res.Properties[p.Messages].([]string); ok {
+			sort.Strings(p)
+		}
 	}
 
 	expected := map[string]*graph.Resource{
