@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"path"
@@ -65,81 +66,33 @@ var sshCmd = &cobra.Command{
 			return fmt.Errorf("instance required")
 		}
 
-		var user, instanceID string
-		if strings.Contains(args[0], "@") {
-			user = strings.Split(args[0], "@")[0]
-			instanceID = strings.Split(args[0], "@")[1]
-		} else {
-			instanceID = args[0]
-		}
-
-		resourcesGraph, ip := fetchConnectionInfo()
-
-		var inst *graph.Resource
-
-		instanceResolvers := []graph.Resolver{&graph.ByProperty{Key: "Name", Value: instanceID}, &graph.ByType{Typ: cloud.Instance}}
-		resources, err := resourcesGraph.ResolveResources(&graph.And{Resolvers: instanceResolvers})
-		exitOn(err)
-		switch len(resources) {
-		case 0:
-			// No instance with that name, use the id
-			inst, err = findResource(resourcesGraph, instanceID, cloud.Instance)
-			exitOn(err)
-		case 1:
-			inst = resources[0]
-		default:
-			idStatus := graph.Resources(resources).Map(func(r *graph.Resource) string {
-				return fmt.Sprintf("%s (%s)", r.Id(), r.Properties[properties.State])
-			})
-			logger.Infof("Found %d resources with name '%s': %s", len(resources), instanceID, strings.Join(idStatus, ", "))
-
-			var running []*graph.Resource
-			running, err = resourcesGraph.ResolveResources(&graph.And{Resolvers: append(instanceResolvers, &graph.ByProperty{Key: properties.State, Value: "running"})})
-			exitOn(err)
-
-			switch len(running) {
-			case 0:
-				logger.Warning("None of them is running, cannot connect through SSH")
-				return nil
-			case 1:
-				logger.Infof("Found only one instance running: %s. Will connect to this instance.", running[0].Id())
-				inst = running[0]
-			default:
-				logger.Warning("Connect through the running ones using their id:")
-				for _, res := range running {
-					var up string
-					if uptime, ok := res.Properties[properties.Launched].(time.Time); ok {
-						up = fmt.Sprintf("\t\t(uptime: %s)", console.HumanizeTime(uptime))
-					}
-					logger.Warningf("\t`awless ssh %s`%s", res.Id(), up)
-				}
-				return nil
-			}
-		}
-
-		keypath, IP, err := instanceCredentialsFromGraph(resourcesGraph, inst, keyPathFlag)
+		connectionCtx, err := initInstanceConnectionContext(args[0], keyPathFlag)
 		exitOn(err)
 
-		client, err := ssh.InitClient(keypath, disableStrictHostKeyCheckingFlag)
+		client, err := ssh.InitClient(connectionCtx.keypath, disableStrictHostKeyCheckingFlag)
 		exitOn(err)
 
 		client.SetLogger(logger.DefaultLogger)
 		client.InteractiveTerminalFunc = console.InteractiveTerminal
-		client.IP = IP
+		client.IP = connectionCtx.ip
 
-		if user != "" {
-			client, err = client.DialWithUsers(user)
+		if connectionCtx.user != "" {
+			client, err = client.DialWithUsers(connectionCtx.user)
 		} else {
 			client, err = client.DialWithUsers(awsconfig.DefaultAMIUsers...)
 		}
 
-		if err != nil {
-			checkInstanceAccessible(resourcesGraph, inst, ip, err)
-			exitOn(err)
+		if isConnectionRefusedErr(err) {
+			logger.Warning("cannot connect to this instance, maybe the system is still booting?")
+			return nil
 		}
 
+		exitOn(err)
+
+		exitOn(connectionCtx.checkInstanceAccessible())
+
 		if printSSHConfigFlag {
-			fmt.Println(client.SSHConfigString(instanceID))
+			fmt.Println(client.SSHConfigString(connectionCtx.instanceName))
 			return nil
 		}
 
@@ -172,6 +125,10 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyFlag 
 	return
 }
 
+func isConnectionRefusedErr(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "connection refused")
+}
+
 func getIP(inst *graph.Resource) (string, error) {
 	var ipKeyType string
 
@@ -190,7 +147,80 @@ func getIP(inst *graph.Resource) (string, error) {
 	return fmt.Sprint(ip), nil
 }
 
-func fetchConnectionInfo() (*graph.Graph, net.IP) {
+type instanceConnectionContext struct {
+	user           string
+	ip             string
+	keypath        string
+	instanceName   string
+	instance       *graph.Resource
+	resourcesGraph *graph.Graph
+	myip           net.IP
+}
+
+func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectionContext, error) {
+	ctx := &instanceConnectionContext{}
+
+	if strings.Contains(userhost, "@") {
+		ctx.user = strings.Split(userhost, "@")[0]
+		ctx.instanceName = strings.Split(userhost, "@")[1]
+	} else {
+		ctx.instanceName = userhost
+	}
+
+	ctx.fetchConnectionInfo()
+
+	instanceResolvers := []graph.Resolver{&graph.ByProperty{Key: "Name", Value: ctx.instanceName}, &graph.ByType{Typ: cloud.Instance}}
+	resources, err := ctx.resourcesGraph.ResolveResources(&graph.And{Resolvers: instanceResolvers})
+	exitOn(err)
+	switch len(resources) {
+	case 0:
+		// No instance with that name, use the id
+		ctx.instance, err = findResource(ctx.resourcesGraph, ctx.instanceName, cloud.Instance)
+		exitOn(err)
+	case 1:
+		ctx.instance = resources[0]
+	default:
+		idStatus := graph.Resources(resources).Map(func(r *graph.Resource) string {
+			return fmt.Sprintf("%s (%s)", r.Id(), r.Properties[properties.State])
+		})
+		logger.Infof("Found %d resources with name '%s': %s", len(resources), ctx.instanceName, strings.Join(idStatus, ", "))
+
+		var running []*graph.Resource
+		running, err = ctx.resourcesGraph.ResolveResources(&graph.And{Resolvers: append(instanceResolvers, &graph.ByProperty{Key: properties.State, Value: "running"})})
+		exitOn(err)
+
+		switch len(running) {
+		case 0:
+			logger.Warning("None of them is running, cannot connect through SSH")
+			return ctx, errors.New("non running instances")
+		case 1:
+			logger.Infof("Found only one instance running: %s. Will connect to this instance.", running[0].Id())
+			ctx.instance = running[0]
+		default:
+			logger.Warning("Connect through the running ones using their id:")
+			for _, res := range running {
+				var up string
+				if uptime, ok := res.Properties[properties.Launched].(time.Time); ok {
+					up = fmt.Sprintf("\t\t(uptime: %s)", console.HumanizeTime(uptime))
+				}
+				logger.Warningf("\t`awless ssh %s`%s", res.Id(), up)
+			}
+			return ctx, errors.New("use instances ids")
+		}
+	}
+
+	keypath, IP, err := instanceCredentialsFromGraph(ctx.resourcesGraph, ctx.instance, keypath)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.keypath = keypath
+	ctx.ip = IP
+
+	return ctx, nil
+}
+
+func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 	var resourcesGraph, sgroupsGraph *graph.Graph
 	var myip net.IP
 	var wg sync.WaitGroup
@@ -232,25 +262,27 @@ func fetchConnectionInfo() (*graph.Graph, net.IP) {
 	}
 	resourcesGraph.AddGraph(sgroupsGraph)
 
-	return resourcesGraph, myip
-
+	ctx.resourcesGraph = resourcesGraph
+	ctx.myip = myip
+	return
 }
 
-func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP, err error) {
-	state, ok := inst.Properties[properties.State]
+func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
+	state, ok := ctx.instance.Properties[properties.State]
 	if st := fmt.Sprint(state); ok && st != "running" {
 		logger.Warningf("this instance is '%s' (cannot ssh to a non running state)", st)
 		if st == "stopped" {
-			logger.Warningf("you can start it with `awless -f start instance id=%s`", inst.Id())
+			logger.Warningf("you can start it with `awless -f start instance id=%s`", ctx.instance.Id())
 		}
-		return
+		return errors.New("instance not accessible")
 	}
 
-	sgroups, ok := inst.Properties[properties.SecurityGroups].([]string)
+	sgroups, ok := ctx.instance.Properties[properties.SecurityGroups].([]string)
 	if ok {
 		var sshPortOpen, myIPAllowed bool
 		for _, id := range sgroups {
-			sgroup, err := findResource(g, id, cloud.SecurityGroup)
+			var sgroup *graph.Resource
+			sgroup, err = findResource(ctx.resourcesGraph, id, cloud.SecurityGroup)
 			if err != nil {
 				break
 			}
@@ -261,7 +293,7 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP, 
 					if r.PortRange.Contains(22) {
 						sshPortOpen = true
 					}
-					if myip != nil && r.Contains(myip.String()) {
+					if ctx.myip != nil && r.Contains(ctx.myip.String()) {
 						myIPAllowed = true
 					}
 				}
@@ -270,20 +302,21 @@ func checkInstanceAccessible(g *graph.Graph, inst *graph.Resource, myip net.IP, 
 
 		if !sshPortOpen {
 			logger.Warning("port 22 is not open on this instance")
+			return errors.New("instance not accessible")
 		}
-		if !myIPAllowed && myip != nil {
-			logger.Warningf("your ip %s is not authorized for this instance. You might want to update the securitygroup with:", myip)
+
+		if !myIPAllowed && ctx.myip != nil {
+			logger.Warningf("your ip %s is not authorized for this instance. You might want to update the securitygroup with:", ctx.myip)
 			var group = "mygroup"
 			if len(sgroups) == 1 {
 				group = sgroups[0]
 			}
-			logger.Warningf("`awless update securitygroup id=%s inbound=authorize protocol=tcp cidr=%s/32 portrange=22`", group, myip)
+			logger.Warningf("`awless update securitygroup id=%s inbound=authorize protocol=tcp cidr=%s/32 portrange=22`", group, ctx.myip)
+			return errors.New("instance not accessible")
 		}
 	}
 
-	if err != nil && strings.Contains(err.Error(), "connection refused") {
-		logger.Warning("cannot connect to this instance, maybe the system is still booting?")
-	}
+	return nil
 }
 
 func findResource(g *graph.Graph, id, typ string) (*graph.Resource, error) {
