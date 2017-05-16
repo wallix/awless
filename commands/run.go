@@ -300,9 +300,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 			logger.Infof("Revert this template with `awless revert %s`", newTempl.ID)
 		}
 
-		if err == nil && !newTempl.HasErrors() {
-			runSyncFor(newTempl)
-		}
+		runSyncFor(newTempl)
 	}
 
 	return nil
