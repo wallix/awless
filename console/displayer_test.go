@@ -94,10 +94,10 @@ func TestTabularDisplays(t *testing.T) {
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
-	expected := "ID, Name, State, Type, Public IP\n" +
-		"inst_1, redis, running, t2.micro, 1.2.3.4\n" +
-		"inst_2, django, stopped, t2.medium, \n" +
-		"inst_3, apache, running, t2.xlarge, "
+	expected := "ID,Name,State,Type,Public IP\n" +
+		"inst_1,redis,running,t2.micro,1.2.3.4\n" +
+		"inst_2,django,stopped,t2.medium,\n" +
+		"inst_3,apache,running,t2.xlarge,"
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
@@ -113,10 +113,10 @@ func TestTabularDisplays(t *testing.T) {
 		WithSortBy("Name"),
 	).SetSource(g).Build()
 
-	expected = "ID, Name, State, Type, Public IP\n" +
-		"inst_3, apache, running, t2.xlarge, \n" +
-		"inst_2, django, stopped, t2.medium, \n" +
-		"inst_1, redis, running, t2.micro, 1.2.3.4"
+	expected = "ID,Name,State,Type,Public IP\n" +
+		"inst_3,apache,running,t2.xlarge,\n" +
+		"inst_2,django,stopped,t2.medium,\n" +
+		"inst_1,redis,running,t2.micro,1.2.3.4"
 
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -713,7 +713,7 @@ func TestEmotyDisplays(t *testing.T) {
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
-	expected := "ID, Name, Public IP"
+	expected := "ID,Name,Public IP"
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)

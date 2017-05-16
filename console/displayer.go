@@ -24,7 +24,6 @@ import (
 	"reflect"
 	"sort"
 	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/fatih/color"
@@ -299,14 +298,14 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 		head = append(head, h.title(false))
 	}
 
-	lines = append(lines, strings.Join(head, ", "))
+	lines = append(lines, strings.Join(head, ","))
 
 	for i := range values {
 		var props []string
 		for j, h := range d.headers {
 			props = append(props, h.format(values[i][j]))
 		}
-		lines = append(lines, strings.Join(props, ", "))
+		lines = append(lines, strings.Join(props, ","))
 	}
 
 	_, err = w.Write([]byte(strings.Join(lines, "\n")))
@@ -346,19 +345,17 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 		head = append(head, h.title(false))
 	}
 
-	tabw := tabwriter.NewWriter(w, 8, 8, 0, '\t', 0)
-
-	fmt.Fprintln(tabw, strings.Join(head, "\t"))
+	fmt.Fprintln(w, strings.Join(head, "\t"))
 
 	for i := range values {
 		var props []string
 		for j, h := range d.headers {
 			props = append(props, h.format(values[i][j]))
 		}
-		fmt.Fprintln(tabw, strings.Join(props, "\t"))
+		fmt.Fprintln(w, strings.Join(props, "\t"))
 	}
 
-	return tabw.Flush()
+	return nil
 }
 
 type jsonDisplayer struct {
