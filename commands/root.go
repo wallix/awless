@@ -40,8 +40,8 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&extraVerboseGlobalFlag, "extra-verbose", "e", false, "Turn on extra verbose mode (including regular verbose) for all commands")
 	RootCmd.PersistentFlags().BoolVarP(&localGlobalFlag, "local", "l", false, "Work offline only with synced/local resources")
 	RootCmd.PersistentFlags().BoolVarP(&forceGlobalFlag, "force", "f", false, "Force the command and bypass any confirmation prompt")
-	RootCmd.PersistentFlags().StringVar(&awsRegionGlobalFlag, "aws-region", "", "Overwrite AWS region")
-	RootCmd.PersistentFlags().StringVar(&awsProfileGlobalFlag, "aws-profile", "", "Overwrite AWS profile")
+	RootCmd.PersistentFlags().StringVarP(&awsRegionGlobalFlag, "aws-region", "r", "", "Overwrite AWS region")
+	RootCmd.PersistentFlags().StringVarP(&awsProfileGlobalFlag, "aws-profile", "p", "", "Overwrite AWS profile")
 	RootCmd.Flags().BoolVar(&versionGlobalFlag, "version", false, "Print awless version")
 
 	cobra.AddTemplateFunc("IsCmdAnnotatedOneliner", IsCmdAnnotatedOneliner)

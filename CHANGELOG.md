@@ -9,11 +9,13 @@
 - Autowrapping results in tables when too long for `awless list`. No longer truncate results in `--format csv/tsv/json`
 - Adjust the width of table columns to the terminal width in `awless show`
 - Using local EC2 metadata to set region when installing awless on an EC2 instance
+- [#94](https://github.com/wallix/awless/issues/94): Add short flags for `--aws-profile`: `-p` and `--aws-region`: `-r`
 
 ### Bugfixes
 
 - Listing in CSV: remove extra spaces; proper listing in TSV (only 1 tab separator)
 - Avoid double sync on first install due to pre defined default region value us-east-1
+- [#92](https://github.com/wallix/awless/issues/92): Impossible to set a region in config when `aws.region` was empty
 
 ## v0.0.23 [2017-05-05]
 
