@@ -73,7 +73,7 @@ func (a *OpenBuckets) Print(w io.Writer) {
 		fmt.Fprintf(w, "Buckets open to anybody: %s\n", strings.Join(a.openToAny, ", "))
 	}
 	if len(a.openToAnyAuth) > 0 {
-		fmt.Fprintf(w, "Buckets open to any AWS authenticated users: %s\n", strings.Join(a.openToAnyAuth, ", "))
+		fmt.Fprintf(w, "Buckets open to anyone with an AWS account: %s\n", strings.Join(a.openToAnyAuth, ", "))
 	}
 
 	if len(a.openToAnyAuth) == 0 && len(a.openToAny) == 0 {
