@@ -20,15 +20,17 @@ import (
 // As for now only the main specific owner are taken into account
 // and we deal with bares machines only distribution. Here are some examples:
 //
-// - canonical:ubuntu[trusty]
+// - canonical:ubuntu:trusty
 //
-// - redhat:rhel[6.8]
+// - redhat:rhel:6.8
+//
+// - redhat::6.8
 //
 // - amazonlinux
 //
-// - suselinux:[sles-12]
+// - suselinux:sles-12
 //
-// - canonical::i386
+// - canonical:::i386
 //
 // - redhat::::instance-store
 //
