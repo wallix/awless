@@ -35,6 +35,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Type},
 		StringColumnDefinition{Prop: properties.PublicIP, Friendly: "Public IP"},
 		StringColumnDefinition{Prop: properties.PrivateIP, Friendly: "Private IP"},
+		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Tags}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Launched, Friendly: "Uptime"}},
 		StringColumnDefinition{Prop: properties.KeyPair},
 	},

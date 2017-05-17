@@ -28,8 +28,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -47,6 +45,8 @@ import (
 	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template/driver"
+	"github.com/wallix/awless/vendor/github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/wallix/awless/vendor/github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 )
 
 // DO NOT EDIT - This file was automatically generated with go generate

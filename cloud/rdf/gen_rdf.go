@@ -156,6 +156,7 @@ const (
 	StorageType               = "cloud:storageType"
 	Subnet                    = "cloud:subnet"
 	Subnets                   = "cloud:subnets"
+	Tags                      = "cloud:tags"
 	Timeout                   = "cloud:timezone"
 	Timezone                  = "cloud:timeout"
 	Topic                     = "cloud:topic"
@@ -313,6 +314,7 @@ var Labels = map[string]string{
 	properties.StorageType:               StorageType,
 	properties.Subnet:                    Subnet,
 	properties.Subnets:                   Subnets,
+	properties.Tags:                      Tags,
 	properties.Timeout:                   Timeout,
 	properties.Timezone:                  Timezone,
 	properties.Topic:                     Topic,
@@ -470,6 +472,7 @@ var Properties = RDFProperties{
 	StorageType:           {ID: StorageType, RdfType: "rdf:Property", RdfsLabel: "StorageType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Subnet:                {ID: Subnet, RdfType: "rdf:Property", RdfsLabel: "Subnet", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Subnets:               {ID: Subnets, RdfType: "rdf:Property", RdfsLabel: "Subnets", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	Tags:                  {ID: Tags, RdfType: "rdf:Property", RdfsLabel: "Tags", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	Timeout:               {ID: Timeout, RdfType: "rdf:Property", RdfsLabel: "Timeout", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Timezone:              {ID: Timezone, RdfType: "rdf:Property", RdfsLabel: "Timezone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Topic:                 {ID: Topic, RdfType: "rdf:Property", RdfsLabel: "Topic", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},

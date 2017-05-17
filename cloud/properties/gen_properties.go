@@ -154,6 +154,7 @@ const (
 	StorageType               = "StorageType"
 	Subnet                    = "Subnet"
 	Subnets                   = "Subnets"
+	Tags                      = "Tags"
 	Timeout                   = "Timeout"
 	Timezone                  = "Timezone"
 	Topic                     = "Topic"

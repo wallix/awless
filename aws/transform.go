@@ -319,6 +319,20 @@ var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {
 
 }
 
+var extractTagsFn = func(i interface{}) (interface{}, error) {
+	tags, ok := i.([]*ec2.Tag)
+	if !ok {
+		return nil, fmt.Errorf("extract tags: tag slice, but a %T", i)
+	}
+
+	var nameValues []*graph.KeyValue
+	for _, tag := range tags {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(tag.Key), Value: awssdk.StringValue(tag.Value)}
+		nameValues = append(nameValues, keyval)
+	}
+	return nameValues, nil
+}
+
 var extractNameValueFn = func(i interface{}) (interface{}, error) {
 	if _, ok := i.([]*cloudwatch.Dimension); !ok {
 		return nil, fmt.Errorf("extract ip namevalue: not a dimension slice but a %T", i)

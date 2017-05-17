@@ -23,6 +23,7 @@ import "github.com/wallix/awless/cloud/properties"
 var awsResourcesDef = map[string]map[string]*propertyTransform{
 	//EC2
 	cloud.Instance: {
+		properties.Tags:              {name: "Tags", transform: extractTagsFn},
 		properties.Name:              {name: "Tags", transform: extractTagFn("Name")},
 		properties.Type:              {name: "InstanceType", transform: extractValueFn},
 		properties.Subnet:            {name: "SubnetId", transform: extractValueFn},
