@@ -94,6 +94,9 @@ var APIPerTemplateDefName = map[string]string{
 	"detachuser":                "iam",
 	"createaccesskey":           "iam",
 	"deleteaccesskey":           "iam",
+	"createloginprofile":        "iam",
+	"updateloginprofile":        "iam",
+	"deleteloginprofile":        "iam",
 	"creategroup":               "iam",
 	"deletegroup":               "iam",
 	"createrole":                "iam",
@@ -635,6 +638,27 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
+	"createloginprofile": {
+		Action:         "create",
+		Entity:         "loginprofile",
+		Api:            "iam",
+		RequiredParams: []string{"password", "username"},
+		ExtraParams:    []string{"password-reset"},
+	},
+	"updateloginprofile": {
+		Action:         "update",
+		Entity:         "loginprofile",
+		Api:            "iam",
+		RequiredParams: []string{"password", "username"},
+		ExtraParams:    []string{"password-reset"},
+	},
+	"deleteloginprofile": {
+		Action:         "delete",
+		Entity:         "loginprofile",
+		Api:            "iam",
+		RequiredParams: []string{"username"},
+		ExtraParams:    []string{},
+	},
 	"creategroup": {
 		Action:         "create",
 		Entity:         "group",
@@ -949,6 +973,9 @@ func DriverSupportedActions() map[string][]string {
 	supported["detach"] = append(supported["detach"], "user")
 	supported["create"] = append(supported["create"], "accesskey")
 	supported["delete"] = append(supported["delete"], "accesskey")
+	supported["create"] = append(supported["create"], "loginprofile")
+	supported["update"] = append(supported["update"], "loginprofile")
+	supported["delete"] = append(supported["delete"], "loginprofile")
 	supported["create"] = append(supported["create"], "group")
 	supported["delete"] = append(supported["delete"], "group")
 	supported["create"] = append(supported["create"], "role")

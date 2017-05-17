@@ -3815,6 +3815,139 @@ func (d *IamDriver) Delete_Accesskey(params map[string]interface{}) (interface{}
 }
 
 // This function was auto generated
+func (d *IamDriver) Create_Loginprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["username"]; !ok {
+		return nil, errors.New("create loginprofile: missing required params 'username'")
+	}
+
+	if _, ok := params["password"]; !ok {
+		return nil, errors.New("create loginprofile: missing required params 'password'")
+	}
+
+	d.logger.Verbose("params dry run: create loginprofile ok")
+	return fakeDryRunId("loginprofile"), nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Create_Loginprofile(params map[string]interface{}) (interface{}, error) {
+	input := &iam.CreateLoginProfileInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["username"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["password"], input, "Password", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["password-reset"]; ok {
+		err = setFieldWithType(params["password-reset"], input, "PasswordResetRequired", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *iam.CreateLoginProfileOutput
+	output, err = d.CreateLoginProfile(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create loginprofile: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.CreateLoginProfile call took %s", time.Since(start))
+	id := aws.StringValue(output.LoginProfile.UserName)
+
+	d.logger.Infof("create loginprofile '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Update_Loginprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["username"]; !ok {
+		return nil, errors.New("update loginprofile: missing required params 'username'")
+	}
+
+	if _, ok := params["password"]; !ok {
+		return nil, errors.New("update loginprofile: missing required params 'password'")
+	}
+
+	d.logger.Verbose("params dry run: update loginprofile ok")
+	return fakeDryRunId("loginprofile"), nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Update_Loginprofile(params map[string]interface{}) (interface{}, error) {
+	input := &iam.UpdateLoginProfileInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["username"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["password"], input, "Password", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["password-reset"]; ok {
+		err = setFieldWithType(params["password-reset"], input, "PasswordResetRequired", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *iam.UpdateLoginProfileOutput
+	output, err = d.UpdateLoginProfile(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("update loginprofile: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.UpdateLoginProfile call took %s", time.Since(start))
+	d.logger.Info("update loginprofile done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Loginprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["username"]; !ok {
+		return nil, errors.New("delete loginprofile: missing required params 'username'")
+	}
+
+	d.logger.Verbose("params dry run: delete loginprofile ok")
+	return fakeDryRunId("loginprofile"), nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Loginprofile(params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteLoginProfileInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["username"], input, "UserName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeleteLoginProfileOutput
+	output, err = d.DeleteLoginProfile(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete loginprofile: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeleteLoginProfile call took %s", time.Since(start))
+	d.logger.Info("delete loginprofile done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *IamDriver) Create_Group_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create group: missing required params 'name'")

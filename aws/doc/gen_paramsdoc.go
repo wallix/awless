@@ -138,6 +138,11 @@ var generatedParamsDoc = map[string]map[string]string{
 		"securitygroups": "The IDs of the security groups to assign to the load balancer",
 		"subnets":        "The IDs of the subnets to attach to the load balancer",
 	},
+	"createloginprofile": {
+		"password":       "The new password for the user",
+		"password-reset": "Specifies whether the user is required to set a new password on next sign-in",
+		"username":       "The name of the IAM user to create a password for",
+	},
 	"createpolicy": {},
 	"createqueue": {
 		"name": "The name of the new queue",
@@ -228,6 +233,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletegroup": {
 		"name": "The name of the IAM group to delete",
 	},
+	"deleteimage": {},
 	"deleteinstance": {
 		"id": "One or more instance IDs",
 	},
@@ -246,6 +252,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deleteloadbalancer": {
 		"id": "The Amazon Resource Name (ARN) of the load balancer",
+	},
+	"deleteloginprofile": {
+		"username": "The name of the user whose password you want to delete",
 	},
 	"deletepolicy": {
 		"arn": "The Amazon Resource Name (ARN) of the IAM policy you want to delete",
@@ -352,6 +361,11 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":   "The ID of the instance",
 		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",
 		"type": "Changes the instance type to the specified value",
+	},
+	"updateloginprofile": {
+		"password":       "The new password for the specified IAM user",
+		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
+		"username":       "The name of the user whose password you want to update",
 	},
 	"updatescalinggroup":  {},
 	"updatesecuritygroup": {},

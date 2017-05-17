@@ -583,6 +583,24 @@ func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Accesskey, nil
 
+	case "createloginprofile":
+		if d.dryRun {
+			return d.Create_Loginprofile_DryRun, nil
+		}
+		return d.Create_Loginprofile, nil
+
+	case "updateloginprofile":
+		if d.dryRun {
+			return d.Update_Loginprofile_DryRun, nil
+		}
+		return d.Update_Loginprofile, nil
+
+	case "deleteloginprofile":
+		if d.dryRun {
+			return d.Delete_Loginprofile_DryRun, nil
+		}
+		return d.Delete_Loginprofile, nil
+
 	case "creategroup":
 		if d.dryRun {
 			return d.Create_Group_DryRun, nil

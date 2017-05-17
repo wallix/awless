@@ -21,6 +21,7 @@ var entities = map[Entity]struct{}{
 	"launchconfiguration": {},
 	"listener":            {},
 	"loadbalancer":        {},
+	"loginprofile":        {},
 	"policy":              {},
 	"queue":               {},
 	"record":              {},

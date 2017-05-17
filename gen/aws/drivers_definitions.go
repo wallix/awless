@@ -775,6 +775,33 @@ var DriversDefs = []driversDef{
 					{AwsField: "AccessKeyId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
+			// Access key
+			{
+				Action: "create", Entity: cloud.LoginProfile, DryRunUnsupported: true, Input: "CreateLoginProfileInput", Output: "CreateLoginProfileOutput", ApiMethod: "CreateLoginProfile", OutputExtractor: "aws.StringValue(output.LoginProfile.UserName)",
+				RequiredParams: []param{
+					{AwsField: "UserName", TemplateName: "username", AwsType: "awsstr"},
+					{AwsField: "Password", TemplateName: "password", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "PasswordResetRequired", TemplateName: "password-reset", AwsType: "awsbool"},
+				},
+			},
+			{
+				Action: "update", Entity: cloud.LoginProfile, DryRunUnsupported: true, Input: "UpdateLoginProfileInput", Output: "UpdateLoginProfileOutput", ApiMethod: "UpdateLoginProfile",
+				RequiredParams: []param{
+					{AwsField: "UserName", TemplateName: "username", AwsType: "awsstr"},
+					{AwsField: "Password", TemplateName: "password", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "PasswordResetRequired", TemplateName: "password-reset", AwsType: "awsbool"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.LoginProfile, DryRunUnsupported: true, ApiMethod: "DeleteLoginProfile", Input: "DeleteLoginProfileInput", Output: "DeleteLoginProfileOutput",
+				RequiredParams: []param{
+					{AwsField: "UserName", TemplateName: "username", AwsType: "awsstr"},
+				},
+			},
 
 			// GROUP
 			{

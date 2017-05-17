@@ -5,6 +5,7 @@
 - Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`
 - Listing pending import image tasks with `awless list importimagetasks`
 - Deleting images and optionally its related snapshots `awless delete image delete-snapshots=true`
+- Create/Update/Delete login profiles (AWS Console credentials): `awless create/update/delete loginprofile username=...`
 - Autowrapping results in tables when too long for `awless list`. No longer truncate results in `--format csv/tsv/json`
 - Adjust the width of table columns to the terminal width in `awless show`
 - Using local EC2 metadata to set region when installing awless on an EC2 instance

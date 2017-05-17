@@ -44,7 +44,7 @@ func main() {
 	generateRDFProperties()
 
 	// doc
-	if false {
+	if true {
 		generateParamsDocLookup()
 	}
 }

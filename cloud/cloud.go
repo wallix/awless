@@ -53,11 +53,12 @@ const (
 	Database      string = "database"
 	DbSubnetGroup string = "dbsubnetgroup"
 	//access
-	User      string = "user"
-	Role      string = "role"
-	Group     string = "group"
-	Policy    string = "policy"
-	AccessKey string = "accesskey"
+	User         string = "user"
+	Role         string = "role"
+	Group        string = "group"
+	Policy       string = "policy"
+	AccessKey    string = "accesskey"
+	LoginProfile string = "loginprofile"
 	//storage
 	Bucket   string = "bucket"
 	S3Object string = "s3object"
