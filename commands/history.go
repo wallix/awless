@@ -45,7 +45,7 @@ var historyCmd = &cobra.Command{
 	Hidden:            true,
 	Short:             "(in progress) Show a infra resource history & changes using your locally sync snapshots",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
-	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
+	PersistentPostRun: applyHooks(verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !repo.IsGitInstalled() {

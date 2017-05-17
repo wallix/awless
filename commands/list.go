@@ -68,7 +68,7 @@ var listCmd = &cobra.Command{
 	Aliases:           []string{"ls"},
 	Example:           "  awless list instances --sort uptime\n  awless list users --format csv\n  awless list volumes --filter state=use --filter type=gp2\n  awless list instances --filter state=running,type=micro\n  awless list s3objects --filter bucketname=pdf-bucket ",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
-	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
+	PersistentPostRun: applyHooks(verifyNewVersionHook),
 	Short:             "List various type of resources",
 }
 

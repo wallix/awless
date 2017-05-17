@@ -19,7 +19,6 @@ package commands
 import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/database"
 )
 
 var (
@@ -63,18 +62,6 @@ var RootCmd = &cobra.Command{
 		}
 		return c.Usage()
 	},
-}
-
-func ExecuteRoot() error {
-	err := RootCmd.Execute()
-
-	if err != nil {
-		database.Execute(func(db *database.DB) error {
-			return db.AddLog(err.Error())
-		})
-	}
-
-	return err
 }
 
 const customRootUsage = `Usage:{{if .Runnable}}

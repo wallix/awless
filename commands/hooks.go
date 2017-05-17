@@ -19,12 +19,10 @@ package commands
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
@@ -92,15 +90,6 @@ func initLoggerHook(cmd *cobra.Command, args []string) error {
 	}
 
 	logger.DefaultLogger.SetVerbose(flag)
-	return nil
-}
-
-func saveHistoryHook(cmd *cobra.Command, args []string) error {
-	database.Execute(func(db *database.DB) error {
-		db.AddHistoryCommand(append(strings.Split(cmd.CommandPath(), " "), args...))
-		return nil
-	})
-
 	return nil
 }
 

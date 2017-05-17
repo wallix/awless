@@ -17,6 +17,7 @@ limitations under the License.
 package database
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -73,6 +74,19 @@ func open(path string) (*DB, error) {
 	}
 
 	return &DB{bolt: boltdb}, nil
+}
+
+// itob returns an 8-byte big endian representation of v.
+func itob(v int) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
+}
+
+type line struct {
+	ID      int
+	Command []string
+	Time    time.Time
 }
 
 // DeleteBucket deletes a bucket if it exists

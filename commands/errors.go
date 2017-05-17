@@ -19,16 +19,10 @@ package commands
 import (
 	"fmt"
 	"os"
-
-	"github.com/wallix/awless/database"
 )
 
 func exitOn(err error) {
 	if err != nil {
-		database.Execute(func(db *database.DB) error {
-			db.AddLog(err.Error())
-			return nil
-		})
 		fmt.Fprintln(os.Stderr, "Error:", err)
 		os.Exit(1)
 	}

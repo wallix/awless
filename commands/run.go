@@ -79,7 +79,7 @@ var runCmd = &cobra.Command{
 	Short:             "Run a template given a filepath or a URL (prefixed with http)",
 	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls\n  awless run repo:create_vpc",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
-	PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
+	PersistentPostRun: applyHooks(verifyNewVersionHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if listRemoteTemplatesFlag {
@@ -384,7 +384,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			&cobra.Command{
 				Use:               templDef.Entity,
 				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
-				PersistentPostRun: applyHooks(saveHistoryHook, verifyNewVersionHook),
+				PersistentPostRun: applyHooks(verifyNewVersionHook),
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
 				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr.String(), extraStr.String()),
 				RunE:              run(templDef),
