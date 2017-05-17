@@ -50,7 +50,7 @@ var configCmd = &cobra.Command{
 				fmt.Println(k)
 			}
 		} else {
-			fmt.Println(config.Display())
+			fmt.Println(config.DisplayConfig())
 		}
 	},
 }

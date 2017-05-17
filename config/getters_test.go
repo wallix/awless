@@ -17,12 +17,14 @@ func TestGetSyncEnabled(t *testing.T) {
 	os.Setenv("__AWLESS_HOME", f)
 
 	t.Run("Resource configuration", func(t *testing.T) {
-		configDefinitions = map[string]*Definition{}
-		err := InitConfigAndDefaults()
-		if err != nil {
+		configDefinitions = map[string]*Definition{
+			"aws.region": {help: "AWS region", defaultValue: ""},
+		}
+
+		if err := InitConfig(map[string]string{RegionConfigKey: "eu-west-1"}); err != nil {
 			t.Fatal(err)
 		}
-		if err := LoadAll(); err != nil {
+		if err := LoadConfig(); err != nil {
 			t.Fatal(err)
 		}
 		Set("aws.ec2.sync", "true")
@@ -32,6 +34,7 @@ func TestGetSyncEnabled(t *testing.T) {
 		Set("aws.iam.user.sync", "false")
 		Set("other.iam.user.sync", "false")
 		expect := map[string]interface{}{
+			"aws.region":            "eu-west-1",
 			"aws.ec2.sync":          true,
 			"aws.ec2.subnet.sync":   true,
 			"aws.ec2.instance.sync": false,

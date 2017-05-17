@@ -17,19 +17,19 @@ func TestDefaults(t *testing.T) {
 
 	os.Setenv("__AWLESS_HOME", f)
 
+	configDefinitions = map[string]*Definition{
+		"aws.region":   {help: "AWS region", defaultValue: "eu-west-1"},
+		"ec2.autosync": {help: "Auto sync AWS EC2", defaultValue: "true", parseParamFn: parseBool},
+	}
+	defaultsDefinitions = map[string]*Definition{
+		"instance.type": {defaultValue: "t2.micro"},
+	}
+
 	t.Run("Config init", func(t *testing.T) {
-		configDefinitions = map[string]*Definition{
-			"aws.region":   {help: "AWS region", defaultValue: "eu-west-1"},
-			"ec2.autosync": {help: "Auto sync AWS EC2", defaultValue: "true", parseParamFn: parseBool},
-		}
-		defaultsDefinitions = map[string]*Definition{
-			"instance.type": {defaultValue: "t2.micro"},
-		}
-		err := InitConfigAndDefaults()
-		if err != nil {
+		if err := InitConfig(map[string]string{}); err != nil {
 			t.Fatal(err)
 		}
-		if err := LoadAll(); err != nil {
+		if err := LoadConfig(); err != nil {
 			t.Fatal(err)
 		}
 		expect := map[string]interface{}{
@@ -53,7 +53,7 @@ func TestDefaults(t *testing.T) {
 			t.Fatalf("got %#v, want %#v", got, want)
 		}
 
-		if err := LoadAll(); err != nil {
+		if err := LoadConfig(); err != nil {
 			t.Fatal(err)
 		}
 		expect["aws.region"] = "eu-west-1"
@@ -72,7 +72,7 @@ func TestDefaults(t *testing.T) {
 			t.Fatalf("got %#v, want %#v", got, want)
 		}
 
-		if err := LoadAll(); err != nil {
+		if err := LoadConfig(); err != nil {
 			t.Fatal(err)
 		}
 		if got, want := Config, expect; !reflect.DeepEqual(got, want) {
@@ -128,7 +128,7 @@ func TestDefaults(t *testing.T) {
    instance.image:   ami-165a0876   (string)
    subnet.create:    true           (bool)
 `
-		if got, want := Display(), expect; got != want {
+		if got, want := DisplayConfig(), expect; got != want {
 			t.Fatalf("got \n%s\nwant\n%s\n", got, want)
 		}
 	})
@@ -162,7 +162,7 @@ func TestDefaults(t *testing.T) {
 		if got, want := Config, map[string]interface{}{"aws.region": "us-west-1"}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %#v, want %#v", got, want)
 		}
-		LoadAll()
+		LoadConfig()
 		if got, want := Config, map[string]interface{}{"aws.region": "us-west-1"}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %#v, want %#v", got, want)
 		}

@@ -7,8 +7,12 @@
 - Deleting images and optionally its related snapshots `awless delete image delete-snapshots=true`
 - Autowrapping results in tables when too long for `awless list`. No longer truncate results in `--format csv/tsv/json`
 - Adjust the width of table columns to the terminal width in `awless show`
-- installing awless on an EC2 instance now set the correct region using EC2 local metadata
+- Using local EC2 metadata to set region when installing awless on an EC2 instance
+
+### Bugfixes
+
 - Listing in CSV: remove extra spaces; proper listing in TSV (only 1 tab separator)
+- Avoid double sync on first install due to pre defined default region value us-east-1
 
 ## v0.0.23 [2017-05-05]
 

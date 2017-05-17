@@ -29,11 +29,11 @@ import (
 )
 
 var (
-	AwlessHome                          = filepath.Join(os.Getenv("HOME"), ".awless")
-	DBPath                              = filepath.Join(AwlessHome, database.Filename)
-	Dir                                 = filepath.Join(AwlessHome, "aws")
-	KeysDir                             = filepath.Join(AwlessHome, "keys")
-	AwlessFirstInstall, AwlessFirstSync bool
+	AwlessHome         = filepath.Join(os.Getenv("HOME"), ".awless")
+	DBPath             = filepath.Join(AwlessHome, database.Filename)
+	Dir                = filepath.Join(AwlessHome, "aws")
+	KeysDir            = filepath.Join(AwlessHome, "keys")
+	AwlessFirstInstall bool
 )
 
 func init() {
@@ -51,15 +51,24 @@ func InitAwlessEnv() error {
 	if AwlessFirstInstall {
 		fmt.Println("First install. Welcome!")
 		fmt.Println()
-		if err = InitConfigAndDefaults(); err != nil {
+
+		resolved, err := resolveRequiredConfigFromEnv()
+		if err != nil {
 			return err
 		}
 
-		if _, err = overwriteDefaults(); err != nil {
+		if err := InitConfig(resolved); err != nil {
 			return err
 		}
 
-		err := database.Execute(func(db *database.DB) error {
+		fmt.Println("\nThose parameters have been set in your config:")
+		fmt.Println(DisplayConfig())
+
+		fmt.Println("\nShow and update config with `awless config`. Ex: `awless config set aws.region`")
+		fmt.Println("\nAll done. Enjoy!")
+		fmt.Println()
+
+		err = database.Execute(func(db *database.DB) error {
 			return db.SetStringValue("current.version", Version)
 		})
 		if err != nil {
@@ -67,14 +76,14 @@ func InitAwlessEnv() error {
 		}
 	}
 
-	if err = LoadAll(); err != nil {
+	if err = LoadConfig(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func overwriteDefaults() (string, error) {
+func resolveRequiredConfigFromEnv() (map[string]string, error) {
 	var region, ami string
 	var sess *session.Session
 	var err error
@@ -99,24 +108,14 @@ func overwriteDefaults() (string, error) {
 
 	var hasAMI bool
 	if ami, hasAMI = awsconfig.AmiPerRegion[region]; !hasAMI {
-		fmt.Printf("Could not find a default ami for your region %s\n. Set it manually with `awless config set instance.image ...`", region)
+		fmt.Printf("Could not find a default ami for your region %s\n. Set it later manually with `awless config set instance.image ...`", region)
 	}
 
-	if err := Set(RegionConfigKey, region); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-	}
+	resolved := make(map[string]string)
+	resolved[RegionConfigKey] = region
 	if hasAMI {
-		if err := Set(instanceImageDefaultsKey, ami); err != nil {
-			fmt.Fprintf(os.Stderr, err.Error())
-		}
+		resolved[instanceImageDefaultsKey] = ami
 	}
 
-	fmt.Println("\nThose parameters have been set in your config:")
-	fmt.Println(Display())
-
-	fmt.Println("\nShow and update config with `awless config`. Ex: `awless config set aws.region`")
-	fmt.Println("\nAll done. Enjoy!")
-	fmt.Println()
-
-	return region, nil
+	return resolved, nil
 }

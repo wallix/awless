@@ -40,7 +40,7 @@ const (
 
 var configDefinitions = map[string]*Definition{
 	autosyncConfigKey:              {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
-	RegionConfigKey:                {help: "AWS region", defaultValue: "us-east-1", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{awsconfig.WarningChangeRegion, runSyncWithUpdatedRegion}},
+	RegionConfigKey:                {help: "AWS region", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{awsconfig.WarningChangeRegion, runSyncWithUpdatedRegion}},
 	ProfileConfigKey:               {help: "AWS profile", defaultValue: "default"},
 	"aws.infra.sync":               {help: "Sync AWS EC2/ELBv2 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.access.sync":              {help: "Sync AWS IAM service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
@@ -79,7 +79,7 @@ type Definition struct {
 	defaultValue         string
 }
 
-func LoadAll() error {
+func LoadConfig() error {
 	err := database.Execute(func(db *database.DB) (dberr error) {
 		Config, dberr = db.GetConfigs(configDatabaseKey)
 		if dberr != nil {
@@ -96,18 +96,26 @@ func LoadAll() error {
 	return err
 }
 
-func Display() string {
+func DisplayConfig() string {
 	return fmt.Sprintf("%s\n%s", displayConfig(), displayDefaults())
 }
 
-func InitConfigAndDefaults() error {
+func InitConfig(fromEnv map[string]string) error {
 	for k, v := range configDefinitions {
-		if err := Set(k, v.defaultValue); err != nil {
+		val := v.defaultValue
+		if vv, ok := fromEnv[k]; ok {
+			val = vv
+		}
+		if err := Set(k, val); err != nil {
 			return err
 		}
 	}
 	for k, v := range defaultsDefinitions {
-		if err := Set(k, v.defaultValue); err != nil {
+		val := v.defaultValue
+		if vv, ok := fromEnv[k]; ok {
+			val = vv
+		}
+		if err := Set(k, val); err != nil {
 			return err
 		}
 	}
@@ -341,6 +349,10 @@ func displayDefaults() string {
 
 func runSyncWithUpdatedRegion(i interface{}) {
 	if !GetAutosync() {
+		return
+	}
+
+	if !awsconfig.IsValidRegion(fmt.Sprint(i)) {
 		return
 	}
 
