@@ -664,7 +664,7 @@ var DriversDefs = []driversDef{
 	{
 		Api: "rds",
 		Drivers: []driver{
-			// LoadBalancer
+			// Database
 			{
 				Action: "create", Entity: cloud.Database, Input: "CreateDBInstanceInput", Output: "CreateDBInstanceOutput", ApiMethod: "CreateDBInstance", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBInstance.DBInstanceIdentifier)",
 				RequiredParams: []param{
