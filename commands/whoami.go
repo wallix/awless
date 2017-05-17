@@ -53,39 +53,44 @@ var whoamiCmd = &cobra.Command{
 		me, err := aws.AccessService.(*aws.Access).GetIdentity()
 		exitOn(err)
 
-		if me.Username == "root" {
+		if me.IsRoot() {
 			logger.Warning("You are currently root")
 			logger.Warning("Best practices suggest to create a new user and affecting it roles of access")
 			logger.Warning("awless official templates might help https://github.com/wallix/awless-templates\n")
 		}
 
-		fmt.Printf("Username: %s, Id: %s, Account: %s\n", me.Username, me.UserId, me.Account)
+		if !me.IsUserType() {
+			fmt.Printf("ResourceType: %s, Resource: %s,Id: %s, Account: %s\n", me.ResourceType, me.Resource, me.UserId, me.Account)
+			return
+		}
 
-		policies, err := aws.AccessService.(*aws.Access).GetUserPolicies(me.Username)
+		fmt.Printf("Username: %s, Id: %s, Account: %s\n", me.Resource, me.UserId, me.Account)
+
+		policies, err := aws.AccessService.(*aws.Access).GetUserPolicies(me.Resource)
 		if err != nil {
 			logger.Error(err)
 			return
+		}
+
+		if attached := policies.Attached; len(attached) > 0 {
+			fmt.Println("\nAttached policies (i.e. managed):")
+			for _, name := range attached {
+				fmt.Printf("\t- %s\n", name)
+			}
 		} else {
-			if attached := policies.Attached; len(attached) > 0 {
-				fmt.Println("\nAttached policies (i.e. managed):")
-				for _, name := range attached {
-					fmt.Printf("\t- %s\n", name)
-				}
-			} else {
-				fmt.Println("\nAttached policies (i.e. managed): none")
+			fmt.Println("\nAttached policies (i.e. managed): none")
+		}
+		if inlined := policies.Inlined; len(inlined) > 0 {
+			fmt.Println("\nInlined policies:")
+			for _, name := range inlined {
+				fmt.Printf("\t- %s\n", name)
 			}
-			if inlined := policies.Inlined; len(inlined) > 0 {
-				fmt.Println("\nInlined policies:")
-				for _, name := range inlined {
-					fmt.Printf("\t- %s\n", name)
-				}
-			} else {
-				fmt.Println("\nInlined policies: none")
-			}
-			if byGroup := policies.ByGroup; len(byGroup) > 0 {
-				for g, pol := range byGroup {
-					fmt.Printf("\nPolicies from group '%s': %s\n", g, strings.Join(pol, ", "))
-				}
+		} else {
+			fmt.Println("\nInlined policies: none")
+		}
+		if byGroup := policies.ByGroup; len(byGroup) > 0 {
+			for g, pol := range byGroup {
+				fmt.Printf("\nPolicies from group '%s': %s\n", g, strings.Join(pol, ", "))
 			}
 		}
 	},

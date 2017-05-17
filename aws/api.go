@@ -79,10 +79,18 @@ type oncer struct {
 	err    error
 }
 
-var usernameArnRegex = regexp.MustCompile(`:(root)|user[/\w*/]*/([\w-.]*)$`)
+var arnResourceSuffixRegex = regexp.MustCompile(`:(root)|([\w-.]*)/([\w-./]*)$`)
 
 type Identity struct {
-	Account, Arn, UserId, Username string
+	Account, Arn, UserId, ResourceType, Resource string
+}
+
+func (i *Identity) IsRoot() bool {
+	return i.Resource == "root"
+}
+
+func (i *Identity) IsUserType() bool {
+	return i.ResourceType == "user"
 }
 
 func (s *Access) GetIdentity() (*Identity, error) {
@@ -96,12 +104,14 @@ func (s *Access) GetIdentity() (*Identity, error) {
 	ident.Arn = awssdk.StringValue(resp.Arn)
 	ident.UserId = awssdk.StringValue(resp.UserId)
 
-	matches := usernameArnRegex.FindStringSubmatch(ident.Arn)
-	if len(matches) == 3 {
-		if matches[1] != "" {
-			ident.Username = matches[1]
+	matches := arnResourceSuffixRegex.FindStringSubmatch(ident.Arn)
+	if len(matches) == 4 {
+		if matches[1] == "root" {
+			ident.Resource = "root"
+			ident.ResourceType = "user"
 		} else {
-			ident.Username = matches[2]
+			ident.ResourceType = matches[2]
+			ident.Resource = matches[3]
 		}
 	}
 
