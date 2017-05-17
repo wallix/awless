@@ -20,7 +20,7 @@ func ParseRegion(i string) (interface{}, error) {
 
 func WarningChangeRegion(i interface{}) {
 	region := fmt.Sprint(i)
-	fmt.Fprintf(os.Stderr, "You changed your region to '%s'.\nYou might also want to update your default AMI with `awless config set instance.image %s`\n", region, AmiPerRegion[region])
+	fmt.Fprintf(os.Stderr, "Region updated to '%s'.\nYou might want to update your default AMI with `awless config set instance.image %s`\n", region, AmiPerRegion[region])
 }
 
 func ParseInstanceType(i string) (interface{}, error) {
