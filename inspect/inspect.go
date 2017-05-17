@@ -28,7 +28,7 @@ var InspectorsRegister map[string]Inspector
 func init() {
 	all := []Inspector{
 		&inspectors.Pricer{}, &inspectors.BucketSizer{},
-		&inspectors.PortScanner{},
+		&inspectors.PortScanner{}, &inspectors.OpenBuckets{},
 	}
 
 	InspectorsRegister = make(map[string]Inspector)
