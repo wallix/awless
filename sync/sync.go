@@ -47,17 +47,21 @@ type syncer struct {
 	logger *logger.Logger
 }
 
-func NewSyncer(l *logger.Logger) Syncer {
+func NewSyncer(l ...*logger.Logger) Syncer {
 	repo, err := repo.New()
 	if err != nil {
 		panic(err)
 	}
 
-	if l == nil {
-		l = logger.DiscardLogger
+	s := &syncer{Repo: repo}
+
+	if len(l) > 0 {
+		s.logger = l[0]
+	} else {
+		s.logger = logger.DiscardLogger
 	}
 
-	return &syncer{Repo: repo, logger: l}
+	return s
 }
 
 func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {

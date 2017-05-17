@@ -364,7 +364,5 @@ func runSyncWithUpdatedRegion(i interface{}) {
 		services = append(services, srv)
 	}
 
-	if sync.DefaultSyncer != nil {
-		sync.DefaultSyncer.Sync(services...)
-	}
+	sync.NewSyncer().Sync(services...)
 }

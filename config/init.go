@@ -96,7 +96,7 @@ func resolveRequiredConfigFromEnv() (map[string]string, error) {
 		fmt.Printf("Found existing AWS region '%s'. Setting it as your default region.\n", region)
 	} else if sess != nil {
 		if r, err := ec2metadata.New(sess).Region(); err == nil {
-			fmt.Printf("Found AWS region '%s' from local EC2 instance metadata. Setting it as your default region.\n", region)
+			fmt.Printf("Found AWS region '%s' from local EC2 instance metadata. Setting it as your default region.\n", r)
 			region = r
 		}
 	}

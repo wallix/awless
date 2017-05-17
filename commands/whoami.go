@@ -60,7 +60,7 @@ var whoamiCmd = &cobra.Command{
 		}
 
 		if !me.IsUserType() {
-			fmt.Printf("ResourceType: %s, Resource: %s,Id: %s, Account: %s\n", me.ResourceType, me.Resource, me.UserId, me.Account)
+			fmt.Printf("ResourceType: %s, Resource: %s, Id: %s, Account: %s\n", me.ResourceType, me.Resource, me.UserId, me.Account)
 			return
 		}
 
