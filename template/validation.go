@@ -1,6 +1,8 @@
 package template
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 
 	"github.com/wallix/awless/graph"
@@ -29,7 +31,14 @@ func (v *UniqueNameValidator) Execute(t *Template) (errs []error) {
 				errs = append(errs, err)
 			}
 			if len(resources) > 0 {
-				errs = append(errs, fmt.Errorf("%s %s: name '%s' already exists", cmd.Action, cmd.Entity, name))
+				for _, r := range resources {
+					var buf bytes.Buffer
+					buf.WriteString(fmt.Sprintf("'%s' %s already exists", name, cmd.Entity))
+					if state, ok := r.Properties["State"].(string); ok {
+						buf.WriteString(fmt.Sprintf(" (state: '%s')", state))
+					}
+					errs = append(errs, errors.New(buf.String()))
+				}
 			}
 		}
 	}
