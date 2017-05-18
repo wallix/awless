@@ -28,6 +28,7 @@
 
 - Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
 - Output formats either human (Markdown-compatible tables, trees) or machine readable (csv, tsv, json, ...): `--format`
+- Listing can be filtered via *resource properties* or *resources tags* 
 - Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults and sound autocomplete through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
@@ -114,6 +115,8 @@ awless list subnets --local
 
 Use `awless list`, `awless list -h` or `awless help list` to see all resources that can be listed.
 
+### Listing and filtering via properties
+
 When dealing with long lists of resources you can filter by property with the `--filter` flag as such:
 
 ```sh
@@ -136,6 +139,8 @@ Note that filters:
 
 1. ignore case when matching
 2. will match when result string contains the search string (ex: `--filter state=Run` will match instances with state `running`)
+
+### Listing and filtering via tags
 
 Listing also support searching resources with tags (mostly AWS EC2 resources have tags):
 
