@@ -10,11 +10,13 @@ import (
 
 func TestFilterGraph(t *testing.T) {
 	g := graph.NewGraph()
-	g.AddResource(
-		resourcetest.Instance("inst_1").Build(),
-		resourcetest.Instance("inst_2").Prop("Name", "redis").Build(),
-		resourcetest.Subnet("sub_1").Build(),
-	)
+
+	inst1 := resourcetest.Instance("inst_1").Prop("Tags", []string{"Creator=God", "Env=Cosmos"}).Build()
+	inst2 := resourcetest.Instance("inst_2").Prop("Tags", []string{"Creator=God"}).Prop("Name", "redis").Build()
+	subnet1 := resourcetest.Subnet("sub_1").Build()
+
+	g.AddResource(inst1, inst2, subnet1)
+
 	filtered, err := g.Filter("subnet")
 	if err != nil {
 		t.Fatal(err)
@@ -93,4 +95,64 @@ func TestFilterGraph(t *testing.T) {
 	if got, want := len(subnets), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+
+	filtered, _ = g.Filter("instance",
+		graph.BuildTagFilterFunc("Creator", "God"),
+	)
+	instances, _ = filtered.GetAllResources("instance")
+	if got, want := len(instances), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := hasResource(instances, inst1), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := hasResource(instances, inst2), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	filtered, _ = g.Filter("instance",
+		graph.BuildTagFilterFunc("Creator", "God"),
+		graph.BuildTagFilterFunc("Env", "Cosmos"),
+	)
+	instances, _ = filtered.GetAllResources("instance")
+	if got, want := len(instances), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := hasResource(instances, inst1), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	filtered, _ = g.Filter("instance",
+		graph.BuildTagKeyFilterFunc("Creator"),
+	)
+	instances, _ = filtered.GetAllResources("instance")
+	if got, want := len(instances), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := hasResource(instances, inst1), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+	if got, want := hasResource(instances, inst2), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+
+	filtered, _ = g.Filter("instance",
+		graph.BuildTagValueFilterFunc("Cosmos"),
+	)
+	instances, _ = filtered.GetAllResources("instance")
+	if got, want := len(instances), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := hasResource(instances, inst1), true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+}
+
+func hasResource(arr []*graph.Resource, r *graph.Resource) bool {
+	for _, a := range arr {
+		if a.Id() == r.Id() {
+			return true
+		}
+	}
+	return false
 }

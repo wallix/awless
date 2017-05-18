@@ -2,6 +2,7 @@
 
 ### Features
 
+- Supporting EC2 tags: syncing locally; listing with --tag, --tag-value, --tag-key
 - Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`
 - Listing pending import image tasks with `awless list importimagetasks`
 - Deleting images and optionally its related snapshots `awless delete image delete-snapshots=true`

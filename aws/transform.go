@@ -354,6 +354,20 @@ var extractFieldFn = func(field string) transformFn {
 	}
 }
 
+var extractTagsFn = func(i interface{}) (interface{}, error) {
+	tags, ok := i.([]*ec2.Tag)
+	if !ok {
+		return nil, fmt.Errorf("extract tags: not a tag slice, but a %T", i)
+	}
+
+	var out []string
+	for _, t := range tags {
+		out = append(out, fmt.Sprintf("%s=%s", awssdk.StringValue(t.Key), awssdk.StringValue(t.Value)))
+	}
+
+	return out, nil
+}
+
 var extractTagFn = func(key string) transformFn {
 	return func(i interface{}) (interface{}, error) {
 		tags, ok := i.([]*ec2.Tag)

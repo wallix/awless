@@ -47,14 +47,17 @@ type sorter interface {
 }
 
 type Builder struct {
-	filters    []string
-	headers    []ColumnDefinition
-	format     string
-	rdfType    string
-	sort       []int
-	maxwidth   int
-	dataSource interface{}
-	root       *graph.Resource
+	filters         []string
+	tagFilters      []string
+	tagKeyFilters   []string
+	tagValueFilters []string
+	headers         []ColumnDefinition
+	format          string
+	rdfType         string
+	sort            []int
+	maxwidth        int
+	dataSource      interface{}
+	root            *graph.Resource
 }
 
 func (b *Builder) SetSource(i interface{}) *Builder {
@@ -78,6 +81,31 @@ func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn) {
 	return
 }
 
+func (b *Builder) buildGraphTagFilters() (funcs []graph.FilterFn) {
+	for _, f := range b.tagFilters {
+		splits := strings.SplitN(f, "=", 2)
+		if len(splits) == 2 {
+			key, val := strings.TrimSpace(splits[0]), strings.TrimSpace(splits[1])
+			funcs = append(funcs, graph.BuildTagFilterFunc(key, val))
+		}
+	}
+	return
+}
+
+func (b *Builder) buildGraphTagKeyFilters() (funcs []graph.FilterFn) {
+	for _, k := range b.tagKeyFilters {
+		funcs = append(funcs, graph.BuildTagKeyFilterFunc(k))
+	}
+	return
+}
+
+func (b *Builder) buildGraphTagValueFilters() (funcs []graph.FilterFn) {
+	for _, v := range b.tagValueFilters {
+		funcs = append(funcs, graph.BuildTagValueFilterFunc(v))
+	}
+	return
+}
+
 func (b *Builder) Build() (Displayer, error) {
 	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
 
@@ -85,6 +113,21 @@ func (b *Builder) Build() (Displayer, error) {
 	case *graph.Graph:
 		gph := b.dataSource.(*graph.Graph)
 		filteredGraph, err := gph.Filter(b.rdfType, b.buildGraphFilters()...)
+		if err != nil {
+			return nil, err
+		}
+
+		filteredGraph, err = filteredGraph.OrFilter(b.rdfType, b.buildGraphTagFilters()...)
+		if err != nil {
+			return nil, err
+		}
+
+		filteredGraph, err = filteredGraph.OrFilter(b.rdfType, b.buildGraphTagKeyFilters()...)
+		if err != nil {
+			return nil, err
+		}
+
+		filteredGraph, err = filteredGraph.OrFilter(b.rdfType, b.buildGraphTagValueFilters()...)
 		if err != nil {
 			return nil, err
 		}
@@ -199,6 +242,27 @@ func WithHeaders(h []ColumnDefinition) optsFn {
 func WithFilters(fs []string) optsFn {
 	return func(b *Builder) *Builder {
 		b.filters = fs
+		return b
+	}
+}
+
+func WithTagFilters(fs []string) optsFn {
+	return func(b *Builder) *Builder {
+		b.tagFilters = fs
+		return b
+	}
+}
+
+func WithTagKeyFilters(fs []string) optsFn {
+	return func(b *Builder) *Builder {
+		b.tagKeyFilters = fs
+		return b
+	}
+}
+
+func WithTagValueFilters(fs []string) optsFn {
+	return func(b *Builder) *Builder {
+		b.tagValueFilters = fs
 		return b
 	}
 }

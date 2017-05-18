@@ -340,12 +340,12 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 	expected := map[string]*graph.Resource{
 		"eu-west-1": resourcetest.Region("eu-west-1").Build(),
-		"inst_1":    resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Build(),
+		"inst_1":    resourcetest.Instance("inst_1").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Prop(p.Name, "instance1-name").Prop(p.Tags, []string{"Name=instance1-name"}).Build(),
 		"inst_2":    resourcetest.Instance("inst_2").Prop(p.Subnet, "sub_2").Prop(p.Vpc, "vpc_1").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Build(),
 		"inst_3":    resourcetest.Instance("inst_3").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
 		"inst_4":    resourcetest.Instance("inst_4").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.KeyPair, "my_key").Build(),
 		"inst_5":    resourcetest.Instance("inst_5").Prop(p.KeyPair, "unexisting_key").Build(),
-		"inst_6": resourcetest.Instance("inst_6").Prop(p.Name, "inst_6_name").Prop(p.Type, "t2.micro").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.PublicIP, "1.2.3.4").Prop(p.PrivateIP, "10.0.0.1").
+		"inst_6": resourcetest.Instance("inst_6").Prop(p.Name, "inst_6_name").Prop(p.Tags, []string{"Name=inst_6_name"}).Prop(p.Type, "t2.micro").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Prop(p.PublicIP, "1.2.3.4").Prop(p.PrivateIP, "10.0.0.1").
 			Prop(p.Image, "ami-1234").Prop(p.Launched, now).Prop(p.State, "running").Prop(p.KeyPair, "my_key").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Prop(p.Affinity, "inst_affinity").
 			Prop(p.AvailabilityZone, "inst_az").Prop(p.PlacementGroup, "inst_group").Prop(p.Host, "inst_host").Prop(p.Architecture, "x86").Prop(p.Hypervisor, "xen").Prop(p.Profile, "arn:instance:profile").
 			Prop(p.Lifecycle, "lifecycle").Prop(p.NetworkInterfaces, []string{"my-network-interface"}).Prop(p.PublicDNS, "my-instance.dns").Prop(p.RootDevice, "/dev/xvda").Prop(p.RootDeviceType, "ebs").Build(),

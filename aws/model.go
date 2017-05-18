@@ -46,12 +46,14 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.PublicDNS:         {name: "PublicDnsName", transform: extractValueFn},
 		properties.RootDevice:        {name: "RootDeviceName", transform: extractValueFn},
 		properties.RootDeviceType:    {name: "RootDeviceType", transform: extractValueFn},
+		properties.Tags:              {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.Vpc: {
 		properties.Name:    {name: "Tags", transform: extractTagFn("Name")},
 		properties.Default: {name: "IsDefault", transform: extractValueFn},
 		properties.State:   {name: "State", transform: extractValueFn},
 		properties.CIDR:    {name: "CidrBlock", transform: extractValueFn},
+		properties.Tags:    {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.Subnet: {
 		properties.Name:             {name: "Tags", transform: extractTagFn("Name")},
@@ -61,6 +63,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.CIDR:             {name: "CidrBlock", transform: extractValueFn},
 		properties.AvailabilityZone: {name: "AvailabilityZone", transform: extractValueFn},
 		properties.Default:          {name: "DefaultForAz", transform: extractValueFn},
+		properties.Tags:             {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.SecurityGroup: {
 		properties.Name:          {name: "GroupName", transform: extractValueFn},
@@ -69,6 +72,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.OutboundRules: {name: "IpPermissionsEgress", transform: extractIpPermissionSliceFn},
 		properties.Owner:         {name: "OwnerId", transform: extractValueFn},
 		properties.Vpc:           {name: "VpcId", transform: extractValueFn},
+		properties.Tags:          {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.Keypair: {
 		properties.Fingerprint: {name: "KeyFingerprint", transform: extractValueFn},
@@ -82,6 +86,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Created:          {name: "CreateTime", transform: extractTimeFn},
 		properties.AvailabilityZone: {name: "AvailabilityZone", transform: extractValueFn},
 		properties.Instances:        {name: "Attachments", transform: extractStringSliceValues("InstanceId")},
+		properties.Tags:             {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.Snapshot: {
 		properties.Description: {name: "Description", transform: extractValueFn},
@@ -92,6 +97,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:       {name: "State", transform: extractValueFn},
 		properties.Size:        {name: "VolumeSize", transform: extractValueFn},
 		properties.Volume:      {name: "VolumeId", transform: extractValueFn},
+		properties.Tags:        {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.Image: {
 		properties.Name:           {name: "Name", transform: extractValueFn},
@@ -104,6 +110,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:          {name: "State", transform: extractValueFn},
 		properties.Created:        {name: "CreationDate", transform: extractTimeWithZSuffixFn},
 		properties.Virtualization: {name: "VirtualizationType", transform: extractValueFn},
+		properties.Tags:           {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.ImportImageTask: {
 		properties.Architecture: {name: "Architecture", transform: extractValueFn},
@@ -117,12 +124,14 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	cloud.InternetGateway: {
 		properties.Name: {name: "Tags", transform: extractTagFn("Name")},
 		properties.Vpcs: {name: "Attachments", transform: extractStringSliceValues("VpcId")},
+		properties.Tags: {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.RouteTable: {
 		properties.Name:   {name: "Tags", transform: extractTagFn("Name")},
 		properties.Vpc:    {name: "VpcId", transform: extractValueFn},
 		properties.Routes: {name: "Routes", transform: extractRoutesSliceFn},
 		properties.Main:   {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
+		properties.Tags:   {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.AvailabilityZone: {
 		properties.Name:     {name: "ZoneName", transform: extractValueFn},

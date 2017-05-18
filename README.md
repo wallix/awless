@@ -114,7 +114,7 @@ awless list subnets --local
 
 Use `awless list`, `awless list -h` or `awless help list` to see all resources that can be listed.
 
-When dealing with long lists of resources you can filter with the `--filter` flag as such:
+When dealing with long lists of resources you can filter by property with the `--filter` flag as such:
 
 ```sh
 awless list volumes --filter state=in-use --filter type=gp2
@@ -136,6 +136,19 @@ Note that filters:
 
 1. ignore case when matching
 2. will match when result string contains the search string (ex: `--filter state=Run` will match instances with state `running`)
+
+Listing also support searching resources with tags (mostly AWS EC2 resources have tags):
+
+```sh
+awless list instances --tag Env=Production,Dept=Marketing
+awless list volumes --tag-value Purchased
+awless list vpcs --tag-key Dept --tag-key Internal
+awless list vpcs --tag-key Dept,Internal
+```
+
+Note that tags:
+
+1. are case sensitive on both the key and the value
 
 ### Showing resources
 

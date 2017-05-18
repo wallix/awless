@@ -31,10 +31,13 @@ import (
 )
 
 var (
-	listingFormat      string
-	listingFiltersFlag []string
-	listOnlyIDs        bool
-	sortBy             []string
+	listingFormat              string
+	listingFiltersFlag         []string
+	listingTagFiltersFlag      []string
+	listingTagKeyFiltersFlag   []string
+	listingTagValueFiltersFlag []string
+	listOnlyIDs                bool
+	sortBy                     []string
 )
 
 func init() {
@@ -58,7 +61,10 @@ func init() {
 	}
 
 	listCmd.PersistentFlags().StringVar(&listingFormat, "format", "table", "Output format: table, csv, tsv, json (default to table)")
-	listCmd.PersistentFlags().StringSliceVar(&listingFiltersFlag, "filter", []string{}, "Filter resources given key/values fields. Ex: --filter type=t2.micro")
+	listCmd.PersistentFlags().StringSliceVar(&listingFiltersFlag, "filter", []string{}, "Filter resources given key/values fields (case insensitive). Ex: --filter type=t2.micro")
+	listCmd.PersistentFlags().StringSliceVar(&listingTagFiltersFlag, "tag", []string{}, "Filter EC2 resources given tags (case sensitive!). Ex: --tag Env=Production")
+	listCmd.PersistentFlags().StringSliceVar(&listingTagKeyFiltersFlag, "tag-key", []string{}, "Filter EC2 resources given a tag key only (case sensitive!). Ex: --tag-key Env")
+	listCmd.PersistentFlags().StringSliceVar(&listingTagValueFiltersFlag, "tag-value", []string{}, "Filter EC2 resources given a tag value only (case sensitive!). Ex: --tag-value Staging")
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort", []string{"Id"}, "Sort tables by column(s) name(s)")
 }
@@ -66,7 +72,7 @@ func init() {
 var listCmd = &cobra.Command{
 	Use:               "list",
 	Aliases:           []string{"ls"},
-	Example:           "  awless list instances --sort uptime\n  awless list users --format csv\n  awless list volumes --filter state=use --filter type=gp2\n  awless list instances --filter state=running,type=micro\n  awless list s3objects --filter bucketname=pdf-bucket ",
+	Example:           "  awless list instances --sort uptime\n  awless list users --format csv\n  awless list volumes --filter state=use --filter type=gp2\n  awless list volumes --tag-value Purchased\n  awless list vpcs --tag-key Dept --tag-key Internal\n  awless list instances --tag Env=Production,Dept=Marketing\n  awless list instances --filter state=running,type=micro\n  awless list s3objects --filter bucketname=pdf-bucket ",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook),
 	Short:             "List various type of resources",
@@ -122,6 +128,9 @@ func printResources(g *graph.Graph, resType string) {
 		console.WithRdfType(resType),
 		console.WithHeaders(console.DefaultsColumnDefinitions[resType]),
 		console.WithFilters(listingFiltersFlag),
+		console.WithTagFilters(listingTagFiltersFlag),
+		console.WithTagKeyFilters(listingTagKeyFiltersFlag),
+		console.WithTagValueFilters(listingTagValueFiltersFlag),
 		console.WithMaxWidth(console.GetTerminalWidth()),
 		console.WithFormat(listingFormat),
 		console.WithIDsOnly(listOnlyIDs),

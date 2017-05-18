@@ -151,6 +151,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "StorageType", RDFLabel: fmt.Sprintf("%s:storageType", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Subnet", RDFLabel: fmt.Sprintf("%s:subnet", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Subnets", RDFLabel: fmt.Sprintf("%s:subnets", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.RdfsClass},
+	{AwlessLabel: "Tags", RDFLabel: fmt.Sprintf("%s:tags", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Timeout", RDFLabel: fmt.Sprintf("%s:timezone", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Timezone", RDFLabel: fmt.Sprintf("%s:timeout", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Topic", RDFLabel: fmt.Sprintf("%s:topic", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},
