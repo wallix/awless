@@ -17,6 +17,8 @@ limitations under the License.
 package commands
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/web"
 )
@@ -28,7 +30,7 @@ var (
 func init() {
 	RootCmd.AddCommand(webCmd)
 
-	webCmd.Flags().StringVarP(&webPortFlag, "port", "p", ":8080", "Web UI port to listen on")
+	webCmd.Flags().StringVar(&webPortFlag, "port", ":8080", "Web UI port to listen on")
 }
 
 var webCmd = &cobra.Command{
@@ -37,6 +39,9 @@ var webCmd = &cobra.Command{
 	Short:  "Browse your cloud data through a web ui",
 
 	Run: func(cmd *cobra.Command, args []string) {
+		if !strings.HasPrefix(webPortFlag, ":") {
+			webPortFlag = ":" + webPortFlag
+		}
 		server := web.New(webPortFlag)
 		exitOn(server.Start())
 	},
