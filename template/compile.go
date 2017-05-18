@@ -337,7 +337,7 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	tpl.visitCommandNodes(each)
 
 	if len(emptyResolv) > 0 {
-		return tpl, env, fmt.Errorf("cannot resolve aliases: %q", emptyResolv)
+		return tpl, env, fmt.Errorf("cannot resolve aliases: %q. Maybe you need to update your local model with `awless sync` ?", emptyResolv)
 	}
 
 	return tpl, env, nil
