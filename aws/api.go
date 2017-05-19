@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -79,10 +80,10 @@ type oncer struct {
 	err    error
 }
 
-var arnResourceSuffixRegex = regexp.MustCompile(`:(root)|([\w-.]*)/([\w-./]*)$`)
+var arnResourceInfoRegex = regexp.MustCompile(`(root)|([\w-.]*)/([\w-./]*)`)
 
 type Identity struct {
-	Account, Arn, UserId, ResourceType, Resource string
+	Account, Arn, UserId, ResourceType, ResourcePath, Resource string
 }
 
 func (i *Identity) IsRoot() bool {
@@ -98,20 +99,25 @@ func (s *Access) GetIdentity() (*Identity, error) {
 	if err != nil {
 		return nil, err
 	}
-	ident := &Identity{}
 
-	ident.Account = awssdk.StringValue(resp.Account)
-	ident.Arn = awssdk.StringValue(resp.Arn)
-	ident.UserId = awssdk.StringValue(resp.UserId)
+	ident := &Identity{
+		Account: awssdk.StringValue(resp.Account),
+		Arn:     awssdk.StringValue(resp.Arn),
+		UserId:  awssdk.StringValue(resp.UserId),
+	}
 
-	matches := arnResourceSuffixRegex.FindStringSubmatch(ident.Arn)
-	if len(matches) == 4 {
-		if matches[1] == "root" {
-			ident.Resource = "root"
-			ident.ResourceType = "user"
-		} else {
-			ident.ResourceType = matches[2]
-			ident.Resource = matches[3]
+	splits := strings.Split(ident.Arn, ":")
+	if l := len(splits); l > 0 {
+		ident.ResourcePath = splits[l-1]
+		matches := arnResourceInfoRegex.FindStringSubmatch(ident.ResourcePath)
+		if len(matches) == 4 {
+			if matches[1] == "root" {
+				ident.Resource = "root"
+				ident.ResourceType = "user"
+			} else {
+				ident.ResourceType = matches[2]
+				ident.Resource = matches[3]
+			}
 		}
 	}
 

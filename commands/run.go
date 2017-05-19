@@ -275,6 +275,14 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	}
 
 	if strings.TrimSpace(yesorno) == "y" {
+		me, err := aws.AccessService.(*aws.Access).GetIdentity()
+		if err != nil {
+			logger.Warningf("cannot resolve template author identity: %s", err)
+		} else {
+			templ.Author = me.ResourcePath
+			logger.ExtraVerbosef("resolved template author: %s", templ.Author)
+		}
+
 		if scheduleFlag {
 			exitOn(scheduleTemplate(templ, scheduleRunInFlag, scheduleRevertInFlag))
 			return nil

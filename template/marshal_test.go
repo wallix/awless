@@ -12,7 +12,7 @@ import (
 
 func TestUnmarshalFromJSON(t *testing.T) {
 	tpl := &Template{}
-	err := tpl.UnmarshalJSON([]byte(`{"id": "123456", "commands": [
+	err := tpl.UnmarshalJSON([]byte(`{"id": "123456", "author": "michael", "commands": [
 	  {"errors": ["first error"], "results": ["vpc-12345"], "line": "create vpc cidr=10.0.0.0/24"},
 	   {"line": "create subnet"},
 	   {"errors": ["third error"], "results": ["i-12345"], "line": "create instance type=t2.micro count=4"}
@@ -28,6 +28,9 @@ func TestUnmarshalFromJSON(t *testing.T) {
 	}
 
 	if got, want := tpl.ID, "123456"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := tpl.Author, "michael"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
@@ -82,6 +85,7 @@ func TestUnmarshalFromJSON(t *testing.T) {
 func TestMarshalToJSON(t *testing.T) {
 	tmplWithErrors := MustParse("create vpc\ncreate subnet\ncreate instance")
 	tmplWithErrors.ID = "12345"
+	tmplWithErrors.Author = "michael"
 	for i, cmd := range tmplWithErrors.CommandNodesIterator() {
 		if i == 0 {
 			cmd.CmdErr = errors.New("first error")
@@ -101,6 +105,7 @@ func TestMarshalToJSON(t *testing.T) {
 			tmplWithErrors,
 			`{
 			  "id": "12345",
+			  "author": "michael",
 			  "commands": [
 			  {"errors": ["first error"], "results": ["first result"], "line": "create vpc"},
 			   {"line": "create subnet"},

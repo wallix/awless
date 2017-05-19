@@ -9,6 +9,7 @@ import (
 
 type toJSON struct {
 	ID       string    `json:"id"`
+	Author   string    `json:"author,omitempty"`
 	Commands []command `json:"commands"`
 }
 
@@ -21,6 +22,7 @@ type command struct {
 func (t *Template) MarshalJSON() ([]byte, error) {
 	out := &toJSON{}
 	out.ID = t.ID
+	out.Author = t.Author
 	out.Commands = []command{}
 
 	for _, cmd := range t.CommandNodesIterator() {
@@ -47,7 +49,7 @@ func (t *Template) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	tt := &Template{ID: v.ID, AST: &ast.AST{
+	tt := &Template{ID: v.ID, Author: v.Author, AST: &ast.AST{
 		Statements: make([]*ast.Statement, 0),
 	}}
 

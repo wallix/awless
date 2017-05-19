@@ -19,11 +19,13 @@ func (m *mockSTS) GetCallerIdentity(in *sts.GetCallerIdentityInput) (*sts.GetCal
 
 func TestGetIdentityParseAllTypesOfUsername(t *testing.T) {
 	tcases := []struct {
-		arn, expResource, expResourceType string
+		arn, expResource, expResourceType, expResourcePath string
 	}{
-		{arn: "arn:aws:iam::123456789012:root", expResource: "root", expResourceType: "user"},
-		{arn: "arn:aws:iam::123456789012:user/Bob", expResource: "Bob", expResourceType: "user"},
-		{arn: "arn:aws:iam::123456789012:user/division_abc/subdivision_xyz/Donald", expResource: "division_abc/subdivision_xyz/Donald", expResourceType: "user"},
+		{arn: "", expResource: "", expResourceType: "", expResourcePath: ""},
+		{arn: "arn:", expResource: "", expResourceType: "", expResourcePath: ""},
+		{arn: "arn:aws:iam::123456789012:root", expResource: "root", expResourceType: "user", expResourcePath: "root"},
+		{arn: "arn:aws:iam::123456789012:user/Bob", expResource: "Bob", expResourceType: "user", expResourcePath: "user/Bob"},
+		{arn: "arn:aws:iam::123456789012:user/division_abc/subdivision_xyz/Donald", expResource: "division_abc/subdivision_xyz/Donald", expResourceType: "user", expResourcePath: "user/division_abc/subdivision_xyz/Donald"},
 	}
 
 	for _, tcase := range tcases {
@@ -37,6 +39,9 @@ func TestGetIdentityParseAllTypesOfUsername(t *testing.T) {
 			t.Errorf("got '%s', want '%s'", got, want)
 		}
 		if got, want := id.ResourceType, tcase.expResourceType; got != want {
+			t.Errorf("got '%s', want '%s'", got, want)
+		}
+		if got, want := id.ResourcePath, tcase.expResourcePath; got != want {
 			t.Errorf("got '%s', want '%s'", got, want)
 		}
 	}

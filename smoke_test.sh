@@ -72,7 +72,7 @@ fi
 
 echo "Reading token in remote file on instance with success"
 
-REVERT_ID=$($BIN log | grep RevertID | cut -d , -f2 | cut -d : -f2)
+REVERT_ID=$($BIN log | grep ID: | cut -d, -f1 | cut -d: -f2)
 $BIN revert $REVERT_ID -e -f
 
 echo "Clean up and reverting back to region '$ORIG_REGION' and ami '$ORIG_IMAGE'"

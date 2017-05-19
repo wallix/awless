@@ -85,12 +85,12 @@ type logPrinter struct {
 func (p *logPrinter) Print(t *Template) {
 	buff := bufio.NewWriter(p.w)
 
-	buff.WriteString(fmt.Sprintf("Date: %s", parseULIDDate(t.ID)))
-
-	if IsRevertible(t) {
-		buff.WriteString(fmt.Sprintf(", RevertID: %s", t.ID))
-	} else {
-		buff.WriteString(", RevertID: <not revertible>")
+	buff.WriteString(fmt.Sprintf("ID: %s, Date: %s", t.ID, parseULIDDate(t.ID)))
+	if t.Author != "" {
+		buff.WriteString(fmt.Sprintf(", Author: %s", t.Author))
+	}
+	if !IsRevertible(t) {
+		buff.WriteString(" (not revertible)")
 	}
 	buff.WriteString("\n")
 
