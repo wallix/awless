@@ -2,6 +2,7 @@
 
 ### Features
 
+- Template author is now persisted in awless log using the caller identity
 - Supporting EC2 tags: syncing locally; listing with --tag, --tag-value, --tag-key
 - Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`
 - Listing pending import image tasks with `awless list importimagetasks`

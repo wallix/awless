@@ -28,6 +28,7 @@ const (
 	//Config
 	autosyncConfigKey              = "autosync"
 	checkUpgradeFrequencyConfigKey = "upgrade.checkfrequency"
+	schedulerURL                   = "scheduler.url"
 	RegionConfigKey                = "aws.region"
 	ProfileConfigKey               = "aws.profile"
 
@@ -52,6 +53,7 @@ var configDefinitions = map[string]*Definition{
 	"aws.queue.sync":               {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.dns.sync":                 {help: "Sync Route53 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	checkUpgradeFrequencyConfigKey: {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
+	schedulerURL:                   {help: "URL used by awless CLI to interact with pre-installed awless-scheduler", defaultValue: "http://localhost:8082"},
 }
 
 var defaultsDefinitions = map[string]*Definition{

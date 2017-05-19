@@ -548,8 +548,10 @@ func isQuoted(s string) bool {
 }
 
 func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
-	schedClient := client.LocalClient()
-
+	schedClient, err := client.New(config.GetSchedulerURL())
+	if err != nil {
+		return err
+	}
 	logger.Verbosef("sending template to scheduler %s", schedClient.ServiceURL)
 
 	if err := schedClient.Post(client.Form{

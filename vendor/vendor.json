@@ -541,10 +541,16 @@
 			"revisionTime": "2016-10-26T10:01:55Z"
 		},
 		{
-			"checksumSHA1": "LotmoKyrHs4Vk5L4IG7PCa/37uk=",
+			"checksumSHA1": "hDN2+9u0viOiHnaRsdl+DSeEvDU=",
 			"path": "github.com/wallix/awless-scheduler/client",
-			"revision": "eba1733c6e7b09444f8dc1bc07b5cbfa8e58a5a6",
-			"revisionTime": "2017-04-27T14:03:01Z"
+			"revision": "609940774ca9c0200f683c36913b618229f32f31",
+			"revisionTime": "2017-05-19T15:04:05Z"
+		},
+		{
+			"checksumSHA1": "t/YZE+yEC4hJZZBS47aqxrBLal4=",
+			"path": "github.com/wallix/awless-scheduler/model",
+			"revision": "609940774ca9c0200f683c36913b618229f32f31",
+			"revisionTime": "2017-05-19T15:04:05Z"
 		},
 		{
 			"checksumSHA1": "McKGeCPI7qSFsDjEM79NiMGhgfM=",
