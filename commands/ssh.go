@@ -94,9 +94,12 @@ var sshCmd = &cobra.Command{
 			return nil
 		}
 
-		exitOn(err)
-
-		exitOn(connectionCtx.checkInstanceAccessible())
+		if err != nil {
+			if e := connectionCtx.checkInstanceAccessible(); e != nil {
+				logger.Error(e.Error())
+			}
+			exitOn(err)
+		}
 
 		if printSSHConfigFlag {
 			fmt.Println(client.SSHConfigString(connectionCtx.instanceName))
