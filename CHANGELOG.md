@@ -1,3 +1,10 @@
+## v0.0.25 [unreleased]
+
+## Features
+
+- [#98](https://github.com/wallix/awless/issues/98): `awless ssh` searches SSH keys in both `~/.awless/keys` and `~/.ssh` folders.
+- When `awless ssh` in an instance, you can now specify only `-i keyname`, if the key is stored in `~/.awless/keys` or `~/.ssh`.
+
 ## v0.0.24 [2017-05-22]
 
 ### Features

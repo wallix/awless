@@ -12,6 +12,79 @@ import (
 	gossh "golang.org/x/crypto/ssh"
 )
 
+func TestInitClient(t *testing.T) {
+	//Create env
+	f, err := ioutil.TempDir("", "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(f)
+	err = os.Setenv("HOME", f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sshPath := filepath.Join(f, ".ssh")
+	err = os.MkdirAll(sshPath, 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keypath1 := filepath.Join(sshPath, "mykey.pem")
+	rawkey := `-----BEGIN RSA PRIVATE KEY-----
+MIICWwIBAAKBgQDRuxRbc9wQE2Q2grxE7McYoMMIVZRuTYMkqYKYjjhiPo9enlLT
++2QtTma7Yz8WPGSr384F13FYPrz/oYf8P0ZAyKH6WRqVZwIVY5gFLbOKR1tvnPm6
+KtrDXBwvXB8g8QWKIF4Ck8yemuvIe9z/SHiE2aaADJms4Of7Bd3B1XNjQQIDAQAB
+AoGAXL90szS7XsiUip6qD3j+Wt/NIARojZbtperoe/p46MltsZQmYORNWtPPDpNH
+NNgkVPW2MFMkJrgn8IxIjL6WnAYFrz9shpvxSY+ihiICAlXXxuuZ+bEsaBsOmcuM
+L0kOoDs8iL7FauSZ2L8M+Vg/Q6A2DvV53+Qm+8lnmeIwkdkCQQD69j6qoFR67896
++EDk6n++IJyrQJyAYyTbbLAx+8b7WXDXYCn9NUprcc69eQ9cidwyiUj4+gXdRPsl
+N/ngTjOPAkEA1fDwFlI0ROFFh5DJs//2T0QlHWvVMHJFzkTbPTxA2FjlxZoM2c8x
+MEzcrMwg6qwup7MsMswJCxoNWnYEpINULwJASlmZx0MoxCM3/N5/m1I99j4DLFlA
+BGlbCgbxTF2jXePpomVDC1k2aw6UiV3MR0YwjmhNzjWEd0Fwhl5HEUUZ0QJAVraQ
+aUuqWdzAtMDPsEBn0hr5vCIPx9IZTxCDmB9K3SWzA9N7r/CVrFELBJK8KMHfKyOp
+H3GpnLFThj3dhdyhCwJAcYdeLp39POwN0d4Dwf7Bu0sMRZIZrQpSbtO7ypOBwi3j
+hTSx5geAH2W73IyiTK8zIdgPMJPh69//5OhFzhQ8Ug==
+-----END RSA PRIVATE KEY-----`
+
+	ioutil.WriteFile(keypath1, []byte(rawkey), 0644)
+
+	awlessKeysPath := filepath.Join(f, ".awless-keys")
+	err = os.MkdirAll(awlessKeysPath, 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keypath2 := filepath.Join(awlessKeysPath, "mysecondkey.pem")
+	ioutil.WriteFile(keypath2, []byte(rawkey), 0644)
+
+	tcases := []struct {
+		keyname    string
+		keyfolders []string
+		expkeypath string
+	}{
+		{"mykey", []string{sshPath, awlessKeysPath}, keypath1},
+		{"mykey.pem", []string{sshPath, awlessKeysPath}, keypath1},
+		{filepath.Join(sshPath, "mykey.pem"), []string{sshPath, awlessKeysPath}, keypath1},
+		{filepath.Join(sshPath, "mykey"), []string{sshPath, awlessKeysPath}, keypath1},
+		{"mysecondkey", []string{sshPath, awlessKeysPath}, keypath2},
+		{"mysecondkey.pem", []string{sshPath, awlessKeysPath}, keypath2},
+		{keypath2, []string{sshPath, awlessKeysPath}, keypath2},
+	}
+
+	for _, tcase := range tcases {
+		client, err := InitClient(tcase.keyname, tcase.keyfolders, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got, want := client.Keypath, tcase.expkeypath; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if got, want := client.StrictHostKeyChecking, false; got != want {
+			t.Fatalf("got %t, want %t", got, want)
+		}
+	}
+
+}
+
 func TestCheckHostKey(t *testing.T) {
 	//Create env
 	f, err := ioutil.TempDir("", "test")

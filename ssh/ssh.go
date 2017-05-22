@@ -33,8 +33,8 @@ type Client struct {
 	logger                  *logger.Logger
 }
 
-func InitClient(keypath string, disableStrictHostKeyChecking bool) (*Client, error) {
-	privkey, err := resolvePrivateKey(keypath)
+func InitClient(keyname string, keyFolder []string, disableStrictHostKeyChecking bool) (*Client, error) {
+	privkey, err := resolvePrivateKey(keyname, keyFolder)
 	if err != nil {
 		return nil, err
 	}
@@ -186,20 +186,38 @@ type privateKey struct {
 	body []byte
 }
 
-func resolvePrivateKey(path string) (priv privateKey, err error) {
-	priv.path = path
-	priv.body, err = ioutil.ReadFile(priv.path)
-	if os.IsNotExist(err) {
-		pempath := fmt.Sprintf("%s.%s", priv.path, "pem")
-		priv.body, err = ioutil.ReadFile(pempath)
-		if os.IsNotExist(err) {
-			return priv, fmt.Errorf("cannot find SSH key at '%s'. You can add `-i ./path/to/key`", priv.path)
+func resolvePrivateKey(keyname string, keyFolders []string) (priv privateKey, err error) {
+	keyPaths := []string{
+		keyname,
+	}
+	if !strings.HasPrefix(keyname, ".pem") {
+		keyPaths = append(keyPaths, fmt.Sprintf("%s.pem", keyname))
+	}
+	for _, folder := range keyFolders {
+		if filepath.IsAbs(keyname) {
+			break
 		}
-		priv.path = pempath
+		if _, err = os.Stat(folder); err != nil {
+			continue
+		}
+		keyPaths = append(keyPaths, filepath.Join(folder, keyname))
+		if !strings.HasPrefix(keyname, ".pem") {
+			keyPaths = append(keyPaths, filepath.Join(folder, fmt.Sprintf("%s.pem", keyname)))
+		}
 	}
-	if err != nil {
-		return
+
+	for _, path := range keyPaths {
+		priv.body, err = ioutil.ReadFile(path)
+		if err == nil {
+			priv.path = path
+			return
+		}
+		if !os.IsNotExist(err) {
+			return
+		}
 	}
+
+	err = fmt.Errorf("cannot find SSH key '%s'. Searched at paths '%s'", keyname, strings.Join(keyPaths, "','"))
 
 	return
 }

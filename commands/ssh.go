@@ -20,7 +20,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"path"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -45,7 +46,7 @@ var disableStrictHostKeyCheckingFlag bool
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
-	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path toward the identity (key file) to use to connect through SSH")
+	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path or name toward the identity (key file) to use to connect through SSH")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
@@ -57,6 +58,7 @@ var sshCmd = &cobra.Command{
 	Short: "Launch a SSH (Secure Shell) session to an instance given an id or alias",
 	Example: `  awless ssh i-8d43b21b                       # using the instance id
   awless ssh ec2-user@redis-prod              # using the instance name and specify a user
+  awless ssh @redis-prod -i keyname # using a key stored in ~/.ssh/keyname.pem
   awless ssh @redis-prod -i ./path/toward/key # with a keyfile`,
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook),
@@ -69,7 +71,12 @@ var sshCmd = &cobra.Command{
 		connectionCtx, err := initInstanceConnectionContext(args[0], keyPathFlag)
 		exitOn(err)
 
-		client, err := ssh.InitClient(connectionCtx.keypath, disableStrictHostKeyCheckingFlag)
+		client, err := ssh.InitClient(connectionCtx.keypath,
+			[]string{config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh")},
+			disableStrictHostKeyCheckingFlag)
+		if err != nil && strings.Contains(err.Error(), "cannot find SSH key") && keyPathFlag == "" {
+			logger.Info("you may want to specify a key filepath with `-i /path/to/key.pem`")
+		}
 		exitOn(err)
 
 		client.SetLogger(logger.DefaultLogger)
@@ -119,7 +126,7 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyFlag 
 			err = fmt.Errorf("no access key set for instance %s", inst.Id())
 			return
 		}
-		keypath = path.Join(config.KeysDir, fmt.Sprint(keypair))
+		keypath = fmt.Sprint(keypair)
 	}
 
 	return
