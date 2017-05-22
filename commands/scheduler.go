@@ -42,6 +42,7 @@ func init() {
 var schedulerCmd = &cobra.Command{
 	Use:              "scheduler",
 	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook),
+	Hidden:           true,
 	Short:            "Accessing the scheduler API (when installed). To schedule templates runs/reverts use `awless run --schedule`",
 
 	Run: func(cmd *cobra.Command, args []string) {
