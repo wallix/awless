@@ -14,7 +14,8 @@ func TestWholeCompilation(t *testing.T) {
 	env.AddFillers(map[string]interface{}{
 		"instance.type":  "t2.micro",
 		"test.cidr":      "10.0.2.0/24",
-		"instance.count": "42",
+		"instance.count": 42,
+		"unused":         "filler",
 	})
 	env.AliasFunc = func(e, k, v string) string {
 		vals := map[string]string{
@@ -59,6 +60,11 @@ create instance count=42 image=ami-12345 name='my test instance' subnet=$testsub
 
 		if got, want := compiled.String(), tcase.expect; got != want {
 			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
+		}
+
+		expProcessedFillers := map[string]interface{}{"instance.type": "t2.micro", "subnet.cidr": "10.0.2.0/24", "instance.count": 42}
+		if got, want := env.GetProcessedFillers(), expProcessedFillers; !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %v, want %v", got, want)
 		}
 	}
 }
@@ -150,7 +156,6 @@ func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
 }
 
 func TestCheckReferencesDeclarationPass(t *testing.T) {
-
 	env := NewEnv()
 	tcases := []struct {
 		tpl    string
@@ -308,6 +313,9 @@ func TestResolveAliasPass(t *testing.T) {
 	}
 
 	assertCmdParams(t, tpl, map[string]interface{}{"subnet": "sub-12345", "ami": "ami-12345", "count": 3})
+	if got, want := env.GetProcessedFillers(), map[string]interface{}{"instance.ami": "ami-12345"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
 }
 
 func TestResolveHolesPass(t *testing.T) {

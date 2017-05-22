@@ -101,7 +101,13 @@ var runCmd = &cobra.Command{
 		extraParams, err := template.ParseParams(strings.Join(args[1:], " "))
 		exitOn(err)
 
-		exitOn(runTemplate(templ, config.Defaults, extraParams))
+		tplExec := &template.TemplateExecution{
+			Template: templ,
+			Locale:   config.GetAWSRegion(),
+			Source:   templ.String(),
+		}
+
+		exitOn(runTemplate(tplExec, config.Defaults, extraParams))
 
 		return nil
 	},
@@ -221,7 +227,7 @@ func idAndNameCompleter(hole string) readline.AutoCompleter {
 	return readline.NewPrefixCompleter(readline.PcItemDynamic(listAllResourcesIdAndName))
 }
 
-func runTemplate(templ *template.Template, fillers ...map[string]interface{}) error {
+func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]interface{}) error {
 	env := template.NewEnv()
 	env.Log = logger.DefaultLogger
 	env.AddFillers(fillers...)
@@ -234,10 +240,12 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 	}
 
 	var err error
-	templ, env, err = template.Compile(templ, env)
+	tplExec.Template, env, err = template.Compile(tplExec.Template, env)
 	exitOn(err)
 
-	validateTemplate(templ)
+	tplExec.Fillers = env.GetProcessedFillers()
+
+	validateTemplate(tplExec.Template)
 
 	var drivers []driver.Driver
 	for _, s := range cloud.ServiceRegistry {
@@ -247,7 +255,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 
 	awsDriver.SetLogger(logger.DefaultLogger)
 
-	if err = templ.DryRun(awsDriver); err != nil {
+	if err = tplExec.Template.DryRun(awsDriver); err != nil {
 		switch t := err.(type) {
 		case *template.Errors:
 			errs, _ := t.Errors()
@@ -258,7 +266,7 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		exitOn(errors.New("Dryrun failed"))
 	}
 
-	fmt.Printf("%s\n", renderGreenFn(templ))
+	fmt.Printf("%s\n", renderGreenFn(tplExec.Template))
 
 	var yesorno string
 	if forceGlobalFlag {
@@ -279,15 +287,15 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		if err != nil {
 			logger.Warningf("cannot resolve template author identity: %s", err)
 		} else {
-			templ.Author = me.ResourcePath
-			logger.ExtraVerbosef("resolved template author: %s", templ.Author)
+			tplExec.Author = me.ResourcePath
+			logger.ExtraVerbosef("resolved template author: %s", tplExec.Author)
 		}
 
 		if scheduleFlag {
-			exitOn(scheduleTemplate(templ, scheduleRunInFlag, scheduleRevertInFlag))
+			exitOn(scheduleTemplate(tplExec.Template, scheduleRunInFlag, scheduleRevertInFlag))
 			return nil
 		}
-		newTempl, err := templ.Run(awsDriver)
+		tplExec.Template, err = tplExec.Template.Run(awsDriver)
 		if err != nil {
 			logger.Errorf("Running template error: %s", err)
 		}
@@ -295,20 +303,20 @@ func runTemplate(templ *template.Template, fillers ...map[string]interface{}) er
 		printer := template.NewDefaultPrinter(os.Stdout)
 		printer.RenderKO = renderRedFn
 		printer.RenderOK = renderGreenFn
-		printer.Print(newTempl)
+		printer.Print(tplExec)
 
 		if err = database.Execute(func(db *database.DB) error {
-			return db.AddTemplate(newTempl)
+			return db.AddTemplate(tplExec)
 		}); err != nil {
 			logger.Errorf("Cannot save executed template in awless logs: %s", err)
 		}
 
-		if template.IsRevertible(newTempl) {
+		if template.IsRevertible(tplExec.Template) {
 			fmt.Println()
-			logger.Infof("Revert this template with `awless revert %s`", newTempl.ID)
+			logger.Infof("Revert this template with `awless revert %s`", tplExec.Template.ID)
 		}
 
-		runSyncFor(newTempl)
+		runSyncFor(tplExec.Template)
 	}
 
 	return nil
@@ -357,7 +365,13 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			templ, err := suggestFixParsingError(templDef, args, invalidEntityErr)
 			exitOn(err)
 
-			exitOn(runTemplate(templ, config.Defaults))
+			tplExec := &template.TemplateExecution{
+				Template: templ,
+				Locale:   config.GetAWSRegion(),
+				Source:   templ.String(),
+			}
+
+			exitOn(runTemplate(tplExec, config.Defaults))
 			return nil
 		},
 	}
@@ -377,7 +391,13 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 					exitOn(err)
 				}
 
-				exitOn(runTemplate(templ, config.Defaults))
+				tplExec := &template.TemplateExecution{
+					Template: templ,
+					Locale:   config.GetAWSRegion(),
+					Source:   templ.String(),
+				}
+
+				exitOn(runTemplate(tplExec, config.Defaults))
 				return nil
 			}
 		}

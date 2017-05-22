@@ -7,22 +7,24 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
-type toJSON struct {
-	ID       string    `json:"id"`
-	Author   string    `json:"author,omitempty"`
-	Commands []command `json:"commands"`
+// Allow template executions serialization with context for JSON storage
+// without altering the template.Template model
+type TemplateExecution struct {
+	*Template
+	Author, Source, Locale string
+	Fillers                map[string]interface{}
 }
 
-type command struct {
-	Line    string   `json:"line"`
-	Errors  []string `json:"errors,omitempty"`
-	Results []string `json:"results,omitempty"`
-}
-
-func (t *Template) MarshalJSON() ([]byte, error) {
+func (t *TemplateExecution) MarshalJSON() ([]byte, error) {
 	out := &toJSON{}
 	out.ID = t.ID
 	out.Author = t.Author
+	out.Source = t.Source
+	out.Locale = t.Locale
+	out.Fillers = t.Fillers
+	if out.Fillers == nil {
+		out.Fillers = make(map[string]interface{}, 0) // friendlier for json, avoiding "fillers": null,
+	}
 	out.Commands = []command{}
 
 	for _, cmd := range t.CommandNodesIterator() {
@@ -39,17 +41,30 @@ func (t *Template) MarshalJSON() ([]byte, error) {
 		out.Commands = append(out.Commands, newCmd)
 	}
 
-	return json.Marshal(out)
+	return json.MarshalIndent(out, "", " ")
 }
 
-func (t *Template) UnmarshalJSON(b []byte) error {
+func (t *TemplateExecution) UnmarshalJSON(b []byte) error {
+	if t == nil {
+		t = new(TemplateExecution)
+	}
+
+	if t.Template == nil {
+		t.Template = new(Template)
+	}
+
 	var v toJSON
 
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 
-	tt := &Template{ID: v.ID, Author: v.Author, AST: &ast.AST{
+	t.Source = v.Source
+	t.Locale = v.Locale
+	t.Author = v.Author
+	t.Fillers = v.Fillers
+
+	tpl := &Template{ID: v.ID, AST: &ast.AST{
 		Statements: make([]*ast.Statement, 0),
 	}}
 
@@ -68,11 +83,26 @@ func (t *Template) UnmarshalJSON(b []byte) error {
 			if len(c.Errors) > 0 {
 				n.CmdErr = errors.New(c.Errors[0])
 			}
-			tt.Statements = append(tt.Statements, &ast.Statement{Node: n})
+			tpl.Statements = append(tpl.Statements, &ast.Statement{Node: n})
 		}
 	}
 
-	*t = *tt
+	*(t.Template) = *tpl
 
 	return nil
+}
+
+type toJSON struct {
+	ID       string                 `json:"id"`
+	Author   string                 `json:"author,omitempty"`
+	Source   string                 `json:"source"`
+	Locale   string                 `json:"locale"`
+	Fillers  map[string]interface{} `json:"fillers"`
+	Commands []command              `json:"commands"`
+}
+
+type command struct {
+	Line    string   `json:"line"`
+	Errors  []string `json:"errors,omitempty"`
+	Results []string `json:"results,omitempty"`
 }

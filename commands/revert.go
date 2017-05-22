@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/template"
 )
@@ -42,16 +43,21 @@ var revertCmd = &cobra.Command{
 
 		revertId := args[0]
 
-		var tpl *template.Template
+		var loaded *template.TemplateExecution
 		exitOn(database.Execute(func(db *database.DB) (terr error) {
-			tpl, terr = db.GetTemplate(revertId)
+			loaded, terr = db.GetTemplate(revertId)
 			return
 		}))
 
-		reverted, err := tpl.Revert()
+		reverted, err := loaded.Template.Revert()
 		exitOn(err)
 
-		exitOn(runTemplate(reverted))
+		tplExec := &template.TemplateExecution{
+			Template: reverted,
+			Locale:   config.GetAWSRegion(),
+			Source:   reverted.String(),
+		}
+		exitOn(runTemplate(tplExec))
 
 		return nil
 	},

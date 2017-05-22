@@ -10,22 +10,21 @@ import (
 )
 
 type Env struct {
-	Fillers map[string]interface{}
-
-	Resolved         map[string]interface{}
+	Fillers          map[string]interface{}
 	DefLookupFunc    DefinitionLookupFunc
 	AliasFunc        func(entity, key, alias string) string
 	MissingHolesFunc func(string) interface{}
+	Log              *logger.Logger
 
-	Log *logger.Logger
+	processedFillers map[string]interface{}
 }
 
 func NewEnv() *Env {
 	return &Env{
-		Resolved:         make(map[string]interface{}),
 		AliasFunc:        nil,
 		MissingHolesFunc: nil,
 		Log:              logger.DiscardLogger,
+		processedFillers: make(map[string]interface{}),
 	}
 }
 
@@ -39,6 +38,26 @@ func (e *Env) AddFillers(fills ...map[string]interface{}) {
 			e.Fillers[k] = v
 		}
 	}
+}
+
+func (e *Env) addToProcessedFillers(fills ...map[string]interface{}) {
+	if e.processedFillers == nil {
+		e.processedFillers = make(map[string]interface{})
+	}
+
+	for _, f := range fills {
+		for k, v := range f {
+			e.processedFillers[k] = v
+		}
+	}
+}
+
+func (e *Env) GetProcessedFillers() (copy map[string]interface{}) {
+	copy = make(map[string]interface{}, 0)
+	for k, v := range e.processedFillers {
+		copy[k] = v
+	}
+	return
 }
 
 type Mode []compileFunc
@@ -237,20 +256,6 @@ func checkReferencesDeclaration(tpl *Template, env *Env) (*Template, *Env, error
 	return tpl, env, nil
 }
 
-func resolveHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
-	if env.Resolved == nil {
-		env.Resolved = make(map[string]interface{})
-	}
-
-	tpl.visitHoles(func(h ast.WithHoles) {
-		h.ProcessHoles(env.Fillers)
-	})
-
-	env.Log.ExtraVerbosef("holes resolved: %v", env.Resolved)
-
-	return tpl, env, nil
-}
-
 func replaceVariableValuePass(tpl *Template, env *Env) (*Template, *Env, error) {
 	toReplace := make(map[string]interface{})
 
@@ -283,6 +288,15 @@ func removeValueStatementsPass(tpl *Template, env *Env) (*Template, *Env, error)
 	return newTpl, env, nil
 }
 
+func resolveHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
+	tpl.visitHoles(func(h ast.WithHoles) {
+		processed := h.ProcessHoles(env.Fillers)
+		env.addToProcessedFillers(processed)
+	})
+
+	return tpl, env, nil
+}
+
 func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	uniqueHoles := make(map[string]struct{})
 	tpl.visitHoles(func(h ast.WithHoles) {
@@ -304,7 +318,8 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	}
 
 	tpl.visitHoles(func(h ast.WithHoles) {
-		h.ProcessHoles(fillers)
+		processed := h.ProcessHoles(fillers)
+		env.addToProcessedFillers(processed)
 	})
 
 	return tpl, env, nil
@@ -316,7 +331,7 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 		for k, v := range cmd.Params {
 			if s, ok := v.(string); ok {
 				if strings.HasPrefix(s, "@") {
-					env.Log.ExtraVerbosef("alias resolving: %s for key %s", s, k)
+					env.Log.ExtraVerbosef("alias: resolving %s for key %s", s, k)
 					alias := strings.TrimPrefix(s, "@")
 					if env.AliasFunc == nil {
 						continue
@@ -325,8 +340,13 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 					if actual == "" {
 						emptyResolv = append(emptyResolv, alias)
 					} else {
-						env.Log.ExtraVerbosef("alias '%s' resolved to '%s' for key %s", alias, actual, k)
+						env.Log.ExtraVerbosef("alias: resolved '%s' to '%s' for key %s", alias, actual, k)
 						cmd.Params[k] = actual
+						for f, v := range env.processedFillers { // any alias hiding in resolved fillers?
+							if v == s {
+								env.processedFillers[f] = actual
+							}
+						}
 						delete(cmd.Holes, k)
 					}
 				}

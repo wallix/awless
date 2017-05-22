@@ -29,6 +29,7 @@ import (
 var (
 	deleteAllLogsFlag    bool
 	deleteFromIdLogsFlag string
+	logsAsRawJSONFlag    bool
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 
 	logCmd.Flags().BoolVar(&deleteAllLogsFlag, "delete-all", false, "Delete all logs from local db")
 	logCmd.Flags().StringVar(&deleteFromIdLogsFlag, "delete", "", "Delete a specifc log entry given its id")
+	logCmd.Flags().BoolVar(&logsAsRawJSONFlag, "raw-json", false, "Display logs as raw json")
 }
 
 var logCmd = &cobra.Command{
@@ -66,6 +68,25 @@ var logCmd = &cobra.Command{
 		})
 		exitOn(err)
 
+		if logsAsRawJSONFlag {
+			for _, loaded := range all {
+				if loaded.Err != nil {
+					logger.Errorf("Template '%s' in error: %s", string(loaded.Key), loaded.Err)
+					logger.Verbosef("Template raw content\n%s", loaded.Raw)
+					fmt.Println()
+					continue
+				}
+
+				b, err := loaded.TplExec.MarshalJSON()
+				if err != nil {
+					logger.Errorf("cannot display template as raw json: %s", err)
+				}
+				fmt.Println(string(b))
+				fmt.Println()
+			}
+			return nil
+		}
+
 		printer := template.NewLogPrinter(os.Stdout)
 		printer.RenderKO = renderRedFn
 		printer.RenderOK = renderGreenFn
@@ -78,7 +99,7 @@ var logCmd = &cobra.Command{
 				continue
 			}
 
-			printer.Print(loaded.Tpl)
+			printer.Print(loaded.TplExec)
 			fmt.Println()
 		}
 

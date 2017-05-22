@@ -27,9 +27,9 @@ import (
 
 const TEMPLATES_BUCKET = "templates"
 
-func (db *DB) AddTemplate(templ *template.Template) error {
+func (db *DB) AddTemplate(tplExec *template.TemplateExecution) error {
 	return db.bolt.Update(func(tx *bolt.Tx) error {
-		if templ.ID == "" {
+		if tplExec.ID == "" {
 			return errors.New("cannot persist template with empty ID")
 		}
 
@@ -38,17 +38,17 @@ func (db *DB) AddTemplate(templ *template.Template) error {
 			return fmt.Errorf("create bucket %s: %s", TEMPLATES_BUCKET, err)
 		}
 
-		b, err := templ.MarshalJSON()
+		b, err := tplExec.MarshalJSON()
 		if err != nil {
 			return err
 		}
 
-		return bucket.Put([]byte(templ.ID), b)
+		return bucket.Put([]byte(tplExec.ID), b)
 	})
 }
 
-func (db *DB) GetTemplate(id string) (*template.Template, error) {
-	tpl := &template.Template{}
+func (db *DB) GetTemplate(id string) (*template.TemplateExecution, error) {
+	tplExec := &template.TemplateExecution{}
 
 	err := db.bolt.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
@@ -56,13 +56,13 @@ func (db *DB) GetTemplate(id string) (*template.Template, error) {
 			return errors.New("no templates stored yet")
 		}
 		if content := b.Get([]byte(id)); content != nil {
-			return tpl.UnmarshalJSON(content)
+			return tplExec.UnmarshalJSON(content)
 		} else {
 			return fmt.Errorf("no content for id '%s'", id)
 		}
 	})
 
-	return tpl, err
+	return tplExec, err
 }
 
 func (db *DB) DeleteTemplates() error {
@@ -87,7 +87,7 @@ func (db *DB) DeleteTemplate(id string) error {
 
 type LoadedTemplate struct {
 	Err      error
-	Tpl      *template.Template
+	TplExec  *template.TemplateExecution
 	Key, Raw string
 }
 
@@ -103,9 +103,9 @@ func (db *DB) ListTemplates() ([]*LoadedTemplate, error) {
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			t := &template.Template{}
-			terr := t.UnmarshalJSON(v)
-			lt := &LoadedTemplate{Tpl: t, Err: terr, Key: string(k), Raw: string(v)}
+			tplExec := &template.TemplateExecution{}
+			terr := tplExec.UnmarshalJSON(v)
+			lt := &LoadedTemplate{TplExec: tplExec, Err: terr, Key: string(k), Raw: string(v)}
 			results = append(results, lt)
 		}
 

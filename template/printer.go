@@ -16,7 +16,7 @@ type renderFunc func(...interface{}) string
 func renderNoop(s ...interface{}) string { return fmt.Sprint(s) }
 
 type Printer interface {
-	Print(*Template)
+	Print(*TemplateExecution)
 }
 
 func NewLogPrinter(w io.Writer) *logPrinter {
@@ -42,7 +42,7 @@ type defaultPrinter struct {
 	RenderKO renderFunc
 }
 
-func (p *defaultPrinter) Print(t *Template) {
+func (p *defaultPrinter) Print(t *TemplateExecution) {
 	buff := bufio.NewWriter(p.w)
 
 	tabw := tabwriter.NewWriter(buff, 0, 8, 0, '\t', 0)
@@ -82,14 +82,17 @@ type logPrinter struct {
 	RenderKO renderFunc
 }
 
-func (p *logPrinter) Print(t *Template) {
+func (p *logPrinter) Print(t *TemplateExecution) {
 	buff := bufio.NewWriter(p.w)
 
 	buff.WriteString(fmt.Sprintf("ID: %s, Date: %s", t.ID, parseULIDDate(t.ID)))
 	if t.Author != "" {
 		buff.WriteString(fmt.Sprintf(", Author: %s", t.Author))
 	}
-	if !IsRevertible(t) {
+	if t.Locale != "" {
+		buff.WriteString(fmt.Sprintf(", Region: %s", t.Locale))
+	}
+	if !IsRevertible(t.Template) {
 		buff.WriteString(" (not revertible)")
 	}
 	buff.WriteString("\n")

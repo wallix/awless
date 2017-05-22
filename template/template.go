@@ -28,7 +28,7 @@ import (
 )
 
 type Template struct {
-	ID, Author string
+	ID string
 	*ast.AST
 }
 
@@ -37,7 +37,6 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 
 	current := &Template{AST: &ast.AST{}}
 	current.ID = ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String()
-	current.Author = s.Author
 
 	for _, sts := range s.Statements {
 		clone := sts.Clone()
