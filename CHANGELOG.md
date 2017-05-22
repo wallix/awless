@@ -3,8 +3,8 @@
 ### Features
 
 - Template author is now persisted in awless log using the caller identity
-- Supporting EC2 tags: syncing locally; listing with --tag, --tag-value, --tag-key
-- Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`
+- [#93](https://github.com/wallix/awless/issues/93): Supporting EC2 tags: syncing locally; filtering in `awless list` with --tag, --tag-value, --tag-key
+- [#84](https://github.com/wallix/awless/issues/84): Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`. Add template to create AMI from local VM file (OVA, VMDK ...).
 - Listing pending import image tasks with `awless list importimagetasks`
 - Deleting images and optionally its related snapshots `awless delete image delete-snapshots=true`
 - Create/Update/Delete login profiles (AWS Console credentials): `awless create/update/delete loginprofile username=...`
@@ -18,6 +18,7 @@
 - Listing in CSV: remove extra spaces; proper listing in TSV (only 1 tab separator)
 - Avoid double sync on first install due to pre defined default region value us-east-1
 - [#92](https://github.com/wallix/awless/issues/92): Impossible to set a region in config when `aws.region` was empty
+- [#89](https://github.com/wallix/awless/issues/89): Fix `awless whoami` when using STS credentials.
 
 ## v0.0.23 [2017-05-05]
 
