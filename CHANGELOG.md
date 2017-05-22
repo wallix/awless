@@ -4,7 +4,7 @@
 
 - Template author is now persisted in awless log using the caller identity
 - [#93](https://github.com/wallix/awless/issues/93): Supporting EC2 tags: syncing locally; filtering in `awless list` with --tag, --tag-value, --tag-key
-- [#84](https://github.com/wallix/awless/issues/84): Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`. Add template to create AMI from local VM file (OVA, VMDK ...).
+- [#84](https://github.com/wallix/awless/issues/84): Create AMI by importing VM image from S3: `awless import image bucket=my-bucket s3object=my-object`. Add template to create AMI from local VM file (OVA, VMDK ...): `awless run repo:upload_image`.
 - Listing pending import image tasks with `awless list importimagetasks`
 - Deleting images and optionally its related snapshots `awless delete image delete-snapshots=true`
 - Create/Update/Delete login profiles (AWS Console credentials): `awless create/update/delete loginprofile username=...`
