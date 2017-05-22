@@ -117,7 +117,7 @@ func (b *Builder) Build() (Displayer, error) {
 			return nil, err
 		}
 
-		filteredGraph, err = filteredGraph.OrFilter(b.rdfType, b.buildGraphTagFilters()...)
+		filteredGraph, err = filteredGraph.Filter(b.rdfType, b.buildGraphTagFilters()...)
 		if err != nil {
 			return nil, err
 		}
