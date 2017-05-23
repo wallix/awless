@@ -756,7 +756,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "bucket",
 		Api:            "s3",
 		RequiredParams: []string{"name", "public-website"},
-		ExtraParams:    []string{"enforce-https", "hostname"},
+		ExtraParams:    []string{"enforce-https", "index-suffix", "redirect-hostname"},
 	},
 	"deletebucket": {
 		Action:         "delete",

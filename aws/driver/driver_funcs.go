@@ -1144,14 +1144,8 @@ func (d *S3Driver) Update_Bucket_DryRun(params map[string]interface{}) (interfac
 		return nil, errors.New("update bucket: missing required param 'public-website'")
 	}
 
-	publicWebsite, err := strconv.ParseBool(fmt.Sprint(params["public-website"]))
-	if err != nil {
+	if _, err := strconv.ParseBool(fmt.Sprint(params["public-website"])); err != nil {
 		return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
-	}
-	if publicWebsite {
-		if _, ok := params["hostname"]; !ok {
-			return nil, errors.New("update bucket: missing required param 'hostname'")
-		}
 	}
 
 	d.logger.Verbose("params dry run: update buclet ok")
@@ -1165,14 +1159,21 @@ func (d *S3Driver) Update_Bucket(params map[string]interface{}) (interface{}, er
 		return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
 	}
 	if publicWebsite {
-		hostname := fmt.Sprint(params["hostname"])
 		input := &s3.PutBucketWebsiteInput{
 			Bucket:               aws.String(bucket),
-			WebsiteConfiguration: &s3.WebsiteConfiguration{RedirectAllRequestsTo: &s3.RedirectAllRequestsTo{HostName: aws.String(hostname)}},
+			WebsiteConfiguration: &s3.WebsiteConfiguration{},
 		}
-		if enforceHttps, ok := params["enforce-https"]; ok && strings.ToLower(fmt.Sprint(enforceHttps)) == "true" {
-			input.WebsiteConfiguration.RedirectAllRequestsTo.Protocol = aws.String("https")
+		if hostname, ok := params["redirect-hostname"].(string); ok {
+			input.WebsiteConfiguration.RedirectAllRequestsTo = &s3.RedirectAllRequestsTo{HostName: aws.String(hostname)}
+			if enforceHttps, found := params["enforce-https"]; found && strings.ToLower(fmt.Sprint(enforceHttps)) == "true" {
+				input.WebsiteConfiguration.RedirectAllRequestsTo.Protocol = aws.String("https")
+			}
+		} else if index, ok := params["index-suffix"].(string); ok {
+			input.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String(index)}
+		} else {
+			input.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String("index.html")}
 		}
+
 		start := time.Now()
 		_, err := d.PutBucketWebsite(input)
 

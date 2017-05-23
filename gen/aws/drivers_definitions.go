@@ -925,7 +925,8 @@ var DriversDefs = []driversDef{
 					{TemplateName: "public-website"},
 				},
 				ExtraParams: []param{
-					{TemplateName: "hostname"},
+					{TemplateName: "redirect-hostname"},
+					{TemplateName: "index-suffix"},
 					{TemplateName: "enforce-https"},
 				},
 			},
