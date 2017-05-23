@@ -1135,6 +1135,74 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 	return fileName, nil
 }
 
+func (d *S3Driver) Update_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("update bucket: missing required param 'name'")
+	}
+
+	if _, ok := params["public-website"]; !ok {
+		return nil, errors.New("update bucket: missing required param 'public-website'")
+	}
+
+	publicWebsite, err := strconv.ParseBool(fmt.Sprint(params["public-website"]))
+	if err != nil {
+		return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
+	}
+	if publicWebsite {
+		if _, ok := params["hostname"]; !ok {
+			return nil, errors.New("update bucket: missing required param 'hostname'")
+		}
+	}
+
+	d.logger.Verbose("params dry run: update buclet ok")
+	return nil, nil
+}
+
+func (d *S3Driver) Update_Bucket(params map[string]interface{}) (interface{}, error) {
+	bucket := fmt.Sprint(params["name"])
+	publicWebsite, err := strconv.ParseBool(fmt.Sprint(params["public-website"]))
+	if err != nil {
+		return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
+	}
+	if publicWebsite {
+		hostname := fmt.Sprint(params["hostname"])
+		input := &s3.PutBucketWebsiteInput{
+			Bucket:               aws.String(bucket),
+			WebsiteConfiguration: &s3.WebsiteConfiguration{RedirectAllRequestsTo: &s3.RedirectAllRequestsTo{HostName: aws.String(hostname)}},
+		}
+		if enforceHttps, ok := params["enforce-https"]; ok && strings.ToLower(fmt.Sprint(enforceHttps)) == "true" {
+			input.WebsiteConfiguration.RedirectAllRequestsTo.Protocol = aws.String("https")
+		}
+		start := time.Now()
+		_, err := d.PutBucketWebsite(input)
+
+		if err != nil {
+			return nil, fmt.Errorf("update bucket: %s", err)
+		}
+		d.logger.ExtraVerbosef("s3.PutBucketWebsite call took %s", time.Since(start))
+		d.logger.Info("update bucket done")
+		return nil, nil
+	} else {
+		start := time.Now()
+		_, err := d.DeleteBucketWebsite(&s3.DeleteBucketWebsiteInput{
+			Bucket: aws.String(bucket),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("update bucket: %s", err)
+		}
+		d.logger.ExtraVerbosef("s3.PutBucketWebsite call took %s", time.Since(start))
+		d.logger.Info("update bucket done")
+		return nil, nil
+	}
+
+	if _, ok := params["public-website"]; !ok {
+		return nil, errors.New("update bucket: missing required param 'public-website'")
+	}
+
+	d.logger.Verbose("params dry run: update buclet ok")
+	return nil, nil
+}
+
 func (d *Route53Driver) Create_Record_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["zone"]; !ok {
 		return nil, errors.New("create record: missing required params 'zone'")

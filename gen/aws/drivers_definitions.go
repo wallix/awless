@@ -919,6 +919,17 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "update", Entity: cloud.Bucket, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+					{TemplateName: "public-website"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "hostname"},
+					{TemplateName: "enforce-https"},
+				},
+			},
+			{
 				Action: "delete", Entity: cloud.Bucket, DryRunUnsupported: true, Input: "DeleteBucketInput", Output: "DeleteBucketOutput", ApiMethod: "DeleteBucket",
 				RequiredParams: []param{
 					{AwsField: "Bucket", TemplateName: "name", AwsType: "awsstr"},

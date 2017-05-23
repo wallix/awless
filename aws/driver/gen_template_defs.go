@@ -110,6 +110,7 @@ var APIPerTemplateDefName = map[string]string{
 	"attachpolicy":              "iam",
 	"detachpolicy":              "iam",
 	"createbucket":              "s3",
+	"updatebucket":              "s3",
 	"deletebucket":              "s3",
 	"creates3object":            "s3",
 	"deletes3object":            "s3",
@@ -750,6 +751,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
+	"updatebucket": {
+		Action:         "update",
+		Entity:         "bucket",
+		Api:            "s3",
+		RequiredParams: []string{"name", "public-website"},
+		ExtraParams:    []string{"enforce-https", "hostname"},
+	},
 	"deletebucket": {
 		Action:         "delete",
 		Entity:         "bucket",
@@ -989,6 +997,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["attach"] = append(supported["attach"], "policy")
 	supported["detach"] = append(supported["detach"], "policy")
 	supported["create"] = append(supported["create"], "bucket")
+	supported["update"] = append(supported["update"], "bucket")
 	supported["delete"] = append(supported["delete"], "bucket")
 	supported["create"] = append(supported["create"], "s3object")
 	supported["delete"] = append(supported["delete"], "s3object")
