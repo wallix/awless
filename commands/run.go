@@ -332,10 +332,34 @@ func validateTemplate(tpl *template.Template) {
 
 func createDriverCommands(action string, entities []string) *cobra.Command {
 	actionCmd := &cobra.Command{
-		Use:         action,
-		Short:       oneLinerShortDesc(action, entities),
-		Long:        fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
-		Annotations: map[string]string{"one-liner": "true"},
+		Use:               fmt.Sprintf("%s ENTITY [param=value ...]", action),
+		Short:             oneLinerShortDesc(action, entities),
+		Long:              fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
+		Annotations:       map[string]string{"one-liner": "true"},
+		PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+		PersistentPostRun: applyHooks(verifyNewVersionHook),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return fmt.Errorf("missing ENTITY")
+			}
+
+			invalidEntityErr := fmt.Errorf("invalid entity '%s'", args[0])
+
+			resources := resolveResourceFromRef(args[0])
+			if len(resources) != 1 {
+				return invalidEntityErr
+			}
+
+			templDef, ok := awsdriver.AWSLookupDefinitions(fmt.Sprintf("%s%s", action, resources[0].Type()))
+			if !ok {
+				return invalidEntityErr
+			}
+			templ, err := suggestFixParsingError(templDef, args, invalidEntityErr)
+			exitOn(err)
+
+			exitOn(runTemplate(templ, config.Defaults))
+			return nil
+		},
 	}
 
 	for _, entity := range entities {
@@ -348,7 +372,10 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				text := fmt.Sprintf("%s %s %s", def.Action, def.Entity, strings.Join(args, " "))
 
 				templ, err := template.Parse(text)
-				exitOn(err)
+				if err != nil {
+					templ, err = suggestFixParsingError(def, args, err)
+					exitOn(err)
+				}
 
 				exitOn(runTemplate(templ, config.Defaults))
 				return nil
@@ -566,4 +593,30 @@ func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
 	logger.Info("template scheduled successfully")
 
 	return nil
+}
+
+func suggestFixParsingError(def template.Definition, args []string, defaultErr error) (*template.Template, error) {
+	if len(def.Required()) != 1 || len(args) != 1 {
+		return nil, defaultErr
+	}
+
+	suggestText := fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, def.Required()[0], args[0])
+
+	fmt.Printf("Did you mean `awless %s` (y/n)? ", suggestText)
+	var yesorno string
+	_, err := fmt.Scanln(&yesorno)
+	if err != nil {
+		return nil, defaultErr
+	}
+
+	if yesorno = strings.ToLower(strings.TrimSpace(yesorno)); !(yesorno == "y" || yesorno == "yes") {
+		return nil, defaultErr
+	}
+
+	templ, err := template.Parse(suggestText)
+	if err != nil {
+		return templ, err
+	}
+
+	return templ, nil
 }
