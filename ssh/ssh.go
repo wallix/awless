@@ -33,8 +33,8 @@ type Client struct {
 	logger                  *logger.Logger
 }
 
-func InitClient(keyname string, keyFolder []string, disableStrictHostKeyChecking bool) (*Client, error) {
-	privkey, err := resolvePrivateKey(keyname, keyFolder)
+func InitClient(keyname string, keyFolders ...string) (*Client, error) {
+	privkey, err := resolvePrivateKey(keyname, keyFolders...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func InitClient(keyname string, keyFolder []string, disableStrictHostKeyChecking
 		InteractiveTerminalFunc: func(*gossh.Client) error { return nil },
 		Keypath:                 privkey.path,
 		signer:                  signer,
-		StrictHostKeyChecking:   !disableStrictHostKeyChecking,
+		StrictHostKeyChecking:   true,
 	}
 
 	return cli, nil
@@ -57,6 +57,10 @@ func InitClient(keyname string, keyFolder []string, disableStrictHostKeyChecking
 
 func (c *Client) SetLogger(l *logger.Logger) {
 	c.logger = l
+}
+
+func (c *Client) SetStrictHostKeyChecking(hostKeyChecking bool) {
+	c.StrictHostKeyChecking = hostKeyChecking
 }
 
 func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
@@ -186,7 +190,7 @@ type privateKey struct {
 	body []byte
 }
 
-func resolvePrivateKey(keyname string, keyFolders []string) (priv privateKey, err error) {
+func resolvePrivateKey(keyname string, keyFolders ...string) (priv privateKey, err error) {
 	keyPaths := []string{
 		keyname,
 	}

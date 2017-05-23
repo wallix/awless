@@ -70,7 +70,7 @@ hTSx5geAH2W73IyiTK8zIdgPMJPh69//5OhFzhQ8Ug==
 	}
 
 	for _, tcase := range tcases {
-		client, err := InitClient(tcase.keyname, tcase.keyfolders, true)
+		client, err := InitClient(tcase.keyname, tcase.keyfolders...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -78,7 +78,7 @@ hTSx5geAH2W73IyiTK8zIdgPMJPh69//5OhFzhQ8Ug==
 		if got, want := client.Keypath, tcase.expkeypath; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
-		if got, want := client.StrictHostKeyChecking, false; got != want {
+		if got, want := client.StrictHostKeyChecking, true; got != want {
 			t.Fatalf("got %t, want %t", got, want)
 		}
 	}

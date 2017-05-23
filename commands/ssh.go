@@ -71,15 +71,14 @@ var sshCmd = &cobra.Command{
 		connectionCtx, err := initInstanceConnectionContext(args[0], keyPathFlag)
 		exitOn(err)
 
-		client, err := ssh.InitClient(connectionCtx.keypath,
-			[]string{config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh")},
-			disableStrictHostKeyCheckingFlag)
+		client, err := ssh.InitClient(connectionCtx.keypath, config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh"))
 		if err != nil && strings.Contains(err.Error(), "cannot find SSH key") && keyPathFlag == "" {
 			logger.Info("you may want to specify a key filepath with `-i /path/to/key.pem`")
 		}
 		exitOn(err)
 
 		client.SetLogger(logger.DefaultLogger)
+		client.SetStrictHostKeyChecking(!disableStrictHostKeyCheckingFlag)
 		client.InteractiveTerminalFunc = console.InteractiveTerminal
 		client.IP = connectionCtx.ip
 
