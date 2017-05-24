@@ -68,28 +68,15 @@ var logCmd = &cobra.Command{
 		})
 		exitOn(err)
 
+		var printer template.Printer
 		if logsAsRawJSONFlag {
-			for _, loaded := range all {
-				if loaded.Err != nil {
-					logger.Errorf("Template '%s' in error: %s", string(loaded.Key), loaded.Err)
-					logger.Verbosef("Template raw content\n%s", loaded.Raw)
-					fmt.Println()
-					continue
-				}
-
-				b, err := loaded.TplExec.MarshalJSON()
-				if err != nil {
-					logger.Errorf("cannot display template as raw json: %s", err)
-				}
-				fmt.Println(string(b))
-				fmt.Println()
-			}
-			return nil
+			printer = template.NewJSONPrinter(os.Stdout)
+		} else {
+			logPrinter := template.NewLogPrinter(os.Stdout)
+			logPrinter.RenderKO = renderRedFn
+			logPrinter.RenderOK = renderGreenFn
+			printer = logPrinter
 		}
-
-		printer := template.NewLogPrinter(os.Stdout)
-		printer.RenderKO = renderRedFn
-		printer.RenderOK = renderGreenFn
 
 		for _, loaded := range all {
 			if loaded.Err != nil {
@@ -99,7 +86,9 @@ var logCmd = &cobra.Command{
 				continue
 			}
 
-			printer.Print(loaded.TplExec)
+			if err := printer.Print(loaded.TplExec); err != nil {
+				logger.Error(err.Error())
+			}
 			fmt.Println()
 		}
 

@@ -342,11 +342,6 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 					} else {
 						env.Log.ExtraVerbosef("alias: resolved '%s' to '%s' for key %s", alias, actual, k)
 						cmd.Params[k] = actual
-						for f, v := range env.processedFillers { // any alias hiding in resolved fillers?
-							if v == s {
-								env.processedFillers[f] = actual
-							}
-						}
 						delete(cmd.Holes, k)
 					}
 				}

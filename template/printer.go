@@ -2,6 +2,7 @@ package template
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -16,7 +17,7 @@ type renderFunc func(...interface{}) string
 func renderNoop(s ...interface{}) string { return fmt.Sprint(s) }
 
 type Printer interface {
-	Print(*TemplateExecution)
+	Print(*TemplateExecution) error
 }
 
 func NewLogPrinter(w io.Writer) *logPrinter {
@@ -35,6 +36,14 @@ func NewDefaultPrinter(w io.Writer) *defaultPrinter {
 	}
 }
 
+func NewJSONPrinter(w io.Writer) *jsonPrinter {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", " ")
+	return &jsonPrinter{
+		enc: enc,
+	}
+}
+
 type defaultPrinter struct {
 	w io.Writer
 
@@ -42,7 +51,7 @@ type defaultPrinter struct {
 	RenderKO renderFunc
 }
 
-func (p *defaultPrinter) Print(t *TemplateExecution) {
+func (p *defaultPrinter) Print(t *TemplateExecution) error {
 	buff := bufio.NewWriter(p.w)
 
 	tabw := tabwriter.NewWriter(buff, 0, 8, 0, '\t', 0)
@@ -73,6 +82,8 @@ func (p *defaultPrinter) Print(t *TemplateExecution) {
 
 	tabw.Flush()
 	buff.Flush()
+
+	return nil
 }
 
 type logPrinter struct {
@@ -82,7 +93,7 @@ type logPrinter struct {
 	RenderKO renderFunc
 }
 
-func (p *logPrinter) Print(t *TemplateExecution) {
+func (p *logPrinter) Print(t *TemplateExecution) error {
 	buff := bufio.NewWriter(p.w)
 
 	buff.WriteString(fmt.Sprintf("ID: %s, Date: %s", t.ID, parseULIDDate(t.ID)))
@@ -126,6 +137,19 @@ func (p *logPrinter) Print(t *TemplateExecution) {
 
 	tabw.Flush()
 	buff.Flush()
+
+	return nil
+}
+
+type jsonPrinter struct {
+	enc *json.Encoder
+}
+
+func (p *jsonPrinter) Print(t *TemplateExecution) error {
+	if err := p.enc.Encode(t); err != nil {
+		return fmt.Errorf("json printer: %s", err)
+	}
+	return nil
 }
 
 func formatMultiLineErrMsg(msg string) []string {

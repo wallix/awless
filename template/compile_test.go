@@ -313,9 +313,6 @@ func TestResolveAliasPass(t *testing.T) {
 	}
 
 	assertCmdParams(t, tpl, map[string]interface{}{"subnet": "sub-12345", "ami": "ami-12345", "count": 3})
-	if got, want := env.GetProcessedFillers(), map[string]interface{}{"instance.ami": "ami-12345"}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("got %v, want %v", got, want)
-	}
 }
 
 func TestResolveHolesPass(t *testing.T) {
