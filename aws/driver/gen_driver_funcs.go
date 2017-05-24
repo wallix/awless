@@ -4217,6 +4217,14 @@ func (d *S3Driver) Create_Bucket(params map[string]interface{}) (interface{}, er
 		return nil, err
 	}
 
+	// Extra params
+	if _, ok := params["acl"]; ok {
+		err = setFieldWithType(params["acl"], input, "ACL", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	start := time.Now()
 	var output *s3.CreateBucketOutput
 	output, err = d.CreateBucket(input)
@@ -4261,6 +4269,63 @@ func (d *S3Driver) Delete_Bucket(params map[string]interface{}) (interface{}, er
 	}
 	d.logger.ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
 	d.logger.Info("delete bucket done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *S3Driver) Update_S3object_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["bucket"]; !ok {
+		return nil, errors.New("update s3object: missing required params 'bucket'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("update s3object: missing required params 'name'")
+	}
+
+	if _, ok := params["acl"]; !ok {
+		return nil, errors.New("update s3object: missing required params 'acl'")
+	}
+
+	d.logger.Verbose("params dry run: update s3object ok")
+	return fakeDryRunId("s3object"), nil
+}
+
+// This function was auto generated
+func (d *S3Driver) Update_S3object(params map[string]interface{}) (interface{}, error) {
+	input := &s3.PutObjectAclInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "Key", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["acl"], input, "ACL", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["version"]; ok {
+		err = setFieldWithType(params["version"], input, "VersionId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *s3.PutObjectAclOutput
+	output, err = d.PutObjectAcl(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("update s3object: %s", err)
+	}
+	d.logger.ExtraVerbosef("s3.PutObjectAcl call took %s", time.Since(start))
+	d.logger.Info("update s3object done")
 	return output, nil
 }
 

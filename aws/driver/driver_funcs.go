@@ -1130,6 +1130,13 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	// Extra params
+	if _, ok := params["acl"]; ok {
+		err = setFieldWithType(params["acl"], input, "ACL", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	d.logger.Infof("uploading '%s'", fileName)
 
@@ -1147,12 +1154,15 @@ func (d *S3Driver) Update_Bucket_DryRun(params map[string]interface{}) (interfac
 		return nil, errors.New("update bucket: missing required param 'name'")
 	}
 
-	if _, ok := params["public-website"]; !ok {
-		return nil, errors.New("update bucket: missing required param 'public-website'")
+	_, updatePublicWebsite := params["public-website"]
+	if updatePublicWebsite {
+		if _, err := strconv.ParseBool(fmt.Sprint(params["public-website"])); err != nil {
+			return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
+		}
 	}
-
-	if _, err := strconv.ParseBool(fmt.Sprint(params["public-website"])); err != nil {
-		return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
+	_, updateAcl := params["acl"]
+	if !updatePublicWebsite && !updateAcl {
+		return nil, fmt.Errorf("update bucket: must set either 'public-website' or 'acl'")
 	}
 
 	d.logger.Verbose("params dry run: update buclet ok")
@@ -1161,53 +1171,66 @@ func (d *S3Driver) Update_Bucket_DryRun(params map[string]interface{}) (interfac
 
 func (d *S3Driver) Update_Bucket(params map[string]interface{}) (interface{}, error) {
 	bucket := fmt.Sprint(params["name"])
-	publicWebsite, err := strconv.ParseBool(fmt.Sprint(params["public-website"]))
-	if err != nil {
-		return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
-	}
-	if publicWebsite {
-		input := &s3.PutBucketWebsiteInput{
-			Bucket:               aws.String(bucket),
-			WebsiteConfiguration: &s3.WebsiteConfiguration{},
-		}
-		if hostname, ok := params["redirect-hostname"].(string); ok {
-			input.WebsiteConfiguration.RedirectAllRequestsTo = &s3.RedirectAllRequestsTo{HostName: aws.String(hostname)}
-			if enforceHttps, found := params["enforce-https"]; found && strings.ToLower(fmt.Sprint(enforceHttps)) == "true" {
-				input.WebsiteConfiguration.RedirectAllRequestsTo.Protocol = aws.String("https")
-			}
-		} else if index, ok := params["index-suffix"].(string); ok {
-			input.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String(index)}
-		} else {
-			input.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String("index.html")}
-		}
 
-		start := time.Now()
-		_, err := d.PutBucketWebsite(input)
+	start := time.Now()
 
-		if err != nil {
-			return nil, fmt.Errorf("update bucket: %s", err)
-		}
-		d.logger.ExtraVerbosef("s3.PutBucketWebsite call took %s", time.Since(start))
-		d.logger.Info("update bucket done")
-		return nil, nil
-	} else {
-		start := time.Now()
-		_, err := d.DeleteBucketWebsite(&s3.DeleteBucketWebsiteInput{
+	if _, ok := params["acl"]; ok { // Update the canned ACL to apply to the bucket
+		input := &s3.PutBucketAclInput{
 			Bucket: aws.String(bucket),
-		})
+		}
+		err := setFieldWithType(params["acl"], input, "ACL", awsstr)
+		if err != nil {
+			return nil, err
+		}
+		_, err = d.PutBucketAcl(input)
 		if err != nil {
 			return nil, fmt.Errorf("update bucket: %s", err)
 		}
-		d.logger.ExtraVerbosef("s3.PutBucketWebsite call took %s", time.Since(start))
+
+		d.logger.ExtraVerbosef("s3.PutBucketAcl call took %s", time.Since(start))
 		d.logger.Info("update bucket done")
 		return nil, nil
 	}
 
-	if _, ok := params["public-website"]; !ok {
-		return nil, errors.New("update bucket: missing required param 'public-website'")
-	}
+	if _, ok := params["public-website"]; ok { // Set/Unset this bucket as a public website
+		publicWebsite, err := strconv.ParseBool(fmt.Sprint(params["public-website"]))
+		if err != nil {
+			return nil, fmt.Errorf("update bucket: 'public-website' is not a bool: %s", err)
+		}
+		if publicWebsite {
+			input := &s3.PutBucketWebsiteInput{
+				Bucket:               aws.String(bucket),
+				WebsiteConfiguration: &s3.WebsiteConfiguration{},
+			}
+			if hostname, ok := params["redirect-hostname"].(string); ok {
+				input.WebsiteConfiguration.RedirectAllRequestsTo = &s3.RedirectAllRequestsTo{HostName: aws.String(hostname)}
+				if enforceHttps, found := params["enforce-https"]; found && strings.ToLower(fmt.Sprint(enforceHttps)) == "true" {
+					input.WebsiteConfiguration.RedirectAllRequestsTo.Protocol = aws.String("https")
+				}
+			} else if index, ok := params["index-suffix"].(string); ok {
+				input.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String(index)}
+			} else {
+				input.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String("index.html")}
+			}
 
-	d.logger.Verbose("params dry run: update buclet ok")
+			_, err := d.PutBucketWebsite(input)
+
+			if err != nil {
+				return nil, fmt.Errorf("update bucket: %s", err)
+			}
+		} else {
+			_, err := d.DeleteBucketWebsite(&s3.DeleteBucketWebsiteInput{
+				Bucket: aws.String(bucket),
+			})
+			if err != nil {
+				return nil, fmt.Errorf("update bucket: %s", err)
+			}
+		}
+
+		d.logger.ExtraVerbosef("s3.PutBucketWebsite call took %s", time.Since(start))
+		d.logger.Info("update bucket done")
+		return nil, nil
+	}
 	return nil, nil
 }
 

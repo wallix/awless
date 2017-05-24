@@ -113,6 +113,7 @@ var APIPerTemplateDefName = map[string]string{
 	"updatebucket":              "s3",
 	"deletebucket":              "s3",
 	"creates3object":            "s3",
+	"updates3object":            "s3",
 	"deletes3object":            "s3",
 	"createtopic":               "sns",
 	"deletetopic":               "sns",
@@ -749,14 +750,14 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "bucket",
 		Api:            "s3",
 		RequiredParams: []string{"name"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"acl"},
 	},
 	"updatebucket": {
 		Action:         "update",
 		Entity:         "bucket",
 		Api:            "s3",
-		RequiredParams: []string{"name", "public-website"},
-		ExtraParams:    []string{"enforce-https", "index-suffix", "redirect-hostname"},
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{"acl", "enforce-https", "index-suffix", "public-website", "redirect-hostname"},
 	},
 	"deletebucket": {
 		Action:         "delete",
@@ -770,7 +771,14 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "s3object",
 		Api:            "s3",
 		RequiredParams: []string{"bucket", "file"},
-		ExtraParams:    []string{"name"},
+		ExtraParams:    []string{"acl", "name"},
+	},
+	"updates3object": {
+		Action:         "update",
+		Entity:         "s3object",
+		Api:            "s3",
+		RequiredParams: []string{"acl", "bucket", "name"},
+		ExtraParams:    []string{"version"},
 	},
 	"deletes3object": {
 		Action:         "delete",
@@ -1000,6 +1008,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["update"] = append(supported["update"], "bucket")
 	supported["delete"] = append(supported["delete"], "bucket")
 	supported["create"] = append(supported["create"], "s3object")
+	supported["update"] = append(supported["update"], "s3object")
 	supported["delete"] = append(supported["delete"], "s3object")
 	supported["create"] = append(supported["create"], "topic")
 	supported["delete"] = append(supported["delete"], "topic")

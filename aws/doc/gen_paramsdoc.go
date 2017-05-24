@@ -88,6 +88,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"unit":                     "The unit of measure for the statistic",
 	},
 	"createbucket": {
+		"acl":  "The canned ACL to apply to the bucket",
 		"name": "",
 	},
 	"createdatabase":      {},
@@ -367,6 +368,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"password":       "The new password for the specified IAM user",
 		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
 		"username":       "The name of the user whose password you want to update",
+	},
+	"updates3object": {
+		"acl":     "The canned ACL to apply to the object",
+		"bucket":  "",
+		"name":    "",
+		"version": "VersionId used to reference a specific version of the object",
 	},
 	"updatescalinggroup":  {},
 	"updatesecuritygroup": {},

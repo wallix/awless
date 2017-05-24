@@ -917,14 +917,18 @@ var DriversDefs = []driversDef{
 				RequiredParams: []param{
 					{AwsField: "Bucket", TemplateName: "name", AwsType: "awsstr"},
 				},
+				ExtraParams: []param{
+					{AwsField: "ACL", TemplateName: "acl", AwsType: "awsstr"},
+				},
 			},
 			{
 				Action: "update", Entity: cloud.Bucket, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "name"},
-					{TemplateName: "public-website"},
 				},
 				ExtraParams: []param{
+					{TemplateName: "acl"},
+					{TemplateName: "public-website"},
 					{TemplateName: "redirect-hostname"},
 					{TemplateName: "index-suffix"},
 					{TemplateName: "enforce-https"},
@@ -946,6 +950,18 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "Key", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "ACL", TemplateName: "acl", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "update", Entity: cloud.S3Object, DryRunUnsupported: true, Input: "PutObjectAclInput", Output: "PutObjectAclOutput", ApiMethod: "PutObjectAcl",
+				RequiredParams: []param{
+					{AwsField: "Bucket", TemplateName: "bucket", AwsType: "awsstr"},
+					{AwsField: "Key", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "ACL", TemplateName: "acl", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "VersionId", TemplateName: "version", AwsType: "awsstr"},
 				},
 			},
 			{

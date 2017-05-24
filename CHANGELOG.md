@@ -6,6 +6,7 @@
 - When `awless ssh` in an instance, you can now specify only `-i keyname`, if the key is stored in `~/.awless/keys` or `~/.ssh`.
 - [#99](https://github.com/wallix/awless/issues/99): Suggesting the right command when typing `awless create instance ID` or `awless create ID` rather than `awless create instance id=ID`
 - Use a s3 bucket as a public website with `awless update bucket name=my-bucket-name public-website=true`
+- Set/update buckets or s3objects predefined ACL (private / public-read / public-read-write / bucket-owner-read...): `awless update s3object acl=public-read`
 - `awless log --raw-json` shows the full info stored on template execution (context, fillers used, region, ...). Typically this contextual info can be reused for replay and updates of templates
 
 ## v0.0.24 [2017-05-22]

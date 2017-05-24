@@ -717,6 +717,12 @@ func (d *S3Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err erro
 		}
 		return d.Create_S3object, nil
 
+	case "updates3object":
+		if d.dryRun {
+			return d.Update_S3object_DryRun, nil
+		}
+		return d.Update_S3object, nil
+
 	case "deletes3object":
 		if d.dryRun {
 			return d.Delete_S3object_DryRun, nil
