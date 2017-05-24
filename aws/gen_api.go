@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
+	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -69,6 +71,7 @@ var ServiceNames = []string{
 	"dns",
 	"lambda",
 	"monitoring",
+	"cdn",
 }
 
 var ResourceTypes = []string{
@@ -108,6 +111,7 @@ var ResourceTypes = []string{
 	"function",
 	"metric",
 	"alarm",
+	"distribution",
 }
 
 var ServicePerAPI = map[string]string{
@@ -123,6 +127,7 @@ var ServicePerAPI = map[string]string{
 	"route53":     "dns",
 	"lambda":      "lambda",
 	"cloudwatch":  "monitoring",
+	"cloudfront":  "cdn",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -162,6 +167,7 @@ var ServicePerResourceType = map[string]string{
 	"function":            "lambda",
 	"metric":              "monitoring",
 	"alarm":               "monitoring",
+	"distribution":        "cdn",
 }
 
 var APIPerResourceType = map[string]string{
@@ -201,6 +207,7 @@ var APIPerResourceType = map[string]string{
 	"function":            "lambda",
 	"metric":              "cloudwatch",
 	"alarm":               "cloudwatch",
+	"distribution":        "cloudfront",
 }
 
 type Infra struct {
@@ -3075,4 +3082,164 @@ func (s *Monitoring) fetch_all_alarm_graph() (*graph.Graph, []*cloudwatch.Metric
 
 func (s *Monitoring) IsSyncDisabled() bool {
 	return !s.config.getBool("aws.monitoring.sync", true)
+}
+
+type Cdn struct {
+	once   oncer
+	region string
+	config config
+	log    *logger.Logger
+	cloudfrontiface.CloudFrontAPI
+}
+
+func NewCdn(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Cdn{
+		CloudFrontAPI: cloudfront.New(sess),
+		config:        awsconf,
+		region:        region,
+		log:           log,
+	}
+}
+
+func (s *Cdn) Name() string {
+	return "cdn"
+}
+
+func (s *Cdn) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewCloudfrontDriver(s.CloudFrontAPI),
+	}
+}
+
+func (s *Cdn) ResourceTypes() []string {
+	return []string{
+		"distribution",
+	}
+}
+
+func (s *Cdn) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
+	var distributionList []*cloudfront.DistributionSummary
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	if s.config.getBool("aws.cdn.distribution.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, distributionList, err = s.fetch_all_distribution_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource cdn[distribution]")
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case accessDenied:
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	if s.config.getBool("aws.cdn.distribution.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range distributionList {
+				for _, fn := range addParentsFns["distribution"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Cdn) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "distribution":
+		graph, _, err := s.fetch_all_distribution_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws cdn: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Cdn) fetch_all_distribution_graph() (*graph.Graph, []*cloudfront.DistributionSummary, error) {
+	g := graph.NewGraph()
+	var cloudResources []*cloudfront.DistributionSummary
+	var badResErr error
+	err := s.ListDistributionsPages(&cloudfront.ListDistributionsInput{},
+		func(out *cloudfront.ListDistributionsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.DistributionList.Items {
+				if badResErr != nil {
+					return false
+				}
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.DistributionList.NextMarker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Cdn) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.cdn.sync", true)
 }

@@ -29,6 +29,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -137,6 +138,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Metric, id)
 	case *cloudwatch.MetricAlarm:
 		res = graph.InitResource(cloud.Alarm, awssdk.StringValue(ss.AlarmArn))
+		// cdn
+	case *cloudfront.DistributionSummary:
+		res = graph.InitResource(cloud.Distribution, awssdk.StringValue(ss.Id))
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -232,6 +236,11 @@ var extractValueFn = func(i interface{}) (interface{}, error) {
 			return nil, nil
 		}
 		return iv.Elem().Interface(), nil
+	}
+	switch ii := i.(type) {
+	case []*string:
+		return awssdk.StringValueSlice(ii), nil
+
 	}
 	return nil, fmt.Errorf("extract value: not a pointer but a %T", i)
 }
@@ -527,6 +536,27 @@ var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
 		grants = append(grants, grant)
 	}
 	return grants, nil
+}
+
+var extractDistributionOriginFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.(*cloudfront.Origins); !ok {
+		return nil, fmt.Errorf("extract origins: not a origins pointer but a %T", i)
+	}
+	var origins []*graph.DistributionOrigin
+	for _, o := range i.(*cloudfront.Origins).Items {
+		origin := &graph.DistributionOrigin{
+			ID:         awssdk.StringValue(o.Id),
+			PublicDNS:  awssdk.StringValue(o.DomainName),
+			PathPrefix: awssdk.StringValue(o.OriginPath),
+		}
+		if o.S3OriginConfig != nil && awssdk.StringValue(o.S3OriginConfig.OriginAccessIdentity) != "" {
+			origin.OriginType = "s3"
+			origin.Config = awssdk.StringValue(o.S3OriginConfig.OriginAccessIdentity)
+		}
+
+		origins = append(origins, origin)
+	}
+	return origins, nil
 }
 
 func notEmpty(str *string) bool {

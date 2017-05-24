@@ -129,6 +129,10 @@ func Image(id string) *rBuilder {
 	return new("image", id).Prop(properties.ID, id)
 }
 
+func Distribution(id string) *rBuilder {
+	return new("distribution", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

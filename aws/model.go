@@ -388,6 +388,25 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Updated:                 {name: "StateUpdatedTimestamp", transform: extractValueFn},
 		properties.State:                   {name: "StateValue", transform: extractValueFn},
 	},
+	// CDN
+	cloud.Distribution: {
+		properties.Arn:                {name: "ARN", transform: extractValueFn},
+		properties.Aliases:            {name: "Aliases", transform: extractFieldFn("Items")},
+		properties.Comment:            {name: "Comment", transform: extractValueFn},
+		properties.ACMCertificate:     {name: "ViewerCertificate", transform: extractFieldFn("ACMCertificateArn")},
+		properties.Certificate:        {name: "ViewerCertificate", transform: extractFieldFn("Certificate")},
+		properties.TLSVersionRequired: {name: "ViewerCertificate", transform: extractFieldFn("MinimumProtocolVersion")},
+		properties.SSLSupportMethod:   {name: "ViewerCertificate", transform: extractFieldFn("SSLSupportMethod")},
+		properties.Origins:            {name: "Origins", transform: extractDistributionOriginFn},
+		properties.PublicDNS:          {name: "DomainName", transform: extractValueFn},
+		properties.Enabled:            {name: "Enabled", transform: extractValueFn},
+		properties.HTTPVersion:        {name: "HttpVersion", transform: extractValueFn},
+		properties.IPv6Enabled:        {name: "IsIPV6Enabled", transform: extractValueFn},
+		properties.Modified:           {name: "LastModifiedTime", transform: extractValueFn},
+		properties.PriceClass:         {name: "PriceClass", transform: extractValueFn},
+		properties.State:              {name: "Status", transform: extractValueFn},
+		properties.WebACL:             {name: "WebACLId", transform: extractValueFn},
+	},
 	//Queue
 	cloud.Queue: {}, //Manually set
 }

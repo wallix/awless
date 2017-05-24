@@ -173,6 +173,16 @@ func (res *Resource) marshalFullRDF() ([]tstore.Triple, error) {
 					triples = append(triples, tstore.SubjPred(res.id, propId).Resource(keyValId))
 					triples = append(triples, kv.marshalToTriples(keyValId)...)
 				}
+			case rdf.DistributionOrigin:
+				list, ok := value.([]*DistributionOrigin)
+				if !ok {
+					return triples, fmt.Errorf("resource %s: marshalling property '%s': expected a distribution origin slice, got a %T", res, key, value)
+				}
+				for _, o := range list {
+					keyValId := randomRdfId()
+					triples = append(triples, tstore.SubjPred(res.id, propId).Resource(keyValId))
+					triples = append(triples, o.marshalToTriples(keyValId)...)
+				}
 			case rdf.Grant:
 			default:
 				return triples, fmt.Errorf("resource %s: marshalling property '%s': unexpected rdfs:DataType: %s", res, key, dataType)
@@ -256,6 +266,13 @@ func (res *Resource) unmarshalFullRdf(gph tstore.RDFGraph) error {
 					list = []*KeyValue{}
 				}
 				list = append(list, propVal.(*KeyValue))
+				res.Properties[propKey] = list
+			case rdf.DistributionOrigin:
+				list, ok := res.Properties[propKey].([]*DistributionOrigin)
+				if !ok {
+					list = []*DistributionOrigin{}
+				}
+				list = append(list, propVal.(*DistributionOrigin))
 				res.Properties[propKey] = list
 			default:
 				return fmt.Errorf("unmarshalling property: unexpected datatype %s", dataType)

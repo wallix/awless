@@ -24,6 +24,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -749,6 +750,114 @@ func TestBuildMonitoringGraph(t *testing.T) {
 	expectedAppliedOn := map[string][]string{
 		"alarm_3": {"awls-4bb30754"},
 	}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+}
+
+func TestBuildCdnGraph(t *testing.T) {
+	now := time.Now().UTC()
+	distributions := []*cloudfront.DistributionSummary{
+		{
+			ARN:              awssdk.String("ds_1_arn"),
+			Aliases:          &cloudfront.Aliases{Items: []*string{awssdk.String("cname1.domain.name"), awssdk.String("cname2.domain.name")}, Quantity: awssdk.Int64(2)},
+			Comment:          awssdk.String("my cdn distribution"),
+			DomainName:       awssdk.String("domain.name"),
+			Enabled:          awssdk.Bool(true),
+			HttpVersion:      awssdk.String("http/2"),
+			Id:               awssdk.String("ds_1"),
+			IsIPV6Enabled:    awssdk.Bool(true),
+			LastModifiedTime: awssdk.Time(now),
+			Origins: &cloudfront.Origins{
+				Quantity: awssdk.Int64(2),
+				Items: []*cloudfront.Origin{
+					{
+						DomainName:     awssdk.String("domain.name"),
+						Id:             awssdk.String("origin_1"),
+						OriginPath:     awssdk.String("my/s3/path"),
+						S3OriginConfig: &cloudfront.S3OriginConfig{OriginAccessIdentity: awssdk.String("origin-access-identity/CloudFront/ID-of-origin-access-identity")},
+					},
+					{
+						DomainName: awssdk.String("domain2.name"),
+						Id:         awssdk.String("origin_2"),
+						OriginPath: awssdk.String("my/other/path"),
+					},
+				},
+			},
+			PriceClass: awssdk.String("expensive"),
+			Status:     awssdk.String("running"),
+			ViewerCertificate: &cloudfront.ViewerCertificate{
+				ACMCertificateArn: awssdk.String("acm-certificate"),
+				Certificate:       awssdk.String("<ViewerProtocolPolicy>https-only<ViewerProtocolPolicy>"),
+				//IAMCertificateId:             awssdk.String("iam-certificate"),
+				MinimumProtocolVersion: awssdk.String("TLSv1"),
+				SSLSupportMethod:       awssdk.String("sni-only"),
+			},
+			WebACLId: awssdk.String("id"),
+		},
+		{
+			ARN:        awssdk.String("ds_2_arn"),
+			DomainName: awssdk.String("other.domain.name"),
+			Id:         awssdk.String("ds_2"),
+		},
+		{
+			Id: awssdk.String("ds_3"),
+		},
+	}
+
+	mock := &mockCloudfront{distributionsummarys: distributions}
+
+	service := Cdn{CloudFrontAPI: mock, region: "eu-west-1"}
+
+	g, err := service.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, err := g.GetAllResources("distribution")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Sort slice properties in resources
+	for _, res := range resources {
+		if p, ok := res.Properties[p.Aliases].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.Origins].([]*graph.DistributionOrigin); ok {
+			sort.Slice(p, func(i, j int) bool {
+				return p[i].ID <= p[j].ID
+			})
+		}
+	}
+
+	expected := map[string]*graph.Resource{
+		"ds_1": resourcetest.Distribution("ds_1").
+			Prop(p.Arn, "ds_1_arn").
+			Prop(p.Aliases, []string{"cname1.domain.name", "cname2.domain.name"}).
+			Prop(p.Comment, "my cdn distribution").
+			Prop(p.PublicDNS, "domain.name").
+			Prop(p.Enabled, true).
+			Prop(p.HTTPVersion, "http/2").
+			Prop(p.IPv6Enabled, true).
+			Prop(p.Modified, now).
+			Prop(p.PriceClass, "expensive").
+			Prop(p.State, "running").
+			Prop(p.WebACL, "id").
+			Prop(p.ACMCertificate, "acm-certificate").
+			Prop(p.Certificate, "<ViewerProtocolPolicy>https-only<ViewerProtocolPolicy>").
+			Prop(p.TLSVersionRequired, "TLSv1").
+			Prop(p.SSLSupportMethod, "sni-only").
+			Prop(p.Origins, []*graph.DistributionOrigin{
+				{ID: "origin_1", PublicDNS: "domain.name", OriginType: "s3", PathPrefix: "my/s3/path", Config: "origin-access-identity/CloudFront/ID-of-origin-access-identity"},
+				{ID: "origin_2", PublicDNS: "domain2.name", PathPrefix: "my/other/path"},
+			}).
+			Build(),
+		"ds_2": resourcetest.Distribution("ds_2").Prop(p.Arn, "ds_2_arn").Prop(p.PublicDNS, "other.domain.name").Build(),
+		"ds_3": resourcetest.Distribution("ds_3").Build(),
+	}
+
+	expectedChildren := map[string][]string{}
+	expectedAppliedOn := map[string][]string{}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 }

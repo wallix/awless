@@ -22,10 +22,12 @@ import "github.com/wallix/awless/cloud/properties"
 const (
 	Actions                   = "cloud:actions"
 	ActionsEnabled            = "cloud:actionsEnabled"
+	ACMCertificate            = "cloud:acmCertificate"
 	AdjustmentType            = "cloud:adjustmentType"
 	Affinity                  = "cloud:affinity"
 	AlarmNames                = "cloud:alarmNames"
 	AlarmActions              = "cloud:alarmActions"
+	Aliases                   = "cloud:aliases"
 	ApproximateMessageCount   = "cloud:approximateMessageCount"
 	Association               = "cloud:association"
 	Architecture              = "cloud:architecture"
@@ -38,6 +40,7 @@ const (
 	BackupRetentionPeriod     = "cloud:backupRetentionPeriod"
 	Bucket                    = "cloud:bucketName"
 	CallerReference           = "cloud:callerReference"
+	Certificate               = "cloud:certificate"
 	CertificateAuthority      = "cloud:certificateAuthority"
 	Certificates              = "cloud:certificates"
 	Charset                   = "cloud:charset"
@@ -54,6 +57,7 @@ const (
 	Cluster                   = "cloud:cluster"
 	Comment                   = "rdfs:comment"
 	Continent                 = "cloud:continent"
+	Config                    = "cloud:config"
 	Cooldown                  = "cloud:cooldown"
 	CopyTagsToSnapshot        = "cloud:copyTagsToSnapshot"
 	Country                   = "cloud:country"
@@ -66,6 +70,7 @@ const (
 	Description               = "cloud:description"
 	DesiredCapacity           = "cloud:desiredCapacity"
 	Dimensions                = "cloud:dimensions"
+	Enabled                   = "cloud:enabled"
 	Encrypted                 = "cloud:encrypted"
 	Endpoint                  = "cloud:endpoint"
 	Engine                    = "cloud:engine"
@@ -81,6 +86,7 @@ const (
 	HealthCheckType           = "cloud:healthCheckType"
 	HealthCheckGracePeriod    = "cloud:healthCheckGracePeriod"
 	HealthyThresholdCount     = "cloud:healthyThresholdCount"
+	HTTPVersion               = "cloud:httpVersion"
 	Host                      = "cloud:host"
 	Hypervisor                = "cloud:hypervisor"
 	ID                        = "cloud:id"
@@ -91,6 +97,7 @@ const (
 	InsufficientDataActions   = "cloud:insufficientDataActions"
 	IOPS                      = "cloud:iops"
 	IPType                    = "net:ipType"
+	IPv6Enabled               = "cloud:ipv6Enabled"
 	Key                       = "cloud:key"
 	KeyPair                   = "cloud:keyPair"
 	LatestRestorableTime      = "cloud:latestRestorableTime"
@@ -118,14 +125,17 @@ const (
 	OptionGroups              = "cloud:optionGroups"
 	OutboundRules             = "net:outboundRules"
 	Owner                     = "cloud:owner"
+	Origins                   = "cloud:origins"
 	ParameterGroups           = "cloud:parameterGroups"
 	PasswordLastUsed          = "cloud:passwordLastUsed"
 	Path                      = "cloud:path"
+	PathPrefix                = "cloud:pathPrefix"
 	PlacementGroup            = "cloud:placementGroup"
 	Port                      = "net:port"
 	PortRange                 = "net:portRange"
 	PreferredBackupDate       = "cloud:preferredBackupDate"
 	PreferredMaintenanceDate  = "cloud:preferredMaintenanceDate"
+	PriceClass                = "cloud:priceClass"
 	Private                   = "cloud:private"
 	PrivateIP                 = "net:privateIP"
 	Profile                   = "cloud:profile"
@@ -150,6 +160,7 @@ const (
 	Size                      = "cloud:size"
 	SpotInstanceRequestId     = "cloud:spotInstanceRequestId"
 	SpotPrice                 = "cloud:spotPrice"
+	SSLSupportMethod          = "cloud:sslSupportMethod"
 	State                     = "cloud:state"
 	StateMessage              = "cloud:stateMessage"
 	Storage                   = "cloud:storage"
@@ -159,6 +170,7 @@ const (
 	Tags                      = "cloud:tags"
 	Timeout                   = "cloud:timezone"
 	Timezone                  = "cloud:timeout"
+	TLSVersionRequired        = "cloud:tlsVersionRequired"
 	Topic                     = "cloud:topic"
 	TrafficPolicyInstance     = "cloud:trafficPolicyInstance"
 	TTL                       = "cloud:ttl"
@@ -174,16 +186,19 @@ const (
 	Vpc                       = "cloud:vpc"
 	Vpcs                      = "cloud:vpcs"
 	Weight                    = "cloud:weight"
+	WebACL                    = "cloud:webACL"
 	Zone                      = "cloud:zone"
 )
 
 var Labels = map[string]string{
 	properties.Actions:                   Actions,
 	properties.ActionsEnabled:            ActionsEnabled,
+	properties.ACMCertificate:            ACMCertificate,
 	properties.AdjustmentType:            AdjustmentType,
 	properties.Affinity:                  Affinity,
 	properties.AlarmNames:                AlarmNames,
 	properties.AlarmActions:              AlarmActions,
+	properties.Aliases:                   Aliases,
 	properties.ApproximateMessageCount:   ApproximateMessageCount,
 	properties.Association:               Association,
 	properties.Architecture:              Architecture,
@@ -196,6 +211,7 @@ var Labels = map[string]string{
 	properties.BackupRetentionPeriod:     BackupRetentionPeriod,
 	properties.Bucket:                    Bucket,
 	properties.CallerReference:           CallerReference,
+	properties.Certificate:               Certificate,
 	properties.CertificateAuthority:      CertificateAuthority,
 	properties.Certificates:              Certificates,
 	properties.Charset:                   Charset,
@@ -212,6 +228,7 @@ var Labels = map[string]string{
 	properties.Cluster:                   Cluster,
 	properties.Comment:                   Comment,
 	properties.Continent:                 Continent,
+	properties.Config:                    Config,
 	properties.Cooldown:                  Cooldown,
 	properties.CopyTagsToSnapshot:        CopyTagsToSnapshot,
 	properties.Country:                   Country,
@@ -224,6 +241,7 @@ var Labels = map[string]string{
 	properties.Description:               Description,
 	properties.DesiredCapacity:           DesiredCapacity,
 	properties.Dimensions:                Dimensions,
+	properties.Enabled:                   Enabled,
 	properties.Encrypted:                 Encrypted,
 	properties.Endpoint:                  Endpoint,
 	properties.Engine:                    Engine,
@@ -239,6 +257,7 @@ var Labels = map[string]string{
 	properties.HealthCheckType:           HealthCheckType,
 	properties.HealthCheckGracePeriod:    HealthCheckGracePeriod,
 	properties.HealthyThresholdCount:     HealthyThresholdCount,
+	properties.HTTPVersion:               HTTPVersion,
 	properties.Host:                      Host,
 	properties.Hypervisor:                Hypervisor,
 	properties.ID:                        ID,
@@ -249,6 +268,7 @@ var Labels = map[string]string{
 	properties.InsufficientDataActions:   InsufficientDataActions,
 	properties.IOPS:                      IOPS,
 	properties.IPType:                    IPType,
+	properties.IPv6Enabled:               IPv6Enabled,
 	properties.Key:                       Key,
 	properties.KeyPair:                   KeyPair,
 	properties.LatestRestorableTime:      LatestRestorableTime,
@@ -276,14 +296,17 @@ var Labels = map[string]string{
 	properties.OptionGroups:              OptionGroups,
 	properties.OutboundRules:             OutboundRules,
 	properties.Owner:                     Owner,
+	properties.Origins:                   Origins,
 	properties.ParameterGroups:           ParameterGroups,
 	properties.PasswordLastUsed:          PasswordLastUsed,
 	properties.Path:                      Path,
+	properties.PathPrefix:                PathPrefix,
 	properties.PlacementGroup:            PlacementGroup,
 	properties.Port:                      Port,
 	properties.PortRange:                 PortRange,
 	properties.PreferredBackupDate:       PreferredBackupDate,
 	properties.PreferredMaintenanceDate:  PreferredMaintenanceDate,
+	properties.PriceClass:                PriceClass,
 	properties.Private:                   Private,
 	properties.PrivateIP:                 PrivateIP,
 	properties.Profile:                   Profile,
@@ -308,6 +331,7 @@ var Labels = map[string]string{
 	properties.Size:                      Size,
 	properties.SpotInstanceRequestId:     SpotInstanceRequestId,
 	properties.SpotPrice:                 SpotPrice,
+	properties.SSLSupportMethod:          SSLSupportMethod,
 	properties.State:                     State,
 	properties.StateMessage:              StateMessage,
 	properties.Storage:                   Storage,
@@ -317,6 +341,7 @@ var Labels = map[string]string{
 	properties.Tags:                      Tags,
 	properties.Timeout:                   Timeout,
 	properties.Timezone:                  Timezone,
+	properties.TLSVersionRequired:        TLSVersionRequired,
 	properties.Topic:                     Topic,
 	properties.TrafficPolicyInstance:     TrafficPolicyInstance,
 	properties.TTL:                       TTL,
@@ -332,16 +357,19 @@ var Labels = map[string]string{
 	properties.Vpc:                       Vpc,
 	properties.Vpcs:                      Vpcs,
 	properties.Weight:                    Weight,
+	properties.WebACL:                    WebACL,
 	properties.Zone:                      Zone,
 }
 
 var Properties = RDFProperties{
 	Actions:                 {ID: Actions, RdfType: "rdf:Property", RdfsLabel: "Actions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ActionsEnabled:          {ID: ActionsEnabled, RdfType: "rdf:Property", RdfsLabel: "ActionsEnabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	ACMCertificate:          {ID: ACMCertificate, RdfType: "rdf:Property", RdfsLabel: "ACMCertificate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AdjustmentType:          {ID: AdjustmentType, RdfType: "rdf:Property", RdfsLabel: "AdjustmentType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Affinity:                {ID: Affinity, RdfType: "rdf:Property", RdfsLabel: "Affinity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AlarmNames:              {ID: AlarmNames, RdfType: "rdf:Property", RdfsLabel: "AlarmNames", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	AlarmActions:            {ID: AlarmActions, RdfType: "rdf:Property", RdfsLabel: "AlarmActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	Aliases:                 {ID: Aliases, RdfType: "rdf:Property", RdfsLabel: "Aliases", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ApproximateMessageCount: {ID: ApproximateMessageCount, RdfType: "rdf:Property", RdfsLabel: "ApproximateMessageCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Association:             {ID: Association, RdfType: "rdf:Property", RdfsLabel: "Association", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -354,6 +382,7 @@ var Properties = RDFProperties{
 	BackupRetentionPeriod:   {ID: BackupRetentionPeriod, RdfType: "rdf:Property", RdfsLabel: "BackupRetentionPeriod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Bucket:                  {ID: Bucket, RdfType: "rdf:Property", RdfsLabel: "Bucket", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	CallerReference:         {ID: CallerReference, RdfType: "rdf:Property", RdfsLabel: "CallerReference", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Certificate:             {ID: Certificate, RdfType: "rdf:Property", RdfsLabel: "Certificate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	CertificateAuthority:    {ID: CertificateAuthority, RdfType: "rdf:Property", RdfsLabel: "CertificateAuthority", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Certificates:            {ID: Certificates, RdfType: "rdf:Property", RdfsLabel: "Certificates", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Charset:                 {ID: Charset, RdfType: "rdf:Property", RdfsLabel: "Charset", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -370,6 +399,7 @@ var Properties = RDFProperties{
 	Cluster:                 {ID: Cluster, RdfType: "rdf:Property", RdfsLabel: "Cluster", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Comment:                 {ID: Comment, RdfType: "rdf:Property", RdfsLabel: "Comment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Continent:               {ID: Continent, RdfType: "rdf:Property", RdfsLabel: "Continent", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Config:                  {ID: Config, RdfType: "rdf:Property", RdfsLabel: "Config", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Cooldown:                {ID: Cooldown, RdfType: "rdf:Property", RdfsLabel: "Cooldown", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	CopyTagsToSnapshot:      {ID: CopyTagsToSnapshot, RdfType: "rdf:Property", RdfsLabel: "CopyTagsToSnapshot", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Country:                 {ID: Country, RdfType: "rdf:Property", RdfsLabel: "Country", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -382,6 +412,7 @@ var Properties = RDFProperties{
 	Description:             {ID: Description, RdfType: "rdf:Property", RdfsLabel: "Description", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	DesiredCapacity:         {ID: DesiredCapacity, RdfType: "rdf:Property", RdfsLabel: "DesiredCapacity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Dimensions:              {ID: Dimensions, RdfType: "rdf:Property", RdfsLabel: "Dimensions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
+	Enabled:                 {ID: Enabled, RdfType: "rdf:Property", RdfsLabel: "Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Encrypted:               {ID: Encrypted, RdfType: "rdf:Property", RdfsLabel: "Encrypted", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Endpoint:                {ID: Endpoint, RdfType: "rdf:Property", RdfsLabel: "Endpoint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Engine:                  {ID: Engine, RdfType: "rdf:Property", RdfsLabel: "Engine", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -397,6 +428,7 @@ var Properties = RDFProperties{
 	HealthCheckType:         {ID: HealthCheckType, RdfType: "rdf:Property", RdfsLabel: "HealthCheckType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	HealthCheckGracePeriod:  {ID: HealthCheckGracePeriod, RdfType: "rdf:Property", RdfsLabel: "HealthCheckGracePeriod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	HealthyThresholdCount:   {ID: HealthyThresholdCount, RdfType: "rdf:Property", RdfsLabel: "HealthyThresholdCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	HTTPVersion:             {ID: HTTPVersion, RdfType: "rdf:Property", RdfsLabel: "HTTPVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Host:                    {ID: Host, RdfType: "rdf:Property", RdfsLabel: "Host", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Hypervisor:              {ID: Hypervisor, RdfType: "rdf:Property", RdfsLabel: "Hypervisor", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	ID:                      {ID: ID, RdfType: "rdf:Property", RdfsLabel: "ID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -407,6 +439,7 @@ var Properties = RDFProperties{
 	InsufficientDataActions: {ID: InsufficientDataActions, RdfType: "rdf:Property", RdfsLabel: "InsufficientDataActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	IOPS:                     {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	IPType:                   {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	IPv6Enabled:              {ID: IPv6Enabled, RdfType: "rdf:Property", RdfsLabel: "IPv6Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Key:                      {ID: Key, RdfType: "rdf:Property", RdfsLabel: "Key", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	KeyPair:                  {ID: KeyPair, RdfType: "rdf:Property", RdfsLabel: "KeyPair", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	LatestRestorableTime:     {ID: LatestRestorableTime, RdfType: "rdf:Property", RdfsLabel: "LatestRestorableTime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
@@ -434,14 +467,17 @@ var Properties = RDFProperties{
 	OptionGroups:             {ID: OptionGroups, RdfType: "rdf:Property", RdfsLabel: "OptionGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OutboundRules:            {ID: OutboundRules, RdfType: "rdf:Property", RdfsLabel: "OutboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
 	Owner:                    {ID: Owner, RdfType: "rdf:Property", RdfsLabel: "Owner", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Origins:                  {ID: Origins, RdfType: "rdf:Property", RdfsLabel: "Origins", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:DistributionOrigin"},
 	ParameterGroups:          {ID: ParameterGroups, RdfType: "rdf:Property", RdfsLabel: "ParameterGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	PasswordLastUsed:         {ID: PasswordLastUsed, RdfType: "rdf:Property", RdfsLabel: "PasswordLastUsed", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Path:                     {ID: Path, RdfType: "rdf:Property", RdfsLabel: "Path", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	PathPrefix:               {ID: PathPrefix, RdfType: "rdf:Property", RdfsLabel: "PathPrefix", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PlacementGroup:           {ID: PlacementGroup, RdfType: "rdf:Property", RdfsLabel: "PlacementGroup", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Port:                     {ID: Port, RdfType: "rdf:Property", RdfsLabel: "Port", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	PortRange:                {ID: PortRange, RdfType: "rdfs:subPropertyOf", RdfsLabel: "PortRange", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PreferredBackupDate:      {ID: PreferredBackupDate, RdfType: "rdf:Property", RdfsLabel: "PreferredBackupDate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PreferredMaintenanceDate: {ID: PreferredMaintenanceDate, RdfType: "rdf:Property", RdfsLabel: "PreferredMaintenanceDate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	PriceClass:               {ID: PriceClass, RdfType: "rdf:Property", RdfsLabel: "PriceClass", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Private:                  {ID: Private, RdfType: "rdf:Property", RdfsLabel: "Private", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PrivateIP:                {ID: PrivateIP, RdfType: "rdf:Property", RdfsLabel: "PrivateIP", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Profile:                  {ID: Profile, RdfType: "rdf:Property", RdfsLabel: "Profile", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -466,6 +502,7 @@ var Properties = RDFProperties{
 	Size:                      {ID: Size, RdfType: "rdf:Property", RdfsLabel: "Size", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	SpotInstanceRequestId: {ID: SpotInstanceRequestId, RdfType: "rdf:Property", RdfsLabel: "SpotInstanceRequestId", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SpotPrice:             {ID: SpotPrice, RdfType: "rdf:Property", RdfsLabel: "SpotPrice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	SSLSupportMethod:      {ID: SSLSupportMethod, RdfType: "rdf:Property", RdfsLabel: "SSLSupportMethod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	State:                 {ID: State, RdfType: "rdf:Property", RdfsLabel: "State", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	StateMessage:          {ID: StateMessage, RdfType: "rdf:Property", RdfsLabel: "StateMessage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Storage:               {ID: Storage, RdfType: "rdf:Property", RdfsLabel: "Storage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -475,6 +512,7 @@ var Properties = RDFProperties{
 	Tags:                  {ID: Tags, RdfType: "rdf:Property", RdfsLabel: "Tags", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Timeout:               {ID: Timeout, RdfType: "rdf:Property", RdfsLabel: "Timeout", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Timezone:              {ID: Timezone, RdfType: "rdf:Property", RdfsLabel: "Timezone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	TLSVersionRequired:    {ID: TLSVersionRequired, RdfType: "rdf:Property", RdfsLabel: "TLSVersionRequired", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Topic:                 {ID: Topic, RdfType: "rdf:Property", RdfsLabel: "Topic", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	TrafficPolicyInstance: {ID: TrafficPolicyInstance, RdfType: "rdf:Property", RdfsLabel: "TrafficPolicyInstance", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	TTL:  {ID: TTL, RdfType: "rdf:Property", RdfsLabel: "TTL", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
@@ -490,5 +528,6 @@ var Properties = RDFProperties{
 	Vpc:                     {ID: Vpc, RdfType: "rdf:Property", RdfsLabel: "Vpc", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Vpcs:                    {ID: Vpcs, RdfType: "rdf:Property", RdfsLabel: "Vpcs", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	Weight:                  {ID: Weight, RdfType: "rdf:Property", RdfsLabel: "Weight", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	WebACL:                  {ID: WebACL, RdfType: "rdf:Property", RdfsLabel: "WebACL", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Zone:                    {ID: Zone, RdfType: "rdf:Property", RdfsLabel: "Zone", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 }

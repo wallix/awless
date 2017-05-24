@@ -1176,4 +1176,10 @@ var DriversDefs = []driversDef{
 			},
 		},
 	},
+
+	{
+		Api:          "cloudfront",
+		ApiInterface: "CloudFrontAPI",
+		Drivers:      []driver{},
+	},
 }

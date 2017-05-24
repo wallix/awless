@@ -2,8 +2,10 @@ package aws
 
 import (
 	"fmt"
+	"strconv"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -82,4 +84,21 @@ func (m *mockS3) GetBucketLocation(input *s3.GetBucketLocationInput) (*s3.GetBuc
 
 func (m *mockSqs) GetQueueAttributes(input *sqs.GetQueueAttributesInput) (*sqs.GetQueueAttributesOutput, error) {
 	return &sqs.GetQueueAttributesOutput{Attributes: m.attributes[awssdk.StringValue(input.QueueUrl)]}, nil
+}
+
+func (m *mockCloudfront) ListDistributionsPages(input *cloudfront.ListDistributionsInput, fn func(p *cloudfront.ListDistributionsOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*cloudfront.DistributionSummary
+	for i := 0; i < len(m.distributionsummarys); i += 2 {
+		page := []*cloudfront.DistributionSummary{m.distributionsummarys[i]}
+		if i+1 < len(m.distributionsummarys) {
+			page = append(page, m.distributionsummarys[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&cloudfront.ListDistributionsOutput{DistributionList: &cloudfront.DistributionList{Items: page, NextMarker: awssdk.String(strconv.Itoa(i + 1))}},
+			i < len(pages),
+		)
+	}
+	return nil
 }

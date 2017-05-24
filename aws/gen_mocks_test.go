@@ -24,6 +24,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
+	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -811,4 +813,43 @@ func (m *mockCloudwatch) DescribeAlarmsPages(input *cloudwatch.DescribeAlarmsInp
 		)
 	}
 	return nil
+}
+
+type mockCloudfront struct {
+	cloudfrontiface.CloudFrontAPI
+	distributionsummarys []*cloudfront.DistributionSummary
+}
+
+func (m *mockCloudfront) Name() string {
+	return ""
+}
+
+func (m *mockCloudfront) Provider() string {
+	return ""
+}
+
+func (m *mockCloudfront) ProviderAPI() string {
+	return ""
+}
+
+func (s *mockCloudfront) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewCloudfrontDriver(s.CloudFrontAPI),
+	}
+}
+
+func (m *mockCloudfront) ResourceTypes() []string {
+	return []string{}
+}
+
+func (m *mockCloudfront) FetchResources() (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockCloudfront) IsSyncDisabled() bool {
+	return false
+}
+
+func (m *mockCloudfront) FetchByType(t string) (*graph.Graph, error) {
+	return nil, nil
 }

@@ -127,6 +127,12 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "cloudwatch.MetricAlarm", ApiMethod: "DescribeAlarmsPages", Input: "cloudwatch.DescribeAlarmsInput", Output: "cloudwatch.DescribeAlarmsOutput", OutputsExtractor: "MetricAlarms", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
+	{
+		Api: "cloudfront",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "cloudfront.DistributionSummary", Manual: true},
+		},
+	},
 }
 
 func Mocks() []*mockDef {
@@ -146,6 +152,8 @@ func apiToInterface(api string) string {
 		return "AutoScalingAPI"
 	case "cloudwatch":
 		return "CloudWatchAPI"
+	case "cloudfront":
+		return "CloudFrontAPI"
 	case "route53", "lambda":
 		return strings.Title(api) + "API"
 	default:

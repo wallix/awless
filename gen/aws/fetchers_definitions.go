@@ -128,4 +128,12 @@ var FetchersDefs = []fetchersDef{
 			{Api: "cloudwatch", ResourceType: cloud.Alarm, AWSType: "cloudwatch.MetricAlarm", ApiMethod: "DescribeAlarmsPages", Input: "cloudwatch.DescribeAlarmsInput{}", Output: "cloudwatch.DescribeAlarmsOutput", OutputsExtractor: "MetricAlarms", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
+	{
+		Name:          "cdn",
+		Api:           []string{"cloudfront"},
+		ApiInterfaces: map[string]string{"cloudfront": "CloudFrontAPI"},
+		Fetchers: []fetcher{
+			{Api: "cloudfront", ResourceType: cloud.Distribution, AWSType: "cloudfront.DistributionSummary", ApiMethod: "ListDistributionsPages", Input: "cloudfront.ListDistributionsInput{}", Output: "cloudfront.ListDistributionsOutput", OutputsExtractor: "DistributionList.Items", Multipage: true, NextPageMarker: "DistributionList.NextMarker"},
+		},
+	},
 }

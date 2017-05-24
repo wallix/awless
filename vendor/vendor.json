@@ -239,6 +239,18 @@
 			"revisionTime": "2017-04-21T18:31:29Z"
 		},
 		{
+			"checksumSHA1": "Xa4HENUzQxHSsx5HoabaxdUpVrg=",
+			"path": "github.com/aws/aws-sdk-go/service/cloudfront",
+			"revision": "2b8c4298b43558883ab1ff49a73c7c5aa99e3d1e",
+			"revisionTime": "2017-05-23T20:12:09Z"
+		},
+		{
+			"checksumSHA1": "p8EQHLB7mTVePO7L1mLOsmpW6Mk=",
+			"path": "github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface",
+			"revision": "2b8c4298b43558883ab1ff49a73c7c5aa99e3d1e",
+			"revisionTime": "2017-05-23T20:12:09Z"
+		},
+		{
 			"checksumSHA1": "aGx2atOHEXSowjXUQ3UoJ/t2LSI=",
 			"path": "github.com/aws/aws-sdk-go/service/cloudwatch",
 			"revision": "fe4c33d5e201f595b450d08d9d7e36fedb2cbcf8",

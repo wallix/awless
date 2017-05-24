@@ -359,23 +359,82 @@ func (kv *KeyValue) marshalToTriples(id string) []tstore.Triple {
 }
 
 func (kv *KeyValue) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
-	keyTs := gph.WithSubjPred(id, rdf.Name)
-	if len(keyTs) != 1 {
-		return fmt.Errorf("unmarshal keyvalue: expect 1 key got: %d", len(keyTs))
-	}
 	var err error
-	kv.KeyName, err = extractUniqueLiteralTextFromTriples(keyTs)
+	kv.KeyName, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.Name)
 	if err != nil {
 		return fmt.Errorf("unmarshal keyvalue: key name: %s", err)
 	}
-	valTs := gph.WithSubjPred(id, rdf.Value)
-	if len(valTs) != 1 {
-		return fmt.Errorf("unmarshal keyvalue: expect 1 key got: %d", len(valTs))
-	}
-
-	kv.Value, err = extractUniqueLiteralTextFromTriples(valTs)
+	kv.Value, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.Value)
 	if err != nil {
-		return fmt.Errorf("unmarshal keyvalue: key name: %s", err)
+		return fmt.Errorf("unmarshal keyvalue: val name: %s", err)
 	}
 	return nil
+}
+
+type DistributionOrigin struct {
+	ID         string `predicate:"cloud:id"`
+	PublicDNS  string `predicate:"cloud:publicDNS"`
+	PathPrefix string `predicate:"cloud:pathPrefix"`
+	OriginType string `predicate:"cloud:type"`
+	Config     string `predicate:"cloud:config"`
+}
+
+func (o *DistributionOrigin) String() string {
+	var elems []string
+	elems = append(elems, "ID:"+o.ID)
+	if o.PublicDNS != "" {
+		elems = append(elems, "PublicDNS:"+o.PublicDNS)
+	}
+	if o.PathPrefix != "" {
+		elems = append(elems, "PathPrefix:"+o.PathPrefix)
+	}
+	if o.OriginType != "" {
+		elems = append(elems, "Type:"+o.OriginType)
+	}
+	if o.Config != "" {
+		elems = append(elems, "Config:"+o.Config)
+	}
+	return fmt.Sprintf("[%s]", strings.Join(elems, ","))
+}
+
+func (o *DistributionOrigin) marshalToTriples(id string) []tstore.Triple {
+	var triples []tstore.Triple
+
+	triples = append(triples, tstore.SubjPred(id, rdf.RdfType).Resource(rdf.DistributionOrigin))
+	triples = append(triples, tstore.TriplesFromStruct(id, o)...)
+
+	return triples
+}
+
+func (o *DistributionOrigin) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
+	var err error
+	o.ID, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.ID)
+	if err != nil {
+		return fmt.Errorf("unmarshal DistributionOrigin: extract id: %s", err)
+	}
+	o.PublicDNS, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.PublicDNS)
+	if err != nil {
+		return fmt.Errorf("unmarshal DistributionOrigin: extract PublicDNS: %s", err)
+	}
+	o.PathPrefix, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.PathPrefix)
+	if err != nil {
+		return fmt.Errorf("unmarshal DistributionOrigin: extract PathPrefix: %s", err)
+	}
+	o.OriginType, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.Type)
+	if err != nil {
+		return fmt.Errorf("unmarshal DistributionOrigin: extract Type: %s", err)
+	}
+	o.Config, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.Config)
+	if err != nil {
+		return fmt.Errorf("unmarshal DistributionOrigin: extract Config: %s", err)
+	}
+	return nil
+}
+
+func extractUniqueLiteralTextFromGraph(gph tstore.RDFGraph, subj, pred string) (string, error) {
+	ts := gph.WithSubjPred(subj, pred)
+	if len(ts) != 1 {
+		return "", fmt.Errorf("%s,%s: expect 1 triple got: %d", subj, pred, len(ts))
+	}
+	return extractUniqueLiteralTextFromTriples(ts)
 }

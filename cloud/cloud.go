@@ -80,6 +80,8 @@ const (
 	//monitoring
 	Metric string = "metric"
 	Alarm  string = "alarm"
+	//cdn
+	Distribution string = "distribution"
 )
 
 type Service interface {

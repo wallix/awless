@@ -323,4 +323,14 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Updated}},
 		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Dimensions}},
 	},
+	//CDN
+	cloud.Distribution: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.PublicDNS},
+		StringColumnDefinition{Prop: properties.Enabled},
+		StringColumnDefinition{Prop: properties.State},
+		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Aliases}},
+		StringColumnDefinition{Prop: properties.SSLSupportMethod},
+		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Origins}},
+	},
 }
