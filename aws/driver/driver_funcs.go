@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"mime"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -1117,6 +1118,12 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 		_, fileName = filepath.Split(f.Name())
 	}
 	input.Key = aws.String(fileName)
+
+	fileExt := filepath.Ext(f.Name())
+	if mimeType := mime.TypeByExtension(fileExt); mimeType != "" {
+		d.logger.ExtraVerbosef("setting object content-type to '%s'", mimeType)
+		input.ContentType = aws.String(mimeType)
+	}
 
 	// Required params
 	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr)
