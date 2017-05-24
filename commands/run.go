@@ -187,44 +187,62 @@ var allGraphsOnce = &onceLoader{}
 
 func idAndNameCompleter(hole string) readline.AutoCompleter {
 	g, err := allGraphsOnce.load()
-	if err != nil {
-		exitOn(err)
-	}
+	exitOn(err)
 
-	types := strings.Split(hole, ".")
-	resources, err := g.GetAllResources(types...)
-	if err != nil {
+	completeFunc := func(string) []string { return []string{} }
+
+	if entityType := guessEntityTypeFromHoleQuestion(hole); entityType != "" {
+		resources, err := g.GetAllResources(entityType)
 		exitOn(err)
-	}
-	listAllResourcesIdAndName := func(s string) (suggest []string) {
-		for _, res := range resources {
-			id := res.Id()
-			if !template.MatchStringParamValue(id) {
-				id = "'" + id + "'"
-			}
-			if strings.Contains(id, s) {
-				suggest = append(suggest, id)
-			}
-			if val, ok := res.Properties["Name"]; ok {
-				switch val.(type) {
-				case string:
-					name := val.(string)
-					if !template.MatchStringParamValue(name) {
-						name = "'" + name + "'"
-					}
-					prefixed := fmt.Sprintf("@%s", name)
-					if strings.Contains(prefixed, s) && name != "" {
-						suggest = append(suggest, prefixed)
+
+		completeFunc = func(s string) (suggest []string) {
+			for _, res := range resources {
+				id := res.Id()
+				if !template.MatchStringParamValue(id) {
+					id = "'" + id + "'"
+				}
+				if strings.Contains(id, s) {
+					suggest = append(suggest, id)
+				}
+				if val, ok := res.Properties["Name"]; ok {
+					switch val.(type) {
+					case string:
+						name := val.(string)
+						if !template.MatchStringParamValue(name) {
+							name = "'" + name + "'"
+						}
+						prefixed := fmt.Sprintf("@%s", name)
+						if strings.Contains(prefixed, s) && name != "" {
+							suggest = append(suggest, prefixed)
+						}
 					}
 				}
 			}
+
+			sort.Strings(suggest)
+			return
 		}
-
-		sort.Strings(suggest)
-
-		return
 	}
-	return readline.NewPrefixCompleter(readline.PcItemDynamic(listAllResourcesIdAndName))
+
+	return readline.NewPrefixCompleter(readline.PcItemDynamic(completeFunc))
+}
+
+func guessEntityTypeFromHoleQuestion(hole string) string {
+	var types []string
+	for _, t := range strings.Split(hole, ".") {
+		for _, r := range aws.ResourceTypes {
+			if t == r {
+				types = append(types, r)
+				break
+			}
+		}
+	}
+
+	if l := len(types); l > 0 {
+		return types[l-1]
+	}
+
+	return ""
 }
 
 func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]interface{}) error {
