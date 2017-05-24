@@ -293,6 +293,7 @@ func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
 			var sgroup *graph.Resource
 			sgroup, err = findResource(ctx.resourcesGraph, id, cloud.SecurityGroup)
 			if err != nil {
+				logger.Errorf("cannot get securitygroup '%s' for instance '%s': %s", id, ctx.instance.Id(), err)
 				break
 			}
 
