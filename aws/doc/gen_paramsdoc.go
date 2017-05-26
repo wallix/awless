@@ -52,6 +52,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":       "The ID of the EBS volume",
 		"instance": "The ID of the instance",
 	},
+	"checkdistribution":  {},
 	"checkinstance":      {},
 	"checkloadbalancer":  {},
 	"checkscalinggroup":  {},
@@ -93,6 +94,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"createdatabase":      {},
 	"createdbsubnetgroup": {},
+	"createdistribution":  {},
 	"createelasticip": {
 		"domain": "Set to vpc to allocate the address for use with instances in a VPC",
 	},
@@ -223,6 +225,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deletedatabase":      {},
 	"deletedbsubnetgroup": {},
+	"deletedistribution":  {},
 	"deleteelasticip": {
 		"id": "[EC2-VPC] The allocation ID",
 		"ip": "[EC2-Classic] The Elastic IP address",
@@ -358,7 +361,8 @@ var generatedParamsDoc = map[string]map[string]string{
 	"stopinstance": {
 		"id": "One or more instance IDs",
 	},
-	"updatebucket": {},
+	"updatebucket":       {},
+	"updatedistribution": {},
 	"updateinstance": {
 		"id":   "The ID of the instance",
 		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",

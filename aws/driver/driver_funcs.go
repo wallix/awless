@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -757,6 +758,66 @@ func (d *AutoscalingDriver) Check_Scalinggroup(params map[string]interface{}) (i
 			return "", fmt.Errorf("scalinggroup %s not found", params["name"])
 		},
 		expect: fmt.Sprint(params["count"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
+
+func (d *CloudfrontDriver) Check_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check distribution: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"Deployed":    {},
+		"InProgress":  {},
+		notFoundState: {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check distribution: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check distribution: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check distribution: missing required params 'timeout'")
+	}
+
+	d.logger.Verbose("params dry run: check distribution ok")
+	return nil, nil
+}
+
+func (d *CloudfrontDriver) Check_Distribution(params map[string]interface{}) (interface{}, error) {
+	input := &cloudfront.GetDistributionInput{}
+
+	// Required params
+	err := setFieldWithType(params["id"], input, "Id", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	c := &checker{
+		description: fmt.Sprintf("distribution %s", params["id"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.GetDistribution(input)
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "NoSuchDistribution" {
+						return notFoundState, nil
+					}
+					return "", awserr
+				} else {
+					return "", err
+				}
+			} else {
+				return aws.StringValue(output.Distribution.Status), nil
+			}
+		},
+		expect: fmt.Sprint(params["state"]),
 		logger: d.logger,
 	}
 	return nil, c.check()
@@ -1648,6 +1709,240 @@ func (d *Ec2Driver) imageSnapshots(id string) ([]string, error) {
 		}
 	}
 	return snapshots, nil
+}
+
+func (d *CloudfrontDriver) Create_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["origin-domain"]; !ok {
+		return nil, errors.New("create distribution: missing required params 'origin-domain'")
+	}
+
+	d.logger.Verbose("params dry run: create distribution ok")
+	return fakeDryRunId("distribution"), nil
+}
+
+func (d *CloudfrontDriver) Create_Distribution(params map[string]interface{}) (interface{}, error) {
+	originId := "orig_1"
+	input := &cloudfront.CreateDistributionInput{
+		DistributionConfig: &cloudfront.DistributionConfig{
+			CallerReference: aws.String(fmt.Sprint(time.Now().UTC().Unix())),
+			Comment:         aws.String(" "),
+			DefaultCacheBehavior: &cloudfront.DefaultCacheBehavior{
+				MinTTL: aws.Int64(0),
+				ForwardedValues: &cloudfront.ForwardedValues{
+					Cookies:     &cloudfront.CookiePreference{Forward: aws.String("all")},
+					QueryString: aws.Bool(true),
+				},
+				TrustedSigners: &cloudfront.TrustedSigners{
+					Enabled:  aws.Bool(false),
+					Quantity: aws.Int64(0),
+				},
+				TargetOriginId:       aws.String(originId),
+				ViewerProtocolPolicy: aws.String("allow-all"),
+			},
+			Enabled: aws.Bool(true),
+			Origins: &cloudfront.Origins{
+				Quantity: aws.Int64(1),
+				Items: []*cloudfront.Origin{
+					{Id: aws.String(originId)},
+				},
+			},
+		},
+	}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["origin-domain"], input, "DistributionConfig.Origins.Items[0].DomainName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	if domain := aws.StringValue(input.DistributionConfig.Origins.Items[0].DomainName); strings.HasSuffix(domain, ".s3.amazonaws.com") || (strings.HasSuffix(domain, ".amazonaws.com") && strings.Contains(domain, ".s3-website-")) {
+		input.DistributionConfig.Origins.Items[0].S3OriginConfig = &cloudfront.S3OriginConfig{OriginAccessIdentity: aws.String("")}
+	}
+
+	// Extra params
+
+	if _, ok := params["certificate"]; ok {
+		err = setFieldWithType(params["certificate"], input, "DistributionConfig.ViewerCertificate.ACMCertificateArn", awsstr)
+		if err != nil {
+			return nil, err
+		}
+		err = setFieldWithType("sni-only", input, "DistributionConfig.ViewerCertificate.SSLSupportMethod", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["comment"]; ok {
+		err = setFieldWithType(params["comment"], input, "DistributionConfig.Comment", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["default-file"]; ok {
+		err = setFieldWithType(params["default-file"], input, "DistributionConfig.DefaultRootObject", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["domain-aliases"]; ok {
+		err = setFieldWithType(params["domain-aliases"], input, "DistributionConfig.Aliases.Items", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["enable"]; ok {
+		err = setFieldWithType(params["enable"], input, "DistributionConfig.Enabled", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["forward-cookies"]; ok {
+		err = setFieldWithType(params["forward-cookies"], input, "DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["forward-queries"]; ok {
+		err = setFieldWithType(params["forward-queries"], input, "DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["https-behaviour"]; ok {
+		err = setFieldWithType(params["https-behaviour"], input, "DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["min-ttl"]; ok {
+		err = setFieldWithType(params["min-ttl"], input, "DistributionConfig.DefaultCacheBehavior.MinTTL", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["origin-path"]; ok {
+		err = setFieldWithType(params["origin-path"], input, "DistributionConfig.Origins.Items[0].OriginPath", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["price-class"]; ok {
+		err = setFieldWithType(params["price-class"], input, "DistributionConfig.PriceClass", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if aliases := input.DistributionConfig.Aliases; aliases != nil {
+		aliases.Quantity = aws.Int64(int64(len(aliases.Items)))
+	}
+
+	start := time.Now()
+	var output *cloudfront.CreateDistributionOutput
+	output, err = d.CreateDistribution(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create distribution: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudfront.CreateDistribution call took %s", time.Since(start))
+	id := aws.StringValue(output.Distribution.Id)
+
+	d.logger.Infof("create distribution '%s' done", id)
+	return id, nil
+}
+
+func (d *CloudfrontDriver) Update_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("update distribution: missing required params 'id'")
+	}
+
+	if _, ok := params["enable"]; !ok {
+		return nil, errors.New("update distribution: missing required params 'enable'")
+	}
+
+	d.logger.Verbose("params dry run: update distribution ok")
+	return fakeDryRunId("distribution"), nil
+}
+
+func (d *CloudfrontDriver) Update_Distribution(params map[string]interface{}) (interface{}, error) {
+	distribOutput, err := d.GetDistribution(&cloudfront.GetDistributionInput{
+		Id: aws.String(fmt.Sprint(params["id"])),
+	})
+	if err != nil {
+		return nil, err
+	}
+	distriToUpdate := distribOutput.Distribution
+	etag := distribOutput.ETag
+	if enabled := aws.BoolValue(distriToUpdate.DistributionConfig.Enabled); fmt.Sprint(params["enable"]) == fmt.Sprint(enabled) {
+		d.logger.Infof("distribution '%s' is already enable=%t", params["id"], enabled)
+		return aws.StringValue(etag), nil
+	}
+
+	input := &cloudfront.UpdateDistributionInput{IfMatch: etag, DistributionConfig: distriToUpdate.DistributionConfig}
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "Id", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["enable"], input, "DistributionConfig.Enabled", awsbool)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *cloudfront.UpdateDistributionOutput
+	output, err = d.UpdateDistribution(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("update distribution: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudfront.UpdateDistribution call took %s", time.Since(start))
+	id := aws.StringValue(output.ETag)
+
+	d.logger.Infof("update distribution '%s' done", id)
+	return id, nil
+}
+
+func (d *CloudfrontDriver) Delete_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete distribution: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete distribution ok")
+	return fakeDryRunId("distribution"), nil
+}
+
+func (d *CloudfrontDriver) Delete_Distribution(params map[string]interface{}) (interface{}, error) {
+	d.logger.Info("disabling distribution")
+	etag, err := d.Update_Distribution(map[string]interface{}{"id": params["id"], "enable": false})
+	if err != nil {
+		return nil, err
+	}
+
+	d.logger.Info("check distribution disabling has been propagated")
+	_, err = d.Check_Distribution(map[string]interface{}{"id": params["id"], "state": "Deployed", "timeout": 600})
+	if err != nil {
+		return nil, err
+	}
+
+	input := &cloudfront.DeleteDistributionInput{IfMatch: aws.String(fmt.Sprint(etag))}
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "Id", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *cloudfront.DeleteDistributionOutput
+	output, err = d.DeleteDistribution(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete distribution: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudfront.DeleteDistribution call took %s", time.Since(start))
+	d.logger.Info("delete distribution done")
+	return output, nil
 }
 
 func fakeDryRunId(entity string) string {

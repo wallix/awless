@@ -97,9 +97,12 @@ type SliceColumnDefinition struct {
 }
 
 func (h SliceColumnDefinition) format(i interface{}) string {
+	if i == nil {
+		return ""
+	}
 	value := reflect.ValueOf(i)
 	if value.Kind() != reflect.Slice {
-		return "invalid slice"
+		return fmt.Sprintf("invalid slice: %T", i)
 	}
 	var buf bytes.Buffer
 	for i := 0; i < value.Len(); i++ {

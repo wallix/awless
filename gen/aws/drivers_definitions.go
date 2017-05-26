@@ -1180,6 +1180,47 @@ var DriversDefs = []driversDef{
 	{
 		Api:          "cloudfront",
 		ApiInterface: "CloudFrontAPI",
-		Drivers:      []driver{},
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.Distribution, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "origin-domain"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "certificate"},
+					{TemplateName: "comment"},
+					{TemplateName: "default-file"},
+					{TemplateName: "domain-aliases"},
+					{TemplateName: "enable"},
+					{TemplateName: "forward-cookies"}, //default: all
+					{TemplateName: "forward-queries"}, //default: true
+					{TemplateName: "https-behaviour"}, // allow-all (http or https) or redirect-to-https or https-only
+					{TemplateName: "origin-path"},
+					{TemplateName: "price-class"},
+					{TemplateName: "min-ttl"},
+				},
+			},
+			{
+				Action: "check", Entity: cloud.Distribution, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
+			{
+				Action: "update", Entity: cloud.Distribution, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{AwsField: "Id", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "DistributionConfig.Enabled", TemplateName: "enable", AwsType: "awsbool"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Distribution, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{AwsField: "Id", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+		},
 	},
 }

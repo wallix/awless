@@ -8,6 +8,7 @@
 - Use a s3 bucket as a public website with `awless update bucket name=my-bucket-name public-website=true`
 - Set/update buckets or s3objects predefined ACL (private / public-read / public-read-write / bucket-owner-read...): `awless update s3object acl=public-read`
 - List CloudFront distributions: `awless list distributions`
+- Create/Update/Check/Delete a CloudFront distribution: `awless create/update/check/delete distribution`
 - `awless log --raw-json` shows the full info stored on template execution (context, fillers used, region, ...). Typically this contextual info can be reused for replay and updates of templates
 
 ## v0.0.24 [2017-05-22]

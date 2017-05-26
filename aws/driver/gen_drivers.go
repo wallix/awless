@@ -958,6 +958,30 @@ func NewCloudfrontDriver(api cloudfrontiface.CloudFrontAPI) driver.Driver {
 func (d *CloudfrontDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createdistribution":
+		if d.dryRun {
+			return d.Create_Distribution_DryRun, nil
+		}
+		return d.Create_Distribution, nil
+
+	case "checkdistribution":
+		if d.dryRun {
+			return d.Check_Distribution_DryRun, nil
+		}
+		return d.Check_Distribution, nil
+
+	case "updatedistribution":
+		if d.dryRun {
+			return d.Update_Distribution_DryRun, nil
+		}
+		return d.Update_Distribution, nil
+
+	case "deletedistribution":
+		if d.dryRun {
+			return d.Delete_Distribution_DryRun, nil
+		}
+		return d.Delete_Distribution, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

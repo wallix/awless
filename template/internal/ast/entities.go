@@ -10,6 +10,7 @@ var entities = map[Entity]struct{}{
 	"scalinggroup":        {},
 	"bucket":              {},
 	"database":            {},
+	"distribution":        {},
 	"dbsubnetgroup":       {},
 	"elasticip":           {},
 	"function":            {},

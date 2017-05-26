@@ -329,6 +329,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.PublicDNS},
 		StringColumnDefinition{Prop: properties.Enabled},
 		StringColumnDefinition{Prop: properties.State},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified}},
 		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Aliases}},
 		StringColumnDefinition{Prop: properties.SSLSupportMethod},
 		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Origins}},

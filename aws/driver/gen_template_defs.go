@@ -133,6 +133,10 @@ var APIPerTemplateDefName = map[string]string{
 	"stopalarm":                 "cloudwatch",
 	"attachalarm":               "cloudwatch",
 	"detachalarm":               "cloudwatch",
+	"createdistribution":        "cloudfront",
+	"checkdistribution":         "cloudfront",
+	"updatedistribution":        "cloudfront",
+	"deletedistribution":        "cloudfront",
 }
 
 var AWSTemplatesDefinitions = map[string]template.Definition{
@@ -913,6 +917,34 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"action-arn", "name"},
 		ExtraParams:    []string{},
 	},
+	"createdistribution": {
+		Action:         "create",
+		Entity:         "distribution",
+		Api:            "cloudfront",
+		RequiredParams: []string{"origin-domain"},
+		ExtraParams:    []string{"certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-path", "price-class"},
+	},
+	"checkdistribution": {
+		Action:         "check",
+		Entity:         "distribution",
+		Api:            "cloudfront",
+		RequiredParams: []string{"id", "state", "timeout"},
+		ExtraParams:    []string{},
+	},
+	"updatedistribution": {
+		Action:         "update",
+		Entity:         "distribution",
+		Api:            "cloudfront",
+		RequiredParams: []string{"enable", "id"},
+		ExtraParams:    []string{},
+	},
+	"deletedistribution": {
+		Action:         "delete",
+		Entity:         "distribution",
+		Api:            "cloudfront",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
 }
 
 func DriverSupportedActions() map[string][]string {
@@ -1028,5 +1060,9 @@ func DriverSupportedActions() map[string][]string {
 	supported["stop"] = append(supported["stop"], "alarm")
 	supported["attach"] = append(supported["attach"], "alarm")
 	supported["detach"] = append(supported["detach"], "alarm")
+	supported["create"] = append(supported["create"], "distribution")
+	supported["check"] = append(supported["check"], "distribution")
+	supported["update"] = append(supported["update"], "distribution")
+	supported["delete"] = append(supported["delete"], "distribution")
 	return supported
 }
