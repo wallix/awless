@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -981,6 +982,26 @@ func (d *CloudfrontDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, 
 			return d.Delete_Distribution_DryRun, nil
 		}
 		return d.Delete_Distribution, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type CloudformationDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	cloudformationiface.CloudFormationAPI
+}
+
+func (d *CloudformationDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *CloudformationDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewCloudformationDriver(api cloudformationiface.CloudFormationAPI) driver.Driver {
+	return &CloudformationDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *CloudformationDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

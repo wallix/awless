@@ -40,10 +40,12 @@ const (
 	BackupRetentionPeriod     = "cloud:backupRetentionPeriod"
 	Bucket                    = "cloud:bucketName"
 	CallerReference           = "cloud:callerReference"
+	Capabilities              = "cloud:capabilities"
 	Certificate               = "cloud:certificate"
 	CertificateAuthority      = "cloud:certificateAuthority"
 	Certificates              = "cloud:certificates"
 	Charset                   = "cloud:charset"
+	ChangeSet                 = "cloud:changeSet"
 	CheckHTTPCode             = "cloud:checkHTTPCode"
 	CheckInterval             = "cloud:checkInterval"
 	CheckPath                 = "cloud:checkPath"
@@ -70,6 +72,7 @@ const (
 	Description               = "cloud:description"
 	DesiredCapacity           = "cloud:desiredCapacity"
 	Dimensions                = "cloud:dimensions"
+	DisableRollback           = "cloud:disableRollback"
 	Enabled                   = "cloud:enabled"
 	Encrypted                 = "cloud:encrypted"
 	Endpoint                  = "cloud:endpoint"
@@ -121,11 +124,14 @@ const (
 	Namespace                 = "cloud:namemespace"
 	NewInstancesProtected     = "cloud:newInstancesProtected"
 	NetworkInterfaces         = "cloud:networkInterfaces"
+	Notifications             = "cloud:notifications"
 	OKActions                 = "cloud:okActions"
 	OptionGroups              = "cloud:optionGroups"
 	OutboundRules             = "net:outboundRules"
 	Owner                     = "cloud:owner"
 	Origins                   = "cloud:origins"
+	Outputs                   = "cloud:outputs"
+	Parameters                = "cloud:parameters"
 	ParameterGroups           = "cloud:parameterGroups"
 	PasswordLastUsed          = "cloud:passwordLastUsed"
 	Path                      = "cloud:path"
@@ -211,10 +217,12 @@ var Labels = map[string]string{
 	properties.BackupRetentionPeriod:     BackupRetentionPeriod,
 	properties.Bucket:                    Bucket,
 	properties.CallerReference:           CallerReference,
+	properties.Capabilities:              Capabilities,
 	properties.Certificate:               Certificate,
 	properties.CertificateAuthority:      CertificateAuthority,
 	properties.Certificates:              Certificates,
 	properties.Charset:                   Charset,
+	properties.ChangeSet:                 ChangeSet,
 	properties.CheckHTTPCode:             CheckHTTPCode,
 	properties.CheckInterval:             CheckInterval,
 	properties.CheckPath:                 CheckPath,
@@ -241,6 +249,7 @@ var Labels = map[string]string{
 	properties.Description:               Description,
 	properties.DesiredCapacity:           DesiredCapacity,
 	properties.Dimensions:                Dimensions,
+	properties.DisableRollback:           DisableRollback,
 	properties.Enabled:                   Enabled,
 	properties.Encrypted:                 Encrypted,
 	properties.Endpoint:                  Endpoint,
@@ -292,11 +301,14 @@ var Labels = map[string]string{
 	properties.Namespace:                 Namespace,
 	properties.NewInstancesProtected:     NewInstancesProtected,
 	properties.NetworkInterfaces:         NetworkInterfaces,
+	properties.Notifications:             Notifications,
 	properties.OKActions:                 OKActions,
 	properties.OptionGroups:              OptionGroups,
 	properties.OutboundRules:             OutboundRules,
 	properties.Owner:                     Owner,
 	properties.Origins:                   Origins,
+	properties.Outputs:                   Outputs,
+	properties.Parameters:                Parameters,
 	properties.ParameterGroups:           ParameterGroups,
 	properties.PasswordLastUsed:          PasswordLastUsed,
 	properties.Path:                      Path,
@@ -382,10 +394,12 @@ var Properties = RDFProperties{
 	BackupRetentionPeriod:   {ID: BackupRetentionPeriod, RdfType: "rdf:Property", RdfsLabel: "BackupRetentionPeriod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Bucket:                  {ID: Bucket, RdfType: "rdf:Property", RdfsLabel: "Bucket", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	CallerReference:         {ID: CallerReference, RdfType: "rdf:Property", RdfsLabel: "CallerReference", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Capabilities:            {ID: Capabilities, RdfType: "rdf:Property", RdfsLabel: "Capabilities", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Certificate:             {ID: Certificate, RdfType: "rdf:Property", RdfsLabel: "Certificate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	CertificateAuthority:    {ID: CertificateAuthority, RdfType: "rdf:Property", RdfsLabel: "CertificateAuthority", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Certificates:            {ID: Certificates, RdfType: "rdf:Property", RdfsLabel: "Certificates", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Charset:                 {ID: Charset, RdfType: "rdf:Property", RdfsLabel: "Charset", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ChangeSet:               {ID: ChangeSet, RdfType: "rdf:Property", RdfsLabel: "ChangeSet", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	CheckHTTPCode:           {ID: CheckHTTPCode, RdfType: "rdf:Property", RdfsLabel: "CheckHTTPCode", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	CheckInterval:           {ID: CheckInterval, RdfType: "rdf:Property", RdfsLabel: "CheckInterval", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	CheckPath:               {ID: CheckPath, RdfType: "rdf:Property", RdfsLabel: "CheckPath", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -412,6 +426,7 @@ var Properties = RDFProperties{
 	Description:             {ID: Description, RdfType: "rdf:Property", RdfsLabel: "Description", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	DesiredCapacity:         {ID: DesiredCapacity, RdfType: "rdf:Property", RdfsLabel: "DesiredCapacity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Dimensions:              {ID: Dimensions, RdfType: "rdf:Property", RdfsLabel: "Dimensions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
+	DisableRollback:         {ID: DisableRollback, RdfType: "rdf:Property", RdfsLabel: "DisableRollback", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Enabled:                 {ID: Enabled, RdfType: "rdf:Property", RdfsLabel: "Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Encrypted:               {ID: Encrypted, RdfType: "rdf:Property", RdfsLabel: "Encrypted", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Endpoint:                {ID: Endpoint, RdfType: "rdf:Property", RdfsLabel: "Endpoint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -463,11 +478,14 @@ var Properties = RDFProperties{
 	Namespace:                {ID: Namespace, RdfType: "rdf:Property", RdfsLabel: "Namespace", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	NewInstancesProtected:    {ID: NewInstancesProtected, RdfType: "rdf:Property", RdfsLabel: "NewInstancesProtected", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	NetworkInterfaces:        {ID: NetworkInterfaces, RdfType: "rdf:Property", RdfsLabel: "NetworkInterfaces", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	Notifications:            {ID: Notifications, RdfType: "rdf:Property", RdfsLabel: "Notifications", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	OKActions:                {ID: OKActions, RdfType: "rdf:Property", RdfsLabel: "OKActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OptionGroups:             {ID: OptionGroups, RdfType: "rdf:Property", RdfsLabel: "OptionGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	OutboundRules:            {ID: OutboundRules, RdfType: "rdf:Property", RdfsLabel: "OutboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
 	Owner:                    {ID: Owner, RdfType: "rdf:Property", RdfsLabel: "Owner", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Origins:                  {ID: Origins, RdfType: "rdf:Property", RdfsLabel: "Origins", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:DistributionOrigin"},
+	Outputs:                  {ID: Outputs, RdfType: "rdf:Property", RdfsLabel: "Outputs", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
+	Parameters:               {ID: Parameters, RdfType: "rdf:Property", RdfsLabel: "Parameters", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	ParameterGroups:          {ID: ParameterGroups, RdfType: "rdf:Property", RdfsLabel: "ParameterGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	PasswordLastUsed:         {ID: PasswordLastUsed, RdfType: "rdf:Property", RdfsLabel: "PasswordLastUsed", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Path:                     {ID: Path, RdfType: "rdf:Property", RdfsLabel: "Path", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

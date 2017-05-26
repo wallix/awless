@@ -82,6 +82,8 @@ const (
 	Alarm  string = "alarm"
 	//cdn
 	Distribution string = "distribution"
+	//cloudformation
+	Stack string = "stack"
 )
 
 type Service interface {

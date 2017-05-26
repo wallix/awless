@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -72,6 +74,7 @@ var ServiceNames = []string{
 	"lambda",
 	"monitoring",
 	"cdn",
+	"cloudformation",
 }
 
 var ResourceTypes = []string{
@@ -112,22 +115,24 @@ var ResourceTypes = []string{
 	"metric",
 	"alarm",
 	"distribution",
+	"stack",
 }
 
 var ServicePerAPI = map[string]string{
-	"ec2":         "infra",
-	"elbv2":       "infra",
-	"rds":         "infra",
-	"autoscaling": "infra",
-	"iam":         "access",
-	"sts":         "access",
-	"s3":          "storage",
-	"sns":         "notification",
-	"sqs":         "queue",
-	"route53":     "dns",
-	"lambda":      "lambda",
-	"cloudwatch":  "monitoring",
-	"cloudfront":  "cdn",
+	"ec2":            "infra",
+	"elbv2":          "infra",
+	"rds":            "infra",
+	"autoscaling":    "infra",
+	"iam":            "access",
+	"sts":            "access",
+	"s3":             "storage",
+	"sns":            "notification",
+	"sqs":            "queue",
+	"route53":        "dns",
+	"lambda":         "lambda",
+	"cloudwatch":     "monitoring",
+	"cloudfront":     "cdn",
+	"cloudformation": "cloudformation",
 }
 
 var ServicePerResourceType = map[string]string{
@@ -168,6 +173,7 @@ var ServicePerResourceType = map[string]string{
 	"metric":              "monitoring",
 	"alarm":               "monitoring",
 	"distribution":        "cdn",
+	"stack":               "cloudformation",
 }
 
 var APIPerResourceType = map[string]string{
@@ -208,6 +214,7 @@ var APIPerResourceType = map[string]string{
 	"metric":              "cloudwatch",
 	"alarm":               "cloudwatch",
 	"distribution":        "cloudfront",
+	"stack":               "cloudformation",
 }
 
 type Infra struct {
@@ -3242,4 +3249,164 @@ func (s *Cdn) fetch_all_distribution_graph() (*graph.Graph, []*cloudfront.Distri
 
 func (s *Cdn) IsSyncDisabled() bool {
 	return !s.config.getBool("aws.cdn.sync", true)
+}
+
+type Cloudformation struct {
+	once   oncer
+	region string
+	config config
+	log    *logger.Logger
+	cloudformationiface.CloudFormationAPI
+}
+
+func NewCloudformation(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
+	region := awssdk.StringValue(sess.Config.Region)
+	return &Cloudformation{
+		CloudFormationAPI: cloudformation.New(sess),
+		config:            awsconf,
+		region:            region,
+		log:               log,
+	}
+}
+
+func (s *Cloudformation) Name() string {
+	return "cloudformation"
+}
+
+func (s *Cloudformation) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewCloudformationDriver(s.CloudFormationAPI),
+	}
+}
+
+func (s *Cloudformation) ResourceTypes() []string {
+	return []string{
+		"stack",
+	}
+}
+
+func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
+	g := graph.NewGraph()
+	if s.IsSyncDisabled() {
+		return g, nil
+	}
+
+	regionN := graph.InitResource(cloud.Region, s.region)
+	if err := g.AddResource(regionN); err != nil {
+		return g, err
+	}
+	var stackList []*cloudformation.Stack
+
+	errc := make(chan error)
+	var wg sync.WaitGroup
+
+	if s.config.getBool("aws.cloudformation.stack.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, stackList, err = s.fetch_all_stack_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource cloudformation[stack]")
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		switch ee := err.(type) {
+		case awserr.RequestFailure:
+			switch ee.Message() {
+			case accessDenied:
+				return g, cloud.ErrFetchAccessDenied
+			default:
+				return g, ee
+			}
+		case nil:
+			continue
+		default:
+			return g, ee
+		}
+	}
+
+	errc = make(chan error)
+	if s.config.getBool("aws.cloudformation.stack.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range stackList {
+				for _, fn := range addParentsFns["stack"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errc)
+	}()
+
+	for err := range errc {
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
+}
+
+func (s *Cloudformation) FetchByType(t string) (*graph.Graph, error) {
+	switch t {
+	case "stack":
+		graph, _, err := s.fetch_all_stack_graph()
+		return graph, err
+	default:
+		return nil, fmt.Errorf("aws cloudformation: unsupported fetch for type %s", t)
+	}
+}
+
+func (s *Cloudformation) fetch_all_stack_graph() (*graph.Graph, []*cloudformation.Stack, error) {
+	g := graph.NewGraph()
+	var cloudResources []*cloudformation.Stack
+	var badResErr error
+	err := s.DescribeStacksPages(&cloudformation.DescribeStacksInput{},
+		func(out *cloudformation.DescribeStacksOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Stacks {
+				if badResErr != nil {
+					return false
+				}
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Cloudformation) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.cloudformation.sync", true)
 }

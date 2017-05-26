@@ -136,4 +136,12 @@ var FetchersDefs = []fetchersDef{
 			{Api: "cloudfront", ResourceType: cloud.Distribution, AWSType: "cloudfront.DistributionSummary", ApiMethod: "ListDistributionsPages", Input: "cloudfront.ListDistributionsInput{}", Output: "cloudfront.ListDistributionsOutput", OutputsExtractor: "DistributionList.Items", Multipage: true, NextPageMarker: "DistributionList.NextMarker"},
 		},
 	},
+	{
+		Name:          "cloudformation", //deployment ?
+		Api:           []string{"cloudformation"},
+		ApiInterfaces: map[string]string{"cloudformation": "CloudFormationAPI"},
+		Fetchers: []fetcher{
+			{Api: "cloudformation", ResourceType: cloud.Stack, AWSType: "cloudformation.Stack", ApiMethod: "DescribeStacksPages", Input: "cloudformation.DescribeStacksInput{}", Output: "cloudformation.DescribeStacksOutput", OutputsExtractor: "Stacks", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
 }

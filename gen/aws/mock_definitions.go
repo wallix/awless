@@ -133,6 +133,12 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "cloudfront.DistributionSummary", Manual: true},
 		},
 	},
+	{
+		Api: "cloudformation",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "cloudformation.Stack", ApiMethod: "DescribeStacksPages", Input: "cloudformation.DescribeStacksInput", Output: "cloudformation.DescribeStacksOutput", OutputsExtractor: "Stacks", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
 }
 
 func Mocks() []*mockDef {
@@ -154,6 +160,8 @@ func apiToInterface(api string) string {
 		return "CloudWatchAPI"
 	case "cloudfront":
 		return "CloudFrontAPI"
+	case "cloudformation":
+		return "CloudFormationAPI"
 	case "route53", "lambda":
 		return strings.Title(api) + "API"
 	default:

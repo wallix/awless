@@ -407,6 +407,22 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:              {name: "Status", transform: extractValueFn},
 		properties.WebACL:             {name: "WebACLId", transform: extractValueFn},
 	},
+	// Cloudformation
+	cloud.Stack: {
+		properties.Name:            {name: "StackName", transform: extractValueFn},
+		properties.Capabilities:    {name: "Capabilities", transform: extractStringPointerSliceValues},
+		properties.ChangeSet:       {name: "ChangeSetId", transform: extractValueFn},
+		properties.Created:         {name: "CreationTime", transform: extractValueFn},
+		properties.Description:     {name: "Description", transform: extractValueFn},
+		properties.DisableRollback: {name: "DisableRollback", transform: extractValueFn},
+		properties.Modified:        {name: "LastUpdatedTime", transform: extractValueFn},
+		properties.Notifications:   {name: "NotificationARNs", transform: extractStringPointerSliceValues},
+		properties.Role:            {name: "RoleARN", transform: extractValueFn},
+		properties.State:           {name: "StackStatus", transform: extractValueFn},
+		properties.StateMessage:    {name: "StackStatusReason", transform: extractValueFn},
+		properties.Parameters:      {name: "Parameters", transform: extractStackParametersFn},
+		properties.Outputs:         {name: "Outputs", transform: extractStackOutputsFn},
+	},
 	//Queue
 	cloud.Queue: {}, //Manually set
 }

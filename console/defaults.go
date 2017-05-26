@@ -334,4 +334,12 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.SSLSupportMethod},
 		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Origins}},
 	},
+	//Cloudformation
+	cloud.Stack: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.State},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Modified}},
+	},
 }

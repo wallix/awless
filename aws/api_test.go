@@ -24,6 +24,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -862,6 +863,99 @@ func TestBuildCdnGraph(t *testing.T) {
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 }
 
+func TestBuildCloudFormationGraph(t *testing.T) {
+	now := time.Now().UTC()
+	stacks := []*cloudformation.Stack{
+		{
+			Capabilities:      []*string{awssdk.String("cap_1"), awssdk.String("cap_2"), awssdk.String("cap_3")},
+			ChangeSetId:       awssdk.String("changeset"),
+			CreationTime:      awssdk.Time(now.Add(-2 * time.Hour)),
+			Description:       awssdk.String("my cf stack"),
+			DisableRollback:   awssdk.Bool(true),
+			LastUpdatedTime:   awssdk.Time(now),
+			NotificationARNs:  []*string{awssdk.String("notif_1"), awssdk.String("notif_2")},
+			Outputs:           []*cloudformation.Output{{OutputKey: awssdk.String("output1"), OutputValue: awssdk.String("myoutput1")}, {OutputKey: awssdk.String("output2"), OutputValue: awssdk.String("myoutput2")}},
+			Parameters:        []*cloudformation.Parameter{{ParameterKey: awssdk.String("key1"), ParameterValue: awssdk.String("val1")}, {ParameterKey: awssdk.String("key2"), ParameterValue: awssdk.String("val2")}},
+			RoleARN:           awssdk.String("role_arn"),
+			StackId:           awssdk.String("id_1"),
+			StackName:         awssdk.String("name_1"),
+			StackStatus:       awssdk.String("deployed"),
+			StackStatusReason: awssdk.String("evrything ok"),
+		},
+		{
+			StackId:   awssdk.String("id_2"),
+			StackName: awssdk.String("name_2"),
+		},
+		{
+			StackId: awssdk.String("id_3"),
+		},
+	}
+
+	mock := &mockCloudformation{stacks: stacks}
+
+	service := Cloudformation{CloudFormationAPI: mock, region: "eu-west-1"}
+
+	g, err := service.FetchResources()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, err := g.GetAllResources("stack")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Sort slice properties in resources
+	for _, res := range resources {
+		if p, ok := res.Properties[p.Capabilities].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.Notifications].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.Parameters].([]*graph.KeyValue); ok {
+			sort.Slice(p, func(i, j int) bool {
+				if p[i].KeyName != p[j].KeyName {
+					return p[i].KeyName < p[j].KeyName
+				}
+				return p[i].Value <= p[j].Value
+			})
+		}
+		if p, ok := res.Properties[p.Outputs].([]*graph.KeyValue); ok {
+			sort.Slice(p, func(i, j int) bool {
+				if p[i].KeyName != p[j].KeyName {
+					return p[i].KeyName < p[j].KeyName
+				}
+				return p[i].Value <= p[j].Value
+			})
+		}
+	}
+
+	expected := map[string]*graph.Resource{
+		"id_1": resourcetest.Stack("id_1").
+			Prop(p.Name, "name_1").
+			Prop(p.Capabilities, []string{"cap_1", "cap_2", "cap_3"}).
+			Prop(p.ChangeSet, "changeset").
+			Prop(p.Created, now.Add(-2*time.Hour)).
+			Prop(p.Description, "my cf stack").
+			Prop(p.DisableRollback, true).
+			Prop(p.Modified, now).
+			Prop(p.Notifications, []string{"notif_1", "notif_2"}).
+			Prop(p.Outputs, []*graph.KeyValue{{KeyName: "output1", Value: "myoutput1"}, {KeyName: "output2", Value: "myoutput2"}}).
+			Prop(p.Parameters, []*graph.KeyValue{{KeyName: "key1", Value: "val1"}, {KeyName: "key2", Value: "val2"}}).
+			Prop(p.Role, "role_arn").
+			Prop(p.State, "deployed").
+			Prop(p.StateMessage, "evrything ok").
+			Build(),
+		"id_2": resourcetest.Stack("id_2").Prop(p.Name, "name_2").Build(),
+		"id_3": resourcetest.Stack("id_3").Build(),
+	}
+
+	expectedChildren := map[string][]string{}
+	expectedAppliedOn := map[string][]string{}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+}
+
 func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 
 	expectG := graph.NewGraph()
@@ -926,10 +1020,10 @@ func compareResources(t *testing.T, g *graph.Graph, resources []*graph.Resource,
 	for _, got := range resources {
 		want := expected[got.Id()]
 		if !reflect.DeepEqual(got, want) {
-			// 	fmt.Println("got:")
-			// 	pretty.Print(got)
-			// 	fmt.Println("\nwant:")
-			// 	pretty.Print(want)
+			// fmt.Println("got:")
+			// pretty.Print(got)
+			// fmt.Println("\nwant:")
+			// pretty.Print(want)
 			t.Fatalf("got \n%#v\nwant\n%#v", got, want)
 		}
 		children := mustGetChildrenId(g, got)

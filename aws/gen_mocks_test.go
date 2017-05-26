@@ -24,6 +24,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -852,4 +854,60 @@ func (m *mockCloudfront) IsSyncDisabled() bool {
 
 func (m *mockCloudfront) FetchByType(t string) (*graph.Graph, error) {
 	return nil, nil
+}
+
+type mockCloudformation struct {
+	cloudformationiface.CloudFormationAPI
+	stacks []*cloudformation.Stack
+}
+
+func (m *mockCloudformation) Name() string {
+	return ""
+}
+
+func (m *mockCloudformation) Provider() string {
+	return ""
+}
+
+func (m *mockCloudformation) ProviderAPI() string {
+	return ""
+}
+
+func (s *mockCloudformation) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewCloudformationDriver(s.CloudFormationAPI),
+	}
+}
+
+func (m *mockCloudformation) ResourceTypes() []string {
+	return []string{}
+}
+
+func (m *mockCloudformation) FetchResources() (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockCloudformation) IsSyncDisabled() bool {
+	return false
+}
+
+func (m *mockCloudformation) FetchByType(t string) (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockCloudformation) DescribeStacksPages(input *cloudformation.DescribeStacksInput, fn func(p *cloudformation.DescribeStacksOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*cloudformation.Stack
+	for i := 0; i < len(m.stacks); i += 2 {
+		page := []*cloudformation.Stack{m.stacks[i]}
+		if i+1 < len(m.stacks) {
+			page = append(page, m.stacks[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&cloudformation.DescribeStacksOutput{Stacks: page, NextToken: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
 }

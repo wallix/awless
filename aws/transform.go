@@ -29,6 +29,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -141,6 +142,9 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		// cdn
 	case *cloudfront.DistributionSummary:
 		res = graph.InitResource(cloud.Distribution, awssdk.StringValue(ss.Id))
+		// cloudformation
+	case *cloudformation.Stack:
+		res = graph.InitResource(cloud.Stack, awssdk.StringValue(ss.StackId))
 	default:
 		return nil, fmt.Errorf("Unknown type of resource %T", source)
 	}
@@ -557,6 +561,32 @@ var extractDistributionOriginFn = func(i interface{}) (interface{}, error) {
 		origins = append(origins, origin)
 	}
 	return origins, nil
+}
+
+var extractStackOutputsFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*cloudformation.Output); !ok {
+		return nil, fmt.Errorf("extract ouutputs not an output slice but a %T", i)
+	}
+	var keyVals []*graph.KeyValue
+	for _, out := range i.([]*cloudformation.Output) {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(out.OutputKey), Value: awssdk.StringValue(out.OutputValue)}
+
+		keyVals = append(keyVals, keyval)
+	}
+	return keyVals, nil
+}
+
+var extractStackParametersFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*cloudformation.Parameter); !ok {
+		return nil, fmt.Errorf("extract parameters not a parameter slice but a %T", i)
+	}
+	var keyVals []*graph.KeyValue
+	for _, out := range i.([]*cloudformation.Parameter) {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(out.ParameterKey), Value: awssdk.StringValue(out.ParameterValue)}
+
+		keyVals = append(keyVals, keyval)
+	}
+	return keyVals, nil
 }
 
 func notEmpty(str *string) bool {

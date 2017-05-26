@@ -133,6 +133,10 @@ func Distribution(id string) *rBuilder {
 	return new("distribution", id).Prop(properties.ID, id)
 }
 
+func Stack(id string) *rBuilder {
+	return new("stack", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

@@ -239,6 +239,18 @@
 			"revisionTime": "2017-04-21T18:31:29Z"
 		},
 		{
+			"checksumSHA1": "H36nvtC7Uxl6I3NlRbgSYHqIhyQ=",
+			"path": "github.com/aws/aws-sdk-go/service/cloudformation",
+			"revision": "26d4122e877bd86f43d528ad7fbde237dbbd3fa9",
+			"revisionTime": "2017-05-25T22:27:35Z"
+		},
+		{
+			"checksumSHA1": "Dm4IMuyUc6B5hsK8Xxrq+ilB04U=",
+			"path": "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface",
+			"revision": "26d4122e877bd86f43d528ad7fbde237dbbd3fa9",
+			"revisionTime": "2017-05-25T22:27:35Z"
+		},
+		{
 			"checksumSHA1": "Xa4HENUzQxHSsx5HoabaxdUpVrg=",
 			"path": "github.com/aws/aws-sdk-go/service/cloudfront",
 			"revision": "2b8c4298b43558883ab1ff49a73c7c5aa99e3d1e",
