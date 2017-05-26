@@ -126,6 +126,7 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Topic:            {addRegionParent},
 	cloud.Alarm:            {addRegionParent, addAlarmMetric},
 	cloud.Metric:           {addRegionParent},
+	cloud.Stack:            {addRegionParent},
 }
 
 func (fb funcBuilder) build() addParentFn {

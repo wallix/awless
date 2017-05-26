@@ -29,6 +29,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/wallix/awless/logger"
@@ -47,8 +48,10 @@ const (
 	awsstringpointermap
 	awsslicestruct
 	awsfiletobase64
+	awsfiletobyteslice
 	awsfiletostring
 	awsdimensionslice
+	awsparameterslice
 )
 
 var (
@@ -118,19 +121,7 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			v = []*string{&str}
 		}
 	case awsdimensionslice:
-		var sl []string
-		switch vv := v.(type) {
-		case string:
-			sl = []string{vv}
-		case *string:
-			sl = []string{*vv}
-		case []*string:
-			sl = aws.StringValueSlice(vv)
-		case []string:
-			sl = vv
-		default:
-			sl = []string{fmt.Sprint(v)}
-		}
+		sl := castStringSlice(v)
 		var dimensions []*cloudwatch.Dimension
 		for _, s := range sl {
 			splits := strings.SplitN(s, ":", 2)
@@ -140,16 +131,34 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			dimensions = append(dimensions, &cloudwatch.Dimension{Name: aws.String(splits[0]), Value: aws.String(splits[1])})
 		}
 		v = dimensions
+	case awsparameterslice:
+		sl := castStringSlice(v)
+		var parameters []*cloudformation.Parameter
+		for _, s := range sl {
+			splits := strings.SplitN(s, ":", 2)
+			if len(splits) != 2 {
+				return fmt.Errorf("invalid parameter '%s', expected 'key:value'", s)
+			}
+			parameters = append(parameters, &cloudformation.Parameter{ParameterKey: aws.String(splits[0]), ParameterValue: aws.String(splits[1])})
+		}
+		v = parameters
 	case awsfiletobase64:
 		v, err = fileOrRemoteFileAsBase64(v)
 		if err != nil {
 			return err
 		}
-	case awsfiletostring:
+	case awsfiletobyteslice:
 		v, err = ioutil.ReadFile(fmt.Sprint(v))
 		if err != nil {
 			return err
 		}
+	case awsfiletostring:
+		var b []byte
+		b, err = ioutil.ReadFile(fmt.Sprint(v))
+		if err != nil {
+			return err
+		}
+		v = string(b)
 	case awsint64slice:
 		var awsint int64
 		awsint, err = castInt64(v)
@@ -276,6 +285,21 @@ func castInt64(v interface{}) (int64, error) {
 		return vv, nil
 	default:
 		return int64(0), fmt.Errorf("cannot cast %T to int64", v)
+	}
+}
+
+func castStringSlice(v interface{}) []string {
+	switch vv := v.(type) {
+	case string:
+		return []string{vv}
+	case *string:
+		return []string{aws.StringValue(vv)}
+	case []*string:
+		return aws.StringValueSlice(vv)
+	case []string:
+		return vv
+	default:
+		return []string{fmt.Sprint(v)}
 	}
 }
 

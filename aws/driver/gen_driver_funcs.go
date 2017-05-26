@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -4807,7 +4808,7 @@ func (d *LambdaDriver) Create_Function(params map[string]interface{}) (interface
 		}
 	}
 	if _, ok := params["zipfile"]; ok {
-		err = setFieldWithType(params["zipfile"], input, "Code.ZipFile", awsfiletostring)
+		err = setFieldWithType(params["zipfile"], input, "Code.ZipFile", awsfiletobyteslice)
 		if err != nil {
 			return nil, err
 		}
@@ -5123,5 +5124,145 @@ func (d *CloudwatchDriver) Stop_Alarm(params map[string]interface{}) (interface{
 	}
 	d.logger.ExtraVerbosef("cloudwatch.DisableAlarmActions call took %s", time.Since(start))
 	d.logger.Info("stop alarm done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *CloudformationDriver) Create_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create stack: missing required params 'name'")
+	}
+
+	if _, ok := params["template-file"]; !ok {
+		return nil, errors.New("create stack: missing required params 'template-file'")
+	}
+
+	d.logger.Verbose("params dry run: create stack ok")
+	return fakeDryRunId("stack"), nil
+}
+
+// This function was auto generated
+func (d *CloudformationDriver) Create_Stack(params map[string]interface{}) (interface{}, error) {
+	input := &cloudformation.CreateStackInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "StackName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["template-file"], input, "TemplateBody", awsfiletostring)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["capabilities"]; ok {
+		err = setFieldWithType(params["capabilities"], input, "Capabilities", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["disable-rollback"]; ok {
+		err = setFieldWithType(params["disable-rollback"], input, "DisableRollback", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["notifications"]; ok {
+		err = setFieldWithType(params["notifications"], input, "NotificationARNs", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["on-failure"]; ok {
+		err = setFieldWithType(params["on-failure"], input, "OnFailure", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["parameters"]; ok {
+		err = setFieldWithType(params["parameters"], input, "Parameters", awsparameterslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["resource-types"]; ok {
+		err = setFieldWithType(params["resource-types"], input, "ResourceTypes", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "RoleARN", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["policy-file"]; ok {
+		err = setFieldWithType(params["policy-file"], input, "StackPolicyBody", awsfiletostring)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["timeout"]; ok {
+		err = setFieldWithType(params["timeout"], input, "TimeoutInMinutes", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *cloudformation.CreateStackOutput
+	output, err = d.CreateStack(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create stack: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudformation.CreateStack call took %s", time.Since(start))
+	id := aws.StringValue(output.StackId)
+
+	d.logger.Infof("create stack '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *CloudformationDriver) Delete_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete stack: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete stack ok")
+	return fakeDryRunId("stack"), nil
+}
+
+// This function was auto generated
+func (d *CloudformationDriver) Delete_Stack(params map[string]interface{}) (interface{}, error) {
+	input := &cloudformation.DeleteStackInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "StackName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["retain-resources"]; ok {
+		err = setFieldWithType(params["retain-resources"], input, "RetainResources", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *cloudformation.DeleteStackOutput
+	output, err = d.DeleteStack(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete stack: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudformation.DeleteStack call took %s", time.Since(start))
+	d.logger.Info("delete stack done")
 	return output, nil
 }

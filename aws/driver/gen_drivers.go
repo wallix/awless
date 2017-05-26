@@ -1003,6 +1003,18 @@ func NewCloudformationDriver(api cloudformationiface.CloudFormationAPI) driver.D
 func (d *CloudformationDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createstack":
+		if d.dryRun {
+			return d.Create_Stack_DryRun, nil
+		}
+		return d.Create_Stack, nil
+
+	case "deletestack":
+		if d.dryRun {
+			return d.Delete_Stack_DryRun, nil
+		}
+		return d.Delete_Stack, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

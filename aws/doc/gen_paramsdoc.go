@@ -172,6 +172,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"description": "A description for the snapshot",
 		"volume":      "The ID of the EBS volume",
 	},
+	"createstack": {},
 	"createsubnet": {
 		"availabilityzone": "The Availability Zone for the subnet",
 		"cidr":             "The IPv4 network range for the subnet, in CIDR notation",
@@ -287,6 +288,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletesnapshot": {
 		"id": "The ID of the EBS snapshot",
 	},
+	"deletestack": {},
 	"deletesubnet": {
 		"id": "The ID of the subnet",
 	},

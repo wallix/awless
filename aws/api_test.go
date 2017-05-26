@@ -950,7 +950,9 @@ func TestBuildCloudFormationGraph(t *testing.T) {
 		"id_3": resourcetest.Stack("id_3").Build(),
 	}
 
-	expectedChildren := map[string][]string{}
+	expectedChildren := map[string][]string{
+		"eu-west-1": {"id_1", "id_2", "id_3"},
+	}
 	expectedAppliedOn := map[string][]string{}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)

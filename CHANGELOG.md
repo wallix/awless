@@ -10,6 +10,7 @@
 - List CloudFront distributions: `awless list distributions`
 - Create/Update/Check/Delete a CloudFront distribution: `awless create/update/check/delete distribution`
 - List CloudFormation stacks: `awless list stacks`
+- Create/Delete a CloudFormation stack: `awless create/delete stack`
 - `awless log --raw-json` shows the full info stored on template execution (context, fillers used, region, ...). Typically this contextual info can be reused for replay and updates of templates
 
 ## v0.0.24 [2017-05-22]

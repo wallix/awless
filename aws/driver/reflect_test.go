@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -56,12 +57,23 @@ func TestSetFieldWithTypeAWSFile(t *testing.T) {
 
 	functionInput := &lambda.CreateFunctionInput{}
 
-	err = setFieldWithType(f.Name(), functionInput, "Code.ZipFile", awsfiletostring)
+	err = setFieldWithType(f.Name(), functionInput, "Code.ZipFile", awsfiletobyteslice)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if got, want := string(functionInput.Code.ZipFile), string(text); got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	stackInput := &cloudformation.CreateStackInput{}
+
+	err = setFieldWithType(f.Name(), stackInput, "TemplateBody", awsfiletostring)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := aws.StringValue(stackInput.TemplateBody), string(text); got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }
@@ -119,6 +131,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		SliceStructPointerAttribute []*struct{ Str1, Str2 *string }
 		MapAttribute                map[string]*string
 		EmptyMapAttribute           map[string]*string
+		ParameterList               []*cloudformation.Parameter
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -396,6 +409,26 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	if got, want := *any.DimensionSliceField[1].Value, "value1:with:"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	err = setFieldWithType([]string{"key:value", "key1:value1:with:"}, &any, "ParameterList", awsparameterslice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.ParameterList), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.ParameterList[0].ParameterKey, "key"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.ParameterList[0].ParameterValue, "value"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.ParameterList[1].ParameterKey, "key1"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.ParameterList[1].ParameterValue, "value1:with:"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }

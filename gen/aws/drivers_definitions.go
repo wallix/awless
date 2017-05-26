@@ -1098,7 +1098,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "Code.S3Bucket", TemplateName: "bucket", AwsType: "awsstr"},
 					{AwsField: "Code.S3Key", TemplateName: "object", AwsType: "awsstr"},
 					{AwsField: "Code.S3ObjectVersion", TemplateName: "objectversion", AwsType: "awsstr"},
-					{AwsField: "Code.ZipFile", TemplateName: "zipfile", AwsType: "awsfiletostring"},
+					{AwsField: "Code.ZipFile", TemplateName: "zipfile", AwsType: "awsfiletobyteslice"},
 					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
 					{AwsField: "MemorySize", TemplateName: "memory", AwsType: "awsint64"},
 					{AwsField: "Publish", TemplateName: "publish", AwsType: "awsbool"},
@@ -1225,6 +1225,34 @@ var DriversDefs = []driversDef{
 	{
 		Api:          "cloudformation",
 		ApiInterface: "CloudFormationAPI",
-		Drivers:      []driver{},
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.Stack, DryRunUnsupported: true, ApiMethod: "CreateStack", Input: "CreateStackInput", Output: "CreateStackOutput", OutputExtractor: "aws.StringValue(output.StackId)",
+				RequiredParams: []param{
+					{AwsField: "StackName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "TemplateBody", TemplateName: "template-file", AwsType: "awsfiletostring"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Capabilities", TemplateName: "capabilities", AwsType: "awsstringslice"}, //CAPABILITY_IAM and CAPABILITY_NAMED_IAM
+					{AwsField: "DisableRollback", TemplateName: "disable-rollback", AwsType: "awsbool"},
+					{AwsField: "NotificationARNs", TemplateName: "notifications", AwsType: "awsstringslice"},
+					{AwsField: "OnFailure", TemplateName: "on-failure", AwsType: "awsstr"},                 //DO_NOTHING, ROLLBACK, or DELETE
+					{AwsField: "Parameters", TemplateName: "parameters", AwsType: "awsparameterslice"},     //Format, key1:val1,key2:val2,...
+					{AwsField: "ResourceTypes", TemplateName: "resource-types", AwsType: "awsstringslice"}, //AWS::EC2::Instance, AWS::EC2::*, or Custom::MyCustomInstance or Custom::*
+					{AwsField: "RoleARN", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "StackPolicyBody", TemplateName: "policy-file", AwsType: "awsfiletostring"},
+					{AwsField: "TimeoutInMinutes", TemplateName: "timeout", AwsType: "awsint64"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Stack, DryRunUnsupported: true, ApiMethod: "DeleteStack", Input: "DeleteStackInput", Output: "DeleteStackOutput",
+				RequiredParams: []param{
+					{AwsField: "StackName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "RetainResources", TemplateName: "retain-resources", AwsType: "awsstringslice"},
+				},
+			},
+		},
 	},
 }

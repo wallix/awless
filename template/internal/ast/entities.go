@@ -33,6 +33,7 @@ var entities = map[Entity]struct{}{
 	"scalingpolicy":       {},
 	"securitygroup":       {},
 	"snapshot":            {},
+	"stack":               {},
 	"subnet":              {},
 	"subscription":        {},
 	"tag":                 {},
