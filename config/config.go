@@ -53,6 +53,7 @@ var configDefinitions = map[string]*Definition{
 	"aws.queue.sync":               {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.dns.sync":                 {help: "Sync AWS Route53 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.cdn.sync":                 {help: "Sync AWS CloudFront service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.cloudformation.sync":      {help: "Sync AWS CloudFormation service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	checkUpgradeFrequencyConfigKey: {help: "Upgrade check frequency (hours); a negative value disables check", defaultValue: "8", parseParamFn: parseInt},
 	schedulerURL:                   {help: "URL used by awless CLI to interact with pre-installed awless-scheduler", defaultValue: "http://localhost:8082"},
 }
