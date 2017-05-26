@@ -1009,6 +1009,12 @@ func (d *CloudformationDriver) Lookup(lookups ...string) (driverFn driver.Driver
 		}
 		return d.Create_Stack, nil
 
+	case "updatestack":
+		if d.dryRun {
+			return d.Update_Stack_DryRun, nil
+		}
+		return d.Update_Stack, nil
+
 	case "deletestack":
 		if d.dryRun {
 			return d.Delete_Stack_DryRun, nil

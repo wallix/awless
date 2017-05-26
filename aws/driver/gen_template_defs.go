@@ -138,6 +138,7 @@ var APIPerTemplateDefName = map[string]string{
 	"updatedistribution":        "cloudfront",
 	"deletedistribution":        "cloudfront",
 	"createstack":               "cloudformation",
+	"updatestack":               "cloudformation",
 	"deletestack":               "cloudformation",
 }
 
@@ -954,6 +955,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name", "template-file"},
 		ExtraParams:    []string{"capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "timeout"},
 	},
+	"updatestack": {
+		Action:         "update",
+		Entity:         "stack",
+		Api:            "cloudformation",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{"capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "template-file", "use-previous-template"},
+	},
 	"deletestack": {
 		Action:         "delete",
 		Entity:         "stack",
@@ -1081,6 +1089,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["update"] = append(supported["update"], "distribution")
 	supported["delete"] = append(supported["delete"], "distribution")
 	supported["create"] = append(supported["create"], "stack")
+	supported["update"] = append(supported["update"], "stack")
 	supported["delete"] = append(supported["delete"], "stack")
 	return supported
 }

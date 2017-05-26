@@ -1245,6 +1245,23 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "update", Entity: cloud.Stack, DryRunUnsupported: true, ApiMethod: "UpdateStack", Input: "UpdateStackInput", Output: "UpdateStackOutput", OutputExtractor: "aws.StringValue(output.StackId)",
+				RequiredParams: []param{
+					{AwsField: "StackName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Capabilities", TemplateName: "capabilities", AwsType: "awsstringslice"}, //CAPABILITY_IAM and CAPABILITY_NAMED_IAM
+					{AwsField: "NotificationARNs", TemplateName: "notifications", AwsType: "awsstringslice"},
+					{AwsField: "Parameters", TemplateName: "parameters", AwsType: "awsparameterslice"},     //Format, key1:val1,key2:val2,...
+					{AwsField: "ResourceTypes", TemplateName: "resource-types", AwsType: "awsstringslice"}, //AWS::EC2::Instance, AWS::EC2::*, or Custom::MyCustomInstance or Custom::*
+					{AwsField: "RoleARN", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "StackPolicyBody", TemplateName: "policy-file", AwsType: "awsfiletostring"},
+					{AwsField: "StackPolicyDuringUpdateBody", TemplateName: "policy-update-file", AwsType: "awsfiletostring"},
+					{AwsField: "TemplateBody", TemplateName: "template-file", AwsType: "awsfiletostring"},
+					{AwsField: "UsePreviousTemplate", TemplateName: "use-previous-template", AwsType: "awsbool"},
+				},
+			},
+			{
 				Action: "delete", Entity: cloud.Stack, DryRunUnsupported: true, ApiMethod: "DeleteStack", Input: "DeleteStackInput", Output: "DeleteStackOutput",
 				RequiredParams: []param{
 					{AwsField: "StackName", TemplateName: "name", AwsType: "awsstr"},

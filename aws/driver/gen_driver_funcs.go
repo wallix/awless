@@ -5227,6 +5227,97 @@ func (d *CloudformationDriver) Create_Stack(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
+func (d *CloudformationDriver) Update_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("update stack: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: update stack ok")
+	return fakeDryRunId("stack"), nil
+}
+
+// This function was auto generated
+func (d *CloudformationDriver) Update_Stack(params map[string]interface{}) (interface{}, error) {
+	input := &cloudformation.UpdateStackInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "StackName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["capabilities"]; ok {
+		err = setFieldWithType(params["capabilities"], input, "Capabilities", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["notifications"]; ok {
+		err = setFieldWithType(params["notifications"], input, "NotificationARNs", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["parameters"]; ok {
+		err = setFieldWithType(params["parameters"], input, "Parameters", awsparameterslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["resource-types"]; ok {
+		err = setFieldWithType(params["resource-types"], input, "ResourceTypes", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "RoleARN", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["policy-file"]; ok {
+		err = setFieldWithType(params["policy-file"], input, "StackPolicyBody", awsfiletostring)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["policy-update-file"]; ok {
+		err = setFieldWithType(params["policy-update-file"], input, "StackPolicyDuringUpdateBody", awsfiletostring)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["template-file"]; ok {
+		err = setFieldWithType(params["template-file"], input, "TemplateBody", awsfiletostring)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["use-previous-template"]; ok {
+		err = setFieldWithType(params["use-previous-template"], input, "UsePreviousTemplate", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *cloudformation.UpdateStackOutput
+	output, err = d.UpdateStack(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("update stack: %s", err)
+	}
+	d.logger.ExtraVerbosef("cloudformation.UpdateStack call took %s", time.Since(start))
+	id := aws.StringValue(output.StackId)
+
+	d.logger.Infof("update stack '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
 func (d *CloudformationDriver) Delete_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete stack: missing required params 'name'")
