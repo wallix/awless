@@ -47,13 +47,13 @@ func generateParamsDocLookup() {
 
 			params := doc[key]
 			for _, p := range driv.RequiredParams {
-				if s, ok := paramsDoc[fmt.Sprintf("%s$%s", driv.Input, p.AwsField)]; ok {
+				if s, ok := searchParamInDoc(paramsDoc, driv.Input, p.AwsField); ok {
 					params[p.TemplateName] = fmt.Sprint(s)
 				}
 			}
 
 			for _, p := range driv.ExtraParams {
-				if s, ok := paramsDoc[fmt.Sprintf("%s$%s", driv.Input, p.AwsField)]; ok {
+				if s, ok := searchParamInDoc(paramsDoc, driv.Input, p.AwsField); ok {
 					params[p.TemplateName] = fmt.Sprint(s)
 				}
 			}
@@ -69,16 +69,46 @@ func generateParamsDocLookup() {
 	}
 }
 
+func searchParamInDoc(paramsDoc map[string]string, input, field string) (string, bool) {
+	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", input, field)]; ok {
+		return s, ok
+	}
+	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", inputToRequestKey(input), field)]; ok {
+		return s, ok
+	}
+	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", inputToTypeKey(input), field)]; ok {
+		return s, ok
+	}
+	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", dbInstanceKey(input), field)]; ok {
+		return s, ok
+	}
+	return "", false
+}
+
 var simpleTagRegex = regexp.MustCompile(`</?\w+>`)
+var bracketTextRegex = regexp.MustCompile(`\[[\w-]+\]`)
 
 func trimVal(v interface{}) (out string) {
 	out = strings.SplitN(fmt.Sprint(v), ".", 2)[0]
 	out = simpleTagRegex.ReplaceAllString(out, "")
+	out = bracketTextRegex.ReplaceAllString(out, "")
+	out = strings.TrimSpace(out)
 	return
 }
 
-func cleanKey(s string) string {
-	return strings.Replace(s, "Request$", "Input$", 1)
+func inputToRequestKey(s string) string {
+	return strings.Replace(s, "Input", "Request", 1)
+}
+
+func inputToTypeKey(s string) string {
+	return strings.Replace(s, "Input", "Type", 1)
+}
+
+func dbInstanceKey(s string) string {
+	if strings.Contains(s, "DBInstanceInput") {
+		return "DBInstance"
+	}
+	return s
 }
 
 type entries struct {
@@ -99,6 +129,7 @@ func loadAllRefs() map[string]string {
 		filepath.Join("monitoring", "2010-08-01", "docs-2.json"),
 		filepath.Join("elasticloadbalancingv2", "2015-12-01", "docs-2.json"),
 		filepath.Join("sts", "2011-06-15", "docs-2.json"),
+		filepath.Join("cloudformation", "2010-05-15", "docs-2.json"),
 	}
 
 	entriesC := make(chan *entries)
@@ -135,7 +166,7 @@ func loadAllRefs() map[string]string {
 			if all, ok := val.(map[string]interface{}); ok {
 				if allRefs, ok := all["refs"].(map[string]interface{}); ok {
 					for k, v := range allRefs {
-						refs[cleanKey(k)] = trimVal(v)
+						refs[k] = trimVal(v)
 					}
 				}
 			}

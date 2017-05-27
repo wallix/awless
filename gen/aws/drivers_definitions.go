@@ -500,7 +500,7 @@ var DriversDefs = []driversDef{
 				Action: "create", Entity: cloud.Listener, Input: "CreateListenerInput", Output: "CreateListenerOutput", ApiMethod: "CreateListener", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Listeners[0].ListenerArn)",
 				RequiredParams: []param{
 					{AwsField: "DefaultActions[0]Type", TemplateName: "actiontype", AwsType: "awsslicestruct"}, //always forward
-					{AwsField: "DefaultActions[0]TargetGroupArn", TemplateName: "target", AwsType: "awsslicestruct"},
+					{AwsField: "DefaultActions[0]TargetGroupArn", TemplateName: "targetgroup", AwsType: "awsslicestruct"},
 					{AwsField: "LoadBalancerArn", TemplateName: "loadbalancer", AwsType: "awsstr"},
 					{AwsField: "Port", TemplateName: "port", AwsType: "awsint64"},
 					{AwsField: "Protocol", TemplateName: "protocol", AwsType: "awsstr"}, // TCP, HTTP, HTTPS
@@ -1017,12 +1017,12 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "Attributes[DelaySeconds]", TemplateName: "delay", AwsType: "awsstringpointermap"},
-					{AwsField: "Attributes[MaximumMessageSize]", TemplateName: "maxMsgSize", AwsType: "awsstringpointermap"},
-					{AwsField: "Attributes[MessageRetentionPeriod]", TemplateName: "retentionPeriod", AwsType: "awsstringpointermap"},
+					{AwsField: "Attributes[MaximumMessageSize]", TemplateName: "max-msg-size", AwsType: "awsstringpointermap"},
+					{AwsField: "Attributes[MessageRetentionPeriod]", TemplateName: "retention-period", AwsType: "awsstringpointermap"},
 					{AwsField: "Attributes[Policy]", TemplateName: "policy", AwsType: "awsstringpointermap"},
-					{AwsField: "Attributes[ReceiveMessageWaitTimeSeconds]", TemplateName: "msgWait", AwsType: "awsstringpointermap"},
-					{AwsField: "Attributes[RedrivePolicy]", TemplateName: "redrivePolicy", AwsType: "awsstringpointermap"},
-					{AwsField: "Attributes[VisibilityTimeout]", TemplateName: "visibilityTimeout", AwsType: "awsstringpointermap"},
+					{AwsField: "Attributes[ReceiveMessageWaitTimeSeconds]", TemplateName: "msg-wait", AwsType: "awsstringpointermap"},
+					{AwsField: "Attributes[RedrivePolicy]", TemplateName: "redrive-policy", AwsType: "awsstringpointermap"},
+					{AwsField: "Attributes[VisibilityTimeout]", TemplateName: "visibility-timeout", AwsType: "awsstringpointermap"},
 				},
 			},
 			{
@@ -1191,9 +1191,9 @@ var DriversDefs = []driversDef{
 					{TemplateName: "default-file"},
 					{TemplateName: "domain-aliases"},
 					{TemplateName: "enable"},
-					{TemplateName: "forward-cookies"}, //default: all
-					{TemplateName: "forward-queries"}, //default: true
-					{TemplateName: "https-behaviour"}, // allow-all (http or https) or redirect-to-https or https-only
+					{TemplateName: "forward-cookies"},
+					{TemplateName: "forward-queries"},
+					{TemplateName: "https-behaviour"},
 					{TemplateName: "origin-path"},
 					{TemplateName: "price-class"},
 					{TemplateName: "min-ttl"},

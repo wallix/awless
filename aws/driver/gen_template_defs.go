@@ -483,7 +483,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "create",
 		Entity:         "listener",
 		Api:            "elbv2",
-		RequiredParams: []string{"actiontype", "loadbalancer", "port", "protocol", "target"},
+		RequiredParams: []string{"actiontype", "loadbalancer", "port", "protocol", "targetgroup"},
 		ExtraParams:    []string{"certificate", "sslpolicy"},
 	},
 	"deletelistener": {
@@ -827,7 +827,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "queue",
 		Api:            "sqs",
 		RequiredParams: []string{"name"},
-		ExtraParams:    []string{"delay", "maxMsgSize", "msgWait", "policy", "redrivePolicy", "retentionPeriod", "visibilityTimeout"},
+		ExtraParams:    []string{"delay", "max-msg-size", "msg-wait", "policy", "redrive-policy", "retention-period", "visibility-timeout"},
 	},
 	"deletequeue": {
 		Action:         "delete",

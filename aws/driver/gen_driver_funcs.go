@@ -2477,8 +2477,8 @@ func (d *Elbv2Driver) Create_Listener_DryRun(params map[string]interface{}) (int
 		return nil, errors.New("create listener: missing required params 'actiontype'")
 	}
 
-	if _, ok := params["target"]; !ok {
-		return nil, errors.New("create listener: missing required params 'target'")
+	if _, ok := params["targetgroup"]; !ok {
+		return nil, errors.New("create listener: missing required params 'targetgroup'")
 	}
 
 	if _, ok := params["loadbalancer"]; !ok {
@@ -2507,7 +2507,7 @@ func (d *Elbv2Driver) Create_Listener(params map[string]interface{}) (interface{
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["target"], input, "DefaultActions[0]TargetGroupArn", awsslicestruct)
+	err = setFieldWithType(params["targetgroup"], input, "DefaultActions[0]TargetGroupArn", awsslicestruct)
 	if err != nil {
 		return nil, err
 	}
@@ -4551,14 +4551,14 @@ func (d *SqsDriver) Create_Queue(params map[string]interface{}) (interface{}, er
 			return nil, err
 		}
 	}
-	if _, ok := params["maxMsgSize"]; ok {
-		err = setFieldWithType(params["maxMsgSize"], input, "Attributes[MaximumMessageSize]", awsstringpointermap)
+	if _, ok := params["max-msg-size"]; ok {
+		err = setFieldWithType(params["max-msg-size"], input, "Attributes[MaximumMessageSize]", awsstringpointermap)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if _, ok := params["retentionPeriod"]; ok {
-		err = setFieldWithType(params["retentionPeriod"], input, "Attributes[MessageRetentionPeriod]", awsstringpointermap)
+	if _, ok := params["retention-period"]; ok {
+		err = setFieldWithType(params["retention-period"], input, "Attributes[MessageRetentionPeriod]", awsstringpointermap)
 		if err != nil {
 			return nil, err
 		}
@@ -4569,20 +4569,20 @@ func (d *SqsDriver) Create_Queue(params map[string]interface{}) (interface{}, er
 			return nil, err
 		}
 	}
-	if _, ok := params["msgWait"]; ok {
-		err = setFieldWithType(params["msgWait"], input, "Attributes[ReceiveMessageWaitTimeSeconds]", awsstringpointermap)
+	if _, ok := params["msg-wait"]; ok {
+		err = setFieldWithType(params["msg-wait"], input, "Attributes[ReceiveMessageWaitTimeSeconds]", awsstringpointermap)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if _, ok := params["redrivePolicy"]; ok {
-		err = setFieldWithType(params["redrivePolicy"], input, "Attributes[RedrivePolicy]", awsstringpointermap)
+	if _, ok := params["redrive-policy"]; ok {
+		err = setFieldWithType(params["redrive-policy"], input, "Attributes[RedrivePolicy]", awsstringpointermap)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if _, ok := params["visibilityTimeout"]; ok {
-		err = setFieldWithType(params["visibilityTimeout"], input, "Attributes[VisibilityTimeout]", awsstringpointermap)
+	if _, ok := params["visibility-timeout"]; ok {
+		err = setFieldWithType(params["visibility-timeout"], input, "Attributes[VisibilityTimeout]", awsstringpointermap)
 		if err != nil {
 			return nil, err
 		}
