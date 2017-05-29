@@ -90,6 +90,12 @@ func (te *Template) Revert() (*Template, error) {
 				lines = append(lines, fmt.Sprintf("update scalinggroup name=%s max-size=0 min-size=0", cmd.CmdResult))
 				lines = append(lines, fmt.Sprintf("check scalinggroup count=0 name=%s timeout=180", cmd.CmdResult))
 			}
+			if cmd.Action == "start" && cmd.Entity == "instance" {
+				lines = append(lines, fmt.Sprintf("check instance id=%s state=running timeout=180", cmd.Params["id"]))
+			}
+			if cmd.Action == "stop" && cmd.Entity == "instance" {
+				lines = append(lines, fmt.Sprintf("check instance id=%s state=stopped timeout=180", cmd.Params["id"]))
+			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
 

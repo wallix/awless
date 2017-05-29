@@ -68,7 +68,7 @@ func TestRevertTemplate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		exp := "delete tag key=Key resource=myinst value=Value\nstop instance id=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
+		exp := "delete tag key=Key resource=myinst value=Value\ncheck instance id=i-54g3hj state=running timeout=180\nstop instance id=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

@@ -1469,8 +1469,13 @@ func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermi
 	case string:
 		switch {
 		case strings.Contains(ports, "any"):
-			ipPerm.FromPort = aws.Int64(int64(-1))
-			ipPerm.ToPort = aws.Int64(int64(-1))
+			if strings.ToLower(p) == "tcp" || strings.ToLower(p) == "udp" {
+				ipPerm.FromPort = aws.Int64(int64(0))
+				ipPerm.ToPort = aws.Int64(int64(65535))
+			} else {
+				ipPerm.FromPort = aws.Int64(int64(-1))
+				ipPerm.ToPort = aws.Int64(int64(-1))
+			}
 		case strings.Contains(ports, "-"):
 			from, err := strconv.ParseInt(strings.SplitN(ports, "-", 2)[0], 10, 64)
 			if err != nil {
