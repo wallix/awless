@@ -300,11 +300,11 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 
 	princ := new(principal)
 	if pAccount != nil {
-		princ.AWS = pAccount
+		princ.AWS = fmt.Sprint(pAccount)
 	} else if pUser != nil {
-		princ.AWS = pUser
+		princ.AWS = fmt.Sprint(pUser)
 	} else if pService != nil {
-		princ.Service = pService
+		princ.Service = fmt.Sprint(pService)
 	}
 
 	trust := &policyBody{

@@ -161,9 +161,9 @@ var manualParamsDoc = map[string]map[string]string{
 	},
 	"createrole": {
 		"name":              "The name of the role to create",
-		"principal-account": "The account entity that can perform actions and access resources",
-		"principal-user":    "The user entity that can perform actions and access resources",
-		"principal-service": "The service entity that can perform actions and access resources",
+		"principal-account": "The ID of the account that can perform actions and access resources of the role (you can know your account ID with `awless whoami`)",
+		"principal-user":    "The Amazon Resource Name (ARN) of the user that can perform actions and access resources of the role",
+		"principal-service": "The AWS Service that can assume this role to perform actions and access resources of the role (e.g. 'ec2.amazonaws.com')",
 		"sleep-after":       "The amount of time in seconds you want to wait after creating the role (usually used to be sure that the role creation has been propagated)",
 	},
 	"creates3object": {
@@ -299,6 +299,9 @@ var manualParamsDoc = map[string]map[string]string{
 	"updatedistribution": {
 		"id":     "The ID of the distribution to update",
 		"enable": "Enable/Disable the distribution (True | False)",
+	},
+	"updateinstance": {
+		"type": "Changes the instance type to the specified value",
 	},
 	"updates3object": {
 		"acl":     "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",

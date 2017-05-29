@@ -140,7 +140,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "PrivateIpAddress", TemplateName: "ip", AwsType: "awsstr"},
 					{AwsField: "UserData", TemplateName: "userdata", AwsType: "awsfiletobase64"},
 					{AwsField: "SecurityGroupIds", TemplateName: "securitygroup", AwsType: "awsstringslice"},
-					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
+					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsbool"},
 					{AwsField: "IamInstanceProfile.Name", TemplateName: "role", AwsType: "awsstr"},
 				},
 			},
@@ -150,7 +150,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "InstanceId", TemplateName: "id", AwsType: "awsstr"},
 				},
 				ExtraParams: []param{
-					{AwsField: "InstanceType", TemplateName: "type", AwsType: "awsstr"},
+					{AwsField: "InstanceType.Value", TemplateName: "type", AwsType: "awsstr"},
 					{AwsField: "DisableApiTermination", TemplateName: "lock", AwsType: "awsboolattribute"},
 				},
 			},

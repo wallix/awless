@@ -442,7 +442,6 @@ var generatedParamsDoc = map[string]map[string]string{
 	"updateinstance": {
 		"id":   "The ID of the instance",
 		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",
-		"type": "Changes the instance type to the specified value",
 	},
 	"updateloginprofile": {
 		"password":       "The new password for the specified IAM user",

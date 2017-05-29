@@ -391,7 +391,7 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 		}
 	}
 	if _, ok := params["lock"]; ok {
-		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsbool)
 		if err != nil {
 			return nil, err
 		}
@@ -474,7 +474,7 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 		}
 	}
 	if _, ok := params["lock"]; ok {
-		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsbool)
 		if err != nil {
 			return nil, err
 		}
@@ -519,7 +519,7 @@ func (d *Ec2Driver) Update_Instance_DryRun(params map[string]interface{}) (inter
 
 	// Extra params
 	if _, ok := params["type"]; ok {
-		err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+		err = setFieldWithType(params["type"], input, "InstanceType.Value", awsstr)
 		if err != nil {
 			return nil, err
 		}
@@ -557,7 +557,7 @@ func (d *Ec2Driver) Update_Instance(params map[string]interface{}) (interface{},
 
 	// Extra params
 	if _, ok := params["type"]; ok {
-		err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+		err = setFieldWithType(params["type"], input, "InstanceType.Value", awsstr)
 		if err != nil {
 			return nil, err
 		}
