@@ -283,10 +283,13 @@ var manualParamsDoc = map[string]map[string]string{
 		"instance": "The ID of the instance to be detached",
 	},
 	"importimage": {
-		"url":      "The URL to the Amazon S3-based disk image being imported. The URL can either be a https URL (https://..) or an Amazon S3 URL (s3://..)",
-		"snapshot": "The ID of the EBS snapshot to be used for importing the snapshot",
-		"bucket":   "The name of the S3 bucket where the disk image is located",
-		"s3object": "The name of the S3 object where the disk image is located",
+		"architecture": "The architecture of the virtual machine (i386 | x86_64)",
+		"url":          "The URL to the Amazon S3-based disk image being imported. The URL can either be a https URL (https://..) or an Amazon S3 URL (s3://..)",
+		"snapshot":     "The ID of the EBS snapshot to be used for importing the snapshot",
+		"bucket":       "The name of the S3 bucket where the disk image is located",
+		"s3object":     "The name of the S3 object where the disk image is located",
+		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing (AWS | BYOL)",
+		"platform":     "The operating system of the virtual machine (Windows | Linux)",
 	},
 	"updatebucket": {
 		"name":              "The name of the bucket to update",

@@ -144,6 +144,19 @@ delete securitygroup id=sg-54321`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert detach a volume removes the force param", func(t *testing.T) {
+		tpl := MustParse("detach volume device=/dev/sdh force=true id=vol-12345 instance=i-12345")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `attach volume device=/dev/sdh id=vol-12345 instance=i-12345`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {
