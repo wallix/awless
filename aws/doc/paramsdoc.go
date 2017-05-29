@@ -46,7 +46,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
 	"checkscalinggroup": {
-		"id":      "The ID of the AutoScaling Group to check",
+		"name":    "The name of the AutoScaling Group to check",
 		"count":   "The number of Instances + Loadbalancers + TargetGroups in the AutoScaling Group to reach",
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
