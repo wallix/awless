@@ -426,7 +426,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.Keypair, Input: "DeleteKeyPairInput", Output: "DeleteKeyPairOutput", ApiMethod: "DeleteKeyPair",
 				RequiredParams: []param{
-					{AwsField: "KeyName", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "KeyName", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 
@@ -707,8 +707,8 @@ var DriversDefs = []driversDef{
 					{AwsField: "DBInstanceIdentifier", TemplateName: "id", AwsType: "awsstr"},
 				},
 				ExtraParams: []param{
-					{AwsField: "SkipFinalSnapshot", TemplateName: "skipsnapshot", AwsType: "awsbool"},
-					{AwsField: "FinalDBSnapshotIdentifier", TemplateName: "snapshotid", AwsType: "awsbool"},
+					{AwsField: "SkipFinalSnapshot", TemplateName: "skip-snapshot", AwsType: "awsbool"},
+					{AwsField: "FinalDBSnapshotIdentifier", TemplateName: "snapshot", AwsType: "awsbool"},
 				},
 			},
 			{
@@ -722,7 +722,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "delete", Entity: cloud.DbSubnetGroup, ApiMethod: "DeleteDBSubnetGroup", Input: "DeleteDBSubnetGroupInput", Output: "DeleteDBSubnetGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{AwsField: "DBSubnetGroupName", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "DBSubnetGroupName", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 		},

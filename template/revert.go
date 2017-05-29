@@ -68,7 +68,7 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"]))
 				case "loginprofile":
 					params = append(params, fmt.Sprintf("username=%s", cmd.Params["username"]))
-				case "bucket", "launchconfiguration", "scalinggroup", "alarm":
+				case "bucket", "launchconfiguration", "scalinggroup", "alarm", "dbsubnetgroup", "keypair":
 					params = append(params, fmt.Sprintf("name=%s", cmd.CmdResult))
 				default:
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))

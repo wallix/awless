@@ -2070,7 +2070,7 @@ func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "KeyName", awsstr)
+	err = setFieldWithType(params["name"], input, "KeyName", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -2094,7 +2094,7 @@ func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "KeyName", awsstr)
+	err = setFieldWithType(params["name"], input, "KeyName", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -3523,14 +3523,14 @@ func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{},
 	}
 
 	// Extra params
-	if _, ok := params["skipsnapshot"]; ok {
-		err = setFieldWithType(params["skipsnapshot"], input, "SkipFinalSnapshot", awsbool)
+	if _, ok := params["skip-snapshot"]; ok {
+		err = setFieldWithType(params["skip-snapshot"], input, "SkipFinalSnapshot", awsbool)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if _, ok := params["snapshotid"]; ok {
-		err = setFieldWithType(params["snapshotid"], input, "FinalDBSnapshotIdentifier", awsbool)
+	if _, ok := params["snapshot"]; ok {
+		err = setFieldWithType(params["snapshot"], input, "FinalDBSnapshotIdentifier", awsbool)
 		if err != nil {
 			return nil, err
 		}
@@ -3601,8 +3601,8 @@ func (d *RdsDriver) Create_Dbsubnetgroup(params map[string]interface{}) (interfa
 
 // This function was auto generated
 func (d *RdsDriver) Delete_Dbsubnetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["id"]; !ok {
-		return nil, errors.New("delete dbsubnetgroup: missing required params 'id'")
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete dbsubnetgroup: missing required params 'name'")
 	}
 
 	d.logger.Verbose("params dry run: delete dbsubnetgroup ok")
@@ -3615,7 +3615,7 @@ func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interfa
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "DBSubnetGroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "DBSubnetGroupName", awsstr)
 	if err != nil {
 		return nil, err
 	}

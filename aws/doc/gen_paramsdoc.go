@@ -315,7 +315,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id": "The ID of the Internet gateway",
 	},
 	"deletekeypair": {
-		"id": "The name of the key pair",
+		"name": "The name of the key pair",
 	},
 	"deletelaunchconfiguration": {},
 	"deletelistener": {

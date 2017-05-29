@@ -208,208 +208,117 @@ var manualParamsDoc = map[string]map[string]string{
 		"vpcregion": "(Private hosted zones only) The region in which you created an Amazon VPC",
 	},
 	"deleteaccesskey": {
-		"id": "The access key ID for the access key ID and secret access key you want to delete",
+		"id": "The ID of the access key and secret access key you want to delete",
 	},
 	"deletealarm": {
-		"name": "The alarms to be deleted",
+		"name": "The name of the alarm(s) to be deleted",
 	},
 	"deletebucket": {
-		"name": "",
+		"name": "The name of the bucket to be deleted",
 	},
 	"deletedatabase": {
-		"id": "Contains a user-supplied database identifier",
+		"id":            "The ID of the database to be deleted",
+		"skip-snapshot": "Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DBSnapshot is created. If false is specified, a DB snapshot is created before the DB instance is deleted",
+		"snapshot":      "The ID of the new DBSnapshot created when skip-snapshot=false",
 	},
-	"deletedbsubnetgroup": {},
-	"deletedistribution":  {},
-	"deleteelasticip": {
-		"id": "The allocation ID",
-		"ip": "The Elastic IP address",
+	"deletedbsubnetgroup": {
+		"name": "The name of the database subnet group to be deleted",
+	},
+	"deletedistribution": {
+		"id": "The ID of the distribution to be deleted",
 	},
 	"deletefunction": {
-		"id":      "The Lambda function to delete",
-		"version": "Using this optional parameter you can specify a function version (but not the $LATEST version) to direct AWS Lambda to delete a specific function version",
+		"id": "The ID of the Lambda function to be deleted",
 	},
-	"deletegroup": {
-		"name": "The name of the IAM group to delete",
+	"deleteimage": {
+		"id":               "The ID of the AMI to be deleted",
+		"delete-snapshots": "Set to 'true' to also delete the snapshots created from this image",
 	},
-	"deleteimage": {},
 	"deleteinstance": {
-		"id": "One or more instance IDs",
-	},
-	"deleteinstanceprofile": {
-		"name": "The name of the instance profile to delete",
+		"id": "The ID(s) of the instance(s) to be deleted",
 	},
 	"deleteinternetgateway": {
-		"id": "The ID of the Internet gateway",
+		"id": "The ID of the Internet gateway to be deleted",
 	},
 	"deletekeypair": {
-		"id": "The name of the key pair",
+		"name": "The name of the key pair to be deleted",
 	},
-	"deletelaunchconfiguration": {},
-	"deletelistener": {
-		"id": "The Amazon Resource Name (ARN) of the listener",
+	"deletelaunchconfiguration": {
+		"name": "The name of the launch configuration to be deleted",
 	},
-	"deleteloadbalancer": {
-		"id": "The Amazon Resource Name (ARN) of the load balancer",
+	"deleterecord": {
+		"zone":  "The ID of the hosted zone that contains the resource record sets that you want to delete",
+		"name":  "The name of the domain you want to perform the action on. Enter a fully qualified domain name, for example, www.example.com. You can optionally include a trailing dot",
+		"type":  "The DNS record type. (A | AAAA | CNAME | MX | NAPTR | NS | PTR | SOA | SPF | SRV | TXT)",
+		"value": "The DNS record value to delete",
+		"ttl":   "The resource record cache time to live (TTL), in seconds",
 	},
-	"deleteloginprofile": {
-		"username": "The name of the user whose password you want to delete",
-	},
-	"deletepolicy": {
-		"arn": "The Amazon Resource Name (ARN) of the IAM policy you want to delete",
-	},
-	"deletequeue": {
-		"url": "The URL of the Amazon SQS queue to delete",
-	},
-	"deleterecord": {},
-	"deleterole":   {},
-	"deleteroute": {
-		"cidr":  "The IPv4 CIDR range for the route",
-		"table": "The ID of the route table",
-	},
-	"deleteroutetable": {
-		"id": "The ID of the route table",
+	"deleterole": {
+		"name": "The name of the role to be deleted",
 	},
 	"deletes3object": {
-		"bucket": "",
-		"name":   "",
+		"bucket": "The name of the bucket containing the object to be deleted",
+		"name":   "The name (i.e. key) of the object to be deleted",
 	},
-	"deletescalinggroup": {
-		"force": "Specifies that the group will be deleted along with all instances associated with the group, without waiting for all instances to be terminated",
-		"name":  "The name of the group to delete",
+	"deletetag": {
+		"resource": "The ID of the resource on which you want to remove a tag",
+		"key":      "The Tag key",
+		"value":    "The Tag value",
 	},
-	"deletescalingpolicy": {
-		"id": "The name or Amazon Resource Name (ARN) of the policy",
-	},
-	"deletesecuritygroup": {
-		"id": "The ID of the security group",
-	},
-	"deletesnapshot": {
-		"id": "The ID of the EBS snapshot",
-	},
-	"deletestack": {
-		"name":             "The name or the unique stack ID that is associated with the stack",
-		"retain-resources": "For stacks in the DELETE_FAILED state, a list of resource logical IDs that are associated with the resources you want to retain",
-	},
-	"deletesubnet": {
-		"id": "The ID of the subnet",
-	},
-	"deletesubscription": {
-		"id": "The ARN of the subscription to be deleted",
-	},
-	"deletetag": {},
-	"deletetargetgroup": {
-		"id": "The Amazon Resource Name (ARN) of the target group",
-	},
-	"deletetopic": {
-		"id": "The ARN of the topic you want to delete",
-	},
-	"deleteuser": {
-		"name": "The name of the user to delete",
-	},
-	"deletevolume": {
-		"id": "The ID of the volume",
-	},
-	"deletevpc": {
-		"id": "The ID of the VPC",
-	},
-	"deletezone": {
-		"id": "The ID of the hosted zone you want to delete",
-	},
-	"detachalarm": {},
-	"detachelasticip": {
-		"association": "The association ID",
+	"detachalarm": {
+		"name":       "The name of the alarm",
+		"action-arn": "The Amazon Resource Name (ARN) to be detached of the ALARM actions",
 	},
 	"detachinstance": {
-		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
+		"id": "The ID of the instance to be detached from target group",
 	},
-	"detachinternetgateway": {
-		"id":  "The ID of the Internet gateway",
-		"vpc": "The ID of the VPC",
+	"detachpolicy": {
+		"arn":   "The Amazon Resource Name (ARN) of the IAM policy you want to detach",
+		"user":  "The name (friendly name, not ARN) of the IAM user to detach the policy to",
+		"group": "The name (friendly name, not ARN) of the IAM group to detach the policy to",
+		"role":  "The name (friendly name, not ARN) of the IAM role to detach the policy to",
 	},
-	"detachpolicy": {},
-	"detachrole": {
-		"instanceprofile": "The name of the instance profile to update",
-		"name":            "The name of the role to remove",
-	},
-	"detachroutetable": {
-		"association": "The association ID representing the current association between the route table and subnet",
-	},
-	"detachsecuritygroup": {},
-	"detachuser": {
-		"group": "The name of the group to update",
-		"name":  "The name of the user to remove",
-	},
-	"detachvolume": {
-		"device":   "The device name",
-		"force":    "Forces detachment if the previous detachment attempt did not occur cleanly (for example, logging into an instance, unmounting the volume, and detaching normally)",
-		"id":       "The ID of the volume",
-		"instance": "The ID of the instance",
+	"detachsecuritygroup": {
+		"id":       "The ID of the security group",
+		"instance": "The ID of the instance to be detached",
 	},
 	"importimage": {
-		"architecture": "The architecture of the virtual machine",
-		"description":  "A description string for the import image task",
-		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing",
-		"platform":     "The operating system of the virtual machine",
-		"role":         "The name of the role to use when not using the default role, 'vmimport'",
+		"url":      "The URL to the Amazon S3-based disk image being imported. The URL can either be a https URL (https://..) or an Amazon S3 URL (s3://..)",
+		"snapshot": "The ID of the EBS snapshot to be used for importing the snapshot",
+		"bucket":   "The name of the S3 bucket where the disk image is located",
+		"s3object": "The name of the S3 object where the disk image is located",
 	},
-	"startalarm": {
-		"names": "The names of the alarms",
+	"updatebucket": {
+		"name":              "The name of the bucket to update",
+		"acl":               "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
+		"public-website":    "Set to 'true' if you want to publish the content of the bucket as a public HTTP website",
+		"redirect-hostname": "Hostname where HTTP requests will be redirected when publishing website",
+		"index-suffix":      "A suffix that is appended to a request that is for a directory on the website endpoint (e.g. if the suffix is index.html and you make a request to samplebucket/images/ the data that is returned will be for the object with the key name images/index.html)",
+		"enforce-https":     "Use HTTPS rather than HTTP when redirecting requests",
 	},
-	"startinstance": {
-		"id": "One or more instance IDs",
-	},
-	"stopalarm": {
-		"names": "The names of the alarms",
-	},
-	"stopinstance": {
-		"id": "One or more instance IDs",
-	},
-	"updatebucket":       {},
-	"updatedistribution": {},
-	"updateinstance": {
-		"id":   "The ID of the instance",
-		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",
-		"type": "Changes the instance type to the specified value",
-	},
-	"updateloginprofile": {
-		"password":       "The new password for the specified IAM user",
-		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
-		"username":       "The name of the user whose password you want to update",
+	"updatedistribution": {
+		"id":     "The ID of the distribution to update",
+		"enable": "Enable/Disable the distribution (True | False)",
 	},
 	"updates3object": {
-		"acl":     "The canned ACL to apply to the object",
-		"bucket":  "",
-		"name":    "",
-		"version": "VersionId used to reference a specific version of the object",
+		"acl":     "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
+		"bucket":  "The name of the bucket containing the object to be updated",
+		"name":    "The name of the object to be updated",
+		"version": "Used to reference a specific version of the object",
 	},
-	"updatescalinggroup": {
-		"cooldown":                 "The amount of time, in seconds, after a scaling activity completes before another scaling activity can start",
-		"desired-capacity":         "The number of EC2 instances that should be running in the Auto Scaling group",
-		"healthcheck-grace-period": "The amount of time, in seconds, that Auto Scaling waits before checking the health status of an EC2 instance that has come into service",
-		"healthcheck-type":         "The service to use for the health checks",
-		"launchconfiguration":      "The name of the launch configuration",
-		"max-size":                 "The maximum size of the Auto Scaling group",
-		"min-size":                 "The minimum size of the Auto Scaling group",
-		"name":                     "The name of the Auto Scaling group",
-		"new-instances-protected": "Indicates whether newly launched instances are protected from termination by Auto Scaling when scaling in",
-		"subnets":                 "The ID of the subnet, if you are launching into a VPC",
+	"updatesecuritygroup": {
+		"id":        "The ID of the security group to be updated",
+		"cidr":      "The CIDR IPv4 address range",
+		"protocol":  "The IP protocol name (tcp, udp, icmp) or number. Use -1 to specify all protocols",
+		"inbound":   "Set inbound to either authorize or revoke, to update the security group ingress rules (authorize | revoke)",
+		"outbound":  "Set outbound to either authorize or revoke, to update the security group egress rules (authorize | revoke)",
+		"portrange": "The portrange for the rule to update (any | 80 | 22-23 ...)",
 	},
-	"updatesecuritygroup": {},
 	"updatestack": {
-		"capabilities":          "A list of values that you must specify before AWS CloudFormation can update certain stacks",
-		"name":                  "The name or unique stack ID of the stack to update",
-		"notifications":         "Amazon Simple Notification Service topic Amazon Resource Names (ARNs) that AWS CloudFormation associates with the stack",
-		"parameters":            "A list of Parameter structures that specify input parameters for the stack",
-		"policy-file":           "Structure containing a new stack policy body",
-		"policy-update-file":    "Structure containing the temporary overriding stack policy body",
-		"resource-types":        "The template resource types that you have permissions to work with for this update stack action, such as AWS::EC2::Instance, AWS::EC2::*, or Custom::MyCustomInstance",
-		"role":                  "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that AWS CloudFormation assumes to update the stack",
-		"template-file":         "Structure containing the template body with a minimum length of 1 byte and a maximum length of 51,200 bytes",
-		"use-previous-template": "Reuse the existing template that is associated with the stack that you are updating",
-	},
-	"updatesubnet": {
-		"id":     "The ID of the subnet",
-		"public": "Specify true to indicate that network interfaces created in the specified subnet should be assigned a public IPv4 address",
+		"capabilities":       "A list of values that you must specify before AWS CloudFormation can update certain stacks (CAPABILITY_IAM | CAPABILITY_NAMED_IAM)",
+		"parameters":         "A list of Parameters that specify input parameters for the stack given using this format: key1:val1,key2:val2,...",
+		"policy-file":        "The path to the file containing the stack policy body",
+		"policy-update-file": "The path to the file containing the temporary overriding stack policy",
+		"template-file":      "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
 	},
 }

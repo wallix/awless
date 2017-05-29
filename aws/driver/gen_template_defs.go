@@ -427,7 +427,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "delete",
 		Entity:         "keypair",
 		Api:            "ec2",
-		RequiredParams: []string{"id"},
+		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
 	"createelasticip": {
@@ -589,7 +589,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "database",
 		Api:            "rds",
 		RequiredParams: []string{"id"},
-		ExtraParams:    []string{"skipsnapshot", "snapshotid"},
+		ExtraParams:    []string{"skip-snapshot", "snapshot"},
 	},
 	"createdbsubnetgroup": {
 		Action:         "create",
@@ -602,7 +602,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "delete",
 		Entity:         "dbsubnetgroup",
 		Api:            "rds",
-		RequiredParams: []string{"id"},
+		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
 	"createuser": {
