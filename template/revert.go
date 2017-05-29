@@ -121,6 +121,9 @@ func (te *Template) Revert() (*Template, error) {
 				if cmd.Action == "create" && cmd.Entity == "loadbalancer" {
 					lines = append(lines, fmt.Sprintf("check loadbalancer id=%s state=not-found timeout=180", cmd.CmdResult))
 				}
+				if cmd.Action == "attach" && cmd.Entity == "volume" {
+					lines = append(lines, fmt.Sprintf("check volume id=%s state=available timeout=180", cmd.Params["id"]))
+				}
 			}
 		}
 	}

@@ -157,6 +157,21 @@ delete securitygroup id=sg-54321`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert attach a volume waits that the volume is available", func(t *testing.T) {
+		tpl := MustParse("detach volume device=/dev/sdh id=vol-12345 instance=i-12345\nattach volume device=/dev/sdh id=vol-12345 instance=i-12345")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `detach volume device=/dev/sdh id=vol-12345 instance=i-12345
+check volume id=vol-12345 state=available timeout=180
+attach volume device=/dev/sdh id=vol-12345 instance=i-12345`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {

@@ -614,7 +614,7 @@ func (d *Ec2Driver) Check_Securitygroup_DryRun(params map[string]interface{}) (i
 	if _, ok := params["timeout"].(int); !ok {
 		return nil, errors.New("check securitygroup: timeout param is not int")
 	}
-	d.logger.Verbose("dry run: check instance ok")
+	d.logger.Verbose("dry run: check securitygroup ok")
 	return nil, nil
 }
 
@@ -642,6 +642,70 @@ func (d *Ec2Driver) Check_Securitygroup(params map[string]interface{}) (interfac
 				niIds = append(niIds, aws.StringValue(ni.NetworkInterfaceId))
 			}
 			return fmt.Sprintf("used by %s", strings.Join(niIds, ", ")), nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
+
+func (d *Ec2Driver) Check_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check volume: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"available":   {},
+		"in-use":      {},
+		notFoundState: {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check volume: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check volume: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check volume: missing required params 'timeout'")
+	}
+
+	if _, ok := params["timeout"].(int); !ok {
+		return nil, errors.New("check volume: timeout param is not int")
+	}
+	d.logger.Verbose("dry run: check instance ok")
+	return nil, nil
+}
+
+func (d *Ec2Driver) Check_Volume(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DescribeVolumesInput{
+		VolumeIds: []*string{aws.String(fmt.Sprint(params["id"]))},
+	}
+
+	c := &checker{
+		description: fmt.Sprintf("volume %s", params["id"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeVolumes(input)
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "VolumeNotFound" {
+						return notFoundState, nil
+					}
+				} else {
+					return "", err
+				}
+			} else {
+				for _, vol := range output.Volumes {
+					if aws.StringValue(vol.VolumeId) == fmt.Sprint(params["id"]) {
+						return aws.StringValue(vol.State), nil
+					}
+				}
+			}
+			return notFoundState, nil
 		},
 		expect: fmt.Sprint(params["state"]),
 		logger: d.logger,

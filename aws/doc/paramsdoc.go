@@ -55,6 +55,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"state":   "The state of the EC2 Security Group to reach (unused)",
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
+	"checkvolume": {
+		"id":      "The ID of the EC2 Volume to check",
+		"state":   "The state of the EC2 Volume to reach (available | in-use | not-found)",
+		"timeout": "The time (in seconds) after which the check is failed",
+	},
 	"createaccesskey": {
 		"user": "The name of the user for which the access key will be generated",
 	},

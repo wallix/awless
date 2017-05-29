@@ -57,6 +57,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"checkloadbalancer":  {},
 	"checkscalinggroup":  {},
 	"checksecuritygroup": {},
+	"checkvolume":        {},
 	"copyimage": {
 		"description":   "A description for the new AMI in the destination region",
 		"encrypted":     "Specifies whether the destination snapshots of the copied image should be encrypted",

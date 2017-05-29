@@ -43,6 +43,7 @@ var APIPerTemplateDefName = map[string]string{
 	"importimage":               "ec2",
 	"deleteimage":               "ec2",
 	"createvolume":              "ec2",
+	"checkvolume":               "ec2",
 	"deletevolume":              "ec2",
 	"attachvolume":              "ec2",
 	"detachvolume":              "ec2",
@@ -288,6 +289,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "volume",
 		Api:            "ec2",
 		RequiredParams: []string{"availabilityzone", "size"},
+		ExtraParams:    []string{},
+	},
+	"checkvolume": {
+		Action:         "check",
+		Entity:         "volume",
+		Api:            "ec2",
+		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
 	},
 	"deletevolume": {
@@ -994,6 +1002,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["import"] = append(supported["import"], "image")
 	supported["delete"] = append(supported["delete"], "image")
 	supported["create"] = append(supported["create"], "volume")
+	supported["check"] = append(supported["check"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")
 	supported["attach"] = append(supported["attach"], "volume")
 	supported["detach"] = append(supported["detach"], "volume")

@@ -179,6 +179,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Create_Volume, nil
 
+	case "checkvolume":
+		if d.dryRun {
+			return d.Check_Volume_DryRun, nil
+		}
+		return d.Check_Volume, nil
+
 	case "deletevolume":
 		if d.dryRun {
 			return d.Delete_Volume_DryRun, nil

@@ -279,6 +279,14 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "check", Entity: cloud.Volume, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
+			{
 				Action: "delete", Entity: cloud.Volume, Input: "DeleteVolumeInput", Output: "DeleteVolumeOutput", ApiMethod: "DeleteVolume",
 				RequiredParams: []param{
 					{AwsField: "VolumeId", TemplateName: "id", AwsType: "awsstr"},
