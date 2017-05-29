@@ -129,6 +129,21 @@ delete securitygroup id=sg-54321`
 		}
 	})
 
+	t.Run("Delete the copy of an image", func(t *testing.T) {
+		tpl := MustParse("copy image")
+		for _, cmd := range tpl.CommandNodesIterator() {
+			cmd.CmdResult = "ami-12345678"
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete image delete-snapshots=true id=ami-12345678`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {
@@ -148,6 +163,7 @@ func TestCmdNodeIsRevertible(t *testing.T) {
 		{line: "detach policy", revertible: true},
 		{line: "create record", revertible: true},
 		{line: "delete record", revertible: true},
+		{line: "copy image", result: "any", revertible: true},
 	}
 
 	for _, tc := range tcases {

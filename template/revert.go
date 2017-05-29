@@ -17,7 +17,7 @@ func (te *Template) Revert() (*Template, error) {
 			var params []string
 
 			switch cmd.Action {
-			case "create":
+			case "create", "copy":
 				revertAction = "delete"
 			case "start":
 				revertAction = "stop"
@@ -79,6 +79,13 @@ func (te *Template) Revert() (*Template, error) {
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, v))
 					}
+				}
+			case "copy":
+				switch cmd.Entity {
+				case "image":
+					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
+					params = append(params, "delete-snapshots=true")
+				default:
 				}
 			}
 
@@ -143,7 +150,7 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if v, ok := cmd.CmdResult.(string); ok && v != "" {
-		if cmd.Action == "create" || cmd.Action == "start" || cmd.Action == "stop" {
+		if cmd.Action == "create" || cmd.Action == "start" || cmd.Action == "stop" || cmd.Action == "copy" {
 			return true
 		}
 	}
