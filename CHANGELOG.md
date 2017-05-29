@@ -1,3 +1,15 @@
+## v0.0.26 [unreleased]
+
+## Features
+
+- Add documentation for all template parameters (`awless create instance -h`, `awless update s3object -h`...)
+- Rename template parameters for standardization:
+    - `delete keypair id=...` -> `delete keypair name=...`
+    - `create listener target=...` -> `create listener targetgroup=...`
+    - `delete database skipsnapshot=... snapshotid=...` -> `delete database skip-snapshot=... snapshot=...`
+    - `delete dbsubnetgroup id=...` -> `delete dbsubnetgroup name=...`
+    - `create queue maxMsgSize=... retentionPeriod=... msgWait=... redrivePolicy=... visibilityTimeout=...` -> `create queue max-msg-size=... retention-period=... msg-wait=... redrive-policy=... visibility-timeout=...`
+
 ## v0.0.25 [2017-05-26]
 
 ## Features
