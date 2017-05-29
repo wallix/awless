@@ -93,6 +93,7 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 					params = append(params, "delete-snapshots=true")
 				default:
+					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 				}
 			}
 
