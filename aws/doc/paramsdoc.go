@@ -74,6 +74,7 @@ var manualParamsDoc = map[string]map[string]string{
 	},
 	"createdatabase": {
 		"autoupgrade":       "Set to true to indicate that minor version patches are applied automatically",
+		"backupwindow":      "Specifies the daily time range during which automated backups are created if automated backups are enabled, as determined by the BackupRetentionPeriod (format hh24:mi-hh24:mi)",
 		"dbname":            "The name of the database to create when the DB instance is created",
 		"dbsecuritygroups":  "A list of DB security groups to associate with this DB instance",
 		"domain":            "Specify the Active Directory Domain to create the instance in.",
@@ -87,6 +88,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"port":              "The port number on which the database accepts connections",
 		"storagetype":       "Specifies the storage type associated with DB instance (standard | gp2 | io1)",
 		"subnetgroup":       "A DB subnet group to associate with this DB instance",
+		"type":              "Contains the name of the compute and memory capacity class of the DB instance (db.t1.micro | db.m1.small | db.m1.medium | db.m1.large | db.m1.xlarge | db.m2.xlarge |db.m2.2xlarge | db.m2.4xlarge | db.m3.medium | db.m3.large | db.m3.xlarge | db.m3.2xlarge | db.m4.large | db.m4.xlarge | db.m4.2xlarge | db.m4.4xlarge | db.m4.10xlarge | db.r3.large | db.r3.xlarge | db.r3.2xlarge | db.r3.4xlarge | db.r3.8xlarge | db.t2.micro | db.t2.small | db.t2.medium | db.t2.large)",
 		"vpcsecuritygroups": "A list of EC2 VPC security groups to associate with this DB instance",
 	},
 	"createdbsubnetgroup": {

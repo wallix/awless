@@ -264,6 +264,19 @@ delete scalinggroup force=true name=my-scalinggroup`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert create record", func(t *testing.T) {
+		tpl := MustParse("create record comment='my test record' name=test.awlesstest.io. ttl=60 type=A value=1.2.3.4 zone=/hostedzone/Z29L20HGD4CX07")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete record name=test.awlesstest.io. ttl=60 type=A value=1.2.3.4 zone=/hostedzone/Z29L20HGD4CX07`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {

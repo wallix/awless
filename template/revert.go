@@ -66,8 +66,15 @@ func (te *Template) Revert() (*Template, error) {
 				}
 			case "create":
 				switch cmd.Entity {
-				case "record", "tag":
+				case "tag":
 					for k, v := range cmd.Params {
+						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+					}
+				case "record":
+					for k, v := range cmd.Params {
+						if k == "comment" {
+							continue
+						}
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
 					}
 				case "route":
