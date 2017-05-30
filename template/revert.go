@@ -63,6 +63,13 @@ func (te *Template) Revert() (*Template, error) {
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, v))
 					}
+				case "route":
+					for k, v := range cmd.Params {
+						if k == "gateway" {
+							continue
+						}
+						params = append(params, fmt.Sprintf("%s=%v", k, v))
+					}
 				case "database":
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 					params = append(params, "skipsnapshot=true")
@@ -156,6 +163,11 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	if cmd.Action == "check" {
 		return false
 	}
+
+	if cmd.Action == "detach" && cmd.Entity == "routetable" {
+		return false
+	}
+
 	if cmd.Entity == "record" && (cmd.Action == "create" || cmd.Action == "delete") {
 		return true
 	}
@@ -166,5 +178,6 @@ func isRevertible(cmd *ast.CommandNode) bool {
 		}
 	}
 
-	return cmd.Action == "attach" || cmd.Action == "detach" || cmd.Action == "check" || (cmd.Action == "create" && cmd.Entity == "tag")
+	return cmd.Action == "attach" || cmd.Action == "detach" || cmd.Action == "check" ||
+		(cmd.Action == "create" && cmd.Entity == "tag") || (cmd.Action == "create" && cmd.Entity == "route")
 }

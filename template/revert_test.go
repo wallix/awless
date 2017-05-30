@@ -172,6 +172,19 @@ attach volume device=/dev/sdh id=vol-12345 instance=i-12345`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert create route", func(t *testing.T) {
+		tpl := MustParse("create route cidr=0.0.0.0/0 gateway=igw-12345 table=rtb-12345")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete route cidr=0.0.0.0/0 table=rtb-12345`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {
@@ -192,6 +205,7 @@ func TestCmdNodeIsRevertible(t *testing.T) {
 		{line: "create record", revertible: true},
 		{line: "delete record", revertible: true},
 		{line: "copy image", result: "any", revertible: true},
+		{line: "detach routetable", revertible: false},
 	}
 
 	for _, tc := range tcases {
