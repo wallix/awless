@@ -780,6 +780,8 @@ var DriversDefs = []driversDef{
 				Action: "delete", Entity: cloud.AccessKey, DryRunUnsupported: true, ApiMethod: "DeleteAccessKey", Input: "DeleteAccessKeyInput", Output: "DeleteAccessKeyOutput",
 				RequiredParams: []param{
 					{AwsField: "AccessKeyId", TemplateName: "id", AwsType: "awsstr"},
+				}, ExtraParams: []param{
+					{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
 				},
 			},
 			// Access key

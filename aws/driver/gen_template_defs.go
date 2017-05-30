@@ -653,7 +653,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "accesskey",
 		Api:            "iam",
 		RequiredParams: []string{"id"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"user"},
 	},
 	"createloginprofile": {
 		Action:         "create",

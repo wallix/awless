@@ -87,10 +87,16 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("bucket=%s", cmd.Params["bucket"]))
 				case "role", "group", "user", "stack":
 					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"]))
+				case "accesskey":
+					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
+					params = append(params, fmt.Sprintf("user=%s", cmd.Params["user"]))
 				case "loginprofile":
 					params = append(params, fmt.Sprintf("username=%s", cmd.Params["username"]))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm", "dbsubnetgroup", "keypair":
 					params = append(params, fmt.Sprintf("name=%s", cmd.CmdResult))
+					if cmd.Entity == "scalinggroup" {
+						params = append(params, "force=true")
+					}
 				default:
 					params = append(params, fmt.Sprintf("id=%s", cmd.CmdResult))
 				}
@@ -176,6 +182,10 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if cmd.Entity == "record" && (cmd.Action == "create" || cmd.Action == "delete") {
+		return true
+	}
+
+	if cmd.Entity == "alarm" && (cmd.Action == "start" || cmd.Action == "stop") {
 		return true
 	}
 

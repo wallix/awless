@@ -280,7 +280,8 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":            "The name of the domain",
 	},
 	"deleteaccesskey": {
-		"id": "The access key ID for the access key ID and secret access key you want to delete",
+		"id":   "The access key ID for the access key ID and secret access key you want to delete",
+		"user": "The name of the user whose access key pair you want to delete",
 	},
 	"deletealarm": {
 		"name": "The alarms to be deleted",

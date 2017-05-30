@@ -198,6 +198,40 @@ attach volume device=/dev/sdh id=vol-12345 instance=i-12345`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Delete scaling group", func(t *testing.T) {
+		tpl := MustParse("create scalinggroup")
+		for _, cmd := range tpl.CommandNodesIterator() {
+			cmd.CmdResult = "my-scalinggroup"
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `update scalinggroup max-size=0 min-size=0 name=my-scalinggroup
+check scalinggroup count=0 name=my-scalinggroup timeout=180
+delete scalinggroup force=true name=my-scalinggroup`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
+
+	t.Run("Revert create accesskey", func(t *testing.T) {
+		tpl := MustParse("create accesskey user=myuser")
+		for _, cmd := range tpl.CommandNodesIterator() {
+			cmd.CmdResult = "my-accesskey"
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete accesskey id=my-accesskey user=myuser`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {
@@ -219,6 +253,8 @@ func TestCmdNodeIsRevertible(t *testing.T) {
 		{line: "delete record", revertible: true},
 		{line: "copy image", result: "any", revertible: true},
 		{line: "detach routetable", revertible: false},
+		{line: "start alarm", revertible: true},
+		{line: "stop alarm", revertible: true},
 	}
 
 	for _, tc := range tcases {

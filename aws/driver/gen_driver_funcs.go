@@ -3797,6 +3797,14 @@ func (d *IamDriver) Delete_Accesskey(params map[string]interface{}) (interface{}
 		return nil, err
 	}
 
+	// Extra params
+	if _, ok := params["user"]; ok {
+		err = setFieldWithType(params["user"], input, "UserName", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	start := time.Now()
 	var output *iam.DeleteAccessKeyOutput
 	output, err = d.DeleteAccessKey(input)
