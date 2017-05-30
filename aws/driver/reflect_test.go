@@ -128,10 +128,13 @@ func TestSetFieldWithMultiType(t *testing.T) {
 			Str  *string
 			Bool *bool
 		}
-		SliceStructPointerAttribute []*struct{ Str1, Str2 *string }
-		MapAttribute                map[string]*string
-		EmptyMapAttribute           map[string]*string
-		ParameterList               []*cloudformation.Parameter
+		SliceStructPointerAttribute []*struct {
+			Str1, Str2 *string
+			Integer    *int64
+		}
+		MapAttribute      map[string]*string
+		EmptyMapAttribute map[string]*string
+		ParameterList     []*cloudformation.Parameter
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -377,6 +380,16 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 	if got, want := *any.SliceStructPointerAttribute[0].Str2, "toto"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType(10, &any, "SliceStructPointerAttribute[0]Integer", awsslicestructint64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.SliceStructPointerAttribute), 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.SliceStructPointerAttribute[0].Integer, int64(10); got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	err = setFieldWithType("key:value", &any, "DimensionSliceField", awsdimensionslice)

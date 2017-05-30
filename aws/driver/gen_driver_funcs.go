@@ -2758,7 +2758,7 @@ func (d *Elbv2Driver) Attach_Instance(params map[string]interface{}) (interface{
 
 	// Extra params
 	if _, ok := params["port"]; ok {
-		err = setFieldWithType(params["port"], input, "Targets[0]Port", awsslicestruct)
+		err = setFieldWithType(params["port"], input, "Targets[0]Port", awsslicestructint64)
 		if err != nil {
 			return nil, err
 		}

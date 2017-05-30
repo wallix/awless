@@ -47,6 +47,7 @@ const (
 	awsstringslice
 	awsstringpointermap
 	awsslicestruct
+	awsslicestructint64
 	awsfiletobase64
 	awsfiletobyteslice
 	awsfiletostring
@@ -198,7 +199,13 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 		str := fmt.Sprint(v)
 		field.SetMapIndex(reflect.ValueOf(matches[2]), reflect.ValueOf(&str))
 		return nil
-	case awsslicestruct:
+	case awsslicestruct, awsslicestructint64:
+		if destType == awsslicestructint64 {
+			v, err = castInt64(v)
+			if err != nil {
+				return
+			}
+		}
 		matches := sliceStructRegex.FindStringSubmatch(fieldPath)
 		if len(matches) < 2 {
 			err = fmt.Errorf("set field awsslicestruct: path %s does not start with slice[0]", fieldPath)

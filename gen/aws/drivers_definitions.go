@@ -557,7 +557,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "Targets[0]Id", TemplateName: "id", AwsType: "awsslicestruct"},
 				},
 				ExtraParams: []param{
-					{AwsField: "Targets[0]Port", TemplateName: "port", AwsType: "awsslicestruct"},
+					{AwsField: "Targets[0]Port", TemplateName: "port", AwsType: "awsslicestructint64"},
 				},
 			},
 			{

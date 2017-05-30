@@ -136,9 +136,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 		"certificate": "The Amazon Resource Name (ARN) of the certificate",
 		"protocol":    "The protocol for connections from clients to the load balancer (TCP | HTTP | HTTPS)",
+		"sslpolicy":   "The security policy that defines which ciphers and protocols are supported (ELBSecurityPolicy-2016-08 | ELBSecurityPolicy-TLS-1-2-2017-01 | ELBSecurityPolicy-TLS-1-1-2017-01 | ELBSecurityPolicy-2015-05 | ELBSecurityPolicy-TLS-1-0-2015-04)",
 	},
 	"createloadbalancer": {
-		"scheme": "The routing range of the loadbalancer (Internet-facing | internal)",
+		"scheme": "The routing range of the loadbalancer (internet-facing | internal)",
+		"iptype": "The type of IP addresses used by the subnets for your load balancer: IPv4 or IPv4 and IPv6 (ipv4 | dualstack)",
 	},
 	"createpolicy": {
 		"name":        "The friendly name of the policy",
