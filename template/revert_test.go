@@ -185,6 +185,19 @@ attach volume device=/dev/sdh id=vol-12345 instance=i-12345`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert attach instance", func(t *testing.T) {
+		tpl := MustParse("attach instance id=i-123456 port=80 targetgroup=mytargetgrouparn")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `detach instance id=i-123456 targetgroup=mytargetgrouparn`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {

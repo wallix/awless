@@ -36,6 +36,13 @@ func (te *Template) Revert() (*Template, error) {
 				switch cmd.Entity {
 				case "routetable", "elasticip":
 					params = append(params, fmt.Sprintf("association=%s", cmd.CmdResult))
+				case "instance":
+					for k, v := range cmd.Params {
+						if k == "port" {
+							continue
+						}
+						params = append(params, fmt.Sprintf("%s=%v", k, v))
+					}
 				default:
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, v))
