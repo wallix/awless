@@ -212,7 +212,6 @@ var generatedParamsDoc = map[string]map[string]string{
 		"adjustment-scaling":   "The amount by which to scale, based on the specified adjustment type",
 		"adjustment-type":      "The adjustment type",
 		"cooldown":             "The amount of time, in seconds, after a scaling activity completes and before the next scaling activity can start",
-		"metric-aggregation":   "The aggregation type for the CloudWatch metrics",
 		"name":                 "The name of the policy",
 		"scalinggroup":         "The name or ARN of the group",
 	},

@@ -3226,12 +3226,6 @@ func (d *AutoscalingDriver) Create_Scalingpolicy(params map[string]interface{}) 
 			return nil, err
 		}
 	}
-	if _, ok := params["metric-aggregation"]; ok {
-		err = setFieldWithType(params["metric-aggregation"], input, "MetricAggregationType", awsstr)
-		if err != nil {
-			return nil, err
-		}
-	}
 	if _, ok := params["adjustment-magnitude"]; ok {
 		err = setFieldWithType(params["adjustment-magnitude"], input, "MinAdjustmentMagnitude", awsint64)
 		if err != nil {

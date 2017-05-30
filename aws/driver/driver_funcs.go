@@ -815,8 +815,7 @@ func (d *AutoscalingDriver) Check_Scalinggroup(params map[string]interface{}) (i
 			}
 			for _, group := range output.AutoScalingGroups {
 				if aws.StringValue(group.AutoScalingGroupName) == params["name"] {
-					count := len(group.Instances) + len(group.LoadBalancerNames) + len(group.TargetGroupARNs)
-					return fmt.Sprint(count), nil
+					return fmt.Sprint(len(group.Instances)), nil
 				}
 			}
 			return "", fmt.Errorf("scalinggroup %s not found", params["name"])

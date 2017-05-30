@@ -576,7 +576,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "scalingpolicy",
 		Api:            "autoscaling",
 		RequiredParams: []string{"adjustment-scaling", "adjustment-type", "name", "scalinggroup"},
-		ExtraParams:    []string{"adjustment-magnitude", "cooldown", "metric-aggregation"},
+		ExtraParams:    []string{"adjustment-magnitude", "cooldown"},
 	},
 	"deletescalingpolicy": {
 		Action:         "delete",

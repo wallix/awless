@@ -66,6 +66,7 @@ var manualParamsDoc = map[string]map[string]string{
 	"createalarm": {
 		"operator":           "The arithmetic operation to use when comparing the specified statistic and threshold (GreaterThanThreshold | LessThanThreshold | LessThanOrEqualToThreshold | GreaterThanOrEqualToThreshold)",
 		"statistic-function": "The statistic for the metric associated with the alarm, other than percentile (Minimum | Maximum | Sum | Average | SampleCount | pNN.NN)",
+		"unit":               "The unit of measure for the statistic (Seconds | Microseconds | Milliseconds | Bytes | Kilobytes | Megabytes | Gigabytes | Terabytes | Bits | Kilobits | Megabits | Gigabits | Terabits | Percent | Count | Bytes/Second | Kilobytes/Second | Megabytes/Second | Gigabytes/Second | Terabytes/Second | Bits/Second | Kilobits/Second | Megabits/Second | Gigabits/Second | Terabits/Second | Count/Second | None)",
 	},
 	"createbucket": {
 		"acl":  "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
@@ -183,7 +184,8 @@ var manualParamsDoc = map[string]map[string]string{
 		"healthcheck-type": "The service to use for the health checks (EC2 | ELB)",
 	},
 	"createscalingpolicy": {
-		"adjustment-type": "The adjustment type (ChangeInCapacity | ExactCapacity | PercentChangeInCapacity)",
+		"adjustment-type":    "The adjustment type (ChangeInCapacity | ExactCapacity | PercentChangeInCapacity)",
+		"adjustment-scaling": "The amount by which to scale, based on the specified adjustment type (e.g. '-2', '3')",
 	},
 	"createstack": {
 		"capabilities":  "A list of values that you must specify before AWS CloudFormation can create certain stacks (CAPABILITY_IAM | CAPABILITY_NAMED_IAM)",

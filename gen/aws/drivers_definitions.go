@@ -657,7 +657,6 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "Cooldown", TemplateName: "cooldown", AwsType: "awsint64"},
-					{AwsField: "MetricAggregationType", TemplateName: "metric-aggregation", AwsType: "awsstr"},
 					{AwsField: "MinAdjustmentMagnitude", TemplateName: "adjustment-magnitude", AwsType: "awsint64"},
 				},
 			},
