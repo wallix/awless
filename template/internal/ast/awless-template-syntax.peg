@@ -32,6 +32,7 @@ NoRefValue <- HoleValue {  p.addParamHoleValue(text) }
         / CustomTypedValue
         / DoubleQuote <DoubleQuotedValue> { p.addParamValue(text) } DoubleQuote
         / SingleQuote <SingleQuotedValue> { p.addParamValue(text) } SingleQuote
+        / <FloatValue> { p.addParamFloatValue(text) }
         / <IntValue> { p.addParamIntValue(text) }
         / <StringValue> { p.addParamValue(text) }
 
@@ -50,9 +51,10 @@ DoubleQuotedValue <- [^"]*
 SingleQuotedValue <- [^']*
 
 CSVValue <- (StringValue WhiteSpacing ',' WhiteSpacing)+ StringValue
-CidrValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+'/'[0-9]+
-IpValue <- [0-9]+.[0-9]+.[0-9]+.[0-9]+
+CidrValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'/'[0-9]+
+IpValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+
 IntValue <- [0-9]+
+FloatValue <- [0-9]+ [.] [0-9]*
 IntRangeValue <- [0-9]+'-'[0-9]+
 
 RefValue <- '$'<Identifier>

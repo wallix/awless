@@ -88,6 +88,14 @@ func (a *AST) addCsvValue(text string) {
 	a.addParam(csv)
 }
 
+func (a *AST) addParamFloatValue(text string) {
+	num, err := strconv.ParseFloat(text, 64)
+	if err != nil {
+		panic(fmt.Sprintf("cannot convert '%s' to float", text))
+	}
+	a.addParam(num)
+}
+
 func (a *AST) addParamIntValue(text string) {
 	num, err := strconv.Atoi(text)
 	if err != nil {

@@ -179,6 +179,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":   "The name of the Object to create (by default the file name is used)",
 		"acl":    "The canned ACL to apply to the object (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
 	},
+	"createscalinggroup": {
+		"healthcheck-type": "The service to use for the health checks (EC2 | ELB)",
+	},
 	"createscalingpolicy": {
 		"adjustment-type": "The adjustment type (ChangeInCapacity | ExactCapacity | PercentChangeInCapacity)",
 	},

@@ -243,6 +243,24 @@ func TestTemplateParsing(t *testing.T) {
 					return nil
 				},
 			},
+			{
+				input: "launch = create launchconfiguration spotprice=0.01",
+				verifyFn: func(tpl *Template) error {
+					if err := isDeclarationNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return nil
+				},
+			},
+			{
+				input: "launch = create launchconfiguration spotprice=100.",
+				verifyFn: func(tpl *Template) error {
+					if err := isDeclarationNode(tpl.Statements[0].Node); err != nil {
+						t.Fatal(err)
+					}
+					return nil
+				},
+			},
 		}
 
 		for _, tcase := range tcases {
