@@ -248,6 +248,22 @@ delete scalinggroup force=true name=my-scalinggroup`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Param with space is quoted", func(t *testing.T) {
+		tpl := MustParse("create queue name=my-queue")
+		for _, cmd := range tpl.CommandNodesIterator() {
+			cmd.CmdResult = "my queue url"
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete queue url='my queue url'`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {

@@ -115,6 +115,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"bucket":        "Amazon S3 bucket name where the .zip file containing your deployment package is stored. This bucket must reside in the same AWS region where you are creating the Lambda function",
 		"object":        "The Amazon S3 object (the deployment package) key name you want to upload",
 		"objectversion": "The Amazon S3 object (the deployment package) version you want to upload",
+		"runtime":       "The runtime environment for the Lambda function you are uploading (python3.6 | python2.7 | nodejs6.10 | nodejs4.3)",
 		"zipfile":       "The path toward the zip file containing your deployment package",
 	},
 	"creategroup": {
