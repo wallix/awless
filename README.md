@@ -13,7 +13,7 @@
 - get nice and readable output (for humans) that machine know how to parse too
 - explore and query your infrastructure and cloud resources, even **offline**
 - ensure smart defaults & security best practices
-- write and run powerful templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
+- write and run powerful templates (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
 - connect to your instances easily
 
 # Install
@@ -51,7 +51,7 @@ Choose one of the following options:
 
 # Getting started
 
-Read more at [awless wiki: Getting Started](https://github.com/wallix/awless/wiki/Getting-Started)
+Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/Getting-Started)
 
 # About
 
