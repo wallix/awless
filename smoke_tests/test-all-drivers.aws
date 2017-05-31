@@ -32,6 +32,8 @@ attach routetable id=$rt subnet=$subnet
 create route cidr=0.0.0.0/0 gateway=$igw table=$rt
 keypair = create keypair name=my-full-test-keypair encrypted=false
 create role name=my-full-test-role-lambda principal-service="lambda.amazonaws.com"
+create instanceprofile name=my-full-test-instanceprofile
+attach role instanceprofile=my-full-test-instanceprofile name=my-full-test-role-lambda
 create role name=my-full-test-role-rds principal-service="rds.amazonaws.com"
 create role name=my-full-test-role-cloudformation principal-service="cloudformation.amazonaws.com"
 create role name=my-full-test-role principal-service="ec2.amazonaws.com" sleep-after=15
@@ -120,18 +122,11 @@ create record name=test.awlesstest.io. ttl=60 type=A value=1.2.3.4 zone=$zone co
 cdn = create distribution origin-domain=my-full-test-bucket-website.s3.amazonaws.com comment="my full test distribution" default-file="index.html" domain-aliases=test2.awless.io,test3.awless.io enable=false forward-cookies=all forward-queries=true https-behaviour=allow-all min-ttl=5 origin-path=/test price-class=PriceClass_All
 check distribution id=$cdn state=InProgress timeout=180
 update distribution enable=true id=$cdn
-
-## DONE : Working
-
-
 ## Commands that need to be done after a few minutes after other commands
 update loginprofile password=my-full-test-second-password username=my-full-test-user password-reset=true
 
 
-## PROBLEMS FROM HERE / CAN NOT BE TESTED FOR NOW
-# attach role instanceprofile= name= 
-# detach role instanceprofile= name= 
-# create instanceprofile name= 
+## CAN NOT BE TESTED FOR NOW
 # update s3object version= # Can not be tested ?
 # attach elasticip networkinterface=
 # create listener sslpolicy=ELBSecurityPolicy-2016-08 certificate=
