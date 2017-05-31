@@ -3,6 +3,7 @@
 ## Features
 
 - Add documentation for all template parameters (`awless create instance -h`, `awless update s3object -h`...)
+- Listing with filter invalid keys: return error and help
 - Rename template parameters for standardization:
     - `delete keypair id=...` -> `delete keypair name=...`
     - `create listener target=...` -> `create listener targetgroup=...`

@@ -65,7 +65,7 @@ func (b *Builder) SetSource(i interface{}) *Builder {
 	return b
 }
 
-func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn) {
+func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn, err error) {
 	for _, f := range b.filters {
 		splits := strings.SplitN(f, "=", 2)
 		if len(splits) == 2 {
@@ -74,6 +74,12 @@ func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn) {
 
 			if key != "" {
 				funcs = append(funcs, graph.BuildPropertyFilterFunc(key, val))
+			} else {
+				var allowed []string
+				for _, h := range b.headers {
+					allowed = append(allowed, h.propKey())
+				}
+				err = fmt.Errorf("Invalid filter key '%s'. Expecting any of: %s. (Note: filter keys/values are case insensitive)", name, strings.Join(allowed, ", "))
 			}
 		}
 
@@ -112,7 +118,12 @@ func (b *Builder) Build() (Displayer, error) {
 	switch b.dataSource.(type) {
 	case *graph.Graph:
 		gph := b.dataSource.(*graph.Graph)
-		filteredGraph, err := gph.Filter(b.rdfType, b.buildGraphFilters()...)
+
+		propFilters, err := b.buildGraphFilters()
+		if err != nil {
+			return nil, err
+		}
+		filteredGraph, err := gph.Filter(b.rdfType, propFilters...)
 		if err != nil {
 			return nil, err
 		}
