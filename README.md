@@ -58,6 +58,8 @@ Read more at [awless wiki: Getting Started](https://github.com/wallix/awless/wik
 `awless` is an open source project created by Henri Binsztok, Quentin Bourgerie, Simon Caplette and François-Xavier Aguessy at Wallix.
 `awless` is released under the Apache License and sponsored by [Wallix](https://github.com/wallix).
 
-    Disclaimer: Awless allows for easy resource creation with your cloud provider; we will not be responsible for any cloud costs incurred (even if you create a million instances using awless templates).
+    Disclaimer: Awless allows for easy resource creation with your cloud provider;
+    we will not be responsible for any cloud costs incurred (even if you create a 
+    million instances using awless templates).
 
 Contributors are welcome! Please head to [Contributing (wiki)](https://github.com/wallix/awless/wiki/Contributing) to learn more.
