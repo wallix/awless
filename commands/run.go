@@ -62,7 +62,16 @@ func init() {
 	runCmd.Flags().MarkHidden("schedule")
 	runCmd.Flags().MarkHidden("run-in")
 	runCmd.Flags().MarkHidden("revert-in")
-	for action, entities := range awsdriver.DriverSupportedActions() {
+
+	var actions []string
+	for a := range awsdriver.DriverSupportedActions() {
+		actions = append(actions, a)
+	}
+	sort.Strings(actions)
+
+	for _, action := range actions {
+		entities := awsdriver.DriverSupportedActions()[action]
+		sort.Strings(entities)
 		cmd := createDriverCommands(action, entities)
 		cmd.PersistentFlags().BoolVar(&scheduleFlag, "schedule", false, "Schedule the execution of this command")
 		cmd.PersistentFlags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this command")
