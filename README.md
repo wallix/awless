@@ -5,12 +5,13 @@
 
 [Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki) | [Changelog](https://github.com/wallix/awless/blob/master/CHANGELOG.md#readme)
 
-# Why awless
+# Why `awless`
 
 `awless` will help you achieve your goals without leaving your terminal:
 
 - run frequent actions by using simple commands
-- easily explore and query your infrastructure and cloud resources, even **offline**
+- get nice and readable output (for humans) that machine know how to parse too
+- explore and query your infrastructure and cloud resources, even **offline**
 - ensure smart defaults & security best practices
 - write and run powerful templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
 - connect to your instances easily
@@ -24,7 +25,7 @@ Choose one of the following options:
 3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
 4. If you have Golang already installed, install from the source with: `go get -u github.com/wallix/awless`
 
-# Features
+# Main Features
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/wiki/wallix/awless/apng/awless-demo.png"><img src="https://raw.githubusercontent.com/wiki/wallix/awless/apng/awless-demo.png" alt="video of a few awless commands"></a>
@@ -58,5 +59,3 @@ Read more at [awless wiki: Getting Started](https://github.com/wallix/awless/wik
 `awless` is released under the Apache License and sponsored by [Wallix](https://github.com/wallix).
 
 Contributors are welcome! Please head to [Contributing (wiki)](https://github.com/wallix/awless/wiki/Contributing) to learn more.
-
-
