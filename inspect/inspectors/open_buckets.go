@@ -57,11 +57,11 @@ func (a *OpenBuckets) Inspect(g *graph.Graph) error {
 		}
 	}
 
-	for k, _ := range openToUsers {
+	for k := range openToUsers {
 		a.openToAny = append(a.openToAny, k)
 	}
 
-	for k, _ := range openToAuthUsers {
+	for k := range openToAuthUsers {
 		a.openToAnyAuth = append(a.openToAnyAuth, k)
 	}
 

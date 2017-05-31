@@ -256,7 +256,7 @@ func ParseImageQuery(s string) (ImageQuery, error) {
 
 	plat, ok := Platforms[splits[0]]
 	if !ok {
-		return q, fmt.Errorf("unsupported owner %s. Expecting: ", splits[0], supported)
+		return q, fmt.Errorf("unsupported owner %s. Expecting: %s", splits[0], supported)
 	}
 
 	q.Platform = plat

@@ -390,7 +390,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 	if got, want := *any.SliceStructPointerAttribute[0].Integer, int64(10); got != want {
-		t.Fatalf("got %s, want %s", got, want)
+		t.Fatalf("got %d, want %d", got, want)
 	}
 	err = setFieldWithType("key:value", &any, "DimensionSliceField", awsdimensionslice)
 	if err != nil {
