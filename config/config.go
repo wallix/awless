@@ -66,6 +66,7 @@ var defaultsDefinitions = map[string]*Definition{
 	"volume.device":          {defaultValue: "/dev/sdh", help: "Device name to expose to an EC2 instance"},
 	"elasticip.domain":       {defaultValue: "vpc", help: "The domain of elastic IP addresses (standard or vpc)"},
 	"image.delete-snapshots": {defaultValue: "true", help: "Delete linked snapshots when deleting an image"},
+	"database.type":          {defaultValue: "db.t2.micro", help: "Default RDS database type"},
 }
 
 var deprecated = map[string]string{
