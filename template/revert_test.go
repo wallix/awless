@@ -8,6 +8,25 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
+func TestRevertOneliner(t *testing.T) {
+	tcases := []struct {
+		in, exp string
+	}{
+		{in: "create instanceprofile name=stuff", exp: "delete instanceprofile name=stuff"},
+		{in: "delete instanceprofile name=stuff", exp: "create instanceprofile name=stuff"},
+	}
+
+	for _, tcase := range tcases {
+		reverted, err := MustParse(tcase.in).Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := reverted.String(), tcase.exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	}
+}
+
 func TestRevertTemplate(t *testing.T) {
 	t.Run("Simple template", func(t *testing.T) {
 		tpl := MustParse("create instance type=t2.micro")

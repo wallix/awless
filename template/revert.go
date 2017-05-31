@@ -94,7 +94,7 @@ func (te *Template) Revert() (*Template, error) {
 				case "s3object":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.CmdResult)))
 					params = append(params, fmt.Sprintf("bucket=%s", quoteParamIfNeeded(cmd.Params["bucket"])))
-				case "role", "group", "user", "stack":
+				case "role", "group", "user", "stack", "instanceprofile":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
 				case "accesskey":
 					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.CmdResult)))
@@ -115,6 +115,8 @@ func (te *Template) Revert() (*Template, error) {
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
 					}
+				case "instanceprofile":
+					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
 				}
 			case "copy":
 				switch cmd.Entity {
@@ -194,6 +196,10 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if cmd.Entity == "record" && (cmd.Action == "create" || cmd.Action == "delete") {
+		return true
+	}
+
+	if cmd.Entity == "instanceprofile" && (cmd.Action == "create" || cmd.Action == "delete") {
 		return true
 	}
 
