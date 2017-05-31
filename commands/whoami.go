@@ -29,12 +29,17 @@ import (
 	"github.com/wallix/awless/logger"
 )
 
-var onlyMyIPFlag bool
+var onlyMyIPFlag, onlyMyNameFlag, onlyMyTypeFlag, onlyMyIDFlag, onlyMyAccountFlag, onlyMyResourcePathFlag bool
 
 func init() {
 	RootCmd.AddCommand(whoamiCmd)
 
-	whoamiCmd.Flags().BoolVar(&onlyMyIPFlag, "ip-only", false, "Return your IP address as seen by AWS")
+	whoamiCmd.Flags().BoolVar(&onlyMyIPFlag, "ip-only", false, "Only returns your IP address as seen by AWS")
+	whoamiCmd.Flags().BoolVar(&onlyMyNameFlag, "name-only", false, "Only returns the name of the resource (ex: username for a user)")
+	whoamiCmd.Flags().BoolVar(&onlyMyTypeFlag, "type-only", false, "Only returns the type of the resource (ex: user for a user)")
+	whoamiCmd.Flags().BoolVar(&onlyMyIDFlag, "id-only", false, "Only returns the ID of the resource")
+	whoamiCmd.Flags().BoolVar(&onlyMyAccountFlag, "account-only", false, "Only returns the AWS account number")
+	whoamiCmd.Flags().BoolVar(&onlyMyResourcePathFlag, "resource-only", false, "Only returns the AWS ARN resource path suffix (ex: user/jsmith)")
 }
 
 var whoamiCmd = &cobra.Command{
@@ -57,6 +62,24 @@ var whoamiCmd = &cobra.Command{
 			logger.Warning("You are currently root")
 			logger.Warning("Best practices suggest to create a new user and affecting it roles of access")
 			logger.Warning("awless official templates might help https://github.com/wallix/awless-templates\n")
+		}
+
+		switch {
+		case onlyMyAccountFlag:
+			fmt.Println(me.Account)
+			return
+		case onlyMyIDFlag:
+			fmt.Println(me.UserId)
+			return
+		case onlyMyNameFlag:
+			fmt.Println(me.Resource)
+			return
+		case onlyMyTypeFlag:
+			fmt.Println(me.ResourceType)
+			return
+		case onlyMyResourcePathFlag:
+			fmt.Println(me.ResourcePath)
+			return
 		}
 
 		if !me.IsUserType() {
