@@ -94,6 +94,9 @@ func initLoggerHook(cmd *cobra.Command, args []string) error {
 	}
 
 	logger.DefaultLogger.SetVerbose(flag)
+	if silentGlobalFlag {
+		logger.DefaultLogger = logger.DiscardLogger
+	}
 	return nil
 }
 

@@ -90,6 +90,7 @@ var sshCmd = &cobra.Command{
 
 		if isConnectionRefusedErr(err) {
 			logger.Warning("cannot connect to this instance, maybe the system is still booting?")
+			exitOn(err)
 			return nil
 		}
 
