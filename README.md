@@ -7,14 +7,13 @@
 
 # Why awless
 
-`awless` brings a new approach to manage AWS infrastructures through CLI and will help you:
+`awless` will help you achieve your goals without leaving your terminal:
 
 - run frequent actions by using simple commands
-- easily explore your infrastructure and cloud resources inter relations via CLI
+- easily explore and query your infrastructure and cloud resources, even **offline**
 - ensure smart defaults & security best practices
-- manage resources through robust runnable & scriptable templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
-- ssh connect cleanly and simply to cloud instances
-- explore, analyse and query your infrastructure **offline**
+- write and run powerful templates (see [`awless` templates](https://github.com/wallix/awless/wiki/Templates))
+- connect to your instances easily
 
 # Install
 
