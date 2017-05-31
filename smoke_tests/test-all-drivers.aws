@@ -1,0 +1,143 @@
+# Run this template in eu-west-2: awless config set aws.region eu-west-2
+# Need few holes filled withlocal files : 
+#      void.ova-file=~/Desktop/void.ova
+#      cloudformation.policy-file=~/Downloads/cloudformation.policy :
+# {
+#  "Statement" : [
+#    {
+#          "Effect" : "Allow",
+#          "Action" : "Update:*",
+#          "Principal": "*",
+#          "Resource" : "*"
+#        }
+#  ]
+# }
+#      cloudformation.templatefile=~/Downloads/wordpress-sample-cf.template
+#      lambda.zipfile=~/Downloads/s3-get-object-python.zip 
+#      random.string=$(env LC_CTYPE=C tr -dc "a-zA-Z0-9-_\$\?"
+#      principal.account=XXXXXXXXX
+#      principal.user="arn:aws:iam::XXXXXXXXX:user/YYYYY"
+#      cloudformation.role="arn:aws:iam::XXXXXXX:role/my-full-test-role-cloudformation"
+#      lambda.role="arn:aws:iam::XXXXXXX:role/my-full-test-role-lambda"
+#      queue.arn="arn:aws:sqs:eu-west-2:XXXXXXX:my-full-test-queue"
+
+azone = eu-west-2a
+vpc = create vpc cidr=10.0.0.0/16 name=my-full-test-vpc
+igw = create internetgateway  
+attach internetgateway id=$igw vpc=$vpc
+subnet = create subnet cidr=10.0.0.0/24 vpc=$vpc availabilityzone=$azone name=my-full-test-subnet
+update subnet id=$subnet public=true
+rt = create routetable vpc=$vpc
+attach routetable id=$rt subnet=$subnet
+create route cidr=0.0.0.0/0 gateway=$igw table=$rt
+keypair = create keypair name=my-full-test-keypair encrypted=false
+create role name=my-full-test-role-lambda principal-service="lambda.amazonaws.com"
+create role name=my-full-test-role-rds principal-service="rds.amazonaws.com"
+create role name=my-full-test-role-cloudformation principal-service="cloudformation.amazonaws.com"
+create role name=my-full-test-role principal-service="ec2.amazonaws.com" sleep-after=15
+create role name=my-full-test-role-2 principal-account={principal.account}
+create role name=my-full-test-role-3 principal-user={principal.user}
+create user name=my-full-test-user
+create accesskey user=my-full-test-user
+create loginprofile password=my-full-test-password username=my-full-test-user password-reset=false
+create group name=my-full-test-group
+attach user group=my-full-test-group name=my-full-test-user
+detach user group=my-full-test-group name=my-full-test-user
+policy = create policy name=my-full-test-policy action="ec2:*" description="my full test policy" effect=Allow resource={principal.user}
+attach policy arn=$policy group=my-full-test-group
+detach policy arn=$policy group=my-full-test-group
+attach policy arn=$policy role=my-full-test-role
+detach policy arn=$policy role=my-full-test-role
+attach policy arn=$policy user=my-full-test-user
+detach policy arn=$policy user=my-full-test-user
+secgroup = create securitygroup description="my security group description" name=my-full-test-securitygroup vpc=$vpc
+update securitygroup cidr=0.0.0.0/0 id=$secgroup protocol=tcp inbound=authorize portrange=any
+update securitygroup cidr=0.0.0.0/0 id=$secgroup protocol=tcp inbound=revoke portrange=0-65535
+update securitygroup cidr=10.0.0.0/16 id=$secgroup protocol=udp outbound=authorize portrange=22-24
+update securitygroup cidr=10.0.0.0/16 id=$secgroup protocol=udp outbound=revoke portrange=22-24
+check securitygroup id=$secgroup state=unused timeout=10
+instance = create instance count=1 image=ami-f1949e95 name=my-full-test-inst subnet=$subnet type=t2.nano ip=10.0.0.5 keypair=$keypair lock=true role=my-full-test-role securitygroup=$secgroup userdata=https://raw.githubusercontent.com/wallix/awless-templates/master/userdata/install_awless.yml
+update instance id=$instance lock=false
+secgroup2 = create securitygroup description="my second security group description" name=my-full-test-securitygroup2 vpc=$vpc
+attach securitygroup id=$secgroup2 instance=$instance
+check instance id=$instance state=running timeout=180
+stop instance id=$instance
+check instance id=$instance state=stopped timeout=180
+update instance id=$instance type=t2.nano
+start instance id=$instance
+copy image name=my-full-test-image-import source-id=ami-699fbf09 source-region=us-west-1 description="my import image full test" encrypted=false
+create stack name=my-full-test-cf-template template-file={cloudformation.templatefile} capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM disable-rollback=true parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} role={cloudformation.role} timeout=180
+create stack name=my-full-test-cf-template-2 template-file={cloudformation.templatefile} on-failure=DELETE parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} resource-types="AWS::EC2::*" role={cloudformation.role} timeout=180
+webbucket = create bucket name=my-full-test-bucket-website acl=private
+update bucket name=$webbucket enforce-https=true index-suffix="index.html" public-website=true redirect-hostname=my-full-test-bucket-website.awless.io
+bucket = create bucket name=my-full-test-bucket acl=bucket-owner-read
+update bucket name=$bucket acl=private
+ovafile = create s3object bucket=$bucket file={void.ova-file} acl=bucket-owner-read name=mytestfile.ova
+update s3object acl=private bucket=$bucket name=$ovafile 
+import image architecture=x86_64 bucket=$bucket description="my non-working import task" license=BYOL platform=Linux role=vmimport s3object=$ovafile
+import image url=s3://my-full-test-bucket/mytestfile.ova
+vol = create volume availabilityzone=$azone size=2
+check instance id=$instance state=running timeout=180
+attach volume id=$vol device=/dev/sdh instance=$instance
+detach volume device=/dev/sdh id=$vol instance=$instance force=true
+snap = create snapshot volume=$vol description="my-full-test-snapshot"
+import image snapshot=$snap
+copy snapshot source-id=snap-0071ef051e8cfb952 source-region=us-west-1 description="my-full-test-copy-snapshot" encrypted=true
+create tag key=Env resource=$instance value=Test
+eip = create elasticip domain=vpc
+check instance id=$instance state=running timeout=180
+attach elasticip id=$eip allow-reassociation=false instance=$instance privateip=10.0.0.5
+lbinstance = create instance image=ami-f1949e95 name=my-full-test-lbinst subnet=subnet-69bd4324 type=t2.nano
+lb = create loadbalancer name=my-full-test-loadbalancer subnets=subnet-69bd4324,subnet-a103a4da iptype=ipv4 scheme=internet-facing securitygroups=@mysecgroup
+check loadbalancer id=$lb state=provisioning timeout=180
+tg = create targetgroup name=my-full-test-targetgroup port=80 protocol=HTTP vpc=@awless-tests-vpc healthcheckinterval=60 healthcheckpath="/hc" healthcheckport=80 healthcheckprotocol=HTTP healthchecktimeout=10 healthythreshold=3 matcher=200 unhealthythreshold=5
+create listener actiontype=forward loadbalancer=$lb port=80 protocol=HTTP targetgroup=$tg 
+check instance id=$lbinstance state=running timeout=180
+attach instance id=$lbinstance targetgroup=$tg port=80
+detach instance id=$lbinstance targetgroup=$tg
+create launchconfiguration image=ami-f1949e95 name=unused-launchconfiguration type=t2.nano keypair=$keypair public=true role=my-full-test-role securitygroups=$secgroup spotprice=0.01 userdata=https://raw.githubusercontent.com/wallix/awless-templates/master/userdata/install_awless.yml
+launchconfig = create launchconfiguration image=ami-f1949e95 name=my-full-test-launchconfiguration type=t2.nano keypair=$keypair public=true role=my-full-test-role securitygroups=$secgroup userdata=https://raw.githubusercontent.com/wallix/awless-templates/master/userdata/install_awless.yml
+scalgroup = create scalinggroup launchconfiguration=$launchconfig max-size=3 min-size=1 name=my-full-test-scalinggroup subnets=$subnet cooldown=20 desired-capacity=2 healthcheck-grace-period=20 healthcheck-type=EC2 new-instances-protected=false
+update scalinggroup name=$scalgroup cooldown=10 desired-capacity=1 healthcheck-grace-period=10 healthcheck-type=EC2 launchconfiguration=$launchconfig max-size=2 min-size=1 new-instances-protected=false subnets=$subnet
+check scalinggroup count=1 name=$scalgroup timeout=180
+lblaunchconfig = create launchconfiguration image=ami-f1949e95 name=my-full-test-lblaunchconfiguration type=t2.nano
+create scalinggroup launchconfiguration=$lblaunchconfig max-size=2 min-size=1 name=my-full-test-lbscalinggroup subnets=subnet-69bd4324,subnet-a103a4da cooldown=10 desired-capacity=2 healthcheck-grace-period=60 healthcheck-type=ELB targetgroups=$tg
+notifTopic = create topic name=my-full-test-topic
+scalpol = create scalingpolicy adjustment-scaling=+10 adjustment-type=PercentChangeInCapacity name=my-full-test-scalingpol scalinggroup=$scalgroup adjustment-magnitude=1 cooldown=20
+alarm = create alarm evaluation-periods=1 metric=CPUUtilization name=my-full-test-alarm namespace=AWS/EC2 operator=GreaterThanThreshold period=300 statistic-function=Average threshold=65 alarm-actions=$scalpol description="my full test alarm" dimensions=AutoScalingGroupName:my-full-test-scalinggroup enabled=true insufficientdata-actions=$notifTopic ok-actions=$notifTopic unit=Percent
+stop alarm names=$alarm
+start alarm names=$alarm 
+detach alarm action-arn=$scalpol name=$alarm
+attach alarm action-arn=$scalpol name=$alarm
+create queue name=my-full-test-queue delay=0 max-msg-size=262144 msg-wait=0 policy="" redrive-policy="" retention-period=345600 visibility-timeout=30
+create subscription endpoint={queue.arn} protocol=sqs topic=$notifTopic
+create function handler=lambda_handler name=my-full-test-lambda role={lambda.role} runtime=python3.6 description="my lambda from local file" memory=128 publish=false timeout=60 zipfile={lambda.zipfile}
+create function handler=lambda_handler name=my-full-test-lambda-from-s3 role={lambda.role} runtime=python3.6 bucket=awless.test.bucket.eu-west-2 description="my lambda from a s3 file" memory=128 object=s3-get-object-python.zip publish=true timeout=60
+dbsubgroup = create dbsubnetgroup description="my full test dbsubnetgroup" name=my-full-test-dbsubnetgroup subnets=subnet-69bd4324,subnet-a103a4da
+create database engine=mariadb id=my-full-test-db password=awless12345 size=8 type=db.t2.micro username=awlessuser autoupgrade=true availabilityzone=$azone backupretention=2 dbname=awlesstestdb encrypted=false iamrole=my-full-test-role-rds license=general-public-license multiaz=false port=3306 public=false storagetype=standard subnetgroup=$dbsubgroup vpcsecuritygroups=@mysecgroup
+zone = create zone callerreference={random.string} name=awlesstest.io. comment="my full test domain" isprivate=true vpcid=$vpc vpcregion=eu-west-2
+create record name=test.awlesstest.io. ttl=60 type=A value=1.2.3.4 zone=$zone comment="my test record"
+cdn = create distribution origin-domain=my-full-test-bucket-website.s3.amazonaws.com comment="my full test distribution" default-file="index.html" domain-aliases=test2.awless.io,test3.awless.io enable=false forward-cookies=all forward-queries=true https-behaviour=allow-all min-ttl=5 origin-path=/test price-class=PriceClass_All
+check distribution id=$cdn state=InProgress timeout=180
+update distribution enable=true id=$cdn
+
+## DONE : Working
+
+
+## Commands that need to be done after a few minutes after other commands
+update loginprofile password=my-full-test-second-password username=my-full-test-user password-reset=true
+
+
+## PROBLEMS FROM HERE / CAN NOT BE TESTED FOR NOW
+# attach role instanceprofile= name= 
+# detach role instanceprofile= name= 
+# create instanceprofile name= 
+# update s3object version= # Can not be tested ?
+# attach elasticip networkinterface=
+# create listener sslpolicy=ELBSecurityPolicy-2016-08 certificate=
+# create function objectversion=
+# create stack notifications=$notifTopic
+# create database cluster= dbsecuritygroups= domain= optiongroup= parametergroup= timezone= maintenancewindow="02:30-04:30" backupwindow="00:30-02:30" version="10.1.14" iops=1000 
+# create zone delegationsetid=012345678 
+# create distribution certificate=
+# update stack name=my-full-test-cf-template capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} policy-update-file={cloudformation.policy-file} role={cloudformation.role} template-file={cloudformation.templatefile} use-previous-template=false
