@@ -503,6 +503,12 @@ func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Database, nil
 
+	case "checkdatabase":
+		if d.dryRun {
+			return d.Check_Database_DryRun, nil
+		}
+		return d.Check_Database, nil
+
 	case "createdbsubnetgroup":
 		if d.dryRun {
 			return d.Create_Dbsubnetgroup_DryRun, nil

@@ -52,6 +52,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":       "The ID of the EBS volume",
 		"instance": "The ID of the instance",
 	},
+	"checkdatabase":      {},
 	"checkdistribution":  {},
 	"checkinstance":      {},
 	"checkloadbalancer":  {},

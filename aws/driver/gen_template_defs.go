@@ -87,6 +87,7 @@ var APIPerTemplateDefName = map[string]string{
 	"deletescalingpolicy":       "autoscaling",
 	"createdatabase":            "rds",
 	"deletedatabase":            "rds",
+	"checkdatabase":             "rds",
 	"createdbsubnetgroup":       "rds",
 	"deletedbsubnetgroup":       "rds",
 	"createuser":                "iam",
@@ -599,6 +600,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"skip-snapshot", "snapshot"},
 	},
+	"checkdatabase": {
+		Action:         "check",
+		Entity:         "database",
+		Api:            "rds",
+		RequiredParams: []string{"id", "state", "timeout"},
+		ExtraParams:    []string{},
+	},
 	"createdbsubnetgroup": {
 		Action:         "create",
 		Entity:         "dbsubnetgroup",
@@ -1046,6 +1054,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "scalingpolicy")
 	supported["create"] = append(supported["create"], "database")
 	supported["delete"] = append(supported["delete"], "database")
+	supported["check"] = append(supported["check"], "database")
 	supported["create"] = append(supported["create"], "dbsubnetgroup")
 	supported["delete"] = append(supported["delete"], "dbsubnetgroup")
 	supported["create"] = append(supported["create"], "user")

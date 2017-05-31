@@ -37,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/mitchellh/ioprogress"
@@ -702,6 +703,84 @@ func (d *Ec2Driver) Check_Volume(params map[string]interface{}) (interface{}, er
 				for _, vol := range output.Volumes {
 					if aws.StringValue(vol.VolumeId) == fmt.Sprint(params["id"]) {
 						return aws.StringValue(vol.State), nil
+					}
+				}
+			}
+			return notFoundState, nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
+
+func (d *RdsDriver) Check_Database_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check database: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"available":                    {},
+		"backing-up":                   {},
+		"creating":                     {},
+		"deleting":                     {},
+		"failed":                       {},
+		"maintenance":                  {},
+		"modifying":                    {},
+		"rebooting":                    {},
+		"renaming":                     {},
+		"resetting-master-credentials": {},
+		"restore-error":                {},
+		"storage-full":                 {},
+		"upgrading":                    {},
+		notFoundState:                  {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check database: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check database: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check database: missing required params 'timeout'")
+	}
+
+	if _, ok := params["timeout"].(int); !ok {
+		return nil, errors.New("check database: timeout param is not int")
+	}
+
+	d.logger.Verbose("params dry run: check database ok")
+	return nil, nil
+}
+
+func (d *RdsDriver) Check_Database(params map[string]interface{}) (interface{}, error) {
+	input := &rds.DescribeDBInstancesInput{
+		DBInstanceIdentifier: aws.String(fmt.Sprint(params["id"])),
+	}
+
+	c := &checker{
+		description: fmt.Sprintf("database %s", params["id"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeDBInstances(input)
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "DatabaseNotFound" {
+						return notFoundState, nil
+					}
+				} else {
+					return "", err
+				}
+			} else {
+				if res := output.DBInstances; len(res) > 0 {
+					for _, dbinst := range res {
+						if aws.StringValue(dbinst.DBInstanceIdentifier) == fmt.Sprint(params["id"]) {
+							return aws.StringValue(dbinst.DBInstanceStatus), nil
+						}
 					}
 				}
 			}

@@ -719,6 +719,14 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "check", Entity: cloud.Database, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
+			{
 				Action: "create", Entity: cloud.DbSubnetGroup, ApiMethod: "CreateDBSubnetGroup", Input: "CreateDBSubnetGroupInput", Output: "CreateDBSubnetGroupOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBSubnetGroup.DBSubnetGroupName)",
 				RequiredParams: []param{
 					{AwsField: "DBSubnetGroupDescription", TemplateName: "description", AwsType: "awsstr"},

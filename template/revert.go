@@ -86,7 +86,7 @@ func (te *Template) Revert() (*Template, error) {
 					}
 				case "database":
 					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.CmdResult)))
-					params = append(params, "skipsnapshot=true")
+					params = append(params, "skip-snapshot=true")
 				case "policy":
 					params = append(params, fmt.Sprintf("arn=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				case "queue":
@@ -147,6 +147,9 @@ func (te *Template) Revert() (*Template, error) {
 			if notLastCommand {
 				if cmd.Action == "create" && cmd.Entity == "instance" {
 					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=180", quoteParamIfNeeded(cmd.CmdResult)))
+				}
+				if cmd.Action == "create" && cmd.Entity == "database" {
+					lines = append(lines, fmt.Sprintf("check database id=%s state=not-found timeout=300", quoteParamIfNeeded(cmd.CmdResult)))
 				}
 				if cmd.Action == "create" && cmd.Entity == "loadbalancer" {
 					lines = append(lines, fmt.Sprintf("check loadbalancer id=%s state=not-found timeout=180", quoteParamIfNeeded(cmd.CmdResult)))

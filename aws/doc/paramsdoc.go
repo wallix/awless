@@ -30,6 +30,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"id":       "The ID of the Security Group to add to the instance",
 		"instance": "The ID of the Instance",
 	},
+	"checkdatabase": {
+		"id":      "The ID of the RDS Database to check",
+		"state":   "The state of the RDS Database to reach (available | backing-up | creating | deleting | failed | maintenance | modifying | rebooting | renaming | resetting-master-credentials | restore-error | storage-full | upgrading | not-found)",
+		"timeout": "The time (in seconds) after which the check is failed",
+	},
 	"checkdistribution": {
 		"id":      "The ID of the CloudFront Distribution to check",
 		"state":   "The state of the CloudFront Distribution to reach (Deployed | InProgress | not-found)",

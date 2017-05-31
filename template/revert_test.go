@@ -277,6 +277,29 @@ delete scalinggroup force=true name=my-scalinggroup`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert create database", func(t *testing.T) {
+		tpl := MustParse("dbsubgroup = create dbsubnetgroup\ncreate database subnetgroup=$dbsubgroup")
+		for i, cmd := range tpl.CommandNodesIterator() {
+			if i == 0 {
+				cmd.CmdResult = "my-dbsubgroup"
+			}
+			if i == 1 {
+				cmd.CmdResult = "my-database"
+			}
+		}
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete database id=my-database skip-snapshot=true
+check database id=my-database state=not-found timeout=300
+delete dbsubnetgroup name=my-dbsubgroup`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {
