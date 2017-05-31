@@ -67,7 +67,11 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 	awsConf := config.GetConfigWithPrefix("aws.")
-	logger.Verbosef("loading AWS session with profile '%s' and region '%s'", awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
+	_, ok := awsConf[config.ProfileConfigKey]
+	if !ok {
+		awsConf[config.ProfileConfigKey] = "default"
+	}
+	logger.Verbosef("loading AWS session with profile '%v' and region '%v'", awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
 	if err := aws.InitServices(awsConf, logger.DefaultLogger); err != nil {
 		return err
 	}
