@@ -33,9 +33,9 @@ Choose one of the following options:
 <em>Note that this video is in <a href="https://en.wikipedia.org/wiki/APNG">APNG</a>. On Chrome, you need <a href="https://chrome.google.com/webstore/detail/apng/ehkepjiconegkhpodgoaeamnpckdbblp">an extension</a> to view it.</em>
 </p>
 
-- Clear and easy listing of multi-region cloud resources (subnets, instances, groups, users, etc.) on AWS EC2, IAM and S3: `awless list`
+- Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation and Lambda: `awless list`
 - Output formats either human (Markdown-compatible tables, trees) or machine readable (csv, tsv, json, ...): `--format`
-- Listing can be filtered via *resource properties* or *resources tags* 
+- Listing can be filtered via *resource properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
 - Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
 - Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults and sound autocomplete through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
