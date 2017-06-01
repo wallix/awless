@@ -51,7 +51,9 @@ Choose one of the following options:
 
 # Getting started
 
-Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/Getting-Started)
+Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/Getting-Started).
+
+Or read the [introductory blog post about awless](https://medium.com/@hbbio/awless-io-a-mighty-cli-for-aws-a0d48bdb59a4).
 
 # About
 
