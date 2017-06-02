@@ -1820,7 +1820,6 @@ func (d *Ec2Driver) Delete_Image(params map[string]interface{}) (interface{}, er
 	start := time.Now()
 	var output *ec2.DeregisterImageOutput
 	output, err = d.DeregisterImage(input)
-	output = output
 	if err != nil {
 		return nil, fmt.Errorf("delete image: deregister: %s", err)
 	}
@@ -1986,7 +1985,6 @@ func (d *CloudfrontDriver) Create_Distribution(params map[string]interface{}) (i
 	start := time.Now()
 	var output *cloudfront.CreateDistributionOutput
 	output, err = d.CreateDistribution(input)
-	output = output
 	if err != nil {
 		return nil, fmt.Errorf("create distribution: %s", err)
 	}
@@ -2039,7 +2037,6 @@ func (d *CloudfrontDriver) Update_Distribution(params map[string]interface{}) (i
 	start := time.Now()
 	var output *cloudfront.UpdateDistributionOutput
 	output, err = d.UpdateDistribution(input)
-	output = output
 	if err != nil {
 		return nil, fmt.Errorf("update distribution: %s", err)
 	}
@@ -2083,7 +2080,6 @@ func (d *CloudfrontDriver) Delete_Distribution(params map[string]interface{}) (i
 	start := time.Now()
 	var output *cloudfront.DeleteDistributionOutput
 	output, err = d.DeleteDistribution(input)
-	output = output
 	if err != nil {
 		return nil, fmt.Errorf("delete distribution: %s", err)
 	}

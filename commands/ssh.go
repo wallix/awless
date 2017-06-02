@@ -58,8 +58,8 @@ var sshCmd = &cobra.Command{
 	Short: "Launch a SSH (Secure Shell) session to an instance given an id or alias",
 	Example: `  awless ssh i-8d43b21b                       # using the instance id
   awless ssh ec2-user@redis-prod              # using the instance name and specify a user
-  awless ssh @redis-prod -i keyname # using a key stored in ~/.ssh/keyname.pem
-  awless ssh @redis-prod -i ./path/toward/key # with a keyfile`,
+  awless ssh redis-prod -i keyname # using a key stored in ~/.ssh/keyname.pem
+  awless ssh redis-prod -i ./path/toward/key # with a keyfile`,
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook),
 
