@@ -19,13 +19,14 @@ import (
 	"github.com/wallix/awless/logger"
 
 	gossh "golang.org/x/crypto/ssh"
+	agent "golang.org/x/crypto/ssh/agent"
 	"golang.org/x/crypto/ssh/knownhosts"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 type Client struct {
 	*gossh.Client
-	signer                  gossh.Signer
+	authmethod              gossh.AuthMethod
 	Keypath, IP, User       string
 	HostKeyCallback         gossh.HostKeyCallback
 	StrictHostKeyChecking   bool
@@ -39,7 +40,7 @@ func InitClient(keyname string, keyFolders ...string) (*Client, error) {
 		return nil, err
 	}
 
-	signer, err := resolveSigner(privkey)
+	authmethod, err := resolveAuthMethod(privkey)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +49,7 @@ func InitClient(keyname string, keyFolders ...string) (*Client, error) {
 		logger:                  logger.DiscardLogger,
 		InteractiveTerminalFunc: func(*gossh.Client) error { return nil },
 		Keypath:                 privkey.path,
-		signer:                  signer,
+		authmethod:              authmethod,
 		StrictHostKeyChecking:   true,
 	}
 
@@ -107,7 +108,7 @@ func (c *Client) Connect() error {
 func (c *Client) buildClientConfig(username string) *gossh.ClientConfig {
 	config := &gossh.ClientConfig{
 		User:            username,
-		Auth:            []gossh.AuthMethod{gossh.PublicKeys(c.signer)},
+		Auth:            []gossh.AuthMethod{c.authmethod},
 		Timeout:         2 * time.Second,
 		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
 	}
@@ -169,20 +170,39 @@ func DecryptSSHKey(key []byte, password []byte) (gossh.Signer, error) {
 	return gossh.NewSignerFromKey(sshkey)
 }
 
-func resolveSigner(priv privateKey) (gossh.Signer, error) {
-	signer, err := gossh.ParsePrivateKey(priv.body)
-	if err != nil && strings.Contains(err.Error(), "cannot decode encrypted private keys") {
-		fmt.Fprintf(os.Stderr, "This SSH key is encrypted. Please enter passphrase for key '%s':", priv.path)
-		var passphrase []byte
-		passphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+func resolveAuthMethod(priv privateKey) (gossh.AuthMethod, error) {
+	var authmethod gossh.AuthMethod
+
+	if len(priv.body) > 0 {
+		signer, err := gossh.ParsePrivateKey(priv.body)
+		if err != nil && strings.Contains(err.Error(), "cannot decode encrypted private keys") {
+			fmt.Fprintf(os.Stderr, "This SSH key is encrypted. Please enter passphrase for key '%s':", priv.path)
+			var passphrase []byte
+			passphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				return nil, err
+			}
+			fmt.Fprintln(os.Stderr)
+			signer, err = DecryptSSHKey(priv.body, passphrase)
+
+			authmethod = gossh.PublicKeys(signer)
+		}
+
+		return authmethod, err
+	} else {
+		sshAuthSock := os.Getenv("SSH_AUTH_SOCK")
+		if len(sshAuthSock) == 0 {
+			return nil, fmt.Errorf("No key provided and no SSH_AUTH_SOCK env variable set, unable to resolve auth")
+		}
+
+		agentUnixSock, err := net.Dial("unix", sshAuthSock)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Fprintln(os.Stderr)
-		signer, err = DecryptSSHKey(priv.body, passphrase)
+		authmethod = gossh.PublicKeysCallback(agent.NewClient(agentUnixSock).Signers)
 	}
 
-	return signer, err
+	return authmethod, nil
 }
 
 type privateKey struct {
@@ -191,6 +211,11 @@ type privateKey struct {
 }
 
 func resolvePrivateKey(keyname string, keyFolders ...string) (priv privateKey, err error) {
+	// if keyname is zero, assume that the agent will be used
+	if len(keyname) == 0 {
+		return
+	}
+
 	keyPaths := []string{
 		keyname,
 	}
