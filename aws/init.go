@@ -18,17 +18,14 @@ package aws
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/driver"
 )
 
 var (
@@ -70,40 +67,6 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	cloud.ServiceRegistry[CloudformationService.Name()] = CloudformationService
 
 	return nil
-}
-
-func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, error) {
-	if !awsconfig.IsValidRegion(region) {
-		return nil, fmt.Errorf("invalid region '%s' provided", region)
-	}
-
-	sess, err := initAWSSession(region, profile)
-	if err != nil {
-		return nil, err
-	}
-
-	drivLog := logger.DiscardLogger
-	if len(log) > 0 {
-		drivLog = log[0]
-	}
-
-	awsconf := config(
-		map[string]interface{}{"aws.region": region, "aws.profile": profile},
-	)
-
-	var drivers []driver.Driver
-	drivers = append(drivers, NewAccess(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewInfra(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewStorage(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewNotification(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewQueue(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewDns(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewLambda(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewMonitoring(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewCdn(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewCloudformation(sess, awsconf, drivLog).Drivers()...)
-
-	return driver.NewMultiDriver(drivers...), nil
 }
 
 func initAWSSession(region, profile string) (*session.Session, error) {
