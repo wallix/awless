@@ -149,7 +149,10 @@ func (c *Client) localExec() ([]string, bool) {
 		exists = false
 		bin = "ssh"
 	}
-	args := []string{bin, "-i", c.Keypath, fmt.Sprintf("%s@%s", c.User, c.IP)}
+	args := []string{bin, fmt.Sprintf("%s@%s", c.User, c.IP)}
+	if len(c.Keypath) > 0 {
+		args = append(args, "-i", c.Keypath)
+	}
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
 	}
