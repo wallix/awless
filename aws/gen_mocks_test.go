@@ -81,6 +81,10 @@ func (m *mockEc2) Name() string {
 	return ""
 }
 
+func (m *mockEc2) Region() string {
+	return ""
+}
+
 func (m *mockEc2) Provider() string {
 	return ""
 }
@@ -201,6 +205,10 @@ func (m *mockElbv2) Name() string {
 	return ""
 }
 
+func (m *mockElbv2) Region() string {
+	return ""
+}
+
 func (m *mockElbv2) Provider() string {
 	return ""
 }
@@ -259,6 +267,10 @@ type mockRds struct {
 }
 
 func (m *mockRds) Name() string {
+	return ""
+}
+
+func (m *mockRds) Region() string {
 	return ""
 }
 
@@ -334,6 +346,10 @@ type mockAutoscaling struct {
 }
 
 func (m *mockAutoscaling) Name() string {
+	return ""
+}
+
+func (m *mockAutoscaling) Region() string {
 	return ""
 }
 
@@ -433,6 +449,10 @@ func (m *mockIam) Name() string {
 	return ""
 }
 
+func (m *mockIam) Region() string {
+	return ""
+}
+
 func (m *mockIam) Provider() string {
 	return ""
 }
@@ -491,6 +511,10 @@ func (m *mockS3) Name() string {
 	return ""
 }
 
+func (m *mockS3) Region() string {
+	return ""
+}
+
 func (m *mockS3) Provider() string {
 	return ""
 }
@@ -528,6 +552,10 @@ type mockSns struct {
 }
 
 func (m *mockSns) Name() string {
+	return ""
+}
+
+func (m *mockSns) Region() string {
 	return ""
 }
 
@@ -605,6 +633,10 @@ func (m *mockSqs) Name() string {
 	return ""
 }
 
+func (m *mockSqs) Region() string {
+	return ""
+}
+
 func (m *mockSqs) Provider() string {
 	return ""
 }
@@ -646,6 +678,10 @@ type mockRoute53 struct {
 }
 
 func (m *mockRoute53) Name() string {
+	return ""
+}
+
+func (m *mockRoute53) Region() string {
 	return ""
 }
 
@@ -705,6 +741,10 @@ func (m *mockLambda) Name() string {
 	return ""
 }
 
+func (m *mockLambda) Region() string {
+	return ""
+}
+
 func (m *mockLambda) Provider() string {
 	return ""
 }
@@ -759,6 +799,10 @@ type mockCloudwatch struct {
 }
 
 func (m *mockCloudwatch) Name() string {
+	return ""
+}
+
+func (m *mockCloudwatch) Region() string {
 	return ""
 }
 
@@ -835,6 +879,10 @@ func (m *mockCloudfront) Name() string {
 	return ""
 }
 
+func (m *mockCloudfront) Region() string {
+	return ""
+}
+
 func (m *mockCloudfront) Provider() string {
 	return ""
 }
@@ -871,6 +919,10 @@ type mockCloudformation struct {
 }
 
 func (m *mockCloudformation) Name() string {
+	return ""
+}
+
+func (m *mockCloudformation) Region() string {
 	return ""
 }
 
@@ -927,6 +979,10 @@ type mockEcr struct {
 }
 
 func (m *mockEcr) Name() string {
+	return ""
+}
+
+func (m *mockEcr) Region() string {
 	return ""
 }
 
@@ -990,6 +1046,10 @@ type mockEcs struct {
 }
 
 func (m *mockEcs) Name() string {
+	return ""
+}
+
+func (m *mockEcs) Region() string {
 	return ""
 }
 

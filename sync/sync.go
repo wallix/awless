@@ -27,6 +27,7 @@ import (
 	gosync "sync"
 	"time"
 
+	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
@@ -65,14 +66,13 @@ func NewSyncer(l ...*logger.Logger) Syncer {
 }
 
 func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
-	graphs := make(map[string]*graph.Graph)
 	var workers gosync.WaitGroup
 
 	type result struct {
-		name  string
-		gph   *graph.Graph
-		start time.Time
-		err   error
+		service cloud.Service
+		gph     *graph.Graph
+		start   time.Time
+		err     error
 	}
 
 	resultc := make(chan *result, len(services))
@@ -87,7 +87,7 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 			defer workers.Done()
 			start := time.Now()
 			g, err := srv.FetchResources()
-			resultc <- &result{name: srv.Name(), gph: g, start: start, err: err}
+			resultc <- &result{service: srv, gph: g, start: start, err: err}
 		}(service)
 	}
 
@@ -97,7 +97,8 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 	}()
 
 	var allErrors []error
-
+	graphs := make(map[string]*graph.Graph)
+	servicesByName := make(map[string]cloud.Service)
 Loop:
 	for {
 		select {
@@ -106,12 +107,15 @@ Loop:
 				break Loop
 			}
 			if res.err != nil {
-				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", res.name, res.err))
+				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", res.service.Name(), res.err))
 			} else {
-				logger.ExtraVerbosef("sync: fetched %s service took %s", res.name, time.Since(res.start))
+				logger.ExtraVerbosef("sync: fetched %s service took %s", res.service.Name(), time.Since(res.start))
 			}
-			if res.gph != nil {
-				graphs[res.name] = res.gph
+			if serv := res.service; serv != nil {
+				servicesByName[serv.Name()] = serv
+				if res.gph != nil {
+					graphs[serv.Name()] = res.gph
+				}
 			}
 		}
 	}
@@ -124,7 +128,9 @@ Loop:
 		if err != nil {
 			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
 		}
-		filepath := filepath.Join(repo.Dir(), filename)
+		serviceDir := filepath.Join(s.BaseDir(), servicesByName[name].Region())
+		os.MkdirAll(serviceDir, 0700)
+		filepath := filepath.Join(serviceDir, filename)
 		if err = ioutil.WriteFile(filepath, tofile, 0600); err != nil {
 			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", filepath, err))
 		}
@@ -151,8 +157,12 @@ func concatErrors(errs []error) error {
 	return errors.New(strings.Join(lines, "\n"))
 }
 
-func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
-	path := filepath.Join(repo.Dir(), fmt.Sprintf("%s%s", serviceName, fileExt))
+func LoadCurrentLocalGraph(serviceName, region string) *graph.Graph {
+	regionDir := region
+	if aws.IsGlobalService(serviceName) {
+		regionDir = "global"
+	}
+	path := filepath.Join(repo.BaseDir(), regionDir, fmt.Sprintf("%s%s", serviceName, fileExt))
 	g, err := graph.NewGraphFromFile(path)
 	if err != nil {
 		return graph.NewGraph()
@@ -161,7 +171,7 @@ func LoadCurrentLocalGraph(serviceName string) *graph.Graph {
 }
 
 func LoadAllGraphs() (*graph.Graph, error) {
-	path := filepath.Join(repo.Dir(), fmt.Sprintf("*%s", fileExt))
+	path := filepath.Join(repo.BaseDir(), "*", fmt.Sprintf("*%s", fileExt))
 	files, _ := filepath.Glob(path)
 
 	g := graph.NewGraph()

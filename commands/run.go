@@ -283,7 +283,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 
 func validateTemplate(tpl *template.Template) {
 	unicityRule := &template.UniqueNameValidator{LookupGraph: func(key string) (*graph.Graph, bool) {
-		g := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[key])
+		g := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[key], config.GetAWSRegion())
 		return g, true
 	}}
 
@@ -312,7 +312,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 			invalidEntityErr := fmt.Errorf("invalid entity '%s'", args[0])
 
-			resources := resolveResourceFromRef(args[0])
+			_, resources := resolveResourceFromRef(args[0])
 			if len(resources) != 1 {
 				return invalidEntityErr
 			}
@@ -429,7 +429,7 @@ func runSyncFor(tpl *template.Template) {
 }
 
 func resolveAliasFunc(entity, key, alias string) string {
-	gph := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[entity])
+	gph := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[entity], config.GetAWSRegion())
 	resType := key
 	if strings.Contains(key, "id") {
 		resType = entity

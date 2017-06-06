@@ -178,7 +178,7 @@ func newResource(r *graph.Resource) *Resource {
 }
 
 func loadLocalTriples() ([]tstore.Triple, error) {
-	path := filepath.Join(repo.Dir(), fmt.Sprintf("*%s", ".triples"))
+	path := filepath.Join(repo.BaseDir(), "*", fmt.Sprintf("*%s", ".triples"))
 	files, _ := filepath.Glob(path)
 
 	var readers []io.Reader

@@ -49,33 +49,37 @@ type Repo interface {
 	Commit(files ...string) error
 	List() ([]*Rev, error)
 	LoadRev(version string) (*Rev, error)
+	BaseDir() string
 }
 
-type noRevisionRepo struct{}
+type noRevisionRepo struct {
+	basedir string
+}
 
 func (*noRevisionRepo) Commit(files ...string) error         { return nil }
 func (*noRevisionRepo) LoadRev(version string) (*Rev, error) { return &Rev{}, nil }
 func (*noRevisionRepo) List() ([]*Rev, error)                { return nil, nil }
+func (r *noRevisionRepo) BaseDir() string                    { return r.basedir }
 
 type gitRepo struct {
-	repo  *git.Repository
-	files []string
-	path  string
+	repo    *git.Repository
+	files   []string
+	basedir string
 }
 
-func Dir() string {
+func BaseDir() string {
 	return filepath.Join(os.Getenv("__AWLESS_HOME"), "aws", "rdf")
 }
 
 func New() (Repo, error) {
-	dir := Dir()
+	dir := BaseDir()
 	os.MkdirAll(dir, 0700)
 
 	if IsGitInstalled() {
 		return newGitRepo(dir)
-	} else {
-		return &noRevisionRepo{}, nil
 	}
+
+	return &noRevisionRepo{dir}, nil
 }
 
 func IsGitInstalled() bool {
@@ -91,7 +95,11 @@ func newGitRepo(path string) (Repo, error) {
 	}
 
 	repo, err := git.NewFilesystemRepository(filepath.Join(path, ".git"))
-	return &gitRepo{repo: repo, path: path}, err
+	return &gitRepo{repo: repo, basedir: path}, err
+}
+
+func (r *gitRepo) BaseDir() string {
+	return r.basedir
 }
 
 func (r *gitRepo) List() ([]*Rev, error) {
@@ -180,7 +188,7 @@ func (r *gitRepo) Commit(files ...string) error {
 	}
 
 	for _, path := range r.files {
-		if _, err := newGit(r.path).run("add", path); err != nil {
+		if _, err := newGit(r.BaseDir()).run("add", path); err != nil {
 			return err
 		}
 	}
@@ -191,7 +199,7 @@ func (r *gitRepo) Commit(files ...string) error {
 		return nil
 	}
 
-	_, err := newGit(r.path).run(
+	_, err := newGit(r.BaseDir()).run(
 		append(awlessCommitter, "commit", "-m", fmt.Sprintf("syncing %s", strings.Join(files, ", ")))...,
 	)
 
@@ -201,7 +209,7 @@ func (r *gitRepo) Commit(files ...string) error {
 var awlessCommitter = []string{"-c", "user.name='awless'", "-c", "user.email='git@awless.io'"}
 
 func (r *gitRepo) hasChanges() (bool, error) {
-	stdout, err := newGit(r.path).run("status", "--porcelain")
+	stdout, err := newGit(r.BaseDir()).run("status", "--porcelain")
 	if err != nil {
 		return false, err
 	}

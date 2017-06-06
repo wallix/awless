@@ -132,6 +132,14 @@ var APIPerResourceType = map[string]string {
 {{- end }}
 }
 
+var GlobalServices = []string{
+{{- range $index, $service := . }}
+    {{- if $service.Global }}
+      "{{ $service.Name }}",
+    {{- end }}
+{{- end }}
+}
+
 {{ range $index, $service := . }}
 type {{ Title $service.Name }} struct {
 	once oncer
@@ -144,7 +152,11 @@ type {{ Title $service.Name }} struct {
 }
 
 func New{{ Title $service.Name }}(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
-  region := awssdk.StringValue(sess.Config.Region)
+  {{- if $service.Global }}
+	region := "global"
+	{{- else}}
+	region := awssdk.StringValue(sess.Config.Region)
+	{{- end}}
 	return &{{ Title $service.Name }}{ 
 	{{- range $, $api := $service.Api }}
 		{{ApiToInterface $api }}: {{ $api }}.New(sess),
@@ -157,6 +169,10 @@ func New{{ Title $service.Name }}(sess *session.Session, awsconf config, log *lo
 
 func (s *{{ Title $service.Name }}) Name() string {
   return "{{ $service.Name }}"
+}
+
+func (s *{{ Title $service.Name }}) Region() string {
+  return s.region
 }
 
 func (s *{{ Title $service.Name }}) Drivers() []driver.Driver {

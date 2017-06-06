@@ -99,6 +99,7 @@ const (
 )
 
 type Service interface {
+	Region() string
 	Name() string
 	Drivers() []driver.Driver
 	ResourceTypes() []string

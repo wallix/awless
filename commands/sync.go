@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
@@ -70,7 +71,7 @@ var syncCmd = &cobra.Command{
 		}
 		localGraphs := make(map[string]*graph.Graph)
 		for _, service := range services {
-			localGraphs[service.Name()] = sync.LoadCurrentLocalGraph(service.Name())
+			localGraphs[service.Name()] = sync.LoadCurrentLocalGraph(service.Name(), config.GetAWSRegion())
 		}
 		logger.Info("running sync: fetching remote resources for local store")
 		start := time.Now()

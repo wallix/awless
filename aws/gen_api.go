@@ -243,6 +243,12 @@ var APIPerResourceType = map[string]string{
 	"stack":               "cloudformation",
 }
 
+var GlobalServices = []string{
+	"access",
+	"dns",
+	"cdn",
+}
+
 type Infra struct {
 	once   oncer
 	region string
@@ -275,6 +281,10 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 
 func (s *Infra) Name() string {
 	return "infra"
+}
+
+func (s *Infra) Region() string {
+	return s.region
 }
 
 func (s *Infra) Drivers() []driver.Driver {
@@ -1915,7 +1925,7 @@ type Access struct {
 }
 
 func NewAccess(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
-	region := awssdk.StringValue(sess.Config.Region)
+	region := "global"
 	return &Access{
 		IAMAPI: iam.New(sess),
 		STSAPI: sts.New(sess),
@@ -1927,6 +1937,10 @@ func NewAccess(sess *session.Session, awsconf config, log *logger.Logger) cloud.
 
 func (s *Access) Name() string {
 	return "access"
+}
+
+func (s *Access) Region() string {
+	return s.region
 }
 
 func (s *Access) Drivers() []driver.Driver {
@@ -2296,6 +2310,10 @@ func (s *Storage) Name() string {
 	return "storage"
 }
 
+func (s *Storage) Region() string {
+	return s.region
+}
+
 func (s *Storage) Drivers() []driver.Driver {
 	return []driver.Driver{
 		awsdriver.NewS3Driver(s.S3API),
@@ -2470,6 +2488,10 @@ func NewMessaging(sess *session.Session, awsconf config, log *logger.Logger) clo
 
 func (s *Messaging) Name() string {
 	return "messaging"
+}
+
+func (s *Messaging) Region() string {
+	return s.region
 }
 
 func (s *Messaging) Drivers() []driver.Driver {
@@ -2726,7 +2748,7 @@ type Dns struct {
 }
 
 func NewDns(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
-	region := awssdk.StringValue(sess.Config.Region)
+	region := "global"
 	return &Dns{
 		Route53API: route53.New(sess),
 		config:     awsconf,
@@ -2737,6 +2759,10 @@ func NewDns(sess *session.Session, awsconf config, log *logger.Logger) cloud.Ser
 
 func (s *Dns) Name() string {
 	return "dns"
+}
+
+func (s *Dns) Region() string {
+	return s.region
 }
 
 func (s *Dns) Drivers() []driver.Driver {
@@ -2941,6 +2967,10 @@ func (s *Lambda) Name() string {
 	return "lambda"
 }
 
+func (s *Lambda) Region() string {
+	return s.region
+}
+
 func (s *Lambda) Drivers() []driver.Driver {
 	return []driver.Driver{
 		awsdriver.NewLambdaDriver(s.LambdaAPI),
@@ -3105,6 +3135,10 @@ func NewMonitoring(sess *session.Session, awsconf config, log *logger.Logger) cl
 
 func (s *Monitoring) Name() string {
 	return "monitoring"
+}
+
+func (s *Monitoring) Region() string {
+	return s.region
 }
 
 func (s *Monitoring) Drivers() []driver.Driver {
@@ -3324,7 +3358,7 @@ type Cdn struct {
 }
 
 func NewCdn(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
-	region := awssdk.StringValue(sess.Config.Region)
+	region := "global"
 	return &Cdn{
 		CloudFrontAPI: cloudfront.New(sess),
 		config:        awsconf,
@@ -3335,6 +3369,10 @@ func NewCdn(sess *session.Session, awsconf config, log *logger.Logger) cloud.Ser
 
 func (s *Cdn) Name() string {
 	return "cdn"
+}
+
+func (s *Cdn) Region() string {
+	return s.region
 }
 
 func (s *Cdn) Drivers() []driver.Driver {
@@ -3501,6 +3539,10 @@ func NewCloudformation(sess *session.Session, awsconf config, log *logger.Logger
 
 func (s *Cloudformation) Name() string {
 	return "cloudformation"
+}
+
+func (s *Cloudformation) Region() string {
+	return s.region
 }
 
 func (s *Cloudformation) Drivers() []driver.Driver {

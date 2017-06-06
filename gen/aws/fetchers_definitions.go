@@ -43,6 +43,7 @@ func ApiToInterface(api string) string {
 
 type fetchersDef struct {
 	Name     string
+	Global   bool
 	Api      []string
 	Fetchers []fetcher
 }
@@ -93,8 +94,9 @@ var FetchersDefs = []fetchersDef{
 		},
 	},
 	{
-		Name: "access",
-		Api:  []string{"iam", "sts"},
+		Name:   "access",
+		Global: true,
+		Api:    []string{"iam", "sts"},
 		Fetchers: []fetcher{
 			{Api: "iam", ResourceType: cloud.User, AWSType: "iam.UserDetail", ManualFetcher: true},
 			{Api: "iam", ResourceType: cloud.Group, AWSType: "iam.GroupDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "GroupDetailList", Multipage: true, NextPageMarker: "Marker"},
@@ -121,8 +123,9 @@ var FetchersDefs = []fetchersDef{
 		},
 	},
 	{
-		Name: "dns",
-		Api:  []string{"route53"},
+		Name:   "dns",
+		Global: true,
+		Api:    []string{"route53"},
 		Fetchers: []fetcher{
 			{Api: "route53", ResourceType: cloud.Zone, AWSType: "route53.HostedZone", ApiMethod: "ListHostedZonesPages", Input: "route53.ListHostedZonesInput{}", Output: "route53.ListHostedZonesOutput", OutputsExtractor: "HostedZones", Multipage: true, NextPageMarker: "NextMarker"},
 			{Api: "route53", ResourceType: cloud.Record, AWSType: "route53.ResourceRecordSet", ManualFetcher: true},
@@ -145,8 +148,9 @@ var FetchersDefs = []fetchersDef{
 		},
 	},
 	{
-		Name: "cdn",
-		Api:  []string{"cloudfront"},
+		Name:   "cdn",
+		Global: true,
+		Api:    []string{"cloudfront"},
 		Fetchers: []fetcher{
 			{Api: "cloudfront", ResourceType: cloud.Distribution, AWSType: "cloudfront.DistributionSummary", ApiMethod: "ListDistributionsPages", Input: "cloudfront.ListDistributionsInput{}", Output: "cloudfront.ListDistributionsOutput", OutputsExtractor: "DistributionList.Items", Multipage: true, NextPageMarker: "DistributionList.NextMarker"},
 		},

@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
@@ -218,13 +217,12 @@ func runFullSync() {
 }
 
 func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
-	resources := resolveResourceFromRef(ref)
+	g, resources := resolveResourceFromRef(ref)
 	switch len(resources) {
 	case 0:
 		return nil, nil
 	case 1:
-		res := resources[0]
-		return res, sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[res.Type()])
+		return resources[0], g
 	default:
 		logger.Infof("%d resources found with name '%s'. Show a specific resource with:", len(resources), deprefix(ref))
 		for _, res := range resources {
@@ -242,7 +240,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 	return nil, nil
 }
 
-func resolveResourceFromRef(ref string) []*graph.Resource {
+func resolveResourceFromRef(ref string) (*graph.Graph, []*graph.Resource) {
 	g, err := sync.LoadAllGraphs()
 	exitOn(err)
 
@@ -253,13 +251,13 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 		logger.Verbosef("prefixed with @: forcing research by name '%s'", name)
 		rs, err := g.ResolveResources(byName)
 		exitOn(err)
-		return rs
+		return g, rs
 	} else {
 		rs, err := g.ResolveResources(&graph.ById{Id: name})
 		exitOn(err)
 
 		if len(rs) > 0 {
-			return rs
+			return g, rs
 		} else {
 			rs, err := g.ResolveResources(
 				byName,
@@ -267,7 +265,7 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 			)
 			exitOn(err)
 
-			return rs
+			return g, rs
 		}
 	}
 }

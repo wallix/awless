@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
@@ -90,7 +91,7 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 
 			if localGlobalFlag {
 				if srvName, ok := aws.ServicePerResourceType[resType]; ok {
-					g = sync.LoadCurrentLocalGraph(srvName)
+					g = sync.LoadCurrentLocalGraph(srvName, config.GetAWSRegion())
 				} else {
 					exitOn(fmt.Errorf("cannot find service for resource type %s", resType))
 				}
@@ -113,7 +114,7 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 		Hidden: true,
 
 		Run: func(cmd *cobra.Command, args []string) {
-			g := sync.LoadCurrentLocalGraph(srvName)
+			g := sync.LoadCurrentLocalGraph(srvName, config.GetAWSRegion())
 			displayer, err := console.BuildOptions(
 				console.WithFormat(listingFormat),
 				console.WithMaxWidth(console.GetTerminalWidth()),
