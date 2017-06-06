@@ -174,38 +174,41 @@ func DecryptSSHKey(key []byte, password []byte) (gossh.Signer, error) {
 }
 
 func resolveAuthMethod(priv privateKey) (gossh.AuthMethod, error) {
-	var authmethod gossh.AuthMethod
-
 	if len(priv.body) > 0 {
 		signer, err := gossh.ParsePrivateKey(priv.body)
-		if err != nil && strings.Contains(err.Error(), "cannot decode encrypted private keys") {
+		if err != nil {
+			if !strings.Contains(err.Error(), "cannot decode encrypted private keys") {
+				return nil, err
+			}
+
 			fmt.Fprintf(os.Stderr, "This SSH key is encrypted. Please enter passphrase for key '%s':", priv.path)
 			var passphrase []byte
 			passphrase, err = terminal.ReadPassword(int(syscall.Stdin))
 			if err != nil {
 				return nil, err
 			}
+
 			fmt.Fprintln(os.Stderr)
 			signer, err = DecryptSSHKey(priv.body, passphrase)
-
-			authmethod = gossh.PublicKeys(signer)
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		return authmethod, err
-	} else {
-		sshAuthSock := os.Getenv("SSH_AUTH_SOCK")
-		if len(sshAuthSock) == 0 {
-			return nil, fmt.Errorf("No key provided and no SSH_AUTH_SOCK env variable set, unable to resolve auth")
-		}
-
-		agentUnixSock, err := net.Dial("unix", sshAuthSock)
-		if err != nil {
-			return nil, err
-		}
-		authmethod = gossh.PublicKeysCallback(agent.NewClient(agentUnixSock).Signers)
+		return gossh.PublicKeys(signer), err
 	}
 
-	return authmethod, nil
+	sshAuthSock := os.Getenv("SSH_AUTH_SOCK")
+	if len(sshAuthSock) == 0 {
+		return nil, fmt.Errorf("No key provided and no SSH_AUTH_SOCK env variable set, unable to resolve auth")
+	}
+
+	agentUnixSock, err := net.Dial("unix", sshAuthSock)
+	if err != nil {
+		return nil, err
+	}
+
+	return gossh.PublicKeysCallback(agent.NewClient(agentUnixSock).Signers), nil
 }
 
 type privateKey struct {
