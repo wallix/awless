@@ -219,6 +219,7 @@ func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, e
 		logger: d.logger,
 		setters: []setter{
 			{val: params["name"], fieldPath: "PolicyName", fieldType: awsstr},
+			{val: params["description"], fieldPath: "Description", fieldType: awsstr},
 			{val: string(b), fieldPath: "PolicyDocument", fieldType: awsstr},
 		},
 	}
