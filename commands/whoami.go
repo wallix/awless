@@ -46,7 +46,7 @@ var whoamiCmd = &cobra.Command{
 	Use:               "whoami",
 	Aliases:           []string{"who"},
 	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 	Short:             "Show your account, attached (i.e. managed) and inlined policies",
 
 	Run: func(cmd *cobra.Command, args []string) {

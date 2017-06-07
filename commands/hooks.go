@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/config"
+	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
@@ -97,6 +98,27 @@ func initLoggerHook(cmd *cobra.Command, args []string) error {
 	if silentGlobalFlag {
 		logger.DefaultLogger = logger.DiscardLogger
 	}
+	return nil
+}
+
+func onVersionUpgrade(cmd *cobra.Command, args []string) error {
+	var lastVersion string
+	if derr := database.Execute(func(db *database.DB) (err error) {
+		lastVersion, err = db.GetStringValue("current.version")
+		return
+	}); derr != nil {
+		fmt.Printf("cannot verify stored version in db: %s\n", derr)
+	}
+
+	if config.IsSemverUpgrade(lastVersion, config.Version) {
+		if err := database.Execute(func(db *database.DB) error {
+			return db.SetStringValue("current.version", config.Version)
+		}); err != nil {
+			fmt.Printf("cannot store upgraded version in db: %s\n", err)
+		}
+		logger.Infof("awless has just been upgraded from %s to %s", lastVersion, config.Version)
+	}
+
 	return nil
 }
 

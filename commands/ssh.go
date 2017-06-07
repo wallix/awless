@@ -61,7 +61,7 @@ var sshCmd = &cobra.Command{
   awless ssh redis-prod -i keyname # using a key stored in ~/.ssh/keyname.pem
   awless ssh redis-prod -i ./path/toward/key # with a keyfile`,
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

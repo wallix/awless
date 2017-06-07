@@ -44,7 +44,7 @@ var logCmd = &cobra.Command{
 	Use:               "log",
 	Short:             "Shows the cloud infrastructure changes log",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(c *cobra.Command, args []string) error {
 		if deleteAllLogsFlag {
