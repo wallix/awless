@@ -81,10 +81,10 @@ func TestSemverUpgradeOrNot(t *testing.T) {
 	}
 
 	for _, tc := range tcases {
-		if got, want := isSemverUpgrade(tc.current, tc.latest), tc.exp; got != want {
+		if got, want := IsSemverUpgrade(tc.current, tc.latest), tc.exp; got != want {
 			t.Fatalf("%s -> %s, got %t, want %t", tc.current, tc.latest, got, want)
 		}
-		if got, want := isSemverUpgrade(tc.latest, tc.current), tc.revert; got != want {
+		if got, want := IsSemverUpgrade(tc.latest, tc.current), tc.revert; got != want {
 			t.Fatalf("(revert) %s -> %s, got %t, want %t", tc.latest, tc.current, got, want)
 		}
 
@@ -92,10 +92,10 @@ func TestSemverUpgradeOrNot(t *testing.T) {
 		current := "v" + tc.current
 		latest := "v" + tc.latest
 
-		if got, want := isSemverUpgrade(current, latest), tc.exp; got != want {
+		if got, want := IsSemverUpgrade(current, latest), tc.exp; got != want {
 			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
 		}
-		if got, want := isSemverUpgrade(latest, current), tc.revert; got != want {
+		if got, want := IsSemverUpgrade(latest, current), tc.revert; got != want {
 			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
 		}
 
@@ -103,10 +103,10 @@ func TestSemverUpgradeOrNot(t *testing.T) {
 		current = "v" + tc.current
 		latest = tc.latest
 
-		if got, want := isSemverUpgrade(current, latest), tc.exp; got != want {
+		if got, want := IsSemverUpgrade(current, latest), tc.exp; got != want {
 			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
 		}
-		if got, want := isSemverUpgrade(latest, current), tc.revert; got != want {
+		if got, want := IsSemverUpgrade(latest, current), tc.revert; got != want {
 			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
 		}
 
@@ -114,10 +114,91 @@ func TestSemverUpgradeOrNot(t *testing.T) {
 		current = tc.current
 		latest = "v" + tc.latest
 
-		if got, want := isSemverUpgrade(current, latest), tc.exp; got != want {
+		if got, want := IsSemverUpgrade(current, latest), tc.exp; got != want {
 			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
 		}
-		if got, want := isSemverUpgrade(latest, current), tc.revert; got != want {
+		if got, want := IsSemverUpgrade(latest, current), tc.revert; got != want {
+			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+		}
+	}
+}
+
+func TestCompareSemver(t *testing.T) {
+	tcases := []struct {
+		current, latest string
+		exp, revert     int
+	}{
+		{current: "0.0.0", latest: "0.0.0", exp: 0, revert: 0},
+
+		{current: "0.0.0", latest: "0.0.1", exp: -1, revert: 1},
+		{current: "0.0.0", latest: "0.1.0", exp: -1, revert: 1},
+		{current: "0.0.0", latest: "0.1.0", exp: -1, revert: 1},
+		{current: "0.0.0", latest: "1.0.0", exp: -1, revert: 1},
+
+		{current: "0.0.10", latest: "0.0.1", exp: 1, revert: -1},
+		{current: "0.0.10", latest: "0.0.10", exp: 0, revert: 0},
+		{current: "0.12.0", latest: "0.1.0", exp: 1, revert: -1},
+		{current: "0.12.0", latest: "0.12.0", exp: 0, revert: 0},
+		{current: "10.0.0", latest: "9.0.0", exp: 1, revert: -1},
+		{current: "10.0.0", latest: "10.0.0", exp: 0, revert: 0},
+
+		{current: "0.0.10", latest: "0.0.11", exp: -1, revert: 1},
+		{current: "0.9.0", latest: "0.10.0", exp: -1, revert: 1},
+		{current: "9.0.0", latest: "10.0.0", exp: -1, revert: 1},
+
+		{current: "0.1.0", latest: "0.0.2", exp: 1, revert: -1},
+		{current: "1.0.0", latest: "0.10.0", exp: 1, revert: -1},
+
+		{current: "1.1.0", latest: "1.1.1", exp: -1, revert: 1},
+		{current: "2.1.5", latest: "2.2.0", exp: -1, revert: 1},
+	}
+
+	MustCompareSemver := func(a, b string) int {
+		i, err := CompareSemver(a, b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return i
+	}
+
+	for _, tc := range tcases {
+		if got, want := MustCompareSemver(tc.current, tc.latest), tc.exp; got != want {
+			t.Fatalf("%s -> %s, got %d, want %d", tc.current, tc.latest, got, want)
+		}
+		if got, want := MustCompareSemver(tc.latest, tc.current), tc.revert; got != want {
+			t.Fatalf("(revert) %s -> %s, got %d, want %d", tc.latest, tc.current, got, want)
+		}
+
+		// with both 'v' prefix
+		current := "v" + tc.current
+		latest := "v" + tc.latest
+
+		if got, want := MustCompareSemver(current, latest), tc.exp; got != want {
+			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+		}
+		if got, want := MustCompareSemver(latest, current), tc.revert; got != want {
+			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+		}
+
+		// with current 'v' prefix
+		current = "v" + tc.current
+		latest = tc.latest
+
+		if got, want := MustCompareSemver(current, latest), tc.exp; got != want {
+			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+		}
+		if got, want := MustCompareSemver(latest, current), tc.revert; got != want {
+			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+		}
+
+		// with latest 'v' prefix
+		current = tc.current
+		latest = "v" + tc.latest
+
+		if got, want := MustCompareSemver(current, latest), tc.exp; got != want {
+			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+		}
+		if got, want := MustCompareSemver(latest, current), tc.revert; got != want {
 			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
 		}
 	}

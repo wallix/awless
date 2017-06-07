@@ -17,6 +17,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -68,7 +69,7 @@ func notifyIfUpgrade(url string, messaging io.Writer) error {
 
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&latest); err == nil {
-		if isSemverUpgrade(Version, latest.Version) {
+		if IsSemverUpgrade(Version, latest.Version) {
 			var install string
 			switch BuildFor {
 			case "brew":
@@ -89,7 +90,18 @@ const semverLen = 3
 
 type semver [semverLen]int
 
-func isSemverUpgrade(current, latest string) bool {
+var SemverInvalidFormatErr = errors.New("semver invalid format")
+
+func IsSemverUpgrade(current, latest string) bool {
+	i, err := CompareSemver(current, latest)
+	if err != nil {
+		return false
+	}
+
+	return i < 0
+}
+
+func CompareSemver(current, latest string) (int, error) {
 	current = strings.TrimPrefix(current, "v")
 	latest = strings.TrimPrefix(latest, "v")
 
@@ -100,14 +112,14 @@ func isSemverUpgrade(current, latest string) bool {
 	lFields := strings.FieldsFunc(latest, dot)
 
 	if len(cFields) != semverLen || len(lFields) != semverLen {
-		return false
+		return 0, SemverInvalidFormatErr
 	}
 
 	currents := new(semver)
 	for i, f := range cFields {
 		num, err := strconv.Atoi(f)
 		if err != nil {
-			return false
+			return 0, SemverInvalidFormatErr
 		}
 		currents[i] = num
 	}
@@ -116,20 +128,20 @@ func isSemverUpgrade(current, latest string) bool {
 	for i, f := range lFields {
 		num, err := strconv.Atoi(f)
 		if err != nil {
-			return false
+			return 0, SemverInvalidFormatErr
 		}
 		latests[i] = num
 	}
 
 	for i := 0; i < semverLen; i++ {
 		if latests[i] > currents[i] {
-			return true
+			return -1, nil
 		} else if latests[i] == currents[i] {
 			continue
 		} else {
-			return false
+			return 1, nil
 		}
 	}
 
-	return false
+	return 0, nil
 }
