@@ -549,8 +549,8 @@ const (
 )
 
 type templateMetadata struct {
-	Title, Name string
-	Tags        []string
+	Title, Name, MinimalVersion string
+	Tags                        []string
 }
 
 func getTemplateText(path string) ([]byte, error) {
@@ -594,7 +594,12 @@ func listRemoteTemplates() error {
 	fmt.Fprintln(w, "Title\tTags\tRun it with")
 	fmt.Fprintln(w, "-----\t----\t-----------")
 	for _, tpl := range remoteTemplates {
-		fmt.Fprintln(w, fmt.Sprintf("%s\t%s\tawless run repo:%s -v", tpl.Title, strings.Join(tpl.Tags, ","), tpl.Name))
+		if tpl.MinimalVersion == "" {
+			tpl.MinimalVersion = config.Version
+		}
+		if comp, err := config.CompareSemver(tpl.MinimalVersion, config.Version); comp < 1 && err == nil {
+			fmt.Fprintln(w, fmt.Sprintf("%s\t%s\tawless run repo:%s -v", tpl.Title, strings.Join(tpl.Tags, ","), tpl.Name))
+		}
 	}
 	w.Flush()
 	return nil
