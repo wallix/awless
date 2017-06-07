@@ -553,7 +553,7 @@ type templateMetadata struct {
 	Tags                        []string
 }
 
-func getTemplateText(path string) ([]byte, error) {
+func getTemplateText(path string) (content []byte, err error) {
 	if strings.HasPrefix(path, "repo:") {
 		path = fmt.Sprintf("%s/%s", DEFAULT_REPO_PREFIX, strings.TrimPrefix(path[5:], "/"))
 		path = fmt.Sprintf("%s%s", strings.TrimSuffix(path, FILE_EXT), FILE_EXT)
@@ -561,9 +561,24 @@ func getTemplateText(path string) ([]byte, error) {
 
 	if strings.HasPrefix(path, "http") {
 		logger.ExtraVerbosef("fetching remote template at '%s'", path)
-		return readHttpContent(path)
+		content, err = readHttpContent(path)
+	} else {
+		content, err = ioutil.ReadFile(path)
 	}
-	return ioutil.ReadFile(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	requiredVersion, ok := detectMinimalVersionInTemplate(content)
+	if ok {
+		comp, _ := config.CompareSemver(requiredVersion, config.Version)
+		if comp > 0 {
+			return content, fmt.Errorf("This template has metadata indicating to be parsed with at least awless version %s. Your current version is %s", requiredVersion, config.Version)
+		}
+	}
+
+	return content, nil
 }
 
 func removeComments(b []byte) []byte {
@@ -579,6 +594,22 @@ func removeComments(b []byte) []byte {
 	}
 
 	return cleaned.Bytes()
+}
+
+var (
+	minimalVersionRegex = regexp.MustCompile(`^# *MinimalVersion: *(v?\d{1,3}\.\d{1,3}\.\d{1,3}).*$`)
+)
+
+func detectMinimalVersionInTemplate(content []byte) (string, bool) {
+	scn := bufio.NewScanner(bytes.NewReader(content))
+	for scn.Scan() {
+		matches := minimalVersionRegex.FindStringSubmatch(scn.Text())
+		if len(matches) > 1 {
+			logger.ExtraVerbosef("detected minimal version %s in templates", matches[1])
+			return matches[1], true
+		}
+	}
+	return "", false
 }
 
 func listRemoteTemplates() error {
