@@ -44,7 +44,7 @@ CustomTypedValue <- <CidrValue> { p.addParamCidrValue(text) }
         / <CSVValue> {p.addCsvValue(text)}
         / <IntRangeValue> { p.addParamValue(text) }
 
-StringValue <- [a-zA-Z0-9-._:/+;~@<>]+ # This regex is in sync with template/internal/ast.simpleStringValue
+StringValue <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
 
 
 DoubleQuotedValue <- [^"]*

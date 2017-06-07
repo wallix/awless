@@ -50,6 +50,7 @@ testkey = create keypair name=$KEY_NAME
 instancecount = {instance.count} # testing var assignement from hole
 testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
 create tag resource=\$testinstance key=Env value=Testing
+create policy name=AwlessSmokeTestPolicy resource=* action="ec2:Describe*" effect=Allow
 EOF
 
 RESOLVED_AMI=$($BIN search images debian::jessie --id-only)

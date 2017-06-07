@@ -26,6 +26,35 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
+func TestParseVariousTemplatesCorrectly(t *testing.T) {
+	tcases := []struct {
+		desc string
+		text string
+		exp  string
+	}{
+		{"keep quote in output", "create policy description=\"my desc\"", "create policy description='my desc'"},
+		{"support wildcard", "create policy action=ec2:Get*", ""},
+		{"support wildcard in quote", "create policy action=\"ec2:Get*\"", "create policy action=ec2:Get*"},
+		{"support single wildcard", "create policy resource=*", ""},
+	}
+
+	for _, tcase := range tcases {
+		tpl, err := Parse(tcase.text)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := tcase.text
+		if tcase.exp != "" {
+			exp = tcase.exp
+		}
+
+		if got, want := tpl.String(), exp; got != want {
+			t.Fatalf("%s: parsing [%s]\ngot  [%s]\nwant [%s]\n", tcase.desc, tcase.text, got, want)
+		}
+	}
+}
+
 func TestParseDoubleQuotedString(t *testing.T) {
 	tcases := []struct {
 		text, exp string

@@ -257,7 +257,7 @@ func (a *AST) Clone() *AST {
 	return clone
 }
 
-var SimpleStringValue = regexp.MustCompile("^[a-zA-Z0-9-._:/+;~@<>]+$") // in sync with [a-zA-Z0-9-._:/+;~@<>]+ in PEG (with ^ and $ around)
+var SimpleStringValue = regexp.MustCompile("^[a-zA-Z0-9-._:/+;~@<>*]+$") // in sync with [a-zA-Z0-9-._:/+;~@<>]+ in PEG (with ^ and $ around)
 
 func quoteStringIfNeeded(input string) string {
 	if SimpleStringValue.MatchString(input) {
