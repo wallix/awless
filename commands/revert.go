@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template"
 )
 
@@ -48,6 +49,12 @@ var revertCmd = &cobra.Command{
 			loaded, terr = db.GetTemplate(revertId)
 			return
 		}))
+
+		if loc := loaded.Locale; loc != "" && loc != config.GetAWSRegion() {
+			logger.Errorf("This template was originally run in region %s. You are currently in region %s", loc, config.GetAWSRegion())
+			logger.Infof("You can revert it using the region flag: `awless revert %s -r %s`", revertId, loc)
+			exitOn(errors.New("region mismatched"))
+		}
 
 		reverted, err := loaded.Template.Revert()
 		exitOn(err)
