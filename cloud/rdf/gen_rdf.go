@@ -20,6 +20,7 @@ package rdf
 import "github.com/wallix/awless/cloud/properties"
 
 const (
+	Account                   = "cloud:account"
 	Actions                   = "cloud:actions"
 	ActionsEnabled            = "cloud:actionsEnabled"
 	ACMCertificate            = "cloud:acmCertificate"
@@ -185,6 +186,7 @@ const (
 	Updated                   = "cloud:updated"
 	UserData                  = "cloud:userData"
 	Username                  = "cloud:username"
+	URI                       = "cloud:uri"
 	Value                     = "cloud:value"
 	Version                   = "cloud:version"
 	Virtualization            = "cloud:virtualization"
@@ -197,6 +199,7 @@ const (
 )
 
 var Labels = map[string]string{
+	properties.Account:                   Account,
 	properties.Actions:                   Actions,
 	properties.ActionsEnabled:            ActionsEnabled,
 	properties.ACMCertificate:            ACMCertificate,
@@ -362,6 +365,7 @@ var Labels = map[string]string{
 	properties.Updated:                   Updated,
 	properties.UserData:                  UserData,
 	properties.Username:                  Username,
+	properties.URI:                       URI,
 	properties.Value:                     Value,
 	properties.Version:                   Version,
 	properties.Virtualization:            Virtualization,
@@ -374,6 +378,7 @@ var Labels = map[string]string{
 }
 
 var Properties = RDFProperties{
+	Account:                 {ID: Account, RdfType: "rdf:Property", RdfsLabel: "Account", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Actions:                 {ID: Actions, RdfType: "rdf:Property", RdfsLabel: "Actions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ActionsEnabled:          {ID: ActionsEnabled, RdfType: "rdf:Property", RdfsLabel: "ActionsEnabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	ACMCertificate:          {ID: ACMCertificate, RdfType: "rdf:Property", RdfsLabel: "ACMCertificate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -539,6 +544,7 @@ var Properties = RDFProperties{
 	Updated:                 {ID: Updated, RdfType: "rdf:Property", RdfsLabel: "Updated", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	UserData:                {ID: UserData, RdfType: "rdf:Property", RdfsLabel: "UserData", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Username:                {ID: Username, RdfType: "rdf:Property", RdfsLabel: "Username", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	URI:                     {ID: URI, RdfType: "rdf:Property", RdfsLabel: "URI", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Value:                   {ID: Value, RdfType: "rdf:Property", RdfsLabel: "Value", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Version:                 {ID: Version, RdfType: "rdf:Property", RdfsLabel: "Version", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Virtualization:          {ID: Virtualization, RdfType: "rdf:Property", RdfsLabel: "Virtualization", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

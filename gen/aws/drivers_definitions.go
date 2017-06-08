@@ -1289,4 +1289,9 @@ var DriversDefs = []driversDef{
 			},
 		},
 	},
+	{
+		Api:          "ecr",
+		ApiInterface: "ECRAPI",
+		Drivers:      []driver{},
+	},
 }

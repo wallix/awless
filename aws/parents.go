@@ -118,6 +118,7 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.AvailabilityZone: {addRegionParent},
 	cloud.Keypair:          {addRegionParent},
 	cloud.Image:            {addRegionParent},
+	cloud.Registry:         {addRegionParent},
 	cloud.User:             {userAddGroupsRelations, addManagedPoliciesRelations},
 	cloud.Role:             {addManagedPoliciesRelations},
 	cloud.Group:            {addManagedPoliciesRelations},

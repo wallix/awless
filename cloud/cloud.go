@@ -84,6 +84,8 @@ const (
 	Distribution string = "distribution"
 	//cloudformation
 	Stack string = "stack"
+	//container
+	Registry string = "registry"
 )
 
 type Service interface {
@@ -118,7 +120,7 @@ func GetServiceForType(t string) (Service, error) {
 }
 
 func PluralizeResource(singular string) string {
-	if strings.HasSuffix(singular, "cy") {
+	if strings.HasSuffix(singular, "cy") || strings.HasSuffix(singular, "try") {
 		return strings.TrimSuffix(singular, "y") + "ies"
 	}
 	return singular + "s"

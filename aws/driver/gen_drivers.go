@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
 	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -1032,6 +1033,26 @@ func (d *CloudformationDriver) Lookup(lookups ...string) (driverFn driver.Driver
 			return d.Delete_Stack_DryRun, nil
 		}
 		return d.Delete_Stack, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type EcrDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	ecriface.ECRAPI
+}
+
+func (d *EcrDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *EcrDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewEcrDriver(api ecriface.ECRAPI) driver.Driver {
+	return &EcrDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *EcrDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

@@ -37,6 +37,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch/cloudwatchiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -99,6 +101,7 @@ var ResourceTypes = []string{
 	"launchconfiguration",
 	"scalinggroup",
 	"scalingpolicy",
+	"registry",
 	"user",
 	"group",
 	"role",
@@ -123,6 +126,7 @@ var ServicePerAPI = map[string]string{
 	"elbv2":          "infra",
 	"rds":            "infra",
 	"autoscaling":    "infra",
+	"ecr":            "infra",
 	"iam":            "access",
 	"sts":            "access",
 	"s3":             "storage",
@@ -157,6 +161,7 @@ var ServicePerResourceType = map[string]string{
 	"launchconfiguration": "infra",
 	"scalinggroup":        "infra",
 	"scalingpolicy":       "infra",
+	"registry":            "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -198,6 +203,7 @@ var APIPerResourceType = map[string]string{
 	"launchconfiguration": "autoscaling",
 	"scalinggroup":        "autoscaling",
 	"scalingpolicy":       "autoscaling",
+	"registry":            "ecr",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -226,6 +232,7 @@ type Infra struct {
 	elbv2iface.ELBV2API
 	rdsiface.RDSAPI
 	autoscalingiface.AutoScalingAPI
+	ecriface.ECRAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
@@ -235,6 +242,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		ELBV2API:       elbv2.New(sess),
 		RDSAPI:         rds.New(sess),
 		AutoScalingAPI: autoscaling.New(sess),
+		ECRAPI:         ecr.New(sess),
 		config:         awsconf,
 		region:         region,
 		log:            log,
@@ -251,6 +259,7 @@ func (s *Infra) Drivers() []driver.Driver {
 		awsdriver.NewElbv2Driver(s.ELBV2API),
 		awsdriver.NewRdsDriver(s.RDSAPI),
 		awsdriver.NewAutoscalingDriver(s.AutoScalingAPI),
+		awsdriver.NewEcrDriver(s.ECRAPI),
 	}
 }
 
@@ -277,6 +286,7 @@ func (s *Infra) ResourceTypes() []string {
 		"launchconfiguration",
 		"scalinggroup",
 		"scalingpolicy",
+		"registry",
 	}
 }
 
@@ -311,6 +321,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var launchconfigurationList []*autoscaling.LaunchConfiguration
 	var scalinggroupList []*autoscaling.Group
 	var scalingpolicyList []*autoscaling.ScalingPolicy
+	var registryList []*ecr.Repository
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -651,6 +662,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[scalingpolicy]")
 	}
+	if s.config.getBool("aws.infra.registry.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, registryList, err = s.fetch_all_registry_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[registry]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -989,6 +1016,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.registry.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range registryList {
+				for _, fn := range addParentsFns["registry"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1069,6 +1111,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	case "scalingpolicy":
 		graph, _, err := s.fetch_all_scalingpolicy_graph()
 		return graph, err
+	case "registry":
+		graph, _, err := s.fetch_all_registry_graph()
+		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
 	}
@@ -1108,7 +1153,7 @@ func (s *Infra) fetch_all_subnet_graph() (*graph.Graph, []*ec2.Subnet, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.Subnet
 
-	out, err := s.DescribeSubnets(&ec2.DescribeSubnetsInput{})
+	out, err := s.EC2API.DescribeSubnets(&ec2.DescribeSubnetsInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1132,7 +1177,7 @@ func (s *Infra) fetch_all_vpc_graph() (*graph.Graph, []*ec2.Vpc, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.Vpc
 
-	out, err := s.DescribeVpcs(&ec2.DescribeVpcsInput{})
+	out, err := s.EC2API.DescribeVpcs(&ec2.DescribeVpcsInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1156,7 +1201,7 @@ func (s *Infra) fetch_all_keypair_graph() (*graph.Graph, []*ec2.KeyPairInfo, err
 	g := graph.NewGraph()
 	var cloudResources []*ec2.KeyPairInfo
 
-	out, err := s.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
+	out, err := s.EC2API.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1180,7 +1225,7 @@ func (s *Infra) fetch_all_securitygroup_graph() (*graph.Graph, []*ec2.SecurityGr
 	g := graph.NewGraph()
 	var cloudResources []*ec2.SecurityGroup
 
-	out, err := s.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{})
+	out, err := s.EC2API.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1232,7 +1277,7 @@ func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.Internet
 	g := graph.NewGraph()
 	var cloudResources []*ec2.InternetGateway
 
-	out, err := s.DescribeInternetGateways(&ec2.DescribeInternetGatewaysInput{})
+	out, err := s.EC2API.DescribeInternetGateways(&ec2.DescribeInternetGatewaysInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1256,7 +1301,7 @@ func (s *Infra) fetch_all_routetable_graph() (*graph.Graph, []*ec2.RouteTable, e
 	g := graph.NewGraph()
 	var cloudResources []*ec2.RouteTable
 
-	out, err := s.DescribeRouteTables(&ec2.DescribeRouteTablesInput{})
+	out, err := s.EC2API.DescribeRouteTables(&ec2.DescribeRouteTablesInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1280,7 +1325,7 @@ func (s *Infra) fetch_all_availabilityzone_graph() (*graph.Graph, []*ec2.Availab
 	g := graph.NewGraph()
 	var cloudResources []*ec2.AvailabilityZone
 
-	out, err := s.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
+	out, err := s.EC2API.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1304,7 +1349,7 @@ func (s *Infra) fetch_all_image_graph() (*graph.Graph, []*ec2.Image, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ec2.Image
 
-	out, err := s.DescribeImages(&ec2.DescribeImagesInput{Owners: []*string{awssdk.String("self")}})
+	out, err := s.EC2API.DescribeImages(&ec2.DescribeImagesInput{Owners: []*string{awssdk.String("self")}})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1328,7 +1373,7 @@ func (s *Infra) fetch_all_importimagetask_graph() (*graph.Graph, []*ec2.ImportIm
 	g := graph.NewGraph()
 	var cloudResources []*ec2.ImportImageTask
 
-	out, err := s.DescribeImportImageTasks(&ec2.DescribeImportImageTasksInput{})
+	out, err := s.EC2API.DescribeImportImageTasks(&ec2.DescribeImportImageTasksInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1352,7 +1397,7 @@ func (s *Infra) fetch_all_elasticip_graph() (*graph.Graph, []*ec2.Address, error
 	g := graph.NewGraph()
 	var cloudResources []*ec2.Address
 
-	out, err := s.DescribeAddresses(&ec2.DescribeAddressesInput{})
+	out, err := s.EC2API.DescribeAddresses(&ec2.DescribeAddressesInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1432,7 +1477,7 @@ func (s *Infra) fetch_all_targetgroup_graph() (*graph.Graph, []*elbv2.TargetGrou
 	g := graph.NewGraph()
 	var cloudResources []*elbv2.TargetGroup
 
-	out, err := s.DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{})
+	out, err := s.ELBV2API.DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{})
 	if err != nil {
 		return nil, cloudResources, err
 	}
@@ -1571,6 +1616,34 @@ func (s *Infra) fetch_all_scalingpolicy_graph() (*graph.Graph, []*autoscaling.Sc
 	err := s.DescribePoliciesPages(&autoscaling.DescribePoliciesInput{},
 		func(out *autoscaling.DescribePoliciesOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.ScalingPolicies {
+				if badResErr != nil {
+					return false
+				}
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Infra) fetch_all_registry_graph() (*graph.Graph, []*ecr.Repository, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ecr.Repository
+	var badResErr error
+	err := s.DescribeRepositoriesPages(&ecr.DescribeRepositoriesInput{},
+		func(out *ecr.DescribeRepositoriesOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Repositories {
 				if badResErr != nil {
 					return false
 				}

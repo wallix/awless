@@ -15,6 +15,7 @@ type property struct {
 }
 
 var PropertiesDefinitions = []property{
+	{AwlessLabel: "Account", RDFLabel: fmt.Sprintf("%s:account", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Actions", RDFLabel: fmt.Sprintf("%s:actions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "ActionsEnabled", RDFLabel: fmt.Sprintf("%s:actionsEnabled", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "ACMCertificate", RDFLabel: fmt.Sprintf("%s:acmCertificate", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
@@ -180,6 +181,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Updated", RDFLabel: fmt.Sprintf("%s:updated", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "UserData", RDFLabel: fmt.Sprintf("%s:userData", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Username", RDFLabel: fmt.Sprintf("%s:username", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "URI", RDFLabel: fmt.Sprintf("%s:uri", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Value", RDFLabel: fmt.Sprintf("%s:value", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Version", RDFLabel: fmt.Sprintf("%s:version", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Virtualization", RDFLabel: fmt.Sprintf("%s:virtualization", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

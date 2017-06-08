@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -313,16 +314,22 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{AutoScalingGroupARN: awssdk.String("asg_arn_2"), AutoScalingGroupName: awssdk.String("asg_name_2"), LaunchConfigurationName: awssdk.String("launchconfig_name"), TargetGroupARNs: []*string{awssdk.String("tg_1"), awssdk.String("tg_2")}},
 	}
 
+	//ECR
+	repositories := []*ecr.Repository{
+		{CreatedAt: awssdk.Time(now), RegistryId: awssdk.String("account_id"), RepositoryArn: awssdk.String("reg_1"), RepositoryName: awssdk.String("reg_name_1"), RepositoryUri: awssdk.String("http://my.registry.url")},
+		{RepositoryArn: awssdk.String("reg_2")},
+		{RepositoryArn: awssdk.String("reg_3")},
+	}
+
 	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
-	infra := Infra{EC2API: mock, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
-	InfraService = &infra
-
-	g, err := infra.FetchResources()
+	mockEcr := &mockEcr{repositorys: repositories}
+	InfraService = &Infra{EC2API: mock, ECRAPI: mockEcr, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
+	g, err := InfraService.FetchResources()
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "registry")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -378,10 +385,13 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"asg_arn_2":        resourcetest.ScalingGroup("asg_arn_2").Prop(p.Arn, "asg_arn_2").Prop(p.Name, "asg_name_2").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
 		"img_1":            resourcetest.Image("img_1").Build(),
 		"img_2":            resourcetest.Image("img_2").Prop(p.Name, "img_2_name").Prop(p.Architecture, "img_2_arch").Prop(p.Hypervisor, "img_2_hyper").Prop(p.Created, time.Unix(1270123501, 0).UTC()).Build(),
+		"reg_1":            resourcetest.Registry("reg_1").Prop(p.Created, now).Prop(p.Arn, "reg_1").Prop(p.Account, "account_id").Prop(p.Name, "reg_name_1").Prop(p.URI, "http://my.registry.url").Build(),
+		"reg_2":            resourcetest.Registry("reg_2").Prop(p.Arn, "reg_2").Build(),
+		"reg_3":            resourcetest.Registry("reg_3").Prop(p.Arn, "reg_3").Build(),
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "reg_1", "reg_2", "reg_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
@@ -975,7 +985,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
 	}
 
-	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockElbv2{}, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{}, region: "eu-west-1"}
+	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockElbv2{}, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{}, ECRAPI: &mockEcr{}, region: "eu-west-1"}
 
 	g, err = infra.FetchResources()
 	if err != nil {

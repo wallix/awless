@@ -271,6 +271,14 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Type:              {name: "PolicyType", transform: extractValueFn},
 		properties.ScalingAdjustment: {name: "ScalingAdjustment", transform: extractValueFn},
 	},
+	//Containers
+	cloud.Registry: {
+		properties.Name:    {name: "RepositoryName", transform: extractValueFn},
+		properties.Arn:     {name: "RepositoryArn", transform: extractValueFn},
+		properties.URI:     {name: "RepositoryUri", transform: extractValueFn},
+		properties.Created: {name: "CreatedAt", transform: extractValueFn},
+		properties.Account: {name: "RegistryId", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

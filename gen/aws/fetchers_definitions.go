@@ -21,10 +21,9 @@ import (
 )
 
 type fetchersDef struct {
-	Name          string
-	Api           []string
-	ApiInterfaces map[string]string
-	Fetchers      []fetcher
+	Name     string
+	Api      []string
+	Fetchers []fetcher
 }
 
 type fetcher struct {
@@ -40,9 +39,8 @@ type fetcher struct {
 
 var FetchersDefs = []fetchersDef{
 	{
-		Name:          "infra",
-		Api:           []string{"ec2", "elbv2", "rds", "autoscaling"},
-		ApiInterfaces: map[string]string{"autoscaling": "AutoScalingAPI"},
+		Name: "infra",
+		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr"},
 		Fetchers: []fetcher{
 			{Api: "ec2", ResourceType: cloud.Instance, AWSType: "ec2.Instance", ApiMethod: "DescribeInstancesPages", Input: "ec2.DescribeInstancesInput{}", Output: "ec2.DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ec2", ResourceType: cloud.Subnet, AWSType: "ec2.Subnet", ApiMethod: "DescribeSubnets", Input: "ec2.DescribeSubnetsInput{}", Output: "ec2.DescribeSubnetsOutput", OutputsExtractor: "Subnets"},
@@ -65,6 +63,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "autoscaling", ResourceType: cloud.LaunchConfiguration, AWSType: "autoscaling.LaunchConfiguration", ApiMethod: "DescribeLaunchConfigurationsPages", Input: "autoscaling.DescribeLaunchConfigurationsInput{}", Output: "autoscaling.DescribeLaunchConfigurationsOutput", OutputsExtractor: "LaunchConfigurations", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "autoscaling", ResourceType: cloud.ScalingGroup, AWSType: "autoscaling.Group", ApiMethod: "DescribeAutoScalingGroupsPages", Input: "autoscaling.DescribeAutoScalingGroupsInput{}", Output: "autoscaling.DescribeAutoScalingGroupsOutput", OutputsExtractor: "AutoScalingGroups", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "autoscaling", ResourceType: cloud.ScalingPolicy, AWSType: "autoscaling.ScalingPolicy", ApiMethod: "DescribePoliciesPages", Input: "autoscaling.DescribePoliciesInput{}", Output: "autoscaling.DescribePoliciesOutput", OutputsExtractor: "ScalingPolicies", Multipage: true, NextPageMarker: "NextToken"},
+			{Api: "ecr", ResourceType: cloud.Registry, AWSType: "ecr.Repository", ApiMethod: "DescribeRepositoriesPages", Input: "ecr.DescribeRepositoriesInput{}", Output: "ecr.DescribeRepositoriesOutput", OutputsExtractor: "Repositories", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
 	{
@@ -102,9 +101,8 @@ var FetchersDefs = []fetchersDef{
 		},
 	},
 	{
-		Name:          "dns",
-		Api:           []string{"route53"},
-		ApiInterfaces: map[string]string{"route53": "Route53API"},
+		Name: "dns",
+		Api:  []string{"route53"},
 		Fetchers: []fetcher{
 			{Api: "route53", ResourceType: cloud.Zone, AWSType: "route53.HostedZone", ApiMethod: "ListHostedZonesPages", Input: "route53.ListHostedZonesInput{}", Output: "route53.ListHostedZonesOutput", OutputsExtractor: "HostedZones", Multipage: true, NextPageMarker: "NextMarker"},
 			{Api: "route53", ResourceType: cloud.Record, AWSType: "route53.ResourceRecordSet", ManualFetcher: true},
@@ -112,34 +110,30 @@ var FetchersDefs = []fetchersDef{
 	},
 
 	{
-		Name:          "lambda",
-		Api:           []string{"lambda"},
-		ApiInterfaces: map[string]string{"lambda": "LambdaAPI"},
+		Name: "lambda",
+		Api:  []string{"lambda"},
 		Fetchers: []fetcher{
 			{Api: "lambda", ResourceType: cloud.Function, AWSType: "lambda.FunctionConfiguration", ApiMethod: "ListFunctionsPages", Input: "lambda.ListFunctionsInput{}", Output: "lambda.ListFunctionsOutput", OutputsExtractor: "Functions", Multipage: true, NextPageMarker: "NextMarker"},
 		},
 	},
 	{
-		Name:          "monitoring",
-		Api:           []string{"cloudwatch"},
-		ApiInterfaces: map[string]string{"cloudwatch": "CloudWatchAPI"},
+		Name: "monitoring",
+		Api:  []string{"cloudwatch"},
 		Fetchers: []fetcher{
 			{Api: "cloudwatch", ResourceType: cloud.Metric, AWSType: "cloudwatch.Metric", ApiMethod: "ListMetricsPages", Input: "cloudwatch.ListMetricsInput{}", Output: "cloudwatch.ListMetricsOutput", OutputsExtractor: "Metrics", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "cloudwatch", ResourceType: cloud.Alarm, AWSType: "cloudwatch.MetricAlarm", ApiMethod: "DescribeAlarmsPages", Input: "cloudwatch.DescribeAlarmsInput{}", Output: "cloudwatch.DescribeAlarmsOutput", OutputsExtractor: "MetricAlarms", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
 	{
-		Name:          "cdn",
-		Api:           []string{"cloudfront"},
-		ApiInterfaces: map[string]string{"cloudfront": "CloudFrontAPI"},
+		Name: "cdn",
+		Api:  []string{"cloudfront"},
 		Fetchers: []fetcher{
 			{Api: "cloudfront", ResourceType: cloud.Distribution, AWSType: "cloudfront.DistributionSummary", ApiMethod: "ListDistributionsPages", Input: "cloudfront.ListDistributionsInput{}", Output: "cloudfront.ListDistributionsOutput", OutputsExtractor: "DistributionList.Items", Multipage: true, NextPageMarker: "DistributionList.NextMarker"},
 		},
 	},
 	{
-		Name:          "cloudformation", //deployment ?
-		Api:           []string{"cloudformation"},
-		ApiInterfaces: map[string]string{"cloudformation": "CloudFormationAPI"},
+		Name: "cloudformation", //deployment ?
+		Api:  []string{"cloudformation"},
 		Fetchers: []fetcher{
 			{Api: "cloudformation", ResourceType: cloud.Stack, AWSType: "cloudformation.Stack", ApiMethod: "DescribeStacksPages", Input: "cloudformation.DescribeStacksInput{}", Output: "cloudformation.DescribeStacksOutput", OutputsExtractor: "Stacks", Multipage: true, NextPageMarker: "NextToken"},
 		},

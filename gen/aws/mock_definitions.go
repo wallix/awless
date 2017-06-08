@@ -18,8 +18,8 @@ package aws
 import "strings"
 
 type mockDef struct {
-	Api, ApiInterface, Name string
-	Funcs                   []*mockFuncDef
+	Api, Name string
+	Funcs     []*mockFuncDef
 }
 
 type mockFuncDef struct {
@@ -139,11 +139,16 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "cloudformation.Stack", ApiMethod: "DescribeStacksPages", Input: "cloudformation.DescribeStacksInput", Output: "cloudformation.DescribeStacksOutput", OutputsExtractor: "Stacks", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
+	{
+		Api: "ecr",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "ecr.Repository", ApiMethod: "DescribeRepositoriesPages", Input: "ecr.DescribeRepositoriesInput", Output: "ecr.DescribeRepositoriesOutput", OutputsExtractor: "Repositories", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
 }
 
 func Mocks() []*mockDef {
 	for _, def := range mocksDefs {
-		def.ApiInterface = apiToInterface(def.Api)
 		def.Name = "mock" + strings.Title(def.Api)
 		for _, f := range def.Funcs {
 			f.MockField = nameFromAwsType(f.AWSType)
@@ -152,7 +157,7 @@ func Mocks() []*mockDef {
 	return mocksDefs
 }
 
-func apiToInterface(api string) string {
+func ApiToInterface(api string) string {
 	switch api {
 	case "autoscaling":
 		return "AutoScalingAPI"

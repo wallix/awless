@@ -64,8 +64,9 @@ func generateDriverFuncs() {
 
 func generateDriverTypes() {
 	templ, err := template.New("types").Funcs(template.FuncMap{
-		"Title":   strings.Title,
-		"ToUpper": strings.ToUpper,
+		"Title":          strings.Title,
+		"ToUpper":        strings.ToUpper,
+		"ApiToInterface": aws.ApiToInterface,
 	}).Parse(typesTempl)
 	if err != nil {
 		panic(err)
@@ -360,21 +361,12 @@ import (
 type {{ Title $service.Api }}Driver struct {
 	dryRun bool
 	logger *logger.Logger
-	{{- if $service.ApiInterface }}
-	{{ $service.Api }}iface.{{ $service.ApiInterface }}
-	{{- else }}
-	{{ $service.Api }}iface.{{ ToUpper $service.Api }}API
-	{{- end }}
+	{{ $service.Api }}iface.{{ ApiToInterface $service.Api }}
 }
 
 func (d *{{ Title $service.Api }}Driver) SetDryRun(dry bool)         { d.dryRun = dry }
 func (d *{{ Title $service.Api }}Driver) SetLogger(l *logger.Logger) { d.logger = l }
-
-{{- if $service.ApiInterface }}
-func New{{ Title $service.Api }}Driver(api {{ $service.Api }}iface.{{ $service.ApiInterface }}) driver.Driver{
-{{- else }}
-func New{{ Title $service.Api }}Driver(api {{ $service.Api }}iface.{{ ToUpper $service.Api }}API) driver.Driver{
-{{- end }}
+func New{{ Title $service.Api }}Driver(api {{ $service.Api }}iface.{{ ApiToInterface $service.Api }}) driver.Driver{
 	return &{{ Title $service.Api }}Driver{false, logger.DiscardLogger, api}
 }
 

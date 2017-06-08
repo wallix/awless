@@ -18,6 +18,7 @@ limitations under the License.
 package properties
 
 const (
+	Account                   = "Account"
 	Actions                   = "Actions"
 	ActionsEnabled            = "ActionsEnabled"
 	ACMCertificate            = "ACMCertificate"
@@ -183,6 +184,7 @@ const (
 	Updated                   = "Updated"
 	UserData                  = "UserData"
 	Username                  = "Username"
+	URI                       = "URI"
 	Value                     = "Value"
 	Version                   = "Version"
 	Virtualization            = "Virtualization"

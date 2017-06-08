@@ -33,6 +33,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -99,6 +100,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.ScalingGroup, awssdk.StringValue(ss.AutoScalingGroupARN))
 	case *autoscaling.ScalingPolicy:
 		res = graph.InitResource(cloud.ScalingPolicy, awssdk.StringValue(ss.PolicyARN))
+	case *ecr.Repository:
+		res = graph.InitResource(cloud.Registry, awssdk.StringValue(ss.RepositoryArn))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))

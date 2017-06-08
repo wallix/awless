@@ -28,9 +28,10 @@ import (
 
 func generateTestMocks() {
 	templ, err := template.New("mocks").Funcs(template.FuncMap{
-		"Title":   strings.Title,
-		"ToUpper": strings.ToUpper,
-		"Join":    strings.Join,
+		"Title":          strings.Title,
+		"ToUpper":        strings.ToUpper,
+		"Join":           strings.Join,
+		"ApiToInterface": aws.ApiToInterface,
 	}).Parse(mocksTempl)
 
 	if err != nil {
@@ -78,7 +79,7 @@ import (
 {{ range $, $mock := . }}
 
 type {{ $mock.Name }} struct {
-	{{ $mock.Api }}iface.{{ Title $mock.ApiInterface }}
+	{{ $mock.Api }}iface.{{ ApiToInterface $mock.Api }}
 	{{- range $, $func := $mock.Funcs }}
 	{{- if eq $func.MockFieldType "mapslice" }}
 		{{ $func.MockField}} map[string][]*{{ $func.AWSType }}
@@ -104,7 +105,7 @@ func (m * {{ $mock.Name }}) ProviderAPI() string {
 
 func (s *{{ $mock.Name }}) Drivers() []driver.Driver {
   return []driver.Driver{
-		awsdriver.New{{ Title $mock.Api }}Driver(s.{{$mock.ApiInterface}}),
+		awsdriver.New{{ Title $mock.Api }}Driver(s.{{ ApiToInterface $mock.Api }}),
 	}
 }
 

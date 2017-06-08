@@ -291,6 +291,18 @@
 			"versionExact": "v1.8.11"
 		},
 		{
+			"checksumSHA1": "Lwqoi9aWc+j6dzkgt06LLR7i1XA=",
+			"path": "github.com/aws/aws-sdk-go/service/ecr",
+			"revision": "732d3fcb3efeb7d4f1e2e18f3456eec27960ae38",
+			"revisionTime": "2017-06-07T23:11:48Z"
+		},
+		{
+			"checksumSHA1": "cBlx0Bt7+zRvBPWrJblgYtIk/Bk=",
+			"path": "github.com/aws/aws-sdk-go/service/ecr/ecriface",
+			"revision": "732d3fcb3efeb7d4f1e2e18f3456eec27960ae38",
+			"revisionTime": "2017-06-07T23:11:48Z"
+		},
+		{
 			"checksumSHA1": "oJQzYnuAHAhKAtAuinSPEeDsXoU=",
 			"path": "github.com/aws/aws-sdk-go/service/elbv2",
 			"revision": "200fde3f632bb9f036ec0b8cb29fbc8588155ea5",

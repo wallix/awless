@@ -137,7 +137,7 @@ func (r *ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
 		Filters:         filters,
 	}
 
-	amis, err := r.InfraService.DescribeImages(params)
+	amis, err := r.InfraService.EC2API.DescribeImages(params)
 	if err != nil {
 		return results, err
 	}

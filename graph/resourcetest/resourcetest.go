@@ -137,6 +137,10 @@ func Stack(id string) *rBuilder {
 	return new("stack", id).Prop(properties.ID, id)
 }
 
+func Registry(id string) *rBuilder {
+	return new("registry", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

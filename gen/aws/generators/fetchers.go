@@ -28,9 +28,10 @@ import (
 
 func generateFetcherFuncs() {
 	templ, err := template.New("funcs").Funcs(template.FuncMap{
-		"Title":   strings.Title,
-		"ToUpper": strings.ToUpper,
-		"Join":    strings.Join,
+		"Title":          strings.Title,
+		"ToUpper":        strings.ToUpper,
+		"Join":           strings.Join,
+		"ApiToInterface": aws.ApiToInterface,
 	}).Parse(fetchersTempl)
 
 	if err != nil {
@@ -138,11 +139,7 @@ type {{ Title $service.Name }} struct {
 	config config
 	log *logger.Logger
 	{{- range $, $api := $service.Api }}
-		{{- if index $service.ApiInterfaces $api }}
-	{{ $api }}iface.{{index $service.ApiInterfaces $api}}
-		{{- else }}
-  {{ $api }}iface.{{ ToUpper $api }}API
-		{{- end }}
+		{{ $api }}iface.{{ ApiToInterface $api }}
 	{{- end }}
 }
 
@@ -150,11 +147,7 @@ func New{{ Title $service.Name }}(sess *session.Session, awsconf config, log *lo
   region := awssdk.StringValue(sess.Config.Region)
 	return &{{ Title $service.Name }}{ 
 	{{- range $, $api := $service.Api }}
-		{{- if index $service.ApiInterfaces $api }}
-		{{index $service.ApiInterfaces $api}}: {{ $api }}.New(sess),
-		{{- else }}
-		{{ ToUpper $api }}API: {{ $api }}.New(sess),
-		{{- end }}
+		{{ApiToInterface $api }}: {{ $api }}.New(sess),
 	{{- end }}
 		config: awsconf,
 		region: region,
@@ -169,12 +162,7 @@ func (s *{{ Title $service.Name }}) Name() string {
 func (s *{{ Title $service.Name }}) Drivers() []driver.Driver {
   return []driver.Driver{ 
 		{{- range $, $api := $service.Api }}
-			{{- if index $service.ApiInterfaces $api }}
-		awsdriver.New{{ Title $api }}Driver(s.{{index $service.ApiInterfaces $api}}),
-			{{- else }}
-		awsdriver.New{{ Title $api }}Driver(s.{{ ToUpper $api }}API),
-			{{- end }}
-		
+		awsdriver.New{{ Title $api }}Driver(s.{{ ApiToInterface $api }}),
 		{{- end }}
 	}
 }
@@ -327,7 +315,7 @@ func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph(
 	return g, cloudResources, badResErr
 	{{- else }}
 	
-  out, err := s.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }})
+  out, err := s.{{ ApiToInterface $fetcher.Api }}.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }})
   if err != nil {
     return nil, cloudResources, err
   }

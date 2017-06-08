@@ -31,6 +31,7 @@ func TestResourceTypePluralizeName(t *testing.T) {
 		{in: "group", out: "groups"},
 		{in: "policy", out: "policies"},
 		{in: "internetgateway", out: "internetgateways"},
+		{in: "registry", out: "registries"},
 	}
 	for _, tc := range tcases {
 		if got, want := PluralizeResource(tc.in), tc.out; got != want {
