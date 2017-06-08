@@ -17,6 +17,7 @@ limitations under the License.
 package awsdriver
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,6 +25,7 @@ import (
 	"math/rand"
 	"mime"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -35,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -2007,6 +2010,70 @@ func (d *CloudfrontDriver) Update_Distribution_DryRun(params map[string]interfac
 
 	d.logger.Verbose("params dry run: update distribution ok")
 	return fakeDryRunId("distribution"), nil
+}
+
+func (d *EcrDriver) Authenticate_Registry_DryRun(params map[string]interface{}) (interface{}, error) {
+	d.logger.Verbose("params dry run: authenticate registry ok")
+	return fakeDryRunId("registry"), nil
+}
+
+func (d *EcrDriver) Authenticate_Registry(params map[string]interface{}) (interface{}, error) {
+	input := &ecr.GetAuthorizationTokenInput{}
+	var err error
+
+	// Extra params
+	if _, ok := params["accounts"]; ok {
+		err = setFieldWithType(params["accounts"], input, "RegistryIds", awsstringslice)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	output, err := d.GetAuthorizationToken(input)
+	if err != nil {
+		return nil, fmt.Errorf("authenticate registry: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecr.GetAuthorizationToken call took %s", time.Since(start))
+	for _, auth := range output.AuthorizationData {
+		token := aws.StringValue(auth.AuthorizationToken)
+		decoded, err := base64.StdEncoding.DecodeString(token)
+		if err != nil {
+			return nil, err
+		}
+		credentials := strings.SplitN(string(decoded), ":", 2)
+		if len(credentials) != 2 {
+			return nil, fmt.Errorf("invalid authorization token: expect user:password, got %s", decoded)
+		}
+		torun := []string{"docker", "login", "--username", credentials[0], "--password", credentials[1], aws.StringValue(auth.ProxyEndpoint)}
+
+		confirm := !(fmt.Sprint(params["no-confirm"]) == "true")
+		if confirm {
+			fmt.Fprintf(os.Stderr, "\nDocker authentication command:\n\n%s\n\nDo you want to run this command:(y/n)? ", strings.Join(torun, " "))
+			var yesorno string
+			_, err := fmt.Scanln(&yesorno)
+			if err != nil {
+				return nil, err
+			}
+			if strings.ToLower(yesorno) != "y" {
+				return nil, nil
+			}
+		}
+		cmd := exec.Command("docker", torun[1:]...)
+		out, err := cmd.Output()
+		if err != nil {
+			if e, ok := err.(*exec.ExitError); ok {
+				return nil, fmt.Errorf("error running docker command: %s", e.Stderr)
+			}
+			return nil, fmt.Errorf("error running docker command: %s", err)
+		}
+		if len(out) > 0 {
+			d.logger.Info(string(out))
+		}
+		d.logger.Infof("authenticate registry '%s' done", aws.StringValue(auth.ProxyEndpoint))
+	}
+
+	return nil, nil
 }
 
 func (d *CloudfrontDriver) Update_Distribution(params map[string]interface{}) (interface{}, error) {

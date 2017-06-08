@@ -86,6 +86,7 @@ const (
 	Stack string = "stack"
 	//container
 	Repository string = "repository"
+	Registry   string = "registry"
 )
 
 type Service interface {

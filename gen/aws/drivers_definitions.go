@@ -745,7 +745,7 @@ var DriversDefs = []driversDef{
 	{
 		Api: "ecr",
 		Drivers: []driver{
-			// Registry
+			// Repository
 			{
 				Action: "create", Entity: cloud.Repository, Input: "CreateRepositoryInput", Output: "CreateRepositoryOutput", ApiMethod: "CreateRepository", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Repository.RepositoryArn)",
 				RequiredParams: []param{
@@ -760,6 +760,15 @@ var DriversDefs = []driversDef{
 				ExtraParams: []param{
 					{AwsField: "Force", TemplateName: "force", AwsType: "awsbool"},
 					{AwsField: "RegistryId", TemplateName: "account", AwsType: "awsstr"},
+				},
+			},
+			// Registry
+			{
+				Action: "authenticate", Entity: cloud.Registry, ManualFuncDefinition: true,
+				RequiredParams: []param{},
+				ExtraParams: []param{
+					{TemplateName: "accounts"},
+					{TemplateName: "no-confirm"},
 				},
 			},
 		},

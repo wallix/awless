@@ -20,21 +20,23 @@ const (
 
 	Copy Action = "copy"
 
-	Import Action = "import"
+	Import       Action = "import"
+	Authenticate Action = "authenticate"
 )
 
 var actions = map[Action]struct{}{
-	NoneAction: {},
-	Create:     {},
-	Delete:     {},
-	Update:     {},
-	Check:      {},
-	Start:      {},
-	Stop:       {},
-	Attach:     {},
-	Detach:     {},
-	Copy:       {},
-	Import:     {},
+	NoneAction:   {},
+	Create:       {},
+	Delete:       {},
+	Update:       {},
+	Check:        {},
+	Start:        {},
+	Stop:         {},
+	Attach:       {},
+	Detach:       {},
+	Copy:         {},
+	Import:       {},
+	Authenticate: {},
 }
 
 func IsInvalidAction(s string) bool {

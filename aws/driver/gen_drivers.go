@@ -554,6 +554,12 @@ func (d *EcrDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Repository, nil
 
+	case "authenticateregistry":
+		if d.dryRun {
+			return d.Authenticate_Registry_DryRun, nil
+		}
+		return d.Authenticate_Registry, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

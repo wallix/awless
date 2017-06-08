@@ -30,6 +30,10 @@ var manualParamsDoc = map[string]map[string]string{
 		"id":       "The ID of the Security Group to add to the instance",
 		"instance": "The ID of the Instance",
 	},
+	"authenticateregistry": {
+		"accounts":   "A list of AWS account IDs that are associated with the registries for which to authenticate",
+		"no-confirm": "Do not ask confirmation before effectively running `docker login` command",
+	},
 	"checkdatabase": {
 		"id":      "The ID of the RDS Database to check",
 		"state":   "The state of the RDS Database to reach (available | backing-up | creating | deleting | failed | maintenance | modifying | rebooting | renaming | resetting-master-credentials | restore-error | storage-full | upgrading | not-found)",

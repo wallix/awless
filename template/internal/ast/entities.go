@@ -27,6 +27,7 @@ var entities = map[Entity]struct{}{
 	"policy":              {},
 	"queue":               {},
 	"record":              {},
+	"registry":            {},
 	"repository":          {},
 	"role":                {},
 	"route":               {},

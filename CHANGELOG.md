@@ -5,6 +5,7 @@
 - `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list repositories`
 - Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete repository`
+- Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
 
 ## v0.1.0 [2017-05-31]
 
