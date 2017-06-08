@@ -1,5 +1,7 @@
 ## v0.1.1 [unreleased]
 
+- `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
+
 ## v0.1.0 [2017-05-31]
 
 ## Features

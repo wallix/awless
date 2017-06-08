@@ -304,6 +304,76 @@ func (s *Access) fetch_all_user_graph() (*graph.Graph, []*iam.UserDetail, error)
 	return g, userDetails, nil
 }
 
+func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
+	g := graph.NewGraph()
+	var policies []*iam.Policy
+
+	errc := make(chan error)
+	policiesc := make(chan *iam.Policy)
+
+	processPagePolicies := func(page *iam.ListPoliciesOutput) bool {
+		for _, p := range page.Policies {
+			policiesc <- p
+			res, rerr := newResource(p)
+			if rerr != nil {
+				return false
+			}
+			if rerr = g.AddResource(res); rerr != nil {
+				return false
+			}
+		}
+		return page.Marker != nil
+	}
+
+	var wg sync.WaitGroup
+
+	// Return all policies that are only attached
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := s.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
+			func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
+				return processPagePolicies(out)
+			})
+		if err != nil {
+			errc <- err
+		}
+	}()
+
+	// Return only self managed policies (local scope)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := s.ListPoliciesPages(&iam.ListPoliciesInput{Scope: awssdk.String("Local")},
+			func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
+				return processPagePolicies(out)
+			})
+		if err != nil {
+			errc <- err
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errc)
+		close(policiesc)
+	}()
+
+	for {
+		select {
+		case err := <-errc:
+			if err != nil {
+				return g, policies, err
+			}
+		case p, ok := <-policiesc:
+			if !ok {
+				return g, policies, nil
+			}
+			policies = append(policies, p)
+		}
+	}
+}
+
 // STORAGE
 
 func (s *Storage) fetch_all_bucket_graph() (*graph.Graph, []*s3.Bucket, error) {

@@ -1927,34 +1927,6 @@ func (s *Access) fetch_all_role_graph() (*graph.Graph, []*iam.RoleDetail, error)
 	return g, cloudResources, badResErr
 }
 
-func (s *Access) fetch_all_policy_graph() (*graph.Graph, []*iam.Policy, error) {
-	g := graph.NewGraph()
-	var cloudResources []*iam.Policy
-	var badResErr error
-	err := s.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
-		func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
-			for _, output := range out.Policies {
-				if badResErr != nil {
-					return false
-				}
-				cloudResources = append(cloudResources, output)
-				var res *graph.Resource
-				if res, badResErr = newResource(output); badResErr != nil {
-					return false
-				}
-				if badResErr = g.AddResource(res); badResErr != nil {
-					return false
-				}
-			}
-			return out.Marker != nil
-		})
-	if err != nil {
-		return g, cloudResources, err
-	}
-
-	return g, cloudResources, badResErr
-}
-
 func (s *Access) fetch_all_accesskey_graph() (*graph.Graph, []*iam.AccessKeyMetadata, error) {
 	g := graph.NewGraph()
 	var cloudResources []*iam.AccessKeyMetadata
