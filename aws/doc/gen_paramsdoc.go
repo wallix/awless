@@ -185,7 +185,10 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name": "The name of the new queue",
 	},
 	"createrecord": {},
-	"createrole":   {},
+	"createregistry": {
+		"name": "The name to use for the repository",
+	},
+	"createrole": {},
 	"createroute": {
 		"cidr":    "The IPv4 CIDR address block used for the destination match",
 		"gateway": "The ID of an Internet gateway or virtual private gateway attached to your VPC",
@@ -336,7 +339,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"url": "The URL of the Amazon SQS queue to delete",
 	},
 	"deleterecord": {},
-	"deleterole":   {},
+	"deleteregistry": {
+		"account": "The AWS account ID associated with the registry that contains the repository to delete",
+		"force":   "Force the deletion of the repository if it contains images",
+		"name":    "The name of the repository to delete",
+	},
+	"deleterole": {},
 	"deleteroute": {
 		"cidr":  "The IPv4 CIDR range for the route",
 		"table": "The ID of the route table",

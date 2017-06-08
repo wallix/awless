@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"unicode"
 
 	"github.com/wallix/awless/gen/aws"
 )
@@ -70,10 +71,19 @@ func generateParamsDocLookup() {
 }
 
 func searchParamInDoc(paramsDoc map[string]string, input, field string) (string, bool) {
+	var lowerField string
+	if len(field) > 0 {
+		fieldRules := []rune(field)
+		fieldRules[0] = unicode.ToLower(fieldRules[0])
+		lowerField = string(fieldRules)
+	}
 	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", input, field)]; ok {
 		return s, ok
 	}
 	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", inputToRequestKey(input), field)]; ok {
+		return s, ok
+	}
+	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", inputToRequestKey(input), lowerField)]; ok {
 		return s, ok
 	}
 	if s, ok := paramsDoc[fmt.Sprintf("%s$%s", inputToTypeKey(input), field)]; ok {
@@ -130,6 +140,7 @@ func loadAllRefs() map[string]string {
 		filepath.Join("elasticloadbalancingv2", "2015-12-01", "docs-2.json"),
 		filepath.Join("sts", "2011-06-15", "docs-2.json"),
 		filepath.Join("cloudformation", "2010-05-15", "docs-2.json"),
+		filepath.Join("ecr", "2015-09-21", "docs-2.json"),
 	}
 
 	entriesC := make(chan *entries)

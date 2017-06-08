@@ -94,7 +94,7 @@ func (te *Template) Revert() (*Template, error) {
 				case "s3object":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.CmdResult)))
 					params = append(params, fmt.Sprintf("bucket=%s", quoteParamIfNeeded(cmd.Params["bucket"])))
-				case "role", "group", "user", "stack", "instanceprofile":
+				case "role", "group", "user", "stack", "instanceprofile", "registry":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
 				case "accesskey":
 					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.CmdResult)))

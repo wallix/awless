@@ -4,6 +4,7 @@
 
 - `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list registries`
+- Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete registry`
 
 ## v0.1.0 [2017-05-31]
 

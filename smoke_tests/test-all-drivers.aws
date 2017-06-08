@@ -124,7 +124,7 @@ check distribution id=$cdn state=InProgress timeout=180
 update distribution enable=true id=$cdn
 ## Commands that need to be done after a few minutes after other commands
 update loginprofile password=my-full-test-second-password username=my-full-test-user password-reset=true
-
+create registry name=my-full-test-registry
 
 ## CAN NOT BE TESTED FOR NOW
 # update s3object version= # Can not be tested ?

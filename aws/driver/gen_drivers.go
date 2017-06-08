@@ -527,6 +527,38 @@ func (d *RdsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 	}
 }
 
+type EcrDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	ecriface.ECRAPI
+}
+
+func (d *EcrDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *EcrDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewEcrDriver(api ecriface.ECRAPI) driver.Driver {
+	return &EcrDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *EcrDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
+
+	case "createregistry":
+		if d.dryRun {
+			return d.Create_Registry_DryRun, nil
+		}
+		return d.Create_Registry, nil
+
+	case "deleteregistry":
+		if d.dryRun {
+			return d.Delete_Registry_DryRun, nil
+		}
+		return d.Delete_Registry, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
 type StsDriver struct {
 	dryRun bool
 	logger *logger.Logger
@@ -1033,26 +1065,6 @@ func (d *CloudformationDriver) Lookup(lookups ...string) (driverFn driver.Driver
 			return d.Delete_Stack_DryRun, nil
 		}
 		return d.Delete_Stack, nil
-
-	default:
-		return nil, driver.ErrDriverFnNotFound
-	}
-}
-
-type EcrDriver struct {
-	dryRun bool
-	logger *logger.Logger
-	ecriface.ECRAPI
-}
-
-func (d *EcrDriver) SetDryRun(dry bool)         { d.dryRun = dry }
-func (d *EcrDriver) SetLogger(l *logger.Logger) { d.logger = l }
-func NewEcrDriver(api ecriface.ECRAPI) driver.Driver {
-	return &EcrDriver{false, logger.DiscardLogger, api}
-}
-
-func (d *EcrDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
-	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

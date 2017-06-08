@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -3623,6 +3624,88 @@ func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interfa
 	}
 	d.logger.ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
 	d.logger.Info("delete dbsubnetgroup done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *EcrDriver) Create_Registry_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create registry: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create registry ok")
+	return fakeDryRunId("registry"), nil
+}
+
+// This function was auto generated
+func (d *EcrDriver) Create_Registry(params map[string]interface{}) (interface{}, error) {
+	input := &ecr.CreateRepositoryInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "RepositoryName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ecr.CreateRepositoryOutput
+	output, err = d.CreateRepository(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create registry: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecr.CreateRepository call took %s", time.Since(start))
+	id := aws.StringValue(output.Repository.RepositoryArn)
+
+	d.logger.Infof("create registry '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *EcrDriver) Delete_Registry_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete registry: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: delete registry ok")
+	return fakeDryRunId("registry"), nil
+}
+
+// This function was auto generated
+func (d *EcrDriver) Delete_Registry(params map[string]interface{}) (interface{}, error) {
+	input := &ecr.DeleteRepositoryInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "RepositoryName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["force"]; ok {
+		err = setFieldWithType(params["force"], input, "Force", awsbool)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["account"]; ok {
+		err = setFieldWithType(params["account"], input, "RegistryId", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ecr.DeleteRepositoryOutput
+	output, err = d.DeleteRepository(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete registry: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecr.DeleteRepository call took %s", time.Since(start))
+	d.logger.Info("delete registry done")
 	return output, nil
 }
 

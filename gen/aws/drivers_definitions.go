@@ -743,6 +743,28 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
+		Api: "ecr",
+		Drivers: []driver{
+			// Registry
+			{
+				Action: "create", Entity: cloud.Registry, Input: "CreateRepositoryInput", Output: "CreateRepositoryOutput", ApiMethod: "CreateRepository", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Repository.RepositoryArn)",
+				RequiredParams: []param{
+					{AwsField: "RepositoryName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Registry, Input: "DeleteRepositoryInput", Output: "DeleteRepositoryOutput", ApiMethod: "DeleteRepository", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "RepositoryName", TemplateName: "name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Force", TemplateName: "force", AwsType: "awsbool"},
+					{AwsField: "RegistryId", TemplateName: "account", AwsType: "awsstr"},
+				},
+			},
+		},
+	},
+	{
 		Api:     "sts",
 		Drivers: []driver{},
 	},
@@ -1288,10 +1310,5 @@ var DriversDefs = []driversDef{
 				},
 			},
 		},
-	},
-	{
-		Api:          "ecr",
-		ApiInterface: "ECRAPI",
-		Drivers:      []driver{},
 	},
 }
