@@ -90,8 +90,8 @@ var APIPerTemplateDefName = map[string]string{
 	"checkdatabase":             "rds",
 	"createdbsubnetgroup":       "rds",
 	"deletedbsubnetgroup":       "rds",
-	"createregistry":            "ecr",
-	"deleteregistry":            "ecr",
+	"createrepository":          "ecr",
+	"deleterepository":          "ecr",
 	"createuser":                "iam",
 	"deleteuser":                "iam",
 	"attachuser":                "iam",
@@ -623,16 +623,16 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
-	"createregistry": {
+	"createrepository": {
 		Action:         "create",
-		Entity:         "registry",
+		Entity:         "repository",
 		Api:            "ecr",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{},
 	},
-	"deleteregistry": {
+	"deleterepository": {
 		Action:         "delete",
-		Entity:         "registry",
+		Entity:         "repository",
 		Api:            "ecr",
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{"account", "force"},
@@ -1073,8 +1073,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["check"] = append(supported["check"], "database")
 	supported["create"] = append(supported["create"], "dbsubnetgroup")
 	supported["delete"] = append(supported["delete"], "dbsubnetgroup")
-	supported["create"] = append(supported["create"], "registry")
-	supported["delete"] = append(supported["delete"], "registry")
+	supported["create"] = append(supported["create"], "repository")
+	supported["delete"] = append(supported["delete"], "repository")
 	supported["create"] = append(supported["create"], "user")
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")

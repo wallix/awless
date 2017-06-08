@@ -101,7 +101,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *autoscaling.ScalingPolicy:
 		res = graph.InitResource(cloud.ScalingPolicy, awssdk.StringValue(ss.PolicyARN))
 	case *ecr.Repository:
-		res = graph.InitResource(cloud.Registry, awssdk.StringValue(ss.RepositoryArn))
+		res = graph.InitResource(cloud.Repository, awssdk.StringValue(ss.RepositoryArn))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))

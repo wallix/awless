@@ -316,9 +316,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 	//ECR
 	repositories := []*ecr.Repository{
-		{CreatedAt: awssdk.Time(now), RegistryId: awssdk.String("account_id"), RepositoryArn: awssdk.String("reg_1"), RepositoryName: awssdk.String("reg_name_1"), RepositoryUri: awssdk.String("http://my.registry.url")},
-		{RepositoryArn: awssdk.String("reg_2")},
-		{RepositoryArn: awssdk.String("reg_3")},
+		{CreatedAt: awssdk.Time(now), RegistryId: awssdk.String("account_id"), RepositoryArn: awssdk.String("repo_1"), RepositoryName: awssdk.String("repo_name_1"), RepositoryUri: awssdk.String("http://my.repository.url")},
+		{RepositoryArn: awssdk.String("repo_2")},
+		{RepositoryArn: awssdk.String("repo_3")},
 	}
 
 	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones}
@@ -329,7 +329,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "registry")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,13 +385,13 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"asg_arn_2":        resourcetest.ScalingGroup("asg_arn_2").Prop(p.Arn, "asg_arn_2").Prop(p.Name, "asg_name_2").Prop(p.LaunchConfigurationName, "launchconfig_name").Build(),
 		"img_1":            resourcetest.Image("img_1").Build(),
 		"img_2":            resourcetest.Image("img_2").Prop(p.Name, "img_2_name").Prop(p.Architecture, "img_2_arch").Prop(p.Hypervisor, "img_2_hyper").Prop(p.Created, time.Unix(1270123501, 0).UTC()).Build(),
-		"reg_1":            resourcetest.Registry("reg_1").Prop(p.Created, now).Prop(p.Arn, "reg_1").Prop(p.Account, "account_id").Prop(p.Name, "reg_name_1").Prop(p.URI, "http://my.registry.url").Build(),
-		"reg_2":            resourcetest.Registry("reg_2").Prop(p.Arn, "reg_2").Build(),
-		"reg_3":            resourcetest.Registry("reg_3").Prop(p.Arn, "reg_3").Build(),
+		"repo_1":           resourcetest.Repository("repo_1").Prop(p.Created, now).Prop(p.Arn, "repo_1").Prop(p.Account, "account_id").Prop(p.Name, "repo_name_1").Prop(p.URI, "http://my.repository.url").Build(),
+		"repo_2":           resourcetest.Repository("repo_2").Prop(p.Arn, "repo_2").Build(),
+		"repo_3":           resourcetest.Repository("repo_3").Prop(p.Arn, "repo_3").Build(),
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "reg_1", "reg_2", "reg_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},

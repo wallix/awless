@@ -747,13 +747,13 @@ var DriversDefs = []driversDef{
 		Drivers: []driver{
 			// Registry
 			{
-				Action: "create", Entity: cloud.Registry, Input: "CreateRepositoryInput", Output: "CreateRepositoryOutput", ApiMethod: "CreateRepository", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Repository.RepositoryArn)",
+				Action: "create", Entity: cloud.Repository, Input: "CreateRepositoryInput", Output: "CreateRepositoryOutput", ApiMethod: "CreateRepository", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Repository.RepositoryArn)",
 				RequiredParams: []param{
 					{AwsField: "RepositoryName", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Registry, Input: "DeleteRepositoryInput", Output: "DeleteRepositoryOutput", ApiMethod: "DeleteRepository", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.Repository, Input: "DeleteRepositoryInput", Output: "DeleteRepositoryOutput", ApiMethod: "DeleteRepository", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "RepositoryName", TemplateName: "name", AwsType: "awsstr"},
 				},

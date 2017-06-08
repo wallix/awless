@@ -542,17 +542,17 @@ func NewEcrDriver(api ecriface.ECRAPI) driver.Driver {
 func (d *EcrDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
-	case "createregistry":
+	case "createrepository":
 		if d.dryRun {
-			return d.Create_Registry_DryRun, nil
+			return d.Create_Repository_DryRun, nil
 		}
-		return d.Create_Registry, nil
+		return d.Create_Repository, nil
 
-	case "deleteregistry":
+	case "deleterepository":
 		if d.dryRun {
-			return d.Delete_Registry_DryRun, nil
+			return d.Delete_Repository_DryRun, nil
 		}
-		return d.Delete_Registry, nil
+		return d.Delete_Repository, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

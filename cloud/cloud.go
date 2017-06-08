@@ -85,7 +85,7 @@ const (
 	//cloudformation
 	Stack string = "stack"
 	//container
-	Registry string = "registry"
+	Repository string = "repository"
 )
 
 type Service interface {
@@ -120,7 +120,7 @@ func GetServiceForType(t string) (Service, error) {
 }
 
 func PluralizeResource(singular string) string {
-	if strings.HasSuffix(singular, "cy") || strings.HasSuffix(singular, "try") {
+	if strings.HasSuffix(singular, "cy") || strings.HasSuffix(singular, "ry") {
 		return strings.TrimSuffix(singular, "y") + "ies"
 	}
 	return singular + "s"

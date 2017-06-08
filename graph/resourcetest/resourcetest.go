@@ -137,8 +137,8 @@ func Stack(id string) *rBuilder {
 	return new("stack", id).Prop(properties.ID, id)
 }
 
-func Registry(id string) *rBuilder {
-	return new("registry", id).Prop(properties.ID, id)
+func Repository(id string) *rBuilder {
+	return new("repository", id).Prop(properties.ID, id)
 }
 
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {

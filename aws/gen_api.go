@@ -101,7 +101,7 @@ var ResourceTypes = []string{
 	"launchconfiguration",
 	"scalinggroup",
 	"scalingpolicy",
-	"registry",
+	"repository",
 	"user",
 	"group",
 	"role",
@@ -161,7 +161,7 @@ var ServicePerResourceType = map[string]string{
 	"launchconfiguration": "infra",
 	"scalinggroup":        "infra",
 	"scalingpolicy":       "infra",
-	"registry":            "infra",
+	"repository":          "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -203,7 +203,7 @@ var APIPerResourceType = map[string]string{
 	"launchconfiguration": "autoscaling",
 	"scalinggroup":        "autoscaling",
 	"scalingpolicy":       "autoscaling",
-	"registry":            "ecr",
+	"repository":          "ecr",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -286,7 +286,7 @@ func (s *Infra) ResourceTypes() []string {
 		"launchconfiguration",
 		"scalinggroup",
 		"scalingpolicy",
-		"registry",
+		"repository",
 	}
 }
 
@@ -321,7 +321,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var launchconfigurationList []*autoscaling.LaunchConfiguration
 	var scalinggroupList []*autoscaling.Group
 	var scalingpolicyList []*autoscaling.ScalingPolicy
-	var registryList []*ecr.Repository
+	var repositoryList []*ecr.Repository
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -662,13 +662,13 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[scalingpolicy]")
 	}
-	if s.config.getBool("aws.infra.registry.sync", true) {
+	if s.config.getBool("aws.infra.repository.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			var resGraph *graph.Graph
 			var err error
-			resGraph, registryList, err = s.fetch_all_registry_graph()
+			resGraph, repositoryList, err = s.fetch_all_repository_graph()
 			if err != nil {
 				errc <- err
 				return
@@ -676,7 +676,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource infra[registry]")
+		s.log.Verbose("sync: *disabled* for resource infra[repository]")
 	}
 
 	go func() {
@@ -1016,12 +1016,12 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-	if s.config.getBool("aws.infra.registry.sync", true) {
+	if s.config.getBool("aws.infra.repository.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for _, r := range registryList {
-				for _, fn := range addParentsFns["registry"] {
+			for _, r := range repositoryList {
+				for _, fn := range addParentsFns["repository"] {
 					err := fn(g, r)
 					if err != nil {
 						errc <- err
@@ -1111,8 +1111,8 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	case "scalingpolicy":
 		graph, _, err := s.fetch_all_scalingpolicy_graph()
 		return graph, err
-	case "registry":
-		graph, _, err := s.fetch_all_registry_graph()
+	case "repository":
+		graph, _, err := s.fetch_all_repository_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
@@ -1637,7 +1637,7 @@ func (s *Infra) fetch_all_scalingpolicy_graph() (*graph.Graph, []*autoscaling.Sc
 	return g, cloudResources, badResErr
 }
 
-func (s *Infra) fetch_all_registry_graph() (*graph.Graph, []*ecr.Repository, error) {
+func (s *Infra) fetch_all_repository_graph() (*graph.Graph, []*ecr.Repository, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ecr.Repository
 	var badResErr error

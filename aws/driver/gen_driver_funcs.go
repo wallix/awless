@@ -3628,17 +3628,17 @@ func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *EcrDriver) Create_Registry_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Create_Repository_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("create registry: missing required params 'name'")
+		return nil, errors.New("create repository: missing required params 'name'")
 	}
 
-	d.logger.Verbose("params dry run: create registry ok")
-	return fakeDryRunId("registry"), nil
+	d.logger.Verbose("params dry run: create repository ok")
+	return fakeDryRunId("repository"), nil
 }
 
 // This function was auto generated
-func (d *EcrDriver) Create_Registry(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Create_Repository(params map[string]interface{}) (interface{}, error) {
 	input := &ecr.CreateRepositoryInput{}
 	var err error
 
@@ -3653,27 +3653,27 @@ func (d *EcrDriver) Create_Registry(params map[string]interface{}) (interface{},
 	output, err = d.CreateRepository(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("create registry: %s", err)
+		return nil, fmt.Errorf("create repository: %s", err)
 	}
 	d.logger.ExtraVerbosef("ecr.CreateRepository call took %s", time.Since(start))
 	id := aws.StringValue(output.Repository.RepositoryArn)
 
-	d.logger.Infof("create registry '%s' done", id)
+	d.logger.Infof("create repository '%s' done", id)
 	return id, nil
 }
 
 // This function was auto generated
-func (d *EcrDriver) Delete_Registry_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Delete_Repository_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("delete registry: missing required params 'name'")
+		return nil, errors.New("delete repository: missing required params 'name'")
 	}
 
-	d.logger.Verbose("params dry run: delete registry ok")
-	return fakeDryRunId("registry"), nil
+	d.logger.Verbose("params dry run: delete repository ok")
+	return fakeDryRunId("repository"), nil
 }
 
 // This function was auto generated
-func (d *EcrDriver) Delete_Registry(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Delete_Repository(params map[string]interface{}) (interface{}, error) {
 	input := &ecr.DeleteRepositoryInput{}
 	var err error
 
@@ -3702,10 +3702,10 @@ func (d *EcrDriver) Delete_Registry(params map[string]interface{}) (interface{},
 	output, err = d.DeleteRepository(input)
 	output = output
 	if err != nil {
-		return nil, fmt.Errorf("delete registry: %s", err)
+		return nil, fmt.Errorf("delete repository: %s", err)
 	}
 	d.logger.ExtraVerbosef("ecr.DeleteRepository call took %s", time.Since(start))
-	d.logger.Info("delete registry done")
+	d.logger.Info("delete repository done")
 	return output, nil
 }
 

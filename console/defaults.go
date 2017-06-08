@@ -220,7 +220,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.ScalingAdjustment},
 	},
 	//Containers
-	cloud.Registry: {
+	cloud.Repository: {
 		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.URI},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},

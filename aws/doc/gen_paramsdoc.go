@@ -185,7 +185,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name": "The name of the new queue",
 	},
 	"createrecord": {},
-	"createregistry": {
+	"createrepository": {
 		"name": "The name to use for the repository",
 	},
 	"createrole": {},
@@ -339,7 +339,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"url": "The URL of the Amazon SQS queue to delete",
 	},
 	"deleterecord": {},
-	"deleteregistry": {
+	"deleterepository": {
 		"account": "The AWS account ID associated with the registry that contains the repository to delete",
 		"force":   "Force the deletion of the repository if it contains images",
 		"name":    "The name of the repository to delete",
