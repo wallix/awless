@@ -111,12 +111,12 @@ func (s *source) Remove(ts ...Triple) {
 }
 
 func (s *source) Snapshot() RDFGraph {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	if !s.isUpdated() {
 		return s.latestSnap
 	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	gph := newGraph(len(s.triples))
 	defer func() {
@@ -144,14 +144,11 @@ func (s *source) Snapshot() RDFGraph {
 		gph.spo[k] = t
 	}
 
-	for _, t := range gph.spo {
-		gph.unique = append(gph.unique, t)
-	}
-
 	return gph
 }
 
 type graph struct {
+	once       sync.Once
 	unique     []Triple
 	s, p, o    map[string][]Triple
 	sp, so, po map[string][]Triple
@@ -175,8 +172,14 @@ func (g *graph) Contains(t Triple) bool {
 	return ok
 }
 func (g *graph) Triples() []Triple {
+	g.once.Do(func() {
+		for _, t := range g.spo {
+			g.unique = append(g.unique, t)
+		}
+	})
 	return g.unique
 }
+
 func (g *graph) Count() int {
 	return len(g.spo)
 }
