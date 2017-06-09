@@ -2,12 +2,17 @@
 
 ## Features
 
+- Better template TAB completion: suggest on properties, suggest nothing if not relevant
 - `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list repositories`
 - Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete repository`
 - Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
 - Listing [ECS](https://aws.amazon.com/ecs/) clusters: `awless list containerclusters`
 - Create/Delete [ECS](https://aws.amazon.com/ecs/) clusters: `awless create/delete containercluster`
+
+
+### Bugfixes
+- Template TAB completion: do not display non relevant id/name listing for each prompt
 
 ## v0.1.0 [2017-05-31]
 
