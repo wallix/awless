@@ -498,6 +498,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	}
 
 	columnsToDisplay := d.headers
+	maxWidthNoWraping := 1
 	if d.maxwidth != 0 {
 		columnsToDisplay = []ColumnDefinition{}
 		currentWidth := 1 // first border
@@ -507,6 +508,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 				break
 			}
 			currentWidth += colW
+			maxWidthNoWraping += colWidthNoWraping(j, values, h, j == markColumnAsc) + 3
 			columnsToDisplay = append(columnsToDisplay, h)
 		}
 	}
@@ -522,12 +524,22 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	}
 	table.SetHeader(displayHeaders)
 
+	var enableWraping bool
+	if d.maxwidth <= maxWidthNoWraping {
+		enableWraping = true
+	}
+
 	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
 	for i := range values {
 		var props []string
 		for j, h := range columnsToDisplay {
 			val := h.format(values[i][j])
-			props = append(props, wraper.Wrap(val))
+			if enableWraping {
+				props = append(props, wraper.Wrap(val))
+			} else {
+				props = append(props, val)
+			}
+
 		}
 		table.Append(props)
 	}
@@ -933,6 +945,27 @@ func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
 	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
 	for i := range t {
 		val := wraper.Wrap(h.format(t[i][j]))
+		valLen := tablewriter.DisplayWidth(val)
+		if valLen > tableColWidth {
+			if tableColWidth > max {
+				max = tableColWidth
+			}
+		}
+		lines, _ := tablewriter.WrapString(val, tableColWidth)
+		for _, line := range lines {
+			width := tablewriter.DisplayWidth(line)
+			if width > max {
+				max = width
+			}
+		}
+	}
+	return max
+}
+
+func colWidthNoWraping(j int, t table, h ColumnDefinition, hasSortSign bool) int {
+	max := tablewriter.DisplayWidth(h.title(hasSortSign))
+	for i := range t {
+		val := h.format(t[i][j])
 		valLen := tablewriter.DisplayWidth(val)
 		if valLen > tableColWidth {
 			if tableColWidth > max {

@@ -432,6 +432,7 @@ func TestMaxWidth(t *testing.T) {
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "name"),
+		WithMaxWidth(55),
 	).SetSource(g).Build()
 
 	expected := `|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
@@ -462,6 +463,7 @@ func TestMaxWidth(t *testing.T) {
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("state", "name"),
+		WithMaxWidth(45),
 	).SetSource(g).Build()
 
 	expected = `|  ID  | NAME | STATE ▲ | TYPE | PUBLIC IP |
@@ -484,6 +486,27 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
+	displayer, _ = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType("instance"),
+		WithSortBy("state", "name"),
+		WithMaxWidth(70),
+	).SetSource(g).Build()
+
+	expected = `|   ID   |  NAME  | STATE ▲ |   TYPE    | PUBLIC IP |
+|--------|--------|---------|-----------|---------|
+| inst_3 | apache | running | t2.xlarge |         |
+| inst_1 | redis  | running | t2.micro  | 1.2.3.4 |
+| inst_2 | django | stopped | t2.medium |         |
+`
+	w.Reset()
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+
 	headers = []ColumnDefinition{
 		StringColumnDefinition{Prop: "ID", Friendly: "I"},
 		StringColumnDefinition{Prop: "Name", Friendly: "N"},
@@ -496,6 +519,7 @@ func TestMaxWidth(t *testing.T) {
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("s", "n"),
+		WithMaxWidth(40),
 	).SetSource(g).Build()
 
 	expected = `|  I   |  N   | S ▲  |  T   |  P   |
@@ -539,7 +563,7 @@ func TestMaxWidth(t *testing.T) {
 		WithHeaders(headers),
 		WithRdfType("instance"),
 		WithSortBy("s", "n"),
-		WithMaxWidth(30),
+		WithMaxWidth(29),
 	).SetSource(g).Build()
 
 	expected = `|   I   |   N   |  S ▲  |

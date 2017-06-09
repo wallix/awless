@@ -9,6 +9,7 @@
 - Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
 - Listing [ECS](https://aws.amazon.com/ecs/) clusters: `awless list containerclusters`
 - Create/Delete [ECS](https://aws.amazon.com/ecs/) clusters: `awless create/delete containercluster`
+- Table display now use full terminal width when possible
 
 
 ### Bugfixes
