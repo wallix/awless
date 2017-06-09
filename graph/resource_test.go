@@ -352,7 +352,7 @@ func buildBenchmarkData() (data []*Resource) {
 			subId := fmt.Sprintf("%ssub%d", vpcId, j)
 			data = append(data, subResource(subId).prop(properties.ID, subId).prop(properties.Vpc, vpcId).prop(properties.Default, true).build())
 			for k := 0; k < 10; k++ {
-				instId := fmt.Sprintf("%sinst%d", subId, j)
+				instId := fmt.Sprintf("%sinst%d", subId, k)
 
 				secGroup1Id := fmt.Sprintf("%s_securitygroup1", instId)
 				data = append(data, sGrpResource(secGroup1Id).prop(properties.ID, secGroup1Id).prop("InboundRules", rules).prop("OutboundRules", rules).prop(properties.Vpc, vpcId).prop(properties.Launched, time.Now()).build())
