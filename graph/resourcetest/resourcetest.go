@@ -141,6 +141,10 @@ func Repository(id string) *rBuilder {
 	return new("repository", id).Prop(properties.ID, id)
 }
 
+func ContainerCluster(id string) *rBuilder {
+	return new("containercluster", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

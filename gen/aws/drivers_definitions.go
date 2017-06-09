@@ -774,6 +774,10 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
+		Api:     "ecs",
+		Drivers: []driver{},
+	},
+	{
 		Api:     "sts",
 		Drivers: []driver{},
 	},

@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -321,15 +322,24 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{RepositoryArn: awssdk.String("repo_3")},
 	}
 
+	//ECS
+	clusterNames := []*string{awssdk.String("clust_1"), awssdk.String("clust_2"), awssdk.String("clust_3")}
+	clusters := []*ecs.Cluster{
+		{ActiveServicesCount: awssdk.Int64(3), ClusterArn: awssdk.String("clust_1"), ClusterName: awssdk.String("my_cust_1"), PendingTasksCount: awssdk.Int64(1), RegisteredContainerInstancesCount: awssdk.Int64(3), RunningTasksCount: awssdk.Int64(2), Status: awssdk.String("ACTIVE")},
+		{ClusterArn: awssdk.String("clust_2")},
+		{ClusterArn: awssdk.String("clust_3"), ClusterName: awssdk.String("my_cust_3")},
+	}
+
 	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	mockEcr := &mockEcr{repositorys: repositories}
-	InfraService = &Infra{EC2API: mock, ECRAPI: mockEcr, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
+	mockEcs := &mockEcs{strings: clusterNames, clusters: clusters}
+	InfraService = &Infra{EC2API: mock, ECRAPI: mockEcr, ECSAPI: mockEcs, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
 	g, err := InfraService.FetchResources()
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", "containercluster")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -388,6 +398,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"repo_1":           resourcetest.Repository("repo_1").Prop(p.Created, now).Prop(p.Arn, "repo_1").Prop(p.Account, "account_id").Prop(p.Name, "repo_name_1").Prop(p.URI, "http://my.repository.url").Build(),
 		"repo_2":           resourcetest.Repository("repo_2").Prop(p.Arn, "repo_2").Build(),
 		"repo_3":           resourcetest.Repository("repo_3").Prop(p.Arn, "repo_3").Build(),
+		"clust_1":          resourcetest.ContainerCluster("clust_1").Prop(p.Arn, "clust_1").Prop(p.Name, "my_cust_1").Prop(p.PendingTasksCount, 1).Prop(p.ActiveServicesCount, 3).Prop(p.RegisteredContainerInstancesCount, 3).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Build(),
+		"clust_2":          resourcetest.ContainerCluster("clust_2").Prop(p.Arn, "clust_2").Build(),
+		"clust_3":          resourcetest.ContainerCluster("clust_3").Prop(p.Arn, "clust_3").Prop(p.Name, "my_cust_3").Build(),
 	}
 
 	expectedChildren := map[string][]string{
@@ -985,7 +998,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
 	}
 
-	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockElbv2{}, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{}, ECRAPI: &mockEcr{}, region: "eu-west-1"}
+	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockElbv2{}, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{}, ECRAPI: &mockEcr{}, ECSAPI: &mockEcs{}, region: "eu-west-1"}
 
 	g, err = infra.FetchResources()
 	if err != nil {

@@ -279,6 +279,15 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Created: {name: "CreatedAt", transform: extractValueFn},
 		properties.Account: {name: "RegistryId", transform: extractValueFn},
 	},
+	cloud.ContainerCluster: {
+		properties.Name:                              {name: "ClusterName", transform: extractValueFn},
+		properties.Arn:                               {name: "ClusterArn", transform: extractValueFn},
+		properties.ActiveServicesCount:               {name: "ActiveServicesCount", transform: extractValueFn},
+		properties.PendingTasksCount:                 {name: "PendingTasksCount", transform: extractValueFn},
+		properties.RegisteredContainerInstancesCount: {name: "RegisteredContainerInstancesCount", transform: extractValueFn},
+		properties.RunningTasksCount:                 {name: "RunningTasksCount", transform: extractValueFn},
+		properties.State:                             {name: "Status", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

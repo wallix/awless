@@ -34,6 +34,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
+	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -964,6 +966,63 @@ func (m *mockEcr) DescribeRepositoriesPages(input *ecr.DescribeRepositoriesInput
 	}
 	for i, page := range pages {
 		fn(&ecr.DescribeRepositoriesOutput{Repositories: page, NextToken: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+type mockEcs struct {
+	ecsiface.ECSAPI
+	clusters []*ecs.Cluster
+	strings  []*string
+}
+
+func (m *mockEcs) Name() string {
+	return ""
+}
+
+func (m *mockEcs) Provider() string {
+	return ""
+}
+
+func (m *mockEcs) ProviderAPI() string {
+	return ""
+}
+
+func (s *mockEcs) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewEcsDriver(s.ECSAPI),
+	}
+}
+
+func (m *mockEcs) ResourceTypes() []string {
+	return []string{}
+}
+
+func (m *mockEcs) FetchResources() (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockEcs) IsSyncDisabled() bool {
+	return false
+}
+
+func (m *mockEcs) FetchByType(t string) (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockEcs) ListClustersPages(input *ecs.ListClustersInput, fn func(p *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*string
+	for i := 0; i < len(m.strings); i += 2 {
+		page := []*string{m.strings[i]}
+		if i+1 < len(m.strings) {
+			page = append(page, m.strings[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&ecs.ListClustersOutput{ClusterArns: page, NextToken: aws.String(strconv.Itoa(i + 1))},
 			i < len(pages),
 		)
 	}

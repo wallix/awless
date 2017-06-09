@@ -303,6 +303,18 @@
 			"revisionTime": "2017-06-07T23:11:48Z"
 		},
 		{
+			"checksumSHA1": "xK333jTw5R1dnr9mt+yxsEHg3/A=",
+			"path": "github.com/aws/aws-sdk-go/service/ecs",
+			"revision": "4b24694fc54751608cb6bd35b1025137a0e243d2",
+			"revisionTime": "2017-06-08T20:25:46Z"
+		},
+		{
+			"checksumSHA1": "9bftOIXfwzjxiFxIeBGttyTJJH4=",
+			"path": "github.com/aws/aws-sdk-go/service/ecs/ecsiface",
+			"revision": "4b24694fc54751608cb6bd35b1025137a0e243d2",
+			"revisionTime": "2017-06-08T20:25:46Z"
+		},
+		{
 			"checksumSHA1": "oJQzYnuAHAhKAtAuinSPEeDsXoU=",
 			"path": "github.com/aws/aws-sdk-go/service/elbv2",
 			"revision": "200fde3f632bb9f036ec0b8cb29fbc8588155ea5",

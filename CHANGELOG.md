@@ -6,6 +6,7 @@
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list repositories`
 - Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete repository`
 - Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
+- Listing [ECS](https://aws.amazon.com/ecs/) clusters: `awless list containerclusters`
 
 ## v0.1.0 [2017-05-31]
 

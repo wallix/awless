@@ -145,6 +145,13 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "ecr.Repository", ApiMethod: "DescribeRepositoriesPages", Input: "ecr.DescribeRepositoriesInput", Output: "ecr.DescribeRepositoriesOutput", OutputsExtractor: "Repositories", Multipage: true, NextPageMarker: "NextToken"},
 		},
 	},
+	{
+		Api: "ecs",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "ecs.Cluster", Manual: true},
+			{FuncType: "list", AWSType: "string", ApiMethod: "ListClustersPages", Input: "ecs.ListClustersInput", Output: "ecs.ListClustersOutput", OutputsExtractor: "ClusterArns", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
 }
 
 func Mocks() []*mockDef {

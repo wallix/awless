@@ -227,6 +227,14 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Account},
 		StringColumnDefinition{Prop: properties.Arn},
 	},
+	cloud.ContainerCluster: {
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.ActiveServicesCount, Friendly: "ActiveServices"},
+		StringColumnDefinition{Prop: properties.PendingTasksCount, Friendly: "PendingTasks"},
+		StringColumnDefinition{Prop: properties.RegisteredContainerInstancesCount, Friendly: "RegisteredContainerInstances"},
+		StringColumnDefinition{Prop: properties.RunningTasksCount, Friendly: "RunningTasks"},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: properties.ID},

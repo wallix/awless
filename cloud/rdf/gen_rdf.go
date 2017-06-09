@@ -20,367 +20,376 @@ package rdf
 import "github.com/wallix/awless/cloud/properties"
 
 const (
-	Account                   = "cloud:account"
-	Actions                   = "cloud:actions"
-	ActionsEnabled            = "cloud:actionsEnabled"
-	ACMCertificate            = "cloud:acmCertificate"
-	AdjustmentType            = "cloud:adjustmentType"
-	Affinity                  = "cloud:affinity"
-	AlarmNames                = "cloud:alarmNames"
-	AlarmActions              = "cloud:alarmActions"
-	Aliases                   = "cloud:aliases"
-	ApproximateMessageCount   = "cloud:approximateMessageCount"
-	Association               = "cloud:association"
-	Architecture              = "cloud:architecture"
-	Arn                       = "cloud:arn"
-	Attachable                = "cloud:attachable"
-	AutoUpgrade               = "cloud:autoUpgrade"
-	ScalingGroupName          = "cloud:scalingGroupName"
-	AvailabilityZone          = "cloud:availabilityZone"
-	AvailabilityZones         = "cloud:availabilityZones"
-	BackupRetentionPeriod     = "cloud:backupRetentionPeriod"
-	Bucket                    = "cloud:bucketName"
-	CallerReference           = "cloud:callerReference"
-	Capabilities              = "cloud:capabilities"
-	Certificate               = "cloud:certificate"
-	CertificateAuthority      = "cloud:certificateAuthority"
-	Certificates              = "cloud:certificates"
-	Charset                   = "cloud:charset"
-	ChangeSet                 = "cloud:changeSet"
-	CheckHTTPCode             = "cloud:checkHTTPCode"
-	CheckInterval             = "cloud:checkInterval"
-	CheckPath                 = "cloud:checkPath"
-	CheckPort                 = "cloud:checkPort"
-	CheckProtocol             = "cloud:checkProtocol"
-	CheckTimeout              = "cloud:checkTimeout"
-	CIDR                      = "net:cidr"
-	CIDRv6                    = "net:cidrv6"
-	CipherSuite               = "cloud:cipherSuite"
-	Class                     = "cloud:class"
-	Cluster                   = "cloud:cluster"
-	Comment                   = "rdfs:comment"
-	Continent                 = "cloud:continent"
-	Config                    = "cloud:config"
-	Cooldown                  = "cloud:cooldown"
-	CopyTagsToSnapshot        = "cloud:copyTagsToSnapshot"
-	Country                   = "cloud:country"
-	Created                   = "cloud:created"
-	DBSecurityGroups          = "cloud:dbSecurityGroups"
-	DBSubnetGroup             = "cloud:dbSubnetGroup"
-	Default                   = "cloud:default"
-	DefaultCooldown           = "cloud:defaultCooldown"
-	Delay                     = "cloud:delaySeconds"
-	Description               = "cloud:description"
-	DesiredCapacity           = "cloud:desiredCapacity"
-	Dimensions                = "cloud:dimensions"
-	DisableRollback           = "cloud:disableRollback"
-	Enabled                   = "cloud:enabled"
-	Encrypted                 = "cloud:encrypted"
-	Endpoint                  = "cloud:endpoint"
-	Engine                    = "cloud:engine"
-	EngineVersion             = "cloud:engineVersion"
-	Failover                  = "cloud:failover"
-	Fingerprint               = "cloud:fingerprint"
-	GlobalID                  = "cloud:globalID"
-	GranteeType               = "cloud:granteeType"
-	Grants                    = "cloud:grants"
-	Handler                   = "cloud:handler"
-	Hash                      = "cloud:hash"
-	HealthCheck               = "cloud:healthCheck"
-	HealthCheckType           = "cloud:healthCheckType"
-	HealthCheckGracePeriod    = "cloud:healthCheckGracePeriod"
-	HealthyThresholdCount     = "cloud:healthyThresholdCount"
-	HTTPVersion               = "cloud:httpVersion"
-	Host                      = "cloud:host"
-	Hypervisor                = "cloud:hypervisor"
-	ID                        = "cloud:id"
-	Image                     = "cloud:image"
-	InboundRules              = "net:inboundRules"
-	InlinePolicies            = "cloud:inlinePolicies"
-	Instances                 = "cloud:instances"
-	InsufficientDataActions   = "cloud:insufficientDataActions"
-	IOPS                      = "cloud:iops"
-	IPType                    = "net:ipType"
-	IPv6Enabled               = "cloud:ipv6Enabled"
-	Key                       = "cloud:key"
-	KeyPair                   = "cloud:keyPair"
-	LatestRestorableTime      = "cloud:latestRestorableTime"
-	Launched                  = "cloud:launched"
-	LaunchConfigurationName   = "cloud:launchConfigurationName"
-	License                   = "cloud:license"
-	Lifecycle                 = "cloud:lifecycle"
-	LoadBalancer              = "cloud:loadBalancer"
-	Location                  = "cloud:location"
-	Main                      = "cloud:main"
-	MaxSize                   = "cloud:maxSize"
-	Memory                    = "cloud:memory"
-	Messages                  = "cloud:messages"
-	MetricName                = "cloud:metricName"
-	MinSize                   = "cloud:minSize"
-	Modified                  = "cloud:modified"
-	MonitoringInterval        = "cloud:monitoringInterval"
-	MonitoringRole            = "cloud:monitoringRole"
-	MultiAZ                   = "cloud:multiAZ"
-	Name                      = "cloud:name"
-	Namespace                 = "cloud:namemespace"
-	NewInstancesProtected     = "cloud:newInstancesProtected"
-	NetworkInterfaces         = "cloud:networkInterfaces"
-	Notifications             = "cloud:notifications"
-	OKActions                 = "cloud:okActions"
-	OptionGroups              = "cloud:optionGroups"
-	OutboundRules             = "net:outboundRules"
-	Owner                     = "cloud:owner"
-	Origins                   = "cloud:origins"
-	Outputs                   = "cloud:outputs"
-	Parameters                = "cloud:parameters"
-	ParameterGroups           = "cloud:parameterGroups"
-	PasswordLastUsed          = "cloud:passwordLastUsed"
-	Path                      = "cloud:path"
-	PathPrefix                = "cloud:pathPrefix"
-	PlacementGroup            = "cloud:placementGroup"
-	Port                      = "net:port"
-	PortRange                 = "net:portRange"
-	PreferredBackupDate       = "cloud:preferredBackupDate"
-	PreferredMaintenanceDate  = "cloud:preferredMaintenanceDate"
-	PriceClass                = "cloud:priceClass"
-	Private                   = "cloud:private"
-	PrivateIP                 = "net:privateIP"
-	Profile                   = "cloud:profile"
-	Progress                  = "cloud:progress"
-	Protocol                  = "net:protocol"
-	Public                    = "cloud:public"
-	PublicDNS                 = "cloud:publicDNS"
-	PublicIP                  = "net:publicIP"
-	RecordCount               = "cloud:records"
-	Records                   = "cloud:recordCount"
-	Region                    = "cloud:region"
-	Role                      = "cloud:rootDeviceType"
-	RootDevice                = "cloud:role"
-	RootDeviceType            = "cloud:rootDevice"
-	Routes                    = "net:routes"
-	Runtime                   = "cloud:runtime"
-	ScalingAdjustment         = "cloud:scalingAdjustment"
-	Scheme                    = "net:scheme"
-	SecondaryAvailabilityZone = "cloud:secondaryAvailabilityZone"
-	SecurityGroups            = "cloud:securityGroups"
-	Set                       = "cloud:set"
-	Size                      = "cloud:size"
-	SpotInstanceRequestId     = "cloud:spotInstanceRequestId"
-	SpotPrice                 = "cloud:spotPrice"
-	SSLSupportMethod          = "cloud:sslSupportMethod"
-	State                     = "cloud:state"
-	StateMessage              = "cloud:stateMessage"
-	Storage                   = "cloud:storage"
-	StorageType               = "cloud:storageType"
-	Subnet                    = "cloud:subnet"
-	Subnets                   = "cloud:subnets"
-	Tags                      = "cloud:tags"
-	Timeout                   = "cloud:timezone"
-	Timezone                  = "cloud:timeout"
-	TLSVersionRequired        = "cloud:tlsVersionRequired"
-	Topic                     = "cloud:topic"
-	TrafficPolicyInstance     = "cloud:trafficPolicyInstance"
-	TTL                       = "cloud:ttl"
-	Type                      = "cloud:type"
-	UnhealthyThresholdCount   = "cloud:unhealthyThresholdCount"
-	Updated                   = "cloud:updated"
-	UserData                  = "cloud:userData"
-	Username                  = "cloud:username"
-	URI                       = "cloud:uri"
-	Value                     = "cloud:value"
-	Version                   = "cloud:version"
-	Virtualization            = "cloud:virtualization"
-	Volume                    = "cloud:volume"
-	Vpc                       = "cloud:vpc"
-	Vpcs                      = "cloud:vpcs"
-	Weight                    = "cloud:weight"
-	WebACL                    = "cloud:webACL"
-	Zone                      = "cloud:zone"
+	Account                           = "cloud:account"
+	Actions                           = "cloud:actions"
+	ActionsEnabled                    = "cloud:actionsEnabled"
+	ActiveServicesCount               = "cloud:activeServicesCount"
+	ACMCertificate                    = "cloud:acmCertificate"
+	AdjustmentType                    = "cloud:adjustmentType"
+	Affinity                          = "cloud:affinity"
+	AlarmNames                        = "cloud:alarmNames"
+	AlarmActions                      = "cloud:alarmActions"
+	Aliases                           = "cloud:aliases"
+	ApproximateMessageCount           = "cloud:approximateMessageCount"
+	Association                       = "cloud:association"
+	Architecture                      = "cloud:architecture"
+	Arn                               = "cloud:arn"
+	Attachable                        = "cloud:attachable"
+	AutoUpgrade                       = "cloud:autoUpgrade"
+	ScalingGroupName                  = "cloud:scalingGroupName"
+	AvailabilityZone                  = "cloud:availabilityZone"
+	AvailabilityZones                 = "cloud:availabilityZones"
+	BackupRetentionPeriod             = "cloud:backupRetentionPeriod"
+	Bucket                            = "cloud:bucketName"
+	CallerReference                   = "cloud:callerReference"
+	Capabilities                      = "cloud:capabilities"
+	Certificate                       = "cloud:certificate"
+	CertificateAuthority              = "cloud:certificateAuthority"
+	Certificates                      = "cloud:certificates"
+	Charset                           = "cloud:charset"
+	ChangeSet                         = "cloud:changeSet"
+	CheckHTTPCode                     = "cloud:checkHTTPCode"
+	CheckInterval                     = "cloud:checkInterval"
+	CheckPath                         = "cloud:checkPath"
+	CheckPort                         = "cloud:checkPort"
+	CheckProtocol                     = "cloud:checkProtocol"
+	CheckTimeout                      = "cloud:checkTimeout"
+	CIDR                              = "net:cidr"
+	CIDRv6                            = "net:cidrv6"
+	CipherSuite                       = "cloud:cipherSuite"
+	Class                             = "cloud:class"
+	Cluster                           = "cloud:cluster"
+	Comment                           = "rdfs:comment"
+	Continent                         = "cloud:continent"
+	Config                            = "cloud:config"
+	Cooldown                          = "cloud:cooldown"
+	CopyTagsToSnapshot                = "cloud:copyTagsToSnapshot"
+	Country                           = "cloud:country"
+	Created                           = "cloud:created"
+	DBSecurityGroups                  = "cloud:dbSecurityGroups"
+	DBSubnetGroup                     = "cloud:dbSubnetGroup"
+	Default                           = "cloud:default"
+	DefaultCooldown                   = "cloud:defaultCooldown"
+	Delay                             = "cloud:delaySeconds"
+	Description                       = "cloud:description"
+	DesiredCapacity                   = "cloud:desiredCapacity"
+	Dimensions                        = "cloud:dimensions"
+	DisableRollback                   = "cloud:disableRollback"
+	Enabled                           = "cloud:enabled"
+	Encrypted                         = "cloud:encrypted"
+	Endpoint                          = "cloud:endpoint"
+	Engine                            = "cloud:engine"
+	EngineVersion                     = "cloud:engineVersion"
+	Failover                          = "cloud:failover"
+	Fingerprint                       = "cloud:fingerprint"
+	GlobalID                          = "cloud:globalID"
+	GranteeType                       = "cloud:granteeType"
+	Grants                            = "cloud:grants"
+	Handler                           = "cloud:handler"
+	Hash                              = "cloud:hash"
+	HealthCheck                       = "cloud:healthCheck"
+	HealthCheckType                   = "cloud:healthCheckType"
+	HealthCheckGracePeriod            = "cloud:healthCheckGracePeriod"
+	HealthyThresholdCount             = "cloud:healthyThresholdCount"
+	HTTPVersion                       = "cloud:httpVersion"
+	Host                              = "cloud:host"
+	Hypervisor                        = "cloud:hypervisor"
+	ID                                = "cloud:id"
+	Image                             = "cloud:image"
+	InboundRules                      = "net:inboundRules"
+	InlinePolicies                    = "cloud:inlinePolicies"
+	Instances                         = "cloud:instances"
+	InsufficientDataActions           = "cloud:insufficientDataActions"
+	IOPS                              = "cloud:iops"
+	IPType                            = "net:ipType"
+	IPv6Enabled                       = "cloud:ipv6Enabled"
+	Key                               = "cloud:key"
+	KeyPair                           = "cloud:keyPair"
+	LatestRestorableTime              = "cloud:latestRestorableTime"
+	Launched                          = "cloud:launched"
+	LaunchConfigurationName           = "cloud:launchConfigurationName"
+	License                           = "cloud:license"
+	Lifecycle                         = "cloud:lifecycle"
+	LoadBalancer                      = "cloud:loadBalancer"
+	Location                          = "cloud:location"
+	Main                              = "cloud:main"
+	MaxSize                           = "cloud:maxSize"
+	Memory                            = "cloud:memory"
+	Messages                          = "cloud:messages"
+	MetricName                        = "cloud:metricName"
+	MinSize                           = "cloud:minSize"
+	Modified                          = "cloud:modified"
+	MonitoringInterval                = "cloud:monitoringInterval"
+	MonitoringRole                    = "cloud:monitoringRole"
+	MultiAZ                           = "cloud:multiAZ"
+	Name                              = "cloud:name"
+	Namespace                         = "cloud:namemespace"
+	NewInstancesProtected             = "cloud:newInstancesProtected"
+	NetworkInterfaces                 = "cloud:networkInterfaces"
+	Notifications                     = "cloud:notifications"
+	OKActions                         = "cloud:okActions"
+	OptionGroups                      = "cloud:optionGroups"
+	OutboundRules                     = "net:outboundRules"
+	Owner                             = "cloud:owner"
+	Origins                           = "cloud:origins"
+	Outputs                           = "cloud:outputs"
+	Parameters                        = "cloud:parameters"
+	ParameterGroups                   = "cloud:parameterGroups"
+	PasswordLastUsed                  = "cloud:passwordLastUsed"
+	Path                              = "cloud:path"
+	PathPrefix                        = "cloud:pathPrefix"
+	PendingTasksCount                 = "cloud:pendingTasksCount"
+	PlacementGroup                    = "cloud:placementGroup"
+	Port                              = "net:port"
+	PortRange                         = "net:portRange"
+	PreferredBackupDate               = "cloud:preferredBackupDate"
+	PreferredMaintenanceDate          = "cloud:preferredMaintenanceDate"
+	PriceClass                        = "cloud:priceClass"
+	Private                           = "cloud:private"
+	PrivateIP                         = "net:privateIP"
+	Profile                           = "cloud:profile"
+	Progress                          = "cloud:progress"
+	Protocol                          = "net:protocol"
+	Public                            = "cloud:public"
+	PublicDNS                         = "cloud:publicDNS"
+	PublicIP                          = "net:publicIP"
+	RecordCount                       = "cloud:records"
+	Records                           = "cloud:recordCount"
+	Region                            = "cloud:region"
+	RegisteredContainerInstancesCount = "cloud:registeredContainerInstancesCount"
+	Role                              = "cloud:rootDeviceType"
+	RootDevice                        = "cloud:role"
+	RootDeviceType                    = "cloud:rootDevice"
+	Routes                            = "net:routes"
+	Runtime                           = "cloud:runtime"
+	RunningTasksCount                 = "cloud:runningTasksCount"
+	ScalingAdjustment                 = "cloud:scalingAdjustment"
+	Scheme                            = "net:scheme"
+	SecondaryAvailabilityZone         = "cloud:secondaryAvailabilityZone"
+	SecurityGroups                    = "cloud:securityGroups"
+	Set                               = "cloud:set"
+	Size                              = "cloud:size"
+	SpotInstanceRequestId             = "cloud:spotInstanceRequestId"
+	SpotPrice                         = "cloud:spotPrice"
+	SSLSupportMethod                  = "cloud:sslSupportMethod"
+	State                             = "cloud:state"
+	StateMessage                      = "cloud:stateMessage"
+	Storage                           = "cloud:storage"
+	StorageType                       = "cloud:storageType"
+	Subnet                            = "cloud:subnet"
+	Subnets                           = "cloud:subnets"
+	Tags                              = "cloud:tags"
+	Timeout                           = "cloud:timezone"
+	Timezone                          = "cloud:timeout"
+	TLSVersionRequired                = "cloud:tlsVersionRequired"
+	Topic                             = "cloud:topic"
+	TrafficPolicyInstance             = "cloud:trafficPolicyInstance"
+	TTL                               = "cloud:ttl"
+	Type                              = "cloud:type"
+	UnhealthyThresholdCount           = "cloud:unhealthyThresholdCount"
+	Updated                           = "cloud:updated"
+	UserData                          = "cloud:userData"
+	Username                          = "cloud:username"
+	URI                               = "cloud:uri"
+	Value                             = "cloud:value"
+	Version                           = "cloud:version"
+	Virtualization                    = "cloud:virtualization"
+	Volume                            = "cloud:volume"
+	Vpc                               = "cloud:vpc"
+	Vpcs                              = "cloud:vpcs"
+	Weight                            = "cloud:weight"
+	WebACL                            = "cloud:webACL"
+	Zone                              = "cloud:zone"
 )
 
 var Labels = map[string]string{
-	properties.Account:                   Account,
-	properties.Actions:                   Actions,
-	properties.ActionsEnabled:            ActionsEnabled,
-	properties.ACMCertificate:            ACMCertificate,
-	properties.AdjustmentType:            AdjustmentType,
-	properties.Affinity:                  Affinity,
-	properties.AlarmNames:                AlarmNames,
-	properties.AlarmActions:              AlarmActions,
-	properties.Aliases:                   Aliases,
-	properties.ApproximateMessageCount:   ApproximateMessageCount,
-	properties.Association:               Association,
-	properties.Architecture:              Architecture,
-	properties.Arn:                       Arn,
-	properties.Attachable:                Attachable,
-	properties.AutoUpgrade:               AutoUpgrade,
-	properties.ScalingGroupName:          ScalingGroupName,
-	properties.AvailabilityZone:          AvailabilityZone,
-	properties.AvailabilityZones:         AvailabilityZones,
-	properties.BackupRetentionPeriod:     BackupRetentionPeriod,
-	properties.Bucket:                    Bucket,
-	properties.CallerReference:           CallerReference,
-	properties.Capabilities:              Capabilities,
-	properties.Certificate:               Certificate,
-	properties.CertificateAuthority:      CertificateAuthority,
-	properties.Certificates:              Certificates,
-	properties.Charset:                   Charset,
-	properties.ChangeSet:                 ChangeSet,
-	properties.CheckHTTPCode:             CheckHTTPCode,
-	properties.CheckInterval:             CheckInterval,
-	properties.CheckPath:                 CheckPath,
-	properties.CheckPort:                 CheckPort,
-	properties.CheckProtocol:             CheckProtocol,
-	properties.CheckTimeout:              CheckTimeout,
-	properties.CIDR:                      CIDR,
-	properties.CIDRv6:                    CIDRv6,
-	properties.CipherSuite:               CipherSuite,
-	properties.Class:                     Class,
-	properties.Cluster:                   Cluster,
-	properties.Comment:                   Comment,
-	properties.Continent:                 Continent,
-	properties.Config:                    Config,
-	properties.Cooldown:                  Cooldown,
-	properties.CopyTagsToSnapshot:        CopyTagsToSnapshot,
-	properties.Country:                   Country,
-	properties.Created:                   Created,
-	properties.DBSecurityGroups:          DBSecurityGroups,
-	properties.DBSubnetGroup:             DBSubnetGroup,
-	properties.Default:                   Default,
-	properties.DefaultCooldown:           DefaultCooldown,
-	properties.Delay:                     Delay,
-	properties.Description:               Description,
-	properties.DesiredCapacity:           DesiredCapacity,
-	properties.Dimensions:                Dimensions,
-	properties.DisableRollback:           DisableRollback,
-	properties.Enabled:                   Enabled,
-	properties.Encrypted:                 Encrypted,
-	properties.Endpoint:                  Endpoint,
-	properties.Engine:                    Engine,
-	properties.EngineVersion:             EngineVersion,
-	properties.Failover:                  Failover,
-	properties.Fingerprint:               Fingerprint,
-	properties.GlobalID:                  GlobalID,
-	properties.GranteeType:               GranteeType,
-	properties.Grants:                    Grants,
-	properties.Handler:                   Handler,
-	properties.Hash:                      Hash,
-	properties.HealthCheck:               HealthCheck,
-	properties.HealthCheckType:           HealthCheckType,
-	properties.HealthCheckGracePeriod:    HealthCheckGracePeriod,
-	properties.HealthyThresholdCount:     HealthyThresholdCount,
-	properties.HTTPVersion:               HTTPVersion,
-	properties.Host:                      Host,
-	properties.Hypervisor:                Hypervisor,
-	properties.ID:                        ID,
-	properties.Image:                     Image,
-	properties.InboundRules:              InboundRules,
-	properties.InlinePolicies:            InlinePolicies,
-	properties.Instances:                 Instances,
-	properties.InsufficientDataActions:   InsufficientDataActions,
-	properties.IOPS:                      IOPS,
-	properties.IPType:                    IPType,
-	properties.IPv6Enabled:               IPv6Enabled,
-	properties.Key:                       Key,
-	properties.KeyPair:                   KeyPair,
-	properties.LatestRestorableTime:      LatestRestorableTime,
-	properties.Launched:                  Launched,
-	properties.LaunchConfigurationName:   LaunchConfigurationName,
-	properties.License:                   License,
-	properties.Lifecycle:                 Lifecycle,
-	properties.LoadBalancer:              LoadBalancer,
-	properties.Location:                  Location,
-	properties.Main:                      Main,
-	properties.MaxSize:                   MaxSize,
-	properties.Memory:                    Memory,
-	properties.Messages:                  Messages,
-	properties.MetricName:                MetricName,
-	properties.MinSize:                   MinSize,
-	properties.Modified:                  Modified,
-	properties.MonitoringInterval:        MonitoringInterval,
-	properties.MonitoringRole:            MonitoringRole,
-	properties.MultiAZ:                   MultiAZ,
-	properties.Name:                      Name,
-	properties.Namespace:                 Namespace,
-	properties.NewInstancesProtected:     NewInstancesProtected,
-	properties.NetworkInterfaces:         NetworkInterfaces,
-	properties.Notifications:             Notifications,
-	properties.OKActions:                 OKActions,
-	properties.OptionGroups:              OptionGroups,
-	properties.OutboundRules:             OutboundRules,
-	properties.Owner:                     Owner,
-	properties.Origins:                   Origins,
-	properties.Outputs:                   Outputs,
-	properties.Parameters:                Parameters,
-	properties.ParameterGroups:           ParameterGroups,
-	properties.PasswordLastUsed:          PasswordLastUsed,
-	properties.Path:                      Path,
-	properties.PathPrefix:                PathPrefix,
-	properties.PlacementGroup:            PlacementGroup,
-	properties.Port:                      Port,
-	properties.PortRange:                 PortRange,
-	properties.PreferredBackupDate:       PreferredBackupDate,
-	properties.PreferredMaintenanceDate:  PreferredMaintenanceDate,
-	properties.PriceClass:                PriceClass,
-	properties.Private:                   Private,
-	properties.PrivateIP:                 PrivateIP,
-	properties.Profile:                   Profile,
-	properties.Progress:                  Progress,
-	properties.Protocol:                  Protocol,
-	properties.Public:                    Public,
-	properties.PublicDNS:                 PublicDNS,
-	properties.PublicIP:                  PublicIP,
-	properties.RecordCount:               RecordCount,
-	properties.Records:                   Records,
-	properties.Region:                    Region,
-	properties.Role:                      Role,
-	properties.RootDevice:                RootDevice,
-	properties.RootDeviceType:            RootDeviceType,
-	properties.Routes:                    Routes,
-	properties.Runtime:                   Runtime,
-	properties.ScalingAdjustment:         ScalingAdjustment,
-	properties.Scheme:                    Scheme,
-	properties.SecondaryAvailabilityZone: SecondaryAvailabilityZone,
-	properties.SecurityGroups:            SecurityGroups,
-	properties.Set:                       Set,
-	properties.Size:                      Size,
-	properties.SpotInstanceRequestId:     SpotInstanceRequestId,
-	properties.SpotPrice:                 SpotPrice,
-	properties.SSLSupportMethod:          SSLSupportMethod,
-	properties.State:                     State,
-	properties.StateMessage:              StateMessage,
-	properties.Storage:                   Storage,
-	properties.StorageType:               StorageType,
-	properties.Subnet:                    Subnet,
-	properties.Subnets:                   Subnets,
-	properties.Tags:                      Tags,
-	properties.Timeout:                   Timeout,
-	properties.Timezone:                  Timezone,
-	properties.TLSVersionRequired:        TLSVersionRequired,
-	properties.Topic:                     Topic,
-	properties.TrafficPolicyInstance:     TrafficPolicyInstance,
-	properties.TTL:                       TTL,
-	properties.Type:                      Type,
-	properties.UnhealthyThresholdCount:   UnhealthyThresholdCount,
-	properties.Updated:                   Updated,
-	properties.UserData:                  UserData,
-	properties.Username:                  Username,
-	properties.URI:                       URI,
-	properties.Value:                     Value,
-	properties.Version:                   Version,
-	properties.Virtualization:            Virtualization,
-	properties.Volume:                    Volume,
-	properties.Vpc:                       Vpc,
-	properties.Vpcs:                      Vpcs,
-	properties.Weight:                    Weight,
-	properties.WebACL:                    WebACL,
-	properties.Zone:                      Zone,
+	properties.Account:                           Account,
+	properties.Actions:                           Actions,
+	properties.ActionsEnabled:                    ActionsEnabled,
+	properties.ActiveServicesCount:               ActiveServicesCount,
+	properties.ACMCertificate:                    ACMCertificate,
+	properties.AdjustmentType:                    AdjustmentType,
+	properties.Affinity:                          Affinity,
+	properties.AlarmNames:                        AlarmNames,
+	properties.AlarmActions:                      AlarmActions,
+	properties.Aliases:                           Aliases,
+	properties.ApproximateMessageCount:           ApproximateMessageCount,
+	properties.Association:                       Association,
+	properties.Architecture:                      Architecture,
+	properties.Arn:                               Arn,
+	properties.Attachable:                        Attachable,
+	properties.AutoUpgrade:                       AutoUpgrade,
+	properties.ScalingGroupName:                  ScalingGroupName,
+	properties.AvailabilityZone:                  AvailabilityZone,
+	properties.AvailabilityZones:                 AvailabilityZones,
+	properties.BackupRetentionPeriod:             BackupRetentionPeriod,
+	properties.Bucket:                            Bucket,
+	properties.CallerReference:                   CallerReference,
+	properties.Capabilities:                      Capabilities,
+	properties.Certificate:                       Certificate,
+	properties.CertificateAuthority:              CertificateAuthority,
+	properties.Certificates:                      Certificates,
+	properties.Charset:                           Charset,
+	properties.ChangeSet:                         ChangeSet,
+	properties.CheckHTTPCode:                     CheckHTTPCode,
+	properties.CheckInterval:                     CheckInterval,
+	properties.CheckPath:                         CheckPath,
+	properties.CheckPort:                         CheckPort,
+	properties.CheckProtocol:                     CheckProtocol,
+	properties.CheckTimeout:                      CheckTimeout,
+	properties.CIDR:                              CIDR,
+	properties.CIDRv6:                            CIDRv6,
+	properties.CipherSuite:                       CipherSuite,
+	properties.Class:                             Class,
+	properties.Cluster:                           Cluster,
+	properties.Comment:                           Comment,
+	properties.Continent:                         Continent,
+	properties.Config:                            Config,
+	properties.Cooldown:                          Cooldown,
+	properties.CopyTagsToSnapshot:                CopyTagsToSnapshot,
+	properties.Country:                           Country,
+	properties.Created:                           Created,
+	properties.DBSecurityGroups:                  DBSecurityGroups,
+	properties.DBSubnetGroup:                     DBSubnetGroup,
+	properties.Default:                           Default,
+	properties.DefaultCooldown:                   DefaultCooldown,
+	properties.Delay:                             Delay,
+	properties.Description:                       Description,
+	properties.DesiredCapacity:                   DesiredCapacity,
+	properties.Dimensions:                        Dimensions,
+	properties.DisableRollback:                   DisableRollback,
+	properties.Enabled:                           Enabled,
+	properties.Encrypted:                         Encrypted,
+	properties.Endpoint:                          Endpoint,
+	properties.Engine:                            Engine,
+	properties.EngineVersion:                     EngineVersion,
+	properties.Failover:                          Failover,
+	properties.Fingerprint:                       Fingerprint,
+	properties.GlobalID:                          GlobalID,
+	properties.GranteeType:                       GranteeType,
+	properties.Grants:                            Grants,
+	properties.Handler:                           Handler,
+	properties.Hash:                              Hash,
+	properties.HealthCheck:                       HealthCheck,
+	properties.HealthCheckType:                   HealthCheckType,
+	properties.HealthCheckGracePeriod:            HealthCheckGracePeriod,
+	properties.HealthyThresholdCount:             HealthyThresholdCount,
+	properties.HTTPVersion:                       HTTPVersion,
+	properties.Host:                              Host,
+	properties.Hypervisor:                        Hypervisor,
+	properties.ID:                                ID,
+	properties.Image:                             Image,
+	properties.InboundRules:                      InboundRules,
+	properties.InlinePolicies:                    InlinePolicies,
+	properties.Instances:                         Instances,
+	properties.InsufficientDataActions:           InsufficientDataActions,
+	properties.IOPS:                              IOPS,
+	properties.IPType:                            IPType,
+	properties.IPv6Enabled:                       IPv6Enabled,
+	properties.Key:                               Key,
+	properties.KeyPair:                           KeyPair,
+	properties.LatestRestorableTime:              LatestRestorableTime,
+	properties.Launched:                          Launched,
+	properties.LaunchConfigurationName:           LaunchConfigurationName,
+	properties.License:                           License,
+	properties.Lifecycle:                         Lifecycle,
+	properties.LoadBalancer:                      LoadBalancer,
+	properties.Location:                          Location,
+	properties.Main:                              Main,
+	properties.MaxSize:                           MaxSize,
+	properties.Memory:                            Memory,
+	properties.Messages:                          Messages,
+	properties.MetricName:                        MetricName,
+	properties.MinSize:                           MinSize,
+	properties.Modified:                          Modified,
+	properties.MonitoringInterval:                MonitoringInterval,
+	properties.MonitoringRole:                    MonitoringRole,
+	properties.MultiAZ:                           MultiAZ,
+	properties.Name:                              Name,
+	properties.Namespace:                         Namespace,
+	properties.NewInstancesProtected:             NewInstancesProtected,
+	properties.NetworkInterfaces:                 NetworkInterfaces,
+	properties.Notifications:                     Notifications,
+	properties.OKActions:                         OKActions,
+	properties.OptionGroups:                      OptionGroups,
+	properties.OutboundRules:                     OutboundRules,
+	properties.Owner:                             Owner,
+	properties.Origins:                           Origins,
+	properties.Outputs:                           Outputs,
+	properties.Parameters:                        Parameters,
+	properties.ParameterGroups:                   ParameterGroups,
+	properties.PasswordLastUsed:                  PasswordLastUsed,
+	properties.Path:                              Path,
+	properties.PathPrefix:                        PathPrefix,
+	properties.PendingTasksCount:                 PendingTasksCount,
+	properties.PlacementGroup:                    PlacementGroup,
+	properties.Port:                              Port,
+	properties.PortRange:                         PortRange,
+	properties.PreferredBackupDate:               PreferredBackupDate,
+	properties.PreferredMaintenanceDate:          PreferredMaintenanceDate,
+	properties.PriceClass:                        PriceClass,
+	properties.Private:                           Private,
+	properties.PrivateIP:                         PrivateIP,
+	properties.Profile:                           Profile,
+	properties.Progress:                          Progress,
+	properties.Protocol:                          Protocol,
+	properties.Public:                            Public,
+	properties.PublicDNS:                         PublicDNS,
+	properties.PublicIP:                          PublicIP,
+	properties.RecordCount:                       RecordCount,
+	properties.Records:                           Records,
+	properties.Region:                            Region,
+	properties.RegisteredContainerInstancesCount: RegisteredContainerInstancesCount,
+	properties.Role:                              Role,
+	properties.RootDevice:                        RootDevice,
+	properties.RootDeviceType:                    RootDeviceType,
+	properties.Routes:                            Routes,
+	properties.Runtime:                           Runtime,
+	properties.RunningTasksCount:                 RunningTasksCount,
+	properties.ScalingAdjustment:                 ScalingAdjustment,
+	properties.Scheme:                            Scheme,
+	properties.SecondaryAvailabilityZone:         SecondaryAvailabilityZone,
+	properties.SecurityGroups:                    SecurityGroups,
+	properties.Set:                               Set,
+	properties.Size:                              Size,
+	properties.SpotInstanceRequestId:             SpotInstanceRequestId,
+	properties.SpotPrice:                         SpotPrice,
+	properties.SSLSupportMethod:                  SSLSupportMethod,
+	properties.State:                             State,
+	properties.StateMessage:                      StateMessage,
+	properties.Storage:                           Storage,
+	properties.StorageType:                       StorageType,
+	properties.Subnet:                            Subnet,
+	properties.Subnets:                           Subnets,
+	properties.Tags:                              Tags,
+	properties.Timeout:                           Timeout,
+	properties.Timezone:                          Timezone,
+	properties.TLSVersionRequired:                TLSVersionRequired,
+	properties.Topic:                             Topic,
+	properties.TrafficPolicyInstance:             TrafficPolicyInstance,
+	properties.TTL:                               TTL,
+	properties.Type:                              Type,
+	properties.UnhealthyThresholdCount:           UnhealthyThresholdCount,
+	properties.Updated:                           Updated,
+	properties.UserData:                          UserData,
+	properties.Username:                          Username,
+	properties.URI:                               URI,
+	properties.Value:                             Value,
+	properties.Version:                           Version,
+	properties.Virtualization:                    Virtualization,
+	properties.Volume:                            Volume,
+	properties.Vpc:                               Vpc,
+	properties.Vpcs:                              Vpcs,
+	properties.Weight:                            Weight,
+	properties.WebACL:                            WebACL,
+	properties.Zone:                              Zone,
 }
 
 var Properties = RDFProperties{
 	Account:                 {ID: Account, RdfType: "rdf:Property", RdfsLabel: "Account", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Actions:                 {ID: Actions, RdfType: "rdf:Property", RdfsLabel: "Actions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ActionsEnabled:          {ID: ActionsEnabled, RdfType: "rdf:Property", RdfsLabel: "ActionsEnabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	ActiveServicesCount:     {ID: ActiveServicesCount, RdfType: "rdf:Property", RdfsLabel: "ActiveServicesCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	ACMCertificate:          {ID: ACMCertificate, RdfType: "rdf:Property", RdfsLabel: "ACMCertificate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AdjustmentType:          {ID: AdjustmentType, RdfType: "rdf:Property", RdfsLabel: "AdjustmentType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Affinity:                {ID: Affinity, RdfType: "rdf:Property", RdfsLabel: "Affinity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -495,6 +504,7 @@ var Properties = RDFProperties{
 	PasswordLastUsed:         {ID: PasswordLastUsed, RdfType: "rdf:Property", RdfsLabel: "PasswordLastUsed", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Path:                     {ID: Path, RdfType: "rdf:Property", RdfsLabel: "Path", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PathPrefix:               {ID: PathPrefix, RdfType: "rdf:Property", RdfsLabel: "PathPrefix", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	PendingTasksCount:        {ID: PendingTasksCount, RdfType: "rdf:Property", RdfsLabel: "PendingTasksCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	PlacementGroup:           {ID: PlacementGroup, RdfType: "rdf:Property", RdfsLabel: "PlacementGroup", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Port:                     {ID: Port, RdfType: "rdf:Property", RdfsLabel: "Port", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	PortRange:                {ID: PortRange, RdfType: "rdfs:subPropertyOf", RdfsLabel: "PortRange", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -512,13 +522,15 @@ var Properties = RDFProperties{
 	RecordCount:              {ID: RecordCount, RdfType: "rdf:Property", RdfsLabel: "RecordCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Records:                  {ID: Records, RdfType: "rdf:Property", RdfsLabel: "Records", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Region:                   {ID: Region, RdfType: "rdf:Property", RdfsLabel: "Region", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Role:                     {ID: Role, RdfType: "rdf:Property", RdfsLabel: "Role", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
-	RootDevice:               {ID: RootDevice, RdfType: "rdf:Property", RdfsLabel: "RootDevice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	RootDeviceType:           {ID: RootDeviceType, RdfType: "rdf:Property", RdfsLabel: "RootDeviceType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Routes:                   {ID: Routes, RdfType: "rdf:Property", RdfsLabel: "Routes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:Route"},
-	Runtime:                  {ID: Runtime, RdfType: "rdf:Property", RdfsLabel: "Runtime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	ScalingAdjustment:        {ID: ScalingAdjustment, RdfType: "rdf:Property", RdfsLabel: "ScalingAdjustment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Scheme:                   {ID: Scheme, RdfType: "rdf:Property", RdfsLabel: "Scheme", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	RegisteredContainerInstancesCount: {ID: RegisteredContainerInstancesCount, RdfType: "rdf:Property", RdfsLabel: "RegisteredContainerInstancesCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Role:              {ID: Role, RdfType: "rdf:Property", RdfsLabel: "Role", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	RootDevice:        {ID: RootDevice, RdfType: "rdf:Property", RdfsLabel: "RootDevice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	RootDeviceType:    {ID: RootDeviceType, RdfType: "rdf:Property", RdfsLabel: "RootDeviceType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Routes:            {ID: Routes, RdfType: "rdf:Property", RdfsLabel: "Routes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:Route"},
+	Runtime:           {ID: Runtime, RdfType: "rdf:Property", RdfsLabel: "Runtime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	RunningTasksCount: {ID: RunningTasksCount, RdfType: "rdf:Property", RdfsLabel: "RunningTasksCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	ScalingAdjustment: {ID: ScalingAdjustment, RdfType: "rdf:Property", RdfsLabel: "ScalingAdjustment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Scheme:            {ID: Scheme, RdfType: "rdf:Property", RdfsLabel: "Scheme", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SecondaryAvailabilityZone: {ID: SecondaryAvailabilityZone, RdfType: "rdf:Property", RdfsLabel: "SecondaryAvailabilityZone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SecurityGroups:            {ID: SecurityGroups, RdfType: "rdf:Property", RdfsLabel: "SecurityGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	Set:                       {ID: Set, RdfType: "rdf:Property", RdfsLabel: "Set", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

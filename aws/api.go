@@ -26,6 +26,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -735,4 +736,35 @@ func (s *Dns) fetch_all_record_graph() (*graph.Graph, []*route53.ResourceRecordS
 			cloudResources = append(cloudResources, record)
 		}
 	}
+}
+
+func (s *Infra) fetch_all_containercluster_graph() (*graph.Graph, []*ecs.Cluster, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ecs.Cluster
+
+	var badResErr error
+	err := s.ListClustersPages(&ecs.ListClustersInput{}, func(out *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool) {
+		var clustersOut *ecs.DescribeClustersOutput
+
+		if clustersOut, badResErr = s.ECSAPI.DescribeClusters(&ecs.DescribeClustersInput{Clusters: out.ClusterArns}); badResErr != nil {
+			return false
+		}
+
+		for _, cluster := range clustersOut.Clusters {
+			cloudResources = append(cloudResources, cluster)
+			var res *graph.Resource
+			if res, badResErr = newResource(cluster); badResErr != nil {
+				return false
+			}
+			if badResErr = g.AddResource(res); badResErr != nil {
+				return false
+			}
+		}
+		return out.NextToken != nil
+	})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
 }

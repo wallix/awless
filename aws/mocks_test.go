@@ -7,6 +7,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -101,4 +102,16 @@ func (m *mockCloudfront) ListDistributionsPages(input *cloudfront.ListDistributi
 		)
 	}
 	return nil
+}
+
+func (m *mockEcs) DescribeClusters(input *ecs.DescribeClustersInput) (*ecs.DescribeClustersOutput, error) {
+	var clusters []*ecs.Cluster
+	for _, cluster := range m.clusters {
+		for _, inputC := range input.Clusters {
+			if awssdk.StringValue(cluster.ClusterArn) == awssdk.StringValue(inputC) {
+				clusters = append(clusters, cluster)
+			}
+		}
+	}
+	return &ecs.DescribeClustersOutput{Clusters: clusters}, nil
 }

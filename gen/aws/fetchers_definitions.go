@@ -40,7 +40,7 @@ type fetcher struct {
 var FetchersDefs = []fetchersDef{
 	{
 		Name: "infra",
-		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr"},
+		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr", "ecs"},
 		Fetchers: []fetcher{
 			{Api: "ec2", ResourceType: cloud.Instance, AWSType: "ec2.Instance", ApiMethod: "DescribeInstancesPages", Input: "ec2.DescribeInstancesInput{}", Output: "ec2.DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ec2", ResourceType: cloud.Subnet, AWSType: "ec2.Subnet", ApiMethod: "DescribeSubnets", Input: "ec2.DescribeSubnetsInput{}", Output: "ec2.DescribeSubnetsOutput", OutputsExtractor: "Subnets"},
@@ -64,6 +64,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "autoscaling", ResourceType: cloud.ScalingGroup, AWSType: "autoscaling.Group", ApiMethod: "DescribeAutoScalingGroupsPages", Input: "autoscaling.DescribeAutoScalingGroupsInput{}", Output: "autoscaling.DescribeAutoScalingGroupsOutput", OutputsExtractor: "AutoScalingGroups", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "autoscaling", ResourceType: cloud.ScalingPolicy, AWSType: "autoscaling.ScalingPolicy", ApiMethod: "DescribePoliciesPages", Input: "autoscaling.DescribePoliciesInput{}", Output: "autoscaling.DescribePoliciesOutput", OutputsExtractor: "ScalingPolicies", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ecr", ResourceType: cloud.Repository, AWSType: "ecr.Repository", ApiMethod: "DescribeRepositoriesPages", Input: "ecr.DescribeRepositoriesInput{}", Output: "ecr.DescribeRepositoriesOutput", OutputsExtractor: "Repositories", Multipage: true, NextPageMarker: "NextToken"},
+			{Api: "ecs", ResourceType: cloud.ContainerCluster, AWSType: "ecs.Cluster", ManualFetcher: true},
 		},
 	},
 	{

@@ -39,6 +39,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
+	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -102,6 +104,7 @@ var ResourceTypes = []string{
 	"scalinggroup",
 	"scalingpolicy",
 	"repository",
+	"containercluster",
 	"user",
 	"group",
 	"role",
@@ -127,6 +130,7 @@ var ServicePerAPI = map[string]string{
 	"rds":            "infra",
 	"autoscaling":    "infra",
 	"ecr":            "infra",
+	"ecs":            "infra",
 	"iam":            "access",
 	"sts":            "access",
 	"s3":             "storage",
@@ -162,6 +166,7 @@ var ServicePerResourceType = map[string]string{
 	"scalinggroup":        "infra",
 	"scalingpolicy":       "infra",
 	"repository":          "infra",
+	"containercluster":    "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -204,6 +209,7 @@ var APIPerResourceType = map[string]string{
 	"scalinggroup":        "autoscaling",
 	"scalingpolicy":       "autoscaling",
 	"repository":          "ecr",
+	"containercluster":    "ecs",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -233,6 +239,7 @@ type Infra struct {
 	rdsiface.RDSAPI
 	autoscalingiface.AutoScalingAPI
 	ecriface.ECRAPI
+	ecsiface.ECSAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
@@ -243,6 +250,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		RDSAPI:         rds.New(sess),
 		AutoScalingAPI: autoscaling.New(sess),
 		ECRAPI:         ecr.New(sess),
+		ECSAPI:         ecs.New(sess),
 		config:         awsconf,
 		region:         region,
 		log:            log,
@@ -260,6 +268,7 @@ func (s *Infra) Drivers() []driver.Driver {
 		awsdriver.NewRdsDriver(s.RDSAPI),
 		awsdriver.NewAutoscalingDriver(s.AutoScalingAPI),
 		awsdriver.NewEcrDriver(s.ECRAPI),
+		awsdriver.NewEcsDriver(s.ECSAPI),
 	}
 }
 
@@ -287,6 +296,7 @@ func (s *Infra) ResourceTypes() []string {
 		"scalinggroup",
 		"scalingpolicy",
 		"repository",
+		"containercluster",
 	}
 }
 
@@ -322,6 +332,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var scalinggroupList []*autoscaling.Group
 	var scalingpolicyList []*autoscaling.ScalingPolicy
 	var repositoryList []*ecr.Repository
+	var containerclusterList []*ecs.Cluster
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -678,6 +689,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[repository]")
 	}
+	if s.config.getBool("aws.infra.containercluster.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, containerclusterList, err = s.fetch_all_containercluster_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[containercluster]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -1031,6 +1058,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.containercluster.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range containerclusterList {
+				for _, fn := range addParentsFns["containercluster"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1113,6 +1155,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "repository":
 		graph, _, err := s.fetch_all_repository_graph()
+		return graph, err
+	case "containercluster":
+		graph, _, err := s.fetch_all_containercluster_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)
