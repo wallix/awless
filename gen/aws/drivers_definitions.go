@@ -81,7 +81,7 @@ var DriversDefs = []driversDef{
 		Drivers: []driver{
 			// VPC
 			{
-				Action: "create", Entity: cloud.Vpc, Input: "CreateVpcInput", Output: "CreateVpcOutput", ApiMethod: "CreateVpc", OutputExtractor: "aws.StringValue(output.Vpc.VpcId)",
+				Action: "create", Entity: cloud.Vpc, ApiMethod: "CreateVpc", Input: "CreateVpcInput", Output: "CreateVpcOutput", OutputExtractor: "aws.StringValue(output.Vpc.VpcId)",
 				RequiredParams: []param{
 					{AwsField: "CidrBlock", TemplateName: "cidr", AwsType: "awsstr"},
 				},
@@ -90,7 +90,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Vpc, Input: "DeleteVpcInput", Output: "DeleteVpcOutput", ApiMethod: "DeleteVpc",
+				Action: "delete", Entity: cloud.Vpc, ApiMethod: "DeleteVpc", Input: "DeleteVpcInput", Output: "DeleteVpcOutput",
 				RequiredParams: []param{
 					{AwsField: "VpcId", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -98,7 +98,7 @@ var DriversDefs = []driversDef{
 
 			// SUBNET
 			{
-				Action: "create", Entity: cloud.Subnet, Input: "CreateSubnetInput", Output: "CreateSubnetOutput", ApiMethod: "CreateSubnet", OutputExtractor: "aws.StringValue(output.Subnet.SubnetId)",
+				Action: "create", Entity: cloud.Subnet, ApiMethod: "CreateSubnet", Input: "CreateSubnetInput", Output: "CreateSubnetOutput", OutputExtractor: "aws.StringValue(output.Subnet.SubnetId)",
 				RequiredParams: []param{
 					{AwsField: "CidrBlock", TemplateName: "cidr", AwsType: "awsstr"},
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
@@ -109,7 +109,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "update", Entity: cloud.Subnet, Input: "ModifySubnetAttributeInput", Output: "ModifySubnetAttributeOutput", ApiMethod: "ModifySubnetAttribute", DryRunUnsupported: true,
+				Action: "update", Entity: cloud.Subnet, ApiMethod: "ModifySubnetAttribute", Input: "ModifySubnetAttributeInput", Output: "ModifySubnetAttributeOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "SubnetId", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -118,7 +118,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Subnet, Input: "DeleteSubnetInput", Output: "DeleteSubnetOutput", ApiMethod: "DeleteSubnet",
+				Action: "delete", Entity: cloud.Subnet, ApiMethod: "DeleteSubnet", Input: "DeleteSubnetInput", Output: "DeleteSubnetOutput",
 				RequiredParams: []param{
 					{AwsField: "SubnetId", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -126,7 +126,7 @@ var DriversDefs = []driversDef{
 
 			// INSTANCES
 			{
-				Action: "create", Entity: cloud.Instance, Input: "RunInstancesInput", Output: "Reservation", ApiMethod: "RunInstances", OutputExtractor: "aws.StringValue(output.Instances[0].InstanceId)",
+				Action: "create", Entity: cloud.Instance, ApiMethod: "RunInstances", Input: "RunInstancesInput", Output: "Reservation", OutputExtractor: "aws.StringValue(output.Instances[0].InstanceId)",
 				RequiredParams: []param{
 					{AwsField: "ImageId", TemplateName: "image", AwsType: "awsstr"},
 					{AwsField: "MaxCount", TemplateName: "count", AwsType: "awsint64"},
@@ -145,7 +145,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "update", Entity: cloud.Instance, Input: "ModifyInstanceAttributeInput", Output: "ModifyInstanceAttributeOutput", ApiMethod: "ModifyInstanceAttribute",
+				Action: "update", Entity: cloud.Instance, ApiMethod: "ModifyInstanceAttribute", Input: "ModifyInstanceAttributeInput", Output: "ModifyInstanceAttributeOutput",
 				RequiredParams: []param{
 					{AwsField: "InstanceId", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -155,19 +155,19 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Instance, Input: "TerminateInstancesInput", Output: "TerminateInstancesOutput", ApiMethod: "TerminateInstances",
+				Action: "delete", Entity: cloud.Instance, ApiMethod: "TerminateInstances", Input: "TerminateInstancesInput", Output: "TerminateInstancesOutput",
 				RequiredParams: []param{
 					{AwsField: "InstanceIds", TemplateName: "id", AwsType: "awsstringslice"},
 				},
 			},
 			{
-				Action: "start", Entity: cloud.Instance, Input: "StartInstancesInput", Output: "StartInstancesOutput", ApiMethod: "StartInstances", OutputExtractor: "aws.StringValue(output.StartingInstances[0].InstanceId)",
+				Action: "start", Entity: cloud.Instance, ApiMethod: "StartInstances", Input: "StartInstancesInput", Output: "StartInstancesOutput", OutputExtractor: "aws.StringValue(output.StartingInstances[0].InstanceId)",
 				RequiredParams: []param{
 					{AwsField: "InstanceIds", TemplateName: "id", AwsType: "awsstringslice"},
 				},
 			},
 			{
-				Action: "stop", Entity: cloud.Instance, Input: "StopInstancesInput", Output: "StopInstancesOutput", ApiMethod: "StopInstances", OutputExtractor: "aws.StringValue(output.StoppingInstances[0].InstanceId)",
+				Action: "stop", Entity: cloud.Instance, ApiMethod: "StopInstances", Input: "StopInstancesInput", Output: "StopInstancesOutput", OutputExtractor: "aws.StringValue(output.StoppingInstances[0].InstanceId)",
 				RequiredParams: []param{
 					{AwsField: "InstanceIds", TemplateName: "id", AwsType: "awsstringslice"},
 				},
@@ -182,7 +182,7 @@ var DriversDefs = []driversDef{
 			},
 			// Security Group
 			{
-				Action: "create", Entity: cloud.SecurityGroup, Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", ApiMethod: "CreateSecurityGroup", OutputExtractor: "aws.StringValue(output.GroupId)",
+				Action: "create", Entity: cloud.SecurityGroup, ApiMethod: "CreateSecurityGroup", Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", OutputExtractor: "aws.StringValue(output.GroupId)",
 				RequiredParams: []param{
 					{AwsField: "GroupName", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
@@ -203,7 +203,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.SecurityGroup, Input: "DeleteSecurityGroupInput", Output: "DeleteSecurityGroupOutput", ApiMethod: "DeleteSecurityGroup",
+				Action: "delete", Entity: cloud.SecurityGroup, ApiMethod: "DeleteSecurityGroup", Input: "DeleteSecurityGroupInput", Output: "DeleteSecurityGroupOutput",
 				RequiredParams: []param{
 					{AwsField: "GroupId", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -236,7 +236,7 @@ var DriversDefs = []driversDef{
 			},
 			// IMAGES
 			{
-				Action: "copy", Entity: cloud.Image, Input: "CopyImageInput", Output: "CopyImageOutput", ApiMethod: "CopyImage", OutputExtractor: "aws.StringValue(output.ImageId)",
+				Action: "copy", Entity: cloud.Image, ApiMethod: "CopyImage", Input: "CopyImageInput", Output: "CopyImageOutput", OutputExtractor: "aws.StringValue(output.ImageId)",
 				RequiredParams: []param{
 					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "SourceImageId", TemplateName: "source-id", AwsType: "awsstr"},
@@ -272,7 +272,7 @@ var DriversDefs = []driversDef{
 
 			// VOLUME
 			{
-				Action: "create", Entity: cloud.Volume, Input: "CreateVolumeInput", Output: "Volume", ApiMethod: "CreateVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
+				Action: "create", Entity: cloud.Volume, ApiMethod: "CreateVolume", Input: "CreateVolumeInput", Output: "Volume", OutputExtractor: "aws.StringValue(output.VolumeId)",
 				RequiredParams: []param{
 					{AwsField: "AvailabilityZone", TemplateName: "availabilityzone", AwsType: "awsstr"},
 					{AwsField: "Size", TemplateName: "size", AwsType: "awsint64"},
@@ -287,13 +287,13 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Volume, Input: "DeleteVolumeInput", Output: "DeleteVolumeOutput", ApiMethod: "DeleteVolume",
+				Action: "delete", Entity: cloud.Volume, ApiMethod: "DeleteVolume", Input: "DeleteVolumeInput", Output: "DeleteVolumeOutput",
 				RequiredParams: []param{
 					{AwsField: "VolumeId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "attach", Entity: cloud.Volume, Input: "AttachVolumeInput", Output: "VolumeAttachment", ApiMethod: "AttachVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
+				Action: "attach", Entity: cloud.Volume, ApiMethod: "AttachVolume", Input: "AttachVolumeInput", Output: "VolumeAttachment", OutputExtractor: "aws.StringValue(output.VolumeId)",
 				RequiredParams: []param{
 					{AwsField: "Device", TemplateName: "device", AwsType: "awsstr"},
 					{AwsField: "VolumeId", TemplateName: "id", AwsType: "awsstr"},
@@ -301,7 +301,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "detach", Entity: cloud.Volume, Input: "DetachVolumeInput", Output: "VolumeAttachment", ApiMethod: "DetachVolume", OutputExtractor: "aws.StringValue(output.VolumeId)",
+				Action: "detach", Entity: cloud.Volume, ApiMethod: "DetachVolume", Input: "DetachVolumeInput", Output: "VolumeAttachment", OutputExtractor: "aws.StringValue(output.VolumeId)",
 				RequiredParams: []param{
 					{AwsField: "Device", TemplateName: "device", AwsType: "awsstr"},
 					{AwsField: "VolumeId", TemplateName: "id", AwsType: "awsstr"},
@@ -340,23 +340,23 @@ var DriversDefs = []driversDef{
 			},
 			// INTERNET GATEWAYS
 			{
-				Action: "create", Entity: cloud.InternetGateway, Input: "CreateInternetGatewayInput", Output: "CreateInternetGatewayOutput", ApiMethod: "CreateInternetGateway", OutputExtractor: "aws.StringValue(output.InternetGateway.InternetGatewayId)",
+				Action: "create", Entity: cloud.InternetGateway, ApiMethod: "CreateInternetGateway", Input: "CreateInternetGatewayInput", Output: "CreateInternetGatewayOutput", OutputExtractor: "aws.StringValue(output.InternetGateway.InternetGatewayId)",
 			},
 			{
-				Action: "delete", Entity: cloud.InternetGateway, Input: "DeleteInternetGatewayInput", Output: "DeleteInternetGatewayOutput", ApiMethod: "DeleteInternetGateway",
+				Action: "delete", Entity: cloud.InternetGateway, ApiMethod: "DeleteInternetGateway", Input: "DeleteInternetGatewayInput", Output: "DeleteInternetGatewayOutput",
 				RequiredParams: []param{
 					{AwsField: "InternetGatewayId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "attach", Entity: cloud.InternetGateway, Input: "AttachInternetGatewayInput", Output: "AttachInternetGatewayOutput", ApiMethod: "AttachInternetGateway",
+				Action: "attach", Entity: cloud.InternetGateway, ApiMethod: "AttachInternetGateway", Input: "AttachInternetGatewayInput", Output: "AttachInternetGatewayOutput",
 				RequiredParams: []param{
 					{AwsField: "InternetGatewayId", TemplateName: "id", AwsType: "awsstr"},
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "detach", Entity: cloud.InternetGateway, Input: "DetachInternetGatewayInput", Output: "DetachInternetGatewayOutput", ApiMethod: "DetachInternetGateway",
+				Action: "detach", Entity: cloud.InternetGateway, ApiMethod: "DetachInternetGateway", Input: "DetachInternetGatewayInput", Output: "DetachInternetGatewayOutput",
 				RequiredParams: []param{
 					{AwsField: "InternetGatewayId", TemplateName: "id", AwsType: "awsstr"},
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
@@ -364,32 +364,32 @@ var DriversDefs = []driversDef{
 			},
 			// ROUTE TABLES
 			{
-				Action: "create", Entity: cloud.RouteTable, Input: "CreateRouteTableInput", Output: "CreateRouteTableOutput", ApiMethod: "CreateRouteTable", OutputExtractor: "aws.StringValue(output.RouteTable.RouteTableId)",
+				Action: "create", Entity: cloud.RouteTable, ApiMethod: "CreateRouteTable", Input: "CreateRouteTableInput", Output: "CreateRouteTableOutput", OutputExtractor: "aws.StringValue(output.RouteTable.RouteTableId)",
 				RequiredParams: []param{
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"}},
 			},
 			{
-				Action: "delete", Entity: cloud.RouteTable, Input: "DeleteRouteTableInput", Output: "DeleteRouteTableOutput", ApiMethod: "DeleteRouteTable",
+				Action: "delete", Entity: cloud.RouteTable, ApiMethod: "DeleteRouteTable", Input: "DeleteRouteTableInput", Output: "DeleteRouteTableOutput",
 				RequiredParams: []param{
 					{AwsField: "RouteTableId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "attach", Entity: cloud.RouteTable, Input: "AssociateRouteTableInput", Output: "AssociateRouteTableOutput", ApiMethod: "AssociateRouteTable", OutputExtractor: "aws.StringValue(output.AssociationId)",
+				Action: "attach", Entity: cloud.RouteTable, ApiMethod: "AssociateRouteTable", Input: "AssociateRouteTableInput", Output: "AssociateRouteTableOutput", OutputExtractor: "aws.StringValue(output.AssociationId)",
 				RequiredParams: []param{
 					{AwsField: "RouteTableId", TemplateName: "id", AwsType: "awsstr"},
 					{AwsField: "SubnetId", TemplateName: "subnet", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "detach", Entity: cloud.RouteTable, Input: "DisassociateRouteTableInput", Output: "DisassociateRouteTableOutput", ApiMethod: "DisassociateRouteTable",
+				Action: "detach", Entity: cloud.RouteTable, ApiMethod: "DisassociateRouteTable", Input: "DisassociateRouteTableInput", Output: "DisassociateRouteTableOutput",
 				RequiredParams: []param{
 					{AwsField: "AssociationId", TemplateName: "association", AwsType: "awsstr"},
 				},
 			},
 			// ROUTES
 			{
-				Action: "create", Entity: "route", Input: "CreateRouteInput", Output: "CreateRouteOutput", ApiMethod: "CreateRoute",
+				Action: "create", Entity: "route", ApiMethod: "CreateRoute", Input: "CreateRouteInput", Output: "CreateRouteOutput",
 				RequiredParams: []param{
 					{AwsField: "RouteTableId", TemplateName: "table", AwsType: "awsstr"},
 					{AwsField: "DestinationCidrBlock", TemplateName: "cidr", AwsType: "awsstr"},
@@ -397,7 +397,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: "route", Input: "DeleteRouteInput", Output: "DeleteRouteOutput", ApiMethod: "DeleteRoute",
+				Action: "delete", Entity: "route", ApiMethod: "DeleteRoute", Input: "DeleteRouteInput", Output: "DeleteRouteOutput",
 				RequiredParams: []param{
 					{AwsField: "RouteTableId", TemplateName: "table", AwsType: "awsstr"},
 					{AwsField: "DestinationCidrBlock", TemplateName: "cidr", AwsType: "awsstr"},
@@ -432,7 +432,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Keypair, Input: "DeleteKeyPairInput", Output: "DeleteKeyPairOutput", ApiMethod: "DeleteKeyPair",
+				Action: "delete", Entity: cloud.Keypair, ApiMethod: "DeleteKeyPair", Input: "DeleteKeyPairInput", Output: "DeleteKeyPairOutput",
 				RequiredParams: []param{
 					{AwsField: "KeyName", TemplateName: "name", AwsType: "awsstr"},
 				},
@@ -478,7 +478,7 @@ var DriversDefs = []driversDef{
 		Drivers: []driver{
 			// LoadBalancer
 			{
-				Action: "create", Entity: cloud.LoadBalancer, Input: "CreateLoadBalancerInput", Output: "CreateLoadBalancerOutput", ApiMethod: "CreateLoadBalancer", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.LoadBalancers[0].LoadBalancerArn)",
+				Action: "create", Entity: cloud.LoadBalancer, ApiMethod: "CreateLoadBalancer", Input: "CreateLoadBalancerInput", Output: "CreateLoadBalancerOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.LoadBalancers[0].LoadBalancerArn)",
 				RequiredParams: []param{
 					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "Subnets", TemplateName: "subnets", AwsType: "awsstringslice"},
@@ -490,7 +490,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.LoadBalancer, Input: "DeleteLoadBalancerInput", Output: "DeleteLoadBalancerOutput", ApiMethod: "DeleteLoadBalancer", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.LoadBalancer, ApiMethod: "DeleteLoadBalancer", Input: "DeleteLoadBalancerInput", Output: "DeleteLoadBalancerOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "LoadBalancerArn", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -505,7 +505,7 @@ var DriversDefs = []driversDef{
 			},
 			// Listener
 			{
-				Action: "create", Entity: cloud.Listener, Input: "CreateListenerInput", Output: "CreateListenerOutput", ApiMethod: "CreateListener", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Listeners[0].ListenerArn)",
+				Action: "create", Entity: cloud.Listener, ApiMethod: "CreateListener", Input: "CreateListenerInput", Output: "CreateListenerOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Listeners[0].ListenerArn)",
 				RequiredParams: []param{
 					{AwsField: "DefaultActions[0]Type", TemplateName: "actiontype", AwsType: "awsslicestruct"}, //always forward
 					{AwsField: "DefaultActions[0]TargetGroupArn", TemplateName: "targetgroup", AwsType: "awsslicestruct"},
@@ -519,14 +519,14 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Listener, Input: "DeleteListenerInput", Output: "DeleteListenerOutput", ApiMethod: "DeleteListener", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.Listener, ApiMethod: "DeleteListener", Input: "DeleteListenerInput", Output: "DeleteListenerOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "ListenerArn", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 			// Target group
 			{
-				Action: "create", Entity: cloud.TargetGroup, Input: "CreateTargetGroupInput", Output: "CreateTargetGroupOutput", ApiMethod: "CreateTargetGroup", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.TargetGroups[0].TargetGroupArn)",
+				Action: "create", Entity: cloud.TargetGroup, ApiMethod: "CreateTargetGroup", Input: "CreateTargetGroupInput", Output: "CreateTargetGroupOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.TargetGroups[0].TargetGroupArn)",
 				RequiredParams: []param{
 					{AwsField: "Name", TemplateName: "name", AwsType: "awsstr"},
 					{AwsField: "Port", TemplateName: "port", AwsType: "awsint64"},
@@ -545,7 +545,7 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.TargetGroup, Input: "DeleteTargetGroupInput", Output: "DeleteTargetGroupOutput", ApiMethod: "DeleteTargetGroup", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.TargetGroup, ApiMethod: "DeleteTargetGroup", Input: "DeleteTargetGroupInput", Output: "DeleteTargetGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "TargetGroupArn", TemplateName: "id", AwsType: "awsstr"},
 				},
@@ -673,7 +673,7 @@ var DriversDefs = []driversDef{
 		Drivers: []driver{
 			// Database
 			{
-				Action: "create", Entity: cloud.Database, Input: "CreateDBInstanceInput", Output: "CreateDBInstanceOutput", ApiMethod: "CreateDBInstance", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBInstance.DBInstanceIdentifier)",
+				Action: "create", Entity: cloud.Database, ApiMethod: "CreateDBInstance", Input: "CreateDBInstanceInput", Output: "CreateDBInstanceOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.DBInstance.DBInstanceIdentifier)",
 				RequiredParams: []param{
 					{AwsField: "DBInstanceClass", TemplateName: "type", AwsType: "awsstr"},
 					{AwsField: "DBInstanceIdentifier", TemplateName: "id", AwsType: "awsstr"},
@@ -747,13 +747,13 @@ var DriversDefs = []driversDef{
 		Drivers: []driver{
 			// Repository
 			{
-				Action: "create", Entity: cloud.Repository, Input: "CreateRepositoryInput", Output: "CreateRepositoryOutput", ApiMethod: "CreateRepository", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Repository.RepositoryArn)",
+				Action: "create", Entity: cloud.Repository, ApiMethod: "CreateRepository", Input: "CreateRepositoryInput", Output: "CreateRepositoryOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Repository.RepositoryArn)",
 				RequiredParams: []param{
 					{AwsField: "RepositoryName", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Repository, Input: "DeleteRepositoryInput", Output: "DeleteRepositoryOutput", ApiMethod: "DeleteRepository", DryRunUnsupported: true,
+				Action: "delete", Entity: cloud.Repository, ApiMethod: "DeleteRepository", Input: "DeleteRepositoryInput", Output: "DeleteRepositoryOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "RepositoryName", TemplateName: "name", AwsType: "awsstr"},
 				},
@@ -774,8 +774,22 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:     "ecs",
-		Drivers: []driver{},
+		Api: "ecs",
+		Drivers: []driver{
+			//Cluster
+			{
+				Action: "create", Entity: cloud.ContainerCluster, ApiMethod: "CreateCluster", Input: "CreateClusterInput", Output: "CreateClusterOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.Cluster.ClusterArn)",
+				RequiredParams: []param{
+					{AwsField: "ClusterName", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.ContainerCluster, ApiMethod: "DeleteCluster", Input: "DeleteClusterInput", Output: "DeleteClusterOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "Cluster", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+		},
 	},
 	{
 		Api:     "sts",

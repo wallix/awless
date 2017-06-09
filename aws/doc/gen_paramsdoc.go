@@ -95,6 +95,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"acl":  "The canned ACL to apply to the bucket",
 		"name": "",
 	},
+	"createcontainercluster": {
+		"name": "The name of your cluster",
+	},
 	"createdatabase": {
 		"autoupgrade":       "Indicates that minor version patches are applied automatically",
 		"availabilityzone":  "Specifies the name of the Availability Zone the DB instance is located in",
@@ -293,6 +296,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deletebucket": {
 		"name": "",
+	},
+	"deletecontainercluster": {
+		"id": "The short name or full Amazon Resource Name (ARN) of the cluster to delete",
 	},
 	"deletedatabase": {
 		"id": "Contains a user-supplied database identifier",

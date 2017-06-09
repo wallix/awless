@@ -141,6 +141,7 @@ func loadAllRefs() map[string]string {
 		filepath.Join("sts", "2011-06-15", "docs-2.json"),
 		filepath.Join("cloudformation", "2010-05-15", "docs-2.json"),
 		filepath.Join("ecr", "2015-09-21", "docs-2.json"),
+		filepath.Join("ecs", "2014-11-13", "docs-2.json"),
 	}
 
 	entriesC := make(chan *entries)

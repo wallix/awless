@@ -581,6 +581,18 @@ func NewEcsDriver(api ecsiface.ECSAPI) driver.Driver {
 func (d *EcsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createcontainercluster":
+		if d.dryRun {
+			return d.Create_Containercluster_DryRun, nil
+		}
+		return d.Create_Containercluster, nil
+
+	case "deletecontainercluster":
+		if d.dryRun {
+			return d.Delete_Containercluster_DryRun, nil
+		}
+		return d.Delete_Containercluster, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

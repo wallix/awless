@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -3706,6 +3707,74 @@ func (d *EcrDriver) Delete_Repository(params map[string]interface{}) (interface{
 	}
 	d.logger.ExtraVerbosef("ecr.DeleteRepository call took %s", time.Since(start))
 	d.logger.Info("delete repository done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Create_Containercluster_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create containercluster: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create containercluster ok")
+	return fakeDryRunId("containercluster"), nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Create_Containercluster(params map[string]interface{}) (interface{}, error) {
+	input := &ecs.CreateClusterInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "ClusterName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ecs.CreateClusterOutput
+	output, err = d.CreateCluster(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create containercluster: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.CreateCluster call took %s", time.Since(start))
+	id := aws.StringValue(output.Cluster.ClusterArn)
+
+	d.logger.Infof("create containercluster '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Delete_Containercluster_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete containercluster: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete containercluster ok")
+	return fakeDryRunId("containercluster"), nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Delete_Containercluster(params map[string]interface{}) (interface{}, error) {
+	input := &ecs.DeleteClusterInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "Cluster", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ecs.DeleteClusterOutput
+	output, err = d.DeleteCluster(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete containercluster: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.DeleteCluster call took %s", time.Since(start))
+	d.logger.Info("delete containercluster done")
 	return output, nil
 }
 
