@@ -39,7 +39,6 @@ import (
 )
 
 var keyPathFlag string
-var useAgentFlag bool
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
 var privateIPFlag bool
@@ -48,7 +47,6 @@ var disableStrictHostKeyCheckingFlag bool
 func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path or name toward the identity (key file) to use to connect through SSH")
-	sshCmd.Flags().BoolVarP(&useAgentFlag, "agent", "a", false, "Force using SSH agent")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
@@ -120,10 +118,6 @@ var sshCmd = &cobra.Command{
 
 func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyFlag string) (keypath string, ip string, err error) {
 	if ip, err = getIP(inst); err != nil {
-		return
-	}
-
-	if useAgentFlag {
 		return
 	}
 
