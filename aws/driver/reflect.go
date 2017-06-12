@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/wallix/awless/logger"
 )
 
@@ -53,6 +54,7 @@ const (
 	awsfiletostring
 	awsdimensionslice
 	awsparameterslice
+	awsecskeyvalue
 )
 
 var (
@@ -132,6 +134,17 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			dimensions = append(dimensions, &cloudwatch.Dimension{Name: aws.String(splits[0]), Value: aws.String(splits[1])})
 		}
 		v = dimensions
+	case awsecskeyvalue:
+		sl := castStringSlice(v)
+		var keyvalues []*ecs.KeyValuePair
+		for _, s := range sl {
+			splits := strings.SplitN(s, ":", 2)
+			if len(splits) != 2 {
+				return fmt.Errorf("invalid keyvalue '%s', expected 'key:value'", s)
+			}
+			keyvalues = append(keyvalues, &ecs.KeyValuePair{Name: aws.String(splits[0]), Value: aws.String(splits[1])})
+		}
+		v = keyvalues
 	case awsparameterslice:
 		sl := castStringSlice(v)
 		var parameters []*cloudformation.Parameter

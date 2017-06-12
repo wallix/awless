@@ -7,8 +7,8 @@
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list repositories`
 - Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete repository`
 - Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
-- Listing [ECS](https://aws.amazon.com/ecs/) clusters: `awless list containerclusters`
-- Create/Delete [ECS](https://aws.amazon.com/ecs/) clusters: `awless create/delete containercluster`
+- Listing [ECS](https://aws.amazon.com/ecs/) clusters services and containers: `awless list containerclusters/containerservices/containers`
+- Create/Delete [ECS](https://aws.amazon.com/ecs/) clusters, create container and start services: `awless create/delete containercluster / awless create container / awless start containerservice`
 - Table display now use full terminal width when possible
 
 

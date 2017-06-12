@@ -81,6 +81,16 @@ var manualParamsDoc = map[string]map[string]string{
 		"acl":  "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
 		"name": "The name of bucket to create",
 	},
+	"createcontainer": {
+		"name":              "The name of a container",
+		"service":           "The name of the new or existing service containing the container to create",
+		"image":             "The image used to start a container. Images in the Docker Hub registry are available by default. Other repositories are specified with repository-url/image:tag",
+		"memory-hard-limit": "The hard limit (in MiB) of memory to present to the container. If your container attempts to exceed the memory specified here, the container is killed",
+		"command":           "The command that is passed to the container",
+		"env":               "The environment variables to pass to a container using this format: key1:val1,key2:val2,...",
+		"privileged":        "When this parameter is true, the container is given elevated privileges on the host container instance",
+		"workdir":           "The working directory in which to run commands inside the container",
+	},
 	"createdatabase": {
 		"autoupgrade":       "Set to true to indicate that minor version patches are applied automatically",
 		"backupwindow":      "Specifies the daily time range during which automated backups are created if automated backups are enabled, as determined by the BackupRetentionPeriod (format hh24:mi-hh24:mi)",
@@ -314,6 +324,13 @@ var manualParamsDoc = map[string]map[string]string{
 		"s3object":     "The name of the S3 object where the disk image is located",
 		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing (AWS | BYOL)",
 		"platform":     "The operating system of the virtual machine (Windows | Linux)",
+	},
+	"startcontainerservice": {
+		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your service",
+		"desired-count":   "The number of instantiations of the specified service to place and keep running on your cluster",
+		"name":            "The name of the container service to start",
+		"deployment-name": "The deployment name of the service (e.g. prod, staging...)",
+		"role":            "The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon ECS to make calls to your load balancer on your behalf",
 	},
 	"updatebucket": {
 		"name":              "The name of the bucket to update",

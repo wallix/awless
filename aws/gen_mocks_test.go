@@ -974,8 +974,12 @@ func (m *mockEcr) DescribeRepositoriesPages(input *ecr.DescribeRepositoriesInput
 
 type mockEcs struct {
 	ecsiface.ECSAPI
-	clusters []*ecs.Cluster
-	strings  []*string
+	clusters            []*ecs.Cluster
+	clusterNames        []*string
+	taskdefinitions     []*ecs.TaskDefinition
+	taskdefinitionNames []*string
+	tasks               map[string][]*ecs.Task
+	tasksNames          map[string][]*string
 }
 
 func (m *mockEcs) Name() string {
@@ -1014,15 +1018,32 @@ func (m *mockEcs) FetchByType(t string) (*graph.Graph, error) {
 
 func (m *mockEcs) ListClustersPages(input *ecs.ListClustersInput, fn func(p *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool)) error {
 	var pages [][]*string
-	for i := 0; i < len(m.strings); i += 2 {
-		page := []*string{m.strings[i]}
-		if i+1 < len(m.strings) {
-			page = append(page, m.strings[i+1])
+	for i := 0; i < len(m.clusterNames); i += 2 {
+		page := []*string{m.clusterNames[i]}
+		if i+1 < len(m.clusterNames) {
+			page = append(page, m.clusterNames[i+1])
 		}
 		pages = append(pages, page)
 	}
 	for i, page := range pages {
 		fn(&ecs.ListClustersOutput{ClusterArns: page, NextToken: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+func (m *mockEcs) ListTaskDefinitionsPages(input *ecs.ListTaskDefinitionsInput, fn func(p *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*string
+	for i := 0; i < len(m.taskdefinitionNames); i += 2 {
+		page := []*string{m.taskdefinitionNames[i]}
+		if i+1 < len(m.taskdefinitionNames) {
+			page = append(page, m.taskdefinitionNames[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&ecs.ListTaskDefinitionsOutput{TaskDefinitionArns: page, NextToken: aws.String(strconv.Itoa(i + 1))},
 			i < len(pages),
 		)
 	}

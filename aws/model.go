@@ -288,6 +288,21 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.RunningTasksCount:                 {name: "RunningTasksCount", transform: extractValueFn},
 		properties.State:                             {name: "Status", transform: extractValueFn},
 	},
+	cloud.ContainerService: {
+		properties.Name:             {name: "Family", transform: extractValueFn},
+		properties.Arn:              {name: "TaskDefinitionArn", transform: extractValueFn},
+		properties.ContainersImages: {name: "ContainerDefinitions", transform: extractStringSliceValues("Image")},
+		properties.Version:          {name: "Revision", transform: extractValueAsStringFn},
+		properties.State:            {name: "Status", transform: extractValueFn},
+		properties.Role:             {name: "TaskRoleArn", transform: extractValueFn},
+	},
+	cloud.Container: {
+		properties.Name:         {name: "Name", transform: extractValueFn},
+		properties.Arn:          {name: "ContainerArn", transform: extractValueFn},
+		properties.ExitCode:     {name: "ExitCode", transform: extractValueFn},
+		properties.State:        {name: "LastStatus", transform: extractValueFn},
+		properties.StateMessage: {name: "Reason", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

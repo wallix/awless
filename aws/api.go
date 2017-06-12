@@ -738,27 +738,70 @@ func (s *Dns) fetch_all_record_graph() (*graph.Graph, []*route53.ResourceRecordS
 	}
 }
 
+func (s *Infra) getClustersNames() (res []*string, err error) {
+	err = s.ListClustersPages(&ecs.ListClustersInput{}, func(out *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool) {
+		res = append(res, out.ClusterArns...)
+		return out.NextToken != nil
+	})
+	return
+}
+
 func (s *Infra) fetch_all_containercluster_graph() (*graph.Graph, []*ecs.Cluster, error) {
+	s.once.Do(func() {
+		s.once.result, s.once.err = s.getClustersNames()
+	})
+	if s.once.err != nil {
+		return nil, nil, s.once.err
+	}
+	clusterNames := s.once.result.([]*string)
+
 	g := graph.NewGraph()
 	var cloudResources []*ecs.Cluster
 
-	var badResErr error
-	err := s.ListClustersPages(&ecs.ListClustersInput{}, func(out *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool) {
-		var clustersOut *ecs.DescribeClustersOutput
-
-		if clustersOut, badResErr = s.ECSAPI.DescribeClusters(&ecs.DescribeClustersInput{Clusters: out.ClusterArns}); badResErr != nil {
-			return false
+	for _, clusterArns := range sliceOfSlice(clusterNames, 100) {
+		clustersOut, err := s.ECSAPI.DescribeClusters(&ecs.DescribeClustersInput{Clusters: clusterArns})
+		if err != nil {
+			return nil, nil, err
 		}
 
 		for _, cluster := range clustersOut.Clusters {
 			cloudResources = append(cloudResources, cluster)
 			var res *graph.Resource
-			if res, badResErr = newResource(cluster); badResErr != nil {
-				return false
+			if res, err = newResource(cluster); err != nil {
+				return nil, nil, err
 			}
-			if badResErr = g.AddResource(res); badResErr != nil {
-				return false
+			if err = g.AddResource(res); err != nil {
+				return nil, nil, err
 			}
+		}
+	}
+	return g, cloudResources, nil
+}
+
+func (s *Infra) fetch_all_containerservice_graph() (*graph.Graph, []*ecs.TaskDefinition, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ecs.TaskDefinition
+
+	type resStruct struct {
+		res *ecs.TaskDefinition
+		err error
+	}
+
+	var wg sync.WaitGroup
+	resc := make(chan resStruct)
+
+	err := s.ListTaskDefinitionsPages(&ecs.ListTaskDefinitionsInput{}, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
+		for _, arn := range out.TaskDefinitionArns {
+			wg.Add(1)
+			go func(taskDefArn *string) {
+				defer wg.Done()
+				tasksOut, err := s.ECSAPI.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{TaskDefinition: taskDefArn})
+				if err != nil {
+					resc <- resStruct{err: err}
+					return
+				}
+				resc <- resStruct{res: tasksOut.TaskDefinition}
+			}(arn)
 		}
 		return out.NextToken != nil
 	})
@@ -766,5 +809,135 @@ func (s *Infra) fetch_all_containercluster_graph() (*graph.Graph, []*ecs.Cluster
 		return g, cloudResources, err
 	}
 
-	return g, cloudResources, badResErr
+	go func() {
+		wg.Wait()
+		close(resc)
+	}()
+
+	var errors []string
+
+	for res := range resc {
+		if res.err != nil {
+			errors = appendIfNotInSlice(errors, res.err.Error())
+			continue
+		}
+		cloudResources = append(cloudResources, res.res)
+		var graphres *graph.Resource
+		if graphres, err = newResource(res.res); err != nil {
+			errors = appendIfNotInSlice(errors, err.Error())
+			continue
+		}
+		if err = g.AddResource(graphres); err != nil {
+			errors = appendIfNotInSlice(errors, err.Error())
+			continue
+		}
+	}
+	if len(errors) > 0 {
+		err = fmt.Errorf(strings.Join(errors, "; "))
+	}
+
+	return g, cloudResources, err
+}
+
+func appendIfNotInSlice(slice []string, s string) []string {
+	var found bool
+	for _, e := range slice {
+		if e == s {
+			found = true
+		}
+	}
+	if !found {
+		return append(slice, s)
+	}
+	return slice
+}
+
+func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ecs.Container
+
+	s.once.Do(func() {
+		s.once.result, s.once.err = s.getClustersNames()
+	})
+	if s.once.err != nil {
+		return nil, nil, s.once.err
+	}
+	clusterArns := s.once.result.([]*string)
+
+	for _, cluster := range clusterArns {
+		var badResErr error
+		err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster}, func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
+			var tasksOut *ecs.DescribeTasksOutput
+
+			if tasksOut, badResErr = s.ECSAPI.DescribeTasks(&ecs.DescribeTasksInput{Cluster: cluster, Tasks: out.TaskArns}); badResErr != nil {
+				return false
+			}
+
+			for _, task := range tasksOut.Tasks {
+				for _, container := range task.Containers {
+					var res *graph.Resource
+					cloudResources = append(cloudResources, container)
+					if res, badResErr = newResource(container); badResErr != nil {
+						return false
+					}
+					if task.ClusterArn != nil {
+						res.Properties[properties.Cluster] = awssdk.StringValue(task.ClusterArn)
+					}
+					if task.ContainerInstanceArn != nil {
+						res.Properties[properties.ContainerInstance] = awssdk.StringValue(task.ContainerInstanceArn)
+					}
+					if task.CreatedAt != nil {
+						res.Properties[properties.Created] = awssdk.TimeValue(task.CreatedAt)
+					}
+					if task.StartedAt != nil {
+						res.Properties[properties.Launched] = awssdk.TimeValue(task.StartedAt)
+					}
+					if task.StoppedAt != nil {
+						res.Properties[properties.Stopped] = awssdk.TimeValue(task.StoppedAt)
+					}
+					if task.TaskDefinitionArn != nil {
+						res.Properties[properties.ContainerService] = awssdk.StringValue(task.TaskDefinitionArn)
+					}
+					if task.Group != nil {
+						res.Properties[properties.DeploymentName] = awssdk.StringValue(task.Group)
+					}
+					if badResErr = g.AddParentRelation(graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(task.ClusterArn)), res); badResErr != nil {
+						return false
+					}
+					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerService, awssdk.StringValue(task.TaskDefinitionArn)), res); badResErr != nil {
+						return false
+					}
+					if badResErr = g.AddResource(res); badResErr != nil {
+						return false
+					}
+				}
+			}
+			return out.NextToken != nil
+		})
+		if err != nil {
+			return g, cloudResources, err
+		}
+		if badResErr != nil {
+			return g, cloudResources, badResErr
+		}
+	}
+	return g, cloudResources, nil
+}
+
+func sliceOfSlice(in []*string, maxLength int) (res [][]*string) {
+	if maxLength <= 0 {
+		return
+	}
+	if len(in) == 0 {
+		return
+	}
+	for i := 0; i < len(in); i += maxLength {
+		if i+maxLength < len(in) {
+			res = append(res, in[i:i+maxLength])
+		} else {
+			res = append(res, in[i:len(in)])
+		}
+	}
+
+	return
 }

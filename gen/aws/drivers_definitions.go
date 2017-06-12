@@ -789,6 +789,34 @@ var DriversDefs = []driversDef{
 					{AwsField: "Cluster", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "start", Entity: cloud.ContainerService, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "cluster"},
+					{TemplateName: "desired-count"},
+					{TemplateName: "name"},
+					{TemplateName: "deployment-name"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "role"},
+				},
+			},
+			//Container
+			{
+				Action: "create", Entity: cloud.Container, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+					{TemplateName: "service"},
+					{TemplateName: "image"},
+					{TemplateName: "memory-hard-limit"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "command"},
+					{TemplateName: "env"},
+					{TemplateName: "privileged"},
+					{TemplateName: "workdir"},
+				},
+			},
 		},
 	},
 	{

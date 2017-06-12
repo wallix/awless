@@ -95,6 +95,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"acl":  "The canned ACL to apply to the bucket",
 		"name": "",
 	},
+	"createcontainer": {},
 	"createcontainercluster": {
 		"name": "The name of your cluster",
 	},
@@ -445,6 +446,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"startalarm": {
 		"names": "The names of the alarms",
 	},
+	"startcontainerservice": {},
 	"startinstance": {
 		"id": "One or more instance IDs",
 	},

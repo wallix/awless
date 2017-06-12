@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/lambda"
 )
 
@@ -124,6 +125,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		BooleanValueField   *ec2.AttributeBooleanValue
 		StringValueField    *ec2.AttributeValue
 		DimensionSliceField []*cloudwatch.Dimension
+		KeyValueSliceField  []*ecs.KeyValuePair
 		StructAttribute     struct {
 			Str  *string
 			Bool *bool
@@ -444,4 +446,24 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	if got, want := *any.ParameterList[1].ParameterValue, "value1:with:"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
+	err = setFieldWithType([]string{"key:value", "key1:value1:with:"}, &any, "KeyValueSliceField", awsecskeyvalue)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.KeyValueSliceField), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.KeyValueSliceField[0].Name, "key"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.KeyValueSliceField[0].Value, "value"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.KeyValueSliceField[1].Name, "key1"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.KeyValueSliceField[1].Value, "value1:with:"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
 }

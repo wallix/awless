@@ -115,3 +115,43 @@ func (m *mockEcs) DescribeClusters(input *ecs.DescribeClustersInput) (*ecs.Descr
 	}
 	return &ecs.DescribeClustersOutput{Clusters: clusters}, nil
 }
+
+func (m *mockEcs) DescribeTaskDefinition(input *ecs.DescribeTaskDefinitionInput) (*ecs.DescribeTaskDefinitionOutput, error) {
+	for _, def := range m.taskdefinitions {
+		family := awssdk.StringValue(def.Family)
+		familyRevision := family + ":" + fmt.Sprint(awssdk.Int64Value(def.Revision))
+		if family == awssdk.StringValue(input.TaskDefinition) || familyRevision == awssdk.StringValue(input.TaskDefinition) || awssdk.StringValue(def.TaskDefinitionArn) == awssdk.StringValue(input.TaskDefinition) {
+			return &ecs.DescribeTaskDefinitionOutput{TaskDefinition: def}, nil
+		}
+	}
+	return nil, fmt.Errorf("task definition not found")
+}
+
+func (m *mockEcs) ListTasksPages(input *ecs.ListTasksInput, fn func(p *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*string
+	for i := 0; i < len(m.tasksNames[awssdk.StringValue(input.Cluster)]); i += 2 {
+		page := []*string{m.tasksNames[awssdk.StringValue(input.Cluster)][i]}
+		if i+1 < len(m.tasksNames[awssdk.StringValue(input.Cluster)]) {
+			page = append(page, m.tasksNames[awssdk.StringValue(input.Cluster)][i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&ecs.ListTasksOutput{TaskArns: page, NextToken: awssdk.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+func (m *mockEcs) DescribeTasks(input *ecs.DescribeTasksInput) (*ecs.DescribeTasksOutput, error) {
+	var tasks []*ecs.Task
+	for _, task := range m.tasks[awssdk.StringValue(input.Cluster)] {
+		for _, inputT := range input.Tasks {
+			if awssdk.StringValue(task.TaskArn) == awssdk.StringValue(inputT) {
+				tasks = append(tasks, task)
+			}
+		}
+	}
+	return &ecs.DescribeTasksOutput{Tasks: tasks}, nil
+}

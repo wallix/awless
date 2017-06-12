@@ -106,6 +106,10 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Repository, awssdk.StringValue(ss.RepositoryArn))
 	case *ecs.Cluster:
 		res = graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(ss.ClusterArn))
+	case *ecs.TaskDefinition:
+		res = graph.InitResource(cloud.ContainerService, awssdk.StringValue(ss.TaskDefinitionArn))
+	case *ecs.Container:
+		res = graph.InitResource(cloud.Container, awssdk.StringValue(ss.ContainerArn))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))
@@ -254,6 +258,11 @@ var extractValueFn = func(i interface{}) (interface{}, error) {
 
 	}
 	return nil, fmt.Errorf("extract value: not a pointer but a %T", i)
+}
+
+var extractValueAsStringFn = func(i interface{}) (interface{}, error) {
+	val, err := extractValueFn(i)
+	return fmt.Sprint(val), err
 }
 
 // Extract time forcing timezone to UTC (friendlier when running test in different timezones i.e. travis)

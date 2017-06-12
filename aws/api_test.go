@@ -36,6 +36,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/wallix/awless/cloud"
 	p "github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/graph/resourcetest"
@@ -329,17 +330,99 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{ClusterArn: awssdk.String("clust_2")},
 		{ClusterArn: awssdk.String("clust_3"), ClusterName: awssdk.String("my_cust_3")},
 	}
+	defNames := []*string{awssdk.String("cs_1:1"), awssdk.String("cs_2:1"), awssdk.String("cs_2:2")}
+	tasksDef := []*ecs.TaskDefinition{
+		{
+			ContainerDefinitions: []*ecs.ContainerDefinition{
+				{Image: awssdk.String("image_1")},
+				{Image: awssdk.String("image_2")},
+				{Image: awssdk.String("image_3")},
+			},
+			Family:            awssdk.String("cs_1"),
+			Revision:          awssdk.Int64(1),
+			Status:            awssdk.String("ENABLED"),
+			TaskDefinitionArn: awssdk.String("cs_1:1"),
+			TaskRoleArn:       awssdk.String("role:arn"),
+		},
+		{
+			ContainerDefinitions: []*ecs.ContainerDefinition{},
+			Family:               awssdk.String("cs_2"),
+			Revision:             awssdk.Int64(1),
+			TaskDefinitionArn:    awssdk.String("cs_2:1"),
+		},
+		{
+			ContainerDefinitions: []*ecs.ContainerDefinition{},
+			Family:               awssdk.String("cs_2"),
+			Revision:             awssdk.Int64(2),
+			TaskDefinitionArn:    awssdk.String("cs_2:2"),
+		},
+	}
+	tasksNames := map[string][]*string{
+		"clust_1": {awssdk.String("task_1")},
+		"clust_2": {awssdk.String("task_2"), awssdk.String("task_3")},
+	}
+	tasks := map[string][]*ecs.Task{
+		"clust_1": {
+			{
+				ClusterArn:           awssdk.String("clust_1"),
+				ContainerInstanceArn: awssdk.String("continst_1"),
+				Containers: []*ecs.Container{
+					{
+						ContainerArn: awssdk.String("container_1"),
+						ExitCode:     awssdk.Int64(-1),
+						LastStatus:   awssdk.String("running"),
+						Name:         awssdk.String("my_container_1"),
+						Reason:       awssdk.String("no reason"),
+					}, {
+						ContainerArn: awssdk.String("container_2"),
+						Name:         awssdk.String("my_container_2"),
+					}, {
+						ContainerArn: awssdk.String("container_3"),
+					},
+				},
+				CreatedAt:         awssdk.Time(now.Add(-2 * time.Hour)),
+				StartedAt:         awssdk.Time(now.Add(-1 * time.Hour)),
+				StoppedAt:         awssdk.Time(now),
+				TaskArn:           awssdk.String("task_1"),
+				TaskDefinitionArn: awssdk.String("cs_2:1"),
+			},
+		},
+		"clust_2": {
+			{
+				ClusterArn:           awssdk.String("clust_2"),
+				ContainerInstanceArn: awssdk.String("continst_2"),
+				Containers: []*ecs.Container{
+					{
+						ContainerArn: awssdk.String("container_4"),
+						ExitCode:     awssdk.Int64(0),
+						LastStatus:   awssdk.String("stopped"),
+						Name:         awssdk.String("my_container_4"),
+					},
+				},
+				Group:             awssdk.String("deployment-service-2"),
+				TaskArn:           awssdk.String("task_2"),
+				TaskDefinitionArn: awssdk.String("cs_2:2"),
+			},
+			{
+				ClusterArn:           awssdk.String("clust_2"),
+				ContainerInstanceArn: awssdk.String("continst_3"),
+				Containers:           []*ecs.Container{},
+				TaskArn:              awssdk.String("task_3"),
+				TaskDefinitionArn:    awssdk.String("cs_1"),
+			},
+		},
+	}
 
 	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	mockEcr := &mockEcr{repositorys: repositories}
-	mockEcs := &mockEcs{strings: clusterNames, clusters: clusters}
+	mockEcs := &mockEcs{clusterNames: clusterNames, clusters: clusters, taskdefinitionNames: defNames, taskdefinitions: tasksDef, tasksNames: tasksNames, tasks: tasks}
 	InfraService = &Infra{EC2API: mock, ECRAPI: mockEcr, ECSAPI: mockEcs, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
 	g, err := InfraService.FetchResources()
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", "containercluster")
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerService, cloud.Container)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -353,6 +436,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			sort.Strings(p)
 		}
 		if p, ok := res.Properties[p.Messages].([]string); ok {
+			sort.Strings(p)
+		}
+		if p, ok := res.Properties[p.ContainersImages].([]string); ok {
 			sort.Strings(p)
 		}
 	}
@@ -401,10 +487,18 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"clust_1":          resourcetest.ContainerCluster("clust_1").Prop(p.Arn, "clust_1").Prop(p.Name, "my_cust_1").Prop(p.PendingTasksCount, 1).Prop(p.ActiveServicesCount, 3).Prop(p.RegisteredContainerInstancesCount, 3).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Build(),
 		"clust_2":          resourcetest.ContainerCluster("clust_2").Prop(p.Arn, "clust_2").Build(),
 		"clust_3":          resourcetest.ContainerCluster("clust_3").Prop(p.Arn, "clust_3").Prop(p.Name, "my_cust_3").Build(),
+		"cs_1:1":           resourcetest.ContainerService("cs_1:1").Prop(p.Arn, "cs_1:1").Prop(p.ContainersImages, []string{"image_1", "image_2", "image_3"}).Prop(p.Name, "cs_1").Prop(p.Version, "1").Prop(p.State, "ENABLED").Prop(p.Role, "role:arn").Build(),
+		"cs_2:1":           resourcetest.ContainerService("cs_2:1").Prop(p.Arn, "cs_2:1").Prop(p.Name, "cs_2").Prop(p.Version, "1").Build(),
+		"cs_2:2":           resourcetest.ContainerService("cs_2:2").Prop(p.Arn, "cs_2:2").Prop(p.Name, "cs_2").Prop(p.Version, "2").Build(),
+		"container_1": resourcetest.Container("container_1").Prop(p.Arn, "container_1").Prop(p.ExitCode, -1).Prop(p.State, "running").Prop(p.Name, "my_container_1").Prop(p.StateMessage, "no reason").Prop(p.Cluster, "clust_1").
+			Prop(p.ContainerInstance, "continst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.ContainerService, "cs_2:1").Build(),
+		"container_2": resourcetest.Container("container_2").Prop(p.Arn, "container_2").Prop(p.Name, "my_container_2").Prop(p.Cluster, "clust_1").Prop(p.ContainerInstance, "continst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.ContainerService, "cs_2:1").Build(),
+		"container_3": resourcetest.Container("container_3").Prop(p.Arn, "container_3").Prop(p.Cluster, "clust_1").Prop(p.ContainerInstance, "continst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.ContainerService, "cs_2:1").Build(),
+		"container_4": resourcetest.Container("container_4").Prop(p.Arn, "container_4").Prop(p.Name, "my_container_4").Prop(p.ExitCode, 0).Prop(p.State, "stopped").Prop(p.Cluster, "clust_2").Prop(p.ContainerInstance, "continst_2").Prop(p.ContainerService, "cs_2:2").Prop(p.DeploymentName, "deployment-service-2").Build(),
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
@@ -413,6 +507,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"sub_3":     {"inst_3", "inst_4", "inst_6"},
 		"vpc_1":     {"lb_1", "lb_3", "rt_1", "securitygroup_1", "securitygroup_2", "sub_1", "sub_2", "tg_1"},
 		"vpc_2":     {"lb_2", "sub_3", "tg_2"},
+		"clust_1":   {"container_1", "container_2", "container_3"},
+		"clust_2":   {"container_4"},
 	}
 
 	expectedAppliedOn := map[string][]string{
@@ -428,6 +524,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"tg_2":            {"inst_2", "inst_3"},
 		"asg_arn_1":       {"inst_1", "inst_3", "sub_1", "sub_2"},
 		"asg_arn_2":       {"tg_1", "tg_2"},
+		"cs_2:1":          {"container_1", "container_2", "container_3"},
+		"cs_2:2":          {"container_4"},
 	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
@@ -1060,6 +1158,28 @@ func compareResources(t *testing.T, g *graph.Graph, resources []*graph.Resource,
 		sort.Strings(appliedOn)
 		if g, w := appliedOn, expectedAppliedOn[got.Id()]; !reflect.DeepEqual(g, w) {
 			t.Fatalf("'%s' appliedOn: got %v, want %v", got.Id(), g, w)
+		}
+	}
+}
+
+func TestSliceOfSlice(t *testing.T) {
+	var empty [][]*string
+	tcases := []struct {
+		in        []*string
+		maxlength int
+		out       [][]*string
+	}{
+		{in: []*string{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}, maxlength: 2, out: [][]*string{{awssdk.String("1"), awssdk.String("2")}, {awssdk.String("3")}}},
+		{in: []*string{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}, maxlength: 1, out: [][]*string{{awssdk.String("1")}, {awssdk.String("2")}, {awssdk.String("3")}}},
+		{in: []*string{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}, maxlength: 3, out: [][]*string{{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}}},
+		{in: []*string{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}, maxlength: 5, out: [][]*string{{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}}},
+		{in: []*string{awssdk.String("1"), awssdk.String("2"), awssdk.String("3")}, maxlength: 0, out: empty},
+		{in: []*string{}, maxlength: 2, out: empty},
+		{in: []*string{awssdk.String("1"), awssdk.String("2"), awssdk.String("3"), awssdk.String("4")}, maxlength: 2, out: [][]*string{{awssdk.String("1"), awssdk.String("2")}, {awssdk.String("3"), awssdk.String("4")}}},
+	}
+	for i, tcase := range tcases {
+		if got, want := sliceOfSlice(tcase.in, tcase.maxlength), tcase.out; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d: got %+v, want %+v", i+1, got, want)
 		}
 	}
 }

@@ -60,10 +60,13 @@ const (
 	Class                             = "cloud:class"
 	Cluster                           = "cloud:cluster"
 	Comment                           = "rdfs:comment"
+	ContainerInstance                 = "cloud:containerInstance"
 	Continent                         = "cloud:continent"
 	Config                            = "cloud:config"
 	Cooldown                          = "cloud:cooldown"
 	CopyTagsToSnapshot                = "cloud:copyTagsToSnapshot"
+	ContainersImages                  = "cloud:containersImages"
+	ContainerService                  = "cloud:containerService"
 	Country                           = "cloud:country"
 	Created                           = "cloud:created"
 	DBSecurityGroups                  = "cloud:dbSecurityGroups"
@@ -73,6 +76,7 @@ const (
 	Delay                             = "cloud:delaySeconds"
 	Description                       = "cloud:description"
 	DesiredCapacity                   = "cloud:desiredCapacity"
+	DeploymentName                    = "cloud:deploymentName"
 	Dimensions                        = "cloud:dimensions"
 	DisableRollback                   = "cloud:disableRollback"
 	Enabled                           = "cloud:enabled"
@@ -80,6 +84,7 @@ const (
 	Endpoint                          = "cloud:endpoint"
 	Engine                            = "cloud:engine"
 	EngineVersion                     = "cloud:engineVersion"
+	ExitCode                          = "cloud:exitCode"
 	Failover                          = "cloud:failover"
 	Fingerprint                       = "cloud:fingerprint"
 	GlobalID                          = "cloud:globalID"
@@ -174,6 +179,7 @@ const (
 	SSLSupportMethod                  = "cloud:sslSupportMethod"
 	State                             = "cloud:state"
 	StateMessage                      = "cloud:stateMessage"
+	Stopped                           = "cloud:stopped"
 	Storage                           = "cloud:storage"
 	StorageType                       = "cloud:storageType"
 	Subnet                            = "cloud:subnet"
@@ -243,10 +249,13 @@ var Labels = map[string]string{
 	properties.Class:                             Class,
 	properties.Cluster:                           Cluster,
 	properties.Comment:                           Comment,
+	properties.ContainerInstance:                 ContainerInstance,
 	properties.Continent:                         Continent,
 	properties.Config:                            Config,
 	properties.Cooldown:                          Cooldown,
 	properties.CopyTagsToSnapshot:                CopyTagsToSnapshot,
+	properties.ContainersImages:                  ContainersImages,
+	properties.ContainerService:                  ContainerService,
 	properties.Country:                           Country,
 	properties.Created:                           Created,
 	properties.DBSecurityGroups:                  DBSecurityGroups,
@@ -256,6 +265,7 @@ var Labels = map[string]string{
 	properties.Delay:                             Delay,
 	properties.Description:                       Description,
 	properties.DesiredCapacity:                   DesiredCapacity,
+	properties.DeploymentName:                    DeploymentName,
 	properties.Dimensions:                        Dimensions,
 	properties.DisableRollback:                   DisableRollback,
 	properties.Enabled:                           Enabled,
@@ -263,6 +273,7 @@ var Labels = map[string]string{
 	properties.Endpoint:                          Endpoint,
 	properties.Engine:                            Engine,
 	properties.EngineVersion:                     EngineVersion,
+	properties.ExitCode:                          ExitCode,
 	properties.Failover:                          Failover,
 	properties.Fingerprint:                       Fingerprint,
 	properties.GlobalID:                          GlobalID,
@@ -357,6 +368,7 @@ var Labels = map[string]string{
 	properties.SSLSupportMethod:                  SSLSupportMethod,
 	properties.State:                             State,
 	properties.StateMessage:                      StateMessage,
+	properties.Stopped:                           Stopped,
 	properties.Storage:                           Storage,
 	properties.StorageType:                       StorageType,
 	properties.Subnet:                            Subnet,
@@ -426,10 +438,13 @@ var Properties = RDFProperties{
 	Class:                   {ID: Class, RdfType: "rdf:Property", RdfsLabel: "Class", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Cluster:                 {ID: Cluster, RdfType: "rdf:Property", RdfsLabel: "Cluster", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Comment:                 {ID: Comment, RdfType: "rdf:Property", RdfsLabel: "Comment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ContainerInstance:       {ID: ContainerInstance, RdfType: "rdf:Property", RdfsLabel: "ContainerInstance", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Continent:               {ID: Continent, RdfType: "rdf:Property", RdfsLabel: "Continent", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Config:                  {ID: Config, RdfType: "rdf:Property", RdfsLabel: "Config", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Cooldown:                {ID: Cooldown, RdfType: "rdf:Property", RdfsLabel: "Cooldown", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	CopyTagsToSnapshot:      {ID: CopyTagsToSnapshot, RdfType: "rdf:Property", RdfsLabel: "CopyTagsToSnapshot", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ContainersImages:        {ID: ContainersImages, RdfType: "rdf:Property", RdfsLabel: "ContainersImages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	ContainerService:        {ID: ContainerService, RdfType: "rdf:Property", RdfsLabel: "ContainerService", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Country:                 {ID: Country, RdfType: "rdf:Property", RdfsLabel: "Country", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Created:                 {ID: Created, RdfType: "rdf:Property", RdfsLabel: "Created", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	DBSecurityGroups:        {ID: DBSecurityGroups, RdfType: "rdf:Property", RdfsLabel: "DBSecurityGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
@@ -439,6 +454,7 @@ var Properties = RDFProperties{
 	Delay:                   {ID: Delay, RdfType: "rdf:Property", RdfsLabel: "Delay", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Description:             {ID: Description, RdfType: "rdf:Property", RdfsLabel: "Description", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	DesiredCapacity:         {ID: DesiredCapacity, RdfType: "rdf:Property", RdfsLabel: "DesiredCapacity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	DeploymentName:          {ID: DeploymentName, RdfType: "rdf:Property", RdfsLabel: "DeploymentName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Dimensions:              {ID: Dimensions, RdfType: "rdf:Property", RdfsLabel: "Dimensions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	DisableRollback:         {ID: DisableRollback, RdfType: "rdf:Property", RdfsLabel: "DisableRollback", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Enabled:                 {ID: Enabled, RdfType: "rdf:Property", RdfsLabel: "Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
@@ -446,6 +462,7 @@ var Properties = RDFProperties{
 	Endpoint:                {ID: Endpoint, RdfType: "rdf:Property", RdfsLabel: "Endpoint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Engine:                  {ID: Engine, RdfType: "rdf:Property", RdfsLabel: "Engine", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	EngineVersion:           {ID: EngineVersion, RdfType: "rdf:Property", RdfsLabel: "EngineVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ExitCode:                {ID: ExitCode, RdfType: "rdf:Property", RdfsLabel: "ExitCode", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Failover:                {ID: Failover, RdfType: "rdf:Property", RdfsLabel: "Failover", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Fingerprint:             {ID: Fingerprint, RdfType: "rdf:Property", RdfsLabel: "Fingerprint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	GlobalID:                {ID: GlobalID, RdfType: "rdf:Property", RdfsLabel: "GlobalID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -540,6 +557,7 @@ var Properties = RDFProperties{
 	SSLSupportMethod:      {ID: SSLSupportMethod, RdfType: "rdf:Property", RdfsLabel: "SSLSupportMethod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	State:                 {ID: State, RdfType: "rdf:Property", RdfsLabel: "State", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	StateMessage:          {ID: StateMessage, RdfType: "rdf:Property", RdfsLabel: "StateMessage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Stopped:               {ID: Stopped, RdfType: "rdf:Property", RdfsLabel: "Stopped", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Storage:               {ID: Storage, RdfType: "rdf:Property", RdfsLabel: "Storage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	StorageType:           {ID: StorageType, RdfType: "rdf:Property", RdfsLabel: "StorageType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Subnet:                {ID: Subnet, RdfType: "rdf:Property", RdfsLabel: "Subnet", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},

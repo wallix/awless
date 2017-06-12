@@ -92,6 +92,20 @@ func (h ColoredValueColumnDefinition) format(i interface{}) string {
 	return str
 }
 
+type ARNLastValueColumnDefinition struct {
+	StringColumnDefinition
+	Separator string
+}
+
+func (h ARNLastValueColumnDefinition) format(i interface{}) string {
+	str := h.StringColumnDefinition.format(i)
+	splits := strings.Split(str, h.Separator)
+	if len(splits) > 1 {
+		return splits[len(splits)-1]
+	}
+	return str
+}
+
 type SliceColumnDefinition struct {
 	StringColumnDefinition
 }

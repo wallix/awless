@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -169,6 +170,161 @@ func removeString(arr []string, s string) (out []string) {
 		}
 	}
 	return
+}
+
+func (d *EcsDriver) Create_Container_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create container: missing required params 'name'")
+	}
+	if _, ok := params["service"]; !ok {
+		return nil, errors.New("create container: missing required params 'service'")
+	}
+	if _, ok := params["image"]; !ok {
+		return nil, errors.New("create container: missing required params 'image'")
+	}
+	if _, ok := params["memory-hard-limit"]; !ok {
+		return nil, errors.New("create container: missing required params 'memory-hard-limit'")
+	}
+	d.logger.Verbose("params dry run: create container ok")
+	return nil, nil
+}
+
+func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}, error) {
+	var taskDefinitionInput *ecs.RegisterTaskDefinitionInput
+	taskDefinitionName := fmt.Sprint(params["service"])
+
+	taskdefOutput, err := d.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(taskDefinitionName),
+	})
+	if awserr, ok := err.(awserr.Error); err != nil && ok {
+		if awserr.Code() == "ClientException" && strings.Contains(strings.ToLower(awserr.Message()), "unable to describe task definition") {
+			taskDefinitionInput = &ecs.RegisterTaskDefinitionInput{
+				Family: aws.String(taskDefinitionName),
+			}
+		} else {
+			return nil, err
+		}
+	} else if err != nil {
+		return nil, err
+	} else {
+		taskDefinitionInput = &ecs.RegisterTaskDefinitionInput{
+			ContainerDefinitions: taskdefOutput.TaskDefinition.ContainerDefinitions,
+			Family:               taskdefOutput.TaskDefinition.Family,
+			NetworkMode:          taskdefOutput.TaskDefinition.NetworkMode,
+			PlacementConstraints: taskdefOutput.TaskDefinition.PlacementConstraints,
+			TaskRoleArn:          taskdefOutput.TaskDefinition.TaskRoleArn,
+			Volumes:              taskdefOutput.TaskDefinition.Volumes,
+		}
+	}
+
+	container := &ecs.ContainerDefinition{}
+	if err = setFieldWithType(params["name"], container, "Name", awsstr); err != nil {
+		return nil, err
+	}
+	if err = setFieldWithType(params["image"], container, "Image", awsstr); err != nil {
+		return nil, err
+	}
+	if err = setFieldWithType(params["memory-hard-limit"], container, "Memory", awsint64); err != nil {
+		return nil, err
+	}
+	if command, ok := params["command"]; ok {
+		switch cc := command.(type) {
+		case string:
+			if err = setFieldWithType(strings.Split(cc, " "), container, "Command", awsstringslice); err != nil {
+				return nil, err
+			}
+		default:
+			if err = setFieldWithType(cc, container, "Command", awsstringslice); err != nil {
+				return nil, err
+			}
+		}
+	}
+	if env, ok := params["env"]; ok {
+		if err = setFieldWithType(env, container, "Environment", awsecskeyvalue); err != nil {
+			return nil, err
+		}
+	}
+	if priv, ok := params["privileged"]; ok && fmt.Sprint(priv) == "true" {
+		if err = setFieldWithType(true, container, "Privileged", awsbool); err != nil {
+			return nil, err
+		}
+	}
+	if workdir, ok := params["workdir"]; ok {
+		if err = setFieldWithType(workdir, container, "WorkingDirectory", awsstr); err != nil {
+			return nil, err
+		}
+	}
+
+	taskDefinitionInput.ContainerDefinitions = append(taskDefinitionInput.ContainerDefinitions, container)
+
+	start := time.Now()
+
+	taskDefOutput, err := d.RegisterTaskDefinition(taskDefinitionInput)
+	if err != nil {
+		return nil, fmt.Errorf("create container: register task definition: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.RegisterTaskDefinitionOutput call took %s", time.Since(start))
+	d.logger.ExtraVerbosef("create container: register task definition '%s' done", aws.StringValue(taskDefOutput.TaskDefinition.Family))
+
+	d.logger.Infof("create container '%s' done", aws.StringValue(taskDefOutput.TaskDefinition.TaskDefinitionArn))
+	return nil, nil
+}
+
+func (d *EcsDriver) Start_Containerservice_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["cluster"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'cluster'")
+	}
+
+	if _, ok := params["desired-count"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'desired-count'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'name'")
+	}
+
+	if _, ok := params["deployment-name"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'deployment-name'")
+	}
+
+	d.logger.Verbose("params dry run: start containerservice ok")
+	return fakeDryRunId("containerservice"), nil
+}
+
+func (d *EcsDriver) Start_Containerservice(params map[string]interface{}) (interface{}, error) {
+	input := &ecs.CreateServiceInput{}
+
+	// Required params
+	if err := setFieldWithType(params["cluster"], input, "Cluster", awsstr); err != nil {
+		return nil, err
+	}
+	if err := setFieldWithType(params["desired-count"], input, "DesiredCount", awsint64); err != nil {
+		return nil, err
+	}
+	if err := setFieldWithType(params["deployment-name"], input, "ServiceName", awsstr); err != nil {
+		return nil, err
+	}
+	if err := setFieldWithType(params["name"], input, "TaskDefinition", awsstr); err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["role"]; ok {
+		if err := setFieldWithType(params["role"], input, "Role", awsstr); err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	output, err := d.CreateService(input)
+	if err != nil {
+		return nil, fmt.Errorf("start containerservice: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.CreateService call took %s", time.Since(start))
+	id := aws.StringValue(output.Service.ServiceArn)
+
+	d.logger.Infof("start containerservice '%s' done", id)
+	return id, nil
 }
 
 func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interface{}, error) {

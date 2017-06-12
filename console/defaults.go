@@ -235,6 +235,23 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.RegisteredContainerInstancesCount, Friendly: "RegisteredContainerInstances"},
 		StringColumnDefinition{Prop: properties.RunningTasksCount, Friendly: "RunningTasks"},
 	},
+	cloud.ContainerService: {
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Version},
+		StringColumnDefinition{Prop: properties.State},
+		SliceColumnDefinition{StringColumnDefinition{Prop: properties.ContainersImages}},
+	},
+	cloud.Container: {
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.DeploymentName},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.StateMessage},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Launched}},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Stopped}},
+		ARNLastValueColumnDefinition{Separator: "/", StringColumnDefinition: StringColumnDefinition{Prop: properties.Cluster}},
+		ARNLastValueColumnDefinition{Separator: "/", StringColumnDefinition: StringColumnDefinition{Prop: properties.ContainerService}},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: properties.ID},

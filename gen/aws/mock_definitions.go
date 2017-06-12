@@ -149,7 +149,11 @@ var mocksDefs = []*mockDef{
 		Api: "ecs",
 		Funcs: []*mockFuncDef{
 			{FuncType: "list", AWSType: "ecs.Cluster", Manual: true},
-			{FuncType: "list", AWSType: "string", ApiMethod: "ListClustersPages", Input: "ecs.ListClustersInput", Output: "ecs.ListClustersOutput", OutputsExtractor: "ClusterArns", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", MockField: "clusterNames", AWSType: "string", ApiMethod: "ListClustersPages", Input: "ecs.ListClustersInput", Output: "ecs.ListClustersOutput", OutputsExtractor: "ClusterArns", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "ecs.TaskDefinition", Manual: true},
+			{FuncType: "list", MockField: "taskdefinitionNames", AWSType: "string", ApiMethod: "ListTaskDefinitionsPages", Input: "ecs.ListTaskDefinitionsInput", Output: "ecs.ListTaskDefinitionsOutput", OutputsExtractor: "TaskDefinitionArns", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", MockFieldType: "mapslice", AWSType: "ecs.Task", Manual: true},
+			{FuncType: "list", MockFieldType: "mapslice", MockField: "tasksNames", AWSType: "string", Manual: true},
 		},
 	},
 }
@@ -158,7 +162,9 @@ func Mocks() []*mockDef {
 	for _, def := range mocksDefs {
 		def.Name = "mock" + strings.Title(def.Api)
 		for _, f := range def.Funcs {
-			f.MockField = nameFromAwsType(f.AWSType)
+			if f.MockField == "" {
+				f.MockField = nameFromAwsType(f.AWSType)
+			}
 		}
 	}
 	return mocksDefs

@@ -65,6 +65,8 @@ var FetchersDefs = []fetchersDef{
 			{Api: "autoscaling", ResourceType: cloud.ScalingPolicy, AWSType: "autoscaling.ScalingPolicy", ApiMethod: "DescribePoliciesPages", Input: "autoscaling.DescribePoliciesInput{}", Output: "autoscaling.DescribePoliciesOutput", OutputsExtractor: "ScalingPolicies", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ecr", ResourceType: cloud.Repository, AWSType: "ecr.Repository", ApiMethod: "DescribeRepositoriesPages", Input: "ecr.DescribeRepositoriesInput{}", Output: "ecr.DescribeRepositoriesOutput", OutputsExtractor: "Repositories", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ecs", ResourceType: cloud.ContainerCluster, AWSType: "ecs.Cluster", ManualFetcher: true},
+			{Api: "ecs", ResourceType: cloud.ContainerService, AWSType: "ecs.TaskDefinition", ManualFetcher: true},
+			{Api: "ecs", ResourceType: cloud.Container, AWSType: "ecs.Container", ManualFetcher: true},
 		},
 	},
 	{
