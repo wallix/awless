@@ -127,3 +127,10 @@ func PluralizeResource(singular string) string {
 	}
 	return singular + "s"
 }
+
+func SingularizeResource(plural string) string {
+	if strings.HasSuffix(plural, "ies") {
+		return strings.TrimSuffix(plural, "ies") + "y"
+	}
+	return strings.TrimSuffix(plural, "s")
+}

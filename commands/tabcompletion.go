@@ -7,6 +7,7 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template"
 )
@@ -99,9 +100,9 @@ func guessEntityTypeFromHoleQuestion(hole string) (string, string) {
 	var types []string
 	splits := strings.Split(hole, ".")
 	for _, t := range splits {
-		for _, r := range aws.ResourceTypes {
+		for _, r := range resourcesTypesWithPlural {
 			if t == r {
-				types = append(types, r)
+				types = append(types, cloud.SingularizeResource(r))
 				break
 			}
 		}
@@ -119,4 +120,12 @@ func guessEntityTypeFromHoleQuestion(hole string) (string, string) {
 	}
 
 	return "", ""
+}
+
+var resourcesTypesWithPlural []string
+
+func init() {
+	for _, r := range aws.ResourceTypes {
+		resourcesTypesWithPlural = append(resourcesTypesWithPlural, r, cloud.PluralizeResource(r))
+	}
 }

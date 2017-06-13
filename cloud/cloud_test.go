@@ -32,9 +32,34 @@ func TestResourceTypePluralizeName(t *testing.T) {
 		{in: "policy", out: "policies"},
 		{in: "internetgateway", out: "internetgateways"},
 		{in: "repository", out: "repositories"},
+		{in: "registry", out: "registries"},
 	}
 	for _, tc := range tcases {
 		if got, want := PluralizeResource(tc.in), tc.out; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+	}
+}
+
+func TestResourceTypeSingularizeName(t *testing.T) {
+	tcases := []struct {
+		in, out string
+	}{
+		{out: "instance", in: "instance"},
+		{out: "region", in: "regions"},
+		{out: "vpc", in: "vpcs"},
+		{out: "subnet", in: "subnets"},
+		{out: "instance", in: "instances"},
+		{out: "user", in: "users"},
+		{out: "role", in: "roles"},
+		{out: "group", in: "groups"},
+		{out: "policy", in: "policies"},
+		{out: "internetgateway", in: "internetgateways"},
+		{out: "repository", in: "repositories"},
+		{out: "registry", in: "registries"},
+	}
+	for _, tc := range tcases {
+		if got, want := SingularizeResource(tc.in), tc.out; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
 	}

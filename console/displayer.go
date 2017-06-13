@@ -117,33 +117,8 @@ func (b *Builder) Build() (Displayer, error) {
 
 	switch b.dataSource.(type) {
 	case *graph.Graph:
-		gph := b.dataSource.(*graph.Graph)
-
-		propFilters, err := b.buildGraphFilters()
-		if err != nil {
-			return nil, err
-		}
-		filteredGraph, err := gph.Filter(b.rdfType, propFilters...)
-		if err != nil {
-			return nil, err
-		}
-
-		filteredGraph, err = filteredGraph.Filter(b.rdfType, b.buildGraphTagFilters()...)
-		if err != nil {
-			return nil, err
-		}
-
-		filteredGraph, err = filteredGraph.OrFilter(b.rdfType, b.buildGraphTagKeyFilters()...)
-		if err != nil {
-			return nil, err
-		}
-
-		filteredGraph, err = filteredGraph.OrFilter(b.rdfType, b.buildGraphTagValueFilters()...)
-		if err != nil {
-			return nil, err
-		}
-
 		if b.rdfType == "" {
+			gph := b.dataSource.(*graph.Graph)
 			switch b.format {
 			case "table":
 				dis := &multiResourcesTableDisplayer{base}
@@ -164,6 +139,38 @@ func (b *Builder) Build() (Displayer, error) {
 				return dis, nil
 			}
 		}
+
+		filteredGraph := b.dataSource.(*graph.Graph)
+
+		if filters, err := b.buildGraphFilters(); len(filters) > 0 && err == nil {
+			filteredGraph, err = filteredGraph.Filter(b.rdfType, filters...)
+			if err != nil {
+				return nil, err
+			}
+		} else if err != nil {
+			return nil, err
+		}
+
+		var ferr error
+		if filters := b.buildGraphTagFilters(); len(filters) > 0 {
+			filteredGraph, ferr = filteredGraph.Filter(b.rdfType, filters...)
+			if ferr != nil {
+				return nil, ferr
+			}
+		}
+		if filters := b.buildGraphTagKeyFilters(); len(filters) > 0 {
+			filteredGraph, ferr = filteredGraph.OrFilter(b.rdfType, filters...)
+			if ferr != nil {
+				return nil, ferr
+			}
+		}
+		if filters := b.buildGraphTagValueFilters(); len(filters) > 0 {
+			filteredGraph, ferr = filteredGraph.OrFilter(b.rdfType, filters...)
+			if ferr != nil {
+				return nil, ferr
+			}
+		}
+
 		switch b.format {
 		case "csv":
 			dis := &csvDisplayer{base}

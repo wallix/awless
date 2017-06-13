@@ -16,10 +16,6 @@ func (g *Graph) OrFilter(entity string, filters ...FilterFn) (*Graph, error) {
 }
 
 func (g *Graph) filter(apply func(filters ...FilterFn) FilterFn, entity string, filters ...FilterFn) (*Graph, error) {
-	if len(filters) == 0 {
-		return g, nil
-	}
-
 	filtered := NewGraph()
 
 	all, err := g.GetAllResources(entity)
