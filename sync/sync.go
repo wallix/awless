@@ -72,15 +72,10 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 		name  string
 		gph   *graph.Graph
 		start time.Time
-	}
-
-	type srvErr struct {
-		name string
-		err  error
+		err   error
 	}
 
 	resultc := make(chan *result, len(services))
-	errorc := make(chan *srvErr, len(services))
 
 	for _, service := range services {
 		if service.IsSyncDisabled() {
@@ -92,16 +87,12 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 			defer workers.Done()
 			start := time.Now()
 			g, err := srv.FetchResources()
-			errorc <- &srvErr{name: srv.Name(), err: err}
-			if err == nil {
-				resultc <- &result{name: srv.Name(), gph: g, start: start}
-			}
+			resultc <- &result{name: srv.Name(), gph: g, start: start, err: err}
 		}(service)
 	}
 
 	go func() {
 		workers.Wait()
-		close(errorc)
 		close(resultc)
 	}()
 
@@ -110,16 +101,18 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 Loop:
 	for {
 		select {
-		case srvErr, ok := <-errorc:
-			if ok && srvErr.err != nil {
-				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", srvErr.name, srvErr.err))
-			}
 		case res, ok := <-resultc:
 			if !ok {
 				break Loop
 			}
-			logger.ExtraVerbosef("sync: fetched %s service took %s", res.name, time.Since(res.start))
-			graphs[res.name] = res.gph
+			if res.err != nil {
+				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", res.name, res.err))
+			} else {
+				logger.ExtraVerbosef("sync: fetched %s service took %s", res.name, time.Since(res.start))
+			}
+			if res.gph != nil {
+				graphs[res.name] = res.gph
+			}
 		}
 	}
 
@@ -139,7 +132,7 @@ Loop:
 	}
 
 	if err := s.Commit(filenames...); err != nil {
-		allErrors = append(allErrors, fmt.Errorf("commit %s: %s", strings.Join(filenames, ", "), err))
+		allErrors = append(allErrors, fmt.Errorf("storing %s: %s", strings.Join(filenames, ", "), err))
 	}
 
 	return graphs, concatErrors(allErrors)

@@ -343,6 +343,8 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var containerserviceList []*ecs.TaskDefinition
 	var containerList []*ecs.Container
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -757,14 +759,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -1152,8 +1154,12 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -1848,6 +1854,8 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 	var policyList []*iam.Policy
 	var accesskeyList []*iam.AccessKeyMetadata
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -1942,14 +1950,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -2037,8 +2045,12 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -2202,6 +2214,8 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	var bucketList []*s3.Bucket
 	var s3objectList []*s3.Object
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -2248,14 +2262,14 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -2298,8 +2312,12 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -2375,6 +2393,8 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 	var topicList []*sns.Topic
 	var queueList []*string
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -2437,14 +2457,14 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -2502,8 +2522,12 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -2633,6 +2657,8 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 	var zoneList []*route53.HostedZone
 	var recordList []*route53.ResourceRecordSet
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -2679,14 +2705,14 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -2729,8 +2755,12 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -2827,6 +2857,8 @@ func (s *Lambda) FetchResources() (*graph.Graph, error) {
 	}
 	var functionList []*lambda.FunctionConfiguration
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -2857,14 +2889,14 @@ func (s *Lambda) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -2892,8 +2924,12 @@ func (s *Lambda) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -2989,6 +3025,8 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 	var metricList []*cloudwatch.Metric
 	var alarmList []*cloudwatch.MetricAlarm
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -3035,14 +3073,14 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -3085,8 +3123,12 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -3211,6 +3253,8 @@ func (s *Cdn) FetchResources() (*graph.Graph, error) {
 	}
 	var distributionList []*cloudfront.DistributionSummary
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -3241,14 +3285,14 @@ func (s *Cdn) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -3276,8 +3320,12 @@ func (s *Cdn) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil
@@ -3371,6 +3419,8 @@ func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
 	}
 	var stackList []*cloudformation.Stack
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -3401,14 +3451,14 @@ func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -3436,8 +3486,12 @@ func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+			fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil

@@ -201,10 +201,10 @@ const homeTpl = `<!DOCTYPE html>
 	</head>
 	<body>
 	<ul>
-	<li><a href="/resources">View resources</a></li>
-	<li><a href="/graph">View DOT graph</a></li>
+	<li><a href="/resources">View resources and their relations</a></li>
 	<li><a href="/rdf">View RDF</a></li>
 	<li><a href="/rdf?namespaced=true">View namespaced RDF</a></li>
+	<li><a href="/graph">View DOT graph (experimental)</a></li>
 	</ul>
 	</body>
 </html>`

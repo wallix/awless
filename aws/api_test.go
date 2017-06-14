@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 	"testing"
@@ -162,6 +163,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 
 	g, err := access.FetchResources()
 	if err != nil {
+		fmt.Printf("%#v", err)
 		t.Fatal(err)
 	}
 

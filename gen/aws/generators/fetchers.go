@@ -190,6 +190,8 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
   var {{ $fetcher.ResourceType }}List []*{{ $fetcher.AWSType }}
   {{- end }}
 
+	fetchError := new(multiError)
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -222,14 +224,14 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		case awserr.RequestFailure:
 			switch ee.Message() {
 			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
+				fetchError.add(cloud.ErrFetchAccessDenied)
 			default:
-				return g, ee
+				fetchError.add(ee)
 			}
 		case nil:
 			continue
 		default:
-			return g, ee
+			fetchError.add(ee)
 		}
 	}
 
@@ -259,8 +261,12 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 
 	for err := range errc {
 		if err != nil {
-			return g, err
+				fetchError.add(err)
 		}
+	}
+
+	if fetchError.hasAny() {
+		return g, fetchError
 	}
 
 	return g, nil

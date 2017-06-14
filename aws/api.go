@@ -75,6 +75,28 @@ func ResourceTypesPerServiceName() map[string][]string {
 	return out
 }
 
+type multiError struct {
+	errs []error
+}
+
+func (m *multiError) add(err error) {
+	if err != nil {
+		m.errs = append(m.errs, err)
+	}
+}
+
+func (m *multiError) hasAny() bool {
+	return len(m.errs) > 0
+}
+
+func (m *multiError) Error() string {
+	var all []string
+	for _, e := range m.errs {
+		all = append(all, e.Error())
+	}
+	return strings.Join(all, "\n")
+}
+
 type oncer struct {
 	sync.Once
 	result interface{}

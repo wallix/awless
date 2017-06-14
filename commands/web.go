@@ -34,9 +34,8 @@ func init() {
 }
 
 var webCmd = &cobra.Command{
-	Use:    "web",
-	Hidden: true,
-	Short:  "Browse your cloud data through a web ui",
+	Use:   "web",
+	Short: "Browse your cloud data through a web ui",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !strings.HasPrefix(webPortFlag, ":") {
