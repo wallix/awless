@@ -250,6 +250,10 @@ var manualParamsDoc = map[string]map[string]string{
 	"deletebucket": {
 		"name": "The name of the bucket to be deleted",
 	},
+	"deletecontainer": {
+		"name":    "The name of the container to delete",
+		"service": "The name of the existing service containing the container to delete",
+	},
 	"deletedatabase": {
 		"id":            "The ID of the database to be deleted",
 		"skip-snapshot": "Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DBSnapshot is created. If false is specified, a DB snapshot is created before the DB instance is deleted",

@@ -319,6 +319,33 @@ delete dbsubnetgroup name=my-dbsubgroup`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert start containerservice", func(t *testing.T) {
+		tpl := MustParse("start containerservice name=awless-test-service cluster=awless-cluster deployment-name=awless-test")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `update containerservice cluster=awless-cluster deployment-name=awless-test desired-count=0
+stop containerservice cluster=awless-cluster deployment-name=awless-test`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
+
+	t.Run("Revert create container", func(t *testing.T) {
+		tpl := MustParse("create container image=toto memory-hard-limit=64 name=test-container service=test-service")
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete container name=test-container service=test-service`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {
@@ -342,6 +369,7 @@ func TestCmdNodeIsRevertible(t *testing.T) {
 		{line: "detach routetable", revertible: false},
 		{line: "start alarm", revertible: true},
 		{line: "stop alarm", revertible: true},
+		{line: "start containerservice", revertible: true},
 	}
 
 	for _, tc := range tcases {

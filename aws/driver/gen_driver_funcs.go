@@ -3779,6 +3779,167 @@ func (d *EcsDriver) Delete_Containercluster(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
+func (d *EcsDriver) Start_Containerservice_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["cluster"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'cluster'")
+	}
+
+	if _, ok := params["deployment-name"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'deployment-name'")
+	}
+
+	if _, ok := params["desired-count"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'desired-count'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("start containerservice: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: start containerservice ok")
+	return fakeDryRunId("containerservice"), nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Start_Containerservice(params map[string]interface{}) (interface{}, error) {
+	input := &ecs.CreateServiceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["cluster"], input, "Cluster", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["deployment-name"], input, "ServiceName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["desired-count"], input, "DesiredCount", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["name"], input, "TaskDefinition", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["role"]; ok {
+		err = setFieldWithType(params["role"], input, "Role", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ecs.CreateServiceOutput
+	output, err = d.CreateService(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("start containerservice: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.CreateService call took %s", time.Since(start))
+	d.logger.Info("start containerservice done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Stop_Containerservice_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["cluster"]; !ok {
+		return nil, errors.New("stop containerservice: missing required params 'cluster'")
+	}
+
+	if _, ok := params["deployment-name"]; !ok {
+		return nil, errors.New("stop containerservice: missing required params 'deployment-name'")
+	}
+
+	d.logger.Verbose("params dry run: stop containerservice ok")
+	return fakeDryRunId("containerservice"), nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Stop_Containerservice(params map[string]interface{}) (interface{}, error) {
+	input := &ecs.DeleteServiceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["cluster"], input, "Cluster", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["deployment-name"], input, "Service", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ecs.DeleteServiceOutput
+	output, err = d.DeleteService(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("stop containerservice: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.DeleteService call took %s", time.Since(start))
+	d.logger.Info("stop containerservice done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Update_Containerservice_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["cluster"]; !ok {
+		return nil, errors.New("update containerservice: missing required params 'cluster'")
+	}
+
+	if _, ok := params["deployment-name"]; !ok {
+		return nil, errors.New("update containerservice: missing required params 'deployment-name'")
+	}
+
+	d.logger.Verbose("params dry run: update containerservice ok")
+	return fakeDryRunId("containerservice"), nil
+}
+
+// This function was auto generated
+func (d *EcsDriver) Update_Containerservice(params map[string]interface{}) (interface{}, error) {
+	input := &ecs.UpdateServiceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["cluster"], input, "Cluster", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["deployment-name"], input, "Service", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["desired-count"]; ok {
+		err = setFieldWithType(params["desired-count"], input, "DesiredCount", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["name"]; ok {
+		err = setFieldWithType(params["name"], input, "TaskDefinition", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ecs.UpdateServiceOutput
+	output, err = d.UpdateService(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("update containerservice: %s", err)
+	}
+	d.logger.ExtraVerbosef("ecs.UpdateService call took %s", time.Since(start))
+	d.logger.Info("update containerservice done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *IamDriver) Create_User_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create user: missing required params 'name'")

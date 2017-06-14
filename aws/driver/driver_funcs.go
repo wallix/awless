@@ -198,6 +198,7 @@ func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}
 	})
 	if awserr, ok := err.(awserr.Error); err != nil && ok {
 		if awserr.Code() == "ClientException" && strings.Contains(strings.ToLower(awserr.Message()), "unable to describe task definition") {
+			d.logger.Verbosef("service %s does not exist: creating service", taskDefinitionName)
 			taskDefinitionInput = &ecs.RegisterTaskDefinitionInput{
 				Family: aws.String(taskDefinitionName),
 			}
@@ -270,61 +271,74 @@ func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}
 	return nil, nil
 }
 
-func (d *EcsDriver) Start_Containerservice_DryRun(params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["cluster"]; !ok {
-		return nil, errors.New("start containerservice: missing required params 'cluster'")
-	}
-
-	if _, ok := params["desired-count"]; !ok {
-		return nil, errors.New("start containerservice: missing required params 'desired-count'")
-	}
-
+func (d *EcsDriver) Delete_Container_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("start containerservice: missing required params 'name'")
+		return nil, errors.New("delete container: missing required params 'name'")
 	}
-
-	if _, ok := params["deployment-name"]; !ok {
-		return nil, errors.New("start containerservice: missing required params 'deployment-name'")
+	if _, ok := params["service"]; !ok {
+		return nil, errors.New("delete container: missing required params 'service'")
 	}
-
-	d.logger.Verbose("params dry run: start containerservice ok")
-	return fakeDryRunId("containerservice"), nil
+	d.logger.Verbose("params dry run: create container ok")
+	return nil, nil
 }
 
-func (d *EcsDriver) Start_Containerservice(params map[string]interface{}) (interface{}, error) {
-	input := &ecs.CreateServiceInput{}
+func (d *EcsDriver) Delete_Container(params map[string]interface{}) (interface{}, error) {
+	taskDefinitionName := fmt.Sprint(params["service"])
 
-	// Required params
-	if err := setFieldWithType(params["cluster"], input, "Cluster", awsstr); err != nil {
-		return nil, err
-	}
-	if err := setFieldWithType(params["desired-count"], input, "DesiredCount", awsint64); err != nil {
-		return nil, err
-	}
-	if err := setFieldWithType(params["deployment-name"], input, "ServiceName", awsstr); err != nil {
-		return nil, err
-	}
-	if err := setFieldWithType(params["name"], input, "TaskDefinition", awsstr); err != nil {
+	taskdefOutput, err := d.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(taskDefinitionName),
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	// Extra params
-	if _, ok := params["role"]; ok {
-		if err := setFieldWithType(params["role"], input, "Role", awsstr); err != nil {
-			return nil, err
+	var containerDefinitions []*ecs.ContainerDefinition
+	var found bool
+	var containerNames []string
+	for _, def := range taskdefOutput.TaskDefinition.ContainerDefinitions {
+		name := aws.StringValue(def.Name)
+		containerNames = append(containerNames, name)
+		if name == fmt.Sprint(params["name"]) || aws.StringValue(def.Image) == fmt.Sprint(params["name"]) {
+			found = true
+		} else {
+			containerDefinitions = append(containerDefinitions, def)
 		}
 	}
-
-	start := time.Now()
-	output, err := d.CreateService(input)
-	if err != nil {
-		return nil, fmt.Errorf("start containerservice: %s", err)
+	if !found {
+		return nil, fmt.Errorf("did not find any container called '%s': found: '%s'", fmt.Sprint(params["name"]), strings.Join(containerNames, "','"))
 	}
-	d.logger.ExtraVerbosef("ecs.CreateService call took %s", time.Since(start))
-	id := aws.StringValue(output.Service.ServiceArn)
 
-	d.logger.Infof("start containerservice '%s' done", id)
-	return id, nil
+	if len(containerDefinitions) > 0 { //At least one container remaining
+		taskDefinitionInput := &ecs.RegisterTaskDefinitionInput{
+			ContainerDefinitions: containerDefinitions,
+			Family:               taskdefOutput.TaskDefinition.Family,
+			NetworkMode:          taskdefOutput.TaskDefinition.NetworkMode,
+			PlacementConstraints: taskdefOutput.TaskDefinition.PlacementConstraints,
+			TaskRoleArn:          taskdefOutput.TaskDefinition.TaskRoleArn,
+			Volumes:              taskdefOutput.TaskDefinition.Volumes,
+		}
+		start := time.Now()
+
+		if _, err := d.RegisterTaskDefinition(taskDefinitionInput); err != nil {
+			return nil, fmt.Errorf("delete container: register task definition: %s", err)
+		}
+		d.logger.ExtraVerbosef("ecs.RegisterTaskDefinition call took %s", time.Since(start))
+
+	} else {
+		d.logger.Verbosef("no container remaining in service %s: deleting service", taskDefinitionName)
+		taskDefinitionInput := &ecs.DeregisterTaskDefinitionInput{
+			TaskDefinition: taskdefOutput.TaskDefinition.TaskDefinitionArn,
+		}
+		start := time.Now()
+
+		if _, err := d.DeregisterTaskDefinition(taskDefinitionInput); err != nil {
+			return nil, fmt.Errorf("delete container: deregister task definition: %s", err)
+		}
+		d.logger.ExtraVerbosef("ecs.DeregisterTaskDefinition call took %s", time.Since(start))
+	}
+
+	d.logger.Infof("delete container '%s' done", aws.StringValue(taskdefOutput.TaskDefinition.Family))
+	return nil, nil
 }
 
 func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interface{}, error) {

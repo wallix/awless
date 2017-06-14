@@ -59,6 +59,9 @@ func (te *Template) Revert() (*Template, error) {
 						}
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
 					}
+				case cmd.Entity == "containerservice":
+					params = append(params, fmt.Sprintf("cluster=%s", quoteParamIfNeeded(cmd.Params["cluster"])))
+					params = append(params, fmt.Sprintf("deployment-name=%s", quoteParamIfNeeded(cmd.Params["deployment-name"])))
 				default:
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
@@ -101,6 +104,9 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("user=%s", quoteParamIfNeeded(cmd.Params["user"])))
 				case "loginprofile":
 					params = append(params, fmt.Sprintf("username=%s", quoteParamIfNeeded(cmd.Params["username"])))
+				case "container":
+					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
+					params = append(params, fmt.Sprintf("service=%s", quoteParamIfNeeded(cmd.Params["service"])))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm", "dbsubnetgroup", "keypair":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.CmdResult)))
 					if cmd.Entity == "scalinggroup" {
@@ -141,6 +147,9 @@ func (te *Template) Revert() (*Template, error) {
 			}
 			if cmd.Action == "stop" && cmd.Entity == "instance" {
 				lines = append(lines, fmt.Sprintf("check instance id=%s state=stopped timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
+			}
+			if cmd.Action == "start" && cmd.Entity == "containerservice" {
+				lines = append(lines, fmt.Sprintf("update containerservice cluster=%s deployment-name=%s desired-count=0", quoteParamIfNeeded(cmd.Params["cluster"]), quoteParamIfNeeded(cmd.Params["deployment-name"])))
 			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
@@ -204,6 +213,14 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if cmd.Entity == "alarm" && (cmd.Action == "start" || cmd.Action == "stop") {
+		return true
+	}
+
+	if cmd.Entity == "containerservice" && cmd.Action == "start" {
+		return true
+	}
+
+	if cmd.Entity == "container" && cmd.Action == "create" {
 		return true
 	}
 

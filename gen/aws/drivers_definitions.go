@@ -790,15 +790,33 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "start", Entity: cloud.ContainerService, ManualFuncDefinition: true,
+				Action: "start", Entity: cloud.ContainerService, ApiMethod: "CreateService", Input: "CreateServiceInput", Output: "CreateServiceOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
-					{TemplateName: "cluster"},
-					{TemplateName: "desired-count"},
-					{TemplateName: "name"},
-					{TemplateName: "deployment-name"},
+					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
+					{AwsField: "ServiceName", TemplateName: "deployment-name", AwsType: "awsstr"},
+					{AwsField: "DesiredCount", TemplateName: "desired-count", AwsType: "awsint64"},
+					{AwsField: "TaskDefinition", TemplateName: "name", AwsType: "awsstr"},
 				},
 				ExtraParams: []param{
-					{TemplateName: "role"},
+					{AwsField: "Role", TemplateName: "role", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "stop", Entity: cloud.ContainerService, ApiMethod: "DeleteService", Input: "DeleteServiceInput", Output: "DeleteServiceOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
+					{AwsField: "Service", TemplateName: "deployment-name", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "update", Entity: cloud.ContainerService, ApiMethod: "UpdateService", Input: "UpdateServiceInput", Output: "UpdateServiceOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
+					{AwsField: "Service", TemplateName: "deployment-name", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "DesiredCount", TemplateName: "desired-count", AwsType: "awsint64"},
+					{AwsField: "TaskDefinition", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
 			//Container
@@ -815,6 +833,13 @@ var DriversDefs = []driversDef{
 					{TemplateName: "env"},
 					{TemplateName: "privileged"},
 					{TemplateName: "workdir"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Container, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+					{TemplateName: "service"},
 				},
 			},
 		},

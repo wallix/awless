@@ -868,6 +868,9 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 		var badResErr error
 		err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster}, func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
 			var tasksOut *ecs.DescribeTasksOutput
+			if len(out.TaskArns) == 0 {
+				return out.NextToken != nil
+			}
 
 			if tasksOut, badResErr = s.ECSAPI.DescribeTasks(&ecs.DescribeTasksInput{Cluster: cluster, Tasks: out.TaskArns}); badResErr != nil {
 				return false
@@ -935,7 +938,7 @@ func sliceOfSlice(in []*string, maxLength int) (res [][]*string) {
 		if i+maxLength < len(in) {
 			res = append(res, in[i:i+maxLength])
 		} else {
-			res = append(res, in[i:len(in)])
+			res = append(res, in[i:])
 		}
 	}
 

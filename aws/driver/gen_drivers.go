@@ -599,11 +599,29 @@ func (d *EcsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Start_Containerservice, nil
 
+	case "stopcontainerservice":
+		if d.dryRun {
+			return d.Stop_Containerservice_DryRun, nil
+		}
+		return d.Stop_Containerservice, nil
+
+	case "updatecontainerservice":
+		if d.dryRun {
+			return d.Update_Containerservice_DryRun, nil
+		}
+		return d.Update_Containerservice, nil
+
 	case "createcontainer":
 		if d.dryRun {
 			return d.Create_Container_DryRun, nil
 		}
 		return d.Create_Container, nil
+
+	case "deletecontainer":
+		if d.dryRun {
+			return d.Delete_Container_DryRun, nil
+		}
+		return d.Delete_Container, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound
