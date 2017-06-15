@@ -137,6 +137,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		MapAttribute      map[string]*string
 		EmptyMapAttribute map[string]*string
 		ParameterList     []*cloudformation.Parameter
+		PortMappings      []*ecs.PortMapping
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -466,4 +467,29 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
+	err = setFieldWithType([]string{"80:8080", "8082", "1234:8083/udp"}, &any, "PortMappings", awsportmappings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.PortMappings), 3; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.PortMappings[0].HostPort, int64(80); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.PortMappings[0].ContainerPort, int64(8080); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.PortMappings[1].ContainerPort, int64(8082); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.PortMappings[2].HostPort, int64(1234); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.PortMappings[2].ContainerPort, int64(8083); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.PortMappings[2].Protocol, "udp"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
 }

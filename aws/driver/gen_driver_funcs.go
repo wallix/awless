@@ -3830,6 +3830,24 @@ func (d *EcsDriver) Start_Containerservice(params map[string]interface{}) (inter
 			return nil, err
 		}
 	}
+	if _, ok := params["loadbalancer.container-name"]; ok {
+		err = setFieldWithType(params["loadbalancer.container-name"], input, "LoadBalancers[0]ContainerName", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["loadbalancer.container-port"]; ok {
+		err = setFieldWithType(params["loadbalancer.container-port"], input, "LoadBalancers[0]ContainerPort", awsslicestructint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["loadbalancer.targetgroup"]; ok {
+		err = setFieldWithType(params["loadbalancer.targetgroup"], input, "LoadBalancers[0]TargetGroupArn", awsslicestruct)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	start := time.Now()
 	var output *ecs.CreateServiceOutput

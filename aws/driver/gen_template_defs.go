@@ -671,7 +671,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "containerservice",
 		Api:            "ecs",
 		RequiredParams: []string{"cluster", "deployment-name", "desired-count", "name"},
-		ExtraParams:    []string{"role"},
+		ExtraParams:    []string{"loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role"},
 	},
 	"stopcontainerservice": {
 		Action:         "stop",
@@ -692,7 +692,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "container",
 		Api:            "ecs",
 		RequiredParams: []string{"image", "memory-hard-limit", "name", "service"},
-		ExtraParams:    []string{"command", "env", "privileged", "workdir"},
+		ExtraParams:    []string{"command", "env", "ports", "privileged", "workdir"},
 	},
 	"deletecontainer": {
 		Action:         "delete",

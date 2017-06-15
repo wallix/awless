@@ -799,6 +799,9 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "Role", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "LoadBalancers[0]ContainerName", TemplateName: "loadbalancer.container-name", AwsType: "awsslicestruct"},
+					{AwsField: "LoadBalancers[0]ContainerPort", TemplateName: "loadbalancer.container-port", AwsType: "awsslicestructint64"},
+					{AwsField: "LoadBalancers[0]TargetGroupArn", TemplateName: "loadbalancer.targetgroup", AwsType: "awsslicestruct"},
 				},
 			},
 			{
@@ -833,6 +836,7 @@ var DriversDefs = []driversDef{
 					{TemplateName: "env"},
 					{TemplateName: "privileged"},
 					{TemplateName: "workdir"},
+					{TemplateName: "ports"},
 				},
 			},
 			{

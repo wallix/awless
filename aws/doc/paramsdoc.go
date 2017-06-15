@@ -90,6 +90,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"env":               "The environment variables to pass to a container using this format: key1:val1,key2:val2,...",
 		"privileged":        "When this parameter is true, the container is given elevated privileges on the host container instance",
 		"workdir":           "The working directory in which to run commands inside the container",
+		"ports":             "The list of port mappings for the container. Port mappings allow containers to access ports on the host container instance to send or receive traffic (format [host-port:]container-port[/protocol][,[host-port:]container-port[/protocol]])",
 	},
 	"createdatabase": {
 		"autoupgrade":       "Set to true to indicate that minor version patches are applied automatically",
@@ -330,8 +331,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"platform":     "The operating system of the virtual machine (Windows | Linux)",
 	},
 	"startcontainerservice": {
-		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your service",
-		"desired-count":   "The number of instantiations of the specified service to place and keep running on your cluster",
+		"cluster":                     "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your service",
+		"desired-count":               "The number of instantiations of the specified service to place and keep running on your cluster",
+		"loadbalancer.container-name": "The name of the container (as it appears in a container definition) to associate with the load balancer",
+		"loadbalancer.container-port": "The port on the container to associate with the load balancer",
+		"loadbalancer.targetgroup":    "The full Amazon Resource Name (ARN) of the Elastic Load Balancing target group associated with a service",
 		"name":            "The name of the container service to start",
 		"deployment-name": "The deployment name of the service (e.g. prod, staging...)",
 		"role":            "The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon ECS to make calls to your load balancer on your behalf",

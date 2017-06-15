@@ -55,6 +55,7 @@ const (
 	awsdimensionslice
 	awsparameterslice
 	awsecskeyvalue
+	awsportmappings
 )
 
 var (
@@ -156,6 +157,50 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			parameters = append(parameters, &cloudformation.Parameter{ParameterKey: aws.String(splits[0]), ParameterValue: aws.String(splits[1])})
 		}
 		v = parameters
+	case awsportmappings:
+		sl := castStringSlice(v)
+		var portMappings []*ecs.PortMapping
+		for _, s := range sl {
+			portMapping := &ecs.PortMapping{}
+			if strings.Contains(s, "-") {
+				return fmt.Errorf("invalid port mapping '%s', AWS do not support portrange (from-to)", s)
+			}
+			var protocol string
+			if strings.Contains(s, "/") {
+				splits := strings.Split(s, "/")
+				protocol = splits[1]
+				if protocol != "tcp" && protocol != "udp" {
+					return fmt.Errorf("invalid port mapping '%s', invalid protocol, expect tcp or udp, got %s", s, protocol)
+				}
+				s = strings.TrimRight(s, "/"+protocol)
+				portMapping.Protocol = aws.String(protocol)
+			}
+			splits := strings.Split(s, ":")
+			switch len(splits) {
+			case 1:
+				containerPort, err := strconv.ParseInt(s, 10, 64)
+				if err != nil {
+					return fmt.Errorf("invalid port mapping '%s', expect from[:to][/protocol]", s)
+				}
+				portMapping.ContainerPort = aws.Int64(containerPort)
+			case 2:
+				hostPort, err := strconv.ParseInt(splits[0], 10, 64)
+				if err != nil {
+					return fmt.Errorf("invalid port mapping '%s', expect from[:to][/protocol]", s)
+				}
+				containerPort, err := strconv.ParseInt(splits[1], 10, 64)
+				if err != nil {
+					return fmt.Errorf("invalid port mapping '%s', expect from[:to][/protocol]", s)
+				}
+				portMapping.HostPort = aws.Int64(hostPort)
+				portMapping.ContainerPort = aws.Int64(containerPort)
+			default:
+				return fmt.Errorf("invalid port mapping '%s', expect from[:to][/protocol]", s)
+			}
+
+			portMappings = append(portMappings, portMapping)
+		}
+		v = portMappings
 	case awsfiletobase64:
 		v, err = fileOrRemoteFileAsBase64(v)
 		if err != nil {

@@ -255,6 +255,11 @@ func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}
 			return nil, err
 		}
 	}
+	if ports, ok := params["ports"]; ok {
+		if err = setFieldWithType(ports, container, "PortMappings", awsportmappings); err != nil {
+			return nil, err
+		}
+	}
 
 	taskDefinitionInput.ContainerDefinitions = append(taskDefinitionInput.ContainerDefinitions, container)
 
