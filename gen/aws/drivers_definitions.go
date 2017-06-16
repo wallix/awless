@@ -1004,12 +1004,12 @@ var DriversDefs = []driversDef{
 				Action: "create", Entity: cloud.Policy, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{AwsField: "PolicyName", TemplateName: "name", AwsType: "awsstr"},
-				},
-				ExtraParams: []param{
-					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
 					{TemplateName: "effect"},
 					{TemplateName: "action"},
 					{TemplateName: "resource"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
 				},
 			},
 			{

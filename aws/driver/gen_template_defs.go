@@ -832,8 +832,8 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "create",
 		Entity:         "policy",
 		Api:            "iam",
-		RequiredParams: []string{"name"},
-		ExtraParams:    []string{"action", "description", "effect", "resource"},
+		RequiredParams: []string{"action", "effect", "name", "resource"},
+		ExtraParams:    []string{"description"},
 	},
 	"deletepolicy": {
 		Action:         "delete",

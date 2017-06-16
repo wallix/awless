@@ -351,8 +351,8 @@ func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interfa
 	_, action := params["action"]
 	_, resource := params["resource"]
 
-	if !effect && !action && !resource {
-		return nil, errors.New("create role: missing policy effect, action and resource values")
+	if !effect || !action || !resource {
+		return nil, errors.New("create role: effect, action and resource are required values")
 	}
 
 	d.logger.Verbose("params dry run: create policy ok")
