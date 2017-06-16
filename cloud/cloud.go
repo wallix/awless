@@ -89,6 +89,7 @@ const (
 	Registry         string = "registry"
 	ContainerCluster string = "containercluster"
 	ContainerService string = "containerservice"
+	ContainerTask    string = "containertask"
 	Container        string = "container"
 )
 

@@ -98,6 +98,7 @@ var APIPerTemplateDefName = map[string]string{
 	"startcontainerservice":     "ecs",
 	"stopcontainerservice":      "ecs",
 	"updatecontainerservice":    "ecs",
+	"startcontainertask":        "ecs",
 	"createcontainer":           "ecs",
 	"deletecontainer":           "ecs",
 	"createuser":                "iam",
@@ -687,6 +688,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"cluster", "deployment-name"},
 		ExtraParams:    []string{"desired-count", "name"},
 	},
+	"startcontainertask": {
+		Action:         "start",
+		Entity:         "containertask",
+		Api:            "ecs",
+		RequiredParams: []string{"cluster", "containerservice"},
+		ExtraParams:    []string{"count", "started-by"},
+	},
 	"createcontainer": {
 		Action:         "create",
 		Entity:         "container",
@@ -1145,6 +1153,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["start"] = append(supported["start"], "containerservice")
 	supported["stop"] = append(supported["stop"], "containerservice")
 	supported["update"] = append(supported["update"], "containerservice")
+	supported["start"] = append(supported["start"], "containertask")
 	supported["create"] = append(supported["create"], "container")
 	supported["delete"] = append(supported["delete"], "container")
 	supported["create"] = append(supported["create"], "user")

@@ -454,6 +454,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":            "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run in your service",
 		"role":            "The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon ECS to make calls to your load balancer on your behalf",
 	},
+	"startcontainertask": {
+		"cluster":          "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your task",
+		"containerservice": "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run",
+		"count":            "The number of instantiations of the specified task to place on your cluster",
+		"started-by":       "An optional tag specified when a task is started",
+	},
 	"startinstance": {
 		"id": "One or more instance IDs",
 	},

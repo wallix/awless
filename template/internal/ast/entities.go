@@ -12,6 +12,7 @@ var entities = map[Entity]struct{}{
 	"container":           {},
 	"containercluster":    {},
 	"containerservice":    {},
+	"containertask":       {},
 	"database":            {},
 	"distribution":        {},
 	"dbsubnetgroup":       {},

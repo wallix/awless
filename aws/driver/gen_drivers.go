@@ -611,6 +611,12 @@ func (d *EcsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Update_Containerservice, nil
 
+	case "startcontainertask":
+		if d.dryRun {
+			return d.Start_Containertask_DryRun, nil
+		}
+		return d.Start_Containertask, nil
+
 	case "createcontainer":
 		if d.dryRun {
 			return d.Create_Container_DryRun, nil

@@ -822,6 +822,17 @@ var DriversDefs = []driversDef{
 					{AwsField: "TaskDefinition", TemplateName: "name", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "start", Entity: cloud.ContainerTask, ApiMethod: "RunTask", Input: "RunTaskInput", Output: "RunTaskOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
+					{AwsField: "TaskDefinition", TemplateName: "containerservice", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Count", TemplateName: "count", AwsType: "awsint64"},
+					{AwsField: "StartedBy", TemplateName: "started-by", AwsType: "awsstr"},
+				},
+			},
 			//Container
 			{
 				Action: "create", Entity: cloud.Container, ManualFuncDefinition: true,
