@@ -48,7 +48,6 @@ import (
 	"github.com/wallix/awless/template/driver"
 )
 
-var scheduleFlag bool
 var scheduleRunInFlag string
 var scheduleRevertInFlag string
 var listRemoteTemplatesFlag bool
@@ -56,12 +55,8 @@ var listRemoteTemplatesFlag bool
 func init() {
 	RootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVar(&listRemoteTemplatesFlag, "list", false, "List templates available at https://github.com/wallix/awless-templates")
-	runCmd.Flags().BoolVar(&scheduleFlag, "schedule", false, "Schedule the execution of this template")
 	runCmd.Flags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this template")
 	runCmd.Flags().StringVar(&scheduleRevertInFlag, "revert-in", "", "Schedule the revertion of this template")
-	runCmd.Flags().MarkHidden("schedule")
-	runCmd.Flags().MarkHidden("run-in")
-	runCmd.Flags().MarkHidden("revert-in")
 
 	var actions []string
 	for a := range awsdriver.DriverSupportedActions() {
@@ -73,12 +68,8 @@ func init() {
 		entities := awsdriver.DriverSupportedActions()[action]
 		sort.Strings(entities)
 		cmd := createDriverCommands(action, entities)
-		cmd.PersistentFlags().BoolVar(&scheduleFlag, "schedule", false, "Schedule the execution of this command")
 		cmd.PersistentFlags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this command")
 		cmd.PersistentFlags().StringVar(&scheduleRevertInFlag, "revert-in", "", "Schedule the revertion of this command")
-		cmd.PersistentFlags().MarkHidden("schedule")
-		cmd.PersistentFlags().MarkHidden("run-in")
-		cmd.PersistentFlags().MarkHidden("revert-in")
 		RootCmd.AddCommand(cmd)
 	}
 }
@@ -241,7 +232,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 		yesorno = "y"
 	} else {
 		fmt.Println()
-		if scheduleFlag {
+		if isSchedulingMode() {
 			fmt.Print("Confirm scheduling? (y/n): ")
 		} else {
 			fmt.Print("Confirm? (y/n): ")
@@ -259,7 +250,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 			logger.ExtraVerbosef("resolved template author: %s", tplExec.Author)
 		}
 
-		if scheduleFlag {
+		if isSchedulingMode() {
 			exitOn(scheduleTemplate(tplExec.Template, scheduleRunInFlag, scheduleRevertInFlag))
 			return nil
 		}
@@ -601,7 +592,7 @@ func isQuoted(s string) bool {
 func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
 	schedClient, err := client.New(config.GetSchedulerURL())
 	if err != nil {
-		return err
+		return fmt.Errorf("Cannot connect to scheduler: %s", err)
 	}
 	logger.Verbosef("sending template to scheduler %s", schedClient.ServiceURL)
 
@@ -643,4 +634,14 @@ func suggestFixParsingError(def template.Definition, args []string, defaultErr e
 	}
 
 	return templ, nil
+}
+
+func isSchedulingMode() bool {
+	runin := strings.TrimSpace(scheduleRunInFlag)
+	revertin := strings.TrimSpace(scheduleRevertInFlag)
+
+	if runin != "" || revertin != "" {
+		return true
+	}
+	return false
 }
