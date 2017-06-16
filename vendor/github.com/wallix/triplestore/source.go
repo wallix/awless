@@ -63,7 +63,7 @@ func (ts Triples) String() string {
 }
 
 type source struct {
-	latestSnap RDFGraph
+	latestSnap atomic.Value
 	updated    uint32 // atomic
 	mu         sync.RWMutex
 	triples    map[string]Triple
@@ -71,10 +71,11 @@ type source struct {
 
 // A source is a persistent yet mutable source or container of triples
 func NewSource() Source {
-	return &source{
-		triples:    make(map[string]Triple),
-		latestSnap: newGraph(0),
+	s := &source{
+		triples: make(map[string]Triple),
 	}
+	s.latestSnap.Store(newGraph(0))
+	return s
 }
 
 func (s *source) isUpdated() bool {
@@ -112,17 +113,13 @@ func (s *source) Remove(ts ...Triple) {
 
 func (s *source) Snapshot() RDFGraph {
 	if !s.isUpdated() {
-		return s.latestSnap
+		return s.latestSnap.Load().(RDFGraph)
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	gph := newGraph(len(s.triples))
-	defer func() {
-		s.latestSnap = gph
-		s.reset()
-	}()
 
 	for k, t := range s.triples {
 		objKey := t.Object().(object).key()
@@ -143,6 +140,9 @@ func (s *source) Snapshot() RDFGraph {
 
 		gph.spo[k] = t
 	}
+
+	s.latestSnap.Store(gph)
+	s.reset()
 
 	return gph
 }
