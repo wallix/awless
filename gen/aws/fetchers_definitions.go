@@ -17,8 +17,29 @@ limitations under the License.
 package aws
 
 import (
+	"strings"
+
 	"github.com/wallix/awless/cloud"
 )
+
+func ApiToInterface(api string) string {
+	switch api {
+	case "autoscaling":
+		return "AutoScalingAPI"
+	case "cloudwatch":
+		return "CloudWatchAPI"
+	case "cloudfront":
+		return "CloudFrontAPI"
+	case "applicationautoscaling":
+		return "ApplicationAutoScalingAPI"
+	case "cloudformation":
+		return "CloudFormationAPI"
+	case "route53", "lambda":
+		return strings.Title(api) + "API"
+	default:
+		return strings.ToUpper(api) + "API"
+	}
+}
 
 type fetchersDef struct {
 	Name     string
@@ -40,7 +61,7 @@ type fetcher struct {
 var FetchersDefs = []fetchersDef{
 	{
 		Name: "infra",
-		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr", "ecs"},
+		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr", "ecs", "applicationautoscaling"},
 		Fetchers: []fetcher{
 			{Api: "ec2", ResourceType: cloud.Instance, AWSType: "ec2.Instance", ApiMethod: "DescribeInstancesPages", Input: "ec2.DescribeInstancesInput{}", Output: "ec2.DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ec2", ResourceType: cloud.Subnet, AWSType: "ec2.Subnet", ApiMethod: "DescribeSubnets", Input: "ec2.DescribeSubnetsInput{}", Output: "ec2.DescribeSubnetsOutput", OutputsExtractor: "Subnets"},

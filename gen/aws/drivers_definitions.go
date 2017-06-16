@@ -56,9 +56,8 @@ func (d *driver) ExtraKeys() []string {
 }
 
 type driversDef struct {
-	Api          string
-	ApiInterface string
-	Drivers      []driver
+	Api     string
+	Drivers []driver
 }
 
 func sortUnique(arr []string) (sorted []string) {
@@ -570,8 +569,7 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:          "autoscaling",
-		ApiInterface: "AutoScalingAPI",
+		Api: "autoscaling",
 		Drivers: []driver{
 			{
 				Action: "create", Entity: cloud.LaunchConfiguration, ApiMethod: "CreateLaunchConfiguration", Input: "CreateLaunchConfigurationInput", Output: "CreateLaunchConfigurationOutput", DryRunUnsupported: true, OutputExtractor: "params[\"name\"]",
@@ -1168,8 +1166,7 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:          "route53",
-		ApiInterface: "Route53API",
+		Api: "route53",
 		Drivers: []driver{
 			{
 				Action: "create", Entity: cloud.Zone, DryRunUnsupported: true, Input: "CreateHostedZoneInput", Output: "CreateHostedZoneOutput", ApiMethod: "CreateHostedZone", OutputExtractor: "aws.StringValue(output.HostedZone.Id)",
@@ -1217,8 +1214,7 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:          "lambda",
-		ApiInterface: "LambdaAPI",
+		Api: "lambda",
 		Drivers: []driver{
 			{
 				Action: "create", Entity: cloud.Function, DryRunUnsupported: true, ApiMethod: "CreateFunction", Input: "CreateFunctionInput", Output: "FunctionConfiguration", OutputExtractor: "aws.StringValue(output.FunctionArn)",
@@ -1251,8 +1247,7 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:          "cloudwatch",
-		ApiInterface: "CloudWatchAPI",
+		Api: "cloudwatch",
 		Drivers: []driver{
 			{
 				Action: "create", Entity: cloud.Alarm, DryRunUnsupported: true, ApiMethod: "PutMetricAlarm", Input: "PutMetricAlarmInput", Output: "PutMetricAlarmOutput", OutputExtractor: "params[\"name\"]",
@@ -1311,8 +1306,7 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:          "cloudfront",
-		ApiInterface: "CloudFrontAPI",
+		Api: "cloudfront",
 		Drivers: []driver{
 			{
 				Action: "create", Entity: cloud.Distribution, ManualFuncDefinition: true,
@@ -1357,8 +1351,7 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:          "cloudformation",
-		ApiInterface: "CloudFormationAPI",
+		Api: "cloudformation",
 		Drivers: []driver{
 			{
 				Action: "create", Entity: cloud.Stack, DryRunUnsupported: true, ApiMethod: "CreateStack", Input: "CreateStackInput", Output: "CreateStackOutput", OutputExtractor: "aws.StringValue(output.StackId)",
@@ -1402,6 +1395,30 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "RetainResources", TemplateName: "retain-resources", AwsType: "awsstringslice"},
+				},
+			},
+		},
+	},
+	{
+		Api: "applicationautoscaling",
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.AppScalingTarget, DryRunUnsupported: true, ApiMethod: "RegisterScalableTarget", Input: "RegisterScalableTargetInput", Output: "RegisterScalableTargetOutput",
+				RequiredParams: []param{
+					{AwsField: "MaxCapacity", TemplateName: "max-capacity", AwsType: "awsint64"},
+					{AwsField: "MinCapacity", TemplateName: "min-capacity", AwsType: "awsint64"},
+					{AwsField: "ResourceId", TemplateName: "resource", AwsType: "awsstr"},
+					{AwsField: "RoleARN", TemplateName: "role", AwsType: "awsstr"},
+					{AwsField: "ScalableDimension", TemplateName: "dimension", AwsType: "awsstr"},
+					{AwsField: "ServiceNamespace", TemplateName: "service-namespace", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.AppScalingTarget, DryRunUnsupported: true, ApiMethod: "DeregisterScalableTarget", Input: "DeregisterScalableTargetInput", Output: "DeregisterScalableTargetOutput",
+				RequiredParams: []param{
+					{AwsField: "ResourceId", TemplateName: "resource", AwsType: "awsstr"},
+					{AwsField: "ScalableDimension", TemplateName: "dimension", AwsType: "awsstr"},
+					{AwsField: "ServiceNamespace", TemplateName: "service-namespace", AwsType: "awsstr"},
 				},
 			},
 		},

@@ -13,6 +13,8 @@
 - Listing [ECS](https://aws.amazon.com/ecs/) clusters, services and containers: `awless list containerclusters/containerservices/containers`
 - Create/Delete [ECS](https://aws.amazon.com/ecs/) cluster or container: `awless create/delete containercluster/container`
 - Start/Stop container services or tasks: `awless start/stop containerservice`, `awless start containertasks`
+- Create/Delete [ApplicationAutoScaling](http://docs.aws.amazon.com/ApplicationAutoScaling/latest/APIReference/Welcome.html) scalable target: `awless create/delete appscalingtarget`
+- Start/Stop container services: `awless start/stop containerservice`
 - Table display now use full terminal width when possible
 
 

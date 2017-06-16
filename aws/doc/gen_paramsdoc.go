@@ -91,6 +91,14 @@ var generatedParamsDoc = map[string]map[string]string{
 		"threshold":                "The value against which the specified statistic is compared",
 		"unit":                     "The unit of measure for the statistic",
 	},
+	"createappscalingtarget": {
+		"dimension":         "The scalable dimension associated with the scalable target",
+		"max-capacity":      "The maximum value to scale to in response to a scale out event",
+		"min-capacity":      "The minimum value to scale to in response to a scale in event",
+		"resource":          "The identifier of the resource associated with the scalable target",
+		"role":              "The ARN of an IAM role that allows Application Auto Scaling to modify the scalable target on your behalf",
+		"service-namespace": "The namespace of the AWS service",
+	},
 	"createbucket": {
 		"acl":  "The canned ACL to apply to the bucket",
 		"name": "",
@@ -221,7 +229,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"adjustment-scaling":   "The amount by which to scale, based on the specified adjustment type",
 		"adjustment-type":      "The adjustment type",
 		"cooldown":             "The amount of time, in seconds, after a scaling activity completes and before the next scaling activity can start",
-		"name":                 "The name of the policy",
+		"name":                 "The name of the scaling policy",
 		"scalinggroup":         "The name or ARN of the group",
 	},
 	"createsecuritygroup": {
@@ -294,6 +302,11 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deletealarm": {
 		"name": "The alarms to be deleted",
+	},
+	"deleteappscalingtarget": {
+		"dimension":         "The scalable dimension associated with the scalable target",
+		"resource":          "The identifier of the resource associated with the scalable target",
+		"service-namespace": "The namespace of the AWS service",
 	},
 	"deletebucket": {
 		"name": "",

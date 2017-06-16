@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -5743,5 +5744,127 @@ func (d *CloudformationDriver) Delete_Stack(params map[string]interface{}) (inte
 	}
 	d.logger.ExtraVerbosef("cloudformation.DeleteStack call took %s", time.Since(start))
 	d.logger.Info("delete stack done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Create_Appscalingtarget_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["max-capacity"]; !ok {
+		return nil, errors.New("create appscalingtarget: missing required params 'max-capacity'")
+	}
+
+	if _, ok := params["min-capacity"]; !ok {
+		return nil, errors.New("create appscalingtarget: missing required params 'min-capacity'")
+	}
+
+	if _, ok := params["resource"]; !ok {
+		return nil, errors.New("create appscalingtarget: missing required params 'resource'")
+	}
+
+	if _, ok := params["role"]; !ok {
+		return nil, errors.New("create appscalingtarget: missing required params 'role'")
+	}
+
+	if _, ok := params["dimension"]; !ok {
+		return nil, errors.New("create appscalingtarget: missing required params 'dimension'")
+	}
+
+	if _, ok := params["service-namespace"]; !ok {
+		return nil, errors.New("create appscalingtarget: missing required params 'service-namespace'")
+	}
+
+	d.logger.Verbose("params dry run: create appscalingtarget ok")
+	return fakeDryRunId("appscalingtarget"), nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Create_Appscalingtarget(params map[string]interface{}) (interface{}, error) {
+	input := &applicationautoscaling.RegisterScalableTargetInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["max-capacity"], input, "MaxCapacity", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["min-capacity"], input, "MinCapacity", awsint64)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["role"], input, "RoleARN", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *applicationautoscaling.RegisterScalableTargetOutput
+	output, err = d.RegisterScalableTarget(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create appscalingtarget: %s", err)
+	}
+	d.logger.ExtraVerbosef("applicationautoscaling.RegisterScalableTarget call took %s", time.Since(start))
+	d.logger.Info("create appscalingtarget done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["resource"]; !ok {
+		return nil, errors.New("delete appscalingtarget: missing required params 'resource'")
+	}
+
+	if _, ok := params["dimension"]; !ok {
+		return nil, errors.New("delete appscalingtarget: missing required params 'dimension'")
+	}
+
+	if _, ok := params["service-namespace"]; !ok {
+		return nil, errors.New("delete appscalingtarget: missing required params 'service-namespace'")
+	}
+
+	d.logger.Verbose("params dry run: delete appscalingtarget ok")
+	return fakeDryRunId("appscalingtarget"), nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget(params map[string]interface{}) (interface{}, error) {
+	input := &applicationautoscaling.DeregisterScalableTargetInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *applicationautoscaling.DeregisterScalableTargetOutput
+	output, err = d.DeregisterScalableTarget(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete appscalingtarget: %s", err)
+	}
+	d.logger.ExtraVerbosef("applicationautoscaling.DeregisterScalableTarget call took %s", time.Since(start))
+	d.logger.Info("delete appscalingtarget done")
 	return output, nil
 }

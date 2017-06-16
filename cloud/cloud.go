@@ -91,6 +91,8 @@ const (
 	ContainerService string = "containerservice"
 	ContainerTask    string = "containertask"
 	Container        string = "container"
+	//application autoscaling
+	AppScalingTarget string = "appscalingtarget"
 )
 
 type Service interface {

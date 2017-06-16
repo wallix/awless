@@ -27,6 +27,8 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -126,12 +128,13 @@ var ResourceTypes = []string{
 }
 
 var ServicePerAPI = map[string]string{
-	"ec2":            "infra",
-	"elbv2":          "infra",
-	"rds":            "infra",
-	"autoscaling":    "infra",
-	"ecr":            "infra",
-	"ecs":            "infra",
+	"ec2":         "infra",
+	"elbv2":       "infra",
+	"rds":         "infra",
+	"autoscaling": "infra",
+	"ecr":         "infra",
+	"ecs":         "infra",
+	"applicationautoscaling": "infra",
 	"iam":            "access",
 	"sts":            "access",
 	"s3":             "storage",
@@ -245,6 +248,7 @@ type Infra struct {
 	autoscalingiface.AutoScalingAPI
 	ecriface.ECRAPI
 	ecsiface.ECSAPI
+	applicationautoscalingiface.ApplicationAutoScalingAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
@@ -256,9 +260,10 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		AutoScalingAPI: autoscaling.New(sess),
 		ECRAPI:         ecr.New(sess),
 		ECSAPI:         ecs.New(sess),
-		config:         awsconf,
-		region:         region,
-		log:            log,
+		ApplicationAutoScalingAPI: applicationautoscaling.New(sess),
+		config: awsconf,
+		region: region,
+		log:    log,
 	}
 }
 
@@ -274,6 +279,7 @@ func (s *Infra) Drivers() []driver.Driver {
 		awsdriver.NewAutoscalingDriver(s.AutoScalingAPI),
 		awsdriver.NewEcrDriver(s.ECRAPI),
 		awsdriver.NewEcsDriver(s.ECSAPI),
+		awsdriver.NewApplicationautoscalingDriver(s.ApplicationAutoScalingAPI),
 	}
 }
 

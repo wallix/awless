@@ -170,24 +170,6 @@ func Mocks() []*mockDef {
 	return mocksDefs
 }
 
-func ApiToInterface(api string) string {
-	switch api {
-	case "autoscaling":
-		return "AutoScalingAPI"
-	case "cloudwatch":
-		return "CloudWatchAPI"
-	case "cloudfront":
-		return "CloudFrontAPI"
-	case "cloudformation":
-		return "CloudFormationAPI"
-	case "route53", "lambda":
-		return strings.Title(api) + "API"
-	default:
-		return strings.ToUpper(api) + "API"
-	}
-
-}
-
 func nameFromAwsType(awstype string) string {
 	if awstype == "map[string]*string" {
 		return "attributes"

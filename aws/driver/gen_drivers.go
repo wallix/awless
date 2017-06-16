@@ -20,6 +20,7 @@ package awsdriver
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"github.com/aws/aws-sdk-go/service/cloudfront/cloudfrontiface"
@@ -1140,6 +1141,38 @@ func (d *CloudformationDriver) Lookup(lookups ...string) (driverFn driver.Driver
 			return d.Delete_Stack_DryRun, nil
 		}
 		return d.Delete_Stack, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type ApplicationautoscalingDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	applicationautoscalingiface.ApplicationAutoScalingAPI
+}
+
+func (d *ApplicationautoscalingDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *ApplicationautoscalingDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewApplicationautoscalingDriver(api applicationautoscalingiface.ApplicationAutoScalingAPI) driver.Driver {
+	return &ApplicationautoscalingDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *ApplicationautoscalingDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
+
+	case "createappscalingtarget":
+		if d.dryRun {
+			return d.Create_Appscalingtarget_DryRun, nil
+		}
+		return d.Create_Appscalingtarget, nil
+
+	case "deleteappscalingtarget":
+		if d.dryRun {
+			return d.Delete_Appscalingtarget_DryRun, nil
+		}
+		return d.Delete_Appscalingtarget, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

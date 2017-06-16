@@ -227,6 +227,18 @@
 			"versionExact": "v1.8.11"
 		},
 		{
+			"checksumSHA1": "RfpJ39QCYQP6Xg6+We6t87Tf7bQ=",
+			"path": "github.com/aws/aws-sdk-go/service/applicationautoscaling",
+			"revision": "1a4946ffe36a25107f0b6c5d1085e385b368ab9a",
+			"revisionTime": "2017-06-15T22:48:07Z"
+		},
+		{
+			"checksumSHA1": "WFEdE9c3I1v4AUSdAcGq2QI83sI=",
+			"path": "github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface",
+			"revision": "1a4946ffe36a25107f0b6c5d1085e385b368ab9a",
+			"revisionTime": "2017-06-15T22:48:07Z"
+		},
+		{
 			"checksumSHA1": "/d8U22aF2+qYhWYscPzClHTDCP4=",
 			"path": "github.com/aws/aws-sdk-go/service/autoscaling",
 			"revision": "0e1d7f7c9ff58350ce8f53866ba45487e7153d46",

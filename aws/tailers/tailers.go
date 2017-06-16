@@ -51,7 +51,7 @@ func (t *scalingActivitiesTailer) Tail(w io.Writer) error {
 }
 
 func (t *scalingActivitiesTailer) displayLastEvents(infra *aws.Infra, w io.Writer) error {
-	out, err := infra.DescribeScalingActivities(&autoscaling.DescribeScalingActivitiesInput{MaxRecords: awssdk.Int64(int64(t.nbEvents))})
+	out, err := infra.AutoScalingAPI.DescribeScalingActivities(&autoscaling.DescribeScalingActivitiesInput{MaxRecords: awssdk.Int64(int64(t.nbEvents))})
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (t *scalingActivitiesTailer) displayNewEvents(infra *aws.Infra, w io.Writer
 	var eventFound bool
 	var newEvents []*event
 	lastEventTime := t.lastEventTime
-	err := infra.DescribeScalingActivitiesPages(&autoscaling.DescribeScalingActivitiesInput{}, func(page *autoscaling.DescribeScalingActivitiesOutput, lastPage bool) bool {
+	err := infra.AutoScalingAPI.DescribeScalingActivitiesPages(&autoscaling.DescribeScalingActivitiesInput{}, func(page *autoscaling.DescribeScalingActivitiesOutput, lastPage bool) bool {
 		for _, act := range page.Activities {
 			evt := newEventFromScalingActivity(act)
 			if t.lastEventTime.Before(evt.stamp) {

@@ -77,6 +77,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"statistic-function": "The statistic for the metric associated with the alarm, other than percentile (Minimum | Maximum | Sum | Average | SampleCount | pNN.NN)",
 		"unit":               "The unit of measure for the statistic (Seconds | Microseconds | Milliseconds | Bytes | Kilobytes | Megabytes | Gigabytes | Terabytes | Bits | Kilobits | Megabits | Gigabits | Terabits | Percent | Count | Bytes/Second | Kilobytes/Second | Megabytes/Second | Gigabytes/Second | Terabytes/Second | Bits/Second | Kilobits/Second | Megabits/Second | Gigabits/Second | Terabits/Second | Count/Second | None)",
 	},
+	"createappscalingtarget": {
+		"dimension":         "The scalable dimension associated with the scalable target (ecs:service:DesiredCount | ec2:spot-fleet-request:TargetCapacity | elasticmapreduce:instancegroup:InstanceCount | appstream:fleet:DesiredCapacity | dynamodb:table:ReadCapacityUnits | dynamodb:table:WriteCapacityUnits | dynamodb:index:ReadCapacityUnits | dynamodb:index:WriteCapacityUnits)",
+		"resource":          "The identifier of the resource associated with the scalable target (eg. for ECS: service/default/sample-webapp, for EC2 spot-fleet: spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE, for EMR cluster: instancegroup/j-2EEZNYKUA1NTV/ig-1791Y4E1L8YI0, for AppStream 2.0 fleet: fleet/sample-fleet, for DynamoDB table: table/my-table, for DynamoDB global secondary index: table/my-table/index/my-table-index)",
+		"service-namespace": "The namespace of the AWS service (ecs | ec2 | elasticmapreduce | appstream | dynamodb)",
+	},
 	"createbucket": {
 		"acl":  "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
 		"name": "The name of bucket to create",
