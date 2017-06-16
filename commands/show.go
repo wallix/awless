@@ -35,12 +35,14 @@ import (
 )
 
 var (
-	listAllSiblingsFlag bool
+	listAllSiblingsFlag          bool
+	showPropertiesValuesOnlyFlag []string
 )
 
 func init() {
 	RootCmd.AddCommand(showCmd)
 	showCmd.Flags().BoolVar(&listAllSiblingsFlag, "siblings", false, "List all the resource's siblings")
+	showCmd.Flags().StringSliceVar(&showPropertiesValuesOnlyFlag, "values-for", []string{}, "Output values only for given properties keys")
 }
 
 var showCmd = &cobra.Command{
@@ -89,11 +91,46 @@ var showCmd = &cobra.Command{
 		}
 
 		if resource != nil {
+			if len(showPropertiesValuesOnlyFlag) > 0 {
+				showResourceValuesOnlyFor(resource, showPropertiesValuesOnlyFlag)
+				return nil
+			}
 			showResource(resource, gph)
 		}
 
 		return nil
 	},
+}
+
+func showResourceValuesOnlyFor(resource *graph.Resource, propKeys []string) {
+	var normalized []string
+	for _, p := range propKeys {
+		normalized = append(normalized, strings.ToLower(strings.Replace(p, " ", "", -1)))
+	}
+
+	valuesForKeys := map[string]string{}
+	isIncluded := func(s string) (bool, string) {
+		for _, n := range normalized {
+			if n == strings.ToLower(s) {
+				return true, n
+			}
+		}
+		return false, ""
+	}
+	for k, v := range resource.Properties {
+		if ok, p := isIncluded(k); ok {
+			valuesForKeys[p] = fmt.Sprint(v)
+		}
+	}
+
+	var values []string
+	for _, n := range normalized {
+		if v, ok := valuesForKeys[n]; ok {
+			values = append(values, v)
+		}
+	}
+
+	fmt.Println(strings.Join(values, ","))
 }
 
 func showResource(resource *graph.Resource, gph *graph.Graph) {
@@ -215,7 +252,6 @@ func resolveResourceFromRef(ref string) []*graph.Resource {
 		exitOn(err)
 		return rs
 	} else {
-
 		rs, err := g.ResolveResources(&graph.ById{Id: name})
 		exitOn(err)
 

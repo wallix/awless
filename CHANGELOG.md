@@ -4,6 +4,7 @@
 
 - Better template TAB completion: suggest on properties, suggest nothing if not relevant
 - `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
+- New flag `--values-for` in `awless show` to output machine readable values for resource properties. Ex: `awless show my_instance --values-for name,publicip`
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list repositories`
 - Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete repository`
 - Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
