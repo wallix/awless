@@ -1421,6 +1421,32 @@ var DriversDefs = []driversDef{
 					{AwsField: "ServiceNamespace", TemplateName: "service-namespace", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "create", Entity: cloud.AppScalingPolicy, ApiMethod: "PutScalingPolicy", Input: "PutScalingPolicyInput", Output: "PutScalingPolicyOutput", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.PolicyARN)",
+				RequiredParams: []param{
+					{AwsField: "PolicyName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "PolicyType", TemplateName: "type", AwsType: "awsstr"},
+					{AwsField: "ResourceId", TemplateName: "resource", AwsType: "awsstr"},
+					{AwsField: "ScalableDimension", TemplateName: "dimension", AwsType: "awsstr"},
+					{AwsField: "ServiceNamespace", TemplateName: "service-namespace", AwsType: "awsstr"},
+					{AwsField: "StepScalingPolicyConfiguration.AdjustmentType", TemplateName: "stepscaling-adjustment-type", AwsType: "awsstr"},
+					{AwsField: "StepScalingPolicyConfiguration.StepAdjustments", TemplateName: "stepscaling-adjustments", AwsType: "awsstepadjustments"},
+				},
+				ExtraParams: []param{
+					{AwsField: "StepScalingPolicyConfiguration.Cooldown", TemplateName: "stepscaling-cooldown", AwsType: "awsint64"},
+					{AwsField: "StepScalingPolicyConfiguration.MetricAggregationType", TemplateName: "stepscaling-aggregation-type", AwsType: "awsstr"},
+					{AwsField: "StepScalingPolicyConfiguration.MinAdjustmentMagnitude", TemplateName: "stepscaling-min-adjustment-magnitude", AwsType: "awsint64"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.AppScalingPolicy, ApiMethod: "DeleteScalingPolicy", Input: "DeleteScalingPolicyInput", Output: "DeleteScalingPolicyOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "PolicyName", TemplateName: "name", AwsType: "awsstr"},
+					{AwsField: "ResourceId", TemplateName: "resource", AwsType: "awsstr"},
+					{AwsField: "ScalableDimension", TemplateName: "dimension", AwsType: "awsstr"},
+					{AwsField: "ServiceNamespace", TemplateName: "service-namespace", AwsType: "awsstr"},
+				},
+			},
 		},
 	},
 }

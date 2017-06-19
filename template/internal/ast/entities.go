@@ -8,6 +8,7 @@ var entities = map[Entity]struct{}{
 	"accesskey":           {},
 	"alarm":               {},
 	"appscalingtarget":    {},
+	"appscalingpolicy":    {},
 	"scalinggroup":        {},
 	"bucket":              {},
 	"container":           {},

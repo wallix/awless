@@ -79,8 +79,19 @@ var manualParamsDoc = map[string]map[string]string{
 	},
 	"createappscalingtarget": {
 		"dimension":         "The scalable dimension associated with the scalable target (ecs:service:DesiredCount | ec2:spot-fleet-request:TargetCapacity | elasticmapreduce:instancegroup:InstanceCount | appstream:fleet:DesiredCapacity | dynamodb:table:ReadCapacityUnits | dynamodb:table:WriteCapacityUnits | dynamodb:index:ReadCapacityUnits | dynamodb:index:WriteCapacityUnits)",
-		"resource":          "The identifier of the resource associated with the scalable target (eg. for ECS: service/default/sample-webapp, for EC2 spot-fleet: spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE, for EMR cluster: instancegroup/j-2EEZNYKUA1NTV/ig-1791Y4E1L8YI0, for AppStream 2.0 fleet: fleet/sample-fleet, for DynamoDB table: table/my-table, for DynamoDB global secondary index: table/my-table/index/my-table-index)",
+		"resource":          "The identifier of the resource associated with the scalable target (eg. for ECS: service/cluster-name/service-deployment-name, for EC2 spot-fleet: spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE, for EMR cluster: instancegroup/j-2EEZNYKUA1NTV/ig-1791Y4E1L8YI0, for AppStream 2.0 fleet: fleet/sample-fleet, for DynamoDB table: table/my-table, for DynamoDB global secondary index: table/my-table/index/my-table-index)",
 		"service-namespace": "The namespace of the AWS service (ecs | ec2 | elasticmapreduce | appstream | dynamodb)",
+	},
+	"createappscalingpolicy": {
+		"dimension":         "The scalable dimension associated with the scalable target (ecs:service:DesiredCount | ec2:spot-fleet-request:TargetCapacity | elasticmapreduce:instancegroup:InstanceCount | appstream:fleet:DesiredCapacity | dynamodb:table:ReadCapacityUnits | dynamodb:table:WriteCapacityUnits | dynamodb:index:ReadCapacityUnits | dynamodb:index:WriteCapacityUnits)",
+		"resource":          "The identifier of the resource associated with the scalable target (eg. for ECS: service/cluster-name/service-deployment-name, for EC2 spot-fleet: spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE, for EMR cluster: instancegroup/j-2EEZNYKUA1NTV/ig-1791Y4E1L8YI0, for AppStream 2.0 fleet: fleet/sample-fleet, for DynamoDB table: table/my-table, for DynamoDB global secondary index: table/my-table/index/my-table-index)",
+		"service-namespace": "The namespace of the AWS service (ecs | ec2 | elasticmapreduce | appstream | dynamodb)",
+		"type":              "The policy type (StepScaling)",
+		"stepscaling-adjustment-type":          "The scalable dimension (ChangeInCapacity | ExactCapacity | PercentChangeInCapacity)",
+		"stepscaling-adjustments":              "A set of adjustments that enable you to scale based on the size of the alarm breach using this format: [from]:[to]:scaling-adjustment[,[from]:[to]:scaling-adjustment[,...]] (e.g. 75::+1 i.e. add one task when > 75%)",
+		"stepscaling-cooldown":                 "The amount of time, in seconds, after a scaling activity completes where previous trigger-related scaling activities can influence future scaling events",
+		"stepscaling-aggregation-type":         "The aggregation type for the CloudWatch metrics (Minimum | Maximum | Average)",
+		"stepscaling-min-adjustment-magnitude": "The minimum number to adjust your scalable dimension as a result of a scaling activity",
 	},
 	"createbucket": {
 		"acl":  "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
@@ -164,7 +175,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"actiontype":  "The type of action (forward)",
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 		"certificate": "The Amazon Resource Name (ARN) of the certificate",
-		"protocol":    "The protocol for connections from clients to the load balancer (TCP | HTTP | HTTPS)",
+		"protocol":    "The protocol for connections from clients to the load balancer (HTTP | HTTPS)",
 		"sslpolicy":   "The security policy that defines which ciphers and protocols are supported (ELBSecurityPolicy-2016-08 | ELBSecurityPolicy-TLS-1-2-2017-01 | ELBSecurityPolicy-TLS-1-1-2017-01 | ELBSecurityPolicy-2015-05 | ELBSecurityPolicy-TLS-1-0-2015-04)",
 	},
 	"createloadbalancer": {

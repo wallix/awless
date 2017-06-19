@@ -155,6 +155,8 @@ var APIPerTemplateDefName = map[string]string{
 	"deletestack":               "cloudformation",
 	"createappscalingtarget":    "applicationautoscaling",
 	"deleteappscalingtarget":    "applicationautoscaling",
+	"createappscalingpolicy":    "applicationautoscaling",
+	"deleteappscalingpolicy":    "applicationautoscaling",
 }
 
 var AWSTemplatesDefinitions = map[string]template.Definition{
@@ -1089,6 +1091,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"dimension", "resource", "service-namespace"},
 		ExtraParams:    []string{},
 	},
+	"createappscalingpolicy": {
+		Action:         "create",
+		Entity:         "appscalingpolicy",
+		Api:            "applicationautoscaling",
+		RequiredParams: []string{"dimension", "name", "resource", "service-namespace", "stepscaling-adjustment-type", "stepscaling-adjustments", "type"},
+		ExtraParams:    []string{"stepscaling-aggregation-type", "stepscaling-cooldown", "stepscaling-min-adjustment-magnitude"},
+	},
+	"deleteappscalingpolicy": {
+		Action:         "delete",
+		Entity:         "appscalingpolicy",
+		Api:            "applicationautoscaling",
+		RequiredParams: []string{"dimension", "name", "resource", "service-namespace"},
+		ExtraParams:    []string{},
+	},
 }
 
 func DriverSupportedActions() map[string][]string {
@@ -1226,5 +1242,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "stack")
 	supported["create"] = append(supported["create"], "appscalingtarget")
 	supported["delete"] = append(supported["delete"], "appscalingtarget")
+	supported["create"] = append(supported["create"], "appscalingpolicy")
+	supported["delete"] = append(supported["delete"], "appscalingpolicy")
 	return supported
 }

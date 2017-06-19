@@ -29,6 +29,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
+	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -56,6 +57,7 @@ const (
 	awsparameterslice
 	awsecskeyvalue
 	awsportmappings
+	awsstepadjustments
 )
 
 var (
@@ -201,6 +203,37 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 			portMappings = append(portMappings, portMapping)
 		}
 		v = portMappings
+	case awsstepadjustments:
+		sl := castStringSlice(v)
+		var stepAdjustments []*applicationautoscaling.StepAdjustment
+		for _, s := range sl {
+			splits := strings.Split(s, ":")
+			if len(splits) != 3 {
+				return fmt.Errorf("invalid step adjustment '%s', expect from:to:scaling-adjustment", s)
+			}
+			stepAdjustment := &applicationautoscaling.StepAdjustment{}
+			if splits[0] != "" {
+				lower, err := strconv.ParseFloat(splits[0], 64)
+				if err != nil {
+					return fmt.Errorf("invalid from '%s' in step adjustment '%s', expect from:to:scaling-adjustment", splits[0], s)
+				}
+				stepAdjustment.MetricIntervalLowerBound = aws.Float64(lower)
+			}
+			if splits[1] != "" {
+				upper, err := strconv.ParseFloat(splits[1], 64)
+				if err != nil {
+					return fmt.Errorf("invalid to '%s' in step adjustment '%s', expect from:to:scaling-adjustment", splits[1], s)
+				}
+				stepAdjustment.MetricIntervalUpperBound = aws.Float64(upper)
+			}
+			adjustment, err := strconv.ParseInt(splits[2], 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid adjustment-adjustment '%s' in step adjustmentstep adjustment '%s', expect from:to:scaling-adjustment", splits[2], s)
+			}
+			stepAdjustment.ScalingAdjustment = aws.Int64(adjustment)
+			stepAdjustments = append(stepAdjustments, stepAdjustment)
+		}
+		v = stepAdjustments
 	case awsfiletobase64:
 		v, err = fileOrRemoteFileAsBase64(v)
 		if err != nil {

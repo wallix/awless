@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -138,6 +139,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		EmptyMapAttribute map[string]*string
 		ParameterList     []*cloudformation.Parameter
 		PortMappings      []*ecs.PortMapping
+		StepAdjustments   []*applicationautoscaling.StepAdjustment
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -491,5 +493,31 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	}
 	if got, want := *any.PortMappings[2].Protocol, "udp"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	err = setFieldWithType([]string{"0:0.25:-1", "0.75:1:+1"}, &any, "StepAdjustments", awsstepadjustments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.StepAdjustments), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.StepAdjustments[0].MetricIntervalLowerBound, float64(0); got != want {
+		t.Fatalf("got %f, want %f", got, want)
+	}
+	if got, want := *any.StepAdjustments[0].MetricIntervalUpperBound, float64(0.25); got != want {
+		t.Fatalf("got %f, want %f", got, want)
+	}
+	if got, want := *any.StepAdjustments[0].ScalingAdjustment, int64(-1); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.StepAdjustments[1].MetricIntervalLowerBound, float64(0.75); got != want {
+		t.Fatalf("got %f, want %f", got, want)
+	}
+	if got, want := *any.StepAdjustments[1].MetricIntervalUpperBound, float64(1); got != want {
+		t.Fatalf("got %f, want %f", got, want)
+	}
+	if got, want := *any.StepAdjustments[1].ScalingAdjustment, int64(+1); got != want {
+		t.Fatalf("got %d, want %d", got, want)
 	}
 }

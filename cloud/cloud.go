@@ -93,6 +93,7 @@ const (
 	Container        string = "container"
 	//application autoscaling
 	AppScalingTarget string = "appscalingtarget"
+	AppScalingPolicy string = "appscalingpolicy"
 )
 
 type Service interface {

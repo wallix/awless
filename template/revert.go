@@ -106,6 +106,11 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("dimension=%s", quoteParamIfNeeded(cmd.Params["dimension"])))
 					params = append(params, fmt.Sprintf("resource=%s", quoteParamIfNeeded(cmd.Params["resource"])))
 					params = append(params, fmt.Sprintf("service-namespace=%s", quoteParamIfNeeded(cmd.Params["service-namespace"])))
+				case "appscalingpolicy":
+					params = append(params, fmt.Sprintf("dimension=%s", quoteParamIfNeeded(cmd.Params["dimension"])))
+					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
+					params = append(params, fmt.Sprintf("resource=%s", quoteParamIfNeeded(cmd.Params["resource"])))
+					params = append(params, fmt.Sprintf("service-namespace=%s", quoteParamIfNeeded(cmd.Params["service-namespace"])))
 				case "loginprofile":
 					params = append(params, fmt.Sprintf("username=%s", quoteParamIfNeeded(cmd.Params["username"])))
 				case "container":
@@ -229,6 +234,10 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if cmd.Entity == "appscalingtarget" && cmd.Action == "create" {
+		return true
+	}
+
+	if cmd.Entity == "appscalingpolicy" && cmd.Action == "create" {
 		return true
 	}
 

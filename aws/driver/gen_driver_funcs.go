@@ -5868,3 +5868,163 @@ func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget(params map[string
 	d.logger.Info("delete appscalingtarget done")
 	return output, nil
 }
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'name'")
+	}
+
+	if _, ok := params["type"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'type'")
+	}
+
+	if _, ok := params["resource"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'resource'")
+	}
+
+	if _, ok := params["dimension"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'dimension'")
+	}
+
+	if _, ok := params["service-namespace"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'service-namespace'")
+	}
+
+	if _, ok := params["stepscaling-adjustment-type"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'stepscaling-adjustment-type'")
+	}
+
+	if _, ok := params["stepscaling-adjustments"]; !ok {
+		return nil, errors.New("create appscalingpolicy: missing required params 'stepscaling-adjustments'")
+	}
+
+	d.logger.Verbose("params dry run: create appscalingpolicy ok")
+	return fakeDryRunId("appscalingpolicy"), nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy(params map[string]interface{}) (interface{}, error) {
+	input := &applicationautoscaling.PutScalingPolicyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "PolicyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["type"], input, "PolicyType", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["stepscaling-adjustment-type"], input, "StepScalingPolicyConfiguration.AdjustmentType", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["stepscaling-adjustments"], input, "StepScalingPolicyConfiguration.StepAdjustments", awsstepadjustments)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["stepscaling-cooldown"]; ok {
+		err = setFieldWithType(params["stepscaling-cooldown"], input, "StepScalingPolicyConfiguration.Cooldown", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["stepscaling-aggregation-type"]; ok {
+		err = setFieldWithType(params["stepscaling-aggregation-type"], input, "StepScalingPolicyConfiguration.MetricAggregationType", awsstr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["stepscaling-min-adjustment-magnitude"]; ok {
+		err = setFieldWithType(params["stepscaling-min-adjustment-magnitude"], input, "StepScalingPolicyConfiguration.MinAdjustmentMagnitude", awsint64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *applicationautoscaling.PutScalingPolicyOutput
+	output, err = d.PutScalingPolicy(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create appscalingpolicy: %s", err)
+	}
+	d.logger.ExtraVerbosef("applicationautoscaling.PutScalingPolicy call took %s", time.Since(start))
+	id := aws.StringValue(output.PolicyARN)
+
+	d.logger.Infof("create appscalingpolicy '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete appscalingpolicy: missing required params 'name'")
+	}
+
+	if _, ok := params["resource"]; !ok {
+		return nil, errors.New("delete appscalingpolicy: missing required params 'resource'")
+	}
+
+	if _, ok := params["dimension"]; !ok {
+		return nil, errors.New("delete appscalingpolicy: missing required params 'dimension'")
+	}
+
+	if _, ok := params["service-namespace"]; !ok {
+		return nil, errors.New("delete appscalingpolicy: missing required params 'service-namespace'")
+	}
+
+	d.logger.Verbose("params dry run: delete appscalingpolicy ok")
+	return fakeDryRunId("appscalingpolicy"), nil
+}
+
+// This function was auto generated
+func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy(params map[string]interface{}) (interface{}, error) {
+	input := &applicationautoscaling.DeleteScalingPolicyInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["name"], input, "PolicyName", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *applicationautoscaling.DeleteScalingPolicyOutput
+	output, err = d.DeleteScalingPolicy(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete appscalingpolicy: %s", err)
+	}
+	d.logger.ExtraVerbosef("applicationautoscaling.DeleteScalingPolicy call took %s", time.Since(start))
+	d.logger.Info("delete appscalingpolicy done")
+	return output, nil
+}

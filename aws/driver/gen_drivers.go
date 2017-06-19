@@ -1174,6 +1174,18 @@ func (d *ApplicationautoscalingDriver) Lookup(lookups ...string) (driverFn drive
 		}
 		return d.Delete_Appscalingtarget, nil
 
+	case "createappscalingpolicy":
+		if d.dryRun {
+			return d.Create_Appscalingpolicy_DryRun, nil
+		}
+		return d.Create_Appscalingpolicy, nil
+
+	case "deleteappscalingpolicy":
+		if d.dryRun {
+			return d.Delete_Appscalingpolicy_DryRun, nil
+		}
+		return d.Delete_Appscalingpolicy, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

@@ -15,6 +15,7 @@ func TestRevertOneliner(t *testing.T) {
 		{in: "create instanceprofile name=stuff", exp: "delete instanceprofile name=stuff"},
 		{in: "delete instanceprofile name=stuff", exp: "create instanceprofile name=stuff"},
 		{in: "create appscalingtarget dimension=dim max-capacity=10 min-capacity=4 resource=res role=role service-namespace=ecs", exp: "delete appscalingtarget dimension=dim resource=res service-namespace=ecs"},
+		{in: "create appscalingpolicy dimension=my-dim name=my-name resource=my-res service-namespace=my-ns stepscaling-adjustment-type=my-sat stepscaling-adjustments=0:0.25:-1,0.25:0.75:0,0.75::+1 type=my-type", exp: "delete appscalingpolicy dimension=my-dim name=my-name resource=my-res service-namespace=my-ns"},
 	}
 
 	for _, tcase := range tcases {

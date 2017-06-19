@@ -91,6 +91,13 @@ var generatedParamsDoc = map[string]map[string]string{
 		"threshold":                "The value against which the specified statistic is compared",
 		"unit":                     "The unit of measure for the statistic",
 	},
+	"createappscalingpolicy": {
+		"dimension":         "The scalable dimension",
+		"name":              "The name of the scaling policy",
+		"resource":          "The identifier of the resource associated with the scaling policy",
+		"service-namespace": "The namespace of the AWS service",
+		"type":              "The policy type",
+	},
 	"createappscalingtarget": {
 		"dimension":         "The scalable dimension associated with the scalable target",
 		"max-capacity":      "The maximum value to scale to in response to a scale out event",
@@ -302,6 +309,12 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deletealarm": {
 		"name": "The alarms to be deleted",
+	},
+	"deleteappscalingpolicy": {
+		"dimension":         "The scalable dimension",
+		"name":              "The name of the scaling policy",
+		"resource":          "The identifier of the resource associated with the scalable target",
+		"service-namespace": "The namespace of the AWS service",
 	},
 	"deleteappscalingtarget": {
 		"dimension":         "The scalable dimension associated with the scalable target",
