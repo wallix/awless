@@ -226,11 +226,14 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 		res := resources[0]
 		return res, sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[res.Type()])
 	default:
-		all := graph.Resources(resources).Map(func(r *graph.Resource) string { return r.String() })
-		logger.Infof("%d resources found with name '%s': %s", len(resources), deprefix(ref), strings.Join(all, ", "))
-		logger.Info("Show them using the id:")
+		logger.Infof("%d resources found with name '%s'. Show a specific resource with:", len(resources), deprefix(ref))
 		for _, res := range resources {
-			logger.Infof("\t`awless show %s` for the %s", res.Id(), res.Type())
+			var buf bytes.Buffer
+			buf.WriteString(fmt.Sprintf("\t`awless show %s` to show the %s", res.Id(), res.Type()))
+			if state, ok := res.Properties["State"].(string); ok {
+				buf.WriteString(fmt.Sprintf(" (state: '%s')", state))
+			}
+			logger.Infof(buf.String())
 		}
 
 		os.Exit(0)
