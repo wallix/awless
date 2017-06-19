@@ -19,11 +19,13 @@ package commands
 import (
 	"fmt"
 	"os"
+
+	"github.com/fatih/color"
 )
 
 func exitOn(err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		fmt.Fprintln(os.Stderr, color.RedString("[error]  "), err)
 		os.Exit(1)
 	}
 }
