@@ -36,6 +36,7 @@ func TestParseVariousTemplatesCorrectly(t *testing.T) {
 		{"support wildcard", "create policy action=ec2:Get*", ""},
 		{"support wildcard in quote", "create policy action=\"ec2:Get*\"", "create policy action=ec2:Get*"},
 		{"support single wildcard", "create policy resource=*", ""},
+		{"support parameter value beginning with number", "create keypair name=123test", ""},
 	}
 
 	for _, tcase := range tcases {
@@ -52,6 +53,39 @@ func TestParseVariousTemplatesCorrectly(t *testing.T) {
 		if got, want := tpl.String(), exp; got != want {
 			t.Fatalf("%s: parsing [%s]\ngot  [%s]\nwant [%s]\n", tcase.desc, tcase.text, got, want)
 		}
+	}
+}
+
+func TestStringWithDigitValues(t *testing.T) {
+	tcases := []struct {
+		text      string
+		expParams map[string]interface{}
+	}{
+		{"create keypair name=1test", map[string]interface{}{"name": "1test"}},
+		{"create keypair name=11test", map[string]interface{}{"name": "11test"}},
+		{"create keypair name=123test", map[string]interface{}{"name": "123test"}},
+		{"create keypair name=0test", map[string]interface{}{"name": "0test"}},
+		{"create keypair name=110", map[string]interface{}{"name": 110}},
+		{"create keypair name=1/test", map[string]interface{}{"name": "1/test"}},
+		{"create keypair name=123456789", map[string]interface{}{"name": 123456789}},
+		{"create keypair name=0.5", map[string]interface{}{"name": 0.5}},
+		{"create keypair name=0.5:0.6:+1", map[string]interface{}{"name": "0.5:0.6:+1"}},
+	}
+
+	for i, tcase := range tcases {
+		tpl, err := Parse(tcase.text)
+		if err != nil {
+			t.Fatalf("%d. %s", i+1, err)
+		}
+
+		if n, ok := tpl.Statements[0].Node.(*ast.CommandNode); ok {
+			if got, want := n.Params, tcase.expParams; !reflect.DeepEqual(got, want) {
+				t.Fatalf("%d. got %#v, want %#v", i+1, got, want)
+			}
+		} else {
+			t.Fatalf("expected command node, was %T", n)
+		}
+
 	}
 }
 

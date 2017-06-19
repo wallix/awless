@@ -77,6 +77,20 @@ func (a *AST) addAliasParam(text string) {
 }
 
 func (a *AST) addParamValue(text string) {
+	i, err := strconv.Atoi(text)
+	if err == nil {
+		a.addParam(i)
+	} else {
+		f, err := strconv.ParseFloat(text, 64)
+		if err == nil {
+			a.addParam(f)
+		} else {
+			a.addParam(text)
+		}
+	}
+}
+
+func (a *AST) addStringValue(text string) {
 	a.addParam(text)
 }
 

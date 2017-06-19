@@ -21,6 +21,7 @@
 
 ### Bugfixes
 - Template TAB completion: do not display non relevant id/name listing for each prompt
+- Parse successfully template parameters starting with a digit
 
 ## v0.1.0 [2017-05-31]
 

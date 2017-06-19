@@ -30,11 +30,9 @@ NoRefValue <- HoleValue {  p.addParamHoleValue(text) }
         / DoubleQuote CustomTypedValue DoubleQuote
         / SingleQuote CustomTypedValue SingleQuote
         / CustomTypedValue
-        / DoubleQuote <DoubleQuotedValue> { p.addParamValue(text) } DoubleQuote
-        / SingleQuote <SingleQuotedValue> { p.addParamValue(text) } SingleQuote
-        / <FloatValue> { p.addParamFloatValue(text) }
-        / <IntValue> { p.addParamIntValue(text) }
-        / <StringValue> { p.addParamValue(text) }
+        / DoubleQuote <DoubleQuotedValue> { p.addStringValue(text) } DoubleQuote
+        / SingleQuote <SingleQuotedValue> { p.addStringValue(text) } SingleQuote
+        / <OtherParamValue> { p.addParamValue(text) }
 
 Value <- RefValue {  p.addParamRefValue(text) }
       / NoRefValue
@@ -44,21 +42,18 @@ CustomTypedValue <- <CidrValue> { p.addParamCidrValue(text) }
         / <CSVValue> {p.addCsvValue(text)}
         / <IntRangeValue> { p.addParamValue(text) }
 
-StringValue <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
-
+OtherParamValue <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
 
 DoubleQuotedValue <- [^"]*
 SingleQuotedValue <- [^']*
 
-CSVValue <- (StringValue WhiteSpacing ',' WhiteSpacing)+ StringValue
+CSVValue <- (OtherParamValue WhiteSpacing ',' WhiteSpacing)+ OtherParamValue
 CidrValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'/'[0-9]+
 IpValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+
-IntValue <- [0-9]+
-FloatValue <- [0-9]+ [.] [0-9]*
 IntRangeValue <- [0-9]+'-'[0-9]+
 
 RefValue <- '$'<Identifier>
-AliasValue <- '@'<StringValue> / '@' DoubleQuote <DoubleQuotedValue> DoubleQuote / '@' SingleQuote <SingleQuotedValue> SingleQuote 
+AliasValue <- '@'<OtherParamValue> / '@' DoubleQuote <DoubleQuotedValue> DoubleQuote / '@' SingleQuote <SingleQuotedValue> SingleQuote 
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
 
 Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)* { p.LineDone() }
