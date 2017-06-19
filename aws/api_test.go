@@ -671,10 +671,24 @@ func TestBuildNotificationGraph(t *testing.T) {
 		{Endpoint: awssdk.String("endpoint_2"), Owner: awssdk.String("subscr_owner"), Protocol: awssdk.String("subscr_prot"), SubscriptionArn: awssdk.String("subscr_arn"), TopicArn: awssdk.String("topic_arn_2")},
 		{Endpoint: awssdk.String("endpoint_3"), TopicArn: awssdk.String("topic_arn_2")},
 	}
+	queues := []*string{awssdk.String("queue_1"), awssdk.String("queue_2"), awssdk.String("queue_3")}
+	attributes := map[string]map[string]*string{
+		"queue_2": {
+			"ApproximateNumberOfMessages": awssdk.String("4"),
+			"CreatedTimestamp":            awssdk.String("1494419259"),
+			"LastModifiedTimestamp":       awssdk.String("1494332859"),
+			"QueueArn":                    awssdk.String("queue_2_arn"),
+			"DelaySeconds":                awssdk.String("15"),
+		},
+		"queue_3": {
+			"ApproximateNumberOfMessages": awssdk.String("12"),
+		},
+	}
 
-	mock := &mockSns{subscriptions: subscriptions, topics: topics}
+	sqs := &mockSqs{strings: queues, attributes: attributes}
+	sns := &mockSns{subscriptions: subscriptions, topics: topics}
 
-	service := Notification{SNSAPI: mock, region: "eu-west-1"}
+	service := Messaging{SNSAPI: sns, SQSAPI: sqs, region: "eu-west-1"}
 
 	g, err := service.FetchResources()
 	if err != nil {
@@ -701,46 +715,22 @@ func TestBuildNotificationGraph(t *testing.T) {
 	expectedAppliedOn := map[string][]string{}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
-}
 
-func TestBuildQueueGraph(t *testing.T) {
-	queues := []*string{awssdk.String("queue_1"), awssdk.String("queue_2"), awssdk.String("queue_3")}
-	attributes := map[string]map[string]*string{
-		"queue_2": {
-			"ApproximateNumberOfMessages": awssdk.String("4"),
-			"CreatedTimestamp":            awssdk.String("1494419259"),
-			"LastModifiedTimestamp":       awssdk.String("1494332859"),
-			"QueueArn":                    awssdk.String("queue_2_arn"),
-			"DelaySeconds":                awssdk.String("15"),
-		},
-		"queue_3": {
-			"ApproximateNumberOfMessages": awssdk.String("12"),
-		},
-	}
-
-	mock := &mockSqs{strings: queues, attributes: attributes}
-
-	service := Queue{SQSAPI: mock, region: "eu-west-1"}
-
-	g, err := service.FetchResources()
+	resources, err = g.GetAllResources("queue")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resources, err := g.GetAllResources("queue")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expected := map[string]*graph.Resource{
+	expected = map[string]*graph.Resource{
 		"queue_1": resourcetest.Queue("queue_1").Build(),
 		"queue_2": resourcetest.Queue("queue_2").Prop(p.ApproximateMessageCount, 4).Prop(p.Created, time.Unix(1494419259, 0).UTC()).Prop(p.Modified, time.Unix(1494332859, 0).UTC()).Prop(p.Arn, "queue_2_arn").Prop(p.Delay, 15).Build(),
 		"queue_3": resourcetest.Queue("queue_3").Prop(p.ApproximateMessageCount, 12).Build(),
 	}
-	expectedChildren := map[string][]string{}
-	expectedAppliedOn := map[string][]string{}
+	expectedChildren = map[string][]string{}
+	expectedAppliedOn = map[string][]string{}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
+
 }
 
 func TestBuildLambdaGraph(t *testing.T) {

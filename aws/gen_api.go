@@ -72,8 +72,7 @@ var ServiceNames = []string{
 	"infra",
 	"access",
 	"storage",
-	"notification",
-	"queue",
+	"messaging",
 	"dns",
 	"lambda",
 	"monitoring",
@@ -136,8 +135,8 @@ var ServicePerAPI = map[string]string{
 	"iam":            "access",
 	"sts":            "access",
 	"s3":             "storage",
-	"sns":            "notification",
-	"sqs":            "queue",
+	"sns":            "messaging",
+	"sqs":            "messaging",
 	"route53":        "dns",
 	"lambda":         "lambda",
 	"cloudwatch":     "monitoring",
@@ -178,9 +177,9 @@ var ServicePerResourceType = map[string]string{
 	"accesskey":           "access",
 	"bucket":              "storage",
 	"s3object":            "storage",
-	"subscription":        "notification",
-	"topic":               "notification",
-	"queue":               "queue",
+	"subscription":        "messaging",
+	"topic":               "messaging",
+	"queue":               "messaging",
 	"zone":                "dns",
 	"record":              "dns",
 	"function":            "lambda",
@@ -2323,42 +2322,46 @@ func (s *Storage) IsSyncDisabled() bool {
 	return !s.config.getBool("aws.storage.sync", true)
 }
 
-type Notification struct {
+type Messaging struct {
 	once   oncer
 	region string
 	config config
 	log    *logger.Logger
 	snsiface.SNSAPI
+	sqsiface.SQSAPI
 }
 
-func NewNotification(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
+func NewMessaging(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
 	region := awssdk.StringValue(sess.Config.Region)
-	return &Notification{
+	return &Messaging{
 		SNSAPI: sns.New(sess),
+		SQSAPI: sqs.New(sess),
 		config: awsconf,
 		region: region,
 		log:    log,
 	}
 }
 
-func (s *Notification) Name() string {
-	return "notification"
+func (s *Messaging) Name() string {
+	return "messaging"
 }
 
-func (s *Notification) Drivers() []driver.Driver {
+func (s *Messaging) Drivers() []driver.Driver {
 	return []driver.Driver{
 		awsdriver.NewSnsDriver(s.SNSAPI),
+		awsdriver.NewSqsDriver(s.SQSAPI),
 	}
 }
 
-func (s *Notification) ResourceTypes() []string {
+func (s *Messaging) ResourceTypes() []string {
 	return []string{
 		"subscription",
 		"topic",
+		"queue",
 	}
 }
 
-func (s *Notification) FetchResources() (*graph.Graph, error) {
+func (s *Messaging) FetchResources() (*graph.Graph, error) {
 	g := graph.NewGraph()
 	if s.IsSyncDisabled() {
 		return g, nil
@@ -2370,11 +2373,12 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 	}
 	var subscriptionList []*sns.Subscription
 	var topicList []*sns.Topic
+	var queueList []*string
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
-	if s.config.getBool("aws.notification.subscription.sync", true) {
+	if s.config.getBool("aws.messaging.subscription.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -2388,9 +2392,9 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource notification[subscription]")
+		s.log.Verbose("sync: *disabled* for resource messaging[subscription]")
 	}
-	if s.config.getBool("aws.notification.topic.sync", true) {
+	if s.config.getBool("aws.messaging.topic.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -2404,7 +2408,23 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource notification[topic]")
+		s.log.Verbose("sync: *disabled* for resource messaging[topic]")
+	}
+	if s.config.getBool("aws.messaging.queue.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, queueList, err = s.fetch_all_queue_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource messaging[queue]")
 	}
 
 	go func() {
@@ -2429,7 +2449,7 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 	}
 
 	errc = make(chan error)
-	if s.config.getBool("aws.notification.subscription.sync", true) {
+	if s.config.getBool("aws.messaging.subscription.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -2444,7 +2464,7 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-	if s.config.getBool("aws.notification.topic.sync", true) {
+	if s.config.getBool("aws.messaging.topic.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -2459,183 +2479,7 @@ func (s *Notification) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-
-	go func() {
-		wg.Wait()
-		close(errc)
-	}()
-
-	for err := range errc {
-		if err != nil {
-			return g, err
-		}
-	}
-
-	return g, nil
-}
-
-func (s *Notification) FetchByType(t string) (*graph.Graph, error) {
-	switch t {
-	case "subscription":
-		graph, _, err := s.fetch_all_subscription_graph()
-		return graph, err
-	case "topic":
-		graph, _, err := s.fetch_all_topic_graph()
-		return graph, err
-	default:
-		return nil, fmt.Errorf("aws notification: unsupported fetch for type %s", t)
-	}
-}
-
-func (s *Notification) fetch_all_subscription_graph() (*graph.Graph, []*sns.Subscription, error) {
-	g := graph.NewGraph()
-	var cloudResources []*sns.Subscription
-	var badResErr error
-	err := s.ListSubscriptionsPages(&sns.ListSubscriptionsInput{},
-		func(out *sns.ListSubscriptionsOutput, lastPage bool) (shouldContinue bool) {
-			for _, output := range out.Subscriptions {
-				if badResErr != nil {
-					return false
-				}
-				cloudResources = append(cloudResources, output)
-				var res *graph.Resource
-				if res, badResErr = newResource(output); badResErr != nil {
-					return false
-				}
-				if badResErr = g.AddResource(res); badResErr != nil {
-					return false
-				}
-			}
-			return out.NextToken != nil
-		})
-	if err != nil {
-		return g, cloudResources, err
-	}
-
-	return g, cloudResources, badResErr
-}
-
-func (s *Notification) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, error) {
-	g := graph.NewGraph()
-	var cloudResources []*sns.Topic
-	var badResErr error
-	err := s.ListTopicsPages(&sns.ListTopicsInput{},
-		func(out *sns.ListTopicsOutput, lastPage bool) (shouldContinue bool) {
-			for _, output := range out.Topics {
-				if badResErr != nil {
-					return false
-				}
-				cloudResources = append(cloudResources, output)
-				var res *graph.Resource
-				if res, badResErr = newResource(output); badResErr != nil {
-					return false
-				}
-				if badResErr = g.AddResource(res); badResErr != nil {
-					return false
-				}
-			}
-			return out.NextToken != nil
-		})
-	if err != nil {
-		return g, cloudResources, err
-	}
-
-	return g, cloudResources, badResErr
-}
-
-func (s *Notification) IsSyncDisabled() bool {
-	return !s.config.getBool("aws.notification.sync", true)
-}
-
-type Queue struct {
-	once   oncer
-	region string
-	config config
-	log    *logger.Logger
-	sqsiface.SQSAPI
-}
-
-func NewQueue(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
-	region := awssdk.StringValue(sess.Config.Region)
-	return &Queue{
-		SQSAPI: sqs.New(sess),
-		config: awsconf,
-		region: region,
-		log:    log,
-	}
-}
-
-func (s *Queue) Name() string {
-	return "queue"
-}
-
-func (s *Queue) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewSqsDriver(s.SQSAPI),
-	}
-}
-
-func (s *Queue) ResourceTypes() []string {
-	return []string{
-		"queue",
-	}
-}
-
-func (s *Queue) FetchResources() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	if s.IsSyncDisabled() {
-		return g, nil
-	}
-
-	regionN := graph.InitResource(cloud.Region, s.region)
-	if err := g.AddResource(regionN); err != nil {
-		return g, err
-	}
-	var queueList []*string
-
-	errc := make(chan error)
-	var wg sync.WaitGroup
-
-	if s.config.getBool("aws.queue.queue.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			var resGraph *graph.Graph
-			var err error
-			resGraph, queueList, err = s.fetch_all_queue_graph()
-			if err != nil {
-				errc <- err
-				return
-			}
-			g.AddGraph(resGraph)
-		}()
-	} else {
-		s.log.Verbose("sync: *disabled* for resource queue[queue]")
-	}
-
-	go func() {
-		wg.Wait()
-		close(errc)
-	}()
-
-	for err := range errc {
-		switch ee := err.(type) {
-		case awserr.RequestFailure:
-			switch ee.Message() {
-			case accessDenied:
-				return g, cloud.ErrFetchAccessDenied
-			default:
-				return g, ee
-			}
-		case nil:
-			continue
-		default:
-			return g, ee
-		}
-	}
-
-	errc = make(chan error)
-	if s.config.getBool("aws.queue.queue.sync", true) {
+	if s.config.getBool("aws.messaging.queue.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -2665,18 +2509,80 @@ func (s *Queue) FetchResources() (*graph.Graph, error) {
 	return g, nil
 }
 
-func (s *Queue) FetchByType(t string) (*graph.Graph, error) {
+func (s *Messaging) FetchByType(t string) (*graph.Graph, error) {
 	switch t {
+	case "subscription":
+		graph, _, err := s.fetch_all_subscription_graph()
+		return graph, err
+	case "topic":
+		graph, _, err := s.fetch_all_topic_graph()
+		return graph, err
 	case "queue":
 		graph, _, err := s.fetch_all_queue_graph()
 		return graph, err
 	default:
-		return nil, fmt.Errorf("aws queue: unsupported fetch for type %s", t)
+		return nil, fmt.Errorf("aws messaging: unsupported fetch for type %s", t)
 	}
 }
 
-func (s *Queue) IsSyncDisabled() bool {
-	return !s.config.getBool("aws.queue.sync", true)
+func (s *Messaging) fetch_all_subscription_graph() (*graph.Graph, []*sns.Subscription, error) {
+	g := graph.NewGraph()
+	var cloudResources []*sns.Subscription
+	var badResErr error
+	err := s.ListSubscriptionsPages(&sns.ListSubscriptionsInput{},
+		func(out *sns.ListSubscriptionsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Subscriptions {
+				if badResErr != nil {
+					return false
+				}
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Messaging) fetch_all_topic_graph() (*graph.Graph, []*sns.Topic, error) {
+	g := graph.NewGraph()
+	var cloudResources []*sns.Topic
+	var badResErr error
+	err := s.ListTopicsPages(&sns.ListTopicsInput{},
+		func(out *sns.ListTopicsOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.Topics {
+				if badResErr != nil {
+					return false
+				}
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.NextToken != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Messaging) IsSyncDisabled() bool {
+	return !s.config.getBool("aws.messaging.sync", true)
 }
 
 type Dns struct {

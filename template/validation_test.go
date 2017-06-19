@@ -27,7 +27,7 @@ func TestValidation(t *testing.T) {
 		if got, want := len(errs), 1; got != want {
 			t.Fatalf("got %d, want %d", got, want)
 		}
-		exp := "'instance1_name' instance already exists (state: 'terminated')"
+		exp := "'instance1_name' name already used for instance inst_1 (state: 'terminated')"
 		if got, want := errs[0].Error(), exp; got != want {
 			t.Fatalf("got %q, want %q", got, want)
 		}

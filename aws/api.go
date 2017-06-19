@@ -520,9 +520,9 @@ func (s *Storage) foreach_bucket_parallel(f func(b *s3.Bucket) error) error {
 	return nil
 }
 
-// QUEUE
+// Messaging
 
-func (s *Queue) fetch_all_queue_graph() (*graph.Graph, []*string, error) {
+func (s *Messaging) fetch_all_queue_graph() (*graph.Graph, []*string, error) {
 	g := graph.NewGraph()
 	var cloudResources []*string
 	out, err := s.ListQueues(&sqs.ListQueuesInput{})

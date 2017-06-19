@@ -50,7 +50,7 @@ var configDefinitions = map[string]*Definition{
 	"aws.notification.sync":        {help: "Sync AWS SNS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.monitoring.sync":          {help: "Sync AWS metric/alarm/cloudwatch service (when empty: true)", defaultValue: "false", parseParamFn: parseBool},
 	"aws.lambda.sync":              {help: "Sync AWS Lambda service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
-	"aws.queue.sync":               {help: "Sync AWS SQS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
+	"aws.messaging.sync":           {help: "Sync AWS SQS/SNS service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.dns.sync":                 {help: "Sync AWS Route53 service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.cdn.sync":                 {help: "Sync AWS CloudFront service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.cloudformation.sync":      {help: "Sync AWS CloudFormation service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},

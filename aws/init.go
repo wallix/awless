@@ -32,7 +32,7 @@ import (
 )
 
 var (
-	AccessService, InfraService, StorageService, NotificationService, QueueService, DnsService, LambdaService, MonitoringService, CdnService, CloudformationService cloud.Service
+	AccessService, InfraService, StorageService, MessagingService, DnsService, LambdaService, MonitoringService, CdnService, CloudformationService cloud.Service
 )
 
 func InitServices(conf map[string]interface{}, log *logger.Logger) error {
@@ -50,8 +50,7 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	AccessService = NewAccess(sess, awsconf, log)
 	InfraService = NewInfra(sess, awsconf, log)
 	StorageService = NewStorage(sess, awsconf, log)
-	NotificationService = NewNotification(sess, awsconf, log)
-	QueueService = NewQueue(sess, awsconf, log)
+	MessagingService = NewMessaging(sess, awsconf, log)
 	DnsService = NewDns(sess, awsconf, log)
 	LambdaService = NewLambda(sess, awsconf, log)
 	MonitoringService = NewMonitoring(sess, awsconf, log)
@@ -61,8 +60,7 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	cloud.ServiceRegistry[InfraService.Name()] = InfraService
 	cloud.ServiceRegistry[AccessService.Name()] = AccessService
 	cloud.ServiceRegistry[StorageService.Name()] = StorageService
-	cloud.ServiceRegistry[NotificationService.Name()] = NotificationService
-	cloud.ServiceRegistry[QueueService.Name()] = QueueService
+	cloud.ServiceRegistry[MessagingService.Name()] = MessagingService
 	cloud.ServiceRegistry[DnsService.Name()] = DnsService
 	cloud.ServiceRegistry[LambdaService.Name()] = LambdaService
 	cloud.ServiceRegistry[MonitoringService.Name()] = MonitoringService
@@ -95,8 +93,7 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 	drivers = append(drivers, NewAccess(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewInfra(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewStorage(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewNotification(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewQueue(sess, awsconf, drivLog).Drivers()...)
+	drivers = append(drivers, NewMessaging(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewDns(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewLambda(sess, awsconf, drivLog).Drivers()...)
 	drivers = append(drivers, NewMonitoring(sess, awsconf, drivLog).Drivers()...)

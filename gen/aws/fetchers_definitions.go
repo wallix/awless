@@ -89,17 +89,11 @@ var FetchersDefs = []fetchersDef{
 		},
 	},
 	{
-		Name: "notification",
-		Api:  []string{"sns"},
+		Name: "messaging",
+		Api:  []string{"sns", "sqs"},
 		Fetchers: []fetcher{
 			{Api: "sns", ResourceType: cloud.Subscription, AWSType: "sns.Subscription", ApiMethod: "ListSubscriptionsPages", Input: "sns.ListSubscriptionsInput{}", Output: "sns.ListSubscriptionsOutput", OutputsExtractor: "Subscriptions", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "sns", ResourceType: cloud.Topic, AWSType: "sns.Topic", ApiMethod: "ListTopicsPages", Input: "sns.ListTopicsInput{}", Output: "sns.ListTopicsOutput", OutputsExtractor: "Topics", Multipage: true, NextPageMarker: "NextToken"},
-		},
-	},
-	{
-		Name: "queue",
-		Api:  []string{"sqs"},
-		Fetchers: []fetcher{
 			{Api: "sqs", ResourceType: cloud.Queue, AWSType: "string", ManualFetcher: true},
 		},
 	},
