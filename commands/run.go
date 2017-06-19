@@ -422,7 +422,7 @@ func runSyncFor(tpl *template.Template) {
 	)...)
 
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
-		logger.Error(err.Error())
+		logger.ExtraVerbosef(err.Error())
 	} else {
 		logger.Verbosef("performed sync for %s", strings.Join(cloud.Services(services).Names(), ", "))
 	}
