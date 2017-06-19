@@ -20,10 +20,12 @@
 #      cloudformation.role="arn:aws:iam::XXXXXXX:role/my-full-test-role-cloudformation"
 #      lambda.role="arn:aws:iam::XXXXXXX:role/my-full-test-role-lambda"
 #      queue.arn="arn:aws:sqs:eu-west-2:XXXXXXX:my-full-test-queue"
+#      ecs.role="arn:aws:iam::XXXXXXX:role/ecsServiceRole"
+#      appscaling.role="arn:aws:iam::XXXXXXX:role/ecsAutoscaleRole"
 
 azone = eu-west-2a
 vpc = create vpc cidr=10.0.0.0/16 name=my-full-test-vpc
-igw = create internetgateway  
+igw = create internetgateway
 attach internetgateway id=$igw vpc=$vpc
 subnet = create subnet cidr=10.0.0.0/24 vpc=$vpc availabilityzone=$azone name=my-full-test-subnet
 update subnet id=$subnet public=true
@@ -75,7 +77,7 @@ update bucket name=$webbucket enforce-https=true index-suffix="index.html" publi
 bucket = create bucket name=my-full-test-bucket acl=bucket-owner-read
 update bucket name=$bucket acl=private
 ovafile = create s3object bucket=$bucket file={void.ova-file} acl=bucket-owner-read name=mytestfile.ova
-update s3object acl=private bucket=$bucket name=$ovafile 
+update s3object acl=private bucket=$bucket name=$ovafile
 import image architecture=x86_64 bucket=$bucket description="my non-working import task" license=BYOL platform=Linux role=vmimport s3object=$ovafile
 import image url=s3://my-full-test-bucket/mytestfile.ova
 vol = create volume availabilityzone=$azone size=2
@@ -93,7 +95,7 @@ lbinstance = create instance image=ami-f1949e95 name=my-full-test-lbinst subnet=
 lb = create loadbalancer name=my-full-test-loadbalancer subnets=subnet-69bd4324,subnet-a103a4da iptype=ipv4 scheme=internet-facing securitygroups=@mysecgroup
 check loadbalancer id=$lb state=provisioning timeout=180
 tg = create targetgroup name=my-full-test-targetgroup port=80 protocol=HTTP vpc=@awless-tests-vpc healthcheckinterval=60 healthcheckpath="/hc" healthcheckport=80 healthcheckprotocol=HTTP healthchecktimeout=10 healthythreshold=3 matcher=200 unhealthythreshold=5
-create listener actiontype=forward loadbalancer=$lb port=80 protocol=HTTP targetgroup=$tg 
+create listener actiontype=forward loadbalancer=$lb port=80 protocol=HTTP targetgroup=$tg
 check instance id=$lbinstance state=running timeout=180
 attach instance id=$lbinstance targetgroup=$tg port=80
 detach instance id=$lbinstance targetgroup=$tg
@@ -108,7 +110,7 @@ notifTopic = create topic name=my-full-test-topic
 scalpol = create scalingpolicy adjustment-scaling=+10 adjustment-type=PercentChangeInCapacity name=my-full-test-scalingpol scalinggroup=$scalgroup adjustment-magnitude=1 cooldown=20
 alarm = create alarm evaluation-periods=1 metric=CPUUtilization name=my-full-test-alarm namespace=AWS/EC2 operator=GreaterThanThreshold period=300 statistic-function=Average threshold=65 alarm-actions=$scalpol description="my full test alarm" dimensions=AutoScalingGroupName:my-full-test-scalinggroup enabled=true insufficientdata-actions=$notifTopic ok-actions=$notifTopic unit=Percent
 stop alarm names=$alarm
-start alarm names=$alarm 
+start alarm names=$alarm
 detach alarm action-arn=$scalpol name=$alarm
 attach alarm action-arn=$scalpol name=$alarm
 create queue name=my-full-test-queue delay=0 max-msg-size=262144 msg-wait=0 policy="" redrive-policy="" retention-period=345600 visibility-timeout=30
@@ -123,7 +125,15 @@ cdn = create distribution origin-domain=my-full-test-bucket-website.s3.amazonaws
 check distribution id=$cdn state=InProgress timeout=180
 update distribution enable=true id=$cdn
 create repository name=my-full-test-repository
+create container image=alpine memory-hard-limit=64 name=my-full-test-container service=my-full-test-service command="/bin/bash echo $HELLO $WORLD" env="HELLO:Hello,WORLD:world!" ports=80:80/tcp,9090,9191/udp privileged=true workdir=/root
+create containercluster name=my-full-test-container-cluster
+start containerservice cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 name=my-full-test-service loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role={ecs.role}
+create appscalingtarget dimension=ecs:service:DesiredCount max-capacity=3 min-capacity=1 resource=service/my-full-test-container-cluster/my-full-test-service-deployment role={appscaling.role} service-namespace=ecs
+create appscalingpolicy dimension=ecs:service:DesiredCount name=my-full-test-appscalingpol resource=service/my-full-test-container-cluster/my-full-test-service-deployment service-namespace=ecs stepscaling-adjustment-type=ChangeInCapacity stepscaling-adjustments=0::+1,:0:-1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-cooldown=60
+create appscalingpolicy dimension=ecs:service:DesiredCount name=my-full-test-appscalingpol-2 resource=service/my-full-test-container-cluster/my-full-test-service-deployment service-namespace=ecs stepscaling-adjustment-type=PercentChangeInCapacity stepscaling-adjustments=0::+1,:0:-1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-min-adjustment-magnitude=1
+
 ## Commands that need to be done after a few minutes after other commands
+
 update loginprofile password=my-full-test-second-password username=my-full-test-user password-reset=true
 
 ## CAN NOT BE TESTED FOR NOW
@@ -136,3 +146,5 @@ update loginprofile password=my-full-test-second-password username=my-full-test-
 # create zone delegationsetid=012345678 
 # create distribution certificate=
 # update stack name=my-full-test-cf-template capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} policy-update-file={cloudformation.policy-file} role={cloudformation.role} template-file={cloudformation.templatefile} use-previous-template=false
+# authenticate registry
+# start containertasks # No revert
