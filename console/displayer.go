@@ -17,6 +17,7 @@ limitations under the License.
 package console
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -58,6 +59,7 @@ type Builder struct {
 	maxwidth        int
 	dataSource      interface{}
 	root            *graph.Resource
+	noHeaders       bool
 }
 
 func (b *Builder) SetSource(i interface{}) *Builder {
@@ -113,7 +115,7 @@ func (b *Builder) buildGraphTagValueFilters() (funcs []graph.FilterFn) {
 }
 
 func (b *Builder) Build() (Displayer, error) {
-	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth}
+	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth, noHeaders: b.noHeaders}
 
 	switch b.dataSource.(type) {
 	case *graph.Graph:
@@ -333,14 +335,22 @@ func WithRootNode(root *graph.Resource) optsFn {
 	}
 }
 
+func WithNoHeaders(nh bool) optsFn {
+	return func(b *Builder) *Builder {
+		b.noHeaders = nh
+		return b
+	}
+}
+
 type table [][]interface{}
 
 type fromGraphDisplayer struct {
 	sorter
-	g        *graph.Graph
-	rdfType  string
-	headers  []ColumnDefinition
-	maxwidth int
+	g         *graph.Graph
+	rdfType   string
+	headers   []ColumnDefinition
+	maxwidth  int
+	noHeaders bool
 }
 
 func (d *fromGraphDisplayer) setGraph(g *graph.Graph) {
@@ -373,24 +383,26 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 
 	d.sorter.sort(values)
 
-	var lines []string
+	var buff bytes.Buffer
 
 	var head []string
 	for _, h := range d.headers {
 		head = append(head, h.title(false))
 	}
 
-	lines = append(lines, strings.Join(head, ","))
+	if !d.noHeaders {
+		buff.WriteString(strings.Join(head, ",") + "\n")
+	}
 
 	for i := range values {
 		var props []string
 		for j, h := range d.headers {
 			props = append(props, h.format(values[i][j]))
 		}
-		lines = append(lines, strings.Join(props, ","))
+		buff.WriteString(strings.Join(props, ",") + "\n")
 	}
 
-	_, err = w.Write([]byte(strings.Join(lines, "\n")))
+	_, err = w.Write(buff.Bytes())
 	return err
 }
 
@@ -427,7 +439,9 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 		head = append(head, h.title(false))
 	}
 
-	fmt.Fprintln(w, strings.Join(head, "\t"))
+	if !d.noHeaders {
+		fmt.Fprintln(w, strings.Join(head, "\t"))
+	}
 
 	for i := range values {
 		var props []string
@@ -518,11 +532,13 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetColWidth(tableColWidth)
-	var displayHeaders []string
-	for i, h := range columnsToDisplay {
-		displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
+	if !d.noHeaders {
+		var displayHeaders []string
+		for i, h := range columnsToDisplay {
+			displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
+		}
+		table.SetHeader(displayHeaders)
 	}
-	table.SetHeader(displayHeaders)
 
 	var enableWraping bool
 	if d.maxwidth <= maxWidthNoWraping {

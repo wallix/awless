@@ -37,6 +37,7 @@ var (
 	listingTagKeyFiltersFlag   []string
 	listingTagValueFiltersFlag []string
 	listOnlyIDs                bool
+	noHeadersFlag              bool
 	sortBy                     []string
 )
 
@@ -66,6 +67,7 @@ func init() {
 	listCmd.PersistentFlags().StringSliceVar(&listingTagKeyFiltersFlag, "tag-key", []string{}, "Filter EC2 resources given a tag key only (case sensitive!). Ex: --tag-key Env")
 	listCmd.PersistentFlags().StringSliceVar(&listingTagValueFiltersFlag, "tag-value", []string{}, "Filter EC2 resources given a tag value only (case sensitive!). Ex: --tag-value Staging")
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
+	listCmd.PersistentFlags().BoolVar(&noHeadersFlag, "no-headers", false, "Do not display headers")
 	listCmd.PersistentFlags().StringSliceVar(&sortBy, "sort", []string{"Id"}, "Sort tables by column(s) name(s)")
 }
 
@@ -135,6 +137,7 @@ func printResources(g *graph.Graph, resType string) {
 		console.WithFormat(listingFormat),
 		console.WithIDsOnly(listOnlyIDs),
 		console.WithSortBy(sortBy...),
+		console.WithNoHeaders(noHeadersFlag),
 	).SetSource(g).Build()
 	exitOn(err)
 

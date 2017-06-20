@@ -97,7 +97,7 @@ func TestTabularDisplays(t *testing.T) {
 	expected := "ID,Name,State,Type,Public IP\n" +
 		"inst_1,redis,running,t2.micro,1.2.3.4\n" +
 		"inst_2,django,stopped,t2.medium,\n" +
-		"inst_3,apache,running,t2.xlarge,"
+		"inst_3,apache,running,t2.xlarge,\n"
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
@@ -116,7 +116,7 @@ func TestTabularDisplays(t *testing.T) {
 	expected = "ID,Name,State,Type,Public IP\n" +
 		"inst_3,apache,running,t2.xlarge,\n" +
 		"inst_2,django,stopped,t2.medium,\n" +
-		"inst_1,redis,running,t2.micro,1.2.3.4"
+		"inst_1,redis,running,t2.micro,1.2.3.4\n"
 
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -737,7 +737,7 @@ func TestEmotyDisplays(t *testing.T) {
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
-	expected := "ID,Name,Public IP"
+	expected := "ID,Name,Public IP\n"
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
 		t.Fatal(err)
@@ -793,5 +793,94 @@ func TestEmotyDisplays(t *testing.T) {
 	}
 	if got, want := w.String(), expected; got != want {
 		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+}
+
+func TestNoHeadersDisplay(t *testing.T) {
+	g := createInfraGraph()
+	headers := []ColumnDefinition{
+		StringColumnDefinition{Prop: "ID"},
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "State"},
+		StringColumnDefinition{Prop: "Type"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
+	}
+
+	displayer, _ := BuildOptions(
+		WithHeaders(headers),
+		WithRdfType("instance"),
+		WithFormat("csv"),
+	).SetSource(g).Build()
+
+	expected := "ID,Name,State,Type,Public IP\n" +
+		"inst_1,redis,running,t2.micro,1.2.3.4\n" +
+		"inst_2,django,stopped,t2.medium,\n" +
+		"inst_3,apache,running,t2.xlarge,\n"
+	var w bytes.Buffer
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+
+	displayer, _ = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType("instance"),
+		WithFormat("csv"),
+		WithNoHeaders(true),
+	).SetSource(g).Build()
+
+	expected = "inst_1,redis,running,t2.micro,1.2.3.4\n" +
+		"inst_2,django,stopped,t2.medium,\n" +
+		"inst_3,apache,running,t2.xlarge,\n"
+	w.Reset()
+
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+
+	displayer, _ = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType("instance"),
+		WithFormat("tsv"),
+		WithNoHeaders(true),
+	).SetSource(g).Build()
+
+	expected = "inst_1\tredis\trunning\tt2.micro\t1.2.3.4\n" +
+		"inst_2\tdjango\tstopped\tt2.medium\t\n" +
+		"inst_3\tapache\trunning\tt2.xlarge\t\n"
+	w.Reset()
+
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
+	}
+
+	autowrapMaxSize = 20
+	tableColWidth = 20
+	displayer, _ = BuildOptions(
+		WithHeaders(headers),
+		WithRdfType("instance"),
+		WithFormat("table"),
+		WithNoHeaders(true),
+	).SetSource(g).Build()
+
+	expected = `| inst_1 | redis  | running | t2.micro  | 1.2.3.4 |
+| inst_2 | django | stopped | t2.medium |         |
+| inst_3 | apache | running | t2.xlarge |         |
+`
+	w.Reset()
+
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 }
