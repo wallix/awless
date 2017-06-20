@@ -547,9 +547,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"container_3": resourcetest.Container("container_3").Prop(p.Arn, "container_3").Prop(p.Cluster, "clust_1").Prop(p.ContainerInstance, "cont_inst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.ContainerService, "cs_2:1").Build(),
 		"container_4": resourcetest.Container("container_4").Prop(p.Arn, "container_4").Prop(p.Name, "my_container_4").Prop(p.ExitCode, 0).Prop(p.State, "stopped").Prop(p.Cluster, "clust_2").Prop(p.ContainerInstance, "cont_inst_2").Prop(p.ContainerService, "cs_2:2").Prop(p.DeploymentName, "deployment-service-2").Build(),
 		"cont_inst_1": resourcetest.ContainerInstance("cont_inst_1").Prop(p.Arn, "cont_inst_1").Prop(p.AgentConnected, true).Prop(p.AgentState, "AgentRunning").Prop(p.Attributes, []*graph.KeyValue{{"attr_1", "val1"}, {"attr_2", "val2"}}).
-			Prop(p.Instance, "inst_2").Prop(p.PendingTasksCount, 4).Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Prop(p.Version, "2").Prop(p.AgentVersion, "0.0.5").Prop(p.DockerVersion, "v1.0.12").Build(),
-		"cont_inst_2": resourcetest.ContainerInstance("cont_inst_2").Prop(p.Arn, "cont_inst_2").Prop(p.Instance, "inst_3").Build(),
-		"cont_inst_3": resourcetest.ContainerInstance("cont_inst_3").Prop(p.Arn, "cont_inst_3").Prop(p.Instance, "inst_1").Build(),
+			Prop(p.Instance, "inst_2").Prop(p.PendingTasksCount, 4).Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Prop(p.Version, "2").Prop(p.AgentVersion, "0.0.5").Prop(p.DockerVersion, "v1.0.12").Prop(p.Cluster, "clust_1").Build(),
+		"cont_inst_2": resourcetest.ContainerInstance("cont_inst_2").Prop(p.Arn, "cont_inst_2").Prop(p.Instance, "inst_3").Prop(p.Cluster, "clust_1").Build(),
+		"cont_inst_3": resourcetest.ContainerInstance("cont_inst_3").Prop(p.Arn, "cont_inst_3").Prop(p.Instance, "inst_1").Prop(p.Cluster, "clust_2").Build(),
 	}
 
 	expectedChildren := map[string][]string{

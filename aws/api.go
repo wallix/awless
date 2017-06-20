@@ -982,6 +982,7 @@ func (s *Infra) fetch_all_containerinstance_graph() (*graph.Graph, []*ecs.Contai
 				if res, badResErr = newResource(inst); badResErr != nil {
 					return false
 				}
+				res.Properties[properties.Cluster] = awssdk.StringValue(cluster)
 				if badResErr = g.AddResource(res); badResErr != nil {
 					return false
 				}
