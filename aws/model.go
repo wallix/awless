@@ -303,6 +303,20 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:        {name: "LastStatus", transform: extractValueFn},
 		properties.StateMessage: {name: "Reason", transform: extractValueFn},
 	},
+	cloud.ContainerInstance: {
+		properties.Arn:               {name: "ContainerInstanceArn", transform: extractValueFn},
+		properties.AgentConnected:    {name: "AgentConnected", transform: extractValueFn},
+		properties.AgentState:        {name: "AgentUpdateStatus", transform: extractValueFn},
+		properties.Attributes:        {name: "Attributes", transform: extractECSAttributesFn},
+		properties.Instance:          {name: "Ec2InstanceId", transform: extractValueFn},
+		properties.PendingTasksCount: {name: "PendingTasksCount", transform: extractValueFn},
+		properties.RunningTasksCount: {name: "RunningTasksCount", transform: extractValueFn},
+		properties.Created:           {name: "RegisteredAt", transform: extractValueFn},
+		properties.State:             {name: "Status", transform: extractValueFn},
+		properties.Version:           {name: "Version", transform: extractValueAsStringFn},
+		properties.AgentVersion:      {name: "VersionInfo", transform: extractFieldFn("AgentVersion")},
+		properties.DockerVersion:     {name: "VersionInfo", transform: extractFieldFn("DockerVersion")},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

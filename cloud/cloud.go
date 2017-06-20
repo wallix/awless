@@ -85,12 +85,13 @@ const (
 	//cloudformation
 	Stack string = "stack"
 	//container
-	Repository       string = "repository"
-	Registry         string = "registry"
-	ContainerCluster string = "containercluster"
-	ContainerService string = "containerservice"
-	ContainerTask    string = "containertask"
-	Container        string = "container"
+	Repository        string = "repository"
+	Registry          string = "registry"
+	ContainerCluster  string = "containercluster"
+	ContainerService  string = "containerservice"
+	ContainerTask     string = "containertask"
+	Container         string = "container"
+	ContainerInstance string = "containerinstance"
 	//application autoscaling
 	AppScalingTarget string = "appscalingtarget"
 	AppScalingPolicy string = "appscalingpolicy"

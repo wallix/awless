@@ -108,6 +108,7 @@ var ResourceTypes = []string{
 	"containercluster",
 	"containerservice",
 	"container",
+	"containerinstance",
 	"user",
 	"group",
 	"role",
@@ -173,6 +174,7 @@ var ServicePerResourceType = map[string]string{
 	"containercluster":    "infra",
 	"containerservice":    "infra",
 	"container":           "infra",
+	"containerinstance":   "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -218,6 +220,7 @@ var APIPerResourceType = map[string]string{
 	"containercluster":    "ecs",
 	"containerservice":    "ecs",
 	"container":           "ecs",
+	"containerinstance":   "ecs",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -310,6 +313,7 @@ func (s *Infra) ResourceTypes() []string {
 		"containercluster",
 		"containerservice",
 		"container",
+		"containerinstance",
 	}
 }
 
@@ -348,6 +352,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var containerclusterList []*ecs.Cluster
 	var containerserviceList []*ecs.TaskDefinition
 	var containerList []*ecs.Container
+	var containerinstanceList []*ecs.ContainerInstance
 
 	fetchError := new(multiError)
 
@@ -754,6 +759,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[container]")
 	}
+	if s.config.getBool("aws.infra.containerinstance.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, containerinstanceList, err = s.fetch_all_containerinstance_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[containerinstance]")
+	}
 
 	go func() {
 		wg.Wait()
@@ -1152,6 +1173,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.containerinstance.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range containerinstanceList {
+				for _, fn := range addParentsFns["containerinstance"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	go func() {
 		wg.Wait()
@@ -1247,6 +1283,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "container":
 		graph, _, err := s.fetch_all_container_graph()
+		return graph, err
+	case "containerinstance":
+		graph, _, err := s.fetch_all_containerinstance_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws infra: unsupported fetch for type %s", t)

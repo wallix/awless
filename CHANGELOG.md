@@ -10,7 +10,7 @@
 - Listing [ECR](https://aws.amazon.com/ecr/) repositories: `awless list repositories`
 - Create/Delete [ECR](https://aws.amazon.com/ecr/) repositories: `awless create/delete repository`
 - Easily authenticate to a [ECR](https://aws.amazon.com/ecr/) registry: `awless authenticate registry`
-- Listing [ECS](https://aws.amazon.com/ecs/) clusters, services and containers: `awless list containerclusters/containerservices/containers`
+- Listing [ECS](https://aws.amazon.com/ecs/) clusters, services, containerinstances and containers: `awless list containerclusters/containerservices/containerinstances/containers`
 - Create/Delete [ECS](https://aws.amazon.com/ecs/) cluster or container: `awless create/delete containercluster/container`
 - Start/Stop container services or tasks: `awless start/stop containerservice`, `awless start containertasks`
 - Create/Delete [ApplicationAutoScaling](http://docs.aws.amazon.com/ApplicationAutoScaling/latest/APIReference/Welcome.html) scalable target and policies: `awless create/delete appscalingtarget/appscalingpolicy`

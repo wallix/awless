@@ -154,6 +154,8 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", MockField: "taskdefinitionNames", AWSType: "string", ApiMethod: "ListTaskDefinitionsPages", Input: "ecs.ListTaskDefinitionsInput", Output: "ecs.ListTaskDefinitionsOutput", OutputsExtractor: "TaskDefinitionArns", Multipage: true, NextPageMarker: "NextToken"},
 			{FuncType: "list", MockFieldType: "mapslice", AWSType: "ecs.Task", Manual: true},
 			{FuncType: "list", MockFieldType: "mapslice", MockField: "tasksNames", AWSType: "string", Manual: true},
+			{FuncType: "list", MockFieldType: "mapslice", MockField: "containerinstancesNames", AWSType: "string", Manual: true},
+			{FuncType: "list", MockFieldType: "mapslice", AWSType: "ecs.ContainerInstance", Manual: true},
 		},
 	},
 }

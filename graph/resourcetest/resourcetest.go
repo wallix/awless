@@ -153,6 +153,10 @@ func Container(id string) *rBuilder {
 	return new("container", id).Prop(properties.ID, id)
 }
 
+func ContainerInstance(id string) *rBuilder {
+	return new("containerinstance", id).Prop(properties.ID, id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

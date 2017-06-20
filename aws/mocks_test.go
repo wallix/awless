@@ -155,3 +155,24 @@ func (m *mockEcs) DescribeTasks(input *ecs.DescribeTasksInput) (*ecs.DescribeTas
 	}
 	return &ecs.DescribeTasksOutput{Tasks: tasks}, nil
 }
+
+func (m *mockEcs) ListContainerInstancesPages(input *ecs.ListContainerInstancesInput, fn func(p *ecs.ListContainerInstancesOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*string
+	for i := 0; i < len(m.containerinstancesNames[awssdk.StringValue(input.Cluster)]); i += 2 {
+		page := []*string{m.containerinstancesNames[awssdk.StringValue(input.Cluster)][i]}
+		if i+1 < len(m.containerinstancesNames[awssdk.StringValue(input.Cluster)]) {
+			page = append(page, m.containerinstancesNames[awssdk.StringValue(input.Cluster)][i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&ecs.ListContainerInstancesOutput{ContainerInstanceArns: page, NextToken: awssdk.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+func (m *mockEcs) DescribeContainerInstances(input *ecs.DescribeContainerInstancesInput) (*ecs.DescribeContainerInstancesOutput, error) {
+	return &ecs.DescribeContainerInstancesOutput{ContainerInstances: m.containerinstances[awssdk.StringValue(input.Cluster)]}, nil
+}

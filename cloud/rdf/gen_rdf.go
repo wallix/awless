@@ -27,6 +27,9 @@ const (
 	ACMCertificate                    = "cloud:acmCertificate"
 	AdjustmentType                    = "cloud:adjustmentType"
 	Affinity                          = "cloud:affinity"
+	AgentConnected                    = "cloud:agentConnected"
+	AgentState                        = "cloud:agentState"
+	AgentVersion                      = "cloud:agentVersion"
 	AlarmNames                        = "cloud:alarmNames"
 	AlarmActions                      = "cloud:alarmActions"
 	Aliases                           = "cloud:aliases"
@@ -35,6 +38,7 @@ const (
 	Architecture                      = "cloud:architecture"
 	Arn                               = "cloud:arn"
 	Attachable                        = "cloud:attachable"
+	Attributes                        = "cloud:attributes"
 	AutoUpgrade                       = "cloud:autoUpgrade"
 	ScalingGroupName                  = "cloud:scalingGroupName"
 	AvailabilityZone                  = "cloud:availabilityZone"
@@ -79,6 +83,7 @@ const (
 	DeploymentName                    = "cloud:deploymentName"
 	Dimensions                        = "cloud:dimensions"
 	DisableRollback                   = "cloud:disableRollback"
+	DockerVersion                     = "cloud:dockerVersion"
 	Enabled                           = "cloud:enabled"
 	Encrypted                         = "cloud:encrypted"
 	Endpoint                          = "cloud:endpoint"
@@ -103,6 +108,7 @@ const (
 	Image                             = "cloud:image"
 	InboundRules                      = "net:inboundRules"
 	InlinePolicies                    = "cloud:inlinePolicies"
+	Instance                          = "cloud:instance"
 	Instances                         = "cloud:instances"
 	InsufficientDataActions           = "cloud:insufficientDataActions"
 	IOPS                              = "cloud:iops"
@@ -216,6 +222,9 @@ var Labels = map[string]string{
 	properties.ACMCertificate:                    ACMCertificate,
 	properties.AdjustmentType:                    AdjustmentType,
 	properties.Affinity:                          Affinity,
+	properties.AgentConnected:                    AgentConnected,
+	properties.AgentState:                        AgentState,
+	properties.AgentVersion:                      AgentVersion,
 	properties.AlarmNames:                        AlarmNames,
 	properties.AlarmActions:                      AlarmActions,
 	properties.Aliases:                           Aliases,
@@ -224,6 +233,7 @@ var Labels = map[string]string{
 	properties.Architecture:                      Architecture,
 	properties.Arn:                               Arn,
 	properties.Attachable:                        Attachable,
+	properties.Attributes:                        Attributes,
 	properties.AutoUpgrade:                       AutoUpgrade,
 	properties.ScalingGroupName:                  ScalingGroupName,
 	properties.AvailabilityZone:                  AvailabilityZone,
@@ -268,6 +278,7 @@ var Labels = map[string]string{
 	properties.DeploymentName:                    DeploymentName,
 	properties.Dimensions:                        Dimensions,
 	properties.DisableRollback:                   DisableRollback,
+	properties.DockerVersion:                     DockerVersion,
 	properties.Enabled:                           Enabled,
 	properties.Encrypted:                         Encrypted,
 	properties.Endpoint:                          Endpoint,
@@ -292,6 +303,7 @@ var Labels = map[string]string{
 	properties.Image:                             Image,
 	properties.InboundRules:                      InboundRules,
 	properties.InlinePolicies:                    InlinePolicies,
+	properties.Instance:                          Instance,
 	properties.Instances:                         Instances,
 	properties.InsufficientDataActions:           InsufficientDataActions,
 	properties.IOPS:                              IOPS,
@@ -405,6 +417,9 @@ var Properties = RDFProperties{
 	ACMCertificate:          {ID: ACMCertificate, RdfType: "rdf:Property", RdfsLabel: "ACMCertificate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AdjustmentType:          {ID: AdjustmentType, RdfType: "rdf:Property", RdfsLabel: "AdjustmentType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Affinity:                {ID: Affinity, RdfType: "rdf:Property", RdfsLabel: "Affinity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	AgentConnected:          {ID: AgentConnected, RdfType: "rdf:Property", RdfsLabel: "AgentConnected", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	AgentState:              {ID: AgentState, RdfType: "rdf:Property", RdfsLabel: "AgentState", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	AgentVersion:            {ID: AgentVersion, RdfType: "rdf:Property", RdfsLabel: "AgentVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AlarmNames:              {ID: AlarmNames, RdfType: "rdf:Property", RdfsLabel: "AlarmNames", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	AlarmActions:            {ID: AlarmActions, RdfType: "rdf:Property", RdfsLabel: "AlarmActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Aliases:                 {ID: Aliases, RdfType: "rdf:Property", RdfsLabel: "Aliases", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
@@ -413,6 +428,7 @@ var Properties = RDFProperties{
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Arn:                     {ID: Arn, RdfType: "rdf:Property", RdfsLabel: "Arn", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Attachable:              {ID: Attachable, RdfType: "rdf:Property", RdfsLabel: "Attachable", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	Attributes:              {ID: Attributes, RdfType: "rdf:Property", RdfsLabel: "Attributes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	AutoUpgrade:             {ID: AutoUpgrade, RdfType: "rdf:Property", RdfsLabel: "AutoUpgrade", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	ScalingGroupName:        {ID: ScalingGroupName, RdfType: "rdf:Property", RdfsLabel: "ScalingGroupName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AvailabilityZone:        {ID: AvailabilityZone, RdfType: "rdf:Property", RdfsLabel: "AvailabilityZone", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
@@ -457,6 +473,7 @@ var Properties = RDFProperties{
 	DeploymentName:          {ID: DeploymentName, RdfType: "rdf:Property", RdfsLabel: "DeploymentName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Dimensions:              {ID: Dimensions, RdfType: "rdf:Property", RdfsLabel: "Dimensions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	DisableRollback:         {ID: DisableRollback, RdfType: "rdf:Property", RdfsLabel: "DisableRollback", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	DockerVersion:           {ID: DockerVersion, RdfType: "rdf:Property", RdfsLabel: "DockerVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Enabled:                 {ID: Enabled, RdfType: "rdf:Property", RdfsLabel: "Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Encrypted:               {ID: Encrypted, RdfType: "rdf:Property", RdfsLabel: "Encrypted", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Endpoint:                {ID: Endpoint, RdfType: "rdf:Property", RdfsLabel: "Endpoint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -481,6 +498,7 @@ var Properties = RDFProperties{
 	Image:                   {ID: Image, RdfType: "rdf:Property", RdfsLabel: "Image", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	InboundRules:            {ID: InboundRules, RdfType: "rdf:Property", RdfsLabel: "InboundRules", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:FirewallRule"},
 	InlinePolicies:          {ID: InlinePolicies, RdfType: "rdf:Property", RdfsLabel: "InlinePolicies", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	Instance:                {ID: Instance, RdfType: "rdf:Property", RdfsLabel: "Instance", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Instances:               {ID: Instances, RdfType: "rdf:Property", RdfsLabel: "Instances", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	InsufficientDataActions: {ID: InsufficientDataActions, RdfType: "rdf:Property", RdfsLabel: "InsufficientDataActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	IOPS:                     {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},

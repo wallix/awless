@@ -252,6 +252,16 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		ARNLastValueColumnDefinition{Separator: "/", StringColumnDefinition: StringColumnDefinition{Prop: properties.Cluster}},
 		ARNLastValueColumnDefinition{Separator: "/", StringColumnDefinition: StringColumnDefinition{Prop: properties.ContainerService}},
 	},
+	cloud.ContainerInstance: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Instance},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.RunningTasksCount, Friendly: "RunningTasks"},
+		StringColumnDefinition{Prop: properties.PendingTasksCount, Friendly: "PendingTasks"},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+		StringColumnDefinition{Prop: properties.AgentConnected},
+		StringColumnDefinition{Prop: properties.AgentVersion},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: properties.ID},

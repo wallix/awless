@@ -974,12 +974,14 @@ func (m *mockEcr) DescribeRepositoriesPages(input *ecr.DescribeRepositoriesInput
 
 type mockEcs struct {
 	ecsiface.ECSAPI
-	clusters            []*ecs.Cluster
-	clusterNames        []*string
-	taskdefinitions     []*ecs.TaskDefinition
-	taskdefinitionNames []*string
-	tasks               map[string][]*ecs.Task
-	tasksNames          map[string][]*string
+	clusters                []*ecs.Cluster
+	clusterNames            []*string
+	taskdefinitions         []*ecs.TaskDefinition
+	taskdefinitionNames     []*string
+	tasks                   map[string][]*ecs.Task
+	tasksNames              map[string][]*string
+	containerinstancesNames map[string][]*string
+	containerinstances      map[string][]*ecs.ContainerInstance
 }
 
 func (m *mockEcs) Name() string {

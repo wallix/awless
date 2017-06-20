@@ -88,6 +88,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "ecs", ResourceType: cloud.ContainerCluster, AWSType: "ecs.Cluster", ManualFetcher: true},
 			{Api: "ecs", ResourceType: cloud.ContainerService, AWSType: "ecs.TaskDefinition", ManualFetcher: true},
 			{Api: "ecs", ResourceType: cloud.Container, AWSType: "ecs.Container", ManualFetcher: true},
+			{Api: "ecs", ResourceType: cloud.ContainerInstance, AWSType: "ecs.ContainerInstance", ManualFetcher: true},
 		},
 	},
 	{

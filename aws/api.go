@@ -932,9 +932,63 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerService, awssdk.StringValue(task.TaskDefinitionArn)), res); badResErr != nil {
 						return false
 					}
+					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(task.ContainerInstanceArn)), res); badResErr != nil {
+						return false
+					}
 					if badResErr = g.AddResource(res); badResErr != nil {
 						return false
 					}
+				}
+			}
+			return out.NextToken != nil
+		})
+		if err != nil {
+			return g, cloudResources, err
+		}
+		if badResErr != nil {
+			return g, cloudResources, badResErr
+		}
+	}
+	return g, cloudResources, nil
+}
+
+func (s *Infra) fetch_all_containerinstance_graph() (*graph.Graph, []*ecs.ContainerInstance, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ecs.ContainerInstance
+
+	s.once.Do(func() {
+		s.once.result, s.once.err = s.getClustersNames()
+	})
+	if s.once.err != nil {
+		return nil, nil, s.once.err
+	}
+	clusterArns := s.once.result.([]*string)
+
+	for _, cluster := range clusterArns {
+		var badResErr error
+		err := s.ListContainerInstancesPages(&ecs.ListContainerInstancesInput{Cluster: cluster}, func(out *ecs.ListContainerInstancesOutput, lastPage bool) (shouldContinue bool) {
+			var containerInstancesOut *ecs.DescribeContainerInstancesOutput
+			if len(out.ContainerInstanceArns) == 0 {
+				return out.NextToken != nil
+			}
+
+			if containerInstancesOut, badResErr = s.ECSAPI.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{Cluster: cluster, ContainerInstances: out.ContainerInstanceArns}); badResErr != nil {
+				return false
+			}
+
+			for _, inst := range containerInstancesOut.ContainerInstances {
+				cloudResources = append(cloudResources, inst)
+				var res *graph.Resource
+				if res, badResErr = newResource(inst); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+				parent := graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(cluster))
+
+				if badResErr = g.AddParentRelation(parent, res); badResErr != nil {
+					return false
 				}
 			}
 			return out.NextToken != nil

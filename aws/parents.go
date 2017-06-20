@@ -111,6 +111,10 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.TargetGroup, stringListName: "TargetGroupARNs", relation: DEPENDING_ON}.build(),
 		addScalingGroupSubnets,
 	},
+	// Container
+	cloud.ContainerInstance: {
+		funcBuilder{parent: cloud.Instance, fieldName: "Ec2InstanceId", relation: APPLIES_ON}.build(),
+	},
 	cloud.Subscription: {
 		funcBuilder{parent: cloud.Topic, fieldName: "TopicArn"}.build(),
 	},

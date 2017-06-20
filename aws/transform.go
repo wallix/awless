@@ -110,6 +110,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.ContainerService, awssdk.StringValue(ss.TaskDefinitionArn))
 	case *ecs.Container:
 		res = graph.InitResource(cloud.Container, awssdk.StringValue(ss.ContainerArn))
+	case *ecs.ContainerInstance:
+		res = graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(ss.ContainerInstanceArn))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))
@@ -359,6 +361,20 @@ var extractNameValueFn = func(i interface{}) (interface{}, error) {
 		nameValues = append(nameValues, keyval)
 	}
 	return nameValues, nil
+
+}
+
+var extractECSAttributesFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*ecs.Attribute); !ok {
+		return nil, fmt.Errorf("extract ECS attributes: not an attribute slice but a %T", i)
+	}
+	var keyVals []*graph.KeyValue
+	for _, attribute := range i.([]*ecs.Attribute) {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(attribute.Name), Value: awssdk.StringValue(attribute.Value)}
+
+		keyVals = append(keyVals, keyval)
+	}
+	return keyVals, nil
 
 }
 
