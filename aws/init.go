@@ -19,15 +19,8 @@ package aws
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"time"
 
-	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/aws/config"
-	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
@@ -44,11 +37,13 @@ func InitServices(conf map[string]interface{}, log *logger.Logger, profileSetter
 		return errors.New("empty AWS region. Set it with `awless config set aws.region`")
 	}
 
-	sess, err := initAWSSession(region, awsconf.profile(), profileSetterCallback)
+	sb := newSessionResolver().withRegion(region).withProfile(awsconf.profile())
+	sb = sb.withProfileSetter(profileSetterCallback).withLogger(log).withCredentialResolvers()
+
+	sess, err := sb.resolve()
 	if err != nil {
 		return err
 	}
-	//addDebugRequestsHandlers(sess)
 
 	AccessService = NewAccess(sess, awsconf, log)
 	InfraService = NewInfra(sess, awsconf, log)
@@ -78,14 +73,16 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 		return nil, fmt.Errorf("invalid region '%s' provided", region)
 	}
 
-	sess, err := initAWSSession(region, profile, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	drivLog := logger.DiscardLogger
 	if len(log) > 0 {
 		drivLog = log[0]
+	}
+
+	sb := newSessionResolver().withRegion(region).withProfile(profile).withLogger(drivLog).withCredentialResolvers()
+
+	sess, err := sb.resolve()
+	if err != nil {
+		return nil, err
 	}
 
 	awsconf := config(
@@ -104,55 +101,4 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 	drivers = append(drivers, NewCloudformation(sess, awsconf, drivLog).Drivers()...)
 
 	return driver.NewMultiDriver(drivers...), nil
-}
-
-func initAWSSession(region, profile string, profileSetterCallback func(val string) error) (*session.Session, error) {
-	session, err := session.NewSessionWithOptions(session.Options{
-		Config: awssdk.Config{
-			Region:     awssdk.String(region),
-			HTTPClient: &http.Client{Timeout: 2 * time.Second},
-		},
-		SharedConfigState:       session.SharedConfigEnable,
-		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
-		Profile:                 profile,
-	})
-
-	//session.Config = session.Config.WithLogLevel(awssdk.LogDebugWithHTTPBody)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err = session.Config.Credentials.Get(); err != nil {
-		fmt.Printf("Cannot resolve AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", profile)
-		creds := awsdriver.NewCredsPrompter(profile)
-		creds.ProfileSetterCallback = profileSetterCallback
-		if err := creds.Prompt(); err != nil {
-			return nil, fmt.Errorf("prompting credentials: %s", err)
-		}
-		created, err := creds.Store()
-		if err != nil {
-			return nil, fmt.Errorf("storing credentials at '%s': %s", awsdriver.AWSCredFilepath, err)
-		}
-		if created {
-			fmt.Printf("\n\u2713 %s created", awsdriver.AWSCredFilepath)
-			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully\n", creds.Profile)
-		} else {
-			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n", creds.Profile, awsdriver.AWSCredFilepath)
-		}
-		fmt.Printf("\u2713 Reloading session...\n\n")
-		return initAWSSession(region, creds.Profile, profileSetterCallback)
-	}
-
-	session.Config.HTTPClient = http.DefaultClient
-
-	return session, nil
-}
-
-func addDebugRequestsHandlers(s *session.Session) {
-	s.Handlers.Send.PushFront(func(r *request.Request) {
-		DefaultNetworkMonitor.addRequest(r)
-	})
-	s.Handlers.Complete.PushBack(func(r *request.Request) {
-		DefaultNetworkMonitor.setRequestEnd(r)
-	})
 }

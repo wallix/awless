@@ -1,3 +1,9 @@
+## v0.1.2 [unreleased]
+
+### Features
+
+- [#109](https://github.com/wallix/awless/issues/109): Support caching of STS credentials for Multi-Factor Authentication.
+
 ## v0.1.1 [2017-07-06]
 
 ### Features
