@@ -42,6 +42,7 @@ const (
 	Instance         string = "instance"
 	InstanceProfile  string = "instanceprofile"
 	InternetGateway  string = "internetgateway"
+	NatGateway       string = "natgateway"
 	RouteTable       string = "routetable"
 	ElasticIP        string = "elasticip"
 	Snapshot         string = "snapshot"

@@ -90,6 +90,7 @@ var ResourceTypes = []string{
 	"securitygroup",
 	"volume",
 	"internetgateway",
+	"natgateway",
 	"routetable",
 	"availabilityzone",
 	"image",
@@ -156,6 +157,7 @@ var ServicePerResourceType = map[string]string{
 	"securitygroup":       "infra",
 	"volume":              "infra",
 	"internetgateway":     "infra",
+	"natgateway":          "infra",
 	"routetable":          "infra",
 	"availabilityzone":    "infra",
 	"image":               "infra",
@@ -202,6 +204,7 @@ var APIPerResourceType = map[string]string{
 	"securitygroup":       "ec2",
 	"volume":              "ec2",
 	"internetgateway":     "ec2",
+	"natgateway":          "ec2",
 	"routetable":          "ec2",
 	"availabilityzone":    "ec2",
 	"image":               "ec2",
@@ -295,6 +298,7 @@ func (s *Infra) ResourceTypes() []string {
 		"securitygroup",
 		"volume",
 		"internetgateway",
+		"natgateway",
 		"routetable",
 		"availabilityzone",
 		"image",
@@ -334,6 +338,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var securitygroupList []*ec2.SecurityGroup
 	var volumeList []*ec2.Volume
 	var internetgatewayList []*ec2.InternetGateway
+	var natgatewayList []*ec2.NatGateway
 	var routetableList []*ec2.RouteTable
 	var availabilityzoneList []*ec2.AvailabilityZone
 	var imageList []*ec2.Image
@@ -470,6 +475,22 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[internetgateway]")
+	}
+	if s.config.getBool("aws.infra.natgateway.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, natgatewayList, err = s.fetch_all_natgateway_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource infra[natgateway]")
 	}
 	if s.config.getBool("aws.infra.routetable.sync", true) {
 		wg.Add(1)
@@ -903,6 +924,21 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
+	if s.config.getBool("aws.infra.natgateway.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, r := range natgatewayList {
+				for _, fn := range addParentsFns["natgateway"] {
+					err := fn(g, r)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}
+			}
+		}()
+	}
 	if s.config.getBool("aws.infra.routetable.sync", true) {
 		wg.Add(1)
 		go func() {
@@ -1230,6 +1266,9 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	case "internetgateway":
 		graph, _, err := s.fetch_all_internetgateway_graph()
 		return graph, err
+	case "natgateway":
+		graph, _, err := s.fetch_all_natgateway_graph()
+		return graph, err
 	case "routetable":
 		graph, _, err := s.fetch_all_routetable_graph()
 		return graph, err
@@ -1456,6 +1495,30 @@ func (s *Infra) fetch_all_internetgateway_graph() (*graph.Graph, []*ec2.Internet
 	}
 
 	for _, output := range out.InternetGateways {
+		cloudResources = append(cloudResources, output)
+		res, err := newResource(output)
+		if err != nil {
+			return g, cloudResources, err
+		}
+		if err = g.AddResource(res); err != nil {
+			return g, cloudResources, err
+		}
+	}
+
+	return g, cloudResources, nil
+
+}
+
+func (s *Infra) fetch_all_natgateway_graph() (*graph.Graph, []*ec2.NatGateway, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ec2.NatGateway
+
+	out, err := s.EC2API.DescribeNatGateways(&ec2.DescribeNatGatewaysInput{})
+	if err != nil {
+		return nil, cloudResources, err
+	}
+
+	for _, output := range out.NatGateways {
 		cloudResources = append(cloudResources, output)
 		res, err := newResource(output)
 		if err != nil {

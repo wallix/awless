@@ -200,6 +200,10 @@ var generatedParamsDoc = map[string]map[string]string{
 		"password-reset": "Specifies whether the user is required to set a new password on next sign-in",
 		"username":       "The name of the IAM user to create a password for",
 	},
+	"createnatgateway": {
+		"elasticip-id": "The allocation ID of an Elastic IP address to associate with the NAT gateway",
+		"subnet":       "The subnet in which to create the NAT gateway",
+	},
 	"createpolicy": {},
 	"createqueue": {
 		"name": "The name of the new queue",
@@ -366,6 +370,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deleteloginprofile": {
 		"username": "The name of the user whose password you want to delete",
+	},
+	"deletenatgateway": {
+		"id": "The ID of the NAT gateway",
 	},
 	"deletepolicy": {
 		"arn": "The Amazon Resource Name (ARN) of the IAM policy you want to delete",

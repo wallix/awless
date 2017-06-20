@@ -24,6 +24,7 @@ var entities = map[Entity]struct{}{
 	"instance":            {},
 	"image":               {},
 	"internetgateway":     {},
+	"natgateway":          {},
 	"instanceprofile":     {},
 	"keypair":             {},
 	"launchconfiguration": {},

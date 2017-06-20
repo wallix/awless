@@ -78,6 +78,13 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.Vpcs},
 	},
+	cloud.NatGateway: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Vpc},
+		StringColumnDefinition{Prop: properties.Subnet},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
+	},
 	cloud.RouteTable: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name},

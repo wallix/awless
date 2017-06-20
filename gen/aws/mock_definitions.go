@@ -41,6 +41,7 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "ec2.SecurityGroup", ApiMethod: "DescribeSecurityGroups", Input: "ec2.DescribeSecurityGroupsInput", Output: "ec2.DescribeSecurityGroupsOutput", OutputsExtractor: "SecurityGroups"},
 			{FuncType: "list", AWSType: "ec2.Volume", ApiMethod: "DescribeVolumesPages", Input: "ec2.DescribeVolumesInput", Output: "ec2.DescribeVolumesOutput", OutputsExtractor: "Volumes", Multipage: true, NextPageMarker: "NextToken"},
 			{FuncType: "list", AWSType: "ec2.InternetGateway", ApiMethod: "DescribeInternetGateways", Input: "ec2.DescribeInternetGatewaysInput", Output: "ec2.DescribeInternetGatewaysOutput", OutputsExtractor: "InternetGateways"},
+			{FuncType: "list", AWSType: "ec2.NatGateway", ApiMethod: "DescribeNatGateways", Input: "ec2.DescribeNatGatewaysInput", Output: "ec2.DescribeNatGatewaysOutput", OutputsExtractor: "NatGateways"},
 			{FuncType: "list", AWSType: "ec2.RouteTable", ApiMethod: "DescribeRouteTables", Input: "ec2.DescribeRouteTablesInput", Output: "ec2.DescribeRouteTablesOutput", OutputsExtractor: "RouteTables"},
 			{FuncType: "list", AWSType: "ec2.AvailabilityZone", ApiMethod: "DescribeAvailabilityZones", Input: "ec2.DescribeAvailabilityZonesInput", Output: "ec2.DescribeAvailabilityZonesOutput", OutputsExtractor: "AvailabilityZones"},
 			{FuncType: "list", AWSType: "ec2.Image", ApiMethod: "DescribeImages", Input: "ec2.DescribeImagesInput", Output: "ec2.DescribeImagesOutput", OutputsExtractor: "Images"},

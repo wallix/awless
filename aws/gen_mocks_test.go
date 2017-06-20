@@ -68,6 +68,7 @@ type mockEc2 struct {
 	securitygroups    []*ec2.SecurityGroup
 	volumes           []*ec2.Volume
 	internetgateways  []*ec2.InternetGateway
+	natgateways       []*ec2.NatGateway
 	routetables       []*ec2.RouteTable
 	availabilityzones []*ec2.AvailabilityZone
 	images            []*ec2.Image
@@ -145,6 +146,10 @@ func (m *mockEc2) DescribeVolumesPages(input *ec2.DescribeVolumesInput, fn func(
 
 func (m *mockEc2) DescribeInternetGateways(input *ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
 	return &ec2.DescribeInternetGatewaysOutput{InternetGateways: m.internetgateways}, nil
+}
+
+func (m *mockEc2) DescribeNatGateways(input *ec2.DescribeNatGatewaysInput) (*ec2.DescribeNatGatewaysOutput, error) {
+	return &ec2.DescribeNatGatewaysOutput{NatGateways: m.natgateways}, nil
 }
 
 func (m *mockEc2) DescribeRouteTables(input *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {

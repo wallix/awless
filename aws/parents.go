@@ -63,6 +63,11 @@ var addParentsFns = map[string][]addParentFn{
 		addRegionParent,
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId", listName: "Attachments", relation: DEPENDING_ON}.build(),
 	},
+	cloud.NatGateway: {
+		addRegionParent,
+		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),
+		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", relation: DEPENDING_ON}.build(),
+	},
 	cloud.RouteTable: {
 		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", listName: "Associations", relation: DEPENDING_ON}.build(),
 		funcBuilder{parent: cloud.Vpc, fieldName: "VpcId"}.build(),

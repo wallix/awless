@@ -248,6 +248,18 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Detach_Internetgateway, nil
 
+	case "createnatgateway":
+		if d.dryRun {
+			return d.Create_Natgateway_DryRun, nil
+		}
+		return d.Create_Natgateway, nil
+
+	case "deletenatgateway":
+		if d.dryRun {
+			return d.Delete_Natgateway_DryRun, nil
+		}
+		return d.Delete_Natgateway, nil
+
 	case "createroutetable":
 		if d.dryRun {
 			return d.Create_Routetable_DryRun, nil

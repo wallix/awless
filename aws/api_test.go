@@ -276,6 +276,10 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{InternetGatewayId: awssdk.String("igw_1"), Attachments: []*ec2.InternetGatewayAttachment{{VpcId: awssdk.String("vpc_2")}}},
 	}
 
+	natgws := []*ec2.NatGateway{
+		{NatGatewayId: awssdk.String("natgw_1"), VpcId: awssdk.String("vpc_1"), SubnetId: awssdk.String("sub_1")},
+	}
+
 	routeTables := []*ec2.RouteTable{
 		{RouteTableId: awssdk.String("rt_1"), VpcId: awssdk.String("vpc_1"), Associations: []*ec2.RouteTableAssociation{{RouteTableId: awssdk.String("rt_1"), SubnetId: awssdk.String("sub_1")}}},
 	}
@@ -456,7 +460,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		},
 	}
 
-	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones}
+	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones, natgateways: natgws}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	mockEcr := &mockEcr{repositorys: repositories}
 	mockEcs := &mockEcs{clusterNames: clusterNames, clusters: clusters, taskdefinitionNames: defNames, taskdefinitions: tasksDef, tasksNames: tasksNames, tasks: tasks, containerinstancesNames: containerInstancesNames, containerinstances: containerInstances}
@@ -465,7 +469,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerService, cloud.Container, cloud.ContainerInstance)
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", cloud.NatGateway, "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerService, cloud.Container, cloud.ContainerInstance)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -517,6 +521,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"us-west-1b":       resourcetest.AvailabilityZone("us-west-1b").Prop(p.Name, "us-west-1b").Build(),
 		"my_key":           resourcetest.KeyPair("my_key").Build(),
 		"igw_1":            resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
+		"natgw_1":          resourcetest.NatGw("natgw_1").Prop(p.Vpc, "vpc_1").Prop(p.Subnet, "sub_1").Build(),
 		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
 		"lb_1":             resourcetest.LoadBalancer("lb_1").Prop(p.Arn, "lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
 		"lb_2":             resourcetest.LoadBalancer("lb_2").Prop(p.Arn, "lb_2").Prop(p.Vpc, "vpc_2").Build(),
@@ -553,14 +558,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "natgw_1", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
 		"sub_1":     {"inst_1"},
 		"sub_2":     {"inst_2"},
 		"sub_3":     {"inst_3", "inst_4", "inst_6"},
-		"vpc_1":     {"lb_1", "lb_3", "rt_1", "securitygroup_1", "securitygroup_2", "sub_1", "sub_2", "tg_1"},
+		"vpc_1":     {"lb_1", "lb_3", "natgw_1", "rt_1", "securitygroup_1", "securitygroup_2", "sub_1", "sub_2", "tg_1"},
 		"vpc_2":     {"lb_2", "sub_3", "tg_2"},
 		"clust_1":   {"cont_inst_1", "cont_inst_2", "container_1", "container_2", "container_3"},
 		"clust_2":   {"cont_inst_3", "container_4"},
@@ -572,6 +577,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"lb_2":            {"tg_2"},
 		"lb_3":            {"tg_1"},
 		"my_key":          {"inst_4", "inst_6", "launchconfig_arn"},
+		"natgw_1":         {"sub_1"},
 		"rt_1":            {"sub_1"},
 		"securitygroup_1": {"inst_2", "inst_4", "inst_6", "lb_3"},
 		"securitygroup_2": {"inst_4", "lb_3"},

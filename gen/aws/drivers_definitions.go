@@ -361,6 +361,20 @@ var DriversDefs = []driversDef{
 					{AwsField: "VpcId", TemplateName: "vpc", AwsType: "awsstr"},
 				},
 			},
+			// NAT GATEWAYS
+			{
+				Action: "create", Entity: cloud.NatGateway, ApiMethod: "CreateNatGateway", Input: "CreateNatGatewayInput", Output: "CreateNatGatewayOutput", OutputExtractor: "aws.StringValue(output.NatGateway.NatGatewayId)", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "AllocationId", TemplateName: "elasticip-id", AwsType: "awsstr"},
+					{AwsField: "SubnetId", TemplateName: "subnet", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.NatGateway, ApiMethod: "DeleteNatGateway", Input: "DeleteNatGatewayInput", Output: "DeleteNatGatewayOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "NatGatewayId", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
 			// ROUTE TABLES
 			{
 				Action: "create", Entity: cloud.RouteTable, ApiMethod: "CreateRouteTable", Input: "CreateRouteTableInput", Output: "CreateRouteTableOutput", OutputExtractor: "aws.StringValue(output.RouteTable.RouteTableId)",

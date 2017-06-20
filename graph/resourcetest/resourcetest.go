@@ -45,6 +45,10 @@ func InternetGw(id string) *rBuilder {
 	return new("internetgateway", id).Prop(properties.ID, id)
 }
 
+func NatGw(id string) *rBuilder {
+	return new("natgateway", id).Prop(properties.ID, id)
+}
+
 func RouteTable(id string) *rBuilder {
 	return new("routetable", id).Prop(properties.ID, id)
 }

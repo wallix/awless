@@ -1743,6 +1743,82 @@ func (d *Ec2Driver) Detach_Internetgateway(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Create_Natgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["elasticip-id"]; !ok {
+		return nil, errors.New("create natgateway: missing required params 'elasticip-id'")
+	}
+
+	if _, ok := params["subnet"]; !ok {
+		return nil, errors.New("create natgateway: missing required params 'subnet'")
+	}
+
+	d.logger.Verbose("params dry run: create natgateway ok")
+	return fakeDryRunId("natgateway"), nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Create_Natgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateNatGatewayInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["elasticip-id"], input, "AllocationId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.CreateNatGatewayOutput
+	output, err = d.CreateNatGateway(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create natgateway: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.CreateNatGateway call took %s", time.Since(start))
+	id := aws.StringValue(output.NatGateway.NatGatewayId)
+
+	d.logger.Infof("create natgateway '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Natgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete natgateway: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete natgateway ok")
+	return fakeDryRunId("natgateway"), nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Natgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteNatGatewayInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "NatGatewayId", awsstr)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.DeleteNatGatewayOutput
+	output, err = d.DeleteNatGateway(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete natgateway: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DeleteNatGateway call took %s", time.Since(start))
+	d.logger.Info("delete natgateway done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *Ec2Driver) Create_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
 	input.DryRun = aws.Bool(true)

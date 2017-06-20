@@ -126,6 +126,12 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Vpcs: {name: "Attachments", transform: extractStringSliceValues("VpcId")},
 		properties.Tags: {name: "Tags", transform: extractTagsFn},
 	},
+	cloud.NatGateway: {
+		properties.Created: {name: "CreateTime", transform: extractValueFn},
+		properties.Subnet:  {name: "SubnetId", transform: extractValueFn},
+		properties.Vpc:     {name: "VpcId", transform: extractValueFn},
+		properties.State:   {name: "State", transform: extractValueFn},
+	},
 	cloud.RouteTable: {
 		properties.Name:   {name: "Tags", transform: extractTagFn("Name")},
 		properties.Vpc:    {name: "VpcId", transform: extractValueFn},
