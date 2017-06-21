@@ -158,7 +158,7 @@ func askHole(hole string) (interface{}, error) {
 		switch {
 		case line == "":
 			return nil, errors.New("empty")
-		case !isQuoted(line) && !template.MatchStringParamValue(line):
+		case !isQuoted(line) && !isCSV(line) && !template.MatchStringParamValue(line):
 			return nil, errors.New("string contains spaces or special characters: surround it with quotes")
 		default:
 			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
@@ -594,6 +594,18 @@ func isQuoted(s string) bool {
 		return isQuoted(s[1:])
 	}
 	return (strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")) || strings.HasPrefix(s, "'") && strings.HasSuffix(s, "'")
+}
+
+func isCSV(s string) bool {
+	if !strings.Contains(s, ",") {
+		return false
+	}
+	for _, split := range strings.Split(s, ",") {
+		if !template.MatchStringParamValue(split) {
+			return false
+		}
+	}
+	return true
 }
 
 func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
