@@ -177,6 +177,9 @@ func (te *Template) Revert() (*Template, error) {
 				if cmd.Action == "attach" && cmd.Entity == "volume" {
 					lines = append(lines, fmt.Sprintf("check volume id=%s state=available timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
 				}
+				if cmd.Action == "create" && cmd.Entity == "natgateway" {
+					lines = append(lines, fmt.Sprintf("check natgateway id=%s state=deleted timeout=180", quoteParamIfNeeded(cmd.CmdResult)))
+				}
 			}
 		}
 	}

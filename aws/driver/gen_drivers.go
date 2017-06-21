@@ -260,6 +260,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Natgateway, nil
 
+	case "checknatgateway":
+		if d.dryRun {
+			return d.Check_Natgateway_DryRun, nil
+		}
+		return d.Check_Natgateway, nil
+
 	case "createroutetable":
 		if d.dryRun {
 			return d.Create_Routetable_DryRun, nil

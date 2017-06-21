@@ -375,6 +375,14 @@ var DriversDefs = []driversDef{
 					{AwsField: "NatGatewayId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "check", Entity: cloud.NatGateway, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
 			// ROUTE TABLES
 			{
 				Action: "create", Entity: cloud.RouteTable, ApiMethod: "CreateRouteTable", Input: "CreateRouteTableInput", Output: "CreateRouteTableOutput", OutputExtractor: "aws.StringValue(output.RouteTable.RouteTableId)",

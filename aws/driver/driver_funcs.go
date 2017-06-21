@@ -893,6 +893,73 @@ func (d *Ec2Driver) Check_Volume(params map[string]interface{}) (interface{}, er
 	return nil, c.check()
 }
 
+func (d *Ec2Driver) Check_Natgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check natgateway: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"pending":     {},
+		"failed":      {},
+		"available":   {},
+		"deleting":    {},
+		"deleted":     {},
+		notFoundState: {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check natgateway: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check natgateway: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check natgateway: missing required params 'timeout'")
+	}
+
+	d.logger.Verbose("params dry run: check natgateway ok")
+	return nil, nil
+}
+
+func (d *Ec2Driver) Check_Natgateway(params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DescribeNatGatewaysInput{}
+
+	// Required params
+	err := setFieldWithType(params["id"], input, "NatGatewayIds", awsstringslice)
+	if err != nil {
+		return nil, err
+	}
+	c := &checker{
+		description: fmt.Sprintf("natgateway %s", params["id"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeNatGateways(input)
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "NatGatewayNotFound" {
+						return notFoundState, nil
+					}
+				} else {
+					return "", err
+				}
+			} else {
+				for _, nat := range output.NatGateways {
+					if aws.StringValue(nat.NatGatewayId) == params["id"] {
+						return aws.StringValue(nat.State), nil
+					}
+				}
+			}
+			return notFoundState, nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
+
 func (d *RdsDriver) Check_Database_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check database: missing required params 'id'")

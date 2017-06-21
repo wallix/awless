@@ -57,6 +57,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"checkdistribution":    {},
 	"checkinstance":        {},
 	"checkloadbalancer":    {},
+	"checknatgateway":      {},
 	"checkscalinggroup":    {},
 	"checksecuritygroup":   {},
 	"checkvolume":          {},

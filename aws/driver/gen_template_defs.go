@@ -56,6 +56,7 @@ var APIPerTemplateDefName = map[string]string{
 	"detachinternetgateway":     "ec2",
 	"createnatgateway":          "ec2",
 	"deletenatgateway":          "ec2",
+	"checknatgateway":           "ec2",
 	"createroutetable":          "ec2",
 	"deleteroutetable":          "ec2",
 	"attachroutetable":          "ec2",
@@ -398,6 +399,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "natgateway",
 		Api:            "ec2",
 		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
+	"checknatgateway": {
+		Action:         "check",
+		Entity:         "natgateway",
+		Api:            "ec2",
+		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
 	},
 	"createroutetable": {
@@ -1159,6 +1167,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["detach"] = append(supported["detach"], "internetgateway")
 	supported["create"] = append(supported["create"], "natgateway")
 	supported["delete"] = append(supported["delete"], "natgateway")
+	supported["check"] = append(supported["check"], "natgateway")
 	supported["create"] = append(supported["create"], "routetable")
 	supported["delete"] = append(supported["delete"], "routetable")
 	supported["attach"] = append(supported["attach"], "routetable")
