@@ -62,9 +62,17 @@ func (te *Template) Revert() (*Template, error) {
 						}
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
 					}
-				case cmd.Entity == "containerservice":
+				case cmd.Entity == "containertask":
 					params = append(params, fmt.Sprintf("cluster=%s", quoteParamIfNeeded(cmd.Params["cluster"])))
-					params = append(params, fmt.Sprintf("deployment-name=%s", quoteParamIfNeeded(cmd.Params["deployment-name"])))
+					params = append(params, fmt.Sprintf("type=%s", quoteParamIfNeeded(cmd.Params["type"])))
+					switch fmt.Sprint(cmd.Params["type"]) {
+					case "service":
+						params = append(params, fmt.Sprintf("deployment-name=%s", quoteParamIfNeeded(cmd.Params["deployment-name"])))
+					case "task":
+						params = append(params, fmt.Sprintf("run-arn=%s", quoteParamIfNeeded(cmd.CmdResult)))
+					default:
+						return nil, fmt.Errorf("start containertask with type '%v' can not be reverted", cmd.Params["deployment-name"])
+					}
 				default:
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
@@ -157,8 +165,8 @@ func (te *Template) Revert() (*Template, error) {
 			if cmd.Action == "stop" && cmd.Entity == "instance" {
 				lines = append(lines, fmt.Sprintf("check instance id=%s state=stopped timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
 			}
-			if cmd.Action == "start" && cmd.Entity == "containerservice" {
-				lines = append(lines, fmt.Sprintf("update containerservice cluster=%s deployment-name=%s desired-count=0", quoteParamIfNeeded(cmd.Params["cluster"]), quoteParamIfNeeded(cmd.Params["deployment-name"])))
+			if cmd.Action == "start" && cmd.Entity == "containertask" && fmt.Sprint(cmd.Params["type"]) == "service" {
+				lines = append(lines, fmt.Sprintf("update containertask cluster=%s deployment-name=%s desired-count=0", quoteParamIfNeeded(cmd.Params["cluster"]), quoteParamIfNeeded(cmd.Params["deployment-name"])))
 			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
@@ -228,8 +236,9 @@ func isRevertible(cmd *ast.CommandNode) bool {
 		return true
 	}
 
-	if cmd.Entity == "containerservice" && cmd.Action == "start" {
-		return true
+	if cmd.Entity == "containertask" && cmd.Action == "start" {
+		t, ok := cmd.Params["type"].(string)
+		return ok && (t == "service" || t == "task")
 	}
 
 	if cmd.Entity == "container" && cmd.Action == "create" {

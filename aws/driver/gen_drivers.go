@@ -612,29 +612,23 @@ func (d *EcsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Containercluster, nil
 
-	case "startcontainerservice":
-		if d.dryRun {
-			return d.Start_Containerservice_DryRun, nil
-		}
-		return d.Start_Containerservice, nil
-
-	case "stopcontainerservice":
-		if d.dryRun {
-			return d.Stop_Containerservice_DryRun, nil
-		}
-		return d.Stop_Containerservice, nil
-
-	case "updatecontainerservice":
-		if d.dryRun {
-			return d.Update_Containerservice_DryRun, nil
-		}
-		return d.Update_Containerservice, nil
-
 	case "startcontainertask":
 		if d.dryRun {
 			return d.Start_Containertask_DryRun, nil
 		}
 		return d.Start_Containertask, nil
+
+	case "stopcontainertask":
+		if d.dryRun {
+			return d.Stop_Containertask_DryRun, nil
+		}
+		return d.Stop_Containertask, nil
+
+	case "updatecontainertask":
+		if d.dryRun {
+			return d.Update_Containertask_DryRun, nil
+		}
+		return d.Update_Containertask, nil
 
 	case "attachcontainertask":
 		if d.dryRun {

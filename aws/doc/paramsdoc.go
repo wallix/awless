@@ -351,15 +351,22 @@ var manualParamsDoc = map[string]map[string]string{
 		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing (AWS | BYOL)",
 		"platform":     "The operating system of the virtual machine (Windows | Linux)",
 	},
-	"startcontainerservice": {
-		"cluster":                     "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your service",
+	"startcontainertask": {
+		"cluster":                     "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your task",
+		"type":                        "The type of task to launch (task/service)",
 		"desired-count":               "The number of instantiations of the specified service to place and keep running on your cluster",
 		"loadbalancer.container-name": "The name of the container (as it appears in a container definition) to associate with the load balancer",
 		"loadbalancer.container-port": "The port on the container to associate with the load balancer",
 		"loadbalancer.targetgroup":    "The full Amazon Resource Name (ARN) of the Elastic Load Balancing target group associated with a service",
-		"name":            "The name of the container service to start",
+		"name":            "The name of the container task to start",
 		"deployment-name": "The deployment name of the service (e.g. prod, staging...)",
 		"role":            "The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon ECS to make calls to your load balancer on your behalf",
+	},
+	"stopcontainertask": {
+		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your task",
+		"type":            "The type of task to launch (task/service)",
+		"deployment-name": "The deployment name of the service (e.g. prod, staging...)",
+		"run-arn":         "The ID or full Amazon Resource Name (ARN) entry of the run of the task to stop",
 	},
 	"updatebucket": {
 		"name":              "The name of the bucket to update",

@@ -481,34 +481,19 @@ var generatedParamsDoc = map[string]map[string]string{
 	"startalarm": {
 		"names": "The names of the alarms",
 	},
-	"startcontainerservice": {
-		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your service",
-		"deployment-name": "The name of your service",
-		"desired-count":   "The number of instantiations of the specified task definition to place and keep running on your cluster",
-		"name":            "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run in your service",
-		"role":            "The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon ECS to make calls to your load balancer on your behalf",
-	},
-	"startcontainertask": {
-		"cluster":          "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your task",
-		"containerservice": "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run",
-		"count":            "The number of instantiations of the specified task to place on your cluster",
-		"started-by":       "An optional tag specified when a task is started",
-	},
+	"startcontainertask": {},
 	"startinstance": {
 		"id": "One or more instance IDs",
 	},
 	"stopalarm": {
 		"names": "The names of the alarms",
 	},
-	"stopcontainerservice": {
-		"cluster":         "The name of the cluster that hosts the service to delete",
-		"deployment-name": "The name of the service to delete",
-	},
+	"stopcontainertask": {},
 	"stopinstance": {
 		"id": "One or more instance IDs",
 	},
 	"updatebucket": {},
-	"updatecontainerservice": {
+	"updatecontainertask": {
 		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster that your service is running on",
 		"deployment-name": "The name of the service to update",
 		"desired-count":   "The number of instantiations of the task to place and keep running in your service",

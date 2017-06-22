@@ -810,47 +810,41 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "start", Entity: cloud.ContainerService, ApiMethod: "CreateService", Input: "CreateServiceInput", Output: "CreateServiceOutput", DryRunUnsupported: true,
+				Action: "start", Entity: cloud.ContainerTask, ManualFuncDefinition: true,
 				RequiredParams: []param{
-					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
-					{AwsField: "ServiceName", TemplateName: "deployment-name", AwsType: "awsstr"},
-					{AwsField: "DesiredCount", TemplateName: "desired-count", AwsType: "awsint64"},
-					{AwsField: "TaskDefinition", TemplateName: "name", AwsType: "awsstr"},
+					{TemplateName: "cluster"},
+					{TemplateName: "desired-count"},
+					{TemplateName: "name"},
+					{TemplateName: "type"},
 				},
 				ExtraParams: []param{
-					{AwsField: "Role", TemplateName: "role", AwsType: "awsstr"},
-					{AwsField: "LoadBalancers[0]ContainerName", TemplateName: "loadbalancer.container-name", AwsType: "awsslicestruct"},
-					{AwsField: "LoadBalancers[0]ContainerPort", TemplateName: "loadbalancer.container-port", AwsType: "awsslicestructint64"},
-					{AwsField: "LoadBalancers[0]TargetGroupArn", TemplateName: "loadbalancer.targetgroup", AwsType: "awsslicestruct"},
+					{TemplateName: "role"},
+					{TemplateName: "deployment-name"},
+					{TemplateName: "loadbalancer.container-name"},
+					{TemplateName: "loadbalancer.container-port"},
+					{TemplateName: "loadbalancer.targetgroup"},
 				},
 			},
 			{
-				Action: "stop", Entity: cloud.ContainerService, ApiMethod: "DeleteService", Input: "DeleteServiceInput", Output: "DeleteServiceOutput", DryRunUnsupported: true,
+				Action: "stop", Entity: cloud.ContainerTask, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "cluster"},
+					{TemplateName: "type"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "deployment-name"},
+					{TemplateName: "run-arn"},
+				},
+			},
+			{
+				Action: "update", Entity: cloud.ContainerTask, ApiMethod: "UpdateService", Input: "UpdateServiceInput", Output: "UpdateServiceOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
 					{AwsField: "Service", TemplateName: "deployment-name", AwsType: "awsstr"},
 				},
-			},
-			{
-				Action: "update", Entity: cloud.ContainerService, ApiMethod: "UpdateService", Input: "UpdateServiceInput", Output: "UpdateServiceOutput", DryRunUnsupported: true,
-				RequiredParams: []param{
-					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
-					{AwsField: "Service", TemplateName: "deployment-name", AwsType: "awsstr"},
-				},
 				ExtraParams: []param{
 					{AwsField: "DesiredCount", TemplateName: "desired-count", AwsType: "awsint64"},
 					{AwsField: "TaskDefinition", TemplateName: "name", AwsType: "awsstr"},
-				},
-			},
-			{
-				Action: "start", Entity: cloud.ContainerTask, ApiMethod: "RunTask", Input: "RunTaskInput", Output: "RunTaskOutput", DryRunUnsupported: true,
-				RequiredParams: []param{
-					{AwsField: "Cluster", TemplateName: "cluster", AwsType: "awsstr"},
-					{AwsField: "TaskDefinition", TemplateName: "containerservice", AwsType: "awsstr"},
-				},
-				ExtraParams: []param{
-					{AwsField: "Count", TemplateName: "count", AwsType: "awsint64"},
-					{AwsField: "StartedBy", TemplateName: "started-by", AwsType: "awsstr"},
 				},
 			},
 			//Container

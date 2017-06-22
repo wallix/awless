@@ -98,10 +98,9 @@ var APIPerTemplateDefName = map[string]string{
 	"authenticateregistry":      "ecr",
 	"createcontainercluster":    "ecs",
 	"deletecontainercluster":    "ecs",
-	"startcontainerservice":     "ecs",
-	"stopcontainerservice":      "ecs",
-	"updatecontainerservice":    "ecs",
 	"startcontainertask":        "ecs",
+	"stopcontainertask":         "ecs",
+	"updatecontainertask":       "ecs",
 	"attachcontainertask":       "ecs",
 	"detachcontainertask":       "ecs",
 	"createuser":                "iam",
@@ -695,33 +694,26 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
-	"startcontainerservice": {
-		Action:         "start",
-		Entity:         "containerservice",
-		Api:            "ecs",
-		RequiredParams: []string{"cluster", "deployment-name", "desired-count", "name"},
-		ExtraParams:    []string{"loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role"},
-	},
-	"stopcontainerservice": {
-		Action:         "stop",
-		Entity:         "containerservice",
-		Api:            "ecs",
-		RequiredParams: []string{"cluster", "deployment-name"},
-		ExtraParams:    []string{},
-	},
-	"updatecontainerservice": {
-		Action:         "update",
-		Entity:         "containerservice",
-		Api:            "ecs",
-		RequiredParams: []string{"cluster", "deployment-name"},
-		ExtraParams:    []string{"desired-count", "name"},
-	},
 	"startcontainertask": {
 		Action:         "start",
 		Entity:         "containertask",
 		Api:            "ecs",
-		RequiredParams: []string{"cluster", "containerservice"},
-		ExtraParams:    []string{"count", "started-by"},
+		RequiredParams: []string{"cluster", "desired-count", "name", "type"},
+		ExtraParams:    []string{"deployment-name", "loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role"},
+	},
+	"stopcontainertask": {
+		Action:         "stop",
+		Entity:         "containertask",
+		Api:            "ecs",
+		RequiredParams: []string{"cluster", "type"},
+		ExtraParams:    []string{"deployment-name", "run-arn"},
+	},
+	"updatecontainertask": {
+		Action:         "update",
+		Entity:         "containertask",
+		Api:            "ecs",
+		RequiredParams: []string{"cluster", "deployment-name"},
+		ExtraParams:    []string{"desired-count", "name"},
 	},
 	"attachcontainertask": {
 		Action:         "attach",
@@ -1209,10 +1201,9 @@ func DriverSupportedActions() map[string][]string {
 	supported["authenticate"] = append(supported["authenticate"], "registry")
 	supported["create"] = append(supported["create"], "containercluster")
 	supported["delete"] = append(supported["delete"], "containercluster")
-	supported["start"] = append(supported["start"], "containerservice")
-	supported["stop"] = append(supported["stop"], "containerservice")
-	supported["update"] = append(supported["update"], "containerservice")
 	supported["start"] = append(supported["start"], "containertask")
+	supported["stop"] = append(supported["stop"], "containertask")
+	supported["update"] = append(supported["update"], "containertask")
 	supported["attach"] = append(supported["attach"], "containertask")
 	supported["detach"] = append(supported["detach"], "containertask")
 	supported["create"] = append(supported["create"], "user")
