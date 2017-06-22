@@ -85,7 +85,7 @@ var showCmd = &cobra.Command{
 			exitOn(err)
 			logger.Verbosef("syncing service for %s type", resource.Type())
 			if _, err = sync.DefaultSyncer.Sync(srv); err != nil {
-				logger.Error(err)
+				logger.Verbose(err)
 			}
 			resource, gph = findResourceInLocalGraphs(ref)
 		}
