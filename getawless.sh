@@ -10,12 +10,15 @@ else
 	ARCH="386"
 fi
 
+EXT="tar.gz"
+
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
 	OS="linux"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 	OS="darwin"
 elif [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] ; then
 	OS="windows"
+	EXT="zip"
 else
 	echo "No awless binary available for OS '$OSTYPE'. You may want to use go to install awless with 'go get -u github.com/wallix/awless'"
   exit
@@ -23,21 +26,27 @@ fi
 
 LATEST_VERSION=`curl -fs https://updates.awless.io | grep -oE "v[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"`
 
-DOWNLOAD_URL="https://github.com/wallix/awless/releases/download/$LATEST_VERSION/awless-$OS-$ARCH.zip"
+FILENAME=awless-$OS-$ARCH.$EXT
+
+DOWNLOAD_URL="https://github.com/wallix/awless/releases/download/$LATEST_VERSION/$FILENAME"
 
 echo "Downloading awless from $DOWNLOAD_URL"
 
-ZIPFILE="awless.zip"
-
-if ! curl --fail -o $ZIPFILE -L $DOWNLOAD_URL; then
+if ! curl --fail -o $FILENAME -L $DOWNLOAD_URL; then
     exit
 fi
 
 echo ""
-echo "unzipping $ZIPFILE to ./awless"
-echo 'y' | unzip $ZIPFILE 2>&1 > /dev/null
-echo "removing $ZIPFILE"
-rm $ZIPFILE
+echo "extracting $FILENAME to ./awless"
+
+if [[ "$OS" == "windows" ]]; then
+	echo 'y' | unzip $FILENAME 2>&1 > /dev/null
+else
+	tar -xzf $FILENAME
+fi
+
+echo "removing $FILENAME"
+rm $FILENAME
 chmod +x ./awless
 
 echo ""

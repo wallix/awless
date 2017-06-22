@@ -19,9 +19,13 @@ limitations under the License.
 package main
 
 import (
+	"archive/tar"
 	"archive/zip"
+	"compress/gzip"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -114,9 +118,11 @@ func buildAndZip(osname, arch string) error {
 		return err
 	}
 
-	buildFor := "zip"
+	buildFor := "targz"
 	if *brew {
 		buildFor = "brew"
+	} else if osname == "windows" {
+		buildFor = "zip"
 	}
 
 	buildInfo := fmt.Sprintf("-X github.com/wallix/awless/config.buildDate=%s -X github.com/wallix/awless/config.buildSha=%s -X github.com/wallix/awless/config.buildOS=%s -X github.com/wallix/awless/config.buildArch=%s -X github.com/wallix/awless/config.BuildFor=%s",
@@ -132,10 +138,12 @@ func buildAndZip(osname, arch string) error {
 	if _, err := runCmd(env, "go", "build", "-o", artefactPath, ldflags); err != nil {
 		return err
 	}
-	if *brew { //Disable zipping
+
+	switch buildFor {
+	case "brew": //No zipping
 		fmt.Println("DO NOT forget to update the brew bottles and formula (see homebrew-awless Github repo)!")
 		return os.Rename(artefactPath, "awless")
-	} else {
+	case "zip":
 		zipFile, err := os.OpenFile(fmt.Sprintf("%s-%s-%s.zip", strings.Split(binName, ".")[0], osname, arch), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
 		if err != nil {
 			return err
@@ -158,6 +166,38 @@ func buildAndZip(osname, arch string) error {
 		}
 
 		return w.Close()
+	case "targz":
+		tarball, err := os.Create(fmt.Sprintf("%s-%s-%s.tar.gz", strings.Split(binName, ".")[0], osname, arch))
+		if err != nil {
+			return err
+		}
+		defer tarball.Close()
+
+		gw := gzip.NewWriter(tarball)
+		defer gw.Close()
+
+		tw := tar.NewWriter(gw)
+		defer tw.Close()
+
+		binFile, err := os.Open(artefactPath)
+		if err != nil {
+			return err
+		}
+		defer binFile.Close()
+
+		if stat, err := binFile.Stat(); err != nil {
+			return err
+		} else if tarHeader, err := tar.FileInfoHeader(stat, ""); err == nil {
+			if err := tw.WriteHeader(tarHeader); err != nil {
+				return err
+			}
+			if _, err := io.Copy(tw, binFile); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		return errors.New("missing packaging method")
 	}
 }
 

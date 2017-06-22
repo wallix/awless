@@ -54,6 +54,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"state":   "The state of the ELBv2 Loadbalancer to reach (provisioning | active | failed | not-found)",
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
+	"checknatgateway": {
+		"id":      "The ID of the NAT Gateway to check",
+		"state":   "The state of the NAT Gateway to reach (provisioning | active | failed | not-found)",
+		"timeout": "The time (in seconds) after which the check is failed",
+	},
 	"checkscalinggroup": {
 		"name":    "The name of the AutoScaling Group to check",
 		"count":   "The number of Instances + Loadbalancers + TargetGroups in the AutoScaling Group to reach",
