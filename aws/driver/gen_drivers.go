@@ -636,17 +636,17 @@ func (d *EcsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Start_Containertask, nil
 
-	case "createcontainer":
+	case "attachcontainertask":
 		if d.dryRun {
-			return d.Create_Container_DryRun, nil
+			return d.Attach_Containertask_DryRun, nil
 		}
-		return d.Create_Container, nil
+		return d.Attach_Containertask, nil
 
-	case "deletecontainer":
+	case "detachcontainertask":
 		if d.dryRun {
-			return d.Delete_Container_DryRun, nil
+			return d.Detach_Containertask_DryRun, nil
 		}
-		return d.Delete_Container, nil
+		return d.Detach_Containertask, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

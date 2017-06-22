@@ -43,6 +43,9 @@ func (te *Template) Revert() (*Template, error) {
 						}
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
 					}
+				case "containertask":
+					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
+					params = append(params, fmt.Sprintf("container-name=%s", quoteParamIfNeeded(cmd.Params["container-name"])))
 				default:
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
@@ -113,9 +116,6 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("service-namespace=%s", quoteParamIfNeeded(cmd.Params["service-namespace"])))
 				case "loginprofile":
 					params = append(params, fmt.Sprintf("username=%s", quoteParamIfNeeded(cmd.Params["username"])))
-				case "container":
-					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
-					params = append(params, fmt.Sprintf("service=%s", quoteParamIfNeeded(cmd.Params["service"])))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm", "dbsubnetgroup", "keypair":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.CmdResult)))
 					if cmd.Entity == "scalinggroup" {

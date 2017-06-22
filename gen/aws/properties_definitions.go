@@ -65,7 +65,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Cooldown", RDFLabel: fmt.Sprintf("%s:cooldown", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "CopyTagsToSnapshot", RDFLabel: fmt.Sprintf("%s:copyTagsToSnapshot", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "ContainersImages", RDFLabel: fmt.Sprintf("%s:containersImages", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
-	{AwlessLabel: "ContainerService", RDFLabel: fmt.Sprintf("%s:containerService", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "ContainerTask", RDFLabel: fmt.Sprintf("%s:containerTask", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Country", RDFLabel: fmt.Sprintf("%s:country", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Created", RDFLabel: fmt.Sprintf("%s:created", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdDateTime},
 	{AwlessLabel: "DBSecurityGroups", RDFLabel: fmt.Sprintf("%s:dbSecurityGroups", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},

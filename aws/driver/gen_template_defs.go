@@ -102,8 +102,8 @@ var APIPerTemplateDefName = map[string]string{
 	"stopcontainerservice":      "ecs",
 	"updatecontainerservice":    "ecs",
 	"startcontainertask":        "ecs",
-	"createcontainer":           "ecs",
-	"deletecontainer":           "ecs",
+	"attachcontainertask":       "ecs",
+	"detachcontainertask":       "ecs",
 	"createuser":                "iam",
 	"deleteuser":                "iam",
 	"attachuser":                "iam",
@@ -723,18 +723,18 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"cluster", "containerservice"},
 		ExtraParams:    []string{"count", "started-by"},
 	},
-	"createcontainer": {
-		Action:         "create",
-		Entity:         "container",
+	"attachcontainertask": {
+		Action:         "attach",
+		Entity:         "containertask",
 		Api:            "ecs",
-		RequiredParams: []string{"image", "memory-hard-limit", "name", "service"},
+		RequiredParams: []string{"container-name", "image", "memory-hard-limit", "name"},
 		ExtraParams:    []string{"command", "env", "ports", "privileged", "workdir"},
 	},
-	"deletecontainer": {
-		Action:         "delete",
-		Entity:         "container",
+	"detachcontainertask": {
+		Action:         "detach",
+		Entity:         "containertask",
 		Api:            "ecs",
-		RequiredParams: []string{"name", "service"},
+		RequiredParams: []string{"container-name", "name"},
 		ExtraParams:    []string{},
 	},
 	"createuser": {
@@ -1213,8 +1213,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["stop"] = append(supported["stop"], "containerservice")
 	supported["update"] = append(supported["update"], "containerservice")
 	supported["start"] = append(supported["start"], "containertask")
-	supported["create"] = append(supported["create"], "container")
-	supported["delete"] = append(supported["delete"], "container")
+	supported["attach"] = append(supported["attach"], "containertask")
+	supported["detach"] = append(supported["detach"], "containertask")
 	supported["create"] = append(supported["create"], "user")
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")

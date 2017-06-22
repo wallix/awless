@@ -172,26 +172,26 @@ func removeString(arr []string, s string) (out []string) {
 	return
 }
 
-func (d *EcsDriver) Create_Container_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Attach_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("create container: missing required params 'name'")
+		return nil, errors.New("attach containertask: missing required params 'name'")
 	}
-	if _, ok := params["service"]; !ok {
-		return nil, errors.New("create container: missing required params 'service'")
+	if _, ok := params["container-name"]; !ok {
+		return nil, errors.New("attach containertask: missing required params 'container-name'")
 	}
 	if _, ok := params["image"]; !ok {
-		return nil, errors.New("create container: missing required params 'image'")
+		return nil, errors.New("attach containertask: missing required params 'image'")
 	}
 	if _, ok := params["memory-hard-limit"]; !ok {
-		return nil, errors.New("create container: missing required params 'memory-hard-limit'")
+		return nil, errors.New("attach containertask: missing required params 'memory-hard-limit'")
 	}
-	d.logger.Verbose("params dry run: create container ok")
+	d.logger.Verbose("params dry run: attach container ok")
 	return nil, nil
 }
 
-func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Attach_Containertask(params map[string]interface{}) (interface{}, error) {
 	var taskDefinitionInput *ecs.RegisterTaskDefinitionInput
-	taskDefinitionName := fmt.Sprint(params["service"])
+	taskDefinitionName := fmt.Sprint(params["name"])
 
 	taskdefOutput, err := d.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
 		TaskDefinition: aws.String(taskDefinitionName),
@@ -219,7 +219,7 @@ func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}
 	}
 
 	container := &ecs.ContainerDefinition{}
-	if err = setFieldWithType(params["name"], container, "Name", awsstr); err != nil {
+	if err = setFieldWithType(params["container-name"], container, "Name", awsstr); err != nil {
 		return nil, err
 	}
 	if err = setFieldWithType(params["image"], container, "Image", awsstr); err != nil {
@@ -267,28 +267,28 @@ func (d *EcsDriver) Create_Container(params map[string]interface{}) (interface{}
 
 	taskDefOutput, err := d.RegisterTaskDefinition(taskDefinitionInput)
 	if err != nil {
-		return nil, fmt.Errorf("create container: register task definition: %s", err)
+		return nil, fmt.Errorf("attach containertask: register task definition: %s", err)
 	}
 	d.logger.ExtraVerbosef("ecs.RegisterTaskDefinitionOutput call took %s", time.Since(start))
-	d.logger.ExtraVerbosef("create container: register task definition '%s' done", aws.StringValue(taskDefOutput.TaskDefinition.Family))
+	d.logger.ExtraVerbosef("attach containertask: register task definition '%s' done", aws.StringValue(taskDefOutput.TaskDefinition.Family))
 
-	d.logger.Infof("create container '%s' done", aws.StringValue(taskDefOutput.TaskDefinition.TaskDefinitionArn))
+	d.logger.Infof("attach container '%s' done", aws.StringValue(taskDefOutput.TaskDefinition.TaskDefinitionArn))
 	return nil, nil
 }
 
-func (d *EcsDriver) Delete_Container_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Detach_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
-		return nil, errors.New("delete container: missing required params 'name'")
+		return nil, errors.New("detach containertask: missing required params 'name'")
 	}
-	if _, ok := params["service"]; !ok {
-		return nil, errors.New("delete container: missing required params 'service'")
+	if _, ok := params["container-name"]; !ok {
+		return nil, errors.New("detach containertask: missing required params 'container-name'")
 	}
-	d.logger.Verbose("params dry run: create container ok")
+	d.logger.Verbose("params dry run: attach container ok")
 	return nil, nil
 }
 
-func (d *EcsDriver) Delete_Container(params map[string]interface{}) (interface{}, error) {
-	taskDefinitionName := fmt.Sprint(params["service"])
+func (d *EcsDriver) Detach_Containertask(params map[string]interface{}) (interface{}, error) {
+	taskDefinitionName := fmt.Sprint(params["name"])
 
 	taskdefOutput, err := d.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
 		TaskDefinition: aws.String(taskDefinitionName),
@@ -303,14 +303,14 @@ func (d *EcsDriver) Delete_Container(params map[string]interface{}) (interface{}
 	for _, def := range taskdefOutput.TaskDefinition.ContainerDefinitions {
 		name := aws.StringValue(def.Name)
 		containerNames = append(containerNames, name)
-		if name == fmt.Sprint(params["name"]) || aws.StringValue(def.Image) == fmt.Sprint(params["name"]) {
+		if name == fmt.Sprint(params["container-name"]) || aws.StringValue(def.Image) == fmt.Sprint(params["container-name"]) {
 			found = true
 		} else {
 			containerDefinitions = append(containerDefinitions, def)
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("did not find any container called '%s': found: '%s'", fmt.Sprint(params["name"]), strings.Join(containerNames, "','"))
+		return nil, fmt.Errorf("did not find any container called '%s': found: '%s'", fmt.Sprint(params["container-name"]), strings.Join(containerNames, "','"))
 	}
 
 	if len(containerDefinitions) > 0 { //At least one container remaining
@@ -325,7 +325,7 @@ func (d *EcsDriver) Delete_Container(params map[string]interface{}) (interface{}
 		start := time.Now()
 
 		if _, err := d.RegisterTaskDefinition(taskDefinitionInput); err != nil {
-			return nil, fmt.Errorf("delete container: register task definition: %s", err)
+			return nil, fmt.Errorf("detach containertask: register task definition: %s", err)
 		}
 		d.logger.ExtraVerbosef("ecs.RegisterTaskDefinition call took %s", time.Since(start))
 
@@ -337,12 +337,12 @@ func (d *EcsDriver) Delete_Container(params map[string]interface{}) (interface{}
 		start := time.Now()
 
 		if _, err := d.DeregisterTaskDefinition(taskDefinitionInput); err != nil {
-			return nil, fmt.Errorf("delete container: deregister task definition: %s", err)
+			return nil, fmt.Errorf("detach containertask: deregister task definition: %s", err)
 		}
 		d.logger.ExtraVerbosef("ecs.DeregisterTaskDefinition call took %s", time.Since(start))
 	}
 
-	d.logger.Infof("delete container '%s' done", aws.StringValue(taskdefOutput.TaskDefinition.Family))
+	d.logger.Infof("detach containertask '%s' done", aws.StringValue(taskdefOutput.TaskDefinition.Family))
 	return nil, nil
 }
 

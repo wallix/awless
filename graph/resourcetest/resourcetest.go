@@ -149,8 +149,8 @@ func ContainerCluster(id string) *rBuilder {
 	return new("containercluster", id).Prop(properties.ID, id)
 }
 
-func ContainerService(id string) *rBuilder {
-	return new("containerservice", id).Prop(properties.ID, id)
+func ContainerTask(id string) *rBuilder {
+	return new("containertask", id).Prop(properties.ID, id)
 }
 
 func Container(id string) *rBuilder {

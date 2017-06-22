@@ -13,6 +13,17 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":       "The Name of the Alarm to update",
 		"action-arn": "The Amazon Resource Name (ARN) of the action to execute when this alarm transitions to the ALARM state from any other state",
 	},
+	"attachcontainertask": {
+		"container-name":    "The name of a container",
+		"name":              "The name of the new or existing task containing the container to attach",
+		"image":             "The image used to start a container. Images in the Docker Hub registry are available by default. Other repositories are specified with repository-url/image:tag",
+		"memory-hard-limit": "The hard limit (in MiB) of memory to present to the container. If your container attempts to exceed the memory specified here, the container is killed",
+		"command":           "The command that is passed to the container",
+		"env":               "The environment variables to pass to a container using this format: key1:val1,key2:val2,...",
+		"privileged":        "When this parameter is true, the container is given elevated privileges on the host container instance",
+		"workdir":           "The working directory in which to run commands inside the container",
+		"ports":             "The list of port mappings for the container. Port mappings allow containers to access ports on the host container instance to send or receive traffic (format [host-port:]container-port[/protocol][,[host-port:]container-port[/protocol]])",
+	},
 	"attachelasticip": {
 		"allow-reassociation": "Specify false to ensure the operation fails if the Elastic IP address is already associated with another resource",
 	},
@@ -101,17 +112,6 @@ var manualParamsDoc = map[string]map[string]string{
 	"createbucket": {
 		"acl":  "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
 		"name": "The name of bucket to create",
-	},
-	"createcontainer": {
-		"name":              "The name of a container",
-		"service":           "The name of the new or existing service containing the container to create",
-		"image":             "The image used to start a container. Images in the Docker Hub registry are available by default. Other repositories are specified with repository-url/image:tag",
-		"memory-hard-limit": "The hard limit (in MiB) of memory to present to the container. If your container attempts to exceed the memory specified here, the container is killed",
-		"command":           "The command that is passed to the container",
-		"env":               "The environment variables to pass to a container using this format: key1:val1,key2:val2,...",
-		"privileged":        "When this parameter is true, the container is given elevated privileges on the host container instance",
-		"workdir":           "The working directory in which to run commands inside the container",
-		"ports":             "The list of port mappings for the container. Port mappings allow containers to access ports on the host container instance to send or receive traffic (format [host-port:]container-port[/protocol][,[host-port:]container-port[/protocol]])",
 	},
 	"createdatabase": {
 		"autoupgrade":       "Set to true to indicate that minor version patches are applied automatically",
@@ -272,10 +272,6 @@ var manualParamsDoc = map[string]map[string]string{
 	"deletebucket": {
 		"name": "The name of the bucket to be deleted",
 	},
-	"deletecontainer": {
-		"name":    "The name of the container to delete",
-		"service": "The name of the existing service containing the container to delete",
-	},
 	"deletedatabase": {
 		"id":            "The ID of the database to be deleted",
 		"skip-snapshot": "Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DBSnapshot is created. If false is specified, a DB snapshot is created before the DB instance is deleted",
@@ -328,6 +324,10 @@ var manualParamsDoc = map[string]map[string]string{
 	"detachalarm": {
 		"name":       "The name of the alarm",
 		"action-arn": "The Amazon Resource Name (ARN) to be detached of the ALARM actions",
+	},
+	"detachcontainertask": {
+		"container-name": "The name of the container to detach",
+		"name":           "The name of the existing container task containing the container to detach",
 	},
 	"detachinstance": {
 		"id": "The ID of the instance to be detached from target group",

@@ -68,7 +68,7 @@ const (
 	Cooldown                          = "Cooldown"
 	CopyTagsToSnapshot                = "CopyTagsToSnapshot"
 	ContainersImages                  = "ContainersImages"
-	ContainerService                  = "ContainerService"
+	ContainerTask                     = "ContainerTask"
 	Country                           = "Country"
 	Created                           = "Created"
 	DBSecurityGroups                  = "DBSecurityGroups"

@@ -855,10 +855,10 @@ var DriversDefs = []driversDef{
 			},
 			//Container
 			{
-				Action: "create", Entity: cloud.Container, ManualFuncDefinition: true,
+				Action: "attach", Entity: cloud.ContainerTask, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "name"},
-					{TemplateName: "service"},
+					{TemplateName: "container-name"},
 					{TemplateName: "image"},
 					{TemplateName: "memory-hard-limit"},
 				},
@@ -871,10 +871,10 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
-				Action: "delete", Entity: cloud.Container, ManualFuncDefinition: true,
+				Action: "detach", Entity: cloud.ContainerTask, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "name"},
-					{TemplateName: "service"},
+					{TemplateName: "container-name"},
 				},
 			},
 		},

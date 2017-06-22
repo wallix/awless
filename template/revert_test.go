@@ -336,14 +336,14 @@ stop containerservice cluster=awless-cluster deployment-name=awless-test`
 		}
 	})
 
-	t.Run("Revert create container", func(t *testing.T) {
-		tpl := MustParse("create container image=toto memory-hard-limit=64 name=test-container service=test-service")
+	t.Run("Revert attach containertask", func(t *testing.T) {
+		tpl := MustParse("attach containertask image=toto memory-hard-limit=64 container-name=test-container name=test-service")
 		reverted, err := tpl.Revert()
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		exp := `delete container name=test-container service=test-service`
+		exp := `detach containertask container-name=test-container name=test-service`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

@@ -70,7 +70,7 @@ const (
 	Cooldown                          = "cloud:cooldown"
 	CopyTagsToSnapshot                = "cloud:copyTagsToSnapshot"
 	ContainersImages                  = "cloud:containersImages"
-	ContainerService                  = "cloud:containerService"
+	ContainerTask                     = "cloud:containerTask"
 	Country                           = "cloud:country"
 	Created                           = "cloud:created"
 	DBSecurityGroups                  = "cloud:dbSecurityGroups"
@@ -265,7 +265,7 @@ var Labels = map[string]string{
 	properties.Cooldown:                          Cooldown,
 	properties.CopyTagsToSnapshot:                CopyTagsToSnapshot,
 	properties.ContainersImages:                  ContainersImages,
-	properties.ContainerService:                  ContainerService,
+	properties.ContainerTask:                     ContainerTask,
 	properties.Country:                           Country,
 	properties.Created:                           Created,
 	properties.DBSecurityGroups:                  DBSecurityGroups,
@@ -460,7 +460,7 @@ var Properties = RDFProperties{
 	Cooldown:                {ID: Cooldown, RdfType: "rdf:Property", RdfsLabel: "Cooldown", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	CopyTagsToSnapshot:      {ID: CopyTagsToSnapshot, RdfType: "rdf:Property", RdfsLabel: "CopyTagsToSnapshot", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	ContainersImages:        {ID: ContainersImages, RdfType: "rdf:Property", RdfsLabel: "ContainersImages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
-	ContainerService:        {ID: ContainerService, RdfType: "rdf:Property", RdfsLabel: "ContainerService", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	ContainerTask:           {ID: ContainerTask, RdfType: "rdf:Property", RdfsLabel: "ContainerTask", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Country:                 {ID: Country, RdfType: "rdf:Property", RdfsLabel: "Country", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Created:                 {ID: Created, RdfType: "rdf:Property", RdfsLabel: "Created", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	DBSecurityGroups:        {ID: DBSecurityGroups, RdfType: "rdf:Property", RdfsLabel: "DBSecurityGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},

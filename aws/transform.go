@@ -109,7 +109,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *ecs.Cluster:
 		res = graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(ss.ClusterArn))
 	case *ecs.TaskDefinition:
-		res = graph.InitResource(cloud.ContainerService, awssdk.StringValue(ss.TaskDefinitionArn))
+		res = graph.InitResource(cloud.ContainerTask, awssdk.StringValue(ss.TaskDefinitionArn))
 	case *ecs.Container:
 		res = graph.InitResource(cloud.Container, awssdk.StringValue(ss.ContainerArn))
 	case *ecs.ContainerInstance:

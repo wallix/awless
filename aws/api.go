@@ -809,7 +809,7 @@ func (s *Infra) fetch_all_containercluster_graph() (*graph.Graph, []*ecs.Cluster
 	return g, cloudResources, nil
 }
 
-func (s *Infra) fetch_all_containerservice_graph() (*graph.Graph, []*ecs.TaskDefinition, error) {
+func (s *Infra) fetch_all_containertask_graph() (*graph.Graph, []*ecs.TaskDefinition, error) {
 	g := graph.NewGraph()
 	var cloudResources []*ecs.TaskDefinition
 
@@ -930,7 +930,7 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 						res.Properties[properties.Stopped] = awssdk.TimeValue(task.StoppedAt)
 					}
 					if task.TaskDefinitionArn != nil {
-						res.Properties[properties.ContainerService] = awssdk.StringValue(task.TaskDefinitionArn)
+						res.Properties[properties.ContainerTask] = awssdk.StringValue(task.TaskDefinitionArn)
 					}
 					if task.Group != nil {
 						res.Properties[properties.DeploymentName] = awssdk.StringValue(task.Group)
@@ -938,7 +938,7 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 					if badResErr = g.AddParentRelation(graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(task.ClusterArn)), res); badResErr != nil {
 						return false
 					}
-					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerService, awssdk.StringValue(task.TaskDefinitionArn)), res); badResErr != nil {
+					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerTask, awssdk.StringValue(task.TaskDefinitionArn)), res); badResErr != nil {
 						return false
 					}
 					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(task.ContainerInstanceArn)), res); badResErr != nil {

@@ -107,7 +107,7 @@ var ResourceTypes = []string{
 	"scalingpolicy",
 	"repository",
 	"containercluster",
-	"containerservice",
+	"containertask",
 	"container",
 	"containerinstance",
 	"user",
@@ -174,7 +174,7 @@ var ServicePerResourceType = map[string]string{
 	"scalingpolicy":       "infra",
 	"repository":          "infra",
 	"containercluster":    "infra",
-	"containerservice":    "infra",
+	"containertask":       "infra",
 	"container":           "infra",
 	"containerinstance":   "infra",
 	"user":                "access",
@@ -221,7 +221,7 @@ var APIPerResourceType = map[string]string{
 	"scalingpolicy":       "autoscaling",
 	"repository":          "ecr",
 	"containercluster":    "ecs",
-	"containerservice":    "ecs",
+	"containertask":       "ecs",
 	"container":           "ecs",
 	"containerinstance":   "ecs",
 	"user":                "iam",
@@ -325,7 +325,7 @@ func (s *Infra) ResourceTypes() []string {
 		"scalingpolicy",
 		"repository",
 		"containercluster",
-		"containerservice",
+		"containertask",
 		"container",
 		"containerinstance",
 	}
@@ -365,7 +365,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	var scalingpolicyList []*autoscaling.ScalingPolicy
 	var repositoryList []*ecr.Repository
 	var containerclusterList []*ecs.Cluster
-	var containerserviceList []*ecs.TaskDefinition
+	var containertaskList []*ecs.TaskDefinition
 	var containerList []*ecs.Container
 	var containerinstanceList []*ecs.ContainerInstance
 
@@ -758,13 +758,13 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	} else {
 		s.log.Verbose("sync: *disabled* for resource infra[containercluster]")
 	}
-	if s.config.getBool("aws.infra.containerservice.sync", true) {
+	if s.config.getBool("aws.infra.containertask.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			var resGraph *graph.Graph
 			var err error
-			resGraph, containerserviceList, err = s.fetch_all_containerservice_graph()
+			resGraph, containertaskList, err = s.fetch_all_containertask_graph()
 			if err != nil {
 				errc <- err
 				return
@@ -772,7 +772,7 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			g.AddGraph(resGraph)
 		}()
 	} else {
-		s.log.Verbose("sync: *disabled* for resource infra[containerservice]")
+		s.log.Verbose("sync: *disabled* for resource infra[containertask]")
 	}
 	if s.config.getBool("aws.infra.container.sync", true) {
 		wg.Add(1)
@@ -1189,12 +1189,12 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			}
 		}()
 	}
-	if s.config.getBool("aws.infra.containerservice.sync", true) {
+	if s.config.getBool("aws.infra.containertask.sync", true) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for _, r := range containerserviceList {
-				for _, fn := range addParentsFns["containerservice"] {
+			for _, r := range containertaskList {
+				for _, fn := range addParentsFns["containertask"] {
 					err := fn(g, r)
 					if err != nil {
 						errc <- err
@@ -1327,8 +1327,8 @@ func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
 	case "containercluster":
 		graph, _, err := s.fetch_all_containercluster_graph()
 		return graph, err
-	case "containerservice":
-		graph, _, err := s.fetch_all_containerservice_graph()
+	case "containertask":
+		graph, _, err := s.fetch_all_containertask_graph()
 		return graph, err
 	case "container":
 		graph, _, err := s.fetch_all_container_graph()
