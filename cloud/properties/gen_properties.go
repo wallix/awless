@@ -79,6 +79,7 @@ const (
 	Description                       = "Description"
 	DesiredCapacity                   = "DesiredCapacity"
 	DeploymentName                    = "DeploymentName"
+	Deployments                       = "Deployments"
 	Dimensions                        = "Dimensions"
 	DisableRollback                   = "DisableRollback"
 	DockerVersion                     = "DockerVersion"

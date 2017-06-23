@@ -247,6 +247,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Version},
 		StringColumnDefinition{Prop: properties.State},
 		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.ContainersImages}},
+		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Deployments}},
 	},
 	cloud.Container: {
 		StringColumnDefinition{Prop: properties.Name},

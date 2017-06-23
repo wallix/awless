@@ -128,6 +128,9 @@ func (m *mockEcs) DescribeTaskDefinition(input *ecs.DescribeTaskDefinitionInput)
 }
 
 func (m *mockEcs) ListTasksPages(input *ecs.ListTasksInput, fn func(p *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool)) error {
+	if awssdk.StringValue(input.DesiredStatus) == "STOPPED" {
+		return nil
+	}
 	var pages [][]*string
 	for i := 0; i < len(m.tasksNames[awssdk.StringValue(input.Cluster)]); i += 2 {
 		page := []*string{m.tasksNames[awssdk.StringValue(input.Cluster)][i]}

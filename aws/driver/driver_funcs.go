@@ -185,7 +185,7 @@ func (d *EcsDriver) Attach_Containertask_DryRun(params map[string]interface{}) (
 	if _, ok := params["memory-hard-limit"]; !ok {
 		return nil, errors.New("attach containertask: missing required params 'memory-hard-limit'")
 	}
-	d.logger.Verbose("params dry run: attach container ok")
+	d.logger.Verbose("params dry run: attach containertask ok")
 	return nil, nil
 }
 
@@ -283,7 +283,7 @@ func (d *EcsDriver) Detach_Containertask_DryRun(params map[string]interface{}) (
 	if _, ok := params["container-name"]; !ok {
 		return nil, errors.New("detach containertask: missing required params 'container-name'")
 	}
-	d.logger.Verbose("params dry run: attach container ok")
+	d.logger.Verbose("params dry run: detach containertask ok")
 	return nil, nil
 }
 
@@ -343,6 +343,72 @@ func (d *EcsDriver) Detach_Containertask(params map[string]interface{}) (interfa
 	}
 
 	d.logger.Infof("detach containertask '%s' done", aws.StringValue(taskdefOutput.TaskDefinition.Family))
+	return nil, nil
+}
+
+func (d *EcsDriver) Delete_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("delete containertask: missing required params 'name'")
+	}
+	taskDefinitionName := fmt.Sprint(params["name"])
+
+	taskDefOutput, err := d.ListTaskDefinitions(&ecs.ListTaskDefinitionsInput{
+		FamilyPrefix: aws.String(taskDefinitionName),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("delete containertask dry run: %s", err)
+	}
+	switch len(taskDefOutput.TaskDefinitionArns) {
+	case 0:
+		return nil, fmt.Errorf("delete containertask dry run: no containertask found with name '%s'", taskDefinitionName)
+	case 1:
+		d.logger.Verbosef("only one version found for containertask '%s', will delete '%s'.", taskDefinitionName, aws.StringValue(taskDefOutput.TaskDefinitionArns[0]))
+	default:
+		if deleteAll := fmt.Sprint(params["all-versions"]); deleteAll == "true" {
+			d.logger.Warningf("multiple versions found for containertask '%s'. Will delete '%s'", taskDefinitionName, strings.Join(aws.StringValueSlice(taskDefOutput.TaskDefinitionArns), "','"))
+		} else {
+			d.logger.Infof("multiple versions found for containertask '%s'", taskDefinitionName)
+			d.logger.Warningf("will delete only latest version: '%s'. Add param `all-versions=true` to delete all versions", aws.StringValue(taskDefOutput.TaskDefinitionArns[len(taskDefOutput.TaskDefinitionArns)-1]))
+		}
+	}
+	d.logger.Verbose("params dry run: delete containertask ok")
+	return nil, nil
+}
+
+func (d *EcsDriver) Delete_Containertask(params map[string]interface{}) (interface{}, error) {
+	taskDefinitionName := fmt.Sprint(params["name"])
+
+	if deleteAll := fmt.Sprint(params["all-versions"]); deleteAll == "true" {
+		taskDefOutput, err := d.ListTaskDefinitions(&ecs.ListTaskDefinitionsInput{
+			FamilyPrefix: aws.String(taskDefinitionName),
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, task := range taskDefOutput.TaskDefinitionArns {
+			d.logger.ExtraVerbosef("deleting '%s'", aws.StringValue(task))
+			start := time.Now()
+			if _, err := d.DeregisterTaskDefinition(&ecs.DeregisterTaskDefinitionInput{TaskDefinition: task}); err != nil {
+				return nil, fmt.Errorf("delete containertask: deregister task definition: %s", err)
+			}
+			d.logger.ExtraVerbosef("ecs.DeregisterTaskDefinition call took %s", time.Since(start))
+		}
+	} else {
+		taskDefOutput, err := d.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
+			TaskDefinition: aws.String(taskDefinitionName),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("delete containertask: %s", err)
+		}
+		d.logger.ExtraVerbosef("deleting '%s'", aws.StringValue(taskDefOutput.TaskDefinition.TaskDefinitionArn))
+		start := time.Now()
+		if _, err := d.DeregisterTaskDefinition(&ecs.DeregisterTaskDefinitionInput{TaskDefinition: taskDefOutput.TaskDefinition.TaskDefinitionArn}); err != nil {
+			return nil, fmt.Errorf("delete containertask: deregister task definition: %s", err)
+		}
+		d.logger.ExtraVerbosef("ecs.DeregisterTaskDefinition call took %s", time.Since(start))
+	}
+
+	d.logger.Infof("delete containertask '%s' done", taskDefinitionName)
 	return nil, nil
 }
 

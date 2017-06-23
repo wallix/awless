@@ -871,6 +871,15 @@ var DriversDefs = []driversDef{
 					{TemplateName: "container-name"},
 				},
 			},
+			{
+				Action: "delete", Entity: cloud.ContainerTask, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "all-versions"},
+				},
+			},
 		},
 	},
 	{

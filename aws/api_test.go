@@ -336,7 +336,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{ClusterArn: awssdk.String("clust_2")},
 		{ClusterArn: awssdk.String("clust_3"), ClusterName: awssdk.String("my_cust_3")},
 	}
-	defNames := []*string{awssdk.String("cs_1:1"), awssdk.String("cs_2:1"), awssdk.String("cs_2:2")}
+	defNames := []*string{awssdk.String("cs_1:1"), awssdk.String("cs_2:1"), awssdk.String("cs_2:2"), awssdk.String("cs_3:1")}
 	tasksDef := []*ecs.TaskDefinition{
 		{
 			ContainerDefinitions: []*ecs.ContainerDefinition{
@@ -362,6 +362,12 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			Revision:             awssdk.Int64(2),
 			TaskDefinitionArn:    awssdk.String("cs_2:2"),
 		},
+		{
+			ContainerDefinitions: []*ecs.ContainerDefinition{},
+			Family:               awssdk.String("cs_3"),
+			TaskDefinitionArn:    awssdk.String("cs_3:1"),
+			Status:               awssdk.String("ACTIVE"),
+		},
 	}
 	tasksNames := map[string][]*string{
 		"clust_1": {awssdk.String("task_1")},
@@ -372,6 +378,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			{
 				ClusterArn:           awssdk.String("clust_1"),
 				ContainerInstanceArn: awssdk.String("cont_inst_1"),
+				LastStatus:           awssdk.String("running"),
 				Containers: []*ecs.Container{
 					{
 						ContainerArn: awssdk.String("container_1"),
@@ -398,6 +405,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			{
 				ClusterArn:           awssdk.String("clust_2"),
 				ContainerInstanceArn: awssdk.String("cont_inst_2"),
+				LastStatus:           awssdk.String("stopped"),
 				Containers: []*ecs.Container{
 					{
 						ContainerArn: awssdk.String("container_4"),
@@ -414,9 +422,15 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 				ClusterArn:           awssdk.String("clust_2"),
 				ContainerInstanceArn: awssdk.String("cont_inst_3"),
 				Group:                awssdk.String("family:cs_1"),
-				Containers:           []*ecs.Container{},
-				TaskArn:              awssdk.String("task_3"),
-				TaskDefinitionArn:    awssdk.String("cs_1"),
+				Containers: []*ecs.Container{
+					{
+						ContainerArn: awssdk.String("container_5"),
+						Name:         awssdk.String("my_container_5"),
+					},
+				},
+				LastStatus:        awssdk.String("running"),
+				TaskArn:           awssdk.String("task_3"),
+				TaskDefinitionArn: awssdk.String("cs_1:1"),
 			},
 		},
 	}
@@ -550,14 +564,17 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"clust_1":          resourcetest.ContainerCluster("clust_1").Prop(p.Arn, "clust_1").Prop(p.Name, "my_cust_1").Prop(p.PendingTasksCount, 1).Prop(p.ActiveServicesCount, 3).Prop(p.RegisteredContainerInstancesCount, 3).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Build(),
 		"clust_2":          resourcetest.ContainerCluster("clust_2").Prop(p.Arn, "clust_2").Build(),
 		"clust_3":          resourcetest.ContainerCluster("clust_3").Prop(p.Arn, "clust_3").Prop(p.Name, "my_cust_3").Build(),
-		"cs_1:1":           resourcetest.ContainerTask("cs_1:1").Prop(p.Arn, "cs_1:1").Prop(p.ContainersImages, []*graph.KeyValue{{"cont_name_1", "image_1"}, {"cont_name_2", "image_2"}, {"cont_name_3", "image_3"}}).Prop(p.Name, "cs_1").Prop(p.Version, "1").Prop(p.State, "ENABLED").Prop(p.Role, "role:arn").Build(),
-		"cs_2:1":           resourcetest.ContainerTask("cs_2:1").Prop(p.Arn, "cs_2:1").Prop(p.Name, "cs_2").Prop(p.Version, "1").Build(),
-		"cs_2:2":           resourcetest.ContainerTask("cs_2:2").Prop(p.Arn, "cs_2:2").Prop(p.Name, "cs_2").Prop(p.Version, "2").Build(),
+		"cs_1:1": resourcetest.ContainerTask("cs_1:1").Prop(p.Arn, "cs_1:1").Prop(p.ContainersImages, []*graph.KeyValue{{"cont_name_1", "image_1"}, {"cont_name_2", "image_2"}, {"cont_name_3", "image_3"}}).Prop(p.Name, "cs_1").Prop(p.Version, "1").
+			Prop(p.State, "1 task running").Prop(p.Role, "role:arn").Prop(p.Deployments, []*graph.KeyValue{{"clust_2", "cs_1 (running task)"}}).Build(),
+		"cs_2:1": resourcetest.ContainerTask("cs_2:1").Prop(p.Arn, "cs_2:1").Prop(p.Name, "cs_2").Prop(p.State, "1 service running").Prop(p.Version, "1").Prop(p.Deployments, []*graph.KeyValue{{"clust_1", "container-service-1 (running service)"}}).Build(),
+		"cs_2:2": resourcetest.ContainerTask("cs_2:2").Prop(p.Arn, "cs_2:2").Prop(p.Name, "cs_2").Prop(p.State, "1 service stopped").Prop(p.Version, "2").Prop(p.Deployments, []*graph.KeyValue{{"clust_2", "container-service-2 (stopped service)"}}).Build(),
+		"cs_3:1": resourcetest.ContainerTask("cs_3:1").Prop(p.Arn, "cs_3:1").Prop(p.Name, "cs_3").Prop(p.State, "ready").Build(),
 		"container_1": resourcetest.Container("container_1").Prop(p.Arn, "container_1").Prop(p.ExitCode, -1).Prop(p.State, "running").Prop(p.Name, "my_container_1").Prop(p.StateMessage, "no reason").Prop(p.Cluster, "clust_1").
 			Prop(p.ContainerInstance, "cont_inst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.DeploymentName, "service:container-service-1").Prop(p.ContainerTask, "cs_2:1").Build(),
 		"container_2": resourcetest.Container("container_2").Prop(p.Arn, "container_2").Prop(p.Name, "my_container_2").Prop(p.Cluster, "clust_1").Prop(p.ContainerInstance, "cont_inst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.DeploymentName, "service:container-service-1").Prop(p.ContainerTask, "cs_2:1").Build(),
 		"container_3": resourcetest.Container("container_3").Prop(p.Arn, "container_3").Prop(p.Cluster, "clust_1").Prop(p.ContainerInstance, "cont_inst_1").Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.Launched, now.Add(-1*time.Hour)).Prop(p.Stopped, now).Prop(p.ContainerTask, "cs_2:1").Prop(p.DeploymentName, "service:container-service-1").Build(),
 		"container_4": resourcetest.Container("container_4").Prop(p.Arn, "container_4").Prop(p.Name, "my_container_4").Prop(p.ExitCode, 0).Prop(p.State, "stopped").Prop(p.Cluster, "clust_2").Prop(p.ContainerInstance, "cont_inst_2").Prop(p.ContainerTask, "cs_2:2").Prop(p.DeploymentName, "service:container-service-2").Build(),
+		"container_5": resourcetest.Container("container_5").Prop(p.Arn, "container_5").Prop(p.Name, "my_container_5").Prop(p.Cluster, "clust_2").Prop(p.ContainerInstance, "cont_inst_3").Prop(p.ContainerTask, "cs_1:1").Prop(p.DeploymentName, "family:cs_1").Build(),
 		"cont_inst_1": resourcetest.ContainerInstance("cont_inst_1").Prop(p.Arn, "cont_inst_1").Prop(p.AgentConnected, true).Prop(p.AgentState, "AgentRunning").Prop(p.Attributes, []*graph.KeyValue{{"attr_1", "val1"}, {"attr_2", "val2"}}).
 			Prop(p.Instance, "inst_2").Prop(p.PendingTasksCount, 4).Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Prop(p.Version, "2").Prop(p.AgentVersion, "0.0.5").Prop(p.DockerVersion, "v1.0.12").Prop(p.Cluster, "clust_1").Build(),
 		"cont_inst_2": resourcetest.ContainerInstance("cont_inst_2").Prop(p.Arn, "cont_inst_2").Prop(p.Instance, "inst_3").Prop(p.Cluster, "clust_1").Build(),
@@ -565,7 +582,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "natgw_1", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
+		"eu-west-1": {"asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "cs_3:1", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "natgw_1", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
@@ -575,7 +592,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"vpc_1":     {"lb_1", "lb_3", "natgw_1", "rt_1", "securitygroup_1", "securitygroup_2", "sub_1", "sub_2", "tg_1"},
 		"vpc_2":     {"lb_2", "sub_3", "tg_2"},
 		"clust_1":   {"cont_inst_1", "cont_inst_2", "container_1", "container_2", "container_3"},
-		"clust_2":   {"cont_inst_3", "container_4"},
+		"clust_2":   {"cont_inst_3", "container_4", "container_5"},
 	}
 
 	expectedAppliedOn := map[string][]string{
@@ -592,6 +609,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"tg_2":            {"inst_2", "inst_3"},
 		"asg_arn_1":       {"inst_1", "inst_3", "sub_1", "sub_2"},
 		"asg_arn_2":       {"tg_1", "tg_2"},
+		"cs_1:1":          {"container_5"},
 		"cs_2:1":          {"container_1", "container_2", "container_3"},
 		"cs_2:2":          {"container_4"},
 		"inst_1":          {"cont_inst_3"},
@@ -599,6 +617,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"inst_3":          {"cont_inst_2"},
 		"cont_inst_1":     {"container_1", "container_2", "container_3"},
 		"cont_inst_2":     {"container_4"},
+		"cont_inst_3":     {"container_5"},
 	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)

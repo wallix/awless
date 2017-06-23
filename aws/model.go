@@ -299,7 +299,6 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Arn:              {name: "TaskDefinitionArn", transform: extractValueFn},
 		properties.ContainersImages: {name: "ContainerDefinitions", transform: extractContainersImagesFn},
 		properties.Version:          {name: "Revision", transform: extractValueAsStringFn},
-		properties.State:            {name: "Status", transform: extractValueFn},
 		properties.Role:             {name: "TaskRoleArn", transform: extractValueFn},
 	},
 	cloud.Container: {

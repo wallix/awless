@@ -76,6 +76,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Description", RDFLabel: fmt.Sprintf("%s:description", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "DesiredCapacity", RDFLabel: fmt.Sprintf("%s:desiredCapacity", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "DeploymentName", RDFLabel: fmt.Sprintf("%s:deploymentName", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "Deployments", RDFLabel: fmt.Sprintf("%s:deployments", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.KeyValue},
 	{AwlessLabel: "Dimensions", RDFLabel: fmt.Sprintf("%s:dimensions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.KeyValue},
 	{AwlessLabel: "DisableRollback", RDFLabel: fmt.Sprintf("%s:disableRollback", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "DockerVersion", RDFLabel: fmt.Sprintf("%s:dockerVersion", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

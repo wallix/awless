@@ -81,6 +81,7 @@ const (
 	Description                       = "cloud:description"
 	DesiredCapacity                   = "cloud:desiredCapacity"
 	DeploymentName                    = "cloud:deploymentName"
+	Deployments                       = "cloud:deployments"
 	Dimensions                        = "cloud:dimensions"
 	DisableRollback                   = "cloud:disableRollback"
 	DockerVersion                     = "cloud:dockerVersion"
@@ -277,6 +278,7 @@ var Labels = map[string]string{
 	properties.Description:                       Description,
 	properties.DesiredCapacity:                   DesiredCapacity,
 	properties.DeploymentName:                    DeploymentName,
+	properties.Deployments:                       Deployments,
 	properties.Dimensions:                        Dimensions,
 	properties.DisableRollback:                   DisableRollback,
 	properties.DockerVersion:                     DockerVersion,
@@ -473,6 +475,7 @@ var Properties = RDFProperties{
 	Description:             {ID: Description, RdfType: "rdf:Property", RdfsLabel: "Description", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	DesiredCapacity:         {ID: DesiredCapacity, RdfType: "rdf:Property", RdfsLabel: "DesiredCapacity", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	DeploymentName:          {ID: DeploymentName, RdfType: "rdf:Property", RdfsLabel: "DeploymentName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Deployments:             {ID: Deployments, RdfType: "rdf:Property", RdfsLabel: "Deployments", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	Dimensions:              {ID: Dimensions, RdfType: "rdf:Property", RdfsLabel: "Dimensions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	DisableRollback:         {ID: DisableRollback, RdfType: "rdf:Property", RdfsLabel: "DisableRollback", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	DockerVersion:           {ID: DockerVersion, RdfType: "rdf:Property", RdfsLabel: "DockerVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

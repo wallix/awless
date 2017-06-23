@@ -332,6 +332,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletecontainercluster": {
 		"id": "The short name or full Amazon Resource Name (ARN) of the cluster to delete",
 	},
+	"deletecontainertask": {},
 	"deletedatabase": {
 		"id": "Contains a user-supplied database identifier",
 	},

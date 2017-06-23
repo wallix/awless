@@ -106,10 +106,39 @@ func (m *multiError) Error() string {
 	return strings.Join(all, "\n")
 }
 
-type oncer struct {
-	sync.Once
-	result interface{}
+type cacher struct {
+	mu     sync.Mutex
+	cached map[string]*keyCache
+}
+
+type keyCache struct {
+	mu     sync.Mutex
+	cached *cacheResult
+}
+
+type cacheResult struct {
 	err    error
+	result interface{}
+}
+
+func (c *cacher) Get(key string, f func() *cacheResult) *cacheResult {
+	if c.cached == nil {
+		c.cached = make(map[string]*keyCache)
+	}
+	c.mu.Lock()
+	res, ok := c.cached[key]
+	if !ok {
+		res = &keyCache{}
+		c.cached[key] = &keyCache{}
+	}
+	c.mu.Unlock()
+	res.mu.Lock()
+	defer res.mu.Unlock()
+	if res.cached != nil {
+		return res.cached
+	}
+	res.cached = f()
+	return res.cached
 }
 
 var arnResourceInfoRegex = regexp.MustCompile(`(root)|([\w-.]*)/([\w-./]*)`)
@@ -517,13 +546,14 @@ func (s *Storage) getBucketsPerRegion() ([]*s3.Bucket, error) {
 }
 
 func (s *Storage) foreach_bucket_parallel(f func(b *s3.Bucket) error) error {
-	s.once.Do(func() {
-		s.once.result, s.once.err = s.getBucketsPerRegion()
+	cacheRes := s.cache.Get("getBucketsPerRegion", func() *cacheResult {
+		res, err := s.getBucketsPerRegion()
+		return &cacheResult{result: res, err: err}
 	})
-	if s.once.err != nil {
-		return s.once.err
+	if cacheRes.err != nil {
+		return cacheRes.err
 	}
-	buckets := s.once.result.([]*s3.Bucket)
+	buckets := cacheRes.result.([]*s3.Bucket)
 
 	errc := make(chan error)
 	var wg sync.WaitGroup
@@ -778,13 +808,14 @@ func (s *Infra) getClustersNames() (res []*string, err error) {
 }
 
 func (s *Infra) fetch_all_containercluster_graph() (*graph.Graph, []*ecs.Cluster, error) {
-	s.once.Do(func() {
-		s.once.result, s.once.err = s.getClustersNames()
+	cacheRes := s.cache.Get("getClustersNames", func() *cacheResult {
+		res, err := s.getClustersNames()
+		return &cacheResult{result: res, err: err}
 	})
-	if s.once.err != nil {
-		return nil, nil, s.once.err
+	if cacheRes.err != nil {
+		return nil, nil, cacheRes.err
 	}
-	clusterNames := s.once.result.([]*string)
+	clusterNames := cacheRes.result.([]*string)
 
 	g := graph.NewGraph()
 	var cloudResources []*ecs.Cluster
@@ -814,8 +845,9 @@ func (s *Infra) fetch_all_containertask_graph() (*graph.Graph, []*ecs.TaskDefini
 	var cloudResources []*ecs.TaskDefinition
 
 	type resStruct struct {
-		res *ecs.TaskDefinition
-		err error
+		res   *ecs.TaskDefinition
+		tasks []*ecs.Task
+		err   error
 	}
 
 	var wg sync.WaitGroup
@@ -845,6 +877,15 @@ func (s *Infra) fetch_all_containertask_graph() (*graph.Graph, []*ecs.TaskDefini
 		close(resc)
 	}()
 
+	cacheRes := s.cache.Get("getAllTasks", func() *cacheResult {
+		res, err := s.getAllTasks()
+		return &cacheResult{result: res, err: err}
+	})
+	if cacheRes.err != nil {
+		return nil, nil, cacheRes.err
+	}
+	tasks := cacheRes.result.([]*ecs.Task)
+
 	var errors []string
 
 	for res := range resc {
@@ -858,6 +899,64 @@ func (s *Infra) fetch_all_containertask_graph() (*graph.Graph, []*ecs.TaskDefini
 			errors = appendIfNotInSlice(errors, err.Error())
 			continue
 		}
+		var deployments []*graph.KeyValue
+		var runningServicesCount, stoppedServicesCount, runningTasksCount, stoppedTasksCount uint
+		for _, t := range tasks {
+			if awssdk.StringValue(t.TaskDefinitionArn) == awssdk.StringValue(res.res.TaskDefinitionArn) {
+				group := awssdk.StringValue(t.Group)
+				state := strings.ToLower(awssdk.StringValue(t.LastStatus))
+				clusterArn := awssdk.StringValue(t.ClusterArn)
+				if strings.HasPrefix(group, "service:") {
+					switch state {
+					case "stopped":
+						stoppedServicesCount++
+						deployments = append(deployments, &graph.KeyValue{arnToName(clusterArn), group[len("service:"):] + " (stopped service)"})
+					case "running":
+						runningServicesCount++
+						deployments = append(deployments, &graph.KeyValue{arnToName(clusterArn), group[len("service:"):] + " (running service)"})
+					}
+				}
+				if strings.HasPrefix(group, "family:") {
+					switch state {
+					case "stopped":
+						deployments = append(deployments, &graph.KeyValue{arnToName(clusterArn), group[len("family:"):] + " (stopped task)"})
+						stoppedTasksCount++
+					case "running":
+						deployments = append(deployments, &graph.KeyValue{arnToName(clusterArn), group[len("family:"):] + " (running task)"})
+						runningTasksCount++
+					}
+				}
+			}
+		}
+		if len(deployments) > 0 {
+			graphres.Properties[properties.Deployments] = deployments
+		}
+		switch {
+		case runningServicesCount+stoppedServicesCount+runningTasksCount+stoppedTasksCount == 0:
+			if state := strings.ToLower(awssdk.StringValue(res.res.Status)); state == "active" {
+				graphres.Properties[properties.State] = "ready"
+			} else {
+				graphres.Properties[properties.State] = state
+			}
+		default:
+			var stateSl []string
+			if runningServicesCount > 0 {
+				stateSl = append(stateSl, fmt.Sprintf("%d %s running", runningServicesCount, pluralizeIfNeeded("service", runningServicesCount)))
+			}
+			if stoppedServicesCount > 0 {
+				stateSl = append(stateSl, fmt.Sprintf("%d %s stopped", stoppedServicesCount, pluralizeIfNeeded("service", runningServicesCount)))
+			}
+			if runningTasksCount > 0 {
+				stateSl = append(stateSl, fmt.Sprintf("%d %s running", runningTasksCount, pluralizeIfNeeded("task", runningServicesCount)))
+			}
+			if stoppedTasksCount > 0 {
+				stateSl = append(stateSl, fmt.Sprintf("%d %s stopped", stoppedTasksCount, pluralizeIfNeeded("task", runningServicesCount)))
+			}
+			if len(stateSl) > 0 {
+				graphres.Properties[properties.State] = strings.Join(stateSl, " ")
+			}
+		}
+
 		if err = g.AddResource(graphres); err != nil {
 			errors = appendIfNotInSlice(errors, err.Error())
 			continue
@@ -883,17 +982,31 @@ func appendIfNotInSlice(slice []string, s string) []string {
 	return slice
 }
 
-func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, error) {
-	g := graph.NewGraph()
-	var cloudResources []*ecs.Container
-
-	s.once.Do(func() {
-		s.once.result, s.once.err = s.getClustersNames()
-	})
-	if s.once.err != nil {
-		return nil, nil, s.once.err
+func arnToName(arn string) string {
+	splits := strings.Split(arn, "/")
+	if len(splits) > 1 {
+		return splits[len(splits)-1]
 	}
-	clusterArns := s.once.result.([]*string)
+	return arn
+}
+
+func pluralizeIfNeeded(str string, n uint) string {
+	if n > 1 {
+		return str + "s"
+	}
+	return str
+}
+
+func (s *Infra) getAllTasks() (res []*ecs.Task, err error) {
+	cacheRes := s.cache.Get("getClustersNames", func() *cacheResult {
+		res, err := s.getClustersNames()
+		return &cacheResult{result: res, err: err}
+	})
+	if cacheRes.err != nil {
+		err = cacheRes.err
+		return
+	}
+	clusterArns := cacheRes.result.([]*string)
 
 	for _, cluster := range clusterArns {
 		var badResErr error
@@ -906,64 +1019,83 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 			if tasksOut, badResErr = s.ECSAPI.DescribeTasks(&ecs.DescribeTasksInput{Cluster: cluster, Tasks: out.TaskArns}); badResErr != nil {
 				return false
 			}
-
-			for _, task := range tasksOut.Tasks {
-				for _, container := range task.Containers {
-					var res *graph.Resource
-					cloudResources = append(cloudResources, container)
-					if res, badResErr = newResource(container); badResErr != nil {
-						return false
-					}
-					if task.ClusterArn != nil {
-						res.Properties[properties.Cluster] = awssdk.StringValue(task.ClusterArn)
-					}
-					if task.ContainerInstanceArn != nil {
-						res.Properties[properties.ContainerInstance] = awssdk.StringValue(task.ContainerInstanceArn)
-					}
-					if task.CreatedAt != nil {
-						res.Properties[properties.Created] = awssdk.TimeValue(task.CreatedAt)
-					}
-					if task.StartedAt != nil {
-						res.Properties[properties.Launched] = awssdk.TimeValue(task.StartedAt)
-					}
-					if task.StoppedAt != nil {
-						res.Properties[properties.Stopped] = awssdk.TimeValue(task.StoppedAt)
-					}
-					if task.TaskDefinitionArn != nil {
-						res.Properties[properties.ContainerTask] = awssdk.StringValue(task.TaskDefinitionArn)
-					}
-					if task.Group != nil {
-						res.Properties[properties.DeploymentName] = awssdk.StringValue(task.Group)
-					}
-					if badResErr = g.AddParentRelation(graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(task.ClusterArn)), res); badResErr != nil {
-						return false
-					}
-					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerTask, awssdk.StringValue(task.TaskDefinitionArn)), res); badResErr != nil {
-						return false
-					}
-					if badResErr = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(task.ContainerInstanceArn)), res); badResErr != nil {
-						return false
-					}
-					if badResErr = g.AddResource(res); badResErr != nil {
-						return false
-					}
-				}
-			}
+			res = append(res, tasksOut.Tasks...)
 			return out.NextToken != nil
 		}
 
-		if err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc); err != nil {
-			return g, cloudResources, err
+		if err = s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc); err != nil {
+			return
 		}
 		if badResErr != nil {
-			return g, cloudResources, badResErr
+			err = badResErr
+			return
 		}
 
-		if err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc); err != nil {
-			return g, cloudResources, err
+		if err = s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc); err != nil {
+			return
 		}
 		if badResErr != nil {
-			return g, cloudResources, badResErr
+			err = badResErr
+			return
+		}
+	}
+	return
+}
+
+func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, error) {
+	g := graph.NewGraph()
+	var cloudResources []*ecs.Container
+
+	cacheRes := s.cache.Get("getAllTasks", func() *cacheResult {
+		res, err := s.getAllTasks()
+		return &cacheResult{result: res, err: err}
+	})
+	if cacheRes.err != nil {
+		return nil, nil, cacheRes.err
+	}
+
+	var err error
+
+	for _, task := range cacheRes.result.([]*ecs.Task) {
+		for _, container := range task.Containers {
+			var res *graph.Resource
+			cloudResources = append(cloudResources, container)
+			if res, err = newResource(container); err != nil {
+				return nil, nil, err
+			}
+			if task.ClusterArn != nil {
+				res.Properties[properties.Cluster] = awssdk.StringValue(task.ClusterArn)
+			}
+			if task.ContainerInstanceArn != nil {
+				res.Properties[properties.ContainerInstance] = awssdk.StringValue(task.ContainerInstanceArn)
+			}
+			if task.CreatedAt != nil {
+				res.Properties[properties.Created] = awssdk.TimeValue(task.CreatedAt)
+			}
+			if task.StartedAt != nil {
+				res.Properties[properties.Launched] = awssdk.TimeValue(task.StartedAt)
+			}
+			if task.StoppedAt != nil {
+				res.Properties[properties.Stopped] = awssdk.TimeValue(task.StoppedAt)
+			}
+			if task.TaskDefinitionArn != nil {
+				res.Properties[properties.ContainerTask] = awssdk.StringValue(task.TaskDefinitionArn)
+			}
+			if task.Group != nil {
+				res.Properties[properties.DeploymentName] = awssdk.StringValue(task.Group)
+			}
+			if err = g.AddParentRelation(graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(task.ClusterArn)), res); err != nil {
+				return nil, nil, err
+			}
+			if err = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerTask, awssdk.StringValue(task.TaskDefinitionArn)), res); err != nil {
+				return nil, nil, err
+			}
+			if err = g.AddAppliesOnRelation(graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(task.ContainerInstanceArn)), res); err != nil {
+				return nil, nil, err
+			}
+			if err = g.AddResource(res); err != nil {
+				return nil, nil, err
+			}
 		}
 	}
 	return g, cloudResources, nil
@@ -973,13 +1105,14 @@ func (s *Infra) fetch_all_containerinstance_graph() (*graph.Graph, []*ecs.Contai
 	g := graph.NewGraph()
 	var cloudResources []*ecs.ContainerInstance
 
-	s.once.Do(func() {
-		s.once.result, s.once.err = s.getClustersNames()
+	cacheRes := s.cache.Get("getClustersNames", func() *cacheResult {
+		res, err := s.getClustersNames()
+		return &cacheResult{result: res, err: err}
 	})
-	if s.once.err != nil {
-		return nil, nil, s.once.err
+	if cacheRes.err != nil {
+		return nil, nil, cacheRes.err
 	}
-	clusterArns := s.once.result.([]*string)
+	clusterArns := cacheRes.result.([]*string)
 
 	for _, cluster := range clusterArns {
 		var badResErr error
