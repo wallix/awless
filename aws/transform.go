@@ -623,6 +623,19 @@ var extractStackParametersFn = func(i interface{}) (interface{}, error) {
 	return keyVals, nil
 }
 
+var extractContainersImagesFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*ecs.ContainerDefinition); !ok {
+		return nil, fmt.Errorf("extract containers images, not a container definition slice but a %T", i)
+	}
+	var keyVals []*graph.KeyValue
+	for _, out := range i.([]*ecs.ContainerDefinition) {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(out.Name), Value: awssdk.StringValue(out.Image)}
+
+		keyVals = append(keyVals, keyval)
+	}
+	return keyVals, nil
+}
+
 func notEmpty(str *string) bool {
 	return awssdk.StringValue(str) != ""
 }

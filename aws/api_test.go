@@ -340,9 +340,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	tasksDef := []*ecs.TaskDefinition{
 		{
 			ContainerDefinitions: []*ecs.ContainerDefinition{
-				{Image: awssdk.String("image_1")},
-				{Image: awssdk.String("image_2")},
-				{Image: awssdk.String("image_3")},
+				{Name: awssdk.String("cont_name_1"), Image: awssdk.String("image_1")},
+				{Name: awssdk.String("cont_name_2"), Image: awssdk.String("image_2")},
+				{Name: awssdk.String("cont_name_3"), Image: awssdk.String("image_3")},
 			},
 			Family:            awssdk.String("cs_1"),
 			Revision:          awssdk.Int64(1),
@@ -485,8 +485,13 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		if p, ok := res.Properties[p.Messages].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.ContainersImages].([]string); ok {
-			sort.Strings(p)
+		if p, ok := res.Properties[p.ContainersImages].([]*graph.KeyValue); ok {
+			sort.Slice(p, func(i, j int) bool {
+				if p[i].KeyName == p[j].KeyName {
+					return p[i].Value < p[j].Value
+				}
+				return p[i].KeyName < p[j].KeyName
+			})
 		}
 		if p, ok := res.Properties[p.Attributes].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
@@ -543,7 +548,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"clust_1":          resourcetest.ContainerCluster("clust_1").Prop(p.Arn, "clust_1").Prop(p.Name, "my_cust_1").Prop(p.PendingTasksCount, 1).Prop(p.ActiveServicesCount, 3).Prop(p.RegisteredContainerInstancesCount, 3).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Build(),
 		"clust_2":          resourcetest.ContainerCluster("clust_2").Prop(p.Arn, "clust_2").Build(),
 		"clust_3":          resourcetest.ContainerCluster("clust_3").Prop(p.Arn, "clust_3").Prop(p.Name, "my_cust_3").Build(),
-		"cs_1:1":           resourcetest.ContainerTask("cs_1:1").Prop(p.Arn, "cs_1:1").Prop(p.ContainersImages, []string{"image_1", "image_2", "image_3"}).Prop(p.Name, "cs_1").Prop(p.Version, "1").Prop(p.State, "ENABLED").Prop(p.Role, "role:arn").Build(),
+		"cs_1:1":           resourcetest.ContainerTask("cs_1:1").Prop(p.Arn, "cs_1:1").Prop(p.ContainersImages, []*graph.KeyValue{{"cont_name_1", "image_1"}, {"cont_name_2", "image_2"}, {"cont_name_3", "image_3"}}).Prop(p.Name, "cs_1").Prop(p.Version, "1").Prop(p.State, "ENABLED").Prop(p.Role, "role:arn").Build(),
 		"cs_2:1":           resourcetest.ContainerTask("cs_2:1").Prop(p.Arn, "cs_2:1").Prop(p.Name, "cs_2").Prop(p.Version, "1").Build(),
 		"cs_2:2":           resourcetest.ContainerTask("cs_2:2").Prop(p.Arn, "cs_2:2").Prop(p.Name, "cs_2").Prop(p.Version, "2").Build(),
 		"container_1": resourcetest.Container("container_1").Prop(p.Arn, "container_1").Prop(p.ExitCode, -1).Prop(p.State, "running").Prop(p.Name, "my_container_1").Prop(p.StateMessage, "no reason").Prop(p.Cluster, "clust_1").

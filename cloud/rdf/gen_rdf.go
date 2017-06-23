@@ -459,7 +459,7 @@ var Properties = RDFProperties{
 	Config:                  {ID: Config, RdfType: "rdf:Property", RdfsLabel: "Config", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Cooldown:                {ID: Cooldown, RdfType: "rdf:Property", RdfsLabel: "Cooldown", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	CopyTagsToSnapshot:      {ID: CopyTagsToSnapshot, RdfType: "rdf:Property", RdfsLabel: "CopyTagsToSnapshot", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	ContainersImages:        {ID: ContainersImages, RdfType: "rdf:Property", RdfsLabel: "ContainersImages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	ContainersImages:        {ID: ContainersImages, RdfType: "rdf:Property", RdfsLabel: "ContainersImages", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	ContainerTask:           {ID: ContainerTask, RdfType: "rdf:Property", RdfsLabel: "ContainerTask", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Country:                 {ID: Country, RdfType: "rdf:Property", RdfsLabel: "Country", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Created:                 {ID: Created, RdfType: "rdf:Property", RdfsLabel: "Created", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
