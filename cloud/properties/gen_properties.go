@@ -113,6 +113,7 @@ const (
 	IPType                            = "IPType"
 	IPv6Enabled                       = "IPv6Enabled"
 	Key                               = "Key"
+	KeyName                           = "KeyName"
 	KeyPair                           = "KeyPair"
 	LatestRestorableTime              = "LatestRestorableTime"
 	Launched                          = "Launched"

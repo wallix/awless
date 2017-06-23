@@ -110,6 +110,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "IPType", RDFLabel: fmt.Sprintf("%s:ipType", rdf.NetNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "IPv6Enabled", RDFLabel: fmt.Sprintf("%s:ipv6Enabled", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Key", RDFLabel: fmt.Sprintf("%s:key", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "KeyName", RDFLabel: fmt.Sprintf("%s:keyName", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "KeyPair", RDFLabel: fmt.Sprintf("%s:keyPair", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "LatestRestorableTime", RDFLabel: fmt.Sprintf("%s:latestRestorableTime", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdDateTime},
 	{AwlessLabel: "Launched", RDFLabel: fmt.Sprintf("%s:launched", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdDateTime},

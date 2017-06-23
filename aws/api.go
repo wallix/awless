@@ -897,7 +897,7 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 
 	for _, cluster := range clusterArns {
 		var badResErr error
-		err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster}, func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
+		addTaskContainersFunc := func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
 			var tasksOut *ecs.DescribeTasksOutput
 			if len(out.TaskArns) == 0 {
 				return out.NextToken != nil
@@ -950,8 +950,16 @@ func (s *Infra) fetch_all_container_graph() (*graph.Graph, []*ecs.Container, err
 				}
 			}
 			return out.NextToken != nil
-		})
-		if err != nil {
+		}
+
+		if err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc); err != nil {
+			return g, cloudResources, err
+		}
+		if badResErr != nil {
+			return g, cloudResources, badResErr
+		}
+
+		if err := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc); err != nil {
 			return g, cloudResources, err
 		}
 		if badResErr != nil {

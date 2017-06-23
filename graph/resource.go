@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"unicode"
 
 	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
@@ -340,12 +341,18 @@ func resolveResourceType(g tstore.RDFGraph, id string) (string, error) {
 	}
 }
 
+func lowerFirstLetter(s string) string {
+	a := []rune(s)
+	a[0] = unicode.ToLower(a[0])
+	return string(a)
+}
+
 func unmarshalResourceType(obj tstore.Object) (string, error) {
 	node, ok := obj.Resource()
 	if !ok {
 		return "", fmt.Errorf("object is not a resource identifier, %v", obj)
 	}
-	return strings.ToLower(trimNS(node)), nil
+	return lowerFirstLetter(trimNS(node)), nil
 }
 
 func trimNS(s string) string {

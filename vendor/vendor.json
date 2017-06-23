@@ -315,16 +315,16 @@
 			"revisionTime": "2017-06-07T23:11:48Z"
 		},
 		{
-			"checksumSHA1": "xK333jTw5R1dnr9mt+yxsEHg3/A=",
+			"checksumSHA1": "Tu51GVM0Y0bxV5R/PFAGOwmz2oE=",
 			"path": "github.com/aws/aws-sdk-go/service/ecs",
-			"revision": "4b24694fc54751608cb6bd35b1025137a0e243d2",
-			"revisionTime": "2017-06-08T20:25:46Z"
+			"revision": "5525dcfc0f1a4183fcf97a4278e010b4a67c864e",
+			"revisionTime": "2017-06-22T22:29:05Z"
 		},
 		{
 			"checksumSHA1": "9bftOIXfwzjxiFxIeBGttyTJJH4=",
 			"path": "github.com/aws/aws-sdk-go/service/ecs/ecsiface",
-			"revision": "4b24694fc54751608cb6bd35b1025137a0e243d2",
-			"revisionTime": "2017-06-08T20:25:46Z"
+			"revision": "5525dcfc0f1a4183fcf97a4278e010b4a67c864e",
+			"revisionTime": "2017-06-22T22:29:05Z"
 		},
 		{
 			"checksumSHA1": "oJQzYnuAHAhKAtAuinSPEeDsXoU=",

@@ -115,6 +115,7 @@ const (
 	IPType                            = "net:ipType"
 	IPv6Enabled                       = "cloud:ipv6Enabled"
 	Key                               = "cloud:key"
+	KeyName                           = "cloud:keyName"
 	KeyPair                           = "cloud:keyPair"
 	LatestRestorableTime              = "cloud:latestRestorableTime"
 	Launched                          = "cloud:launched"
@@ -310,6 +311,7 @@ var Labels = map[string]string{
 	properties.IPType:                            IPType,
 	properties.IPv6Enabled:                       IPv6Enabled,
 	properties.Key:                               Key,
+	properties.KeyName:                           KeyName,
 	properties.KeyPair:                           KeyPair,
 	properties.LatestRestorableTime:              LatestRestorableTime,
 	properties.Launched:                          Launched,
@@ -505,6 +507,7 @@ var Properties = RDFProperties{
 	IPType:                   {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	IPv6Enabled:              {ID: IPv6Enabled, RdfType: "rdf:Property", RdfsLabel: "IPv6Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Key:                      {ID: Key, RdfType: "rdf:Property", RdfsLabel: "Key", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	KeyName:                  {ID: KeyName, RdfType: "rdf:Property", RdfsLabel: "KeyName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	KeyPair:                  {ID: KeyPair, RdfType: "rdf:Property", RdfsLabel: "KeyPair", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	LatestRestorableTime:     {ID: LatestRestorableTime, RdfType: "rdf:Property", RdfsLabel: "LatestRestorableTime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Launched:                 {ID: Launched, RdfType: "rdf:Property", RdfsLabel: "Launched", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},

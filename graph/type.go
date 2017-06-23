@@ -341,7 +341,7 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 }
 
 type KeyValue struct {
-	KeyName string `predicate:"cloud:name"`
+	KeyName string `predicate:"cloud:keyName"`
 	Value   string `predicate:"cloud:value"`
 }
 
@@ -360,7 +360,7 @@ func (kv *KeyValue) marshalToTriples(id string) []tstore.Triple {
 
 func (kv *KeyValue) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 	var err error
-	kv.KeyName, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.Name)
+	kv.KeyName, err = extractUniqueLiteralTextFromGraph(gph, id, rdf.KeyName)
 	if err != nil {
 		return fmt.Errorf("unmarshal keyvalue: key name: %s", err)
 	}

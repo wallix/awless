@@ -252,7 +252,6 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.DeploymentName},
 		StringColumnDefinition{Prop: properties.State},
-		StringColumnDefinition{Prop: properties.StateMessage},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Launched}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Stopped}},
