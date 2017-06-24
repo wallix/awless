@@ -24,10 +24,22 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+type auth struct {
+	desc       string
+	keyPath    string
+	authmethod gossh.AuthMethod
+}
+
+type configAndAuth struct {
+	clientConfig *gossh.ClientConfig
+	auth         auth
+}
+
 type Client struct {
 	*gossh.Client
-	authmethods             []gossh.AuthMethod
-	Keypath, IP, User       string
+	auths                   []auth
+	selectedAuth            auth
+	IP, User                string
 	HostKeyCallback         gossh.HostKeyCallback
 	StrictHostKeyChecking   bool
 	InteractiveTerminalFunc func(*gossh.Client) error
@@ -39,7 +51,7 @@ func InitClient(keyname string, keyFolders ...string) (*Client, error) {
 	// if it doesn't resolve it just won't be used
 	privkey, _ := resolvePrivateKey(keyname, keyFolders...)
 
-	authmethods, err := resolveAuthMethods(privkey)
+	auths, err := resolveAuths(privkey)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +59,8 @@ func InitClient(keyname string, keyFolders ...string) (*Client, error) {
 	cli := &Client{
 		logger:                  logger.DiscardLogger,
 		InteractiveTerminalFunc: func(*gossh.Client) error { return nil },
-		Keypath:                 privkey.path,
-		authmethods:             authmethods,
-		StrictHostKeyChecking:   true,
+		auths: auths,
+		StrictHostKeyChecking: true,
 	}
 
 	return cli, nil
@@ -68,14 +79,21 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 	var err error
 	var client *gossh.Client
 
+	authDescs := []string{}
+	for _, am := range c.auths {
+		authDescs = append(authDescs, am.desc)
+	}
+	c.logger.Infof("trying with username(s) [%s] and auth method(s) [%s]", strings.Join(usernames, ", "), strings.Join(authDescs, ", "))
+
 	for _, user := range usernames {
 		c.logger.Verbosef("trying with user %s", user)
-		for _, config := range c.buildClientConfigs(user) {
-			c.logger.Verbosef("trying with config %v", config)
-			client, err = gossh.Dial("tcp", c.IP+":22", config)
+		for _, configAndAuth := range c.buildConfigAndAuths(user) {
+			c.logger.Verbosef("trying with config %v", configAndAuth.clientConfig)
+			client, err = gossh.Dial("tcp", c.IP+":22", configAndAuth.clientConfig)
 			if err == nil {
 				c.User = user
 				c.Client = client
+				c.selectedAuth = configAndAuth.auth
 				return c, nil
 			}
 			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
@@ -99,47 +117,61 @@ func (c *Client) Connect() error {
 
 	args, installed := c.localExec()
 	if installed {
-		c.logger.Infof("Login as '%s' on '%s', using keypair '%s' with ssh client '%s'\n", c.User, c.IP, c.Keypath, args[0])
+		c.logger.Infof("Login as '%s' on '%s', using %s for auth with ssh client '%s'\n", c.User, c.IP, c.selectedAuth.desc, args[0])
 		return syscall.Exec(args[0], args, os.Environ())
 	}
 
-	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using keypair '%s'\n", c.User, c.IP, c.Keypath)
+	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using %s for auth\n", c.User, c.IP, c.selectedAuth.desc)
 	return c.InteractiveTerminalFunc(c.Client)
 }
 
-func (c *Client) buildClientConfigs(username string) []*gossh.ClientConfig {
-	var configs []*gossh.ClientConfig
-	for _, authmethod := range c.authmethods {
+func (c *Client) buildConfigAndAuths(username string) []configAndAuth {
+	var cas []configAndAuth
+	for _, auth := range c.auths {
 
-		config := &gossh.ClientConfig{
-			User:            username,
-			Auth:            []gossh.AuthMethod{authmethod},
-			Timeout:         2 * time.Second,
-			HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+		cAndA := configAndAuth{
+			&gossh.ClientConfig{
+				User:            username,
+				Auth:            []gossh.AuthMethod{auth.authmethod},
+				Timeout:         2 * time.Second,
+				HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+			},
+			auth,
 		}
 
 		if c.StrictHostKeyChecking {
-			config.HostKeyCallback = checkHostKey
+			cAndA.clientConfig.HostKeyCallback = checkHostKey
 		}
 
-		configs = append(configs, config)
+		cas = append(cas, cAndA)
 	}
 
-	return configs
+	return cas
 }
 
 func (c *Client) SSHConfigString(hostname string) string {
 	var buf bytes.Buffer
 
+	extraOpts := map[string]string{}
+	if len(c.selectedAuth.keyPath) > 0 {
+		extraOpts["IdentityFile"] = c.selectedAuth.keyPath
+	}
+	if !c.StrictHostKeyChecking {
+		extraOpts["StrictHostKeychecking"] = "no"
+	}
+
 	params := struct {
-		IP, User, Keypath, Name string
-	}{c.IP, c.User, c.Keypath, hostname}
+		IP, User, Name string
+		Extra          map[string]string
+	}{c.IP, c.User, hostname, extraOpts}
 
 	template.Must(template.New("ssh_config").Parse(`
 Host {{ .Name }}
 	Hostname {{ .IP }}
 	User {{ .User }}
-	IdentityFile {{ .Keypath }}
+{{- range $key, $value := .Extra }}
+	{{ $key }} {{ $value -}}
+{{ end -}}
 `)).Execute(&buf, params)
 
 	return buf.String()
@@ -158,8 +190,8 @@ func (c *Client) localExec() ([]string, bool) {
 		bin = "ssh"
 	}
 	args := []string{bin, fmt.Sprintf("%s@%s", c.User, c.IP)}
-	if len(c.Keypath) > 0 {
-		args = append(args, "-i", c.Keypath)
+	if len(c.selectedAuth.keyPath) > 0 {
+		args = append(args, "-i", c.selectedAuth.keyPath)
 	}
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
@@ -181,46 +213,54 @@ func DecryptSSHKey(key []byte, password []byte) (gossh.Signer, error) {
 	return gossh.NewSignerFromKey(sshkey)
 }
 
-func resolveAuthMethods(priv privateKey) ([]gossh.AuthMethod, error) {
-	var authmethods []gossh.AuthMethod
+func resolveAuths(priv privateKey) ([]auth, error) {
+	var auths []auth
 
 	if len(priv.body) > 0 {
 		signer, err := gossh.ParsePrivateKey(priv.body)
 		if err != nil {
 			if !strings.Contains(err.Error(), "cannot decode encrypted private keys") {
-				return authmethods, err
+				return auths, err
 			}
 
 			fmt.Fprintf(os.Stderr, "This SSH key is encrypted. Please enter passphrase for key '%s':", priv.path)
 			var passphrase []byte
 			passphrase, err = terminal.ReadPassword(int(syscall.Stdin))
 			if err != nil {
-				return authmethods, err
+				return auths, err
 			}
 
 			fmt.Fprintln(os.Stderr)
 			signer, err = DecryptSSHKey(priv.body, passphrase)
 			if err != nil {
-				return authmethods, err
+				return auths, err
 			}
 		}
 
-		authmethods = append(authmethods, gossh.PublicKeys(signer))
+		auths = append(auths, auth{
+			fmt.Sprintf("keypair %s", priv.path),
+			priv.path,
+			gossh.PublicKeys(signer),
+		})
 	}
 
 	sshAuthSock := os.Getenv("SSH_AUTH_SOCK")
 	if len(sshAuthSock) > 0 {
 		agentUnixSock, err := net.Dial("unix", sshAuthSock)
 		if err == nil {
-			authmethods = append(authmethods, gossh.PublicKeysCallback(agent.NewClient(agentUnixSock).Signers))
+			auths = append(auths, auth{
+				"ssh agent",
+				"",
+				gossh.PublicKeysCallback(agent.NewClient(agentUnixSock).Signers),
+			})
 		}
 	}
 
-	if len(authmethods) == 0 {
-		return authmethods, fmt.Errorf("No key provided and no SSH_AUTH_SOCK env variable set, unable to resolve auth")
+	if len(auths) == 0 {
+		return auths, fmt.Errorf("No key provided and no SSH_AUTH_SOCK env variable set, unable to resolve auth")
 	}
 
-	return authmethods, nil
+	return auths, nil
 }
 
 type privateKey struct {
