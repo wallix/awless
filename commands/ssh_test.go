@@ -72,7 +72,4 @@ func TestInstanceCredentialsFromName(t *testing.T) {
 	if _, _, err := instanceCredentialsFromGraph(g, inst_3, ""); err == nil {
 		t.Fatal("expected error got none")
 	}
-	if _, _, err := instanceCredentialsFromGraph(g, inst_2, ""); err == nil {
-		t.Fatal("expected error got none")
-	}
 }

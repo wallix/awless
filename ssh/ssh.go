@@ -19,14 +19,27 @@ import (
 	"github.com/wallix/awless/logger"
 
 	gossh "golang.org/x/crypto/ssh"
+	agent "golang.org/x/crypto/ssh/agent"
 	"golang.org/x/crypto/ssh/knownhosts"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+type auth struct {
+	desc       string
+	keyPath    string
+	authmethod gossh.AuthMethod
+}
+
+type configAndAuth struct {
+	clientConfig *gossh.ClientConfig
+	auth         auth
+}
+
 type Client struct {
 	*gossh.Client
-	signer                  gossh.Signer
-	Keypath, IP, User       string
+	auths                   []auth
+	selectedAuth            auth
+	IP, User                string
 	HostKeyCallback         gossh.HostKeyCallback
 	StrictHostKeyChecking   bool
 	InteractiveTerminalFunc func(*gossh.Client) error
@@ -34,12 +47,11 @@ type Client struct {
 }
 
 func InitClient(keyname string, keyFolders ...string) (*Client, error) {
-	privkey, err := resolvePrivateKey(keyname, keyFolders...)
-	if err != nil {
-		return nil, err
-	}
+	// ignore any errors resolving the private key
+	// if it doesn't resolve it just won't be used
+	privkey, _ := resolvePrivateKey(keyname, keyFolders...)
 
-	signer, err := resolveSigner(privkey)
+	auths, err := resolveAuths(privkey)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +59,8 @@ func InitClient(keyname string, keyFolders ...string) (*Client, error) {
 	cli := &Client{
 		logger:                  logger.DiscardLogger,
 		InteractiveTerminalFunc: func(*gossh.Client) error { return nil },
-		Keypath:                 privkey.path,
-		signer:                  signer,
-		StrictHostKeyChecking:   true,
+		auths: auths,
+		StrictHostKeyChecking: true,
 	}
 
 	return cli, nil
@@ -65,26 +76,36 @@ func (c *Client) SetStrictHostKeyChecking(hostKeyChecking bool) {
 
 func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 	var failures int
+	var err error
+	var client *gossh.Client
+
+	authDescs := []string{}
+	for _, am := range c.auths {
+		authDescs = append(authDescs, am.desc)
+	}
+	c.logger.Infof("trying with username(s) [%s] and auth method(s) [%s]", strings.Join(usernames, ", "), strings.Join(authDescs, ", "))
+
 	for _, user := range usernames {
 		c.logger.Verbosef("trying with user %s", user)
-		client, err := gossh.Dial("tcp", c.IP+":22", c.buildClientConfig(user))
-		if err == nil {
-			c.User = user
-			c.Client = client
-			break
-		}
-		if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
-			failures++
-			if len(usernames) == failures {
-				return c, fmt.Errorf("with users %q: %s", usernames, err)
+		for _, configAndAuth := range c.buildConfigAndAuths(user) {
+			c.logger.Verbosef("trying with config %v", configAndAuth.clientConfig)
+			client, err = gossh.Dial("tcp", c.IP+":22", configAndAuth.clientConfig)
+			if err == nil {
+				c.User = user
+				c.Client = client
+				c.selectedAuth = configAndAuth.auth
+				return c, nil
 			}
-			continue
-		} else if err != nil {
-			return c, err
+			if err != nil && strings.Contains(err.Error(), "unable to authenticate") {
+				failures++
+				continue
+			} else if err != nil {
+				return c, err
+			}
 		}
 	}
 
-	return c, nil
+	return c, fmt.Errorf("with users %q: %s", usernames, err)
 }
 
 func (c *Client) Connect() error {
@@ -96,41 +117,61 @@ func (c *Client) Connect() error {
 
 	args, installed := c.localExec()
 	if installed {
-		c.logger.Infof("Login as '%s' on '%s', using keypair '%s' with ssh client '%s'\n", c.User, c.IP, c.Keypath, args[0])
+		c.logger.Infof("Login as '%s' on '%s', using %s for auth with ssh client '%s'\n", c.User, c.IP, c.selectedAuth.desc, args[0])
 		return syscall.Exec(args[0], args, os.Environ())
 	}
 
-	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using keypair '%s'\n", c.User, c.IP, c.Keypath)
+	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using %s for auth\n", c.User, c.IP, c.selectedAuth.desc)
 	return c.InteractiveTerminalFunc(c.Client)
 }
 
-func (c *Client) buildClientConfig(username string) *gossh.ClientConfig {
-	config := &gossh.ClientConfig{
-		User:            username,
-		Auth:            []gossh.AuthMethod{gossh.PublicKeys(c.signer)},
-		Timeout:         2 * time.Second,
-		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+func (c *Client) buildConfigAndAuths(username string) []configAndAuth {
+	var cas []configAndAuth
+	for _, auth := range c.auths {
+
+		cAndA := configAndAuth{
+			&gossh.ClientConfig{
+				User:            username,
+				Auth:            []gossh.AuthMethod{auth.authmethod},
+				Timeout:         2 * time.Second,
+				HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+			},
+			auth,
+		}
+
+		if c.StrictHostKeyChecking {
+			cAndA.clientConfig.HostKeyCallback = checkHostKey
+		}
+
+		cas = append(cas, cAndA)
 	}
 
-	if c.StrictHostKeyChecking {
-		config.HostKeyCallback = checkHostKey
-	}
-
-	return config
+	return cas
 }
 
 func (c *Client) SSHConfigString(hostname string) string {
 	var buf bytes.Buffer
 
+	extraOpts := map[string]string{}
+	if len(c.selectedAuth.keyPath) > 0 {
+		extraOpts["IdentityFile"] = c.selectedAuth.keyPath
+	}
+	if !c.StrictHostKeyChecking {
+		extraOpts["StrictHostKeychecking"] = "no"
+	}
+
 	params := struct {
-		IP, User, Keypath, Name string
-	}{c.IP, c.User, c.Keypath, hostname}
+		IP, User, Name string
+		Extra          map[string]string
+	}{c.IP, c.User, hostname, extraOpts}
 
 	template.Must(template.New("ssh_config").Parse(`
 Host {{ .Name }}
 	Hostname {{ .IP }}
 	User {{ .User }}
-	IdentityFile {{ .Keypath }}
+{{- range $key, $value := .Extra }}
+	{{ $key }} {{ $value -}}
+{{ end -}}
 `)).Execute(&buf, params)
 
 	return buf.String()
@@ -148,7 +189,10 @@ func (c *Client) localExec() ([]string, bool) {
 		exists = false
 		bin = "ssh"
 	}
-	args := []string{bin, "-i", c.Keypath, fmt.Sprintf("%s@%s", c.User, c.IP)}
+	args := []string{bin, fmt.Sprintf("%s@%s", c.User, c.IP)}
+	if len(c.selectedAuth.keyPath) > 0 {
+		args = append(args, "-i", c.selectedAuth.keyPath)
+	}
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
 	}
@@ -169,20 +213,54 @@ func DecryptSSHKey(key []byte, password []byte) (gossh.Signer, error) {
 	return gossh.NewSignerFromKey(sshkey)
 }
 
-func resolveSigner(priv privateKey) (gossh.Signer, error) {
-	signer, err := gossh.ParsePrivateKey(priv.body)
-	if err != nil && strings.Contains(err.Error(), "cannot decode encrypted private keys") {
-		fmt.Fprintf(os.Stderr, "This SSH key is encrypted. Please enter passphrase for key '%s':", priv.path)
-		var passphrase []byte
-		passphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+func resolveAuths(priv privateKey) ([]auth, error) {
+	var auths []auth
+
+	if len(priv.body) > 0 {
+		signer, err := gossh.ParsePrivateKey(priv.body)
 		if err != nil {
-			return nil, err
+			if !strings.Contains(err.Error(), "cannot decode encrypted private keys") {
+				return auths, err
+			}
+
+			fmt.Fprintf(os.Stderr, "This SSH key is encrypted. Please enter passphrase for key '%s':", priv.path)
+			var passphrase []byte
+			passphrase, err = terminal.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				return auths, err
+			}
+
+			fmt.Fprintln(os.Stderr)
+			signer, err = DecryptSSHKey(priv.body, passphrase)
+			if err != nil {
+				return auths, err
+			}
 		}
-		fmt.Fprintln(os.Stderr)
-		signer, err = DecryptSSHKey(priv.body, passphrase)
+
+		auths = append(auths, auth{
+			fmt.Sprintf("keypair %s", priv.path),
+			priv.path,
+			gossh.PublicKeys(signer),
+		})
 	}
 
-	return signer, err
+	sshAuthSock := os.Getenv("SSH_AUTH_SOCK")
+	if len(sshAuthSock) > 0 {
+		agentUnixSock, err := net.Dial("unix", sshAuthSock)
+		if err == nil {
+			auths = append(auths, auth{
+				"ssh agent",
+				"",
+				gossh.PublicKeysCallback(agent.NewClient(agentUnixSock).Signers),
+			})
+		}
+	}
+
+	if len(auths) == 0 {
+		return auths, fmt.Errorf("No key provided and no SSH_AUTH_SOCK env variable set, unable to resolve auth")
+	}
+
+	return auths, nil
 }
 
 type privateKey struct {
@@ -191,6 +269,11 @@ type privateKey struct {
 }
 
 func resolvePrivateKey(keyname string, keyFolders ...string) (priv privateKey, err error) {
+	// if keyname is zero, assume that the agent will be used
+	if len(keyname) == 0 {
+		return
+	}
+
 	keyPaths := []string{
 		keyname,
 	}

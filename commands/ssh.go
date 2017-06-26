@@ -126,7 +126,6 @@ func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyFlag 
 	} else {
 		keypair, ok := inst.Properties[properties.KeyPair]
 		if !ok {
-			err = fmt.Errorf("no access key set for instance %s", inst.Id())
 			return
 		}
 		keypath = fmt.Sprint(keypair)
