@@ -19,7 +19,6 @@ Here the RDF triples implementation follows along the [W3C RDF concepts](https:/
 - CLI (Command line interface) utility to read and convert triples files.
 
 Roadmap
-- Simple RDF graph traversals API
 - RDF graph comparison
 - Encode to [Turtle syntax](https://en.wikipedia.org/wiki/Turtle_(syntax))
 
@@ -259,3 +258,22 @@ if err != nil {
 }
 ...
 ```
+
+### RDFGraph as a Tree
+
+A tree is defined from a RDFGraph given:
+
+ * a specific predicate as an edge
+ * and considering triples pointing to RDF resource Object 
+
+You can then navigate the tree using the existing API calls
+
+	tree := tstore.NewTree(myGraph, myPredicate)
+	tree.TraverseDFS(...)
+	tree.TraverseAncestors(...)
+	tree.TraverseSiblings(...)
+
+Have a look at the [godoc](https://godoc.org/github.com/wallix/triplestore) fro more info 
+
+Note that at the moment, constructing a new tree from a graph does not verify if the tree is valid namely no cycle and each child at most one parent.
+

@@ -17,9 +17,6 @@ limitations under the License.
 package graph
 
 import (
-	"fmt"
-	"sort"
-
 	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
@@ -49,7 +46,7 @@ func (v *ParentsVisitor) Visit(g *Graph) error {
 		return err
 	}
 
-	return visitBottomUp(g.store.Snapshot(), startNode, foreach)
+	return tstore.NewTree(g.store.Snapshot(), rdf.ParentOf).TraverseAncestors(startNode, foreach)
 }
 
 type ChildrenVisitor struct {
@@ -63,7 +60,7 @@ func (v *ChildrenVisitor) Visit(g *Graph) error {
 	if err != nil {
 		return err
 	}
-	return visitTopDown(g.store.Snapshot(), startNode, foreach)
+	return tstore.NewTree(g.store.Snapshot(), rdf.ParentOf).TraverseDFS(startNode, foreach)
 }
 
 type SiblingsVisitor struct {
@@ -78,7 +75,7 @@ func (v *SiblingsVisitor) Visit(g *Graph) error {
 		return err
 	}
 
-	return visitSiblings(g.store.Snapshot(), startNode, foreach)
+	return tstore.NewTree(g.store.Snapshot(), rdf.ParentOf).TraverseSiblings(startNode, resolveResourceType, foreach)
 }
 
 func prepareRDFVisit(g *Graph, root *Resource, each visitEachFunc, includeRoot bool) (string, func(g tstore.RDFGraph, n string, i int) error, error) {
@@ -101,108 +98,4 @@ func prepareRDFVisit(g *Graph, root *Resource, each visitEachFunc, includeRoot b
 		return nil
 	}
 	return rootNode, foreach, nil
-}
-
-func visitTopDown(snap tstore.RDFGraph, root string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
-	var dist int
-	if len(distances) > 0 {
-		dist = distances[0]
-	}
-
-	if err := each(snap, root, dist); err != nil {
-		return err
-	}
-
-	triples := snap.WithSubjPred(root, rdf.ParentOf)
-
-	var childs []string
-	for _, tri := range triples {
-		n, ok := tri.Object().Resource()
-		if !ok {
-			return fmt.Errorf("object is not a resource identifier")
-		}
-		childs = append(childs, n)
-	}
-
-	sort.Strings(childs)
-
-	for _, child := range childs {
-		visitTopDown(snap, child, each, dist+1)
-	}
-
-	return nil
-}
-
-func visitBottomUp(snap tstore.RDFGraph, startNode string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
-	var dist int
-	if len(distances) > 0 {
-		dist = distances[0]
-	}
-
-	if err := each(snap, startNode, dist); err != nil {
-		return err
-	}
-	triples := snap.WithPredObj(rdf.ParentOf, tstore.Resource(startNode))
-	var parents []string
-	for _, tri := range triples {
-		parents = append(parents, tri.Subject())
-	}
-
-	sort.Strings(parents)
-
-	for _, child := range parents {
-		visitBottomUp(snap, child, each, dist+1)
-	}
-
-	return nil
-}
-
-func visitSiblings(snap tstore.RDFGraph, start string, each func(tstore.RDFGraph, string, int) error, distances ...int) error {
-	triples := snap.WithPredObj(rdf.ParentOf, tstore.Resource(start))
-
-	var parents []string
-	for _, tri := range triples {
-		parents = append(parents, tri.Subject())
-	}
-
-	if len(parents) == 0 {
-		return each(snap, start, 0)
-	}
-
-	sort.Strings(parents)
-
-	for _, parent := range parents {
-		parentTs := snap.WithSubjPred(parent, rdf.ParentOf)
-
-		var childs []string
-		for _, parentT := range parentTs {
-			child, ok := parentT.Object().Resource()
-			if !ok {
-				return fmt.Errorf("object is not a resource identifier")
-			}
-			childs = append(childs, child)
-		}
-
-		sort.Strings(childs)
-
-		startType, err := resolveResourceType(snap, start)
-		if err != nil {
-			return err
-		}
-
-		for _, child := range childs {
-			rt, err := resolveResourceType(snap, child)
-			if err != nil {
-				return err
-			}
-			sameType := rt == startType
-			if sameType {
-				if err := each(snap, child, 0); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
 }
