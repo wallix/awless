@@ -75,7 +75,7 @@ hTSx5geAH2W73IyiTK8zIdgPMJPh69//5OhFzhQ8Ug==
 			t.Fatal(err)
 		}
 
-		if got, want := client.Keypath, tcase.expkeypath; got != want {
+		if got, want := client.auths[0].keyPath, tcase.expkeypath; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
 		if got, want := client.StrictHostKeyChecking, true; got != want {

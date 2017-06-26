@@ -2,6 +2,7 @@
 
 ## Features
 
+- `awless ssh`: support SSH agent thanks to @justone
 - Support of EC2 NAT Gateways
 - Make `awless web` command no hidden anymore. This command allows to have a basic overview from a browser of the resources and theirs relations
 - Sync works on best effort now. Meaning it does not bail out when an error happens (most often it can be an access right issues on some AWS services)
