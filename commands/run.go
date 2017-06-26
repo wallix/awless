@@ -178,7 +178,7 @@ type onceLoader struct {
 
 func (l *onceLoader) mustLoad() *graph.Graph {
 	l.once.Do(func() {
-		l.g, l.err = sync.LoadAllGraphs()
+		l.g, l.err = sync.LoadLocalGraphs(config.GetAWSRegion())
 	})
 	exitOn(l.err)
 	return l.g
@@ -283,7 +283,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 
 func validateTemplate(tpl *template.Template) {
 	unicityRule := &template.UniqueNameValidator{LookupGraph: func(key string) (*graph.Graph, bool) {
-		g := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[key], config.GetAWSRegion())
+		g := sync.LoadLocalGraphForService(aws.ServicePerResourceType[key], config.GetAWSRegion())
 		return g, true
 	}}
 
@@ -429,7 +429,7 @@ func runSyncFor(tpl *template.Template) {
 }
 
 func resolveAliasFunc(entity, key, alias string) string {
-	gph := sync.LoadCurrentLocalGraph(aws.ServicePerResourceType[entity], config.GetAWSRegion())
+	gph := sync.LoadLocalGraphForService(aws.ServicePerResourceType[entity], config.GetAWSRegion())
 	resType := key
 	if strings.Contains(key, "id") {
 		resType = entity

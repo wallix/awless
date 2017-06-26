@@ -28,7 +28,7 @@ func New(port string) *server {
 }
 
 func (s *server) Start() error {
-	g, err := sync.LoadAllGraphs()
+	g, err := sync.LoadAllLocalGraphs()
 	if err != nil {
 		return fmt.Errorf("cannot load local graphs: %s", err)
 	}

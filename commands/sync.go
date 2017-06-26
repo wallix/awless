@@ -71,7 +71,7 @@ var syncCmd = &cobra.Command{
 		}
 		localGraphs := make(map[string]*graph.Graph)
 		for _, service := range services {
-			localGraphs[service.Name()] = sync.LoadCurrentLocalGraph(service.Name(), config.GetAWSRegion())
+			localGraphs[service.Name()] = sync.LoadLocalGraphForService(service.Name(), config.GetAWSRegion())
 		}
 		logger.Info("running sync: fetching remote resources for local store")
 		start := time.Now()

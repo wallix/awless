@@ -65,7 +65,7 @@ var inspectCmd = &cobra.Command{
 			}
 		}
 
-		g, err := sync.LoadAllGraphs()
+		g, err := sync.LoadAllLocalGraphs()
 		exitOn(err)
 
 		err = inspector.Inspect(g)

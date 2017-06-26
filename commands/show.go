@@ -241,7 +241,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 }
 
 func resolveResourceFromRef(ref string) (*graph.Graph, []*graph.Resource) {
-	g, err := sync.LoadAllGraphs()
+	g, err := sync.LoadAllLocalGraphs()
 	exitOn(err)
 
 	name := deprefix(ref)

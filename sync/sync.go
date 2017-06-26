@@ -157,7 +157,7 @@ func concatErrors(errs []error) error {
 	return errors.New(strings.Join(lines, "\n"))
 }
 
-func LoadCurrentLocalGraph(serviceName, region string) *graph.Graph {
+func LoadLocalGraphForService(serviceName, region string) *graph.Graph {
 	regionDir := region
 	if aws.IsGlobalService(serviceName) {
 		regionDir = "global"
@@ -170,7 +170,30 @@ func LoadCurrentLocalGraph(serviceName, region string) *graph.Graph {
 	return g
 }
 
-func LoadAllGraphs() (*graph.Graph, error) {
+func LoadLocalGraphs(region string) (*graph.Graph, error) {
+	var files []string
+	globalFiles, _ := filepath.Glob(filepath.Join(repo.BaseDir(), "global", fmt.Sprintf("*%s", fileExt)))
+	regionFiles, _ := filepath.Glob(filepath.Join(repo.BaseDir(), region, fmt.Sprintf("*%s", fileExt)))
+
+	files = append(files, globalFiles...)
+	files = append(files, regionFiles...)
+
+	g := graph.NewGraph()
+
+	var readers []io.Reader
+	for _, f := range files {
+		reader, err := os.Open(f)
+		if err != nil {
+			return g, fmt.Errorf("loading '%s': %s", f, err)
+		}
+		readers = append(readers, reader)
+	}
+
+	err := g.UnmarshalMultiple(readers...)
+	return g, err
+}
+
+func LoadAllLocalGraphs() (*graph.Graph, error) {
 	path := filepath.Join(repo.BaseDir(), "*", fmt.Sprintf("*%s", fileExt))
 	files, _ := filepath.Glob(path)
 
