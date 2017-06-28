@@ -830,409 +830,409 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.infra.instance.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range instanceList {
-				for _, fn := range addParentsFns["instance"] {
-					err := fn(g, r)
+		for _, r := range instanceList {
+			for _, fn := range addParentsFns["instance"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Instance) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.subnet.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range subnetList {
-				for _, fn := range addParentsFns["subnet"] {
-					err := fn(g, r)
+		for _, r := range subnetList {
+			for _, fn := range addParentsFns["subnet"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Subnet) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.vpc.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range vpcList {
-				for _, fn := range addParentsFns["vpc"] {
-					err := fn(g, r)
+		for _, r := range vpcList {
+			for _, fn := range addParentsFns["vpc"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Vpc) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.keypair.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range keypairList {
-				for _, fn := range addParentsFns["keypair"] {
-					err := fn(g, r)
+		for _, r := range keypairList {
+			for _, fn := range addParentsFns["keypair"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.KeyPairInfo) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.securitygroup.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range securitygroupList {
-				for _, fn := range addParentsFns["securitygroup"] {
-					err := fn(g, r)
+		for _, r := range securitygroupList {
+			for _, fn := range addParentsFns["securitygroup"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.SecurityGroup) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.volume.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range volumeList {
-				for _, fn := range addParentsFns["volume"] {
-					err := fn(g, r)
+		for _, r := range volumeList {
+			for _, fn := range addParentsFns["volume"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Volume) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.internetgateway.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range internetgatewayList {
-				for _, fn := range addParentsFns["internetgateway"] {
-					err := fn(g, r)
+		for _, r := range internetgatewayList {
+			for _, fn := range addParentsFns["internetgateway"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.InternetGateway) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.natgateway.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range natgatewayList {
-				for _, fn := range addParentsFns["natgateway"] {
-					err := fn(g, r)
+		for _, r := range natgatewayList {
+			for _, fn := range addParentsFns["natgateway"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.NatGateway) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.routetable.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range routetableList {
-				for _, fn := range addParentsFns["routetable"] {
-					err := fn(g, r)
+		for _, r := range routetableList {
+			for _, fn := range addParentsFns["routetable"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.RouteTable) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.availabilityzone.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range availabilityzoneList {
-				for _, fn := range addParentsFns["availabilityzone"] {
-					err := fn(g, r)
+		for _, r := range availabilityzoneList {
+			for _, fn := range addParentsFns["availabilityzone"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.AvailabilityZone) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.image.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range imageList {
-				for _, fn := range addParentsFns["image"] {
-					err := fn(g, r)
+		for _, r := range imageList {
+			for _, fn := range addParentsFns["image"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Image) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.importimagetask.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range importimagetaskList {
-				for _, fn := range addParentsFns["importimagetask"] {
-					err := fn(g, r)
+		for _, r := range importimagetaskList {
+			for _, fn := range addParentsFns["importimagetask"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.ImportImageTask) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.elasticip.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range elasticipList {
-				for _, fn := range addParentsFns["elasticip"] {
-					err := fn(g, r)
+		for _, r := range elasticipList {
+			for _, fn := range addParentsFns["elasticip"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Address) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.snapshot.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range snapshotList {
-				for _, fn := range addParentsFns["snapshot"] {
-					err := fn(g, r)
+		for _, r := range snapshotList {
+			for _, fn := range addParentsFns["snapshot"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ec2.Snapshot) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.loadbalancer.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range loadbalancerList {
-				for _, fn := range addParentsFns["loadbalancer"] {
-					err := fn(g, r)
+		for _, r := range loadbalancerList {
+			for _, fn := range addParentsFns["loadbalancer"] {
+				wg.Add(1)
+				go func(f addParentFn, res *elbv2.LoadBalancer) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.targetgroup.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range targetgroupList {
-				for _, fn := range addParentsFns["targetgroup"] {
-					err := fn(g, r)
+		for _, r := range targetgroupList {
+			for _, fn := range addParentsFns["targetgroup"] {
+				wg.Add(1)
+				go func(f addParentFn, res *elbv2.TargetGroup) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.listener.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range listenerList {
-				for _, fn := range addParentsFns["listener"] {
-					err := fn(g, r)
+		for _, r := range listenerList {
+			for _, fn := range addParentsFns["listener"] {
+				wg.Add(1)
+				go func(f addParentFn, res *elbv2.Listener) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.database.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range databaseList {
-				for _, fn := range addParentsFns["database"] {
-					err := fn(g, r)
+		for _, r := range databaseList {
+			for _, fn := range addParentsFns["database"] {
+				wg.Add(1)
+				go func(f addParentFn, res *rds.DBInstance) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.dbsubnetgroup.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range dbsubnetgroupList {
-				for _, fn := range addParentsFns["dbsubnetgroup"] {
-					err := fn(g, r)
+		for _, r := range dbsubnetgroupList {
+			for _, fn := range addParentsFns["dbsubnetgroup"] {
+				wg.Add(1)
+				go func(f addParentFn, res *rds.DBSubnetGroup) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.launchconfiguration.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range launchconfigurationList {
-				for _, fn := range addParentsFns["launchconfiguration"] {
-					err := fn(g, r)
+		for _, r := range launchconfigurationList {
+			for _, fn := range addParentsFns["launchconfiguration"] {
+				wg.Add(1)
+				go func(f addParentFn, res *autoscaling.LaunchConfiguration) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.scalinggroup.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range scalinggroupList {
-				for _, fn := range addParentsFns["scalinggroup"] {
-					err := fn(g, r)
+		for _, r := range scalinggroupList {
+			for _, fn := range addParentsFns["scalinggroup"] {
+				wg.Add(1)
+				go func(f addParentFn, res *autoscaling.Group) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.scalingpolicy.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range scalingpolicyList {
-				for _, fn := range addParentsFns["scalingpolicy"] {
-					err := fn(g, r)
+		for _, r := range scalingpolicyList {
+			for _, fn := range addParentsFns["scalingpolicy"] {
+				wg.Add(1)
+				go func(f addParentFn, res *autoscaling.ScalingPolicy) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.repository.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range repositoryList {
-				for _, fn := range addParentsFns["repository"] {
-					err := fn(g, r)
+		for _, r := range repositoryList {
+			for _, fn := range addParentsFns["repository"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ecr.Repository) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.containercluster.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range containerclusterList {
-				for _, fn := range addParentsFns["containercluster"] {
-					err := fn(g, r)
+		for _, r := range containerclusterList {
+			for _, fn := range addParentsFns["containercluster"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ecs.Cluster) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.containertask.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range containertaskList {
-				for _, fn := range addParentsFns["containertask"] {
-					err := fn(g, r)
+		for _, r := range containertaskList {
+			for _, fn := range addParentsFns["containertask"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ecs.TaskDefinition) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.container.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range containerList {
-				for _, fn := range addParentsFns["container"] {
-					err := fn(g, r)
+		for _, r := range containerList {
+			for _, fn := range addParentsFns["container"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ecs.Container) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.infra.containerinstance.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range containerinstanceList {
-				for _, fn := range addParentsFns["containerinstance"] {
-					err := fn(g, r)
+		for _, r := range containerinstanceList {
+			for _, fn := range addParentsFns["containerinstance"] {
+				wg.Add(1)
+				go func(f addParentFn, res *ecs.ContainerInstance) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -2085,79 +2085,79 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.access.user.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range userList {
-				for _, fn := range addParentsFns["user"] {
-					err := fn(g, r)
+		for _, r := range userList {
+			for _, fn := range addParentsFns["user"] {
+				wg.Add(1)
+				go func(f addParentFn, res *iam.UserDetail) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.access.group.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range groupList {
-				for _, fn := range addParentsFns["group"] {
-					err := fn(g, r)
+		for _, r := range groupList {
+			for _, fn := range addParentsFns["group"] {
+				wg.Add(1)
+				go func(f addParentFn, res *iam.GroupDetail) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.access.role.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range roleList {
-				for _, fn := range addParentsFns["role"] {
-					err := fn(g, r)
+		for _, r := range roleList {
+			for _, fn := range addParentsFns["role"] {
+				wg.Add(1)
+				go func(f addParentFn, res *iam.RoleDetail) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.access.policy.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range policyList {
-				for _, fn := range addParentsFns["policy"] {
-					err := fn(g, r)
+		for _, r := range policyList {
+			for _, fn := range addParentsFns["policy"] {
+				wg.Add(1)
+				go func(f addParentFn, res *iam.Policy) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.access.accesskey.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range accesskeyList {
-				for _, fn := range addParentsFns["accesskey"] {
-					err := fn(g, r)
+		for _, r := range accesskeyList {
+			for _, fn := range addParentsFns["accesskey"] {
+				wg.Add(1)
+				go func(f addParentFn, res *iam.AccessKeyMetadata) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -2401,34 +2401,34 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.storage.bucket.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range bucketList {
-				for _, fn := range addParentsFns["bucket"] {
-					err := fn(g, r)
+		for _, r := range bucketList {
+			for _, fn := range addParentsFns["bucket"] {
+				wg.Add(1)
+				go func(f addParentFn, res *s3.Bucket) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.storage.s3object.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range s3objectList {
-				for _, fn := range addParentsFns["s3object"] {
-					err := fn(g, r)
+		for _, r := range s3objectList {
+			for _, fn := range addParentsFns["s3object"] {
+				wg.Add(1)
+				go func(f addParentFn, res *s3.Object) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -2600,49 +2600,49 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.messaging.subscription.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range subscriptionList {
-				for _, fn := range addParentsFns["subscription"] {
-					err := fn(g, r)
+		for _, r := range subscriptionList {
+			for _, fn := range addParentsFns["subscription"] {
+				wg.Add(1)
+				go func(f addParentFn, res *sns.Subscription) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.messaging.topic.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range topicList {
-				for _, fn := range addParentsFns["topic"] {
-					err := fn(g, r)
+		for _, r := range topicList {
+			for _, fn := range addParentsFns["topic"] {
+				wg.Add(1)
+				go func(f addParentFn, res *sns.Topic) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.messaging.queue.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range queueList {
-				for _, fn := range addParentsFns["queue"] {
-					err := fn(g, r)
+		for _, r := range queueList {
+			for _, fn := range addParentsFns["queue"] {
+				wg.Add(1)
+				go func(f addParentFn, res *string) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -2852,34 +2852,34 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.dns.zone.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range zoneList {
-				for _, fn := range addParentsFns["zone"] {
-					err := fn(g, r)
+		for _, r := range zoneList {
+			for _, fn := range addParentsFns["zone"] {
+				wg.Add(1)
+				go func(f addParentFn, res *route53.HostedZone) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.dns.record.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range recordList {
-				for _, fn := range addParentsFns["record"] {
-					err := fn(g, r)
+		for _, r := range recordList {
+			for _, fn := range addParentsFns["record"] {
+				wg.Add(1)
+				go func(f addParentFn, res *route53.ResourceRecordSet) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -3040,19 +3040,19 @@ func (s *Lambda) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.lambda.function.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range functionList {
-				for _, fn := range addParentsFns["function"] {
-					err := fn(g, r)
+		for _, r := range functionList {
+			for _, fn := range addParentsFns["function"] {
+				wg.Add(1)
+				go func(f addParentFn, res *lambda.FunctionConfiguration) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -3228,34 +3228,34 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.monitoring.metric.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range metricList {
-				for _, fn := range addParentsFns["metric"] {
-					err := fn(g, r)
+		for _, r := range metricList {
+			for _, fn := range addParentsFns["metric"] {
+				wg.Add(1)
+				go func(f addParentFn, res *cloudwatch.Metric) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 	if s.config.getBool("aws.monitoring.alarm.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range alarmList {
-				for _, fn := range addParentsFns["alarm"] {
-					err := fn(g, r)
+		for _, r := range alarmList {
+			for _, fn := range addParentsFns["alarm"] {
+				wg.Add(1)
+				go func(f addParentFn, res *cloudwatch.MetricAlarm) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -3444,19 +3444,19 @@ func (s *Cdn) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.cdn.distribution.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range distributionList {
-				for _, fn := range addParentsFns["distribution"] {
-					err := fn(g, r)
+		for _, r := range distributionList {
+			for _, fn := range addParentsFns["distribution"] {
+				wg.Add(1)
+				go func(f addParentFn, res *cloudfront.DistributionSummary) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {
@@ -3614,19 +3614,19 @@ func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
 
 	errc = make(chan error)
 	if s.config.getBool("aws.cloudformation.stack.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range stackList {
-				for _, fn := range addParentsFns["stack"] {
-					err := fn(g, r)
+		for _, r := range stackList {
+			for _, fn := range addParentsFns["stack"] {
+				wg.Add(1)
+				go func(f addParentFn, res *cloudformation.Stack) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
 
 	go func() {

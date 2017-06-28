@@ -254,19 +254,19 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	errc = make(chan error)
 	{{- range $index, $fetcher := $service.Fetchers }}
 	if s.config.getBool("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for _, r := range {{ $fetcher.ResourceType }}List {
-				for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
-					err := fn(g, r)
+		for _, r := range {{ $fetcher.ResourceType }}List {
+			for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
+				wg.Add(1)
+				go func(f addParentFn, res *{{ $fetcher.AWSType }}) {
+					defer wg.Done()
+					err := f(g, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}
+				}(fn, r)
 			}
-		}()
+		}
 	}
   {{- end }}
 

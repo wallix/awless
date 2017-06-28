@@ -122,23 +122,23 @@ type cacheResult struct {
 }
 
 func (c *cacher) Get(key string, f func() *cacheResult) *cacheResult {
+	c.mu.Lock()
 	if c.cached == nil {
 		c.cached = make(map[string]*keyCache)
 	}
-	c.mu.Lock()
-	res, ok := c.cached[key]
+	cache, ok := c.cached[key]
 	if !ok {
-		res = &keyCache{}
-		c.cached[key] = &keyCache{}
+		cache = &keyCache{}
+		c.cached[key] = cache
 	}
 	c.mu.Unlock()
-	res.mu.Lock()
-	defer res.mu.Unlock()
-	if res.cached != nil {
-		return res.cached
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+	if cache.cached != nil {
+		return cache.cached
 	}
-	res.cached = f()
-	return res.cached
+	cache.cached = f()
+	return cache.cached
 }
 
 var arnResourceInfoRegex = regexp.MustCompile(`(root)|([\w-.]*)/([\w-./]*)`)
@@ -675,10 +675,10 @@ func (s *Infra) fetch_all_listener_graph() (*graph.Graph, []*elbv2.Listener, err
 
 	err := s.DescribeLoadBalancersPages(&elbv2.DescribeLoadBalancersInput{},
 		func(out *elbv2.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				for _, lb := range out.LoadBalancers {
+			for _, lb := range out.LoadBalancers {
+				wg.Add(1)
+				go func(lb *elbv2.LoadBalancer) {
+					defer wg.Done()
 					err := s.DescribeListenersPages(&elbv2.DescribeListenersInput{LoadBalancerArn: lb.LoadBalancerArn},
 						func(out *elbv2.DescribeListenersOutput, lastPage bool) (shouldContinue bool) {
 							for _, listen := range out.Listeners {
@@ -689,8 +689,8 @@ func (s *Infra) fetch_all_listener_graph() (*graph.Graph, []*elbv2.Listener, err
 					if err != nil {
 						errc <- err
 					}
-				}
-			}()
+				}(lb)
+			}
 			return out.NextMarker != nil
 		})
 	if err != nil {
@@ -1008,37 +1008,82 @@ func (s *Infra) getAllTasks() (res []*ecs.Task, err error) {
 	}
 	clusterArns := cacheRes.result.([]*string)
 
-	for _, cluster := range clusterArns {
-		var badResErr error
-		addTaskContainersFunc := func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
-			var tasksOut *ecs.DescribeTasksOutput
-			if len(out.TaskArns) == 0 {
-				return out.NextToken != nil
-			}
+	type listTasksOutput struct {
+		err     error
+		output  *ecs.ListTasksOutput
+		cluster *string
+	}
+	tasksNamesc := make(chan listTasksOutput)
+	var wg sync.WaitGroup
 
-			if tasksOut, badResErr = s.ECSAPI.DescribeTasks(&ecs.DescribeTasksInput{Cluster: cluster, Tasks: out.TaskArns}); badResErr != nil {
-				return false
-			}
-			res = append(res, tasksOut.Tasks...)
+	addTaskContainersFunc := func(cl *string) func(*ecs.ListTasksOutput, bool) bool {
+		return func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
+			tasksNamesc <- listTasksOutput{output: out, cluster: cl}
 			return out.NextToken != nil
 		}
-
-		if err = s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc); err != nil {
-			return
-		}
-		if badResErr != nil {
-			err = badResErr
-			return
-		}
-
-		if err = s.ListTasksPages(&ecs.ListTasksInput{Cluster: cluster, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc); err != nil {
-			return
-		}
-		if badResErr != nil {
-			err = badResErr
-			return
-		}
 	}
+
+	for _, cluster := range clusterArns {
+		wg.Add(1)
+		go func(cl *string) {
+			defer wg.Done()
+			if er := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cl, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc(cl)); er != nil {
+				tasksNamesc <- listTasksOutput{err: er}
+			}
+		}(cluster)
+
+		wg.Add(1)
+		go func(cl *string) {
+			defer wg.Done()
+			if er := s.ListTasksPages(&ecs.ListTasksInput{Cluster: cl, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc(cl)); er != nil {
+				tasksNamesc <- listTasksOutput{err: er}
+			}
+		}(cluster)
+	}
+
+	type describeTasksOutput struct {
+		err    error
+		output *ecs.DescribeTasksOutput
+	}
+
+	tasksc := make(chan describeTasksOutput)
+	var tasksWG sync.WaitGroup
+
+	tasksWG.Add(1)
+	go func() {
+		defer tasksWG.Done()
+		for r := range tasksNamesc {
+			if r.err != nil {
+				tasksc <- describeTasksOutput{err: r.err}
+				return
+			}
+			if len(r.output.TaskArns) == 0 {
+				continue
+			}
+
+			tasksWG.Add(1)
+			go func(arns []*string, cluster *string) {
+				defer tasksWG.Done()
+				tasksOut, er := s.ECSAPI.DescribeTasks(&ecs.DescribeTasksInput{Cluster: cluster, Tasks: arns})
+				tasksc <- describeTasksOutput{err: er, output: tasksOut}
+			}(r.output.TaskArns, r.cluster)
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(tasksNamesc)
+		tasksWG.Wait()
+		close(tasksc)
+	}()
+
+	for r := range tasksc {
+		if err = r.err; err != nil {
+			return
+		}
+		res = append(res, r.output.Tasks...)
+	}
+
 	return
 }
 
