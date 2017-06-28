@@ -127,3 +127,8 @@ func verifyNewVersionHook(cmd *cobra.Command, args []string) error {
 	config.VerifyNewVersionAvailable("https://updates.awless.io", os.Stderr)
 	return nil
 }
+
+func networkMonitorHook(cmd *cobra.Command, args []string) error {
+	aws.DefaultNetworkMonitor.DisplayStats(os.Stderr)
+	return nil
+}

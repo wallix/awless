@@ -24,6 +24,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/cloud"
@@ -46,6 +47,7 @@ func InitServices(conf map[string]interface{}, log *logger.Logger) error {
 	if err != nil {
 		return err
 	}
+	//addDebugRequestsHandlers(sess)
 
 	AccessService = NewAccess(sess, awsconf, log)
 	InfraService = NewInfra(sess, awsconf, log)
@@ -121,4 +123,13 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 	session.Config.HTTPClient = http.DefaultClient
 
 	return session, nil
+}
+
+func addDebugRequestsHandlers(s *session.Session) {
+	s.Handlers.Send.PushFront(func(r *request.Request) {
+		DefaultNetworkMonitor.addRequest(r)
+	})
+	s.Handlers.Complete.PushBack(func(r *request.Request) {
+		DefaultNetworkMonitor.setRequestEnd(r)
+	})
 }
