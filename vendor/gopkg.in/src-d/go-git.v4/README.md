@@ -1,6 +1,6 @@
-# go-git [![GoDoc](https://godoc.org/gopkg.in/src-d/go-git.v4?status.svg)](https://godoc.org/gopkg.in/src-d/go-git.v4) [![Build Status](https://travis-ci.org/src-d/go-git.svg)](https://travis-ci.org/src-d/go-git) [![codecov.io](https://codecov.io/github/src-d/go-git/coverage.svg)](https://codecov.io/github/src-d/go-git) [![codebeat badge](https://codebeat.co/badges/b6cb2f73-9e54-483d-89f9-4b95a911f40c)](https://codebeat.co/projects/github-com-src-d-go-git)
+# go-git [![GoDoc](https://godoc.org/gopkg.in/src-d/go-git.v4?status.svg)](https://godoc.org/github.com/src-d/go-git) [![Build Status](https://travis-ci.org/src-d/go-git.svg)](https://travis-ci.org/src-d/go-git) [![codecov.io](https://codecov.io/github/src-d/go-git/coverage.svg)](https://codecov.io/github/src-d/go-git) [![codebeat badge](https://codebeat.co/badges/b6cb2f73-9e54-483d-89f9-4b95a911f40c)](https://codebeat.co/projects/github-com-src-d-go-git)
 
-A low level and highly extensible git implementation in **pure Go**.
+A highly extensible git implementation in **pure Go**.
 
 *go-git* aims to reach the completeness of [libgit2](https://libgit2.github.com/) or [jgit](http://www.eclipse.org/jgit/), nowadays covers the **majority** of the plumbing **read operations** and **some** of the main **write operations**, but lacks the main porcelain operations such as merges.
 
@@ -27,20 +27,46 @@ go get -u gopkg.in/src-d/go-git.v4/...
 Examples
 --------
 
-Cloning a repository and printing the history of HEAD, just like `git log` does
+> Please note that the functions `CheckIfError` and `Info` used in the examples are from the [examples package](https://github.com/src-d/go-git/blob/master/_examples/common.go#L17) just to be used in the examples.
 
-> Please note that the functions `CheckIfError` and `Info` used in the examples are from the [examples package](https://github.com/src-d/go-git/blob/master/examples/common.go#L17) just to be used in the examples.
+
+### Basic example
+
+A basic example that mimics the standard `git clone` command
+
+```go
+// Clone the given repository to the given directory
+Info("git clone https://github.com/src-d/go-git")
+
+_, err := git.PlainClone("/tmp/foo", false, &git.CloneOptions{
+    URL:      "https://github.com/src-d/go-git",
+    Progress: os.Stdout,
+})
+
+CheckIfError(err)
+```
+
+Outputs:
+```
+Counting objects: 4924, done.
+Compressing objects: 100% (1333/1333), done.
+Total 4924 (delta 530), reused 6 (delta 6), pack-reused 3533
+```
+
+### In-memory example
+
+Cloning a repository into memory and printing the history of HEAD, just like `git log` does
 
 
 ```go
-// Instances an in-memory git repository
-r := git.NewMemoryRepository()
-
-// Clones the given repository, creating the remote, the local branches
-// and fetching the objects, exactly as:
+// Clones the given repository in memory, creating the remote, the local
+// branches and fetching the objects, exactly as:
 Info("git clone https://github.com/src-d/go-siva")
 
-err := r.Clone(&git.CloneOptions{URL: "https://github.com/src-d/go-siva"})
+r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+    URL: "https://github.com/src-d/go-siva",
+})
+
 CheckIfError(err)
 
 // Gets the HEAD history from HEAD, just like does:
@@ -51,7 +77,7 @@ ref, err := r.Head()
 CheckIfError(err)
 
 // ... retrieves the commit object
-commit, err := r.Commit(ref.Hash())
+commit, err := r.CommitObject(ref.Hash())
 CheckIfError(err)
 
 // ... retrieves the commit history
@@ -83,7 +109,13 @@ Date:   Fri Nov 11 13:23:22 2016 +0100
 ...
 ```
 
-You can find this [example](examples/log/main.go) and many other at the [examples](examples) folder
+You can find this [example](_examples/log/main.go) and many other at the [examples](_examples) folder
+
+Comparison With Git
+-------------------
+
+In the [compatibility documentation](COMPATIBILITY.md) you can find a comparison
+table of git with go-git.
 
 Contribute
 ----------

@@ -120,27 +120,27 @@ Loop:
 		}
 	}
 
-	var filenames []string
+	var filepaths []string
 
 	for name, g := range graphs {
 		filename := fmt.Sprintf("%s%s", name, fileExt)
-		tofile, err := g.Marshal()
+		content, err := g.Marshal()
 		if err != nil {
 			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
 		}
 
 		serviceDir := filepath.Join(s.BaseDir(), servicesByName[name].Region())
 		os.MkdirAll(serviceDir, 0700)
-		filepath := filepath.Join(serviceDir, filename)
 
-		if err = ioutil.WriteFile(filepath, tofile, 0600); err != nil {
-			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", filepath, err))
+		writePath := filepath.Join(serviceDir, filename)
+		if err = ioutil.WriteFile(writePath, content, 0600); err != nil {
+			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", writePath, err))
 		}
-		filenames = append(filenames, filename)
+		filepaths = append(filepaths, filepath.Join(servicesByName[name].Region(), filename))
 	}
 
-	if err := s.Commit(filenames...); err != nil {
-		allErrors = append(allErrors, fmt.Errorf("storing %s: %s", strings.Join(filenames, ", "), err))
+	if err := s.Commit(filepaths...); err != nil {
+		allErrors = append(allErrors, fmt.Errorf("storing %s: %s", strings.Join(filepaths, ", "), err))
 	}
 
 	return graphs, concatErrors(allErrors)

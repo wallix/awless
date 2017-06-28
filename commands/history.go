@@ -27,7 +27,6 @@ import (
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
-	"github.com/wallix/awless/sync/repo"
 )
 
 var (
@@ -37,7 +36,7 @@ var (
 func init() {
 	RootCmd.AddCommand(historyCmd)
 
-	historyCmd.Flags().BoolVarP(&showProperties, "properties", "p", false, "Full diff with resources properties")
+	historyCmd.Flags().BoolVar(&showProperties, "properties", false, "Full diff with resources properties")
 }
 
 var historyCmd = &cobra.Command{
@@ -48,11 +47,6 @@ var historyCmd = &cobra.Command{
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if !repo.IsGitInstalled() {
-			fmt.Printf("No history available. You need to install git")
-			os.Exit(0)
-		}
-
 		region := config.GetAWSRegion()
 
 		root := graph.InitResource(cloud.Region, region)

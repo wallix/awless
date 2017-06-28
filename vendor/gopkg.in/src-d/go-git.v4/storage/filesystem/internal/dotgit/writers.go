@@ -10,7 +10,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/format/objfile"
 	"gopkg.in/src-d/go-git.v4/plumbing/format/packfile"
 
-	"srcd.works/go-billy.v1"
+	"gopkg.in/src-d/go-billy.v3"
 )
 
 // PackWriter is a io.Writer that generates the packfile index simultaneously,
@@ -36,7 +36,7 @@ func newPackWrite(fs billy.Filesystem) (*PackWriter, error) {
 		return nil, err
 	}
 
-	fr, err := fs.Open(fw.Filename())
+	fr, err := fs.Open(fw.Name())
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (w *PackWriter) Close() error {
 }
 
 func (w *PackWriter) clean() error {
-	return w.fs.Remove(w.fw.Filename())
+	return w.fs.Remove(w.fw.Name())
 }
 
 func (w *PackWriter) save() error {
@@ -148,7 +148,7 @@ func (w *PackWriter) save() error {
 		return err
 	}
 
-	return w.fs.Rename(w.fw.Filename(), fmt.Sprintf("%s.pack", base))
+	return w.fs.Rename(w.fw.Name(), fmt.Sprintf("%s.pack", base))
 }
 
 func (w *PackWriter) encodeIdx(writer io.Writer) error {
@@ -190,14 +190,14 @@ func (s *syncedReader) Write(p []byte) (n int, err error) {
 func (s *syncedReader) Read(p []byte) (n int, err error) {
 	defer func() { atomic.AddUint64(&s.read, uint64(n)) }()
 
-	s.sleep()
-	n, err = s.r.Read(p)
-	if err == io.EOF && !s.isDone() {
-		if n == 0 {
-			return s.Read(p)
+	for {
+		s.sleep()
+		n, err = s.r.Read(p)
+		if err == io.EOF && !s.isDone() && n == 0 {
+			continue
 		}
 
-		return n, nil
+		break
 	}
 
 	return
@@ -282,5 +282,5 @@ func (w *ObjectWriter) save() error {
 	hash := w.Hash().String()
 	file := w.fs.Join(objectsPath, hash[0:2], hash[2:40])
 
-	return w.fs.Rename(w.f.Filename(), file)
+	return w.fs.Rename(w.f.Name(), file)
 }

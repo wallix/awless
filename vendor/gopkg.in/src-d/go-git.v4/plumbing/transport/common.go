@@ -18,6 +18,7 @@ import (
 	"io"
 	"net/url"
 	"regexp"
+	"strconv"
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/protocol/packp"
@@ -27,9 +28,11 @@ import (
 var (
 	ErrRepositoryNotFound     = errors.New("repository not found")
 	ErrEmptyRemoteRepository  = errors.New("remote repository is empty")
-	ErrAuthorizationRequired  = errors.New("authorization required")
+	ErrAuthenticationRequired = errors.New("authentication required")
+	ErrAuthorizationFailed    = errors.New("authorization failed")
 	ErrEmptyUploadPackRequest = errors.New("empty git-upload-pack given")
 	ErrInvalidAuthMethod      = errors.New("invalid auth method")
+	ErrAlreadyConnected       = errors.New("session already established")
 )
 
 const (
@@ -37,16 +40,16 @@ const (
 	ReceivePackServiceName = "git-receive-pack"
 )
 
-// Client can initiate git-fetch-pack and git-send-pack processes.
-type Client interface {
-	// NewFetchPackSession starts a git-fetch-pack session for an endpoint.
-	NewFetchPackSession(Endpoint) (FetchPackSession, error)
-	// NewSendPackSession starts a git-send-pack session for an endpoint.
-	NewSendPackSession(Endpoint) (SendPackSession, error)
+// Transport can initiate git-upload-pack and git-receive-pack processes.
+// It is implemented both by the client and the server, making this a RPC.
+type Transport interface {
+	// NewUploadPackSession starts a git-upload-pack session for an endpoint.
+	NewUploadPackSession(Endpoint, AuthMethod) (UploadPackSession, error)
+	// NewReceivePackSession starts a git-receive-pack session for an endpoint.
+	NewReceivePackSession(Endpoint, AuthMethod) (ReceivePackSession, error)
 }
 
 type Session interface {
-	SetAuth(auth AuthMethod) error
 	// AdvertisedReferences retrieves the advertised references for a
 	// repository.
 	// If the repository does not exist, returns ErrRepositoryNotFound.
@@ -60,64 +63,185 @@ type AuthMethod interface {
 	Name() string
 }
 
-// FetchPackSession represents a git-fetch-pack session.
-// A git-fetch-pack session has two steps: reference discovery
-// (`AdvertisedReferences` function) and fetching pack (`FetchPack` function).
-// In that order.
-type FetchPackSession interface {
+// UploadPackSession represents a git-upload-pack session.
+// A git-upload-pack session has two steps: reference discovery
+// (AdvertisedReferences) and uploading pack (UploadPack).
+type UploadPackSession interface {
 	Session
-	// FetchPack takes a request and returns a reader for the packfile
-	// received from the server.
-	FetchPack(*packp.UploadPackRequest) (*packp.UploadPackResponse, error)
+	// UploadPack takes a git-upload-pack request and returns a response,
+	// including a packfile. Don't be confused by terminology, the client
+	// side of a git-upload-pack is called git-fetch-pack, although here
+	// the same interface is used to make it RPC-like.
+	UploadPack(*packp.UploadPackRequest) (*packp.UploadPackResponse, error)
 }
 
-// SendPackSession represents a git-send-pack session.
-// A git-send-pack session has two steps: reference discovery
-// (`AdvertisedReferences` function) and sending pack (`SendPack` function).
+// ReceivePackSession represents a git-receive-pack session.
+// A git-receive-pack session has two steps: reference discovery
+// (AdvertisedReferences) and receiving pack (ReceivePack).
 // In that order.
-type SendPackSession interface {
+type ReceivePackSession interface {
 	Session
-	// UpdateReferences sends an update references request and a packfile
-	// reader and returns a ReportStatus and error.
-	SendPack(*packp.ReferenceUpdateRequest) (*packp.ReportStatus, error)
+	// ReceivePack sends an update references request and a packfile
+	// reader and returns a ReportStatus and error. Don't be confused by
+	// terminology, the client side of a git-receive-pack is called
+	// git-send-pack, although here the same interface is used to make it
+	// RPC-like.
+	ReceivePack(*packp.ReferenceUpdateRequest) (*packp.ReportStatus, error)
 }
 
-type Endpoint url.URL
-
-var (
-	isSchemeRegExp   = regexp.MustCompile("^[^:]+://")
-	scpLikeUrlRegExp = regexp.MustCompile("^(?P<user>[^@]+@)?(?P<host>[^:]+):/?(?P<path>.+)$")
-)
+// Endpoint represents a Git URL in any supported protocol.
+type Endpoint interface {
+	// Protocol returns the protocol (e.g. git, https, file). It should never
+	// return the empty string.
+	Protocol() string
+	// User returns the user or an empty string if none is given.
+	User() string
+	// Password returns the password or an empty string if none is given.
+	Password() string
+	// Host returns the host or an empty string if none is given.
+	Host() string
+	// Port returns the port or 0 if there is no port or a default should be
+	// used.
+	Port() int
+	// Path returns the repository path.
+	Path() string
+	// String returns a string representation of the Git URL.
+	String() string
+}
 
 func NewEndpoint(endpoint string) (Endpoint, error) {
-	endpoint = transformSCPLikeIfNeeded(endpoint)
+	if e, ok := parseSCPLike(endpoint); ok {
+		return e, nil
+	}
+
+	if e, ok := parseFile(endpoint); ok {
+		return e, nil
+	}
 
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		return Endpoint{}, plumbing.NewPermanentError(err)
+		return nil, plumbing.NewPermanentError(err)
 	}
 
 	if !u.IsAbs() {
-		return Endpoint{}, plumbing.NewPermanentError(fmt.Errorf(
+		return nil, plumbing.NewPermanentError(fmt.Errorf(
 			"invalid endpoint: %s", endpoint,
 		))
 	}
 
-	return Endpoint(*u), nil
+	return urlEndpoint{u}, nil
 }
 
-func (e *Endpoint) String() string {
-	u := url.URL(*e)
-	return u.String()
+type urlEndpoint struct {
+	*url.URL
 }
 
-func transformSCPLikeIfNeeded(endpoint string) string {
-	if !isSchemeRegExp.MatchString(endpoint) && scpLikeUrlRegExp.MatchString(endpoint) {
-		m := scpLikeUrlRegExp.FindStringSubmatch(endpoint)
-		return fmt.Sprintf("ssh://%s%s/%s", m[1], m[2], m[3])
+func (e urlEndpoint) Protocol() string { return e.URL.Scheme }
+func (e urlEndpoint) Host() string     { return e.URL.Hostname() }
+
+func (e urlEndpoint) User() string {
+	if e.URL.User == nil {
+		return ""
 	}
 
-	return endpoint
+	return e.URL.User.Username()
+}
+
+func (e urlEndpoint) Password() string {
+	if e.URL.User == nil {
+		return ""
+	}
+
+	p, _ := e.URL.User.Password()
+	return p
+}
+
+func (e urlEndpoint) Port() int {
+	p := e.URL.Port()
+	if p == "" {
+		return 0
+	}
+
+	i, err := strconv.Atoi(e.URL.Port())
+	if err != nil {
+		return 0
+	}
+
+	return i
+}
+
+func (e urlEndpoint) Path() string {
+	var res string = e.URL.Path
+	if e.URL.RawQuery != "" {
+		res += "?" + e.URL.RawQuery
+	}
+
+	if e.URL.Fragment != "" {
+		res += "#" + e.URL.Fragment
+	}
+
+	return res
+}
+
+type scpEndpoint struct {
+	user string
+	host string
+	path string
+}
+
+func (e *scpEndpoint) Protocol() string { return "ssh" }
+func (e *scpEndpoint) User() string     { return e.user }
+func (e *scpEndpoint) Password() string { return "" }
+func (e *scpEndpoint) Host() string     { return e.host }
+func (e *scpEndpoint) Port() int        { return 22 }
+func (e *scpEndpoint) Path() string     { return e.path }
+
+func (e *scpEndpoint) String() string {
+	var user string
+	if e.user != "" {
+		user = fmt.Sprintf("%s@", e.user)
+	}
+
+	return fmt.Sprintf("%s%s:%s", user, e.host, e.path)
+}
+
+type fileEndpoint struct {
+	path string
+}
+
+func (e *fileEndpoint) Protocol() string { return "file" }
+func (e *fileEndpoint) User() string     { return "" }
+func (e *fileEndpoint) Password() string { return "" }
+func (e *fileEndpoint) Host() string     { return "" }
+func (e *fileEndpoint) Port() int        { return 0 }
+func (e *fileEndpoint) Path() string     { return e.path }
+func (e *fileEndpoint) String() string   { return e.path }
+
+var (
+	isSchemeRegExp   = regexp.MustCompile(`^[^:]+://`)
+	scpLikeUrlRegExp = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?P<path>[^\\].*)$`)
+)
+
+func parseSCPLike(endpoint string) (Endpoint, bool) {
+	if isSchemeRegExp.MatchString(endpoint) || !scpLikeUrlRegExp.MatchString(endpoint) {
+		return nil, false
+	}
+
+	m := scpLikeUrlRegExp.FindStringSubmatch(endpoint)
+	return &scpEndpoint{
+		user: m[1],
+		host: m[2],
+		path: m[3],
+	}, true
+}
+
+func parseFile(endpoint string) (Endpoint, bool) {
+	if isSchemeRegExp.MatchString(endpoint) {
+		return nil, false
+	}
+
+	path := endpoint
+	return &fileEndpoint{path}, true
 }
 
 // UnsupportedCapabilities are the capabilities not supported by any client

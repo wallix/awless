@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -10,6 +11,11 @@ const (
 	refSpecWildcard  = "*"
 	refSpecForce     = "+"
 	refSpecSeparator = ":"
+)
+
+var (
+	ErrRefSpecMalformedSeparator = errors.New("malformed refspec, separators are wrong")
+	ErrRefSpecMalformedWildcard  = errors.New("malformed refspec, missmatched number of wildcards")
 )
 
 // RefSpec is a mapping from local branches to remote references
@@ -22,24 +28,28 @@ const (
 // https://git-scm.com/book/es/v2/Git-Internals-The-Refspec
 type RefSpec string
 
-// IsValid validates the RefSpec
-func (s RefSpec) IsValid() bool {
+// Validate validates the RefSpec
+func (s RefSpec) Validate() error {
 	spec := string(s)
 	if strings.Count(spec, refSpecSeparator) != 1 {
-		return false
+		return ErrRefSpecMalformedSeparator
 	}
 
 	sep := strings.Index(spec, refSpecSeparator)
-	if sep == len(spec) {
-		return false
+	if sep == len(spec)-1 {
+		return ErrRefSpecMalformedSeparator
 	}
 
 	ws := strings.Count(spec[0:sep], refSpecWildcard)
 	wd := strings.Count(spec[sep+1:], refSpecWildcard)
-	return ws == wd && ws < 2 && wd < 2
+	if ws == wd && ws < 2 && wd < 2 {
+		return nil
+	}
+
+	return ErrRefSpecMalformedWildcard
 }
 
-// IsForceUpdate returns if update is allowed in non fast-forward merges
+// IsForceUpdate returns if update is allowed in non fast-forward merges.
 func (s RefSpec) IsForceUpdate() bool {
 	if s[0] == refSpecForce[0] {
 		return true
@@ -57,7 +67,7 @@ func (s RefSpec) IsDelete() bool {
 	return false
 }
 
-// Src return the src side
+// Src return the src side.
 func (s RefSpec) Src() string {
 	spec := string(s)
 	start := strings.Index(spec, refSpecForce) + 1
@@ -66,7 +76,7 @@ func (s RefSpec) Src() string {
 	return spec[start:end]
 }
 
-// Match match the given plumbing.ReferenceName against the source
+// Match match the given plumbing.ReferenceName against the source.
 func (s RefSpec) Match(n plumbing.ReferenceName) bool {
 	if !s.IsWildcard() {
 		return s.matchExact(n)
@@ -75,7 +85,7 @@ func (s RefSpec) Match(n plumbing.ReferenceName) bool {
 	return s.matchGlob(n)
 }
 
-// IsWildcard returns true if the RefSpec contains a wildcard
+// IsWildcard returns true if the RefSpec contains a wildcard.
 func (s RefSpec) IsWildcard() bool {
 	return strings.Index(string(s), refSpecWildcard) != -1
 }
@@ -100,7 +110,7 @@ func (s RefSpec) matchGlob(n plumbing.ReferenceName) bool {
 		strings.HasSuffix(name, suffix)
 }
 
-// Dst returns the destination for the given remote reference
+// Dst returns the destination for the given remote reference.
 func (s RefSpec) Dst(n plumbing.ReferenceName) plumbing.ReferenceName {
 	spec := string(s)
 	start := strings.Index(spec, refSpecSeparator) + 1
@@ -123,7 +133,7 @@ func (s RefSpec) String() string {
 	return string(s)
 }
 
-// MatchAny returns true if any of the RefSpec match with the given ReferenceName
+// MatchAny returns true if any of the RefSpec match with the given ReferenceName.
 func MatchAny(l []RefSpec, n plumbing.ReferenceName) bool {
 	for _, r := range l {
 		if r.Match(n) {

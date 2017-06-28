@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path"
-	"strconv"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/filemode"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
@@ -18,14 +17,13 @@ import (
 const (
 	maxTreeDepth      = 1024
 	startingStackSize = 8
-	submoduleMode     = 0160000
-	directoryMode     = 0040000
 )
 
 // New errors defined by this package.
 var (
-	ErrMaxTreeDepth = errors.New("maximum tree depth exceeded")
-	ErrFileNotFound = errors.New("file not found")
+	ErrMaxTreeDepth      = errors.New("maximum tree depth exceeded")
+	ErrFileNotFound      = errors.New("file not found")
+	ErrDirectoryNotFound = errors.New("directory not found")
 )
 
 // Tree is basically like a directory - it references a bunch of other trees
@@ -62,24 +60,43 @@ func DecodeTree(s storer.EncodedObjectStorer, o plumbing.EncodedObject) (*Tree, 
 // TreeEntry represents a file
 type TreeEntry struct {
 	Name string
-	Mode os.FileMode
+	Mode filemode.FileMode
 	Hash plumbing.Hash
 }
 
 // File returns the hash of the file identified by the `path` argument.
 // The path is interpreted as relative to the tree receiver.
 func (t *Tree) File(path string) (*File, error) {
-	e, err := t.findEntry(path)
+	e, err := t.FindEntry(path)
 	if err != nil {
 		return nil, ErrFileNotFound
 	}
 
 	blob, err := GetBlob(t.s, e.Hash)
 	if err != nil {
+		if err == plumbing.ErrObjectNotFound {
+			return nil, ErrFileNotFound
+		}
 		return nil, err
 	}
 
 	return NewFile(path, e.Mode, blob), nil
+}
+
+// Tree returns the tree identified by the `path` argument.
+// The path is interpreted as relative to the tree receiver.
+func (t *Tree) Tree(path string) (*Tree, error) {
+	e, err := t.FindEntry(path)
+	if err != nil {
+		return nil, ErrDirectoryNotFound
+	}
+
+	tree, err := GetTree(t.s, e.Hash)
+	if err == plumbing.ErrObjectNotFound {
+		return nil, ErrDirectoryNotFound
+	}
+
+	return tree, err
 }
 
 // TreeEntryFile returns the *File for a given *TreeEntry.
@@ -92,7 +109,8 @@ func (t *Tree) TreeEntryFile(e *TreeEntry) (*File, error) {
 	return NewFile(e.Name, e.Mode, blob), nil
 }
 
-func (t *Tree) findEntry(path string) (*TreeEntry, error) {
+// FindEntry search a TreeEntry in this tree or any subtree.
+func (t *Tree) FindEntry(path string) (*TreeEntry, error) {
 	pathParts := strings.Split(path, "/")
 
 	var tree *Tree
@@ -106,12 +124,10 @@ func (t *Tree) findEntry(path string) (*TreeEntry, error) {
 	return tree.entry(pathParts[0])
 }
 
-var errDirNotFound = errors.New("directory not found")
-
 func (t *Tree) dir(baseName string) (*Tree, error) {
 	entry, err := t.entry(baseName)
 	if err != nil {
-		return nil, errDirNotFound
+		return nil, ErrDirectoryNotFound
 	}
 
 	obj, err := t.s.EncodedObject(plumbing.TreeObject, entry.Hash)
@@ -131,6 +147,7 @@ func (t *Tree) entry(baseName string) (*TreeEntry, error) {
 	if t.m == nil {
 		t.buildMap()
 	}
+
 	entry, ok := t.m[baseName]
 	if !ok {
 		return nil, errEntryNotFound
@@ -179,7 +196,7 @@ func (t *Tree) Decode(o plumbing.EncodedObject) (err error) {
 
 	r := bufio.NewReader(reader)
 	for {
-		mode, err := r.ReadString(' ')
+		str, err := r.ReadString(' ')
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -187,9 +204,10 @@ func (t *Tree) Decode(o plumbing.EncodedObject) (err error) {
 
 			return err
 		}
+		str = str[:len(str)-1] // strip last byte (' ')
 
-		fm, err := t.decodeFileMode(mode[:len(mode)-1])
-		if err != nil && err != io.EOF {
+		mode, err := filemode.New(str)
+		if err != nil {
 			return err
 		}
 
@@ -206,29 +224,12 @@ func (t *Tree) Decode(o plumbing.EncodedObject) (err error) {
 		baseName := name[:len(name)-1]
 		t.Entries = append(t.Entries, TreeEntry{
 			Hash: hash,
-			Mode: fm,
+			Mode: mode,
 			Name: baseName,
 		})
 	}
 
 	return nil
-}
-
-func (t *Tree) decodeFileMode(mode string) (os.FileMode, error) {
-	fm, err := strconv.ParseInt(mode, 8, 32)
-	if err != nil && err != io.EOF {
-		return 0, err
-	}
-
-	m := os.FileMode(fm)
-	switch fm {
-	case 0040000: //tree
-		m = m | os.ModeDir
-	case 0120000: //symlink
-		m = m | os.ModeSymlink
-	}
-
-	return m, nil
 }
 
 // Encode transforms a Tree into a plumbing.EncodedObject.
@@ -239,29 +240,21 @@ func (t *Tree) Encode(o plumbing.EncodedObject) error {
 		return err
 	}
 
-	var size int
 	defer ioutil.CheckClose(w, &err)
 	for _, entry := range t.Entries {
-		n, err := fmt.Fprintf(w, "%o %s", entry.Mode, entry.Name)
-		if err != nil {
+		if _, err := fmt.Fprintf(w, "%o %s", entry.Mode, entry.Name); err != nil {
 			return err
 		}
 
-		size += n
-		n, err = w.Write([]byte{0x00})
-		if err != nil {
+		if _, err = w.Write([]byte{0x00}); err != nil {
 			return err
 		}
 
-		size += n
-		n, err = w.Write([]byte(entry.Hash[:]))
-		if err != nil {
+		if _, err = w.Write([]byte(entry.Hash[:])); err != nil {
 			return err
 		}
-		size += n
 	}
 
-	o.SetSize(int64(size))
 	return err
 }
 
@@ -270,6 +263,22 @@ func (t *Tree) buildMap() {
 	for i := 0; i < len(t.Entries); i++ {
 		t.m[t.Entries[i].Name] = &t.Entries[i]
 	}
+}
+
+// Diff returns a list of changes between this tree and the provided one
+func (from *Tree) Diff(to *Tree) (Changes, error) {
+	return DiffTree(from, to)
+}
+
+// Patch returns a slice of Patch objects with all the changes between trees
+// in chunks. This representation can be used to create several diff outputs.
+func (from *Tree) Patch(to *Tree) (*Patch, error) {
+	changes, err := DiffTree(from, to)
+	if err != nil {
+		return nil, err
+	}
+
+	return changes.Patch()
 }
 
 // treeEntryIter facilitates iterating through the TreeEntry objects in a Tree.
@@ -349,12 +358,7 @@ func (w *TreeWalker) Next() (name string, entry TreeEntry, err error) {
 			return
 		}
 
-		if entry.Mode == submoduleMode {
-			err = nil
-			continue
-		}
-
-		if entry.Mode.IsDir() {
+		if entry.Mode == filemode.Dir {
 			obj, err = GetTree(w.s, entry.Hash)
 		}
 
@@ -405,16 +409,17 @@ type TreeIter struct {
 	s storer.EncodedObjectStorer
 }
 
-// NewTreeIter returns a TreeIter for the given repository and underlying
-// object iterator.
+// NewTreeIter takes a storer.EncodedObjectStorer and a
+// storer.EncodedObjectIter and returns a *TreeIter that iterates over all
+// tree contained in the storer.EncodedObjectIter.
 //
-// The returned TreeIter will automatically skip over non-tree objects.
+// Any non-tree object returned by the storer.EncodedObjectIter is skipped.
 func NewTreeIter(s storer.EncodedObjectStorer, iter storer.EncodedObjectIter) *TreeIter {
 	return &TreeIter{iter, s}
 }
 
-// Next moves the iterator to the next tree and returns a pointer to it. If it
-// has reached the end of the set it will return io.EOF.
+// Next moves the iterator to the next tree and returns a pointer to it. If
+// there are no more trees, it returns io.EOF.
 func (iter *TreeIter) Next() (*Tree, error) {
 	for {
 		obj, err := iter.EncodedObjectIter.Next()

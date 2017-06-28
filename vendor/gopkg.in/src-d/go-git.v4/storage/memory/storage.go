@@ -6,7 +6,9 @@ import (
 
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/format/index"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
+	"gopkg.in/src-d/go-git.v4/storage"
 )
 
 var ErrUnsupportedObjectType = fmt.Errorf("unsupported object type")
@@ -19,7 +21,9 @@ type Storage struct {
 	ConfigStorage
 	ObjectStorage
 	ShallowStorage
+	IndexStorage
 	ReferenceStorage
+	ModuleStorage
 }
 
 // NewStorage returns a new Storage base on memory
@@ -35,6 +39,7 @@ func NewStorage() *Storage {
 			Blobs:   make(map[plumbing.Hash]plumbing.EncodedObject, 0),
 			Tags:    make(map[plumbing.Hash]plumbing.EncodedObject, 0),
 		},
+		ModuleStorage: make(ModuleStorage, 0),
 	}
 }
 
@@ -57,6 +62,23 @@ func (c *ConfigStorage) Config() (*config.Config, error) {
 	}
 
 	return c.config, nil
+}
+
+type IndexStorage struct {
+	index *index.Index
+}
+
+func (c *IndexStorage) SetIndex(idx *index.Index) error {
+	c.index = idx
+	return nil
+}
+
+func (c *IndexStorage) Index() (*index.Index, error) {
+	if c.index == nil {
+		c.index = &index.Index{Version: 2}
+	}
+
+	return c.index, nil
 }
 
 type ObjectStorage struct {
@@ -198,6 +220,11 @@ func (r ReferenceStorage) IterReferences() (storer.ReferenceIter, error) {
 	return storer.NewReferenceSliceIter(refs), nil
 }
 
+func (r ReferenceStorage) RemoveReference(n plumbing.ReferenceName) error {
+	delete(r, n)
+	return nil
+}
+
 type ShallowStorage []plumbing.Hash
 
 func (s *ShallowStorage) SetShallow(commits []plumbing.Hash) error {
@@ -207,4 +234,17 @@ func (s *ShallowStorage) SetShallow(commits []plumbing.Hash) error {
 
 func (s ShallowStorage) Shallow() ([]plumbing.Hash, error) {
 	return s, nil
+}
+
+type ModuleStorage map[string]*Storage
+
+func (s ModuleStorage) Module(name string) (storage.Storer, error) {
+	if m, ok := s[name]; ok {
+		return m, nil
+	}
+
+	m := NewStorage()
+	s[name] = m
+
+	return m, nil
 }

@@ -16,6 +16,16 @@ const (
 )
 
 var (
+	refPrefixes = []string{
+		refHeadPrefix,
+		refTagPrefix,
+		refRemotePrefix,
+		refNotePrefix,
+		refPrefix,
+	}
+)
+
+var (
 	ErrReferenceNotFound = errors.New("reference not found")
 )
 
@@ -28,6 +38,19 @@ const (
 	SymbolicReference ReferenceType = 2
 )
 
+func (r ReferenceType) String() string {
+	switch r {
+	case InvalidReference:
+		return "invalid-reference"
+	case HashReference:
+		return "hash-reference"
+	case SymbolicReference:
+		return "symbolic-reference"
+	}
+
+	return ""
+}
+
 // ReferenceName reference name's
 type ReferenceName string
 
@@ -37,12 +60,22 @@ func (r ReferenceName) String() string {
 
 // Short returns the short name of a ReferenceName
 func (r ReferenceName) Short() string {
-	parts := strings.Split(string(r), "/")
-	return parts[len(parts)-1]
+	return r.removeRefPrefix()
+}
+
+// Instead of hardcoding a number of components, we should remove the prefixes
+// refHeadPrefix, refTagPrefix, refRemotePrefix, refNotePrefix and refPrefix
+func (r ReferenceName) removeRefPrefix() string {
+	s := string(r)
+	for _, prefix := range refPrefixes {
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
 }
 
 const (
-	HEAD ReferenceName = "HEAD"
+	HEAD   ReferenceName = "HEAD"
+	Master ReferenceName = "refs/heads/master"
 )
 
 // Reference is a representation of git reference

@@ -1,4 +1,4 @@
-// Package http implements a HTTP client for go-git.
+// Package http implements the HTTP transport protocol.
 package http
 
 import (
@@ -25,7 +25,7 @@ var DefaultClient = NewClient(nil)
 // Note that for HTTP client cannot distinguist between private repositories and
 // unexistent repositories on GitHub. So it returns `ErrAuthorizationRequired`
 // for both.
-func NewClient(c *http.Client) transport.Client {
+func NewClient(c *http.Client) transport.Transport {
 	if c == nil {
 		return &client{http.DefaultClient}
 	}
@@ -35,16 +35,16 @@ func NewClient(c *http.Client) transport.Client {
 	}
 }
 
-func (c *client) NewFetchPackSession(ep transport.Endpoint) (
-	transport.FetchPackSession, error) {
+func (c *client) NewUploadPackSession(ep transport.Endpoint, auth transport.AuthMethod) (
+	transport.UploadPackSession, error) {
 
-	return newFetchPackSession(c.c, ep), nil
+	return newUploadPackSession(c.c, ep, auth)
 }
 
-func (c *client) NewSendPackSession(ep transport.Endpoint) (
-	transport.SendPackSession, error) {
+func (c *client) NewReceivePackSession(ep transport.Endpoint, auth transport.AuthMethod) (
+	transport.ReceivePackSession, error) {
 
-	return newSendPackSession(c.c, ep), nil
+	return newReceivePackSession(c.c, ep, auth)
 }
 
 type session struct {
@@ -52,16 +52,6 @@ type session struct {
 	client   *http.Client
 	endpoint transport.Endpoint
 	advRefs  *packp.AdvRefs
-}
-
-func (s *session) SetAuth(auth transport.AuthMethod) error {
-	a, ok := auth.(AuthMethod)
-	if !ok {
-		return transport.ErrInvalidAuthMethod
-	}
-
-	s.auth = a
-	return nil
 }
 
 func (*session) Close() error {
@@ -83,18 +73,12 @@ type AuthMethod interface {
 }
 
 func basicAuthFromEndpoint(ep transport.Endpoint) *BasicAuth {
-	info := ep.User
-	if info == nil {
+	u := ep.User()
+	if u == "" {
 		return nil
 	}
 
-	p, ok := info.Password()
-	if !ok {
-		return nil
-	}
-
-	u := info.Username()
-	return NewBasicAuth(u, p)
+	return NewBasicAuth(u, ep.Password())
 }
 
 // BasicAuth represent a HTTP basic auth
@@ -142,7 +126,9 @@ func NewErr(r *http.Response) error {
 
 	switch r.StatusCode {
 	case http.StatusUnauthorized:
-		return transport.ErrAuthorizationRequired
+		return transport.ErrAuthenticationRequired
+	case http.StatusForbidden:
+		return transport.ErrAuthorizationFailed
 	case http.StatusNotFound:
 		return transport.ErrRepositoryNotFound
 	}

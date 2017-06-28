@@ -1,3 +1,5 @@
+// Package object contains implementations of all Git objects and utility
+// functions to work with them.
 package object
 
 import (
@@ -16,10 +18,10 @@ import (
 var ErrUnsupportedObject = errors.New("unsupported object type")
 
 // Object is a generic representation of any git object. It is implemented by
-// Commit, Tree, Blob and Tag, and includes the functions that are common to
+// Commit, Tree, Blob, and Tag, and includes the functions that are common to
 // them.
 //
-// Object is returned when an object could of any type. It is frequently used
+// Object is returned when an object can be of any type. It is frequently used
 // with a type cast to acquire the specific type of object:
 //
 //   func process(obj Object) {
@@ -35,8 +37,9 @@ var ErrUnsupportedObject = errors.New("unsupported object type")
 //   	}
 //   }
 //
-// This interface is intentionally different from plumbing.EncodedObject, which is a lower
-// level interface used by storage implementations to read and write objects.
+// This interface is intentionally different from plumbing.EncodedObject, which
+// is a lower level interface used by storage implementations to read and write
+// objects in its encoded form.
 type Object interface {
 	ID() plumbing.Hash
 	Type() plumbing.ObjectType
@@ -71,21 +74,28 @@ func DecodeObject(s storer.EncodedObjectStorer, o plumbing.EncodedObject) (Objec
 	}
 }
 
-// DateFormat is the format being use in the orignal git implementation
+// DateFormat is the format being used in the original git implementation
 const DateFormat = "Mon Jan 02 15:04:05 2006 -0700"
 
-// Signature represents an action signed by a person
+// Signature is used to identify who and when created a commit or tag.
 type Signature struct {
-	Name  string
+	// Name represents a person name. It is an arbitrary string.
+	Name string
+	// Email is an email, but it cannot be assumed to be well-formed.
 	Email string
-	When  time.Time
+	// When is the timestamp of the signature.
+	When time.Time
 }
 
 // Decode decodes a byte slice into a signature
 func (s *Signature) Decode(b []byte) {
-	open := bytes.IndexByte(b, '<')
-	close := bytes.IndexByte(b, '>')
+	open := bytes.LastIndexByte(b, '<')
+	close := bytes.LastIndexByte(b, '>')
 	if open == -1 || close == -1 {
+		return
+	}
+
+	if close < open {
 		return
 	}
 
@@ -128,7 +138,12 @@ func (s *Signature) decodeTimeAndTimeZone(b []byte) {
 		return
 	}
 
-	tl, err := time.Parse("-0700", string(b[tzStart:tzStart+timeZoneLength]))
+	// Include a dummy year in this time.Parse() call to avoid a bug in Go:
+	// https://github.com/golang/go/issues/19750
+	//
+	// Parsing the timezone with no other details causes the tl.Location() call
+	// below to return time.Local instead of the parsed zone in some cases
+	tl, err := time.Parse("2006 -0700", "1970 "+string(b[tzStart:tzStart+timeZoneLength]))
 	if err != nil {
 		return
 	}
@@ -151,14 +166,15 @@ type ObjectIter struct {
 	s storer.EncodedObjectStorer
 }
 
-// NewObjectIter returns a ObjectIter for the given repository and underlying
-// object iterator.
+// NewObjectIter takes a storer.EncodedObjectStorer and a
+// storer.EncodedObjectIter and returns an *ObjectIter that iterates over all
+// objects contained in the storer.EncodedObjectIter.
 func NewObjectIter(s storer.EncodedObjectStorer, iter storer.EncodedObjectIter) *ObjectIter {
 	return &ObjectIter{iter, s}
 }
 
-// Next moves the iterator to the next object and returns a pointer to it. If it
-// has reached the end of the set it will return io.EOF.
+// Next moves the iterator to the next object and returns a pointer to it. If
+// there are no more objects, it returns io.EOF.
 func (iter *ObjectIter) Next() (Object, error) {
 	for {
 		obj, err := iter.EncodedObjectIter.Next()

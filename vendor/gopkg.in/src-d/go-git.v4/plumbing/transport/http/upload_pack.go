@@ -15,23 +15,29 @@ import (
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
-type fetchPackSession struct {
+type upSession struct {
 	*session
 }
 
-func newFetchPackSession(c *http.Client,
-	ep transport.Endpoint) transport.FetchPackSession {
-
-	return &fetchPackSession{
-		session: &session{
-			auth:     basicAuthFromEndpoint(ep),
-			client:   c,
-			endpoint: ep,
-		},
+func newUploadPackSession(c *http.Client, ep transport.Endpoint, auth transport.AuthMethod) (transport.UploadPackSession, error) {
+	s := &session{
+		auth:     basicAuthFromEndpoint(ep),
+		client:   c,
+		endpoint: ep,
 	}
+	if auth != nil {
+		a, ok := auth.(AuthMethod)
+		if !ok {
+			return nil, transport.ErrInvalidAuthMethod
+		}
+
+		s.auth = a
+	}
+
+	return &upSession{session: s}, nil
 }
 
-func (s *fetchPackSession) AdvertisedReferences() (*packp.AdvRefs, error) {
+func (s *upSession) AdvertisedReferences() (*packp.AdvRefs, error) {
 	if s.advRefs != nil {
 		return s.advRefs, nil
 	}
@@ -53,10 +59,9 @@ func (s *fetchPackSession) AdvertisedReferences() (*packp.AdvRefs, error) {
 		return nil, err
 	}
 
-	defer res.Body.Close()
-
-	if res.StatusCode == http.StatusUnauthorized {
-		return nil, transport.ErrAuthorizationRequired
+	if err := NewErr(res); err != nil {
+		_ = res.Body.Close()
+		return nil, err
 	}
 
 	ar := packp.NewAdvRefs()
@@ -73,7 +78,7 @@ func (s *fetchPackSession) AdvertisedReferences() (*packp.AdvRefs, error) {
 	return ar, nil
 }
 
-func (s *fetchPackSession) FetchPack(req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
+func (s *upSession) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
 	if req.IsEmpty() {
 		return nil, transport.ErrEmptyUploadPackRequest
 	}
@@ -111,11 +116,11 @@ func (s *fetchPackSession) FetchPack(req *packp.UploadPackRequest) (*packp.Uploa
 }
 
 // Close does nothing.
-func (s *fetchPackSession) Close() error {
+func (s *upSession) Close() error {
 	return nil
 }
 
-func (s *fetchPackSession) doRequest(method, url string, content *bytes.Buffer) (*http.Response, error) {
+func (s *upSession) doRequest(method, url string, content *bytes.Buffer) (*http.Response, error) {
 	var body io.Reader
 	if content != nil {
 		body = content
@@ -143,9 +148,9 @@ func (s *fetchPackSession) doRequest(method, url string, content *bytes.Buffer) 
 }
 
 // it requires a bytes.Buffer, because we need to know the length
-func (s *fetchPackSession) applyHeadersToRequest(req *http.Request, content *bytes.Buffer) {
+func (s *upSession) applyHeadersToRequest(req *http.Request, content *bytes.Buffer) {
 	req.Header.Add("User-Agent", "git/1.0")
-	req.Header.Add("Host", s.endpoint.Host)
+	req.Header.Add("Host", s.endpoint.Host()) // host:port
 
 	if content == nil {
 		req.Header.Add("Accept", "*/*")
@@ -165,10 +170,13 @@ func uploadPackRequestToReader(req *packp.UploadPackRequest) (*bytes.Buffer, err
 		return nil, fmt.Errorf("sending upload-req message: %s", err)
 	}
 
-	if err := req.UploadHaves.Encode(buf); err != nil {
+	if err := req.UploadHaves.Encode(buf, false); err != nil {
 		return nil, fmt.Errorf("sending haves message: %s", err)
 	}
 
-	_ = e.EncodeString("done\n")
+	if err := e.EncodeString("done\n"); err != nil {
+		return nil, err
+	}
+
 	return buf, nil
 }

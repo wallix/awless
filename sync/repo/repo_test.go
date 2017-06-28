@@ -34,7 +34,7 @@ func TestReduceToLastRevOfEachDay(t *testing.T) {
 
 	reduced := reduceToLastRevOfEachDay(revs)
 
-	sort.Sort(revsByDate(reduced))
+	sort.Slice(reduced, func(i, j int) bool { return reduced[i].Date.Before(reduced[j].Date) })
 
 	if got, want := len(reduced), 3; got != want {
 		t.Fatalf("got %d, want %d", got, want)

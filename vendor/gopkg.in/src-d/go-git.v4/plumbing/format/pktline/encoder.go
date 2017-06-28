@@ -1,4 +1,5 @@
-// Package pktline implements reading payloads form pkt-lines and encoding pkt-lines from payloads.
+// Package pktline implements reading payloads form pkt-lines and encoding
+// pkt-lines from payloads.
 package pktline
 
 import (
@@ -115,7 +116,8 @@ func (e *Encoder) EncodeString(payloads ...string) error {
 }
 
 // Encodef encodes a single pkt-line with the payload formatted as
-// the format specifier and the rest of the arguments suggest.
+// the format specifier. The rest of the arguments will be used in
+// the format string.
 func (e *Encoder) Encodef(format string, a ...interface{}) error {
 	return e.EncodeString(
 		fmt.Sprintf(format, a...),

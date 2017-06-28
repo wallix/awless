@@ -5,24 +5,28 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	stdioutil "io/ioutil"
 	"os"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 
-	"srcd.works/go-billy.v1"
+	"gopkg.in/src-d/go-billy.v3"
 )
 
 const (
 	suffix         = ".git"
 	packedRefsPath = "packed-refs"
 	configPath     = "config"
+	indexPath      = "index"
 	shallowPath    = "shallow"
+	modulePath     = "module"
+	objectsPath    = "objects"
+	packPath       = "pack"
+	refsPath       = "refs"
 
-	objectsPath = "objects"
-	packPath    = "pack"
-	refsPath    = "refs"
+	tmpPackedRefsPrefix = "._packed-refs"
 
 	packExt = ".pack"
 	idxExt  = ".idx"
@@ -62,6 +66,33 @@ func New(fs billy.Filesystem) *DotGit {
 	return &DotGit{fs: fs}
 }
 
+// Initialize creates all the folder scaffolding.
+func (d *DotGit) Initialize() error {
+	mustExists := []string{
+		d.fs.Join("objects", "info"),
+		d.fs.Join("objects", "pack"),
+		d.fs.Join("refs", "heads"),
+		d.fs.Join("refs", "tags"),
+	}
+
+	for _, path := range mustExists {
+		_, err := d.fs.Stat(path)
+		if err == nil {
+			continue
+		}
+
+		if !os.IsNotExist(err) {
+			return err
+		}
+
+		if err := d.fs.MkdirAll(path, os.ModeDir|os.ModePerm); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ConfigWriter returns a file pointer for write to the config file
 func (d *DotGit) ConfigWriter() (billy.File, error) {
 	return d.fs.Create(configPath)
@@ -70,6 +101,16 @@ func (d *DotGit) ConfigWriter() (billy.File, error) {
 // Config returns a file pointer for read to the config file
 func (d *DotGit) Config() (billy.File, error) {
 	return d.fs.Open(configPath)
+}
+
+// IndexWriter returns a file pointer for write to the index file
+func (d *DotGit) IndexWriter() (billy.File, error) {
+	return d.fs.Create(indexPath)
+}
+
+// Index returns a file pointer for read to the index file
+func (d *DotGit) Index() (billy.File, error) {
+	return d.fs.Open(indexPath)
 }
 
 // ShallowWriter returns a file pointer for write to the shallow file
@@ -190,7 +231,7 @@ func (d *DotGit) Objects() ([]plumbing.Hash, error) {
 	return objects, nil
 }
 
-// Object return a fs.File poiting the object file, if exists
+// Object return a fs.File pointing the object file, if exists
 func (d *DotGit) Object(h plumbing.Hash) (billy.File, error) {
 	hash := h.String()
 	file := d.fs.Join(objectsPath, hash[0:2], hash[2:40])
@@ -258,6 +299,21 @@ func (d *DotGit) Ref(name plumbing.ReferenceName) (*plumbing.Reference, error) {
 	return nil, plumbing.ErrReferenceNotFound
 }
 
+// RemoveRef removes a reference by name.
+func (d *DotGit) RemoveRef(name plumbing.ReferenceName) error {
+	path := d.fs.Join(".", name.String())
+	_, err := d.fs.Stat(path)
+	if err == nil {
+		return d.fs.Remove(path)
+	}
+
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	return d.rewritePackedRefsWithoutRef(name)
+}
+
 func (d *DotGit) addRefsFromPackedRefs(refs *[]*plumbing.Reference) (err error) {
 	f, err := d.fs.Open(packedRefsPath)
 	if err != nil {
@@ -266,12 +322,7 @@ func (d *DotGit) addRefsFromPackedRefs(refs *[]*plumbing.Reference) (err error) 
 		}
 		return err
 	}
-
-	defer func() {
-		if errClose := f.Close(); err == nil {
-			err = errClose
-		}
-	}()
+	defer ioutil.CheckClose(f, &err)
 
 	s := bufio.NewScanner(f)
 	for s.Scan() {
@@ -288,8 +339,64 @@ func (d *DotGit) addRefsFromPackedRefs(refs *[]*plumbing.Reference) (err error) 
 	return s.Err()
 }
 
+func (d *DotGit) rewritePackedRefsWithoutRef(name plumbing.ReferenceName) (err error) {
+	f, err := d.fs.Open(packedRefsPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+
+		return err
+	}
+	defer ioutil.CheckClose(f, &err)
+
+	// Creating the temp file in the same directory as the target file
+	// improves our chances for rename operation to be atomic.
+	tmp, err := d.fs.TempFile("", tmpPackedRefsPrefix)
+	if err != nil {
+		return err
+	}
+
+	tmpPath := tmp.Name()
+	defer ioutil.CheckClose(tmp, &err)
+	defer d.fs.Remove(tmpPath)
+
+	s := bufio.NewScanner(f)
+	found := false
+	for s.Scan() {
+		line := s.Text()
+		ref, err := d.processLine(line)
+		if err != nil {
+			return err
+		}
+
+		if ref != nil && ref.Name() == name {
+			found = true
+			continue
+		}
+
+		if _, err := fmt.Fprintln(tmp, line); err != nil {
+			return err
+		}
+	}
+
+	if err := s.Err(); err != nil {
+		return err
+	}
+
+	if !found {
+		return nil
+	}
+
+	return d.fs.Rename(tmpPath, packedRefsPath)
+}
+
 // process lines from a packed-refs file
 func (d *DotGit) processLine(line string) (*plumbing.Reference, error) {
+	if len(line) == 0 {
+		return nil, nil
+	}
+
 	switch line[0] {
 	case '#': // comment - ignore
 		return nil, nil
@@ -306,11 +413,11 @@ func (d *DotGit) processLine(line string) (*plumbing.Reference, error) {
 }
 
 func (d *DotGit) addRefsFromRefDir(refs *[]*plumbing.Reference) error {
-	return d.walkReferencesTree(refs, refsPath)
+	return d.walkReferencesTree(refs, []string{refsPath})
 }
 
-func (d *DotGit) walkReferencesTree(refs *[]*plumbing.Reference, relPath string) error {
-	files, err := d.fs.ReadDir(relPath)
+func (d *DotGit) walkReferencesTree(refs *[]*plumbing.Reference, relPath []string) error {
+	files, err := d.fs.ReadDir(d.fs.Join(relPath...))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -320,7 +427,7 @@ func (d *DotGit) walkReferencesTree(refs *[]*plumbing.Reference, relPath string)
 	}
 
 	for _, f := range files {
-		newRelPath := d.fs.Join(relPath, f.Name())
+		newRelPath := append(append([]string(nil), relPath...), f.Name())
 		if f.IsDir() {
 			if err = d.walkReferencesTree(refs, newRelPath); err != nil {
 				return err
@@ -329,7 +436,7 @@ func (d *DotGit) walkReferencesTree(refs *[]*plumbing.Reference, relPath string)
 			continue
 		}
 
-		ref, err := d.readReferenceFile(".", newRelPath)
+		ref, err := d.readReferenceFile(".", strings.Join(newRelPath, "/"))
 		if err != nil {
 			return err
 		}
@@ -356,27 +463,26 @@ func (d *DotGit) addRefFromHEAD(refs *[]*plumbing.Reference) error {
 	return nil
 }
 
-func (d *DotGit) readReferenceFile(refsPath, refFile string) (ref *plumbing.Reference, err error) {
-	path := d.fs.Join(refsPath, refFile)
-
+func (d *DotGit) readReferenceFile(path, name string) (ref *plumbing.Reference, err error) {
+	path = d.fs.Join(path, d.fs.Join(strings.Split(name, "/")...))
 	f, err := d.fs.Open(path)
 	if err != nil {
 		return nil, err
 	}
+	defer ioutil.CheckClose(f, &err)
 
-	defer func() {
-		if errClose := f.Close(); err == nil {
-			err = errClose
-		}
-	}()
-
-	b, err := ioutil.ReadAll(f)
+	b, err := stdioutil.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
 
 	line := strings.TrimSpace(string(b))
-	return plumbing.NewReferenceFromStrings(refFile, line), nil
+	return plumbing.NewReferenceFromStrings(name, line), nil
+}
+
+// Module return a billy.Filesystem poiting to the module folder
+func (d *DotGit) Module(name string) (billy.Filesystem, error) {
+	return d.fs.Chroot(d.fs.Join(modulePath, name))
 }
 
 func isHex(s string) bool {

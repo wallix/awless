@@ -8,9 +8,11 @@ import (
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
-// Blob is used to store file data - it is generally a file.
+// Blob is used to store arbitrary data - it is generally a file.
 type Blob struct {
+	// Hash of the blob.
 	Hash plumbing.Hash
+	// Size of the (uncompressed) blob.
 	Size int64
 
 	obj plumbing.EncodedObject
@@ -26,6 +28,7 @@ func GetBlob(s storer.EncodedObjectStorer, h plumbing.Hash) (*Blob, error) {
 	return DecodeBlob(o)
 }
 
+// DecodeObject decodes an encoded object into a *Blob.
 func DecodeBlob(o plumbing.EncodedObject) (*Blob, error) {
 	b := &Blob{}
 	if err := b.Decode(o); err != nil {
@@ -65,18 +68,23 @@ func (b *Blob) Decode(o plumbing.EncodedObject) error {
 
 // Encode transforms a Blob into a plumbing.EncodedObject.
 func (b *Blob) Encode(o plumbing.EncodedObject) error {
+	o.SetType(plumbing.BlobObject)
+
 	w, err := o.Writer()
 	if err != nil {
 		return err
 	}
+
 	defer ioutil.CheckClose(w, &err)
+
 	r, err := b.Reader()
 	if err != nil {
 		return err
 	}
+
 	defer ioutil.CheckClose(r, &err)
+
 	_, err = io.Copy(w, r)
-	o.SetType(plumbing.BlobObject)
 	return err
 }
 
@@ -91,16 +99,17 @@ type BlobIter struct {
 	s storer.EncodedObjectStorer
 }
 
-// NewBlobIter returns a CommitIter for the given repository and underlying
-// object iterator.
+// NewBlobIter takes a storer.EncodedObjectStorer and a
+// storer.EncodedObjectIter and returns a *BlobIter that iterates over all
+// blobs contained in the storer.EncodedObjectIter.
 //
-// The returned BlobIter will automatically skip over non-blob objects.
+// Any non-blob object returned by the storer.EncodedObjectIter is skipped.
 func NewBlobIter(s storer.EncodedObjectStorer, iter storer.EncodedObjectIter) *BlobIter {
 	return &BlobIter{iter, s}
 }
 
-// Next moves the iterator to the next blob and returns a pointer to it. If it
-// has reached the end of the set it will return io.EOF.
+// Next moves the iterator to the next blob and returns a pointer to it. If
+// there are no more blobs, it returns io.EOF.
 func (iter *BlobIter) Next() (*Blob, error) {
 	for {
 		obj, err := iter.EncodedObjectIter.Next()
