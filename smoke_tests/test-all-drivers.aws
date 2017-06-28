@@ -125,9 +125,9 @@ cdn = create distribution origin-domain=my-full-test-bucket-website.s3.amazonaws
 check distribution id=$cdn state=InProgress timeout=180
 update distribution enable=true id=$cdn
 create repository name=my-full-test-repository
-create container image=alpine memory-hard-limit=64 name=my-full-test-container service=my-full-test-service command="/bin/bash echo $HELLO $WORLD" env="HELLO:Hello,WORLD:world!" ports=80:80/tcp,9090,9191/udp privileged=true workdir=/root
+attach containertask name=my-full-test-containertask image=alpine memory-hard-limit=64 container-name=my-full-test-container command="/bin/bash echo $HELLO $WORLD" env="HELLO:Hello,WORLD:world!" ports=80:80/tcp,9090,9191/udp privileged=true workdir=/root
 create containercluster name=my-full-test-container-cluster
-start containerservice cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 name=my-full-test-service loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role={ecs.role}
+start containertask type=service name=my-full-test-containertask cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role={ecs.role}
 create appscalingtarget dimension=ecs:service:DesiredCount max-capacity=3 min-capacity=1 resource=service/my-full-test-container-cluster/my-full-test-service-deployment role={appscaling.role} service-namespace=ecs
 create appscalingpolicy dimension=ecs:service:DesiredCount name=my-full-test-appscalingpol resource=service/my-full-test-container-cluster/my-full-test-service-deployment service-namespace=ecs stepscaling-adjustment-type=ChangeInCapacity stepscaling-adjustments=0::+1,:0:-1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-cooldown=60
 create appscalingpolicy dimension=ecs:service:DesiredCount name=my-full-test-appscalingpol-2 resource=service/my-full-test-container-cluster/my-full-test-service-deployment service-namespace=ecs stepscaling-adjustment-type=PercentChangeInCapacity stepscaling-adjustments=0::+1,:0:-1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-min-adjustment-magnitude=1
@@ -147,4 +147,5 @@ update loginprofile password=my-full-test-second-password username=my-full-test-
 # create distribution certificate=
 # update stack name=my-full-test-cf-template capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} policy-update-file={cloudformation.policy-file} role={cloudformation.role} template-file={cloudformation.templatefile} use-previous-template=false
 # authenticate registry
-# start containertasks # No revert
+# start containertask type=task name=my-full-test-containertask cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role={ecs.role} # For now as, no instances in the container cluster
+
