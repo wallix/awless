@@ -63,7 +63,6 @@ func (r *noRevisionRepo) BaseDir() string                    { return r.basedir 
 
 type gitRepo struct {
 	repo    *git.Repository
-	files   []string
 	basedir string
 }
 
@@ -183,14 +182,8 @@ func unmarshalIntoGraph(g *graph.Graph, commit *object.Commit, filename string) 
 }
 
 func (r *gitRepo) Commit(files ...string) error {
-	for _, path := range files {
-		r.files = append(r.files, path)
-	}
-
-	for _, path := range r.files {
-		if _, err := newGit(r.BaseDir()).run("add", path); err != nil {
-			return err
-		}
+	if _, err := newGit(r.BaseDir()).run("add", "."); err != nil {
+		return err
 	}
 
 	if hasChanges, err := r.hasChanges(); err != nil {

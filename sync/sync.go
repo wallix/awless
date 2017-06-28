@@ -128,9 +128,11 @@ Loop:
 		if err != nil {
 			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
 		}
+
 		serviceDir := filepath.Join(s.BaseDir(), servicesByName[name].Region())
 		os.MkdirAll(serviceDir, 0700)
 		filepath := filepath.Join(serviceDir, filename)
+
 		if err = ioutil.WriteFile(filepath, tofile, 0600); err != nil {
 			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", filepath, err))
 		}
