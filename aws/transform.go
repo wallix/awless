@@ -95,7 +95,7 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *rds.DBInstance:
 		res = graph.InitResource(cloud.Database, awssdk.StringValue(ss.DBInstanceIdentifier))
 	case *rds.DBSubnetGroup:
-		res = graph.InitResource(cloud.DbSubnetGroup, awssdk.StringValue(ss.DBSubnetGroupName))
+		res = graph.InitResource(cloud.DbSubnetGroup, awssdk.StringValue(ss.DBSubnetGroupArn))
 		// Autoscaling
 	case *autoscaling.LaunchConfiguration:
 		res = graph.InitResource(cloud.LaunchConfiguration, awssdk.StringValue(ss.LaunchConfigurationARN))
