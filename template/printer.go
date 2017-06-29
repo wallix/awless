@@ -96,12 +96,12 @@ type logPrinter struct {
 func (p *logPrinter) Print(t *TemplateExecution) error {
 	buff := bufio.NewWriter(p.w)
 
-	buff.WriteString(fmt.Sprintf("ID: %s, Date: %s", t.ID, parseULIDDate(t.ID)))
+	buff.WriteString(fmt.Sprintf("ID: %s\tDate: %s", t.ID, parseULIDDate(t.ID)))
 	if t.Author != "" {
-		buff.WriteString(fmt.Sprintf(", Author: %s", t.Author))
+		buff.WriteString(fmt.Sprintf("\tAuthor: %s", t.Author))
 	}
 	if t.Locale != "" {
-		buff.WriteString(fmt.Sprintf(", Region: %s", t.Locale))
+		buff.WriteString(fmt.Sprintf("\tRegion: %s", t.Locale))
 	}
 	if !IsRevertible(t.Template) {
 		buff.WriteString(" (not revertible)")
