@@ -155,7 +155,7 @@ func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
 	}
 }
 
-func TestCheckReferencesDeclarationPass(t *testing.T) {
+func TestCheckInvalidReferencesDeclarationPass(t *testing.T) {
 	env := NewEnv()
 	tcases := []struct {
 		tpl    string
@@ -164,14 +164,14 @@ func TestCheckReferencesDeclarationPass(t *testing.T) {
 		{"sub = create subnet\ninst = create instance subnet=$sub\nip = 127.0.0.1\ncreate instance subnet=$inst ip=$ip", ""},
 		{"sub = create subnet\ninst = create instance subnet=$sub\ninst = create instance", "'inst' has already been assigned in template"},
 		{"sub = create subnet\ninst = create instance subnet=$sub\ncreate instance subnet=$inst_2", "'inst_2' is undefined in template"},
-		{"sub = create subnet\ncreate vpc cidr=10.0.0.0/4", "unused reference 'sub' in template"},
+		{"sub = create subnet\ncreate vpc cidr=10.0.0.0/4", ""},
 		{"create instance subnet=$sub\nsub = create subnet", "'sub' is undefined in template"},
-		{"create instance\nip = 127.0.0.1", "unused reference 'ip'"},
+		{"create instance\nip = 127.0.0.1", ""},
 		{"new_inst = create instance autoref=$new_inst\n", "'new_inst' is undefined in template"},
 	}
 
 	for i, tcase := range tcases {
-		_, _, err := checkReferencesDeclaration(MustParse(tcase.tpl), env)
+		_, _, err := checkInvalidReferenceDeclarations(MustParse(tcase.tpl), env)
 		if tcase.expErr == "" && err != nil {
 			t.Fatalf("%d: %v", i+1, err)
 		}

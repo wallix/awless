@@ -74,7 +74,7 @@ func TestDriver(t *testing.T) {
 			return nil
 		}
 
-		id, err := driv.Create_Vpc(map[string]interface{}{"cidr": cidr})
+		id, err := driv.Create_Vpc(driver.EmptyContext, map[string]interface{}{"cidr": cidr})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -96,7 +96,7 @@ func TestDriver(t *testing.T) {
 			return nil
 		}
 
-		id, err := driv.Create_Subnet(map[string]interface{}{"cidr": cidr, "vpc": vpc})
+		id, err := driv.Create_Subnet(driver.EmptyContext, map[string]interface{}{"cidr": cidr, "vpc": vpc})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -143,7 +143,7 @@ func TestDriver(t *testing.T) {
 			return nil
 		}
 
-		id, err := driv.Create_Instance(map[string]interface{}{"image": image, "type": typ, "subnet": subnet, "count": count, "name": name})
+		id, err := driv.Create_Instance(driver.EmptyContext, map[string]interface{}{"image": image, "type": typ, "subnet": subnet, "count": count, "name": name})
 		if err != nil {
 			t.Fatal(err)
 		}

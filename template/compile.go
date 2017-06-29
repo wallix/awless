@@ -6,10 +6,15 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/driver"
 	"github.com/wallix/awless/template/internal/ast"
 )
 
 type Env struct {
+	Driver driver.Driver
+
+	ResolvedReferences map[string]interface{}
+
 	Fillers          map[string]interface{}
 	DefLookupFunc    DefinitionLookupFunc
 	AliasFunc        func(entity, key, alias string) string
@@ -21,10 +26,11 @@ type Env struct {
 
 func NewEnv() *Env {
 	return &Env{
-		AliasFunc:        nil,
-		MissingHolesFunc: nil,
-		Log:              logger.DiscardLogger,
-		processedFillers: make(map[string]interface{}),
+		AliasFunc:          nil,
+		MissingHolesFunc:   nil,
+		Log:                logger.DiscardLogger,
+		ResolvedReferences: make(map[string]interface{}),
+		processedFillers:   make(map[string]interface{}),
 	}
 }
 
@@ -65,7 +71,7 @@ type Mode []compileFunc
 var (
 	LenientCompileMode = []compileFunc{
 		resolveAgainstDefinitions,
-		checkReferencesDeclaration,
+		checkInvalidReferenceDeclarations,
 		resolveHolesPass,
 		resolveMissingHolesPass,
 		replaceVariableValuePass,
@@ -120,10 +126,10 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 		return tpl, env, fmt.Errorf("definition lookup function is undefined")
 	}
 	each := func(cmd *ast.CommandNode) error {
-		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
-		def, ok := env.DefLookupFunc(key)
+		tplKey := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
+		def, ok := env.DefLookupFunc(tplKey)
 		if !ok {
-			return fmt.Errorf("cannot find template definition for '%s'", key)
+			return fmt.Errorf("cannot find template definition for '%s'", tplKey)
 		}
 
 		for _, key := range cmd.Keys() {
@@ -197,7 +203,7 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 	return tpl, env, nil
 }
 
-func checkReferencesDeclaration(tpl *Template, env *Env) (*Template, *Env, error) {
+func checkInvalidReferenceDeclarations(tpl *Template, env *Env) (*Template, *Env, error) {
 	usedRefs := make(map[string]struct{})
 	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
 		for _, v := range cmd.Refs {
@@ -206,15 +212,11 @@ func checkReferencesDeclaration(tpl *Template, env *Env) (*Template, *Env, error
 	})
 
 	knownRefs := make(map[string]bool)
-	unusedRefs := make(map[string]bool)
 
 	var each = func(cmd *ast.CommandNode) error {
 		for _, ref := range cmd.Refs {
 			if _, ok := knownRefs[ref]; !ok {
 				return fmt.Errorf("using reference '$%s' but '%s' is undefined in template\n", ref, ref)
-			}
-			if _, ok := unusedRefs[ref]; ok {
-				delete(unusedRefs, ref)
 			}
 		}
 		return nil
@@ -241,34 +243,23 @@ func checkReferencesDeclaration(tpl *Template, env *Env) (*Template, *Env, error
 				return tpl, env, fmt.Errorf("using reference '$%s' but '%s' has already been assigned in template\n", ref, ref)
 			}
 			knownRefs[ref] = true
-			unusedRefs[ref] = true
 		}
-	}
-
-	var unused []string
-	for ref := range unusedRefs {
-		unused = append(unused, ref)
-	}
-	if len(unused) > 0 {
-		return tpl, env, fmt.Errorf("unused reference '%s' in template\n", strings.Join(unused, "','"))
 	}
 
 	return tpl, env, nil
 }
 
 func replaceVariableValuePass(tpl *Template, env *Env) (*Template, *Env, error) {
-	toReplace := make(map[string]interface{})
-
 	tpl.visitDeclarationNodes(func(decl *ast.DeclarationNode) {
 		if value, isValueNode := decl.Expr.(*ast.ValueNode); isValueNode && value.IsResolved() {
-			toReplace[decl.Ident] = decl.Expr.Result()
+			env.ResolvedReferences[decl.Ident] = decl.Expr.Result()
 		}
 	})
 	tpl.visitCommandNodes(func(n *ast.CommandNode) {
-		n.ProcessRefs(toReplace)
+		n.ProcessRefs(env.ResolvedReferences)
 	})
 
-	env.Log.ExtraVerbosef("variable resolved: %v", toReplace)
+	env.Log.ExtraVerbosef("references resolved so far: %v", env.ResolvedReferences)
 
 	return tpl, env, nil
 }

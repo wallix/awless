@@ -10,10 +10,10 @@ import (
 )
 
 func TestMultiDriver(t *testing.T) {
-	ab := func(map[string]interface{}) (interface{}, error) { return "ab", nil }
-	bc := func(map[string]interface{}) (interface{}, error) { return "bc", nil }
-	de := func(map[string]interface{}) (interface{}, error) { return "de", nil }
-	ef := func(map[string]interface{}) (interface{}, error) { return "ef", nil }
+	ab := func(driver.Context, map[string]interface{}) (interface{}, error) { return "ab", nil }
+	bc := func(driver.Context, map[string]interface{}) (interface{}, error) { return "bc", nil }
+	de := func(driver.Context, map[string]interface{}) (interface{}, error) { return "de", nil }
+	ef := func(driver.Context, map[string]interface{}) (interface{}, error) { return "ef", nil }
 	mock1 := &mockDriver{
 		lookupFn: func(lookups ...string) (driverFn driver.DriverFn, err error) {
 			if len(lookups) != 1 {

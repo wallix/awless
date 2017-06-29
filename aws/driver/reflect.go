@@ -25,7 +25,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	gotemplate "text/template"
 	"time"
+
+	"bytes"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
@@ -75,7 +78,7 @@ func (s setter) set(i interface{}) error {
 	return setFieldWithType(s.val, i, s.fieldPath, s.fieldType)
 }
 
-func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err error) {
+func setFieldWithType(v, i interface{}, fieldPath string, destType int, interfs ...interface{}) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("set field %s for %T object: %s", fieldPath, i, e)
@@ -235,7 +238,11 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int) (err err
 		}
 		v = stepAdjustments
 	case awsfiletobase64:
-		v, err = fileOrRemoteFileAsBase64(v)
+		var tplData interface{}
+		if len(interfs) > 0 {
+			tplData = interfs[0]
+		}
+		v, err = fileOrRemoteFileAsBase64(v, tplData)
 		if err != nil {
 			return err
 		}
@@ -401,7 +408,7 @@ func castStringSlice(v interface{}) []string {
 	}
 }
 
-func fileOrRemoteFileAsBase64(v interface{}) (string, error) {
+func fileOrRemoteFileAsBase64(v interface{}, tplData interface{}) (string, error) {
 	path := fmt.Sprint(v)
 
 	var readErr error
@@ -417,7 +424,7 @@ func fileOrRemoteFileAsBase64(v interface{}) (string, error) {
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode < http.StatusOK || resp.StatusCode > 299 {
 			return "", fmt.Errorf("'%s' when fetching userdata at '%s'", resp.Status, path)
 		}
 
@@ -426,5 +433,19 @@ func fileOrRemoteFileAsBase64(v interface{}) (string, error) {
 		content, readErr = ioutil.ReadFile(path)
 	}
 
-	return base64.StdEncoding.EncodeToString(content), readErr
+	if readErr != nil {
+		logger.Errorf("got userdata from '%s' but cannot read content: %s", path, readErr)
+		return "", readErr
+	}
+
+	if tpl, err := gotemplate.New(path).Parse(string(content)); err != nil {
+		logger.Warningf("cannot parse userdata as Go template: %s", err)
+	} else {
+		var buf bytes.Buffer
+		if err := tpl.Execute(&buf, tplData); err == nil {
+			content = buf.Bytes()
+		}
+	}
+
+	return base64.StdEncoding.EncodeToString(content), nil
 }

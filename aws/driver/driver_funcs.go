@@ -48,13 +48,14 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/driver"
 )
 
 const (
 	notFoundState = "not-found"
 )
 
-func (d *Ec2Driver) Attach_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("attach securitygroup: missing required params 'id'")
 	}
@@ -69,7 +70,7 @@ func (d *Ec2Driver) Attach_Securitygroup_DryRun(params map[string]interface{}) (
 	return nil, nil
 }
 
-func (d *Ec2Driver) Attach_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Securitygroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	instance, hasInstance := params["instance"].(string)
 
 	switch {
@@ -99,7 +100,7 @@ func (d *Ec2Driver) Attach_Securitygroup(params map[string]interface{}) (interfa
 	return nil, errors.New("missing 'instance' param")
 }
 
-func (d *Ec2Driver) Detach_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("detach securitygroup: missing required params 'id'")
 	}
@@ -114,7 +115,7 @@ func (d *Ec2Driver) Detach_Securitygroup_DryRun(params map[string]interface{}) (
 	return nil, nil
 }
 
-func (d *Ec2Driver) Detach_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Securitygroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	instance, hasInstance := params["instance"].(string)
 
 	switch {
@@ -172,7 +173,7 @@ func removeString(arr []string, s string) (out []string) {
 	return
 }
 
-func (d *EcsDriver) Attach_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Attach_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("attach containertask: missing required params 'name'")
 	}
@@ -189,7 +190,7 @@ func (d *EcsDriver) Attach_Containertask_DryRun(params map[string]interface{}) (
 	return nil, nil
 }
 
-func (d *EcsDriver) Attach_Containertask(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Attach_Containertask(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	var taskDefinitionInput *ecs.RegisterTaskDefinitionInput
 	taskDefinitionName := fmt.Sprint(params["name"])
 
@@ -276,7 +277,7 @@ func (d *EcsDriver) Attach_Containertask(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *EcsDriver) Detach_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Detach_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("detach containertask: missing required params 'name'")
 	}
@@ -287,7 +288,7 @@ func (d *EcsDriver) Detach_Containertask_DryRun(params map[string]interface{}) (
 	return nil, nil
 }
 
-func (d *EcsDriver) Detach_Containertask(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Detach_Containertask(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	taskDefinitionName := fmt.Sprint(params["name"])
 
 	taskdefOutput, err := d.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
@@ -346,7 +347,7 @@ func (d *EcsDriver) Detach_Containertask(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *EcsDriver) Delete_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Delete_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete containertask: missing required params 'name'")
 	}
@@ -375,7 +376,7 @@ func (d *EcsDriver) Delete_Containertask_DryRun(params map[string]interface{}) (
 	return nil, nil
 }
 
-func (d *EcsDriver) Delete_Containertask(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Delete_Containertask(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	taskDefinitionName := fmt.Sprint(params["name"])
 
 	if deleteAll := fmt.Sprint(params["all-versions"]); deleteAll == "true" {
@@ -412,7 +413,7 @@ func (d *EcsDriver) Delete_Containertask(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *EcsDriver) Start_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Start_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["cluster"]; !ok {
 		return nil, errors.New("start containertask: missing required params 'cluster'")
 	}
@@ -447,7 +448,7 @@ func (d *EcsDriver) Start_Containertask_DryRun(params map[string]interface{}) (i
 	return fakeDryRunId("containertask"), nil
 }
 
-func (d *EcsDriver) Start_Containertask(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Start_Containertask(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	typ := fmt.Sprint(params["type"])
 	switch typ {
 	case "service":
@@ -513,7 +514,7 @@ func (d *EcsDriver) Start_Containertask(params map[string]interface{}) (interfac
 	return nil, fmt.Errorf("start containertask: invalid type '%s'", typ)
 }
 
-func (d *EcsDriver) Stop_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Stop_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["cluster"]; !ok {
 		return nil, errors.New("stop containertask: missing required params 'cluster'")
 	}
@@ -545,7 +546,7 @@ func (d *EcsDriver) Stop_Containertask_DryRun(params map[string]interface{}) (in
 	return nil, nil
 }
 
-func (d *EcsDriver) Stop_Containertask(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Stop_Containertask(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	typ := fmt.Sprint(params["type"])
 	switch typ {
 	case "service":
@@ -579,7 +580,7 @@ func (d *EcsDriver) Stop_Containertask(params map[string]interface{}) (interface
 	return nil, fmt.Errorf("stop containertask: invalid type '%s'", typ)
 }
 
-func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	_, effect := params["effect"]
 	_, action := params["action"]
 	_, resource := params["resource"]
@@ -592,7 +593,7 @@ func (d *IamDriver) Create_Policy_DryRun(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	effect, _ := params["effect"].(string)
 	resource, _ := params["resource"].(string)
 	actions, multipleAction := params["action"].([]string)
@@ -643,7 +644,7 @@ func (d *IamDriver) Create_Policy(params map[string]interface{}) (interface{}, e
 	return aws.StringValue(output.(*iam.CreatePolicyOutput).Policy.Arn), nil
 }
 
-func (d *IamDriver) Delete_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Role_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete role: missing required params 'name'")
 	}
@@ -652,12 +653,12 @@ func (d *IamDriver) Delete_Role_DryRun(params map[string]interface{}) (interface
 	return nil, nil
 }
 
-func (d *IamDriver) Delete_Role(params map[string]interface{}) (interface{}, error) {
-	d.Detach_Role(map[string]interface{}{
+func (d *IamDriver) Delete_Role(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	d.Detach_Role(ctx, map[string]interface{}{
 		"name":            params["name"],
 		"instanceprofile": params["name"],
 	})
-	d.Delete_Instanceprofile(params)
+	d.Delete_Instanceprofile(ctx, params)
 
 	input := &iam.DeleteRoleInput{}
 
@@ -676,7 +677,7 @@ func (d *IamDriver) Delete_Role(params map[string]interface{}) (interface{}, err
 	return output, nil
 }
 
-func (d *IamDriver) Create_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Role_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	_, pAccount := params["principal-account"]
 	_, pService := params["principal-service"]
 	_, pUser := params["principal-user"]
@@ -706,7 +707,7 @@ type policyBody struct {
 	Statement []policyStatement
 }
 
-func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Role(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	pAccount, _ := params["principal-account"]
 	pService, _ := params["principal-service"]
 	pUser, _ := params["principal-user"]
@@ -750,8 +751,8 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 	role := output.(*iam.CreateRoleOutput).Role
 	roleName := aws.StringValue(role.RoleName)
 
-	d.Create_Instanceprofile(params)
-	d.Attach_Role(map[string]interface{}{
+	d.Create_Instanceprofile(ctx, params)
+	d.Attach_Role(ctx, map[string]interface{}{
 		"name":            roleName,
 		"instanceprofile": roleName,
 	})
@@ -763,7 +764,7 @@ func (d *IamDriver) Create_Role(params map[string]interface{}) (interface{}, err
 	return aws.StringValue(role.Arn), nil
 }
 
-func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("attach policy: missing required params 'arn'")
 	}
@@ -780,7 +781,7 @@ func (d *IamDriver) Attach_Policy_DryRun(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *IamDriver) Attach_Policy(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	user, hasUser := params["user"]
 	group, hasGroup := params["group"]
 	role, hasRole := params["role"]
@@ -814,7 +815,7 @@ func (d *IamDriver) Attach_Policy(params map[string]interface{}) (interface{}, e
 	return nil, errors.New("missing one of 'user, group, role' param")
 }
 
-func (d *IamDriver) Detach_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("detach policy: missing required params 'arn'")
 	}
@@ -831,7 +832,7 @@ func (d *IamDriver) Detach_Policy_DryRun(params map[string]interface{}) (interfa
 	return nil, nil
 }
 
-func (d *IamDriver) Detach_Policy(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	user, hasUser := params["user"]
 	group, hasGroup := params["group"]
 	role, hasRole := params["role"]
@@ -865,7 +866,7 @@ func (d *IamDriver) Detach_Policy(params map[string]interface{}) (interface{}, e
 	return nil, errors.New("missing one of 'user, group, role' param")
 }
 
-func (d *IamDriver) Create_Accesskey_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Accesskey_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["user"]; !ok {
 		return nil, errors.New("create accesskey: missing required params 'user'")
 	}
@@ -874,7 +875,7 @@ func (d *IamDriver) Create_Accesskey_DryRun(params map[string]interface{}) (inte
 	return nil, nil
 }
 
-func (d *IamDriver) Create_Accesskey(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Accesskey(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateAccessKeyInput{}
 	var err error
 
@@ -910,7 +911,7 @@ func (d *IamDriver) Create_Accesskey(params map[string]interface{}) (interface{}
 	return id, nil
 }
 
-func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check instance: missing required params 'id'")
 	}
@@ -962,7 +963,7 @@ func (d *Ec2Driver) Check_Instance_DryRun(params map[string]interface{}) (interf
 	return nil, fmt.Errorf("dry run: check instance: %s", err)
 }
 
-func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeInstancesInput{}
 
 	// Required params
@@ -1003,7 +1004,7 @@ func (d *Ec2Driver) Check_Instance(params map[string]interface{}) (interface{}, 
 	return nil, c.check()
 }
 
-func (d *Ec2Driver) Check_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check securitygroup: missing required params 'id'")
 	}
@@ -1031,7 +1032,7 @@ func (d *Ec2Driver) Check_Securitygroup_DryRun(params map[string]interface{}) (i
 	return nil, nil
 }
 
-func (d *Ec2Driver) Check_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Securitygroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeNetworkInterfacesInput{
 		Filters: []*ec2.Filter{
 			{Name: aws.String("group-id"), Values: []*string{aws.String(fmt.Sprint(params["id"]))}},
@@ -1062,7 +1063,7 @@ func (d *Ec2Driver) Check_Securitygroup(params map[string]interface{}) (interfac
 	return nil, c.check()
 }
 
-func (d *Ec2Driver) Check_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Volume_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check volume: missing required params 'id'")
 	}
@@ -1092,7 +1093,7 @@ func (d *Ec2Driver) Check_Volume_DryRun(params map[string]interface{}) (interfac
 	return nil, nil
 }
 
-func (d *Ec2Driver) Check_Volume(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Volume(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeVolumesInput{
 		VolumeIds: []*string{aws.String(fmt.Sprint(params["id"]))},
 	}
@@ -1126,7 +1127,7 @@ func (d *Ec2Driver) Check_Volume(params map[string]interface{}) (interface{}, er
 	return nil, c.check()
 }
 
-func (d *Ec2Driver) Check_Natgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Natgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check natgateway: missing required params 'id'")
 	}
@@ -1156,7 +1157,7 @@ func (d *Ec2Driver) Check_Natgateway_DryRun(params map[string]interface{}) (inte
 	return nil, nil
 }
 
-func (d *Ec2Driver) Check_Natgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Check_Natgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DescribeNatGatewaysInput{}
 
 	// Required params
@@ -1193,7 +1194,7 @@ func (d *Ec2Driver) Check_Natgateway(params map[string]interface{}) (interface{}
 	return nil, c.check()
 }
 
-func (d *RdsDriver) Check_Database_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Check_Database_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check database: missing required params 'id'")
 	}
@@ -1235,7 +1236,7 @@ func (d *RdsDriver) Check_Database_DryRun(params map[string]interface{}) (interf
 	return nil, nil
 }
 
-func (d *RdsDriver) Check_Database(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Check_Database(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &rds.DescribeDBInstancesInput{
 		DBInstanceIdentifier: aws.String(fmt.Sprint(params["id"])),
 	}
@@ -1271,7 +1272,7 @@ func (d *RdsDriver) Check_Database(params map[string]interface{}) (interface{}, 
 	return nil, c.check()
 }
 
-func (d *Elbv2Driver) Check_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Check_Loadbalancer_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check loadbalancer: missing required params 'id'")
 	}
@@ -1299,7 +1300,7 @@ func (d *Elbv2Driver) Check_Loadbalancer_DryRun(params map[string]interface{}) (
 	return nil, nil
 }
 
-func (d *Elbv2Driver) Check_Loadbalancer(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Check_Loadbalancer(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.DescribeLoadBalancersInput{}
 
 	// Required params
@@ -1336,7 +1337,7 @@ func (d *Elbv2Driver) Check_Loadbalancer(params map[string]interface{}) (interfa
 	return nil, c.check()
 }
 
-func (d *AutoscalingDriver) Check_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Check_Scalinggroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"].(string); !ok {
 		return nil, errors.New("check scalinggroup: missing required params 'name'")
 	}
@@ -1353,7 +1354,7 @@ func (d *AutoscalingDriver) Check_Scalinggroup_DryRun(params map[string]interfac
 	return nil, nil
 }
 
-func (d *AutoscalingDriver) Check_Scalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Check_Scalinggroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.DescribeAutoScalingGroupsInput{}
 
 	// Required params
@@ -1384,7 +1385,7 @@ func (d *AutoscalingDriver) Check_Scalinggroup(params map[string]interface{}) (i
 	return nil, c.check()
 }
 
-func (d *CloudfrontDriver) Check_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Check_Distribution_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("check distribution: missing required params 'id'")
 	}
@@ -1411,7 +1412,7 @@ func (d *CloudfrontDriver) Check_Distribution_DryRun(params map[string]interface
 	return nil, nil
 }
 
-func (d *CloudfrontDriver) Check_Distribution(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Check_Distribution(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudfront.GetDistributionInput{}
 
 	// Required params
@@ -1444,7 +1445,7 @@ func (d *CloudfrontDriver) Check_Distribution(params map[string]interface{}) (in
 	return nil, c.check()
 }
 
-func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Tag_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -1469,7 +1470,7 @@ func (d *Ec2Driver) Create_Tag_DryRun(params map[string]interface{}) (interface{
 	return nil, fmt.Errorf("dry run: create tag: %s", err)
 }
 
-func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Tag(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 	var err error
 
@@ -1491,7 +1492,7 @@ func (d *Ec2Driver) Create_Tag(params map[string]interface{}) (interface{}, erro
 	return output, nil
 }
 
-func (d *Ec2Driver) Delete_Tag_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Tag_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteTagsInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -1516,7 +1517,7 @@ func (d *Ec2Driver) Delete_Tag_DryRun(params map[string]interface{}) (interface{
 	return nil, fmt.Errorf("dry run: delete tag: %s", err)
 }
 
-func (d *Ec2Driver) Delete_Tag(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Tag(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteTagsInput{}
 	var err error
 
@@ -1538,7 +1539,7 @@ func (d *Ec2Driver) Delete_Tag(params map[string]interface{}) (interface{}, erro
 	return output, nil
 }
 
-func (d *Ec2Driver) Create_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Keypair_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 
 	input.DryRun = aws.Bool(true)
@@ -1566,7 +1567,7 @@ func (d *Ec2Driver) Create_Keypair_DryRun(params map[string]interface{}) (interf
 	return nil, nil
 }
 
-func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Keypair(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportKeyPairInput{}
 	err := setFieldWithType(params["name"], input, "KeyName", awsstr)
 	if err != nil {
@@ -1605,7 +1606,7 @@ func (d *Ec2Driver) Create_Keypair(params map[string]interface{}) (interface{}, 
 	return aws.StringValue(output.KeyName), nil
 }
 
-func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	ipPerms, err := buildIpPermissionsFromParams(params)
 	if err != nil {
 		return nil, err
@@ -1661,7 +1662,7 @@ func (d *Ec2Driver) Update_Securitygroup_DryRun(params map[string]interface{}) (
 	return nil, fmt.Errorf("dry run: update securitygroup: %s", err)
 }
 
-func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Securitygroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	ipPerms, err := buildIpPermissionsFromParams(params)
 	if err != nil {
 		return nil, err
@@ -1716,7 +1717,7 @@ func (d *Ec2Driver) Update_Securitygroup(params map[string]interface{}) (interfa
 	return output, nil
 }
 
-func (d *S3Driver) Create_S3object_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_S3object_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
 		return nil, errors.New("create s3object: missing required params 'bucket'")
 	}
@@ -1778,7 +1779,7 @@ func (pr *progressReadSeeker) Seek(offset int64, whence int) (int64, error) {
 	return pr.file.Seek(offset, whence)
 }
 
-func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_S3object(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
 	f, err := os.Open(params["file"].(string))
@@ -1831,7 +1832,7 @@ func (d *S3Driver) Create_S3object(params map[string]interface{}) (interface{}, 
 	return fileName, nil
 }
 
-func (d *S3Driver) Update_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Update_Bucket_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("update bucket: missing required param 'name'")
 	}
@@ -1851,7 +1852,7 @@ func (d *S3Driver) Update_Bucket_DryRun(params map[string]interface{}) (interfac
 	return nil, nil
 }
 
-func (d *S3Driver) Update_Bucket(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Update_Bucket(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	bucket := fmt.Sprint(params["name"])
 
 	start := time.Now()
@@ -1916,7 +1917,7 @@ func (d *S3Driver) Update_Bucket(params map[string]interface{}) (interface{}, er
 	return nil, nil
 }
 
-func (d *Route53Driver) Create_Record_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Create_Record_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["zone"]; !ok {
 		return nil, errors.New("create record: missing required params 'zone'")
 	}
@@ -1941,7 +1942,7 @@ func (d *Route53Driver) Create_Record_DryRun(params map[string]interface{}) (int
 	return nil, nil
 }
 
-func (d *Route53Driver) Create_Record(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Create_Record(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &route53.ChangeResourceRecordSetsInput{}
 	var err error
 	// Required params
@@ -1993,7 +1994,7 @@ func (d *Route53Driver) Create_Record(params map[string]interface{}) (interface{
 	return aws.StringValue(output.ChangeInfo.Id), nil
 }
 
-func (d *Route53Driver) Delete_Record_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Delete_Record_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["zone"]; !ok {
 		return nil, errors.New("delete record: missing required params 'zone'")
 	}
@@ -2018,7 +2019,7 @@ func (d *Route53Driver) Delete_Record_DryRun(params map[string]interface{}) (int
 	return nil, nil
 }
 
-func (d *Route53Driver) Delete_Record(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Delete_Record(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &route53.ChangeResourceRecordSetsInput{}
 	var err error
 	// Required params
@@ -2121,7 +2122,7 @@ func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermi
 	return []*ec2.IpPermission{ipPerm}, nil
 }
 
-func (d *CloudwatchDriver) Attach_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Attach_Alarm_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"].(string); !ok {
 		return nil, errors.New("attach alarm: dry run: missing required params 'name'")
 	}
@@ -2136,7 +2137,7 @@ func (d *CloudwatchDriver) Attach_Alarm_DryRun(params map[string]interface{}) (i
 	return nil, nil
 }
 
-func (d *CloudwatchDriver) Attach_Alarm(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Attach_Alarm(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	alarm, err := d.getAlarm(params)
 	if err != nil {
 		return nil, fmt.Errorf("attach alarm: %s", err)
@@ -2169,7 +2170,7 @@ func (d *CloudwatchDriver) Attach_Alarm(params map[string]interface{}) (interfac
 	return nil, nil
 }
 
-func (d *CloudwatchDriver) Detach_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Detach_Alarm_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"].(string); !ok {
 		return nil, errors.New("detach alarm: dry run: missing required params 'name'")
 	}
@@ -2184,7 +2185,7 @@ func (d *CloudwatchDriver) Detach_Alarm_DryRun(params map[string]interface{}) (i
 	return nil, nil
 }
 
-func (d *CloudwatchDriver) Detach_Alarm(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Detach_Alarm(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	alarm, err := d.getAlarm(params)
 	if err != nil {
 		return nil, fmt.Errorf("detach alarm: %s", err)
@@ -2246,7 +2247,7 @@ func (d *CloudwatchDriver) getAlarm(params map[string]interface{}) (*cloudwatch.
 	return out.MetricAlarms[0], nil
 }
 
-func (d *Ec2Driver) Delete_Image_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Image_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeregisterImageInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -2280,7 +2281,7 @@ func (d *Ec2Driver) Delete_Image_DryRun(params map[string]interface{}) (interfac
 	return nil, fmt.Errorf("dry run: delete image: %s", err)
 }
 
-func (d *Ec2Driver) Delete_Image(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Image(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeregisterImageInput{}
 	var err error
 
@@ -2308,7 +2309,7 @@ func (d *Ec2Driver) Delete_Image(params map[string]interface{}) (interface{}, er
 	if del, ok := params["delete-snapshots"]; ok && fmt.Sprint(del) == "true" {
 		for _, snap := range snaps {
 			snapDelParams := map[string]interface{}{"id": snap}
-			if _, err = d.Delete_Snapshot(snapDelParams); err != nil {
+			if _, err = d.Delete_Snapshot(ctx, snapDelParams); err != nil {
 				return nil, fmt.Errorf("error while deleting snapshot %s: %s", snap, err)
 			}
 		}
@@ -2336,7 +2337,7 @@ func (d *Ec2Driver) imageSnapshots(id string) ([]string, error) {
 	return snapshots, nil
 }
 
-func (d *CloudfrontDriver) Create_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Create_Distribution_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["origin-domain"]; !ok {
 		return nil, errors.New("create distribution: missing required params 'origin-domain'")
 	}
@@ -2345,7 +2346,7 @@ func (d *CloudfrontDriver) Create_Distribution_DryRun(params map[string]interfac
 	return fakeDryRunId("distribution"), nil
 }
 
-func (d *CloudfrontDriver) Create_Distribution(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Create_Distribution(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	originId := "orig_1"
 	input := &cloudfront.CreateDistributionInput{
 		DistributionConfig: &cloudfront.DistributionConfig{
@@ -2474,7 +2475,7 @@ func (d *CloudfrontDriver) Create_Distribution(params map[string]interface{}) (i
 	return id, nil
 }
 
-func (d *CloudfrontDriver) Update_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Update_Distribution_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("update distribution: missing required params 'id'")
 	}
@@ -2487,12 +2488,12 @@ func (d *CloudfrontDriver) Update_Distribution_DryRun(params map[string]interfac
 	return fakeDryRunId("distribution"), nil
 }
 
-func (d *EcrDriver) Authenticate_Registry_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Authenticate_Registry_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	d.logger.Verbose("params dry run: authenticate registry ok")
 	return fakeDryRunId("registry"), nil
 }
 
-func (d *EcrDriver) Authenticate_Registry(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Authenticate_Registry(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ecr.GetAuthorizationTokenInput{}
 	var err error
 
@@ -2551,7 +2552,7 @@ func (d *EcrDriver) Authenticate_Registry(params map[string]interface{}) (interf
 	return nil, nil
 }
 
-func (d *CloudfrontDriver) Update_Distribution(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Update_Distribution(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	distribOutput, err := d.GetDistribution(&cloudfront.GetDistributionInput{
 		Id: aws.String(fmt.Sprint(params["id"])),
 	})
@@ -2590,7 +2591,7 @@ func (d *CloudfrontDriver) Update_Distribution(params map[string]interface{}) (i
 	return id, nil
 }
 
-func (d *CloudfrontDriver) Delete_Distribution_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Delete_Distribution_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete distribution: missing required params 'id'")
 	}
@@ -2599,15 +2600,15 @@ func (d *CloudfrontDriver) Delete_Distribution_DryRun(params map[string]interfac
 	return fakeDryRunId("distribution"), nil
 }
 
-func (d *CloudfrontDriver) Delete_Distribution(params map[string]interface{}) (interface{}, error) {
+func (d *CloudfrontDriver) Delete_Distribution(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	d.logger.Info("disabling distribution")
-	etag, err := d.Update_Distribution(map[string]interface{}{"id": params["id"], "enable": false})
+	etag, err := d.Update_Distribution(ctx, map[string]interface{}{"id": params["id"], "enable": false})
 	if err != nil {
 		return nil, err
 	}
 
 	d.logger.Info("check distribution disabling has been propagated")
-	_, err = d.Check_Distribution(map[string]interface{}{"id": params["id"], "state": "Deployed", "timeout": 600})
+	_, err = d.Check_Distribution(ctx, map[string]interface{}{"id": params["id"], "state": "Deployed", "timeout": 600})
 	if err != nil {
 		return nil, err
 	}

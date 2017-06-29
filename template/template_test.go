@@ -30,7 +30,7 @@ import (
 type noopDriver struct{}
 
 func (d *noopDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
-	return func(map[string]interface{}) (interface{}, error) { return nil, nil }, nil
+	return func(driver.Context, map[string]interface{}) (interface{}, error) { return nil, nil }, nil
 }
 func (d *noopDriver) SetLogger(*logger.Logger) {}
 func (d *noopDriver) SetDryRun(bool)           {}
@@ -40,7 +40,7 @@ type errorDriver struct {
 }
 
 func (d *errorDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
-	return func(map[string]interface{}) (interface{}, error) { return nil, d.err }, nil
+	return func(driver.Context, map[string]interface{}) (interface{}, error) { return nil, d.err }, nil
 }
 func (d *errorDriver) SetLogger(*logger.Logger) {}
 func (d *errorDriver) SetDryRun(bool)           {}
@@ -81,7 +81,9 @@ func TestRunDriverReportsInStatement(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		ran, _ := templ.Run(tcase.driver)
+
+		env := &Env{Driver: tcase.driver}
+		ran, _ := templ.Run(env)
 
 		for i, cmd := range ran.CommandNodesIterator() {
 			if got, want := cmd.String(), tcase.lines[i].expString; got != want {
@@ -130,7 +132,8 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		},
 		}
 
-		if _, err := s.Run(mDriver); err != nil {
+		env := &Env{Driver: mDriver}
+		if _, err := s.Run(env); err != nil {
 			t.Fatal(err)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -150,7 +153,8 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		},
 		}
 
-		if _, err := s.Run(mDriver); err != nil {
+		env = &Env{Driver: mDriver}
+		if _, err := s.Run(env); err != nil {
 			t.Fatal(err)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -173,7 +177,8 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		}},
 		}
 
-		if _, err := s.Run(mDriver); err != nil {
+		env := &Env{Driver: mDriver}
+		if _, err := s.Run(env); err != nil {
 			t.Fatal(err)
 		}
 		if err := mDriver.lookupsCalled(); err != nil {
@@ -199,7 +204,8 @@ func TestRunDriverOnTemplate(t *testing.T) {
 		}},
 		}
 
-		executedTemplate, err := s.Run(mDriver)
+		env := &Env{Driver: mDriver}
+		executedTemplate, err := s.Run(env)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -263,7 +269,7 @@ func (r *mockDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
 		if lookups[0] == expect.action && lookups[1] == expect.entity {
 			expect.lookupDone = true
 
-			return func(params map[string]interface{}) (interface{}, error) {
+			return func(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 				if got, want := expect.expectedParams, params; !reflect.DeepEqual(got, want) {
 					return nil, fmt.Errorf("[%s %s] params mismatch: expected %v, got %v", expect.action, expect.entity, got, want)
 				}
@@ -272,7 +278,7 @@ func (r *mockDriver) Lookup(lookups ...string) (driver.DriverFn, error) {
 		}
 	}
 
-	return func(params map[string]interface{}) (interface{}, error) {
+	return func(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 		return nil, errors.New("Unexpected lookup fallthrough")
 	}, nil
 }

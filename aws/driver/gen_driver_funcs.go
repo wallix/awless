@@ -40,6 +40,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/wallix/awless/template/driver"
 )
 
 const (
@@ -48,13 +49,13 @@ const (
 )
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Vpc_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func (d *Ec2Driver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 			id := fakeDryRunId("vpc")
 			// Extra param as tag
 			if v, ok := params["name"]; ok {
-				_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": v, "resource": id})
+				_, err = d.Create_Tag_DryRun(ctx, map[string]interface{}{"key": "Name", "value": v, "resource": id})
 				if err != nil {
 					return nil, fmt.Errorf("dry run: create vpc: adding tags: %s", err)
 				}
@@ -82,12 +83,12 @@ func (d *Ec2Driver) Create_Vpc_DryRun(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Vpc(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Vpc(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVpcInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func (d *Ec2Driver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 	id := aws.StringValue(output.Vpc.VpcId)
 	// Extra param as tag
 	if v, ok := params["name"]; ok {
-		_, err = d.Create_Tag(map[string]interface{}{"key": "Name", "value": v, "resource": id})
+		_, err = d.Create_Tag(ctx, map[string]interface{}{"key": "Name", "value": v, "resource": id})
 		if err != nil {
 			return nil, fmt.Errorf("create vpc: adding tags: %s", err)
 		}
@@ -116,13 +117,13 @@ func (d *Ec2Driver) Create_Vpc(params map[string]interface{}) (interface{}, erro
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Vpc_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVpcInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["id"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -141,12 +142,12 @@ func (d *Ec2Driver) Delete_Vpc_DryRun(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Vpc(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Vpc(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVpcInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["id"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -164,24 +165,24 @@ func (d *Ec2Driver) Delete_Vpc(params map[string]interface{}) (interface{}, erro
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Subnet_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["availabilityzone"]; ok {
-		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
+		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -194,7 +195,7 @@ func (d *Ec2Driver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 			id := fakeDryRunId("subnet")
 			// Extra param as tag
 			if v, ok := params["name"]; ok {
-				_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": v, "resource": id})
+				_, err = d.Create_Tag_DryRun(ctx, map[string]interface{}{"key": "Name", "value": v, "resource": id})
 				if err != nil {
 					return nil, fmt.Errorf("dry run: create subnet: adding tags: %s", err)
 				}
@@ -208,23 +209,23 @@ func (d *Ec2Driver) Create_Subnet_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Subnet(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Subnet(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSubnetInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "CidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["availabilityzone"]; ok {
-		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
+		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -241,7 +242,7 @@ func (d *Ec2Driver) Create_Subnet(params map[string]interface{}) (interface{}, e
 	id := aws.StringValue(output.Subnet.SubnetId)
 	// Extra param as tag
 	if v, ok := params["name"]; ok {
-		_, err = d.Create_Tag(map[string]interface{}{"key": "Name", "value": v, "resource": id})
+		_, err = d.Create_Tag(ctx, map[string]interface{}{"key": "Name", "value": v, "resource": id})
 		if err != nil {
 			return nil, fmt.Errorf("create subnet: adding tags: %s", err)
 		}
@@ -252,7 +253,7 @@ func (d *Ec2Driver) Create_Subnet(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Update_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Subnet_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("update subnet: missing required params 'id'")
 	}
@@ -262,19 +263,19 @@ func (d *Ec2Driver) Update_Subnet_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Update_Subnet(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Subnet(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifySubnetAttributeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["id"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["public"]; ok {
-		err = setFieldWithType(params["public"], input, "MapPublicIpOnLaunch", awsboolattribute)
+		err = setFieldWithType(params["public"], input, "MapPublicIpOnLaunch", awsboolattribute, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -293,13 +294,13 @@ func (d *Ec2Driver) Update_Subnet(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Subnet_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Subnet_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSubnetInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["id"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -318,12 +319,12 @@ func (d *Ec2Driver) Delete_Subnet_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Subnet(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Subnet(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSubnetInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["id"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -341,66 +342,66 @@ func (d *Ec2Driver) Delete_Subnet(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["image"], input, "ImageId", awsstr)
+	err = setFieldWithType(params["image"], input, "ImageId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["count"], input, "MaxCount", awsint64)
+	err = setFieldWithType(params["count"], input, "MaxCount", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["count"], input, "MinCount", awsint64)
+	err = setFieldWithType(params["count"], input, "MinCount", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+	err = setFieldWithType(params["type"], input, "InstanceType", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["keypair"]; ok {
-		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr)
+		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["ip"]; ok {
-		err = setFieldWithType(params["ip"], input, "PrivateIpAddress", awsstr)
+		err = setFieldWithType(params["ip"], input, "PrivateIpAddress", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["userdata"]; ok {
-		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64)
+		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["securitygroup"]; ok {
-		err = setFieldWithType(params["securitygroup"], input, "SecurityGroupIds", awsstringslice)
+		err = setFieldWithType(params["securitygroup"], input, "SecurityGroupIds", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["lock"]; ok {
-		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsbool)
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "IamInstanceProfile.Name", awsstr)
+		err = setFieldWithType(params["role"], input, "IamInstanceProfile.Name", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -412,7 +413,7 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
 			id := fakeDryRunId("instance")
 			// Required param as tag
-			_, err = d.Create_Tag_DryRun(map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
+			_, err = d.Create_Tag_DryRun(ctx, map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
 			if err != nil {
 				return nil, fmt.Errorf("dry run: create instance: adding tags: %s", err)
 			}
@@ -425,65 +426,65 @@ func (d *Ec2Driver) Create_Instance_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.RunInstancesInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["image"], input, "ImageId", awsstr)
+	err = setFieldWithType(params["image"], input, "ImageId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["count"], input, "MaxCount", awsint64)
+	err = setFieldWithType(params["count"], input, "MaxCount", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["count"], input, "MinCount", awsint64)
+	err = setFieldWithType(params["count"], input, "MinCount", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+	err = setFieldWithType(params["type"], input, "InstanceType", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["keypair"]; ok {
-		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr)
+		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["ip"]; ok {
-		err = setFieldWithType(params["ip"], input, "PrivateIpAddress", awsstr)
+		err = setFieldWithType(params["ip"], input, "PrivateIpAddress", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["userdata"]; ok {
-		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64)
+		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["securitygroup"]; ok {
-		err = setFieldWithType(params["securitygroup"], input, "SecurityGroupIds", awsstringslice)
+		err = setFieldWithType(params["securitygroup"], input, "SecurityGroupIds", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["lock"]; ok {
-		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsbool)
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "IamInstanceProfile.Name", awsstr)
+		err = setFieldWithType(params["role"], input, "IamInstanceProfile.Name", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -499,7 +500,7 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 	d.logger.ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
 	id := aws.StringValue(output.Instances[0].InstanceId)
 	// Required param as tag
-	_, err = d.Create_Tag(map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
+	_, err = d.Create_Tag(ctx, map[string]interface{}{"key": "Name", "value": params["name"], "resource": id})
 	if err != nil {
 		return nil, fmt.Errorf("create instance: adding tags: %s", err)
 	}
@@ -509,26 +510,26 @@ func (d *Ec2Driver) Create_Instance(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Update_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifyInstanceAttributeInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceId", awsstr)
+	err = setFieldWithType(params["id"], input, "InstanceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["type"]; ok {
-		err = setFieldWithType(params["type"], input, "InstanceType.Value", awsstr)
+		err = setFieldWithType(params["type"], input, "InstanceType.Value", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["lock"]; ok {
-		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -548,25 +549,25 @@ func (d *Ec2Driver) Update_Instance_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Update_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Update_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ModifyInstanceAttributeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceId", awsstr)
+	err = setFieldWithType(params["id"], input, "InstanceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["type"]; ok {
-		err = setFieldWithType(params["type"], input, "InstanceType.Value", awsstr)
+		err = setFieldWithType(params["type"], input, "InstanceType.Value", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["lock"]; ok {
-		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute)
+		err = setFieldWithType(params["lock"], input, "DisableApiTermination", awsboolattribute, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -585,13 +586,13 @@ func (d *Ec2Driver) Update_Instance(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -610,12 +611,12 @@ func (d *Ec2Driver) Delete_Instance_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.TerminateInstancesInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -633,13 +634,13 @@ func (d *Ec2Driver) Delete_Instance(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Start_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Start_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StartInstancesInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -658,12 +659,12 @@ func (d *Ec2Driver) Start_Instance_DryRun(params map[string]interface{}) (interf
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Start_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Start_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StartInstancesInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -683,13 +684,13 @@ func (d *Ec2Driver) Start_Instance(params map[string]interface{}) (interface{}, 
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Stop_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Stop_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StopInstancesInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -708,12 +709,12 @@ func (d *Ec2Driver) Stop_Instance_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Stop_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Stop_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.StopInstancesInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice)
+	err = setFieldWithType(params["id"], input, "InstanceIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -733,21 +734,21 @@ func (d *Ec2Driver) Stop_Instance(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["description"], input, "Description", awsstr)
+	err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -766,20 +767,20 @@ func (d *Ec2Driver) Create_Securitygroup_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Securitygroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["description"], input, "Description", awsstr)
+	err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -799,13 +800,13 @@ func (d *Ec2Driver) Create_Securitygroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Securitygroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "GroupId", awsstr)
+	err = setFieldWithType(params["id"], input, "GroupId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -824,12 +825,12 @@ func (d *Ec2Driver) Delete_Securitygroup_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Securitygroup(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Securitygroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSecurityGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "GroupId", awsstr)
+	err = setFieldWithType(params["id"], input, "GroupId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -847,34 +848,34 @@ func (d *Ec2Driver) Delete_Securitygroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Copy_Image_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Copy_Image_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CopyImageInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	err = setFieldWithType(params["name"], input, "Name", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["source-id"], input, "SourceImageId", awsstr)
+	err = setFieldWithType(params["source-id"], input, "SourceImageId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["encrypted"]; ok {
-		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -894,33 +895,33 @@ func (d *Ec2Driver) Copy_Image_DryRun(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Copy_Image(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Copy_Image(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CopyImageInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	err = setFieldWithType(params["name"], input, "Name", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["source-id"], input, "SourceImageId", awsstr)
+	err = setFieldWithType(params["source-id"], input, "SourceImageId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["encrypted"]; ok {
-		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -941,62 +942,62 @@ func (d *Ec2Driver) Copy_Image(params map[string]interface{}) (interface{}, erro
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Import_Image_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Import_Image_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportImageInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Extra params
 	if _, ok := params["architecture"]; ok {
-		err = setFieldWithType(params["architecture"], input, "Architecture", awsstr)
+		err = setFieldWithType(params["architecture"], input, "Architecture", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["license"]; ok {
-		err = setFieldWithType(params["license"], input, "LicenseType", awsstr)
+		err = setFieldWithType(params["license"], input, "LicenseType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["platform"]; ok {
-		err = setFieldWithType(params["platform"], input, "Platform", awsstr)
+		err = setFieldWithType(params["platform"], input, "Platform", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "RoleName", awsstr)
+		err = setFieldWithType(params["role"], input, "RoleName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["snapshot"]; ok {
-		err = setFieldWithType(params["snapshot"], input, "DiskContainers[0]SnapshotId", awsslicestruct)
+		err = setFieldWithType(params["snapshot"], input, "DiskContainers[0]SnapshotId", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["url"]; ok {
-		err = setFieldWithType(params["url"], input, "DiskContainers[0]Url", awsslicestruct)
+		err = setFieldWithType(params["url"], input, "DiskContainers[0]Url", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["bucket"]; ok {
-		err = setFieldWithType(params["bucket"], input, "DiskContainers[0]UserBucket.S3Bucket", awsslicestruct)
+		err = setFieldWithType(params["bucket"], input, "DiskContainers[0]UserBucket.S3Bucket", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["s3object"]; ok {
-		err = setFieldWithType(params["s3object"], input, "DiskContainers[0]UserBucket.S3Key", awsslicestruct)
+		err = setFieldWithType(params["s3object"], input, "DiskContainers[0]UserBucket.S3Key", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1016,61 +1017,61 @@ func (d *Ec2Driver) Import_Image_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Import_Image(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Import_Image(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ImportImageInput{}
 	var err error
 
 	// Extra params
 	if _, ok := params["architecture"]; ok {
-		err = setFieldWithType(params["architecture"], input, "Architecture", awsstr)
+		err = setFieldWithType(params["architecture"], input, "Architecture", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["license"]; ok {
-		err = setFieldWithType(params["license"], input, "LicenseType", awsstr)
+		err = setFieldWithType(params["license"], input, "LicenseType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["platform"]; ok {
-		err = setFieldWithType(params["platform"], input, "Platform", awsstr)
+		err = setFieldWithType(params["platform"], input, "Platform", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "RoleName", awsstr)
+		err = setFieldWithType(params["role"], input, "RoleName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["snapshot"]; ok {
-		err = setFieldWithType(params["snapshot"], input, "DiskContainers[0]SnapshotId", awsslicestruct)
+		err = setFieldWithType(params["snapshot"], input, "DiskContainers[0]SnapshotId", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["url"]; ok {
-		err = setFieldWithType(params["url"], input, "DiskContainers[0]Url", awsslicestruct)
+		err = setFieldWithType(params["url"], input, "DiskContainers[0]Url", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["bucket"]; ok {
-		err = setFieldWithType(params["bucket"], input, "DiskContainers[0]UserBucket.S3Bucket", awsslicestruct)
+		err = setFieldWithType(params["bucket"], input, "DiskContainers[0]UserBucket.S3Bucket", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["s3object"]; ok {
-		err = setFieldWithType(params["s3object"], input, "DiskContainers[0]UserBucket.S3Key", awsslicestruct)
+		err = setFieldWithType(params["s3object"], input, "DiskContainers[0]UserBucket.S3Key", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1091,17 +1092,17 @@ func (d *Ec2Driver) Import_Image(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Volume_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
+	err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["size"], input, "Size", awsint64)
+	err = setFieldWithType(params["size"], input, "Size", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1120,16 +1121,16 @@ func (d *Ec2Driver) Create_Volume_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Volume(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Volume(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
+	err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["size"], input, "Size", awsint64)
+	err = setFieldWithType(params["size"], input, "Size", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1149,13 +1150,13 @@ func (d *Ec2Driver) Create_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Volume_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVolumeInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1174,12 +1175,12 @@ func (d *Ec2Driver) Delete_Volume_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Volume(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Volume(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteVolumeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1197,21 +1198,21 @@ func (d *Ec2Driver) Delete_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Volume_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachVolumeInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	err = setFieldWithType(params["device"], input, "Device", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1230,20 +1231,20 @@ func (d *Ec2Driver) Attach_Volume_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Volume(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Volume(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachVolumeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	err = setFieldWithType(params["device"], input, "Device", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1263,28 +1264,28 @@ func (d *Ec2Driver) Attach_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Volume_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Volume_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachVolumeInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	err = setFieldWithType(params["device"], input, "Device", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["force"]; ok {
-		err = setFieldWithType(params["force"], input, "Force", awsbool)
+		err = setFieldWithType(params["force"], input, "Force", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1304,27 +1305,27 @@ func (d *Ec2Driver) Detach_Volume_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Volume(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Volume(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachVolumeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["device"], input, "Device", awsstr)
+	err = setFieldWithType(params["device"], input, "Device", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["id"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["force"]; ok {
-		err = setFieldWithType(params["force"], input, "Force", awsbool)
+		err = setFieldWithType(params["force"], input, "Force", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1345,20 +1346,20 @@ func (d *Ec2Driver) Detach_Volume(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Snapshot_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Snapshot_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSnapshotInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["volume"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["volume"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1378,19 +1379,19 @@ func (d *Ec2Driver) Create_Snapshot_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Snapshot(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Snapshot(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSnapshotInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["volume"], input, "VolumeId", awsstr)
+	err = setFieldWithType(params["volume"], input, "VolumeId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1411,13 +1412,13 @@ func (d *Ec2Driver) Create_Snapshot(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Snapshot_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Snapshot_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSnapshotInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "SnapshotId", awsstr)
+	err = setFieldWithType(params["id"], input, "SnapshotId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1436,12 +1437,12 @@ func (d *Ec2Driver) Delete_Snapshot_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Snapshot(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Snapshot(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteSnapshotInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "SnapshotId", awsstr)
+	err = setFieldWithType(params["id"], input, "SnapshotId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1459,30 +1460,30 @@ func (d *Ec2Driver) Delete_Snapshot(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Copy_Snapshot_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Copy_Snapshot_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CopySnapshotInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["source-id"], input, "SourceSnapshotId", awsstr)
+	err = setFieldWithType(params["source-id"], input, "SourceSnapshotId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["encrypted"]; ok {
-		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1502,29 +1503,29 @@ func (d *Ec2Driver) Copy_Snapshot_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Copy_Snapshot(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Copy_Snapshot(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CopySnapshotInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["source-id"], input, "SourceSnapshotId", awsstr)
+	err = setFieldWithType(params["source-id"], input, "SourceSnapshotId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr)
+	err = setFieldWithType(params["source-region"], input, "SourceRegion", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["encrypted"]; ok {
-		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool)
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -1545,7 +1546,7 @@ func (d *Ec2Driver) Copy_Snapshot(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Internetgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -1564,7 +1565,7 @@ func (d *Ec2Driver) Create_Internetgateway_DryRun(params map[string]interface{})
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Internetgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Internetgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateInternetGatewayInput{}
 	var err error
 
@@ -1583,13 +1584,13 @@ func (d *Ec2Driver) Create_Internetgateway(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Internetgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1608,12 +1609,12 @@ func (d *Ec2Driver) Delete_Internetgateway_DryRun(params map[string]interface{})
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Internetgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Internetgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteInternetGatewayInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1631,17 +1632,17 @@ func (d *Ec2Driver) Delete_Internetgateway(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Internetgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1660,16 +1661,16 @@ func (d *Ec2Driver) Attach_Internetgateway_DryRun(params map[string]interface{})
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Internetgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Internetgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AttachInternetGatewayInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1687,17 +1688,17 @@ func (d *Ec2Driver) Attach_Internetgateway(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Internetgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Internetgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachInternetGatewayInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1716,16 +1717,16 @@ func (d *Ec2Driver) Detach_Internetgateway_DryRun(params map[string]interface{})
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Internetgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Internetgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DetachInternetGatewayInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "InternetGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1743,7 +1744,7 @@ func (d *Ec2Driver) Detach_Internetgateway(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Natgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Natgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["elasticip-id"]; !ok {
 		return nil, errors.New("create natgateway: missing required params 'elasticip-id'")
 	}
@@ -1757,16 +1758,16 @@ func (d *Ec2Driver) Create_Natgateway_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Natgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Natgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateNatGatewayInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["elasticip-id"], input, "AllocationId", awsstr)
+	err = setFieldWithType(params["elasticip-id"], input, "AllocationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1786,7 +1787,7 @@ func (d *Ec2Driver) Create_Natgateway(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Natgateway_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Natgateway_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete natgateway: missing required params 'id'")
 	}
@@ -1796,12 +1797,12 @@ func (d *Ec2Driver) Delete_Natgateway_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Natgateway(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Natgateway(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteNatGatewayInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "NatGatewayId", awsstr)
+	err = setFieldWithType(params["id"], input, "NatGatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1819,13 +1820,13 @@ func (d *Ec2Driver) Delete_Natgateway(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Routetable_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1844,12 +1845,12 @@ func (d *Ec2Driver) Create_Routetable_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Routetable(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Routetable(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteTableInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1869,13 +1870,13 @@ func (d *Ec2Driver) Create_Routetable(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Routetable_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteTableInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1894,12 +1895,12 @@ func (d *Ec2Driver) Delete_Routetable_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Routetable(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Routetable(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteTableInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1917,17 +1918,17 @@ func (d *Ec2Driver) Delete_Routetable(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Routetable_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1946,16 +1947,16 @@ func (d *Ec2Driver) Attach_Routetable_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Routetable(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Routetable(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateRouteTableInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["id"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr)
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1975,13 +1976,13 @@ func (d *Ec2Driver) Attach_Routetable(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Routetable_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Routetable_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateRouteTableInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2000,12 +2001,12 @@ func (d *Ec2Driver) Detach_Routetable_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Routetable(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Routetable(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateRouteTableInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2023,21 +2024,21 @@ func (d *Ec2Driver) Detach_Routetable(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Route_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Route_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["gateway"], input, "GatewayId", awsstr)
+	err = setFieldWithType(params["gateway"], input, "GatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2056,20 +2057,20 @@ func (d *Ec2Driver) Create_Route_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Route(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Route(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateRouteInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["gateway"], input, "GatewayId", awsstr)
+	err = setFieldWithType(params["gateway"], input, "GatewayId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2087,17 +2088,17 @@ func (d *Ec2Driver) Create_Route(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Route_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Route_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2116,16 +2117,16 @@ func (d *Ec2Driver) Delete_Route_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Route(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Route(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteRouteInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr)
+	err = setFieldWithType(params["table"], input, "RouteTableId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr)
+	err = setFieldWithType(params["cidr"], input, "DestinationCidrBlock", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2143,13 +2144,13 @@ func (d *Ec2Driver) Delete_Route(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Keypair_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "KeyName", awsstr)
+	err = setFieldWithType(params["name"], input, "KeyName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2168,12 +2169,12 @@ func (d *Ec2Driver) Delete_Keypair_DryRun(params map[string]interface{}) (interf
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Keypair(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DeleteKeyPairInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "KeyName", awsstr)
+	err = setFieldWithType(params["name"], input, "KeyName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2191,13 +2192,13 @@ func (d *Ec2Driver) Delete_Keypair(params map[string]interface{}) (interface{}, 
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Elasticip_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AllocateAddressInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["domain"], input, "Domain", awsstr)
+	err = setFieldWithType(params["domain"], input, "Domain", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2216,12 +2217,12 @@ func (d *Ec2Driver) Create_Elasticip_DryRun(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Create_Elasticip(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Create_Elasticip(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AllocateAddressInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["domain"], input, "Domain", awsstr)
+	err = setFieldWithType(params["domain"], input, "Domain", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2241,20 +2242,20 @@ func (d *Ec2Driver) Create_Elasticip(params map[string]interface{}) (interface{}
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Elasticip_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ReleaseAddressInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Extra params
 	if _, ok := params["id"]; ok {
-		err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
+		err = setFieldWithType(params["id"], input, "AllocationId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["ip"]; ok {
-		err = setFieldWithType(params["ip"], input, "PublicIp", awsstr)
+		err = setFieldWithType(params["ip"], input, "PublicIp", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2274,19 +2275,19 @@ func (d *Ec2Driver) Delete_Elasticip_DryRun(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Delete_Elasticip(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Delete_Elasticip(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.ReleaseAddressInput{}
 	var err error
 
 	// Extra params
 	if _, ok := params["id"]; ok {
-		err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
+		err = setFieldWithType(params["id"], input, "AllocationId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["ip"]; ok {
-		err = setFieldWithType(params["ip"], input, "PublicIp", awsstr)
+		err = setFieldWithType(params["ip"], input, "PublicIp", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2305,38 +2306,38 @@ func (d *Ec2Driver) Delete_Elasticip(params map[string]interface{}) (interface{}
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Elasticip_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateAddressInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
+	err = setFieldWithType(params["id"], input, "AllocationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["instance"]; ok {
-		err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+		err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["networkinterface"]; ok {
-		err = setFieldWithType(params["networkinterface"], input, "NetworkInterfaceId", awsstr)
+		err = setFieldWithType(params["networkinterface"], input, "NetworkInterfaceId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["privateip"]; ok {
-		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr)
+		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["allow-reassociation"]; ok {
-		err = setFieldWithType(params["allow-reassociation"], input, "AllowReassociation", awsbool)
+		err = setFieldWithType(params["allow-reassociation"], input, "AllowReassociation", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2356,37 +2357,37 @@ func (d *Ec2Driver) Attach_Elasticip_DryRun(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Elasticip(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Attach_Elasticip(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.AssociateAddressInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "AllocationId", awsstr)
+	err = setFieldWithType(params["id"], input, "AllocationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["instance"]; ok {
-		err = setFieldWithType(params["instance"], input, "InstanceId", awsstr)
+		err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["networkinterface"]; ok {
-		err = setFieldWithType(params["networkinterface"], input, "NetworkInterfaceId", awsstr)
+		err = setFieldWithType(params["networkinterface"], input, "NetworkInterfaceId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["privateip"]; ok {
-		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr)
+		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["allow-reassociation"]; ok {
-		err = setFieldWithType(params["allow-reassociation"], input, "AllowReassociation", awsbool)
+		err = setFieldWithType(params["allow-reassociation"], input, "AllowReassociation", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2407,13 +2408,13 @@ func (d *Ec2Driver) Attach_Elasticip(params map[string]interface{}) (interface{}
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Elasticip_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Elasticip_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateAddressInput{}
 	input.DryRun = aws.Bool(true)
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2432,12 +2433,12 @@ func (d *Ec2Driver) Detach_Elasticip_DryRun(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Detach_Elasticip(params map[string]interface{}) (interface{}, error) {
+func (d *Ec2Driver) Detach_Elasticip(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.DisassociateAddressInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["association"], input, "AssociationId", awsstr)
+	err = setFieldWithType(params["association"], input, "AssociationId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2455,7 +2456,7 @@ func (d *Ec2Driver) Detach_Elasticip(params map[string]interface{}) (interface{}
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Create_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Create_Loadbalancer_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create loadbalancer: missing required params 'name'")
 	}
@@ -2469,35 +2470,35 @@ func (d *Elbv2Driver) Create_Loadbalancer_DryRun(params map[string]interface{}) 
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Create_Loadbalancer(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.CreateLoadBalancerInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	err = setFieldWithType(params["name"], input, "Name", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnets"], input, "Subnets", awsstringslice)
+	err = setFieldWithType(params["subnets"], input, "Subnets", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["iptype"]; ok {
-		err = setFieldWithType(params["iptype"], input, "IpAddressType", awsstr)
+		err = setFieldWithType(params["iptype"], input, "IpAddressType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["scheme"]; ok {
-		err = setFieldWithType(params["scheme"], input, "Scheme", awsstr)
+		err = setFieldWithType(params["scheme"], input, "Scheme", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["securitygroups"]; ok {
-		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice)
+		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2518,7 +2519,7 @@ func (d *Elbv2Driver) Create_Loadbalancer(params map[string]interface{}) (interf
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Delete_Loadbalancer_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Delete_Loadbalancer_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete loadbalancer: missing required params 'id'")
 	}
@@ -2528,12 +2529,12 @@ func (d *Elbv2Driver) Delete_Loadbalancer_DryRun(params map[string]interface{}) 
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Delete_Loadbalancer(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Delete_Loadbalancer(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.DeleteLoadBalancerInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "LoadBalancerArn", awsstr)
+	err = setFieldWithType(params["id"], input, "LoadBalancerArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2551,7 +2552,7 @@ func (d *Elbv2Driver) Delete_Loadbalancer(params map[string]interface{}) (interf
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Create_Listener_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Create_Listener_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["actiontype"]; !ok {
 		return nil, errors.New("create listener: missing required params 'actiontype'")
 	}
@@ -2577,41 +2578,41 @@ func (d *Elbv2Driver) Create_Listener_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Create_Listener(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Create_Listener(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.CreateListenerInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["actiontype"], input, "DefaultActions[0]Type", awsslicestruct)
+	err = setFieldWithType(params["actiontype"], input, "DefaultActions[0]Type", awsslicestruct, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["targetgroup"], input, "DefaultActions[0]TargetGroupArn", awsslicestruct)
+	err = setFieldWithType(params["targetgroup"], input, "DefaultActions[0]TargetGroupArn", awsslicestruct, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["loadbalancer"], input, "LoadBalancerArn", awsstr)
+	err = setFieldWithType(params["loadbalancer"], input, "LoadBalancerArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["port"], input, "Port", awsint64)
+	err = setFieldWithType(params["port"], input, "Port", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr)
+	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["certificate"]; ok {
-		err = setFieldWithType(params["certificate"], input, "Certificates[0]CertificateArn", awsslicestruct)
+		err = setFieldWithType(params["certificate"], input, "Certificates[0]CertificateArn", awsslicestruct, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["sslpolicy"]; ok {
-		err = setFieldWithType(params["sslpolicy"], input, "SslPolicy", awsstr)
+		err = setFieldWithType(params["sslpolicy"], input, "SslPolicy", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2632,7 +2633,7 @@ func (d *Elbv2Driver) Create_Listener(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Delete_Listener_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Delete_Listener_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete listener: missing required params 'id'")
 	}
@@ -2642,12 +2643,12 @@ func (d *Elbv2Driver) Delete_Listener_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Delete_Listener(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Delete_Listener(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.DeleteListenerInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "ListenerArn", awsstr)
+	err = setFieldWithType(params["id"], input, "ListenerArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2665,7 +2666,7 @@ func (d *Elbv2Driver) Delete_Listener(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Create_Targetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Create_Targetgroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create targetgroup: missing required params 'name'")
 	}
@@ -2687,73 +2688,73 @@ func (d *Elbv2Driver) Create_Targetgroup_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Create_Targetgroup(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Create_Targetgroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.CreateTargetGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	err = setFieldWithType(params["name"], input, "Name", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["port"], input, "Port", awsint64)
+	err = setFieldWithType(params["port"], input, "Port", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr)
+	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr)
+	err = setFieldWithType(params["vpc"], input, "VpcId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["healthcheckinterval"]; ok {
-		err = setFieldWithType(params["healthcheckinterval"], input, "HealthCheckIntervalSeconds", awsint64)
+		err = setFieldWithType(params["healthcheckinterval"], input, "HealthCheckIntervalSeconds", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheckpath"]; ok {
-		err = setFieldWithType(params["healthcheckpath"], input, "HealthCheckPath", awsstr)
+		err = setFieldWithType(params["healthcheckpath"], input, "HealthCheckPath", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheckport"]; ok {
-		err = setFieldWithType(params["healthcheckport"], input, "HealthCheckPort", awsstr)
+		err = setFieldWithType(params["healthcheckport"], input, "HealthCheckPort", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheckprotocol"]; ok {
-		err = setFieldWithType(params["healthcheckprotocol"], input, "HealthCheckProtocol", awsstr)
+		err = setFieldWithType(params["healthcheckprotocol"], input, "HealthCheckProtocol", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthchecktimeout"]; ok {
-		err = setFieldWithType(params["healthchecktimeout"], input, "HealthCheckTimeoutSeconds", awsint64)
+		err = setFieldWithType(params["healthchecktimeout"], input, "HealthCheckTimeoutSeconds", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthythreshold"]; ok {
-		err = setFieldWithType(params["healthythreshold"], input, "HealthyThresholdCount", awsint64)
+		err = setFieldWithType(params["healthythreshold"], input, "HealthyThresholdCount", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["unhealthythreshold"]; ok {
-		err = setFieldWithType(params["unhealthythreshold"], input, "UnhealthyThresholdCount", awsint64)
+		err = setFieldWithType(params["unhealthythreshold"], input, "UnhealthyThresholdCount", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["matcher"]; ok {
-		err = setFieldWithType(params["matcher"], input, "Matcher.HttpCode", awsstr)
+		err = setFieldWithType(params["matcher"], input, "Matcher.HttpCode", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2774,7 +2775,7 @@ func (d *Elbv2Driver) Create_Targetgroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Delete_Targetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Delete_Targetgroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete targetgroup: missing required params 'id'")
 	}
@@ -2784,12 +2785,12 @@ func (d *Elbv2Driver) Delete_Targetgroup_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Delete_Targetgroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.DeleteTargetGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "TargetGroupArn", awsstr)
+	err = setFieldWithType(params["id"], input, "TargetGroupArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2807,7 +2808,7 @@ func (d *Elbv2Driver) Delete_Targetgroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Attach_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Attach_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["targetgroup"]; !ok {
 		return nil, errors.New("attach instance: missing required params 'targetgroup'")
 	}
@@ -2821,23 +2822,23 @@ func (d *Elbv2Driver) Attach_Instance_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Attach_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Attach_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.RegisterTargetsInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["targetgroup"], input, "TargetGroupArn", awsstr)
+	err = setFieldWithType(params["targetgroup"], input, "TargetGroupArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "Targets[0]Id", awsslicestruct)
+	err = setFieldWithType(params["id"], input, "Targets[0]Id", awsslicestruct, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["port"]; ok {
-		err = setFieldWithType(params["port"], input, "Targets[0]Port", awsslicestructint64)
+		err = setFieldWithType(params["port"], input, "Targets[0]Port", awsslicestructint64, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2856,7 +2857,7 @@ func (d *Elbv2Driver) Attach_Instance(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Detach_Instance_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Detach_Instance_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["targetgroup"]; !ok {
 		return nil, errors.New("detach instance: missing required params 'targetgroup'")
 	}
@@ -2870,16 +2871,16 @@ func (d *Elbv2Driver) Detach_Instance_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *Elbv2Driver) Detach_Instance(params map[string]interface{}) (interface{}, error) {
+func (d *Elbv2Driver) Detach_Instance(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &elbv2.DeregisterTargetsInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["targetgroup"], input, "TargetGroupArn", awsstr)
+	err = setFieldWithType(params["targetgroup"], input, "TargetGroupArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "Targets[0]Id", awsslicestruct)
+	err = setFieldWithType(params["id"], input, "Targets[0]Id", awsslicestruct, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -2897,7 +2898,7 @@ func (d *Elbv2Driver) Detach_Instance(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Launchconfiguration_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Launchconfiguration_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["image"]; !ok {
 		return nil, errors.New("create launchconfiguration: missing required params 'image'")
 	}
@@ -2915,57 +2916,57 @@ func (d *AutoscalingDriver) Create_Launchconfiguration_DryRun(params map[string]
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Launchconfiguration(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Launchconfiguration(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.CreateLaunchConfigurationInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["image"], input, "ImageId", awsstr)
+	err = setFieldWithType(params["image"], input, "ImageId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["type"], input, "InstanceType", awsstr)
+	err = setFieldWithType(params["type"], input, "InstanceType", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "LaunchConfigurationName", awsstr)
+	err = setFieldWithType(params["name"], input, "LaunchConfigurationName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["public"]; ok {
-		err = setFieldWithType(params["public"], input, "AssociatePublicIpAddress", awsbool)
+		err = setFieldWithType(params["public"], input, "AssociatePublicIpAddress", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["keypair"]; ok {
-		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr)
+		err = setFieldWithType(params["keypair"], input, "KeyName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["userdata"]; ok {
-		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64)
+		err = setFieldWithType(params["userdata"], input, "UserData", awsfiletobase64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["securitygroups"]; ok {
-		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice)
+		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "IamInstanceProfile", awsstr)
+		err = setFieldWithType(params["role"], input, "IamInstanceProfile", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["spotprice"]; ok {
-		err = setFieldWithType(params["spotprice"], input, "SpotPrice", awsstr)
+		err = setFieldWithType(params["spotprice"], input, "SpotPrice", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -2986,7 +2987,7 @@ func (d *AutoscalingDriver) Create_Launchconfiguration(params map[string]interfa
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Launchconfiguration_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Launchconfiguration_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete launchconfiguration: missing required params 'name'")
 	}
@@ -2996,12 +2997,12 @@ func (d *AutoscalingDriver) Delete_Launchconfiguration_DryRun(params map[string]
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Launchconfiguration(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Launchconfiguration(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.DeleteLaunchConfigurationInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "LaunchConfigurationName", awsstr)
+	err = setFieldWithType(params["name"], input, "LaunchConfigurationName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3019,7 +3020,7 @@ func (d *AutoscalingDriver) Delete_Launchconfiguration(params map[string]interfa
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Scalinggroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create scalinggroup: missing required params 'name'")
 	}
@@ -3045,65 +3046,65 @@ func (d *AutoscalingDriver) Create_Scalinggroup_DryRun(params map[string]interfa
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Scalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Scalinggroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.CreateAutoScalingGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["launchconfiguration"], input, "LaunchConfigurationName", awsstr)
+	err = setFieldWithType(params["launchconfiguration"], input, "LaunchConfigurationName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["max-size"], input, "MaxSize", awsint64)
+	err = setFieldWithType(params["max-size"], input, "MaxSize", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["min-size"], input, "MinSize", awsint64)
+	err = setFieldWithType(params["min-size"], input, "MinSize", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr)
+	err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["cooldown"]; ok {
-		err = setFieldWithType(params["cooldown"], input, "DefaultCooldown", awsint64)
+		err = setFieldWithType(params["cooldown"], input, "DefaultCooldown", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["desired-capacity"]; ok {
-		err = setFieldWithType(params["desired-capacity"], input, "DesiredCapacity", awsint64)
+		err = setFieldWithType(params["desired-capacity"], input, "DesiredCapacity", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheck-grace-period"]; ok {
-		err = setFieldWithType(params["healthcheck-grace-period"], input, "HealthCheckGracePeriod", awsint64)
+		err = setFieldWithType(params["healthcheck-grace-period"], input, "HealthCheckGracePeriod", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheck-type"]; ok {
-		err = setFieldWithType(params["healthcheck-type"], input, "HealthCheckType", awsstr)
+		err = setFieldWithType(params["healthcheck-type"], input, "HealthCheckType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["new-instances-protected"]; ok {
-		err = setFieldWithType(params["new-instances-protected"], input, "NewInstancesProtectedFromScaleIn", awsbool)
+		err = setFieldWithType(params["new-instances-protected"], input, "NewInstancesProtectedFromScaleIn", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["targetgroups"]; ok {
-		err = setFieldWithType(params["targetgroups"], input, "TargetGroupARNs", awsstringslice)
+		err = setFieldWithType(params["targetgroups"], input, "TargetGroupARNs", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3124,7 +3125,7 @@ func (d *AutoscalingDriver) Create_Scalinggroup(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Update_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Update_Scalinggroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("update scalinggroup: missing required params 'name'")
 	}
@@ -3134,67 +3135,67 @@ func (d *AutoscalingDriver) Update_Scalinggroup_DryRun(params map[string]interfa
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Update_Scalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Update_Scalinggroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.UpdateAutoScalingGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["cooldown"]; ok {
-		err = setFieldWithType(params["cooldown"], input, "DefaultCooldown", awsint64)
+		err = setFieldWithType(params["cooldown"], input, "DefaultCooldown", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["desired-capacity"]; ok {
-		err = setFieldWithType(params["desired-capacity"], input, "DesiredCapacity", awsint64)
+		err = setFieldWithType(params["desired-capacity"], input, "DesiredCapacity", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheck-grace-period"]; ok {
-		err = setFieldWithType(params["healthcheck-grace-period"], input, "HealthCheckGracePeriod", awsint64)
+		err = setFieldWithType(params["healthcheck-grace-period"], input, "HealthCheckGracePeriod", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["healthcheck-type"]; ok {
-		err = setFieldWithType(params["healthcheck-type"], input, "HealthCheckType", awsstr)
+		err = setFieldWithType(params["healthcheck-type"], input, "HealthCheckType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["launchconfiguration"]; ok {
-		err = setFieldWithType(params["launchconfiguration"], input, "LaunchConfigurationName", awsstr)
+		err = setFieldWithType(params["launchconfiguration"], input, "LaunchConfigurationName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["max-size"]; ok {
-		err = setFieldWithType(params["max-size"], input, "MaxSize", awsint64)
+		err = setFieldWithType(params["max-size"], input, "MaxSize", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["min-size"]; ok {
-		err = setFieldWithType(params["min-size"], input, "MinSize", awsint64)
+		err = setFieldWithType(params["min-size"], input, "MinSize", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["new-instances-protected"]; ok {
-		err = setFieldWithType(params["new-instances-protected"], input, "NewInstancesProtectedFromScaleIn", awsbool)
+		err = setFieldWithType(params["new-instances-protected"], input, "NewInstancesProtectedFromScaleIn", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["subnets"]; ok {
-		err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr)
+		err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3213,7 +3214,7 @@ func (d *AutoscalingDriver) Update_Scalinggroup(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Scalinggroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Scalinggroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete scalinggroup: missing required params 'name'")
 	}
@@ -3223,19 +3224,19 @@ func (d *AutoscalingDriver) Delete_Scalinggroup_DryRun(params map[string]interfa
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Scalinggroup(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Scalinggroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.DeleteAutoScalingGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "AutoScalingGroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["force"]; ok {
-		err = setFieldWithType(params["force"], input, "ForceDelete", awsbool)
+		err = setFieldWithType(params["force"], input, "ForceDelete", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3254,7 +3255,7 @@ func (d *AutoscalingDriver) Delete_Scalinggroup(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Scalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Scalingpolicy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["adjustment-type"]; !ok {
 		return nil, errors.New("create scalingpolicy: missing required params 'adjustment-type'")
 	}
@@ -3276,37 +3277,37 @@ func (d *AutoscalingDriver) Create_Scalingpolicy_DryRun(params map[string]interf
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Create_Scalingpolicy(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Create_Scalingpolicy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.PutScalingPolicyInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["adjustment-type"], input, "AdjustmentType", awsstr)
+	err = setFieldWithType(params["adjustment-type"], input, "AdjustmentType", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["scalinggroup"], input, "AutoScalingGroupName", awsstr)
+	err = setFieldWithType(params["scalinggroup"], input, "AutoScalingGroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "PolicyName", awsstr)
+	err = setFieldWithType(params["name"], input, "PolicyName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["adjustment-scaling"], input, "ScalingAdjustment", awsint64)
+	err = setFieldWithType(params["adjustment-scaling"], input, "ScalingAdjustment", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["cooldown"]; ok {
-		err = setFieldWithType(params["cooldown"], input, "Cooldown", awsint64)
+		err = setFieldWithType(params["cooldown"], input, "Cooldown", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["adjustment-magnitude"]; ok {
-		err = setFieldWithType(params["adjustment-magnitude"], input, "MinAdjustmentMagnitude", awsint64)
+		err = setFieldWithType(params["adjustment-magnitude"], input, "MinAdjustmentMagnitude", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3327,7 +3328,7 @@ func (d *AutoscalingDriver) Create_Scalingpolicy(params map[string]interface{}) 
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Scalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Scalingpolicy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete scalingpolicy: missing required params 'id'")
 	}
@@ -3337,12 +3338,12 @@ func (d *AutoscalingDriver) Delete_Scalingpolicy_DryRun(params map[string]interf
 }
 
 // This function was auto generated
-func (d *AutoscalingDriver) Delete_Scalingpolicy(params map[string]interface{}) (interface{}, error) {
+func (d *AutoscalingDriver) Delete_Scalingpolicy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &autoscaling.DeletePolicyInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "PolicyName", awsstr)
+	err = setFieldWithType(params["id"], input, "PolicyName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3360,7 +3361,7 @@ func (d *AutoscalingDriver) Delete_Scalingpolicy(params map[string]interface{}) 
 }
 
 // This function was auto generated
-func (d *RdsDriver) Create_Database_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Create_Database_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["type"]; !ok {
 		return nil, errors.New("create database: missing required params 'type'")
 	}
@@ -3390,171 +3391,171 @@ func (d *RdsDriver) Create_Database_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Create_Database(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &rds.CreateDBInstanceInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["type"], input, "DBInstanceClass", awsstr)
+	err = setFieldWithType(params["type"], input, "DBInstanceClass", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["id"], input, "DBInstanceIdentifier", awsstr)
+	err = setFieldWithType(params["id"], input, "DBInstanceIdentifier", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["engine"], input, "Engine", awsstr)
+	err = setFieldWithType(params["engine"], input, "Engine", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["password"], input, "MasterUserPassword", awsstr)
+	err = setFieldWithType(params["password"], input, "MasterUserPassword", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["username"], input, "MasterUsername", awsstr)
+	err = setFieldWithType(params["username"], input, "MasterUsername", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["size"], input, "AllocatedStorage", awsint64)
+	err = setFieldWithType(params["size"], input, "AllocatedStorage", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["autoupgrade"]; ok {
-		err = setFieldWithType(params["autoupgrade"], input, "AutoMinorVersionUpgrade", awsbool)
+		err = setFieldWithType(params["autoupgrade"], input, "AutoMinorVersionUpgrade", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["availabilityzone"]; ok {
-		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr)
+		err = setFieldWithType(params["availabilityzone"], input, "AvailabilityZone", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["backupretention"]; ok {
-		err = setFieldWithType(params["backupretention"], input, "BackupRetentionPeriod", awsint64)
+		err = setFieldWithType(params["backupretention"], input, "BackupRetentionPeriod", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["cluster"]; ok {
-		err = setFieldWithType(params["cluster"], input, "DBClusterIdentifier", awsstr)
+		err = setFieldWithType(params["cluster"], input, "DBClusterIdentifier", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["dbname"]; ok {
-		err = setFieldWithType(params["dbname"], input, "DBName", awsstr)
+		err = setFieldWithType(params["dbname"], input, "DBName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["parametergroup"]; ok {
-		err = setFieldWithType(params["parametergroup"], input, "DBParameterGroupName", awsstr)
+		err = setFieldWithType(params["parametergroup"], input, "DBParameterGroupName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["dbsecuritygroups"]; ok {
-		err = setFieldWithType(params["dbsecuritygroups"], input, "DBSecurityGroups", awsstringslice)
+		err = setFieldWithType(params["dbsecuritygroups"], input, "DBSecurityGroups", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["subnetgroup"]; ok {
-		err = setFieldWithType(params["subnetgroup"], input, "DBSubnetGroupName", awsstr)
+		err = setFieldWithType(params["subnetgroup"], input, "DBSubnetGroupName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["domain"]; ok {
-		err = setFieldWithType(params["domain"], input, "Domain", awsstr)
+		err = setFieldWithType(params["domain"], input, "Domain", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["iamrole"]; ok {
-		err = setFieldWithType(params["iamrole"], input, "DomainIAMRoleName", awsstr)
+		err = setFieldWithType(params["iamrole"], input, "DomainIAMRoleName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["version"]; ok {
-		err = setFieldWithType(params["version"], input, "EngineVersion", awsstr)
+		err = setFieldWithType(params["version"], input, "EngineVersion", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["iops"]; ok {
-		err = setFieldWithType(params["iops"], input, "Iops", awsint64)
+		err = setFieldWithType(params["iops"], input, "Iops", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["license"]; ok {
-		err = setFieldWithType(params["license"], input, "LicenseModel", awsstr)
+		err = setFieldWithType(params["license"], input, "LicenseModel", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["multiaz"]; ok {
-		err = setFieldWithType(params["multiaz"], input, "MultiAZ", awsbool)
+		err = setFieldWithType(params["multiaz"], input, "MultiAZ", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["optiongroup"]; ok {
-		err = setFieldWithType(params["optiongroup"], input, "OptionGroupName", awsstr)
+		err = setFieldWithType(params["optiongroup"], input, "OptionGroupName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["port"]; ok {
-		err = setFieldWithType(params["port"], input, "Port", awsint64)
+		err = setFieldWithType(params["port"], input, "Port", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["backupwindow"]; ok {
-		err = setFieldWithType(params["backupwindow"], input, "PreferredBackupWindow", awsstr)
+		err = setFieldWithType(params["backupwindow"], input, "PreferredBackupWindow", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["maintenancewindow"]; ok {
-		err = setFieldWithType(params["maintenancewindow"], input, "PreferredMaintenanceWindow", awsstr)
+		err = setFieldWithType(params["maintenancewindow"], input, "PreferredMaintenanceWindow", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["public"]; ok {
-		err = setFieldWithType(params["public"], input, "PubliclyAccessible", awsbool)
+		err = setFieldWithType(params["public"], input, "PubliclyAccessible", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["encrypted"]; ok {
-		err = setFieldWithType(params["encrypted"], input, "StorageEncrypted", awsbool)
+		err = setFieldWithType(params["encrypted"], input, "StorageEncrypted", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["storagetype"]; ok {
-		err = setFieldWithType(params["storagetype"], input, "StorageType", awsstr)
+		err = setFieldWithType(params["storagetype"], input, "StorageType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["timezone"]; ok {
-		err = setFieldWithType(params["timezone"], input, "Timezone", awsstr)
+		err = setFieldWithType(params["timezone"], input, "Timezone", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["vpcsecuritygroups"]; ok {
-		err = setFieldWithType(params["vpcsecuritygroups"], input, "VpcSecurityGroupIds", awsstringslice)
+		err = setFieldWithType(params["vpcsecuritygroups"], input, "VpcSecurityGroupIds", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3575,7 +3576,7 @@ func (d *RdsDriver) Create_Database(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *RdsDriver) Delete_Database_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Delete_Database_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete database: missing required params 'id'")
 	}
@@ -3585,25 +3586,25 @@ func (d *RdsDriver) Delete_Database_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Delete_Database(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &rds.DeleteDBInstanceInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "DBInstanceIdentifier", awsstr)
+	err = setFieldWithType(params["id"], input, "DBInstanceIdentifier", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["skip-snapshot"]; ok {
-		err = setFieldWithType(params["skip-snapshot"], input, "SkipFinalSnapshot", awsbool)
+		err = setFieldWithType(params["skip-snapshot"], input, "SkipFinalSnapshot", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["snapshot"]; ok {
-		err = setFieldWithType(params["snapshot"], input, "FinalDBSnapshotIdentifier", awsbool)
+		err = setFieldWithType(params["snapshot"], input, "FinalDBSnapshotIdentifier", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3622,7 +3623,7 @@ func (d *RdsDriver) Delete_Database(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *RdsDriver) Create_Dbsubnetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Create_Dbsubnetgroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["description"]; !ok {
 		return nil, errors.New("create dbsubnetgroup: missing required params 'description'")
 	}
@@ -3640,20 +3641,20 @@ func (d *RdsDriver) Create_Dbsubnetgroup_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *RdsDriver) Create_Dbsubnetgroup(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Create_Dbsubnetgroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &rds.CreateDBSubnetGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["description"], input, "DBSubnetGroupDescription", awsstr)
+	err = setFieldWithType(params["description"], input, "DBSubnetGroupDescription", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "DBSubnetGroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "DBSubnetGroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnets"], input, "SubnetIds", awsstringslice)
+	err = setFieldWithType(params["subnets"], input, "SubnetIds", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3673,7 +3674,7 @@ func (d *RdsDriver) Create_Dbsubnetgroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *RdsDriver) Delete_Dbsubnetgroup_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Delete_Dbsubnetgroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete dbsubnetgroup: missing required params 'name'")
 	}
@@ -3683,12 +3684,12 @@ func (d *RdsDriver) Delete_Dbsubnetgroup_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interface{}, error) {
+func (d *RdsDriver) Delete_Dbsubnetgroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &rds.DeleteDBSubnetGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "DBSubnetGroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "DBSubnetGroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3706,7 +3707,7 @@ func (d *RdsDriver) Delete_Dbsubnetgroup(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *EcrDriver) Create_Repository_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Create_Repository_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create repository: missing required params 'name'")
 	}
@@ -3716,12 +3717,12 @@ func (d *EcrDriver) Create_Repository_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *EcrDriver) Create_Repository(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Create_Repository(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ecr.CreateRepositoryInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "RepositoryName", awsstr)
+	err = setFieldWithType(params["name"], input, "RepositoryName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3741,7 +3742,7 @@ func (d *EcrDriver) Create_Repository(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *EcrDriver) Delete_Repository_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Delete_Repository_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete repository: missing required params 'name'")
 	}
@@ -3751,25 +3752,25 @@ func (d *EcrDriver) Delete_Repository_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *EcrDriver) Delete_Repository(params map[string]interface{}) (interface{}, error) {
+func (d *EcrDriver) Delete_Repository(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ecr.DeleteRepositoryInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "RepositoryName", awsstr)
+	err = setFieldWithType(params["name"], input, "RepositoryName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["force"]; ok {
-		err = setFieldWithType(params["force"], input, "Force", awsbool)
+		err = setFieldWithType(params["force"], input, "Force", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["account"]; ok {
-		err = setFieldWithType(params["account"], input, "RegistryId", awsstr)
+		err = setFieldWithType(params["account"], input, "RegistryId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3788,7 +3789,7 @@ func (d *EcrDriver) Delete_Repository(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *EcsDriver) Create_Containercluster_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Create_Containercluster_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create containercluster: missing required params 'name'")
 	}
@@ -3798,12 +3799,12 @@ func (d *EcsDriver) Create_Containercluster_DryRun(params map[string]interface{}
 }
 
 // This function was auto generated
-func (d *EcsDriver) Create_Containercluster(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Create_Containercluster(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ecs.CreateClusterInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "ClusterName", awsstr)
+	err = setFieldWithType(params["name"], input, "ClusterName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3823,7 +3824,7 @@ func (d *EcsDriver) Create_Containercluster(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *EcsDriver) Delete_Containercluster_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Delete_Containercluster_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete containercluster: missing required params 'id'")
 	}
@@ -3833,12 +3834,12 @@ func (d *EcsDriver) Delete_Containercluster_DryRun(params map[string]interface{}
 }
 
 // This function was auto generated
-func (d *EcsDriver) Delete_Containercluster(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Delete_Containercluster(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ecs.DeleteClusterInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "Cluster", awsstr)
+	err = setFieldWithType(params["id"], input, "Cluster", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3856,7 +3857,7 @@ func (d *EcsDriver) Delete_Containercluster(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *EcsDriver) Update_Containertask_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Update_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["cluster"]; !ok {
 		return nil, errors.New("update containertask: missing required params 'cluster'")
 	}
@@ -3870,29 +3871,29 @@ func (d *EcsDriver) Update_Containertask_DryRun(params map[string]interface{}) (
 }
 
 // This function was auto generated
-func (d *EcsDriver) Update_Containertask(params map[string]interface{}) (interface{}, error) {
+func (d *EcsDriver) Update_Containertask(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ecs.UpdateServiceInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["cluster"], input, "Cluster", awsstr)
+	err = setFieldWithType(params["cluster"], input, "Cluster", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["deployment-name"], input, "Service", awsstr)
+	err = setFieldWithType(params["deployment-name"], input, "Service", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["desired-count"]; ok {
-		err = setFieldWithType(params["desired-count"], input, "DesiredCount", awsint64)
+		err = setFieldWithType(params["desired-count"], input, "DesiredCount", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["name"]; ok {
-		err = setFieldWithType(params["name"], input, "TaskDefinition", awsstr)
+		err = setFieldWithType(params["name"], input, "TaskDefinition", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -3911,7 +3912,7 @@ func (d *EcsDriver) Update_Containertask(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_User_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_User_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create user: missing required params 'name'")
 	}
@@ -3921,12 +3922,12 @@ func (d *IamDriver) Create_User_DryRun(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_User(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_User(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateUserInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	err = setFieldWithType(params["name"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3946,7 +3947,7 @@ func (d *IamDriver) Create_User(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_User_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_User_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete user: missing required params 'name'")
 	}
@@ -3956,12 +3957,12 @@ func (d *IamDriver) Delete_User_DryRun(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_User(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_User(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteUserInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	err = setFieldWithType(params["name"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3979,7 +3980,7 @@ func (d *IamDriver) Delete_User(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
-func (d *IamDriver) Attach_User_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_User_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["group"]; !ok {
 		return nil, errors.New("attach user: missing required params 'group'")
 	}
@@ -3993,16 +3994,16 @@ func (d *IamDriver) Attach_User_DryRun(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *IamDriver) Attach_User(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_User(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.AddUserToGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["group"], input, "GroupName", awsstr)
+	err = setFieldWithType(params["group"], input, "GroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	err = setFieldWithType(params["name"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4020,7 +4021,7 @@ func (d *IamDriver) Attach_User(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
-func (d *IamDriver) Detach_User_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_User_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["group"]; !ok {
 		return nil, errors.New("detach user: missing required params 'group'")
 	}
@@ -4034,16 +4035,16 @@ func (d *IamDriver) Detach_User_DryRun(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *IamDriver) Detach_User(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_User(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.RemoveUserFromGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["group"], input, "GroupName", awsstr)
+	err = setFieldWithType(params["group"], input, "GroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "UserName", awsstr)
+	err = setFieldWithType(params["name"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4061,7 +4062,7 @@ func (d *IamDriver) Detach_User(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Accesskey_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Accesskey_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete accesskey: missing required params 'id'")
 	}
@@ -4071,19 +4072,19 @@ func (d *IamDriver) Delete_Accesskey_DryRun(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Accesskey(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Accesskey(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteAccessKeyInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "AccessKeyId", awsstr)
+	err = setFieldWithType(params["id"], input, "AccessKeyId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["user"]; ok {
-		err = setFieldWithType(params["user"], input, "UserName", awsstr)
+		err = setFieldWithType(params["user"], input, "UserName", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4102,7 +4103,7 @@ func (d *IamDriver) Delete_Accesskey(params map[string]interface{}) (interface{}
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_Loginprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Loginprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["username"]; !ok {
 		return nil, errors.New("create loginprofile: missing required params 'username'")
 	}
@@ -4116,23 +4117,23 @@ func (d *IamDriver) Create_Loginprofile_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_Loginprofile(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Loginprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateLoginProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["username"], input, "UserName", awsstr)
+	err = setFieldWithType(params["username"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["password"], input, "Password", awsstr)
+	err = setFieldWithType(params["password"], input, "Password", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["password-reset"]; ok {
-		err = setFieldWithType(params["password-reset"], input, "PasswordResetRequired", awsbool)
+		err = setFieldWithType(params["password-reset"], input, "PasswordResetRequired", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4153,7 +4154,7 @@ func (d *IamDriver) Create_Loginprofile(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *IamDriver) Update_Loginprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Update_Loginprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["username"]; !ok {
 		return nil, errors.New("update loginprofile: missing required params 'username'")
 	}
@@ -4167,23 +4168,23 @@ func (d *IamDriver) Update_Loginprofile_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *IamDriver) Update_Loginprofile(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Update_Loginprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.UpdateLoginProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["username"], input, "UserName", awsstr)
+	err = setFieldWithType(params["username"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["password"], input, "Password", awsstr)
+	err = setFieldWithType(params["password"], input, "Password", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["password-reset"]; ok {
-		err = setFieldWithType(params["password-reset"], input, "PasswordResetRequired", awsbool)
+		err = setFieldWithType(params["password-reset"], input, "PasswordResetRequired", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4202,7 +4203,7 @@ func (d *IamDriver) Update_Loginprofile(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Loginprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Loginprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["username"]; !ok {
 		return nil, errors.New("delete loginprofile: missing required params 'username'")
 	}
@@ -4212,12 +4213,12 @@ func (d *IamDriver) Delete_Loginprofile_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Loginprofile(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Loginprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteLoginProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["username"], input, "UserName", awsstr)
+	err = setFieldWithType(params["username"], input, "UserName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4235,7 +4236,7 @@ func (d *IamDriver) Delete_Loginprofile(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_Group_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Group_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create group: missing required params 'name'")
 	}
@@ -4245,12 +4246,12 @@ func (d *IamDriver) Create_Group_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_Group(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Group(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4270,7 +4271,7 @@ func (d *IamDriver) Create_Group(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Group_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Group_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete group: missing required params 'name'")
 	}
@@ -4280,12 +4281,12 @@ func (d *IamDriver) Delete_Group_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Group(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Group(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteGroupInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "GroupName", awsstr)
+	err = setFieldWithType(params["name"], input, "GroupName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4303,7 +4304,7 @@ func (d *IamDriver) Delete_Group(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *IamDriver) Attach_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_Role_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["instanceprofile"]; !ok {
 		return nil, errors.New("attach role: missing required params 'instanceprofile'")
 	}
@@ -4317,16 +4318,16 @@ func (d *IamDriver) Attach_Role_DryRun(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *IamDriver) Attach_Role(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Attach_Role(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.AddRoleToInstanceProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["instanceprofile"], input, "InstanceProfileName", awsstr)
+	err = setFieldWithType(params["instanceprofile"], input, "InstanceProfileName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "RoleName", awsstr)
+	err = setFieldWithType(params["name"], input, "RoleName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4344,7 +4345,7 @@ func (d *IamDriver) Attach_Role(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
-func (d *IamDriver) Detach_Role_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_Role_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["instanceprofile"]; !ok {
 		return nil, errors.New("detach role: missing required params 'instanceprofile'")
 	}
@@ -4358,16 +4359,16 @@ func (d *IamDriver) Detach_Role_DryRun(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *IamDriver) Detach_Role(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Detach_Role(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.RemoveRoleFromInstanceProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["instanceprofile"], input, "InstanceProfileName", awsstr)
+	err = setFieldWithType(params["instanceprofile"], input, "InstanceProfileName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "RoleName", awsstr)
+	err = setFieldWithType(params["name"], input, "RoleName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4385,7 +4386,7 @@ func (d *IamDriver) Detach_Role(params map[string]interface{}) (interface{}, err
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_Instanceprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Instanceprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create instanceprofile: missing required params 'name'")
 	}
@@ -4395,12 +4396,12 @@ func (d *IamDriver) Create_Instanceprofile_DryRun(params map[string]interface{})
 }
 
 // This function was auto generated
-func (d *IamDriver) Create_Instanceprofile(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Create_Instanceprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.CreateInstanceProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "InstanceProfileName", awsstr)
+	err = setFieldWithType(params["name"], input, "InstanceProfileName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4418,7 +4419,7 @@ func (d *IamDriver) Create_Instanceprofile(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Instanceprofile_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Instanceprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete instanceprofile: missing required params 'name'")
 	}
@@ -4428,12 +4429,12 @@ func (d *IamDriver) Delete_Instanceprofile_DryRun(params map[string]interface{})
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Instanceprofile(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Instanceprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeleteInstanceProfileInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "InstanceProfileName", awsstr)
+	err = setFieldWithType(params["name"], input, "InstanceProfileName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4451,7 +4452,7 @@ func (d *IamDriver) Delete_Instanceprofile(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Policy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["arn"]; !ok {
 		return nil, errors.New("delete policy: missing required params 'arn'")
 	}
@@ -4461,12 +4462,12 @@ func (d *IamDriver) Delete_Policy_DryRun(params map[string]interface{}) (interfa
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Policy(params map[string]interface{}) (interface{}, error) {
+func (d *IamDriver) Delete_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &iam.DeletePolicyInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["arn"], input, "PolicyArn", awsstr)
+	err = setFieldWithType(params["arn"], input, "PolicyArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4484,7 +4485,7 @@ func (d *IamDriver) Delete_Policy(params map[string]interface{}) (interface{}, e
 }
 
 // This function was auto generated
-func (d *S3Driver) Create_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_Bucket_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create bucket: missing required params 'name'")
 	}
@@ -4494,19 +4495,19 @@ func (d *S3Driver) Create_Bucket_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *S3Driver) Create_Bucket(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Create_Bucket(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &s3.CreateBucketInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Bucket", awsstr)
+	err = setFieldWithType(params["name"], input, "Bucket", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["acl"]; ok {
-		err = setFieldWithType(params["acl"], input, "ACL", awsstr)
+		err = setFieldWithType(params["acl"], input, "ACL", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4527,7 +4528,7 @@ func (d *S3Driver) Create_Bucket(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *S3Driver) Delete_Bucket_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Delete_Bucket_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete bucket: missing required params 'name'")
 	}
@@ -4537,12 +4538,12 @@ func (d *S3Driver) Delete_Bucket_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *S3Driver) Delete_Bucket(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Delete_Bucket(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &s3.DeleteBucketInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Bucket", awsstr)
+	err = setFieldWithType(params["name"], input, "Bucket", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4560,7 +4561,7 @@ func (d *S3Driver) Delete_Bucket(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *S3Driver) Update_S3object_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Update_S3object_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
 		return nil, errors.New("update s3object: missing required params 'bucket'")
 	}
@@ -4578,27 +4579,27 @@ func (d *S3Driver) Update_S3object_DryRun(params map[string]interface{}) (interf
 }
 
 // This function was auto generated
-func (d *S3Driver) Update_S3object(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Update_S3object(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &s3.PutObjectAclInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr)
+	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "Key", awsstr)
+	err = setFieldWithType(params["name"], input, "Key", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["acl"], input, "ACL", awsstr)
+	err = setFieldWithType(params["acl"], input, "ACL", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["version"]; ok {
-		err = setFieldWithType(params["version"], input, "VersionId", awsstr)
+		err = setFieldWithType(params["version"], input, "VersionId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4617,7 +4618,7 @@ func (d *S3Driver) Update_S3object(params map[string]interface{}) (interface{}, 
 }
 
 // This function was auto generated
-func (d *S3Driver) Delete_S3object_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Delete_S3object_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["bucket"]; !ok {
 		return nil, errors.New("delete s3object: missing required params 'bucket'")
 	}
@@ -4631,16 +4632,16 @@ func (d *S3Driver) Delete_S3object_DryRun(params map[string]interface{}) (interf
 }
 
 // This function was auto generated
-func (d *S3Driver) Delete_S3object(params map[string]interface{}) (interface{}, error) {
+func (d *S3Driver) Delete_S3object(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &s3.DeleteObjectInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr)
+	err = setFieldWithType(params["bucket"], input, "Bucket", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "Key", awsstr)
+	err = setFieldWithType(params["name"], input, "Key", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4658,7 +4659,7 @@ func (d *S3Driver) Delete_S3object(params map[string]interface{}) (interface{}, 
 }
 
 // This function was auto generated
-func (d *SnsDriver) Create_Topic_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Create_Topic_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create topic: missing required params 'name'")
 	}
@@ -4668,12 +4669,12 @@ func (d *SnsDriver) Create_Topic_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *SnsDriver) Create_Topic(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Create_Topic(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &sns.CreateTopicInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	err = setFieldWithType(params["name"], input, "Name", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4693,7 +4694,7 @@ func (d *SnsDriver) Create_Topic(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *SnsDriver) Delete_Topic_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Delete_Topic_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete topic: missing required params 'id'")
 	}
@@ -4703,12 +4704,12 @@ func (d *SnsDriver) Delete_Topic_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *SnsDriver) Delete_Topic(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Delete_Topic(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &sns.DeleteTopicInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "TopicArn", awsstr)
+	err = setFieldWithType(params["id"], input, "TopicArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4726,7 +4727,7 @@ func (d *SnsDriver) Delete_Topic(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *SnsDriver) Create_Subscription_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Create_Subscription_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["topic"]; !ok {
 		return nil, errors.New("create subscription: missing required params 'topic'")
 	}
@@ -4744,20 +4745,20 @@ func (d *SnsDriver) Create_Subscription_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *SnsDriver) Create_Subscription(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Create_Subscription(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &sns.SubscribeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["topic"], input, "TopicArn", awsstr)
+	err = setFieldWithType(params["topic"], input, "TopicArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["endpoint"], input, "Endpoint", awsstr)
+	err = setFieldWithType(params["endpoint"], input, "Endpoint", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr)
+	err = setFieldWithType(params["protocol"], input, "Protocol", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4777,7 +4778,7 @@ func (d *SnsDriver) Create_Subscription(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *SnsDriver) Delete_Subscription_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Delete_Subscription_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete subscription: missing required params 'id'")
 	}
@@ -4787,12 +4788,12 @@ func (d *SnsDriver) Delete_Subscription_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *SnsDriver) Delete_Subscription(params map[string]interface{}) (interface{}, error) {
+func (d *SnsDriver) Delete_Subscription(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &sns.UnsubscribeInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "SubscriptionArn", awsstr)
+	err = setFieldWithType(params["id"], input, "SubscriptionArn", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4810,7 +4811,7 @@ func (d *SnsDriver) Delete_Subscription(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *SqsDriver) Create_Queue_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *SqsDriver) Create_Queue_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create queue: missing required params 'name'")
 	}
@@ -4820,55 +4821,55 @@ func (d *SqsDriver) Create_Queue_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *SqsDriver) Create_Queue(params map[string]interface{}) (interface{}, error) {
+func (d *SqsDriver) Create_Queue(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &sqs.CreateQueueInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "QueueName", awsstr)
+	err = setFieldWithType(params["name"], input, "QueueName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["delay"]; ok {
-		err = setFieldWithType(params["delay"], input, "Attributes[DelaySeconds]", awsstringpointermap)
+		err = setFieldWithType(params["delay"], input, "Attributes[DelaySeconds]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["max-msg-size"]; ok {
-		err = setFieldWithType(params["max-msg-size"], input, "Attributes[MaximumMessageSize]", awsstringpointermap)
+		err = setFieldWithType(params["max-msg-size"], input, "Attributes[MaximumMessageSize]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["retention-period"]; ok {
-		err = setFieldWithType(params["retention-period"], input, "Attributes[MessageRetentionPeriod]", awsstringpointermap)
+		err = setFieldWithType(params["retention-period"], input, "Attributes[MessageRetentionPeriod]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["policy"]; ok {
-		err = setFieldWithType(params["policy"], input, "Attributes[Policy]", awsstringpointermap)
+		err = setFieldWithType(params["policy"], input, "Attributes[Policy]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["msg-wait"]; ok {
-		err = setFieldWithType(params["msg-wait"], input, "Attributes[ReceiveMessageWaitTimeSeconds]", awsstringpointermap)
+		err = setFieldWithType(params["msg-wait"], input, "Attributes[ReceiveMessageWaitTimeSeconds]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["redrive-policy"]; ok {
-		err = setFieldWithType(params["redrive-policy"], input, "Attributes[RedrivePolicy]", awsstringpointermap)
+		err = setFieldWithType(params["redrive-policy"], input, "Attributes[RedrivePolicy]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["visibility-timeout"]; ok {
-		err = setFieldWithType(params["visibility-timeout"], input, "Attributes[VisibilityTimeout]", awsstringpointermap)
+		err = setFieldWithType(params["visibility-timeout"], input, "Attributes[VisibilityTimeout]", awsstringpointermap, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4889,7 +4890,7 @@ func (d *SqsDriver) Create_Queue(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *SqsDriver) Delete_Queue_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *SqsDriver) Delete_Queue_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["url"]; !ok {
 		return nil, errors.New("delete queue: missing required params 'url'")
 	}
@@ -4899,12 +4900,12 @@ func (d *SqsDriver) Delete_Queue_DryRun(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *SqsDriver) Delete_Queue(params map[string]interface{}) (interface{}, error) {
+func (d *SqsDriver) Delete_Queue(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &sqs.DeleteQueueInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["url"], input, "QueueUrl", awsstr)
+	err = setFieldWithType(params["url"], input, "QueueUrl", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -4922,7 +4923,7 @@ func (d *SqsDriver) Delete_Queue(params map[string]interface{}) (interface{}, er
 }
 
 // This function was auto generated
-func (d *Route53Driver) Create_Zone_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Create_Zone_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["callerreference"]; !ok {
 		return nil, errors.New("create zone: missing required params 'callerreference'")
 	}
@@ -4936,47 +4937,47 @@ func (d *Route53Driver) Create_Zone_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Route53Driver) Create_Zone(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Create_Zone(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &route53.CreateHostedZoneInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["callerreference"], input, "CallerReference", awsstr)
+	err = setFieldWithType(params["callerreference"], input, "CallerReference", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["name"], input, "Name", awsstr)
+	err = setFieldWithType(params["name"], input, "Name", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["delegationsetid"]; ok {
-		err = setFieldWithType(params["delegationsetid"], input, "DelegationSetId", awsstr)
+		err = setFieldWithType(params["delegationsetid"], input, "DelegationSetId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["comment"]; ok {
-		err = setFieldWithType(params["comment"], input, "HostedZoneConfig.Comment", awsstr)
+		err = setFieldWithType(params["comment"], input, "HostedZoneConfig.Comment", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["isprivate"]; ok {
-		err = setFieldWithType(params["isprivate"], input, "HostedZoneConfig.PrivateZone", awsbool)
+		err = setFieldWithType(params["isprivate"], input, "HostedZoneConfig.PrivateZone", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["vpcid"]; ok {
-		err = setFieldWithType(params["vpcid"], input, "VPC.VPCId", awsstr)
+		err = setFieldWithType(params["vpcid"], input, "VPC.VPCId", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["vpcregion"]; ok {
-		err = setFieldWithType(params["vpcregion"], input, "VPC.VPCRegion", awsstr)
+		err = setFieldWithType(params["vpcregion"], input, "VPC.VPCRegion", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -4997,7 +4998,7 @@ func (d *Route53Driver) Create_Zone(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *Route53Driver) Delete_Zone_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Delete_Zone_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete zone: missing required params 'id'")
 	}
@@ -5007,12 +5008,12 @@ func (d *Route53Driver) Delete_Zone_DryRun(params map[string]interface{}) (inter
 }
 
 // This function was auto generated
-func (d *Route53Driver) Delete_Zone(params map[string]interface{}) (interface{}, error) {
+func (d *Route53Driver) Delete_Zone(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &route53.DeleteHostedZoneInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "Id", awsstr)
+	err = setFieldWithType(params["id"], input, "Id", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -5030,7 +5031,7 @@ func (d *Route53Driver) Delete_Zone(params map[string]interface{}) (interface{},
 }
 
 // This function was auto generated
-func (d *LambdaDriver) Create_Function_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *LambdaDriver) Create_Function_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create function: missing required params 'name'")
 	}
@@ -5052,73 +5053,73 @@ func (d *LambdaDriver) Create_Function_DryRun(params map[string]interface{}) (in
 }
 
 // This function was auto generated
-func (d *LambdaDriver) Create_Function(params map[string]interface{}) (interface{}, error) {
+func (d *LambdaDriver) Create_Function(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &lambda.CreateFunctionInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "FunctionName", awsstr)
+	err = setFieldWithType(params["name"], input, "FunctionName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["handler"], input, "Handler", awsstr)
+	err = setFieldWithType(params["handler"], input, "Handler", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["role"], input, "Role", awsstr)
+	err = setFieldWithType(params["role"], input, "Role", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["runtime"], input, "Runtime", awsstr)
+	err = setFieldWithType(params["runtime"], input, "Runtime", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["bucket"]; ok {
-		err = setFieldWithType(params["bucket"], input, "Code.S3Bucket", awsstr)
+		err = setFieldWithType(params["bucket"], input, "Code.S3Bucket", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["object"]; ok {
-		err = setFieldWithType(params["object"], input, "Code.S3Key", awsstr)
+		err = setFieldWithType(params["object"], input, "Code.S3Key", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["objectversion"]; ok {
-		err = setFieldWithType(params["objectversion"], input, "Code.S3ObjectVersion", awsstr)
+		err = setFieldWithType(params["objectversion"], input, "Code.S3ObjectVersion", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["zipfile"]; ok {
-		err = setFieldWithType(params["zipfile"], input, "Code.ZipFile", awsfiletobyteslice)
+		err = setFieldWithType(params["zipfile"], input, "Code.ZipFile", awsfiletobyteslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "Description", awsstr)
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["memory"]; ok {
-		err = setFieldWithType(params["memory"], input, "MemorySize", awsint64)
+		err = setFieldWithType(params["memory"], input, "MemorySize", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["publish"]; ok {
-		err = setFieldWithType(params["publish"], input, "Publish", awsbool)
+		err = setFieldWithType(params["publish"], input, "Publish", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["timeout"]; ok {
-		err = setFieldWithType(params["timeout"], input, "Timeout", awsint64)
+		err = setFieldWithType(params["timeout"], input, "Timeout", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5139,7 +5140,7 @@ func (d *LambdaDriver) Create_Function(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *LambdaDriver) Delete_Function_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *LambdaDriver) Delete_Function_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete function: missing required params 'id'")
 	}
@@ -5149,19 +5150,19 @@ func (d *LambdaDriver) Delete_Function_DryRun(params map[string]interface{}) (in
 }
 
 // This function was auto generated
-func (d *LambdaDriver) Delete_Function(params map[string]interface{}) (interface{}, error) {
+func (d *LambdaDriver) Delete_Function(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &lambda.DeleteFunctionInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["id"], input, "FunctionName", awsstr)
+	err = setFieldWithType(params["id"], input, "FunctionName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["version"]; ok {
-		err = setFieldWithType(params["version"], input, "Qualifier", awsstr)
+		err = setFieldWithType(params["version"], input, "Qualifier", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5180,7 +5181,7 @@ func (d *LambdaDriver) Delete_Function(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Create_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Create_Alarm_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create alarm: missing required params 'name'")
 	}
@@ -5218,83 +5219,83 @@ func (d *CloudwatchDriver) Create_Alarm_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Create_Alarm(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Create_Alarm(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudwatch.PutMetricAlarmInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "AlarmName", awsstr)
+	err = setFieldWithType(params["name"], input, "AlarmName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["operator"], input, "ComparisonOperator", awsstr)
+	err = setFieldWithType(params["operator"], input, "ComparisonOperator", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["metric"], input, "MetricName", awsstr)
+	err = setFieldWithType(params["metric"], input, "MetricName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["namespace"], input, "Namespace", awsstr)
+	err = setFieldWithType(params["namespace"], input, "Namespace", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["evaluation-periods"], input, "EvaluationPeriods", awsint64)
+	err = setFieldWithType(params["evaluation-periods"], input, "EvaluationPeriods", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["period"], input, "Period", awsint64)
+	err = setFieldWithType(params["period"], input, "Period", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["statistic-function"], input, "Statistic", awsstr)
+	err = setFieldWithType(params["statistic-function"], input, "Statistic", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["threshold"], input, "Threshold", awsfloat)
+	err = setFieldWithType(params["threshold"], input, "Threshold", awsfloat, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["enabled"]; ok {
-		err = setFieldWithType(params["enabled"], input, "ActionsEnabled", awsbool)
+		err = setFieldWithType(params["enabled"], input, "ActionsEnabled", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["alarm-actions"]; ok {
-		err = setFieldWithType(params["alarm-actions"], input, "AlarmActions", awsstringslice)
+		err = setFieldWithType(params["alarm-actions"], input, "AlarmActions", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["insufficientdata-actions"]; ok {
-		err = setFieldWithType(params["insufficientdata-actions"], input, "InsufficientDataActions", awsstringslice)
+		err = setFieldWithType(params["insufficientdata-actions"], input, "InsufficientDataActions", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["ok-actions"]; ok {
-		err = setFieldWithType(params["ok-actions"], input, "OKActions", awsstringslice)
+		err = setFieldWithType(params["ok-actions"], input, "OKActions", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["description"]; ok {
-		err = setFieldWithType(params["description"], input, "AlarmDescription", awsstr)
+		err = setFieldWithType(params["description"], input, "AlarmDescription", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["dimensions"]; ok {
-		err = setFieldWithType(params["dimensions"], input, "Dimensions", awsdimensionslice)
+		err = setFieldWithType(params["dimensions"], input, "Dimensions", awsdimensionslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["unit"]; ok {
-		err = setFieldWithType(params["unit"], input, "Unit", awsstr)
+		err = setFieldWithType(params["unit"], input, "Unit", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5315,7 +5316,7 @@ func (d *CloudwatchDriver) Create_Alarm(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Delete_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Delete_Alarm_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete alarm: missing required params 'name'")
 	}
@@ -5325,12 +5326,12 @@ func (d *CloudwatchDriver) Delete_Alarm_DryRun(params map[string]interface{}) (i
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Delete_Alarm(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Delete_Alarm(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudwatch.DeleteAlarmsInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "AlarmNames", awsstringslice)
+	err = setFieldWithType(params["name"], input, "AlarmNames", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -5348,7 +5349,7 @@ func (d *CloudwatchDriver) Delete_Alarm(params map[string]interface{}) (interfac
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Start_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Start_Alarm_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["names"]; !ok {
 		return nil, errors.New("start alarm: missing required params 'names'")
 	}
@@ -5358,12 +5359,12 @@ func (d *CloudwatchDriver) Start_Alarm_DryRun(params map[string]interface{}) (in
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Start_Alarm(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Start_Alarm(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudwatch.EnableAlarmActionsInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["names"], input, "AlarmNames", awsstringslice)
+	err = setFieldWithType(params["names"], input, "AlarmNames", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -5381,7 +5382,7 @@ func (d *CloudwatchDriver) Start_Alarm(params map[string]interface{}) (interface
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Stop_Alarm_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Stop_Alarm_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["names"]; !ok {
 		return nil, errors.New("stop alarm: missing required params 'names'")
 	}
@@ -5391,12 +5392,12 @@ func (d *CloudwatchDriver) Stop_Alarm_DryRun(params map[string]interface{}) (int
 }
 
 // This function was auto generated
-func (d *CloudwatchDriver) Stop_Alarm(params map[string]interface{}) (interface{}, error) {
+func (d *CloudwatchDriver) Stop_Alarm(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudwatch.DisableAlarmActionsInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["names"], input, "AlarmNames", awsstringslice)
+	err = setFieldWithType(params["names"], input, "AlarmNames", awsstringslice, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -5414,7 +5415,7 @@ func (d *CloudwatchDriver) Stop_Alarm(params map[string]interface{}) (interface{
 }
 
 // This function was auto generated
-func (d *CloudformationDriver) Create_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudformationDriver) Create_Stack_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create stack: missing required params 'name'")
 	}
@@ -5428,71 +5429,71 @@ func (d *CloudformationDriver) Create_Stack_DryRun(params map[string]interface{}
 }
 
 // This function was auto generated
-func (d *CloudformationDriver) Create_Stack(params map[string]interface{}) (interface{}, error) {
+func (d *CloudformationDriver) Create_Stack(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudformation.CreateStackInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "StackName", awsstr)
+	err = setFieldWithType(params["name"], input, "StackName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["template-file"], input, "TemplateBody", awsfiletostring)
+	err = setFieldWithType(params["template-file"], input, "TemplateBody", awsfiletostring, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["capabilities"]; ok {
-		err = setFieldWithType(params["capabilities"], input, "Capabilities", awsstringslice)
+		err = setFieldWithType(params["capabilities"], input, "Capabilities", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["disable-rollback"]; ok {
-		err = setFieldWithType(params["disable-rollback"], input, "DisableRollback", awsbool)
+		err = setFieldWithType(params["disable-rollback"], input, "DisableRollback", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["notifications"]; ok {
-		err = setFieldWithType(params["notifications"], input, "NotificationARNs", awsstringslice)
+		err = setFieldWithType(params["notifications"], input, "NotificationARNs", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["on-failure"]; ok {
-		err = setFieldWithType(params["on-failure"], input, "OnFailure", awsstr)
+		err = setFieldWithType(params["on-failure"], input, "OnFailure", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["parameters"]; ok {
-		err = setFieldWithType(params["parameters"], input, "Parameters", awsparameterslice)
+		err = setFieldWithType(params["parameters"], input, "Parameters", awsparameterslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["resource-types"]; ok {
-		err = setFieldWithType(params["resource-types"], input, "ResourceTypes", awsstringslice)
+		err = setFieldWithType(params["resource-types"], input, "ResourceTypes", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "RoleARN", awsstr)
+		err = setFieldWithType(params["role"], input, "RoleARN", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["policy-file"]; ok {
-		err = setFieldWithType(params["policy-file"], input, "StackPolicyBody", awsfiletostring)
+		err = setFieldWithType(params["policy-file"], input, "StackPolicyBody", awsfiletostring, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["timeout"]; ok {
-		err = setFieldWithType(params["timeout"], input, "TimeoutInMinutes", awsint64)
+		err = setFieldWithType(params["timeout"], input, "TimeoutInMinutes", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5513,7 +5514,7 @@ func (d *CloudformationDriver) Create_Stack(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *CloudformationDriver) Update_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudformationDriver) Update_Stack_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("update stack: missing required params 'name'")
 	}
@@ -5523,67 +5524,67 @@ func (d *CloudformationDriver) Update_Stack_DryRun(params map[string]interface{}
 }
 
 // This function was auto generated
-func (d *CloudformationDriver) Update_Stack(params map[string]interface{}) (interface{}, error) {
+func (d *CloudformationDriver) Update_Stack(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudformation.UpdateStackInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "StackName", awsstr)
+	err = setFieldWithType(params["name"], input, "StackName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["capabilities"]; ok {
-		err = setFieldWithType(params["capabilities"], input, "Capabilities", awsstringslice)
+		err = setFieldWithType(params["capabilities"], input, "Capabilities", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["notifications"]; ok {
-		err = setFieldWithType(params["notifications"], input, "NotificationARNs", awsstringslice)
+		err = setFieldWithType(params["notifications"], input, "NotificationARNs", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["parameters"]; ok {
-		err = setFieldWithType(params["parameters"], input, "Parameters", awsparameterslice)
+		err = setFieldWithType(params["parameters"], input, "Parameters", awsparameterslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["resource-types"]; ok {
-		err = setFieldWithType(params["resource-types"], input, "ResourceTypes", awsstringslice)
+		err = setFieldWithType(params["resource-types"], input, "ResourceTypes", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["role"]; ok {
-		err = setFieldWithType(params["role"], input, "RoleARN", awsstr)
+		err = setFieldWithType(params["role"], input, "RoleARN", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["policy-file"]; ok {
-		err = setFieldWithType(params["policy-file"], input, "StackPolicyBody", awsfiletostring)
+		err = setFieldWithType(params["policy-file"], input, "StackPolicyBody", awsfiletostring, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["policy-update-file"]; ok {
-		err = setFieldWithType(params["policy-update-file"], input, "StackPolicyDuringUpdateBody", awsfiletostring)
+		err = setFieldWithType(params["policy-update-file"], input, "StackPolicyDuringUpdateBody", awsfiletostring, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["template-file"]; ok {
-		err = setFieldWithType(params["template-file"], input, "TemplateBody", awsfiletostring)
+		err = setFieldWithType(params["template-file"], input, "TemplateBody", awsfiletostring, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["use-previous-template"]; ok {
-		err = setFieldWithType(params["use-previous-template"], input, "UsePreviousTemplate", awsbool)
+		err = setFieldWithType(params["use-previous-template"], input, "UsePreviousTemplate", awsbool, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5604,7 +5605,7 @@ func (d *CloudformationDriver) Update_Stack(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *CloudformationDriver) Delete_Stack_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *CloudformationDriver) Delete_Stack_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete stack: missing required params 'name'")
 	}
@@ -5614,19 +5615,19 @@ func (d *CloudformationDriver) Delete_Stack_DryRun(params map[string]interface{}
 }
 
 // This function was auto generated
-func (d *CloudformationDriver) Delete_Stack(params map[string]interface{}) (interface{}, error) {
+func (d *CloudformationDriver) Delete_Stack(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &cloudformation.DeleteStackInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "StackName", awsstr)
+	err = setFieldWithType(params["name"], input, "StackName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["retain-resources"]; ok {
-		err = setFieldWithType(params["retain-resources"], input, "RetainResources", awsstringslice)
+		err = setFieldWithType(params["retain-resources"], input, "RetainResources", awsstringslice, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5645,7 +5646,7 @@ func (d *CloudformationDriver) Delete_Stack(params map[string]interface{}) (inte
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Create_Appscalingtarget_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Create_Appscalingtarget_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["max-capacity"]; !ok {
 		return nil, errors.New("create appscalingtarget: missing required params 'max-capacity'")
 	}
@@ -5675,32 +5676,32 @@ func (d *ApplicationautoscalingDriver) Create_Appscalingtarget_DryRun(params map
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Create_Appscalingtarget(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Create_Appscalingtarget(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &applicationautoscaling.RegisterScalableTargetInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["max-capacity"], input, "MaxCapacity", awsint64)
+	err = setFieldWithType(params["max-capacity"], input, "MaxCapacity", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["min-capacity"], input, "MinCapacity", awsint64)
+	err = setFieldWithType(params["min-capacity"], input, "MinCapacity", awsint64, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["role"], input, "RoleARN", awsstr)
+	err = setFieldWithType(params["role"], input, "RoleARN", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -5718,7 +5719,7 @@ func (d *ApplicationautoscalingDriver) Create_Appscalingtarget(params map[string
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["resource"]; !ok {
 		return nil, errors.New("delete appscalingtarget: missing required params 'resource'")
 	}
@@ -5736,20 +5737,20 @@ func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget_DryRun(params map
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &applicationautoscaling.DeregisterScalableTargetInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -5767,7 +5768,7 @@ func (d *ApplicationautoscalingDriver) Delete_Appscalingtarget(params map[string
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create appscalingpolicy: missing required params 'name'")
 	}
@@ -5801,55 +5802,55 @@ func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy_DryRun(params map
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &applicationautoscaling.PutScalingPolicyInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "PolicyName", awsstr)
+	err = setFieldWithType(params["name"], input, "PolicyName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["type"], input, "PolicyType", awsstr)
+	err = setFieldWithType(params["type"], input, "PolicyType", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["stepscaling-adjustment-type"], input, "StepScalingPolicyConfiguration.AdjustmentType", awsstr)
+	err = setFieldWithType(params["stepscaling-adjustment-type"], input, "StepScalingPolicyConfiguration.AdjustmentType", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["stepscaling-adjustments"], input, "StepScalingPolicyConfiguration.StepAdjustments", awsstepadjustments)
+	err = setFieldWithType(params["stepscaling-adjustments"], input, "StepScalingPolicyConfiguration.StepAdjustments", awsstepadjustments, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extra params
 	if _, ok := params["stepscaling-cooldown"]; ok {
-		err = setFieldWithType(params["stepscaling-cooldown"], input, "StepScalingPolicyConfiguration.Cooldown", awsint64)
+		err = setFieldWithType(params["stepscaling-cooldown"], input, "StepScalingPolicyConfiguration.Cooldown", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["stepscaling-aggregation-type"]; ok {
-		err = setFieldWithType(params["stepscaling-aggregation-type"], input, "StepScalingPolicyConfiguration.MetricAggregationType", awsstr)
+		err = setFieldWithType(params["stepscaling-aggregation-type"], input, "StepScalingPolicyConfiguration.MetricAggregationType", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if _, ok := params["stepscaling-min-adjustment-magnitude"]; ok {
-		err = setFieldWithType(params["stepscaling-min-adjustment-magnitude"], input, "StepScalingPolicyConfiguration.MinAdjustmentMagnitude", awsint64)
+		err = setFieldWithType(params["stepscaling-min-adjustment-magnitude"], input, "StepScalingPolicyConfiguration.MinAdjustmentMagnitude", awsint64, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -5870,7 +5871,7 @@ func (d *ApplicationautoscalingDriver) Create_Appscalingpolicy(params map[string
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("delete appscalingpolicy: missing required params 'name'")
 	}
@@ -5892,24 +5893,24 @@ func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy_DryRun(params map
 }
 
 // This function was auto generated
-func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy(params map[string]interface{}) (interface{}, error) {
+func (d *ApplicationautoscalingDriver) Delete_Appscalingpolicy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &applicationautoscaling.DeleteScalingPolicyInput{}
 	var err error
 
 	// Required params
-	err = setFieldWithType(params["name"], input, "PolicyName", awsstr)
+	err = setFieldWithType(params["name"], input, "PolicyName", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr)
+	err = setFieldWithType(params["resource"], input, "ResourceId", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr)
+	err = setFieldWithType(params["dimension"], input, "ScalableDimension", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr)
+	err = setFieldWithType(params["service-namespace"], input, "ServiceNamespace", awsstr, ctx)
 	if err != nil {
 		return nil, err
 	}

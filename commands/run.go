@@ -211,10 +211,10 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 		drivers = append(drivers, s.Drivers()...)
 	}
 	awsDriver := driver.NewMultiDriver(drivers...)
-
 	awsDriver.SetLogger(logger.DefaultLogger)
+	env.Driver = awsDriver
 
-	if err = tplExec.Template.DryRun(awsDriver); err != nil {
+	if err = tplExec.Template.DryRun(env); err != nil {
 		switch t := err.(type) {
 		case *template.Errors:
 			errs, _ := t.Errors()
@@ -254,7 +254,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 			exitOn(scheduleTemplate(tplExec.Template, scheduleRunInFlag, scheduleRevertInFlag))
 			return nil
 		}
-		tplExec.Template, err = tplExec.Template.Run(awsDriver)
+		tplExec.Template, err = tplExec.Template.Run(env)
 		if err != nil {
 			logger.Errorf("Running template error: %s", err)
 		}

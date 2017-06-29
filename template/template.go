@@ -32,7 +32,7 @@ type Template struct {
 	*ast.AST
 }
 
-func (s *Template) Run(d driver.Driver) (*Template, error) {
+func (s *Template) Run(env *Env) (*Template, error) {
 	vars := map[string]interface{}{}
 
 	current := &Template{AST: &ast.AST{}}
@@ -44,13 +44,14 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 		switch clone.Node.(type) {
 		case *ast.CommandNode:
 			cmd := clone.Node.(*ast.CommandNode)
-			fn, err := d.Lookup(cmd.Action, cmd.Entity)
+			fn, err := env.Driver.Lookup(cmd.Action, cmd.Entity)
 			if err != nil {
 				return current, err
 			}
 			cmd.ProcessRefs(vars)
 
-			if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
+			ctx := driver.NewContext(env.ResolvedReferences)
+			if cmd.CmdResult, cmd.CmdErr = fn(ctx, cmd.Params); cmd.CmdErr != nil {
 				return current, nil
 			}
 		case *ast.DeclarationNode:
@@ -59,13 +60,14 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 			switch expr.(type) {
 			case *ast.CommandNode:
 				cmd := expr.(*ast.CommandNode)
-				fn, err := d.Lookup(cmd.Action, cmd.Entity)
+				fn, err := env.Driver.Lookup(cmd.Action, cmd.Entity)
 				if err != nil {
 					return current, err
 				}
 				cmd.ProcessRefs(vars)
 
-				if cmd.CmdResult, cmd.CmdErr = fn(cmd.Params); cmd.CmdErr != nil {
+				ctx := driver.NewContext(env.ResolvedReferences)
+				if cmd.CmdResult, cmd.CmdErr = fn(ctx, cmd.Params); cmd.CmdErr != nil {
 					return current, nil
 				}
 				vars[ident] = cmd.CmdResult
@@ -76,11 +78,11 @@ func (s *Template) Run(d driver.Driver) (*Template, error) {
 	return current, nil
 }
 
-func (s *Template) DryRun(d driver.Driver) error {
-	defer d.SetDryRun(false)
-	d.SetDryRun(true)
+func (s *Template) DryRun(env *Env) error {
+	defer env.Driver.SetDryRun(false)
+	env.Driver.SetDryRun(true)
 
-	res, err := s.Run(d)
+	res, err := s.Run(env)
 	if err != nil {
 		return err
 	}

@@ -183,7 +183,7 @@ const (
 
 {{- if $def.DryRunUnsupported }}
 // This function was auto generated
-func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	{{- range $awsField, $field := $def.RequiredParams }}
 	if _, ok := params["{{ $field.TemplateName }}"]; !ok {
 		return nil, errors.New("{{ $def.Action }} {{ $def.Entity }}: missing required params '{{ $field.TemplateName }}'")
@@ -194,7 +194,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 }
 {{ else }}
 // This function was auto generated
-func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun(params map[string]interface{}) (interface{}, error) {
+func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &{{ $service.Api }}.{{ $def.Input }}{}
 	input.DryRun = aws.Bool(true)
 	var err error
@@ -202,7 +202,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 	// Required params
 		{{- range $i, $field := $def.RequiredParams }}
 			{{- if not $field.AsAwsTag }}
-	err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+	err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }}, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 		{{- range $awsField, $field := $def.ExtraParams }}
 			{{- if not $field.AsAwsTag }}
 	if _, ok := params["{{ $field.TemplateName }}"]; ok {
-		err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+		err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }}, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -231,7 +231,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 			{{- range $i, $field := $def.RequiredParams }}
 				{{- if $field.AsAwsTag }}
 				// Required param as tag
-			_, err = d.Create_Tag_DryRun(map[string]interface{}{"key":"{{ $field.AwsField }}", "value":params["{{ $field.TemplateName }}"], "resource":id})
+			_, err = d.Create_Tag_DryRun(ctx, map[string]interface{}{"key":"{{ $field.AwsField }}", "value":params["{{ $field.TemplateName }}"], "resource":id})
 			if err != nil {
 				return nil, fmt.Errorf("dry run: {{ $def.Action }} {{ $def.Entity }}: adding tags: %s",err)
 			}
@@ -241,7 +241,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 				{{- if $field.AsAwsTag }}
 				// Extra param as tag
 			if v, ok := params["{{ $field.TemplateName }}"]; ok {
-				_, err = d.Create_Tag_DryRun(map[string]interface{}{"key":"{{ $field.AwsField }}", "value":v, "resource":id})
+				_, err = d.Create_Tag_DryRun(ctx, map[string]interface{}{"key":"{{ $field.AwsField }}", "value":v, "resource":id})
 				if err != nil {
 					return nil, fmt.Errorf("dry run: {{ $def.Action }} {{ $def.Entity }}: adding tags: %s",err)
 				}
@@ -257,14 +257,14 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 }
 {{ end }}
 // This function was auto generated
-func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}(params map[string]interface{}) (interface{}, error) {
+func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.Entity }}(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &{{ $service.Api }}.{{ $def.Input }}{}
 	var err error
 	{{if gt (len $def.RequiredParams) 0 }}
 	// Required params
 		{{- range $i, $field := $def.RequiredParams }}
 			{{- if not $field.AsAwsTag }}
-	err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+	err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }}, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +276,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 		{{- range $awsField, $field := $def.ExtraParams }}
 			{{- if not $field.AsAwsTag }}
 	if _, ok := params["{{ $field.TemplateName }}"]; ok {
-		err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }})
+		err = setFieldWithType(params["{{ $field.TemplateName }}"], input, "{{ $field.AwsField }}", {{ $field.AwsType }}, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -300,7 +300,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 	{{- range $i, $field := $def.RequiredParams }}
 		{{- if $field.AsAwsTag }}
 		// Required param as tag
-	_, err = d.Create_Tag(map[string]interface{}{"key":"{{ $field.AwsField }}", "value":params["{{ $field.TemplateName }}"], "resource":id})
+	_, err = d.Create_Tag(ctx, map[string]interface{}{"key":"{{ $field.AwsField }}", "value":params["{{ $field.TemplateName }}"], "resource":id})
 	if err != nil {
 		return nil, fmt.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: %s",err)
 	}
@@ -310,7 +310,7 @@ func (d *{{ Title $service.Api }}Driver) {{ Title $def.Action }}_{{ Title $def.E
 		{{- if $field.AsAwsTag }}
 		// Extra param as tag
 	if v, ok := params["{{ $field.TemplateName }}"]; ok {
-		_, err = d.Create_Tag(map[string]interface{}{"key":"{{ $field.AwsField }}", "value":v, "resource":id})
+		_, err = d.Create_Tag(ctx, map[string]interface{}{"key":"{{ $field.AwsField }}", "value":v, "resource":id})
 		if err != nil {
 			return nil, fmt.Errorf("{{ $def.Action }} {{ $def.Entity }}: adding tags: %s",err)
 		}

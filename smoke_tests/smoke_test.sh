@@ -3,10 +3,11 @@ set -e
 
 TMP_FILE=./create-basic-infra.awl
 TMP_USERDATA_FILE=./tmp-user-data.sh
+SUCCESS_KEYWORD=successfull
 
 /bin/cat > $TMP_USERDATA_FILE <<EOF
 #!/bin/bash
-echo "success" > /tmp/awless-ssh-userdata-success.txt
+echo "{{.References.ssh_success_keyword}}" > /tmp/awless-ssh-userdata-success.txt
 EOF
 
 BIN=./awless-test
@@ -34,6 +35,7 @@ SUBNET_NAME=subnet-$SUFFIX
 KEY_NAME=awless-integ-test-key
 
 /bin/cat > $TMP_FILE <<EOF
+ssh_success_keyword = $SUCCESS_KEYWORD
 vpcname = $VPC_NAME
 testvpc = create vpc cidr={vpc-cidr} name=\$vpcname
 testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc name=$SUBNET_NAME
@@ -66,12 +68,12 @@ SSH_CONNECT=$($BIN ssh $INSTANCE_NAME --print-cli --disable-strict-host-keycheck
 echo "Connecting to instance with $SSH_CONNECT"
 RESULT=$($SSH_CONNECT 'cat /tmp/awless-ssh-userdata-success.txt')
 
-if [ "$RESULT" != "success" ]; then
-	echo "FAIL to read correct token in remote file after ssh to instance"
+if [ "$RESULT" != "$SUCCESS_KEYWORD" ]; then
+	echo "FAIL to read correct token in remote file after ssh to instance: got $RESULT, want $SUCCESS_KEYWORD"
 	exit -1
 fi
 
-echo "Reading token in remote file on instance with success"
+echo "Reading keyword $SUCCESS_KEYWORD in remote file on instance with success"
 
 REVERT_ID=$($BIN log | grep ID: | cut -d, -f1 | cut -d: -f2)
 $BIN revert $REVERT_ID -e -f

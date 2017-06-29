@@ -31,7 +31,25 @@ type Driver interface {
 	SetLogger(*logger.Logger)
 }
 
-type DriverFn func(map[string]interface{}) (interface{}, error)
+type Context interface {
+	References() map[string]interface{}
+}
+
+func NewContext(refs map[string]interface{}) Context {
+	return &context{refs: refs}
+}
+
+var EmptyContext = &context{}
+
+type context struct {
+	refs map[string]interface{}
+}
+
+func (c *context) References() map[string]interface{} {
+	return copyMap(c.refs)
+}
+
+type DriverFn func(Context, map[string]interface{}) (interface{}, error)
 
 type MultiDriver struct {
 	drivers []Driver
@@ -73,4 +91,15 @@ func (d *MultiDriver) Lookup(lookups ...string) (driverFn DriverFn, err error) {
 	default:
 		return nil, fmt.Errorf("%d functions corresponding to '%v' found in drivers", len(funcs), lookups)
 	}
+}
+
+func copyMap(m map[string]interface{}) (copy map[string]interface{}) {
+	copy = make(map[string]interface{})
+	if m == nil {
+		return
+	}
+	for k, v := range m {
+		copy[k] = v
+	}
+	return
 }

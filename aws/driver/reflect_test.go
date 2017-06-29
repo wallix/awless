@@ -32,11 +32,37 @@ import (
 	"github.com/aws/aws-sdk-go/service/lambda"
 )
 
+func TestGoTemplatingInUserdata(t *testing.T) {
+	text := []byte("file content {{ .name }}")
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(f.Name())
+
+	finfo, _ := f.Stat()
+	err = ioutil.WriteFile(f.Name(), text, finfo.Mode().Perm())
+	if err != nil {
+		t.Fatal(f)
+	}
+
+	awsparams := &ec2.RunInstancesInput{}
+
+	err = setFieldWithType(f.Name(), awsparams, "UserData", awsfiletobase64, map[string]string{"name": "johndoe"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expText := []byte("file content johndoe")
+	if got, want := aws.StringValue(awsparams.UserData), base64.StdEncoding.EncodeToString(expText); got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
+
 func TestSetFieldWithTypeAWSFile(t *testing.T) {
 	text := []byte("file content")
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		t.Fatal(f)
+		t.Fatal(err)
 	}
 	defer os.Remove(f.Name())
 
