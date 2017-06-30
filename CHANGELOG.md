@@ -2,6 +2,7 @@
 
 ## Features
 
+- Conveniently prompting and storing locally (~/.aws/credentials) for AWS profile credentials when access keys not found
 - Detach/Attach rapidly AWS policies to user, group or role with: `attach policy service=ec2 access=readonly group=sysadmin`. More info with `awless attach policy -h`
 - `awless ssh`: support SSH agent thanks to @justone
 - New `--port` flag for `awless ssh`: specifying non-standard SSH port thanks to @justone

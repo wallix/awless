@@ -107,19 +107,37 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 
 func initAWSSession(region, profile string) (*session.Session, error) {
 	session, err := session.NewSessionWithOptions(session.Options{
-		Config:                  awssdk.Config{Region: awssdk.String(region), HTTPClient: &http.Client{Timeout: 2 * time.Second}},
+		Config: awssdk.Config{
+			Region:     awssdk.String(region),
+			HTTPClient: &http.Client{Timeout: 2 * time.Second},
+		},
 		SharedConfigState:       session.SharedConfigEnable,
 		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
 		Profile:                 profile,
 	})
+
 	//session.Config = session.Config.WithLogLevel(awssdk.LogDebugWithHTTPBody)
 	if err != nil {
 		return nil, err
 	}
 
 	if _, err = session.Config.Credentials.Get(); err != nil {
-		return nil, errors.New("Your AWS credentials seem undefined! AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY need to be exported in your CLI environment\nInstallation documentation is at https://github.com/wallix/awless/wiki/Installation")
+		fmt.Printf("Cannot resolve any AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", profile)
+		creds := NewCredsPrompter(profile)
+		if err := creds.Prompt(); err != nil {
+			return nil, fmt.Errorf("prompting credentials: %s", err)
+		}
+		created, err := creds.Store()
+		if err != nil {
+			return nil, fmt.Errorf("storing credentials at '%s': %s", AWSCredFilepath, err)
+		}
+		if created {
+			fmt.Printf("\n\u2713 %s created", AWSCredFilepath)
+		}
+		fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.profile, AWSCredFilepath)
+		return initAWSSession(region, profile)
 	}
+
 	session.Config.HTTPClient = http.DefaultClient
 
 	return session, nil
