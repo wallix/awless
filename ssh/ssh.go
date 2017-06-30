@@ -46,6 +46,7 @@ type Client struct {
 	StrictHostKeyChecking   bool
 	InteractiveTerminalFunc func(*gossh.Client) error
 	logger                  *logger.Logger
+	ExtraArgs               []string
 }
 
 func InitClient(keyname string, keyFolders ...string) (*Client, error) {
@@ -204,6 +205,7 @@ func (c *Client) localExec() ([]string, bool) {
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
 	}
+	args = append(args, c.ExtraArgs...)
 
 	return args, exists
 }
