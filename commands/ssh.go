@@ -39,6 +39,7 @@ import (
 )
 
 var keyPathFlag string
+var sshPortFlag int
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
 var privateIPFlag bool
@@ -47,6 +48,7 @@ var disableStrictHostKeyCheckingFlag bool
 func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path or name toward the identity (key file) to use to connect through SSH")
+	sshCmd.Flags().IntVar(&sshPortFlag, "port", 22, "Set SSH port")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
@@ -72,6 +74,8 @@ var sshCmd = &cobra.Command{
 		exitOn(err)
 
 		client, err := ssh.InitClient(connectionCtx.keypath, config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh"))
+		client.Port = sshPortFlag
+
 		if err != nil && strings.Contains(err.Error(), "cannot find SSH key") && keyPathFlag == "" {
 			logger.Info("you may want to specify a key filepath with `-i /path/to/key.pem`")
 		}

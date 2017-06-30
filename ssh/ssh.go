@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"text/template"
@@ -40,6 +41,7 @@ type Client struct {
 	auths                   []auth
 	selectedAuth            auth
 	IP, User                string
+	Port                    int
 	HostKeyCallback         gossh.HostKeyCallback
 	StrictHostKeyChecking   bool
 	InteractiveTerminalFunc func(*gossh.Client) error
@@ -89,7 +91,7 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 		c.logger.Verbosef("trying with user %s", user)
 		for _, configAndAuth := range c.buildConfigAndAuths(user) {
 			c.logger.Verbosef("trying with config %v", configAndAuth.clientConfig)
-			client, err = gossh.Dial("tcp", c.IP+":22", configAndAuth.clientConfig)
+			client, err = gossh.Dial("tcp", fmt.Sprintf("%s:%d", c.IP, c.Port), configAndAuth.clientConfig)
 			if err == nil {
 				c.User = user
 				c.Client = client
@@ -159,6 +161,9 @@ func (c *Client) SSHConfigString(hostname string) string {
 	if !c.StrictHostKeyChecking {
 		extraOpts["StrictHostKeychecking"] = "no"
 	}
+	if c.Port != 22 {
+		extraOpts["Port"] = strconv.Itoa(c.Port)
+	}
 
 	params := struct {
 		IP, User, Name string
@@ -192,6 +197,9 @@ func (c *Client) localExec() ([]string, bool) {
 	args := []string{bin, fmt.Sprintf("%s@%s", c.User, c.IP)}
 	if len(c.selectedAuth.keyPath) > 0 {
 		args = append(args, "-i", c.selectedAuth.keyPath)
+	}
+	if c.Port != 22 {
+		args = append(args, "-p", strconv.Itoa(c.Port))
 	}
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
