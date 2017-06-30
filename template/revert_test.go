@@ -232,7 +232,7 @@ attach volume device=/dev/sdh id=vol-12345 instance=i-12345`
 		}
 
 		exp := `update scalinggroup max-size=0 min-size=0 name=my-scalinggroup
-check scalinggroup count=0 name=my-scalinggroup timeout=180
+check scalinggroup count=0 name=my-scalinggroup timeout=600
 delete scalinggroup force=true name=my-scalinggroup`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)

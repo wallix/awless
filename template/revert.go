@@ -157,7 +157,7 @@ func (te *Template) Revert() (*Template, error) {
 			}
 			if cmd.Action == "create" && cmd.Entity == "scalinggroup" {
 				lines = append(lines, fmt.Sprintf("update scalinggroup name=%s max-size=0 min-size=0", quoteParamIfNeeded(cmd.CmdResult)))
-				lines = append(lines, fmt.Sprintf("check scalinggroup count=0 name=%s timeout=180", quoteParamIfNeeded(cmd.CmdResult)))
+				lines = append(lines, fmt.Sprintf("check scalinggroup count=0 name=%s timeout=600", quoteParamIfNeeded(cmd.CmdResult)))
 			}
 			if cmd.Action == "start" && cmd.Entity == "instance" {
 				lines = append(lines, fmt.Sprintf("check instance id=%s state=running timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
