@@ -765,8 +765,24 @@ func (d *IamDriver) Create_Role(ctx driver.Context, params map[string]interface{
 }
 
 func (d *IamDriver) Attach_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("attach policy: missing required params 'arn'")
+	_, hasArn := params["arn"]
+	service, hasService := params["service"].(string)
+	access, hasAccess := params["access"].(string)
+
+	if !hasArn && !hasAccess && !hasService {
+		return nil, errors.New("attach policy: required param 'arn' or 'service' and 'access'")
+	}
+	if hasAccess && !hasService {
+		return nil, errors.New("attach policy: required param 'service' when specifying 'access'")
+	}
+	if hasService && !hasAccess {
+		return nil, errors.New("attach policy: required param 'access' when specifying 'service'")
+	}
+
+	if hasService && hasAccess {
+		if _, err := LookupAWSPolicy(service, access); err != nil {
+			return nil, err
+		}
 	}
 
 	_, hasUser := params["user"]
@@ -786,11 +802,23 @@ func (d *IamDriver) Attach_Policy(ctx driver.Context, params map[string]interfac
 	group, hasGroup := params["group"]
 	role, hasRole := params["role"]
 
+	arn, _ := params["arn"]
+	service, hasService := params["service"].(string)
+	access, hasAccess := params["access"].(string)
+
+	if hasService && hasAccess {
+		pol, err := LookupAWSPolicy(service, access)
+		if err != nil {
+			return nil, err
+		}
+		arn = pol.Arn
+	}
+
 	call := &driverCall{
 		d:      d,
 		logger: d.logger,
 		setters: []setter{
-			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: arn, fieldPath: "PolicyArn", fieldType: awsstr},
 		},
 	}
 
@@ -816,8 +844,24 @@ func (d *IamDriver) Attach_Policy(ctx driver.Context, params map[string]interfac
 }
 
 func (d *IamDriver) Detach_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("detach policy: missing required params 'arn'")
+	_, hasArn := params["arn"]
+	service, hasService := params["service"].(string)
+	access, hasAccess := params["access"].(string)
+
+	if !hasArn && !hasAccess && !hasService {
+		return nil, errors.New("detach policy: required param 'arn' or 'service' and 'access'")
+	}
+	if hasAccess && !hasService {
+		return nil, errors.New("detach policy: required param 'service' when specifying 'access'")
+	}
+	if hasService && !hasAccess {
+		return nil, errors.New("detach policy: required param 'access' when specifying 'service'")
+	}
+
+	if hasService && hasAccess {
+		if _, err := LookupAWSPolicy(service, access); err != nil {
+			return nil, err
+		}
 	}
 
 	_, hasUser := params["user"]
@@ -837,11 +881,23 @@ func (d *IamDriver) Detach_Policy(ctx driver.Context, params map[string]interfac
 	group, hasGroup := params["group"]
 	role, hasRole := params["role"]
 
+	arn, _ := params["arn"]
+	service, hasService := params["service"].(string)
+	access, hasAccess := params["access"].(string)
+
+	if hasService && hasAccess {
+		pol, err := LookupAWSPolicy(service, access)
+		if err != nil {
+			return nil, err
+		}
+		arn = pol.Arn
+	}
+
 	call := &driverCall{
 		d:      d,
 		logger: d.logger,
 		setters: []setter{
-			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: arn, fieldPath: "PolicyArn", fieldType: awsstr},
 		},
 	}
 

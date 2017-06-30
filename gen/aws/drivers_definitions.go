@@ -1043,10 +1043,10 @@ var DriversDefs = []driversDef{
 			},
 			{
 				Action: "attach", Entity: cloud.Policy, ManualFuncDefinition: true,
-				RequiredParams: []param{
-					{TemplateName: "arn"},
-				},
 				ExtraParams: []param{
+					{TemplateName: "arn"},
+					{TemplateName: "service"},
+					{TemplateName: "access"},
 					{TemplateName: "user"},
 					{TemplateName: "group"},
 					{TemplateName: "role"},
@@ -1054,10 +1054,10 @@ var DriversDefs = []driversDef{
 			},
 			{
 				Action: "detach", Entity: cloud.Policy, ManualFuncDefinition: true,
-				RequiredParams: []param{
-					{TemplateName: "arn"},
-				},
 				ExtraParams: []param{
+					{TemplateName: "arn"},
+					{TemplateName: "service"},
+					{TemplateName: "access"},
 					{TemplateName: "user"},
 					{TemplateName: "group"},
 					{TemplateName: "role"},

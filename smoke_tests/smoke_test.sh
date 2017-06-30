@@ -33,6 +33,7 @@ INSTANCE_NAME=inst-$SUFFIX
 VPC_NAME=vpc-$SUFFIX
 SUBNET_NAME=subnet-$SUFFIX
 KEY_NAME=awless-integ-test-key
+GROUP_NAME=awless-integration-tests
 
 /bin/cat > $TMP_FILE <<EOF
 ssh_success_keyword = $SUCCESS_KEYWORD
@@ -53,6 +54,8 @@ instancecount = {instance.count} # testing var assignement from hole
 testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
 create tag resource=\$testinstance key=Env value=Testing
 create policy name=AwlessSmokeTestPolicy resource=* action="ec2:Describe*" effect=Allow
+create group name=$GROUP_NAME
+attach policy service=lambda access=readonly group=$GROUP_NAME
 EOF
 
 RESOLVED_AMI=$($BIN search images debian::jessie --id-only)

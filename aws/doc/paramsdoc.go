@@ -32,10 +32,12 @@ var manualParamsDoc = map[string]map[string]string{
 		"port": "The port on which the Instance is listenning",
 	},
 	"attachpolicy": {
-		"arn":   "The Amazon Resource Name (ARN) of the IAM policy you want to attach",
-		"user":  "The name (friendly name, not ARN) of the IAM user to attach the policy to",
-		"group": "The name (friendly name, not ARN) of the IAM group to attach the policy to",
-		"role":  "The name (friendly name, not ARN) of the IAM role to attach the policy to",
+		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",
+		"service": "Service string to retrieve an AWS policy. Ex: 'ec2', 'cloudfront', 'rds'",
+		"arn":     "The Amazon Resource Name (ARN) of the IAM policy you want to attach",
+		"user":    "The name (friendly name, not ARN) of the IAM user to attach the policy to",
+		"group":   "The name (friendly name, not ARN) of the IAM group to attach the policy to",
+		"role":    "The name (friendly name, not ARN) of the IAM role to attach the policy to",
 	},
 	"attachsecuritygroup": {
 		"id":       "The ID of the Security Group to add to the instance",
@@ -337,10 +339,12 @@ var manualParamsDoc = map[string]map[string]string{
 		"id": "The ID of the instance to be detached from target group",
 	},
 	"detachpolicy": {
-		"arn":   "The Amazon Resource Name (ARN) of the IAM policy you want to detach",
-		"user":  "The name (friendly name, not ARN) of the IAM user to detach the policy to",
-		"group": "The name (friendly name, not ARN) of the IAM group to detach the policy to",
-		"role":  "The name (friendly name, not ARN) of the IAM role to detach the policy to",
+		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",
+		"service": "Service string to retrieve an AWS policy. Ex: 'ec2', 'cloudfront', 'rds'",
+		"arn":     "The Amazon Resource Name (ARN) of the IAM policy you want to detach",
+		"user":    "The name (friendly name, not ARN) of the IAM user to detach the policy to",
+		"group":   "The name (friendly name, not ARN) of the IAM group to detach the policy to",
+		"role":    "The name (friendly name, not ARN) of the IAM role to detach the policy to",
 	},
 	"detachsecuritygroup": {
 		"id":       "The ID of the security group",
