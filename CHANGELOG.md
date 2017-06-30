@@ -3,6 +3,7 @@
 ## Features
 
 - `awless ssh`: support SSH agent thanks to @justone
+- New `--port` flag for `awless ssh`: specifying non-standard SSH port thanks to @justone
 - Sync works on best effort now. Meaning it does not bail out when an error happens (most often it can be an access right issues on some AWS services)
 - Better template TAB completion: suggest on properties, suggest nothing if not relevant
 - Use `--no-headers` flag in `awless list` to display the results without headers
