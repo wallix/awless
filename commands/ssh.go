@@ -52,7 +52,7 @@ func init() {
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
-	sshCmd.Flags().BoolVar(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
+	sshCmd.Flags().BoolVarP(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", "d", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
 }
 
 var sshCmd = &cobra.Command{
