@@ -88,7 +88,8 @@ var manualParamsDoc = map[string]map[string]string{
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
 	"createaccesskey": {
-		"user": "The name of the user for which the access key will be generated",
+		"user":      "The name of the user for which the access key will be generated",
+		"no-prompt": "Use 'true' to disable the prompt that asks the local storage of access keys",
 	},
 	"createalarm": {
 		"operator":           "The arithmetic operation to use when comparing the specified statistic and threshold (GreaterThanThreshold | LessThanThreshold | LessThanOrEqualToThreshold | GreaterThanOrEqualToThreshold)",

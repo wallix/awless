@@ -1,4 +1,4 @@
-package aws
+package awsdriver
 
 import (
 	"errors"
@@ -15,22 +15,22 @@ var (
 )
 
 type credentialsPrompter struct {
-	profile string
-	val     credentials.Value
+	Profile string
+	Val     credentials.Value
 }
 
 func NewCredsPrompter(profile string) *credentialsPrompter {
-	return &credentialsPrompter{profile: profile}
+	return &credentialsPrompter{Profile: profile}
 }
 
 func (c *credentialsPrompter) Prompt() error {
-	fmt.Printf("\nPlease enter access keys for profile '%s' (stored at %s):\n", c.profile, AWSCredFilepath)
+	fmt.Printf("\nPlease enter access keys for profile '%s' (stored at %s):\n", c.Profile, AWSCredFilepath)
 	fmt.Print("AWS Access Key ID? ")
-	if _, err := fmt.Scanln(&c.val.AccessKeyID); err != nil {
+	if _, err := fmt.Scanln(&c.Val.AccessKeyID); err != nil {
 		return err
 	}
 	fmt.Print("AWS Secret Access Key? ")
-	if _, err := fmt.Scanln(&c.val.SecretAccessKey); err != nil {
+	if _, err := fmt.Scanln(&c.Val.SecretAccessKey); err != nil {
 		return err
 	}
 
@@ -40,10 +40,10 @@ func (c *credentialsPrompter) Prompt() error {
 func (c *credentialsPrompter) Store() (bool, error) {
 	var created bool
 
-	if c.val.SecretAccessKey == "" {
+	if c.Val.SecretAccessKey == "" {
 		return created, errors.New("given empty secret access key")
 	}
-	if c.val.AccessKeyID == "" {
+	if c.Val.AccessKeyID == "" {
 		return created, errors.New("given empty access key")
 	}
 
@@ -59,7 +59,7 @@ func (c *credentialsPrompter) Store() (bool, error) {
 		return created, fmt.Errorf("appending to '%s': %s", AWSCredFilepath, err)
 	}
 
-	if _, err := fmt.Fprintf(f, "[%s]\naws_access_key_id = %s\naws_secret_access_key = %s\n", c.profile, c.val.AccessKeyID, c.val.SecretAccessKey); err != nil {
+	if _, err := fmt.Fprintf(f, "\n[%s]\naws_access_key_id = %s\naws_secret_access_key = %s\n", c.Profile, c.Val.AccessKeyID, c.Val.SecretAccessKey); err != nil {
 		return created, err
 	}
 

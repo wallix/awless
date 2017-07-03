@@ -770,7 +770,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "accesskey",
 		Api:            "iam",
 		RequiredParams: []string{"user"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"no-prompt"},
 	},
 	"deleteaccesskey": {
 		Action:         "delete",

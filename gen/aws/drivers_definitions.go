@@ -922,6 +922,8 @@ var DriversDefs = []driversDef{
 				Action: "create", Entity: cloud.AccessKey, DryRunUnsupported: true, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "user"},
+				}, ExtraParams: []param{
+					{TemplateName: "no-prompt"},
 				},
 			},
 			{
@@ -932,7 +934,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
 				},
 			},
-			// Access key
+			// Login profile
 			{
 				Action: "create", Entity: cloud.LoginProfile, DryRunUnsupported: true, Input: "CreateLoginProfileInput", Output: "CreateLoginProfileOutput", ApiMethod: "CreateLoginProfile", OutputExtractor: "aws.StringValue(output.LoginProfile.UserName)",
 				RequiredParams: []param{

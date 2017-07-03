@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/driver"
@@ -123,18 +124,18 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 
 	if _, err = session.Config.Credentials.Get(); err != nil {
 		fmt.Printf("Cannot resolve any AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", profile)
-		creds := NewCredsPrompter(profile)
+		creds := awsdriver.NewCredsPrompter(profile)
 		if err := creds.Prompt(); err != nil {
 			return nil, fmt.Errorf("prompting credentials: %s", err)
 		}
 		created, err := creds.Store()
 		if err != nil {
-			return nil, fmt.Errorf("storing credentials at '%s': %s", AWSCredFilepath, err)
+			return nil, fmt.Errorf("storing credentials at '%s': %s", awsdriver.AWSCredFilepath, err)
 		}
 		if created {
-			fmt.Printf("\n\u2713 %s created", AWSCredFilepath)
+			fmt.Printf("\n\u2713 %s created", awsdriver.AWSCredFilepath)
 		}
-		fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.profile, AWSCredFilepath)
+		fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, awsdriver.AWSCredFilepath)
 		return initAWSSession(region, profile)
 	}
 

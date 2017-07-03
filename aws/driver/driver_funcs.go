@@ -959,7 +959,34 @@ func (d *IamDriver) Create_Accesskey(ctx driver.Context, params map[string]inter
 	fmt.Println()
 	d.logger.Warning("This is your only opportunity to view the secret access keys.")
 	d.logger.Warning("Save the user's new access key ID and secret access key in a safe and secure place.")
-	d.logger.Warning("You will not have access to the secret keys again after this step.")
+	d.logger.Warning("You will not have access to the secret keys again after this step.\n")
+
+	if fmt.Sprint(params["no-prompt"]) != "true" {
+		var yesorno string
+		fmt.Printf("Do you want to save these access keys in %s? (y/n) ", AWSCredFilepath)
+		fmt.Scanln(&yesorno)
+		if y := strings.TrimSpace(strings.ToLower(yesorno)); y == "y" || y == "yes" {
+			var profile string
+			fmt.Print("Entry profile name ? [default] ")
+			fmt.Scanln(&profile)
+			profile = strings.TrimSpace(profile)
+			if profile == "" {
+				profile = "default"
+			}
+			creds := NewCredsPrompter(profile)
+			creds.Val.AccessKeyID = aws.StringValue(output.AccessKey.AccessKeyId)
+			creds.Val.SecretAccessKey = aws.StringValue(output.AccessKey.SecretAccessKey)
+			created, err := creds.Store()
+			if err != nil {
+				logger.Errorf("cannot store access keys: %s", err)
+			} else {
+				if created {
+					fmt.Printf("\n\u2713 %s created", AWSCredFilepath)
+				}
+				fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, AWSCredFilepath)
+			}
+		}
+	}
 
 	id := aws.StringValue(output.AccessKey.AccessKeyId)
 
