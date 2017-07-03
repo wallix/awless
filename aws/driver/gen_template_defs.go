@@ -554,7 +554,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "targetgroup",
 		Api:            "elbv2",
 		RequiredParams: []string{"arn"},
-		ExtraParams:    []string{"healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"},
+		ExtraParams:    []string{"deregistrationdelay", "healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"},
 	},
 	"deletetargetgroup": {
 		Action:         "delete",
