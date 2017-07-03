@@ -566,6 +566,25 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "update", Entity: cloud.TargetGroup, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{AwsField: "TargetGroupArn", TemplateName: "arn", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "deregistrationdelay", AwsType: "awsstr"},
+					{TemplateName: "stickiness", AwsType: "awsstr"},
+					{TemplateName: "stickinessduration", AwsType: "awsstr"},
+					{AwsField: "HealthCheckIntervalSeconds", TemplateName: "healthcheckinterval", AwsType: "awsint64"},
+					{AwsField: "HealthCheckPath", TemplateName: "healthcheckpath", AwsType: "awsstr"},
+					{AwsField: "HealthCheckPort", TemplateName: "healthcheckport", AwsType: "awsstr"},
+					{AwsField: "HealthCheckProtocol", TemplateName: "healthcheckprotocol", AwsType: "awsstr"},
+					{AwsField: "HealthCheckTimeoutSeconds", TemplateName: "healthchecktimeout", AwsType: "awsint64"},
+					{AwsField: "HealthyThresholdCount", TemplateName: "healthythreshold", AwsType: "awsint64"},
+					{AwsField: "UnhealthyThresholdCount", TemplateName: "unhealthythreshold", AwsType: "awsint64"},
+					{AwsField: "Matcher.HttpCode", TemplateName: "matcher", AwsType: "awsstr"},
+				},
+			},
+			{
 				Action: "delete", Entity: cloud.TargetGroup, ApiMethod: "DeleteTargetGroup", Input: "DeleteTargetGroupInput", Output: "DeleteTargetGroupOutput", DryRunUnsupported: true,
 				RequiredParams: []param{
 					{AwsField: "TargetGroupArn", TemplateName: "id", AwsType: "awsstr"},

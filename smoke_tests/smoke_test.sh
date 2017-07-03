@@ -35,6 +35,13 @@ SUBNET_NAME=subnet-$SUFFIX
 KEY_NAME=awless-integ-test-key
 GROUP_NAME=awless-integration-tests
 
+KEY_FILE="$HOME/.awless/keys/$KEY_NAME.pem"
+
+if [ -e  $KEY_FILE ]; then 
+	echo "Removing pre existing dummy test key ..."
+	rm -f $KEY_FILE
+fi
+
 /bin/cat > $TMP_FILE <<EOF
 ssh_success_keyword = $SUCCESS_KEYWORD
 vpcname = $VPC_NAME

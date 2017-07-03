@@ -406,6 +406,12 @@ func (d *Elbv2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err e
 		}
 		return d.Create_Targetgroup, nil
 
+	case "updatetargetgroup":
+		if d.dryRun {
+			return d.Update_Targetgroup_DryRun, nil
+		}
+		return d.Update_Targetgroup, nil
+
 	case "deletetargetgroup":
 		if d.dryRun {
 			return d.Delete_Targetgroup_DryRun, nil

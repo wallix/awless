@@ -1420,6 +1420,129 @@ func (d *Elbv2Driver) Check_Loadbalancer(ctx driver.Context, params map[string]i
 	return nil, c.check()
 }
 
+func (d *Elbv2Driver) Update_Targetgroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"].(string); !ok {
+		return nil, errors.New("create targetgroup: missing required params 'arn'")
+	}
+	d.logger.Verbose("params dry run: create targetgroup ok")
+	return nil, nil
+}
+
+func (d *Elbv2Driver) Update_Targetgroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	tgArn := params["arn"].(string)
+
+	attrsInput := &elbv2.ModifyTargetGroupAttributesInput{}
+	var areTargetAttrsModified bool
+
+	if sticky, ok := params["stickiness"].(string); ok {
+		attrsInput.Attributes = append(attrsInput.Attributes, &elbv2.TargetGroupAttribute{
+			Key:   aws.String("stickiness.enabled"),
+			Value: aws.String(sticky),
+		})
+		areTargetAttrsModified = true
+	}
+	if dur, ok := params["stickinessduration"].(string); ok {
+		attrsInput.Attributes = append(attrsInput.Attributes, &elbv2.TargetGroupAttribute{
+			Key:   aws.String("stickiness.lb_cookie.duration_seconds"),
+			Value: aws.String(dur),
+		})
+		areTargetAttrsModified = true
+	}
+	if delay, ok := params["deregistrationdelay"].(string); ok {
+		attrsInput.Attributes = append(attrsInput.Attributes, &elbv2.TargetGroupAttribute{
+			Key:   aws.String("deregistration_delay.timeout_seconds"),
+			Value: aws.String(delay),
+		})
+		areTargetAttrsModified = true
+	}
+
+	var err error
+
+	if areTargetAttrsModified {
+		start := time.Now()
+		_, err = d.ModifyTargetGroupAttributes(attrsInput)
+		if err != nil {
+			return nil, fmt.Errorf("modify targetgroup attributes: %s", err)
+		}
+		d.logger.ExtraVerbosef("elbv2.ModifyTargetGroupAttributes call took %s", time.Since(start))
+		d.logger.Infof("modify targetgroup attributes '%s' done", tgArn)
+	}
+
+	input := &elbv2.ModifyTargetGroupInput{}
+	var isTargetGroupModified bool
+
+	if _, ok := params["healthcheckinterval"]; ok {
+		err = setFieldWithType(params["healthcheckinterval"], input, "HealthCheckIntervalSeconds", awsint64, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+	if _, ok := params["healthcheckpath"]; ok {
+		err = setFieldWithType(params["healthcheckpath"], input, "HealthCheckPath", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+	if _, ok := params["healthcheckport"]; ok {
+		err = setFieldWithType(params["healthcheckport"], input, "HealthCheckPort", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["healthcheckprotocol"]; ok {
+		err = setFieldWithType(params["healthcheckprotocol"], input, "HealthCheckProtocol", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+	if _, ok := params["healthchecktimeout"]; ok {
+		err = setFieldWithType(params["healthchecktimeout"], input, "HealthCheckTimeoutSeconds", awsint64, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+	if _, ok := params["healthythreshold"]; ok {
+		err = setFieldWithType(params["healthythreshold"], input, "HealthyThresholdCount", awsint64, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+	if _, ok := params["unhealthythreshold"]; ok {
+		err = setFieldWithType(params["unhealthythreshold"], input, "UnhealthyThresholdCount", awsint64, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+	if _, ok := params["matcher"]; ok {
+		err = setFieldWithType(params["matcher"], input, "Matcher.HttpCode", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+		isTargetGroupModified = true
+	}
+
+	if isTargetGroupModified {
+		start := time.Now()
+		var output *elbv2.ModifyTargetGroupOutput
+		output, err = d.ModifyTargetGroup(input)
+		if err != nil {
+			return nil, fmt.Errorf("modify targetgroup: %s", err)
+		}
+		d.logger.ExtraVerbosef("elbv2.ModifyTargetGroup call took %s", time.Since(start))
+		tgArn = aws.StringValue(output.TargetGroups[0].TargetGroupArn)
+		d.logger.Infof("modify targetgroup '%s' done", tgArn)
+
+	}
+
+	return tgArn, nil
+}
+
 func (d *AutoscalingDriver) Check_Scalinggroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"].(string); !ok {
 		return nil, errors.New("check scalinggroup: missing required params 'name'")

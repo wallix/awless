@@ -77,6 +77,7 @@ var APIPerTemplateDefName = map[string]string{
 	"createlistener":            "elbv2",
 	"deletelistener":            "elbv2",
 	"createtargetgroup":         "elbv2",
+	"updatetargetgroup":         "elbv2",
 	"deletetargetgroup":         "elbv2",
 	"attachinstance":            "elbv2",
 	"detachinstance":            "elbv2",
@@ -547,6 +548,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Api:            "elbv2",
 		RequiredParams: []string{"name", "port", "protocol", "vpc"},
 		ExtraParams:    []string{"healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "unhealthythreshold"},
+	},
+	"updatetargetgroup": {
+		Action:         "update",
+		Entity:         "targetgroup",
+		Api:            "elbv2",
+		RequiredParams: []string{"arn"},
+		ExtraParams:    []string{"healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"},
 	},
 	"deletetargetgroup": {
 		Action:         "delete",
@@ -1188,6 +1196,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["create"] = append(supported["create"], "listener")
 	supported["delete"] = append(supported["delete"], "listener")
 	supported["create"] = append(supported["create"], "targetgroup")
+	supported["update"] = append(supported["update"], "targetgroup")
 	supported["delete"] = append(supported["delete"], "targetgroup")
 	supported["attach"] = append(supported["attach"], "instance")
 	supported["detach"] = append(supported["detach"], "instance")
