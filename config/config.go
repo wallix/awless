@@ -358,11 +358,13 @@ func runSyncWithUpdatedRegion(i interface{}) {
 		return
 	}
 
-	if !awsconfig.IsValidRegion(fmt.Sprint(i)) {
+	region := fmt.Sprint(i)
+
+	if !awsconfig.IsValidRegion(region) {
 		return
 	}
 
-	fmt.Println("Syncing new region...")
+	fmt.Printf("Syncing region '%s'...\n\n", region)
 	aws.InitServices(GetConfigWithPrefix("aws."), logger.DiscardLogger)
 
 	var services []cloud.Service

@@ -43,7 +43,7 @@ func init() {
 	os.Setenv("__AWLESS_KEYS_DIR", KeysDir)
 }
 
-func InitAwlessEnv() error {
+func InitAwlessEnv(currentCmd string) error {
 	_, err := os.Stat(DBPath)
 
 	AwlessFirstInstall = os.IsNotExist(err)
@@ -51,7 +51,7 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
-		fmt.Println("First install. Welcome! Now resolving credentials and region ...")
+		fmt.Println("Welcome to awless! Resolving environment data...")
 		fmt.Println()
 
 		resolved, err := resolveRequiredConfigFromEnv()
@@ -63,12 +63,10 @@ func InitAwlessEnv() error {
 			return err
 		}
 
-		fmt.Println("\nThose parameters have been set in your config:")
-		fmt.Println(DisplayConfig())
-
-		fmt.Println("\nShow and update config with `awless config`. Ex: `awless config set aws.region`")
-		fmt.Println("\nAll done. Enjoy!")
+		fmt.Println("All done. Enjoy!")
+		fmt.Println("\nYou can review and configure awless with `awless config`")
 		fmt.Println()
+		fmt.Printf("Now running: `%s`\n", currentCmd)
 
 		err = database.Execute(func(db *database.DB) error {
 			return db.SetStringValue("current.version", Version)
@@ -107,8 +105,8 @@ func resolveRequiredConfigFromEnv() (map[string]string, error) {
 	}
 
 	if region == "" {
-		fmt.Println("Could not find any AWS region in your environment. Please choose one region:")
 		region = awsconfig.StdinRegionSelector()
+		fmt.Println()
 	}
 
 	var hasAMI bool

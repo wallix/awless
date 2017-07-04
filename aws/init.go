@@ -123,7 +123,7 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 	}
 
 	if _, err = session.Config.Credentials.Get(); err != nil {
-		fmt.Printf("Cannot resolve any AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", profile)
+		fmt.Printf("Cannot resolve AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", profile)
 		creds := awsdriver.NewCredsPrompter(profile)
 		if err := creds.Prompt(); err != nil {
 			return nil, fmt.Errorf("prompting credentials: %s", err)
@@ -134,8 +134,10 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 		}
 		if created {
 			fmt.Printf("\n\u2713 %s created", awsdriver.AWSCredFilepath)
+			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully\n\n", creds.Profile)
+		} else {
+			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, awsdriver.AWSCredFilepath)
 		}
-		fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, awsdriver.AWSCredFilepath)
 		return initAWSSession(region, profile)
 	}
 

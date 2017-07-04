@@ -19,8 +19,7 @@ func ParseRegion(i string) (interface{}, error) {
 }
 
 func WarningChangeRegion(i interface{}) {
-	region := fmt.Sprint(i)
-	fmt.Fprintf(os.Stderr, "Region updated to '%s'.\nYou might want to update your default AMI with `awless config set instance.image $(awless search images amazonlinux --id-only --silent)`\n", region)
+	fmt.Fprint(os.Stderr, "You might want to update your default AMI with `awless config set instance.image $(awless search images amazonlinux --id-only --silent)`\n")
 }
 
 func ParseInstanceType(i string) (interface{}, error) {
@@ -36,11 +35,11 @@ func StdinRegionSelector() string {
 
 	fmt.Println(strings.Join(allRegions(), ", "))
 	fmt.Println()
-	fmt.Print("Value ? > ")
+	fmt.Print("Enter region? ")
 	fmt.Scan(&region)
 	for !IsValidRegion(region) {
 		fmt.Printf("'%s' is not a valid region\n", region)
-		fmt.Print("Value ? > ")
+		fmt.Print("Enter region? ")
 		fmt.Scan(&region)
 	}
 	return region

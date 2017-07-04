@@ -39,7 +39,7 @@ func applyHooks(funcs ...func(*cobra.Command, []string) error) func(*cobra.Comma
 }
 
 func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
-	if err := config.InitAwlessEnv(); err != nil {
+	if err := config.InitAwlessEnv(cmd.CommandPath()); err != nil {
 		return fmt.Errorf("cannot init awless environment: %s", err)
 	}
 	if awsRegionGlobalFlag != "" {
