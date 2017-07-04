@@ -414,7 +414,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"template-file":      "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
 	},
 	"updatetargetgroup": {
-		"arn": "The Amazon Resource Name (ARN) of the target group",
+		"id": "The Amazon Resource Name (ARN) of the target group",
 		"deregistrationdelay": "The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused. The range is 0-3600 seconds. The default value is 300 seconds",
 		"healthcheckinterval": "The approximate amount of time, in seconds, between health checks of an individual target",
 		"healthcheckpath":     "The ping path that is the destination on the targets for health checks",

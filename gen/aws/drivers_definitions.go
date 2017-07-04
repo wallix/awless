@@ -568,7 +568,7 @@ var DriversDefs = []driversDef{
 			{
 				Action: "update", Entity: cloud.TargetGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
-					{AwsField: "TargetGroupArn", TemplateName: "arn", AwsType: "awsstr"},
+					{AwsField: "TargetGroupArn", TemplateName: "id", AwsType: "awsstr"},
 				},
 				ExtraParams: []param{
 					{TemplateName: "deregistrationdelay", AwsType: "awsstr"},

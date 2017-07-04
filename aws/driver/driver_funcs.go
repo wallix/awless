@@ -1421,15 +1421,15 @@ func (d *Elbv2Driver) Check_Loadbalancer(ctx driver.Context, params map[string]i
 }
 
 func (d *Elbv2Driver) Update_Targetgroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"].(string); !ok {
-		return nil, errors.New("create targetgroup: missing required params 'arn'")
+	if _, ok := params["id"].(string); !ok {
+		return nil, errors.New("create targetgroup: missing required params 'id'")
 	}
 	d.logger.Verbose("params dry run: create targetgroup ok")
 	return nil, nil
 }
 
 func (d *Elbv2Driver) Update_Targetgroup(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	tgArn := params["arn"].(string)
+	tgArn := params["id"].(string)
 
 	attrsInput := &elbv2.ModifyTargetGroupAttributesInput{}
 	var areTargetAttrsModified bool
@@ -1459,6 +1459,10 @@ func (d *Elbv2Driver) Update_Targetgroup(ctx driver.Context, params map[string]i
 	var err error
 
 	if areTargetAttrsModified {
+		err = setFieldWithType(tgArn, attrsInput, "TargetGroupArn", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
 		start := time.Now()
 		_, err = d.ModifyTargetGroupAttributes(attrsInput)
 		if err != nil {
@@ -1528,6 +1532,10 @@ func (d *Elbv2Driver) Update_Targetgroup(ctx driver.Context, params map[string]i
 	}
 
 	if isTargetGroupModified {
+		err = setFieldWithType(tgArn, input, "TargetGroupArn", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
 		start := time.Now()
 		var output *elbv2.ModifyTargetGroupOutput
 		output, err = d.ModifyTargetGroup(input)

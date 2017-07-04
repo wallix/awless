@@ -553,7 +553,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "update",
 		Entity:         "targetgroup",
 		Api:            "elbv2",
-		RequiredParams: []string{"arn"},
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"deregistrationdelay", "healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"},
 	},
 	"deletetargetgroup": {
