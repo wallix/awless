@@ -18,8 +18,10 @@ package config
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -49,7 +51,7 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
-		fmt.Println("First install. Welcome!")
+		fmt.Println("First install. Welcome! Now resolving credentials and region ...")
 		fmt.Println()
 
 		resolved, err := resolveRequiredConfigFromEnv()
@@ -88,7 +90,10 @@ func resolveRequiredConfigFromEnv() (map[string]string, error) {
 	var sess *session.Session
 	var err error
 
-	if sess, err = session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}); err == nil {
+	if sess, err = session.NewSessionWithOptions(session.Options{
+		Config:            awssdk.Config{HTTPClient: &http.Client{Timeout: 1 * time.Second}},
+		SharedConfigState: session.SharedConfigEnable,
+	}); err == nil {
 		region = awssdk.StringValue(sess.Config.Region)
 	}
 
