@@ -63,6 +63,7 @@ var defaultsDefinitions = map[string]*Definition{
 	instanceImageDefaultsKey: {help: "AWS EC2 AMI"},
 	"instance.count":         {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
 	"instance.timeout":       {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
+	"securitygroup.protocol": {defaultValue: "tcp", help: "The IP protocol to authorize on the security group"},
 	"volume.device":          {defaultValue: "/dev/sdh", help: "Device name to expose to an EC2 instance"},
 	"elasticip.domain":       {defaultValue: "vpc", help: "The domain of elastic IP addresses (standard or vpc)"},
 	"image.delete-snapshots": {defaultValue: "true", help: "Delete linked snapshots when deleting an image"},
