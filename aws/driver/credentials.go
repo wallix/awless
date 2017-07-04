@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 )
@@ -20,7 +21,11 @@ type credentialsPrompter struct {
 }
 
 func NewCredsPrompter(profile string) *credentialsPrompter {
-	return &credentialsPrompter{Profile: profile}
+	p := strings.TrimSpace(profile)
+	if p == "" {
+		p = "default"
+	}
+	return &credentialsPrompter{Profile: p}
 }
 
 func (c *credentialsPrompter) Prompt() error {
