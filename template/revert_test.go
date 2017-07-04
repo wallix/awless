@@ -127,7 +127,7 @@ check instance id=i-1 state=terminated timeout=180
 delete listener id=list-1
 delete loadbalancer id=lb-1
 check loadbalancer id=lb-1 state=not-found timeout=180
-check securitygroup id=securitygroup-1 state=unused timeout=180
+check securitygroup id=securitygroup-1 state=unused timeout=300
 delete securitygroup id=securitygroup-1`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
@@ -144,7 +144,7 @@ delete securitygroup id=securitygroup-1`
 			t.Fatal(err)
 		}
 
-		exp := `check securitygroup id=sg-54321 state=unused timeout=180
+		exp := `check securitygroup id=sg-54321 state=unused timeout=300
 delete securitygroup id=sg-54321`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
