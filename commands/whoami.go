@@ -55,6 +55,11 @@ var whoamiCmd = &cobra.Command{
 			return
 		}
 
+		if localGlobalFlag {
+			logger.Warning("`--local` flag prevent the command from fetching remote information")
+			return
+		}
+
 		me, err := aws.AccessService.(*aws.Access).GetIdentity()
 		exitOn(err)
 
