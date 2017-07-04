@@ -85,7 +85,7 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 	for _, am := range c.auths {
 		authDescs = append(authDescs, am.desc)
 	}
-	c.logger.Infof("trying with username(s) [%s] and auth method(s) [%s]", strings.Join(usernames, ", "), strings.Join(authDescs, ", "))
+	c.logger.Infof("authentication methods found [%s]", strings.Join(authDescs, ", "))
 
 	for _, user := range usernames {
 		c.logger.Verbosef("trying with user %s", user)
@@ -119,7 +119,7 @@ func (c *Client) Connect() error {
 
 	args, installed := c.localExec()
 	if installed {
-		c.logger.Infof("Login as '%s' on '%s', using %s for auth with ssh client '%s'\n", c.User, c.IP, c.selectedAuth.desc, args[0])
+		c.logger.Infof("Login as '%s' on '%s'; auth with %s; client '%s'\n", c.User, c.IP, c.selectedAuth.desc, args[0])
 		return syscall.Exec(args[0], args, os.Environ())
 	}
 
