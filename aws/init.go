@@ -134,10 +134,11 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 		}
 		if created {
 			fmt.Printf("\n\u2713 %s created", awsdriver.AWSCredFilepath)
-			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully\n\n", creds.Profile)
+			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully\n", creds.Profile)
 		} else {
-			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, awsdriver.AWSCredFilepath)
+			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n", creds.Profile, awsdriver.AWSCredFilepath)
 		}
+		fmt.Printf("\u2713 Reloading session...\n\n")
 		return initAWSSession(region, profile)
 	}
 
