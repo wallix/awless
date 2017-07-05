@@ -51,12 +51,6 @@ var syncCmd = &cobra.Command{
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if extraVerboseGlobalFlag {
-			logger.DefaultLogger.SetVerbose(logger.ExtraVerboseF)
-		} else {
-			logger.DefaultLogger.SetVerbose(logger.VerboseF) //Forcing verbose to display sync info
-		}
-
 		var services []cloud.Service
 		displayAllServices := true
 		for _, srv := range cloud.ServiceRegistry {
