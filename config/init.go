@@ -23,6 +23,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"strconv"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -47,6 +49,7 @@ func InitAwlessEnv(currentCmd string) error {
 	_, err := os.Stat(DBPath)
 
 	AwlessFirstInstall = os.IsNotExist(err)
+	os.Setenv("__AWLESS_FIRST_INSTALL", strconv.FormatBool(AwlessFirstInstall))
 
 	os.MkdirAll(KeysDir, 0700)
 
