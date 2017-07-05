@@ -2861,6 +2861,10 @@ func fakeDryRunId(entity string) string {
 		return fmt.Sprintf("sg-%d", suffix)
 	case cloud.InternetGateway:
 		return fmt.Sprintf("igw-%d", suffix)
+	case cloud.NatGateway:
+		return fmt.Sprintf("nat-%d", suffix)
+	case cloud.RouteTable:
+		return fmt.Sprintf("rtb-%d", suffix)
 	default:
 		return fmt.Sprintf("dryrunid-%d", suffix)
 	}
