@@ -2837,7 +2837,7 @@ func (d *CloudfrontDriver) Delete_Distribution(ctx driver.Context, params map[st
 	}
 
 	d.logger.Info("check distribution disabling has been propagated")
-	_, err = d.Check_Distribution(ctx, map[string]interface{}{"id": params["id"], "state": "Deployed", "timeout": 600})
+	_, err = d.Check_Distribution(ctx, map[string]interface{}{"id": params["id"], "state": "Deployed", "timeout": 900})
 	if err != nil {
 		return nil, err
 	}
