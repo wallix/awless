@@ -33,6 +33,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -1684,6 +1686,19 @@ func (d *Ec2Driver) Create_Tag_DryRun(ctx driver.Context, params map[string]inte
 	return nil, fmt.Errorf("dry run: create tag: %s", err)
 }
 
+type createTagRetryer struct {
+	client.DefaultRetryer
+}
+
+func (d createTagRetryer) MaxRetries() int { return 5 }
+func (d createTagRetryer) ShouldRetry(r *request.Request) bool {
+	if d.DefaultRetryer.ShouldRetry(r) || !(r.HTTPResponse.StatusCode < 300 && r.HTTPResponse.StatusCode >= 200) {
+		return true
+	}
+
+	return false
+}
+
 func (d *Ec2Driver) Create_Tag(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
 	var err error
@@ -1696,9 +1711,9 @@ func (d *Ec2Driver) Create_Tag(ctx driver.Context, params map[string]interface{}
 	input.Tags = []*ec2.Tag{{Key: aws.String(fmt.Sprint(params["key"])), Value: aws.String(fmt.Sprint(params["value"]))}}
 
 	start := time.Now()
-	var output *ec2.CreateTagsOutput
-	output, err = d.CreateTags(input)
-	if err != nil {
+	req, output := d.CreateTagsRequest(input)
+	req.Retryer = createTagRetryer{}
+	if err = req.Send(); err != nil {
 		return nil, fmt.Errorf("create tag: %s", err)
 	}
 	d.logger.ExtraVerbosef("ec2.CreateTags call took %s", time.Since(start))

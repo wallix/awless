@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -291,4 +292,8 @@ func (m *mockEc2) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput,
 		return nil, err
 	}
 	return &ec2.CreateTagsOutput{}, nil
+}
+
+func (m *mockEc2) CreateTagsRequest(input *ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
+	return &request.Request{Error: m.verifyTagInput(input)}, &ec2.CreateTagsOutput{}
 }
