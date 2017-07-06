@@ -316,7 +316,7 @@ delete scalinggroup force=true name=my-scalinggroup`
 		}
 
 		exp := `delete database id=my-database skip-snapshot=true
-check database id=my-database state=not-found timeout=600
+check database id=my-database state=not-found timeout=900
 delete dbsubnetgroup name=my-dbsubgroup`
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)

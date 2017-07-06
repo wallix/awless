@@ -177,7 +177,7 @@ func (te *Template) Revert() (*Template, error) {
 					lines = append(lines, fmt.Sprintf("check instance id=%s state=terminated timeout=180", quoteParamIfNeeded(cmd.CmdResult)))
 				}
 				if cmd.Action == "create" && cmd.Entity == "database" {
-					lines = append(lines, fmt.Sprintf("check database id=%s state=not-found timeout=600", quoteParamIfNeeded(cmd.CmdResult)))
+					lines = append(lines, fmt.Sprintf("check database id=%s state=not-found timeout=900", quoteParamIfNeeded(cmd.CmdResult)))
 				}
 				if cmd.Action == "create" && cmd.Entity == "loadbalancer" {
 					lines = append(lines, fmt.Sprintf("check loadbalancer id=%s state=not-found timeout=180", quoteParamIfNeeded(cmd.CmdResult)))
