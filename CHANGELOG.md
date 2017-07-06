@@ -2,6 +2,7 @@
 
 ## Features
 
+- Much more friendlier first install
 - Create new access keys: prompt user to potentially store them locally under a specific profile
 - Conveniently prompting and storing locally (~/.aws/credentials) for AWS profile credentials when access keys not found
 - Detach/Attach rapidly AWS policies to user, group or role with: `attach policy service=ec2 access=readonly group=sysadmin`. More info with `awless attach policy -h`
