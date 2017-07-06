@@ -85,7 +85,7 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 	for _, am := range c.auths {
 		authDescs = append(authDescs, am.desc)
 	}
-	c.logger.Infof("authentication methods found [%s]", strings.Join(authDescs, ", "))
+	c.logger.Infof("trying authentication through: [%s]", strings.Join(authDescs, ", "))
 
 	for _, user := range usernames {
 		c.logger.Verbosef("trying with user %s", user)
