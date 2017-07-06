@@ -1,4 +1,4 @@
-## v0.1.1 [unreleased]
+## v0.1.1 [2017-07-06]
 
 ### Features
 
