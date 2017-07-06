@@ -2888,18 +2888,19 @@ func (c *checker) check() error {
 	defer timer.Stop()
 	for {
 		select {
-		case <-time.After(c.frequency):
-			got, err := c.fetchFunc()
-			if err != nil {
-				return fmt.Errorf("check %s: %s", c.description, err)
-			}
-			if got == c.expect {
-				c.logger.Infof("check %s %s '%s' done", c.description, c.checkName, c.expect)
-				return nil
-			}
-			c.logger.Infof("%s %s '%s', expect '%s', retry in %s (timeout %s).", c.description, c.checkName, got, c.expect, c.frequency, c.timeout)
 		case <-timer.C:
 			return fmt.Errorf("timeout of %s expired", c.timeout)
+		default:
 		}
+		got, err := c.fetchFunc()
+		if err != nil {
+			return fmt.Errorf("check %s: %s", c.description, err)
+		}
+		if got == c.expect {
+			c.logger.Infof("check %s %s '%s' done", c.description, c.checkName, c.expect)
+			return nil
+		}
+		c.logger.Infof("%s %s '%s', expect '%s', retry in %s (timeout %s).", c.description, c.checkName, got, c.expect, c.frequency, c.timeout)
+		time.Sleep(c.frequency)
 	}
 }
