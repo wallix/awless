@@ -43,7 +43,7 @@ func init() {
 var logCmd = &cobra.Command{
 	Use:               "log",
 	Short:             "Shows the cloud infrastructure changes log",
-	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(c *cobra.Command, args []string) error {

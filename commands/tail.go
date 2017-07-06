@@ -41,7 +41,7 @@ func init() {
 var tailCmd = &cobra.Command{
 	Use:               "tail",
 	Hidden:            true,
-	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook),
 	Short:             "Tail cloud events",
 }

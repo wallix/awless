@@ -51,7 +51,7 @@ var showCmd = &cobra.Command{
   awless show AIDAJ3Z24GOKHTZO4OIX6 # show a user via its ref
   awless show jsmith                # show a user via its ref,
   awless show @jsmith               # forcing search by name`,
-	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {

@@ -43,7 +43,7 @@ var historyCmd = &cobra.Command{
 	Use:               "history",
 	Hidden:            true,
 	Short:             "(in progress) Show a infra resource history & changes using your locally sync snapshots",
-	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {

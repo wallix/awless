@@ -78,7 +78,7 @@ var runCmd = &cobra.Command{
 	Use:               "run PATH",
 	Short:             "Run a template given a filepath or a URL (prefixed with http)",
 	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls\n  awless run repo:create_vpc",
-	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -303,7 +303,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		Short:             oneLinerShortDesc(action, entities),
 		Long:              fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
 		Annotations:       map[string]string{"one-liner": "true"},
-		PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+		PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 		PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -397,7 +397,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		actionCmd.AddCommand(
 			&cobra.Command{
 				Use:               templDef.Entity,
-				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 				PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
 				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr.String(), extraStr.String()),

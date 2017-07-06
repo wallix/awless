@@ -44,7 +44,7 @@ var inspectCmd = &cobra.Command{
 		"Inspecting your infrastructure using available inspectors: %s", allInspectors(),
 	),
 	Example:           "  awless inspect -i bucket_sizer\n  awless inspect -i pricer\n  awless inspect -i port_scanner",
-	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook),
+	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(c *cobra.Command, args []string) error {

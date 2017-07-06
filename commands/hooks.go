@@ -147,3 +147,13 @@ func networkMonitorHook(cmd *cobra.Command, args []string) error {
 	aws.DefaultNetworkMonitor.DisplayStats(os.Stderr)
 	return nil
 }
+
+func firstInstallDoneHook(cmd *cobra.Command, args []string) error {
+	if config.TriggerSyncOnConfigUpdate {
+		fmt.Fprintln(os.Stderr, "\nAll done. Enjoy!")
+		fmt.Fprintln(os.Stderr, "You can review and configure awless with `awless config`")
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintf(os.Stderr, "Now running: `%s`\n", cmd.CommandPath())
+	}
+	return nil
+}

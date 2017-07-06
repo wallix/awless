@@ -48,7 +48,7 @@ var searchCmd = &cobra.Command{
 
 var awsImagesCmd = &cobra.Command{
 	Use:              "images",
-	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook),
+	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
 	Short:            fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first. Supported owners: %s", strings.Join(aws.SupportedAMIOwners, ", ")),
 	Long:             fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", aws.ImageQuerySpec, strings.Join(aws.SupportedAMIOwners, ", ")),
 	Example:          "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --id-only\n  awless search images amazonlinux:::::instance-store --ids-only",
