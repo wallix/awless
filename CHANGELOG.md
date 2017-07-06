@@ -1,24 +1,26 @@
 ## v0.1.1 [unreleased]
 
-## Features
+### Features
 
-- Much more friendlier first install
-- Create new access keys: prompt user to potentially store them locally under a specific profile
-- Conveniently prompting and storing locally (~/.aws/credentials) for AWS profile credentials when access keys not found
 - Detach/Attach rapidly AWS policies to user, group or role with: `attach policy service=ec2 access=readonly group=sysadmin`. More info with `awless attach policy -h`
+- Better template TAB completion: suggest on properties, suggest nothing if not relevant
+- Create access keys: prompt user to potentially store them locally under a specific profile
+- Conveniently prompting and storing locally (~/.aws/credentials) for AWS profile credentials when access keys not found
 - `awless ssh`: support SSH agent thanks to @justone
 - New `--port` flag for `awless ssh`: specifying non-standard SSH port thanks to @justone
-- Sync works on best effort now. Meaning it does not bail out when an error happens (most often it can be an access right issues on some AWS services)
-- Better template TAB completion: suggest on properties, suggest nothing if not relevant
 - Use `--no-headers` flag in `awless list` to display the results without headers
-- `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
 - New flag `--values-for` in `awless show` to output machine readable values for resource properties. Ex: `awless show my_instance --values-for name,publicip`
+- Sync works on best effort now. Meaning it does not bail out when an error happens (most often it can be an access right issues on some AWS services)
+- `awless ls policies` now returns: your managed policies + all policies attached to any users, role or group
+- Table display now use full terminal width when possible
+- Much friendlier first install
+
+### New AWS Services
+
 - Support of EC2 NAT Gateways: `awless list natgateways` / `awless create/delete natgateway`
 - Support [ECR](https://aws.amazon.com/ecr/) repositories and registry: `awless list repositories` / `awless create/delete repository` / `awless authenticate registry`
 - Support [ECS](https://aws.amazon.com/ecs/) clusters, services, containerinstances and containers: `awless list containerclusters/containertasks/containerinstances` `awless attach/detach/delete/start/stop containertask`
 - Create/Delete [ApplicationAutoScaling](http://docs.aws.amazon.com/ApplicationAutoScaling/latest/APIReference/Welcome.html) scalable target and policies: `awless create/delete appscalingtarget/appscalingpolicy`
-- Table display now use full terminal width when possible
-
 
 ### Bugfixes
 - Template TAB completion: do not display non relevant id/name listing for each prompt
