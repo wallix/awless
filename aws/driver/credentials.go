@@ -21,22 +21,23 @@ type credentialsPrompter struct {
 }
 
 func NewCredsPrompter(profile string) *credentialsPrompter {
-	p := strings.TrimSpace(profile)
-	if p == "" {
-		p = "default"
-	}
-	return &credentialsPrompter{Profile: p}
+	return &credentialsPrompter{Profile: profile}
 }
 
 func (c *credentialsPrompter) Prompt() error {
-	fmt.Printf("\nPlease enter access keys for profile '%s' (stored at %s):\n", c.Profile, AWSCredFilepath)
-	fmt.Print("AWS Access Key ID? ")
-	if _, err := fmt.Scanln(&c.Val.AccessKeyID); err != nil {
-		return err
+	token := "and choose a profile name"
+	if c.HasProfile() {
+		token = fmt.Sprintf("for profile '%s'", c.Profile)
 	}
-	fmt.Print("AWS Secret Access Key? ")
-	if _, err := fmt.Scanln(&c.Val.SecretAccessKey); err != nil {
-		return err
+	fmt.Printf("\nPlease enter access keys %s (stored at %s):\n", token, AWSCredFilepath)
+
+	promptUntilNonEmpty("AWS Access Key ID? ", &c.Val.AccessKeyID)
+	promptUntilNonEmpty("AWS Secret Access Key? ", &c.Val.SecretAccessKey)
+	if c.HasProfile() {
+		promptToOverride(fmt.Sprintf("Change your profile name (or just press Enter to keep '%s')?", c.Profile), &c.Profile)
+	} else {
+		c.Profile = "default"
+		promptToOverride("Choose a profile name (or just press Enter to have AWS 'default')? ", &c.Profile)
 	}
 
 	return nil
@@ -69,6 +70,36 @@ func (c *credentialsPrompter) Store() (bool, error) {
 	}
 
 	return created, nil
+}
+
+func (c *credentialsPrompter) HasProfile() bool {
+	return strings.TrimSpace(c.Profile) != ""
+}
+
+func promptToOverride(question string, v *string) {
+	fmt.Print(question)
+	var override string
+	fmt.Scanln(&override)
+	if strings.TrimSpace(override) != "" {
+		*v = override
+		return
+	}
+}
+
+func promptUntilNonEmpty(question string, v *string) {
+	ask := func(v *string) bool {
+		fmt.Print(question)
+		_, err := fmt.Scanln(v)
+		if err == nil && strings.TrimSpace(*v) != "" {
+			return false
+		}
+		if err != nil {
+			fmt.Printf("Error: %s. Retry please...\n", err)
+		}
+		return true
+	}
+	for ask(v) {}
+	return
 }
 
 func credentialsDirMissing() bool {

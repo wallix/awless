@@ -139,7 +139,7 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n", creds.Profile, awsdriver.AWSCredFilepath)
 		}
 		fmt.Printf("\u2713 Reloading session...\n\n")
-		return initAWSSession(region, profile)
+		return initAWSSession(region, creds.Profile)
 	}
 
 	session.Config.HTTPClient = http.DefaultClient

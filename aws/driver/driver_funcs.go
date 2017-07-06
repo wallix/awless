@@ -967,7 +967,7 @@ func (d *IamDriver) Create_Accesskey(ctx driver.Context, params map[string]inter
 		fmt.Scanln(&yesorno)
 		if y := strings.TrimSpace(strings.ToLower(yesorno)); y == "y" || y == "yes" {
 			var profile string
-			fmt.Print("Entry profile name ? [default] ")
+			fmt.Print("Entry profile name (will default to AWS 'default') ? ")
 			fmt.Scanln(&profile)
 			profile = strings.TrimSpace(profile)
 			if profile == "" {
