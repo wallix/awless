@@ -37,14 +37,14 @@ var (
 	AccessService, InfraService, StorageService, MessagingService, DnsService, LambdaService, MonitoringService, CdnService, CloudformationService cloud.Service
 )
 
-func InitServices(conf map[string]interface{}, log *logger.Logger) error {
+func InitServices(conf map[string]interface{}, log *logger.Logger, profileSetterCallback func(val string) error) error {
 	awsconf := config(conf)
 	region := awsconf.region()
 	if region == "" {
 		return errors.New("empty AWS region. Set it with `awless config set aws.region`")
 	}
 
-	sess, err := initAWSSession(region, awsconf.profile())
+	sess, err := initAWSSession(region, awsconf.profile(), profileSetterCallback)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 		return nil, fmt.Errorf("invalid region '%s' provided", region)
 	}
 
-	sess, err := initAWSSession(region, profile)
+	sess, err := initAWSSession(region, profile, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, er
 	return driver.NewMultiDriver(drivers...), nil
 }
 
-func initAWSSession(region, profile string) (*session.Session, error) {
+func initAWSSession(region, profile string, profileSetterCallback func(val string) error) (*session.Session, error) {
 	session, err := session.NewSessionWithOptions(session.Options{
 		Config: awssdk.Config{
 			Region:     awssdk.String(region),
@@ -125,6 +125,7 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 	if _, err = session.Config.Credentials.Get(); err != nil {
 		fmt.Printf("Cannot resolve AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", profile)
 		creds := awsdriver.NewCredsPrompter(profile)
+		creds.ProfileSetterCallback = profileSetterCallback
 		if err := creds.Prompt(); err != nil {
 			return nil, fmt.Errorf("prompting credentials: %s", err)
 		}
@@ -139,7 +140,7 @@ func initAWSSession(region, profile string) (*session.Session, error) {
 			fmt.Printf("\n\u2713 Credentials for profile '%s' stored successfully in %s\n", creds.Profile, awsdriver.AWSCredFilepath)
 		}
 		fmt.Printf("\u2713 Reloading session...\n\n")
-		return initAWSSession(region, creds.Profile)
+		return initAWSSession(region, creds.Profile, profileSetterCallback)
 	}
 
 	session.Config.HTTPClient = http.DefaultClient

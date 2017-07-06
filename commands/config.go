@@ -74,9 +74,10 @@ var configGetCmd = &cobra.Command{
 }
 
 var configSetCmd = &cobra.Command{
-	Use:              "set KEY [VALUE]",
-	Short:            "Set or update a configuration value",
-	PersistentPreRun: applyHooks(initAwlessEnvHook),
+	Use:               "set KEY [VALUE]",
+	Short:             "Set or update a configuration value",
+	PersistentPreRun:  applyHooks(initAwlessEnvHook),
+	PersistentPostRun: applyHooks(includeHookIf(&config.TriggerSyncOnConfigUpdate, initCloudServicesHook)),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {

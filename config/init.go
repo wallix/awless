@@ -45,7 +45,7 @@ func init() {
 	os.Setenv("__AWLESS_KEYS_DIR", KeysDir)
 }
 
-func InitAwlessEnv(currentCmd string) error {
+func InitAwlessEnv() error {
 	_, err := os.Stat(DBPath)
 
 	AwlessFirstInstall = os.IsNotExist(err)
@@ -65,11 +65,6 @@ func InitAwlessEnv(currentCmd string) error {
 		if err := InitConfig(resolved); err != nil {
 			return err
 		}
-
-		fmt.Println("All done. Enjoy!")
-		fmt.Println("\nYou can review and configure awless with `awless config`")
-		fmt.Println()
-		fmt.Printf("Now running: `%s`\n", currentCmd)
 
 		err = database.Execute(func(db *database.DB) error {
 			return db.SetStringValue("current.version", Version)

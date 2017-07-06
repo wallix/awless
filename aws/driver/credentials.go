@@ -16,12 +16,13 @@ var (
 )
 
 type credentialsPrompter struct {
-	Profile string
-	Val     credentials.Value
+	Profile               string
+	Val                   credentials.Value
+	ProfileSetterCallback func(string) error
 }
 
 func NewCredsPrompter(profile string) *credentialsPrompter {
-	return &credentialsPrompter{Profile: profile}
+	return &credentialsPrompter{Profile: profile, ProfileSetterCallback: func(string) error { return nil }}
 }
 
 func (c *credentialsPrompter) Prompt() error {
@@ -34,10 +35,14 @@ func (c *credentialsPrompter) Prompt() error {
 	promptUntilNonEmpty("AWS Access Key ID? ", &c.Val.AccessKeyID)
 	promptUntilNonEmpty("AWS Secret Access Key? ", &c.Val.SecretAccessKey)
 	if c.HasProfile() {
-		promptToOverride(fmt.Sprintf("Change your profile name (or just press Enter to keep '%s')?", c.Profile), &c.Profile)
+		promptToOverride(fmt.Sprintf("Change your profile name (or just press Enter to keep '%s')? ", c.Profile), &c.Profile)
 	} else {
 		c.Profile = "default"
 		promptToOverride("Choose a profile name (or just press Enter to have AWS 'default')? ", &c.Profile)
+	}
+
+	if c.ProfileSetterCallback != nil {
+		c.ProfileSetterCallback(c.Profile)
 	}
 
 	return nil
@@ -98,7 +103,8 @@ func promptUntilNonEmpty(question string, v *string) {
 		}
 		return true
 	}
-	for ask(v) {}
+	for ask(v) {
+	}
 	return
 }
 

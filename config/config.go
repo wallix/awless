@@ -8,12 +8,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/config"
-	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/sync"
 )
 
 var (
@@ -74,6 +70,8 @@ var deprecated = map[string]string{
 	"sync.auto": autosyncConfigKey,
 	"region":    RegionConfigKey,
 }
+
+var TriggerSyncOnConfigUpdate bool
 
 type onUpdateFunc func(interface{})
 
@@ -153,6 +151,10 @@ func Set(key, value string) error {
 	}
 
 	return nil
+}
+
+func SetProfileCallback(value string) error {
+	return Set(ProfileConfigKey, value)
 }
 
 func Unset(key string) error {
@@ -358,19 +360,9 @@ func runSyncWithUpdatedRegion(i interface{}) {
 		return
 	}
 
-	region := fmt.Sprint(i)
-
-	if !awsconfig.IsValidRegion(region) {
+	if !awsconfig.IsValidRegion(fmt.Sprint(i)) {
 		return
 	}
 
-	fmt.Printf("Syncing region '%s'...\n\n", region)
-	aws.InitServices(GetConfigWithPrefix("aws."), logger.DiscardLogger)
-
-	var services []cloud.Service
-	for _, srv := range cloud.ServiceRegistry {
-		services = append(services, srv)
-	}
-
-	sync.NewSyncer().Sync(services...)
+	TriggerSyncOnConfigUpdate = true
 }

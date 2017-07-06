@@ -22,6 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/logger"
@@ -39,7 +40,7 @@ func applyHooks(funcs ...func(*cobra.Command, []string) error) func(*cobra.Comma
 }
 
 func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
-	if err := config.InitAwlessEnv(cmd.CommandPath()); err != nil {
+	if err := config.InitAwlessEnv(); err != nil {
 		return fmt.Errorf("cannot init awless environment: %s", err)
 	}
 	if awsRegionGlobalFlag != "" {
@@ -69,16 +70,30 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 	awsConf := config.GetConfigWithPrefix("aws.")
-	_, ok := awsConf[config.ProfileConfigKey]
-	if !ok {
-		awsConf[config.ProfileConfigKey] = "default"
-	}
 	logger.Verbosef("loading AWS session with profile '%v' and region '%v'", awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
-	if err := aws.InitServices(awsConf, logger.DefaultLogger); err != nil {
+	if err := aws.InitServices(awsConf, logger.DefaultLogger, config.SetProfileCallback); err != nil {
 		return err
 	}
 
+	if config.TriggerSyncOnConfigUpdate {
+		logger.Infof("Syncing new region '%s'", awsConf[config.RegionConfigKey])
+		var services []cloud.Service
+		for _, s := range cloud.ServiceRegistry {
+			services = append(services, s)
+		}
+		sync.NewSyncer().Sync(services...)
+	}
+
 	return nil
+}
+
+func includeHookIf(cond *bool, hook func(*cobra.Command, []string) error) func(*cobra.Command, []string) error {
+	return func(c *cobra.Command, args []string) error {
+		if *cond {
+			return hook(c, args)
+		}
+		return nil
+	}
 }
 
 func initSyncerHook(cmd *cobra.Command, args []string) error {
