@@ -75,7 +75,7 @@ hTSx5geAH2W73IyiTK8zIdgPMJPh69//5OhFzhQ8Ug==
 			t.Fatal(err)
 		}
 
-		if got, want := client.auths[0].keyPath, tcase.expkeypath; got != want {
+		if got, want := client.Keypath, tcase.expkeypath; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
 		if got, want := client.StrictHostKeyChecking, true; got != want {
@@ -198,7 +198,7 @@ func TestCLIAndConfig(t *testing.T) {
 			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tPort 8022",
 		},
 		{
-			&Client{Port: 22, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: true, selectedAuth: auth{keyPath: "/path/to/key"}},
+			&Client{Port: 22, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: true, Keypath: "/path/to/key"},
 			"/usr/bin/ssh ec2-user@1.2.3.4 -i /path/to/key",
 			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tIdentityFile /path/to/key",
 		},

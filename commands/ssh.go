@@ -74,6 +74,8 @@ var sshCmd = &cobra.Command{
 		exitOn(err)
 
 		client, err := ssh.InitClient(connectionCtx.keypath, config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh"))
+		exitOn(err)
+
 		client.Port = sshPortFlag
 
 		if err != nil && strings.Contains(err.Error(), "cannot find SSH key") && keyPathFlag == "" {
@@ -143,21 +145,21 @@ func isConnectionRefusedErr(err error) bool {
 }
 
 func getIP(inst *graph.Resource) (string, error) {
-	var ipKeyType string
+	privIP, hasPriv := inst.Properties[properties.PrivateIP].(string)
+	pubIP, hasPub := inst.Properties[properties.PublicIP].(string)
+	state, _ := inst.Properties[properties.State].(string)
+
+	if !hasPub && !hasPriv {
+		return "", fmt.Errorf("No public/private IP addresses for *%s* instance %s", state, inst.Id())
+	} else if !hasPub {
+		return "", fmt.Errorf("No public IP address for instance %s (private IP is '%s')", inst.Id(), privIP)
+	}
 
 	if privateIPFlag {
-		ipKeyType = properties.PrivateIP
-	} else {
-		ipKeyType = properties.PublicIP
+		return privIP, nil
 	}
 
-	ip, ok := inst.Properties[ipKeyType]
-
-	if !ok {
-		return "", fmt.Errorf("no IP address for instance %s", inst.Id())
-	}
-
-	return fmt.Sprint(ip), nil
+	return pubIP, nil
 }
 
 type instanceConnectionContext struct {
