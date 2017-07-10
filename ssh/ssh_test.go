@@ -190,22 +190,22 @@ func TestCLIAndConfig(t *testing.T) {
 		{
 			&Client{Port: 22, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: true},
 			"/usr/bin/ssh ec2-user@1.2.3.4",
-			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user",
+			"\nHost TestHost\n  Hostname 1.2.3.4\n  User ec2-user",
 		},
 		{
 			&Client{Port: 8022, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: true},
 			"/usr/bin/ssh ec2-user@1.2.3.4 -p 8022",
-			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tPort 8022",
+			"\nHost TestHost\n  Hostname 1.2.3.4\n  User ec2-user\n  Port 8022",
 		},
 		{
 			&Client{Port: 22, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: true, Keypath: "/path/to/key"},
 			"/usr/bin/ssh ec2-user@1.2.3.4 -i /path/to/key",
-			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tIdentityFile /path/to/key",
+			"\nHost TestHost\n  Hostname 1.2.3.4\n  User ec2-user\n  IdentityFile /path/to/key",
 		},
 		{
 			&Client{Port: 22, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: false},
 			"/usr/bin/ssh ec2-user@1.2.3.4 -o StrictHostKeychecking=no",
-			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tStrictHostKeychecking no",
+			"\nHost TestHost\n  Hostname 1.2.3.4\n  User ec2-user\n  StrictHostKeychecking no",
 		},
 	}
 

@@ -38,7 +38,7 @@ import (
 	"github.com/wallix/awless/ssh"
 )
 
-var keyPathFlag string
+var keyPathFlag, proxyInstanceThroughFlag string
 var sshPortFlag int
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
@@ -49,6 +49,7 @@ func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path or name toward the identity (key file) to use to connect through SSH")
 	sshCmd.Flags().IntVar(&sshPortFlag, "port", 22, "Set SSH port")
+	sshCmd.Flags().StringVar(&proxyInstanceThroughFlag, "through", "", "Name of instance to proxy through to connect to a destination host")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
@@ -70,28 +71,51 @@ var sshCmd = &cobra.Command{
 			return fmt.Errorf("instance required")
 		}
 
-		connectionCtx, err := initInstanceConnectionContext(args[0], keyPathFlag)
+		var err error
+		var connectionCtx *instanceConnectionContext
+
+		if proxyInstanceThroughFlag != "" {
+			connectionCtx, err = initInstanceConnectionContext(proxyInstanceThroughFlag, keyPathFlag)
+		} else {
+			connectionCtx, err = initInstanceConnectionContext(args[0], keyPathFlag)
+		}
 		exitOn(err)
 
-		client, err := ssh.InitClient(connectionCtx.keypath, config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh"))
+		firsHopClient, err := ssh.InitClient(connectionCtx.keypath, config.KeysDir, filepath.Join(os.Getenv("HOME"), ".ssh"))
 		exitOn(err)
-
-		client.Port = sshPortFlag
 
 		if err != nil && strings.Contains(err.Error(), "cannot find SSH key") && keyPathFlag == "" {
 			logger.Info("you may want to specify a key filepath with `-i /path/to/key.pem`")
 		}
 		exitOn(err)
 
-		client.SetLogger(logger.DefaultLogger)
-		client.SetStrictHostKeyChecking(!disableStrictHostKeyCheckingFlag)
-		client.InteractiveTerminalFunc = console.InteractiveTerminal
-		client.IP = connectionCtx.ip
+		firsHopClient.SetLogger(logger.DefaultLogger)
+		firsHopClient.SetStrictHostKeyChecking(!disableStrictHostKeyCheckingFlag)
+		firsHopClient.InteractiveTerminalFunc = console.InteractiveTerminal
+		firsHopClient.Port = sshPortFlag
+
+		if privateIPFlag {
+			if priv := connectionCtx.privip; priv != "" {
+				firsHopClient.IP = connectionCtx.privip
+			} else {
+				exitOn(fmt.Errorf(
+					"no private IP resolved for instance %s (state '%s')",
+					connectionCtx.instance.Id(), connectionCtx.state,
+				))
+			}
+		} else {
+			if pub := connectionCtx.ip; pub != "" {
+				firsHopClient.IP = connectionCtx.ip
+			} else {
+				logger.Infof("`--private` flag can be used to connect through instance's private IP '%s'", connectionCtx.privip)
+				exitOn(fmt.Errorf("no public IP resolved for instance %s (state '%s')", connectionCtx.instance.Id(), connectionCtx.state))
+			}
+		}
 
 		if connectionCtx.user != "" {
-			client, err = client.DialWithUsers(connectionCtx.user)
+			err = firsHopClient.DialWithUsers(connectionCtx.user)
 		} else {
-			client, err = client.DialWithUsers(awsconfig.DefaultAMIUsers...)
+			err = firsHopClient.DialWithUsers(awsconfig.DefaultAMIUsers...)
 		}
 
 		if isConnectionRefusedErr(err) {
@@ -107,69 +131,44 @@ var sshCmd = &cobra.Command{
 			exitOn(err)
 		}
 
+		targetClient := firsHopClient
+
+		if proxyInstanceThroughFlag != "" {
+			destInstanceCtx, err := initInstanceConnectionContext(args[0], keyPathFlag)
+			exitOn(err)
+			if destInstanceCtx.user != "" {
+				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, destInstanceCtx.user)
+			} else {
+				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, awsconfig.DefaultAMIUsers...)
+			}
+		}
+
 		if printSSHConfigFlag {
-			fmt.Println(client.SSHConfigString(connectionCtx.instanceName))
+			fmt.Println(targetClient.SSHConfigString(connectionCtx.instanceName))
 			return nil
 		}
 
 		if printSSHCLIFlag {
-			fmt.Println(client.ConnectString())
+			fmt.Println(targetClient.ConnectString())
 			return nil
 		}
 
-		exitOn(client.Connect())
+		exitOn(targetClient.Connect())
 		return nil
 	},
-}
-
-func instanceCredentialsFromGraph(g *graph.Graph, inst *graph.Resource, keyFlag string) (keypath string, ip string, err error) {
-	if ip, err = getIP(inst); err != nil {
-		return
-	}
-
-	if keyFlag != "" {
-		keypath = keyFlag
-	} else {
-		keypair, ok := inst.Properties[properties.KeyPair]
-		if !ok {
-			return
-		}
-		keypath = fmt.Sprint(keypair)
-	}
-
-	return
 }
 
 func isConnectionRefusedErr(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "connection refused")
 }
 
-func getIP(inst *graph.Resource) (string, error) {
-	privIP, hasPriv := inst.Properties[properties.PrivateIP].(string)
-	pubIP, hasPub := inst.Properties[properties.PublicIP].(string)
-	state, _ := inst.Properties[properties.State].(string)
-
-	if !hasPub && !hasPriv {
-		return "", fmt.Errorf("No public/private IP addresses for *%s* instance %s", state, inst.Id())
-	} else if !hasPub {
-		return "", fmt.Errorf("No public IP address for instance %s (private IP is '%s')", inst.Id(), privIP)
-	}
-
-	if privateIPFlag {
-		return privIP, nil
-	}
-
-	return pubIP, nil
-}
-
 type instanceConnectionContext struct {
-	user           string
-	ip             string
-	keypath        string
-	instanceName   string
-	instance       *graph.Resource
-	resourcesGraph *graph.Graph
-	myip           net.IP
+	ip, privip          string
+	myip                net.IP
+	user, keypath       string
+	state, instanceName string
+	instance            *graph.Resource
+	resourcesGraph      *graph.Graph
 }
 
 func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectionContext, error) {
@@ -224,13 +223,18 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 		}
 	}
 
-	keypath, IP, err := instanceCredentialsFromGraph(ctx.resourcesGraph, ctx.instance, keypath)
-	if err != nil {
-		return nil, err
-	}
+	ctx.privip, _ = ctx.instance.Properties[properties.PrivateIP].(string)
+	ctx.ip, _ = ctx.instance.Properties[properties.PublicIP].(string)
+	ctx.state, _ = ctx.instance.Properties[properties.State].(string)
 
-	ctx.keypath = keypath
-	ctx.ip = IP
+	if keypath != "" {
+		ctx.keypath = keypath
+	} else {
+		keypair, ok := ctx.instance.Properties[properties.KeyPair].(string)
+		if ok {
+			ctx.keypath = fmt.Sprint(keypair)
+		}
+	}
 
 	return ctx, nil
 }
@@ -283,8 +287,7 @@ func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 }
 
 func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
-	state, ok := ctx.instance.Properties[properties.State]
-	if st := fmt.Sprint(state); ok && st != "running" {
+	if st := ctx.state; st != "running" {
 		logger.Warningf("this instance is '%s' (cannot ssh to a non running state)", st)
 		if st == "stopped" {
 			logger.Warningf("you can start it with `awless -f start instance id=%s`", ctx.instance.Id())
