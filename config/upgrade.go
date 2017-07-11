@@ -74,8 +74,12 @@ func notifyIfUpgrade(url string, messaging io.Writer) error {
 			switch BuildFor {
 			case "brew":
 				install = "Run `brew upgrade awless`"
-			case "zip":
-				install = fmt.Sprintf("Run `wget -O awless-%s.zip https://github.com/wallix/awless/releases/download/%s/awless-%s-%s.zip`", latest.Version, latest.Version, runtime.GOOS, runtime.GOARCH)
+			case "zip", "targz":
+				ext := "tar.gz"
+				if runtime.GOOS == "windows" {
+					ext = "zip"
+				}
+				install = fmt.Sprintf("Run `wget -O awless-%s.%s https://github.com/wallix/awless/releases/download/%s/awless-%s-%s.%s`", latest.Version, ext, latest.Version, runtime.GOOS, runtime.GOARCH, ext)
 			default:
 				install = "Run `go get -u github.com/wallix/awless`"
 			}
