@@ -60,7 +60,7 @@ var showCmd = &cobra.Command{
 		}
 
 		ref := args[0]
-		notFound := fmt.Sprintf("resource with reference %s not found", deprefix(ref))
+		notFound := fmt.Sprintf("resource with reference '%s' not found", deprefix(ref))
 
 		var resource *graph.Resource
 		var gph *graph.Graph
@@ -204,7 +204,8 @@ func runFullSync() {
 		return
 	}
 
-	logger.Info("cannot resolve resource - running full sync")
+	logger.Infof("cannot find resource in existing data synced locally")
+	logger.Infof("running sync for current region '%s'", config.GetAWSRegion())
 
 	var services []cloud.Service
 	for _, srv := range cloud.ServiceRegistry {
