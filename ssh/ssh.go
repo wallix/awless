@@ -76,7 +76,6 @@ func (c *Client) SetStrictHostKeyChecking(hostKeyChecking bool) {
 func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 	var err error
 	for _, user := range usernames {
-		c.logger.ExtraVerbosef("trying with user %s", user)
 		newConfig := *c.Config
 		newConfig.User = user
 		if !c.StrictHostKeyChecking {
@@ -84,8 +83,10 @@ func (c *Client) DialWithUsers(usernames ...string) (*Client, error) {
 		}
 		client, err := gossh.Dial("tcp", fmt.Sprintf("%s:%d", c.IP, c.Port), &newConfig)
 		if err != nil {
-			return c, err
+			c.logger.ExtraVerbosef("cannot dial with user %s", user)
+			continue
 		} else {
+			c.logger.Verbosef("dialed successfully with user %s", user)
 			c.User = user
 			c.Client = client
 			return c, nil
