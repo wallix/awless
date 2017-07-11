@@ -169,6 +169,7 @@ const (
 	Region                            = "Region"
 	RegisteredContainerInstancesCount = "RegisteredContainerInstancesCount"
 	Role                              = "Role"
+	Roles                             = "Roles"
 	RootDevice                        = "RootDevice"
 	RootDeviceType                    = "RootDeviceType"
 	Routes                            = "Routes"

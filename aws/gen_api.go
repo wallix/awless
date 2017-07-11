@@ -115,6 +115,7 @@ var ResourceTypes = []string{
 	"role",
 	"policy",
 	"accesskey",
+	"instanceprofile",
 	"bucket",
 	"s3object",
 	"subscription",
@@ -182,6 +183,7 @@ var ServicePerResourceType = map[string]string{
 	"role":                "access",
 	"policy":              "access",
 	"accesskey":           "access",
+	"instanceprofile":     "access",
 	"bucket":              "storage",
 	"s3object":            "storage",
 	"subscription":        "messaging",
@@ -229,6 +231,7 @@ var APIPerResourceType = map[string]string{
 	"role":                "iam",
 	"policy":              "iam",
 	"accesskey":           "iam",
+	"instanceprofile":     "iam",
 	"bucket":              "s3",
 	"s3object":            "s3",
 	"subscription":        "sns",
@@ -1957,6 +1960,7 @@ func (s *Access) ResourceTypes() []string {
 		"role",
 		"policy",
 		"accesskey",
+		"instanceprofile",
 	}
 }
 
@@ -1975,6 +1979,7 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 	var roleList []*iam.RoleDetail
 	var policyList []*iam.Policy
 	var accesskeyList []*iam.AccessKeyMetadata
+	var instanceprofileList []*iam.InstanceProfile
 
 	fetchError := new(multiError)
 
@@ -2060,6 +2065,22 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		}()
 	} else {
 		s.log.Verbose("sync: *disabled* for resource access[accesskey]")
+	}
+	if s.config.getBool("aws.access.instanceprofile.sync", true) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var resGraph *graph.Graph
+			var err error
+			resGraph, instanceprofileList, err = s.fetch_all_instanceprofile_graph()
+			if err != nil {
+				errc <- err
+				return
+			}
+			g.AddGraph(resGraph)
+		}()
+	} else {
+		s.log.Verbose("sync: *disabled* for resource access[instanceprofile]")
 	}
 
 	go func() {
@@ -2159,6 +2180,21 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 			}
 		}
 	}
+	if s.config.getBool("aws.access.instanceprofile.sync", true) {
+		for _, r := range instanceprofileList {
+			for _, fn := range addParentsFns["instanceprofile"] {
+				wg.Add(1)
+				go func(f addParentFn, res *iam.InstanceProfile) {
+					defer wg.Done()
+					err := f(g, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, r)
+			}
+		}
+	}
 
 	go func() {
 		wg.Wait()
@@ -2194,6 +2230,9 @@ func (s *Access) FetchByType(t string) (*graph.Graph, error) {
 		return graph, err
 	case "accesskey":
 		graph, _, err := s.fetch_all_accesskey_graph()
+		return graph, err
+	case "instanceprofile":
+		graph, _, err := s.fetch_all_instanceprofile_graph()
 		return graph, err
 	default:
 		return nil, fmt.Errorf("aws access: unsupported fetch for type %s", t)
@@ -2263,6 +2302,34 @@ func (s *Access) fetch_all_accesskey_graph() (*graph.Graph, []*iam.AccessKeyMeta
 	err := s.ListAccessKeysPages(&iam.ListAccessKeysInput{},
 		func(out *iam.ListAccessKeysOutput, lastPage bool) (shouldContinue bool) {
 			for _, output := range out.AccessKeyMetadata {
+				if badResErr != nil {
+					return false
+				}
+				cloudResources = append(cloudResources, output)
+				var res *graph.Resource
+				if res, badResErr = newResource(output); badResErr != nil {
+					return false
+				}
+				if badResErr = g.AddResource(res); badResErr != nil {
+					return false
+				}
+			}
+			return out.Marker != nil
+		})
+	if err != nil {
+		return g, cloudResources, err
+	}
+
+	return g, cloudResources, badResErr
+}
+
+func (s *Access) fetch_all_instanceprofile_graph() (*graph.Graph, []*iam.InstanceProfile, error) {
+	g := graph.NewGraph()
+	var cloudResources []*iam.InstanceProfile
+	var badResErr error
+	err := s.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{},
+		func(out *iam.ListInstanceProfilesOutput, lastPage bool) (shouldContinue bool) {
+			for _, output := range out.InstanceProfiles {
 				if badResErr != nil {
 					return false
 				}

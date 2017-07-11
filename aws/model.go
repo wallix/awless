@@ -112,6 +112,13 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Virtualization: {name: "VirtualizationType", transform: extractValueFn},
 		properties.Tags:           {name: "Tags", transform: extractTagsFn},
 	},
+	cloud.InstanceProfile: {
+		properties.Name:    {name: "InstanceProfileName", transform: extractValueFn},
+		properties.Arn:     {name: "Arn", transform: extractValueFn},
+		properties.Created: {name: "CreateDate", transform: extractValueFn},
+		properties.Path:    {name: "Path", transform: extractValueFn},
+		properties.Roles:   {name: "Roles", transform: extractStringSliceValues("RoleId")},
+	},
 	cloud.ImportImageTask: {
 		properties.Architecture: {name: "Architecture", transform: extractValueFn},
 		properties.Description:  {name: "Description", transform: extractValueFn},

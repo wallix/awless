@@ -179,6 +179,14 @@ var DriversDefs = []driversDef{
 					{TemplateName: "timeout"},
 				},
 			},
+			// InstanceProfile
+			{
+				Action: "attach", Entity: cloud.InstanceProfile, DryRunUnsupported: true, Input: "AssociateIamInstanceProfileInput", Output: "AssociateIamInstanceProfileOutput", ApiMethod: "AssociateIamInstanceProfile",
+				RequiredParams: []param{
+					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
+					{AwsField: "IamInstanceProfile.Name", TemplateName: "name", AwsType: "awsstr"},
+				},
+			},
 			// Security Group
 			{
 				Action: "create", Entity: cloud.SecurityGroup, ApiMethod: "CreateSecurityGroup", Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", OutputExtractor: "aws.StringValue(output.GroupId)",

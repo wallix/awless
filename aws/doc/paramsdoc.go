@@ -31,6 +31,10 @@ var manualParamsDoc = map[string]map[string]string{
 		"id":   "The ID of the Instance",
 		"port": "The port on which the Instance is listenning",
 	},
+	"attachinstanceprofile": {
+		"instance": "The ID of the Instance",
+		"name":     "The name of the InstanceProfile to associate to the Instance",
+	},
 	"attachpolicy": {
 		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",
 		"service": "Service string to retrieve an AWS policy. Ex: 'ec2', 'cloudfront', 'rds'",

@@ -82,6 +82,7 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "iam.RoleDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "RoleDetailList", Multipage: true, NextPageMarker: "Marker", Manual: true},
 			{FuncType: "list", AWSType: "iam.Policy", ApiMethod: "ListPoliciesPages", Input: "iam.ListPoliciesInput", Output: "iam.ListPoliciesOutput", OutputsExtractor: "Policies", Multipage: true, NextPageMarker: "Marker", Manual: true},
 			{FuncType: "list", AWSType: "iam.AccessKeyMetadata", ApiMethod: "ListAccessKeysPages", Input: "iam.ListAccessKeysInput", Output: "iam.ListAccessKeysOutput", OutputsExtractor: "AccessKeyMetadata", Multipage: true, NextPageMarker: "Marker"},
+			{FuncType: "list", AWSType: "iam.InstanceProfile", ApiMethod: "ListInstanceProfilesPages", Input: "iam.ListInstanceProfilesInput", Output: "iam.ListInstanceProfilesOutput", OutputsExtractor: "InstanceProfiles", Multipage: true, NextPageMarker: "Marker"},
 			{FuncType: "list", AWSType: "iam.ManagedPolicyDetail", Manual: true},
 			{FuncType: "list", AWSType: "iam.User", Manual: true},
 		},

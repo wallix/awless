@@ -441,6 +441,7 @@ type mockIam struct {
 	roledetails          []*iam.RoleDetail
 	policys              []*iam.Policy
 	accesskeymetadatas   []*iam.AccessKeyMetadata
+	instanceprofiles     []*iam.InstanceProfile
 	managedpolicydetails []*iam.ManagedPolicyDetail
 	users                []*iam.User
 }
@@ -494,6 +495,23 @@ func (m *mockIam) ListAccessKeysPages(input *iam.ListAccessKeysInput, fn func(p 
 	}
 	for i, page := range pages {
 		fn(&iam.ListAccessKeysOutput{AccessKeyMetadata: page, Marker: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+func (m *mockIam) ListInstanceProfilesPages(input *iam.ListInstanceProfilesInput, fn func(p *iam.ListInstanceProfilesOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*iam.InstanceProfile
+	for i := 0; i < len(m.instanceprofiles); i += 2 {
+		page := []*iam.InstanceProfile{m.instanceprofiles[i]}
+		if i+1 < len(m.instanceprofiles) {
+			page = append(page, m.instanceprofiles[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&iam.ListInstanceProfilesOutput{InstanceProfiles: page, Marker: aws.String(strconv.Itoa(i + 1))},
 			i < len(pages),
 		)
 	}

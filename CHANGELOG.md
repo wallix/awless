@@ -1,5 +1,7 @@
 ## v0.1.2 [unreleased]
 
+- Instance Profiles: List them; attach them to an instance. Ex: `attach instanceprofiles name=...`, `awless ls instanceprofiles`
+
 ### Features
 
 - [#109](https://github.com/wallix/awless/issues/109): Support caching of STS credentials for Multi-Factor Authentication.

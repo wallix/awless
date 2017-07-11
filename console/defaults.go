@@ -281,6 +281,12 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Name},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 	},
+	cloud.InstanceProfile: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Path},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+	},
 	cloud.Policy: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name},

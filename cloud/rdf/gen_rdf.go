@@ -170,9 +170,10 @@ const (
 	Records                           = "cloud:recordCount"
 	Region                            = "cloud:region"
 	RegisteredContainerInstancesCount = "cloud:registeredContainerInstancesCount"
-	Role                              = "cloud:rootDeviceType"
-	RootDevice                        = "cloud:role"
-	RootDeviceType                    = "cloud:rootDevice"
+	Role                              = "cloud:role"
+	Roles                             = "cloud:roles"
+	RootDevice                        = "cloud:rootDevice"
+	RootDeviceType                    = "cloud:rootDeviceType"
 	Routes                            = "net:routes"
 	Runtime                           = "cloud:runtime"
 	RunningTasksCount                 = "cloud:runningTasksCount"
@@ -368,6 +369,7 @@ var Labels = map[string]string{
 	properties.Region:                            Region,
 	properties.RegisteredContainerInstancesCount: RegisteredContainerInstancesCount,
 	properties.Role:                              Role,
+	properties.Roles:                             Roles,
 	properties.RootDevice:                        RootDevice,
 	properties.RootDeviceType:                    RootDeviceType,
 	properties.Routes:                            Routes,
@@ -565,6 +567,7 @@ var Properties = RDFProperties{
 	Region:                   {ID: Region, RdfType: "rdf:Property", RdfsLabel: "Region", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	RegisteredContainerInstancesCount: {ID: RegisteredContainerInstancesCount, RdfType: "rdf:Property", RdfsLabel: "RegisteredContainerInstancesCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Role:              {ID: Role, RdfType: "rdf:Property", RdfsLabel: "Role", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	Roles:             {ID: Roles, RdfType: "rdf:Property", RdfsLabel: "Roles", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	RootDevice:        {ID: RootDevice, RdfType: "rdf:Property", RdfsLabel: "RootDevice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	RootDeviceType:    {ID: RootDeviceType, RdfType: "rdf:Property", RdfsLabel: "RootDeviceType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Routes:            {ID: Routes, RdfType: "rdf:Property", RdfsLabel: "Routes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:Route"},
