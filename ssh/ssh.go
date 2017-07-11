@@ -122,6 +122,8 @@ func (c *Client) SSHConfigString(hostname string) string {
 	}
 	if !c.StrictHostKeyChecking {
 		extraOpts["StrictHostKeychecking"] = "no"
+		extraOpts["GlobalKnownHostsFile"] = "/dev/null"
+		extraOpts["UserKnownHostsFile"] = "/dev/null"
 	}
 	if c.Port != 22 {
 		extraOpts["Port"] = strconv.Itoa(c.Port)
@@ -165,6 +167,8 @@ func (c *Client) localExec() ([]string, bool) {
 	}
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
+		args = append(args, "-o", "GlobalKnownHostsFile=/dev/null")
+		args = append(args, "-o", "UserKnownHostsFile=/dev/null")
 	}
 
 	return args, exists

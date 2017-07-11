@@ -204,8 +204,8 @@ func TestCLIAndConfig(t *testing.T) {
 		},
 		{
 			&Client{Port: 22, IP: "1.2.3.4", User: "ec2-user", StrictHostKeyChecking: false},
-			"/usr/bin/ssh ec2-user@1.2.3.4 -o StrictHostKeychecking=no",
-			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tStrictHostKeychecking no",
+			"/usr/bin/ssh ec2-user@1.2.3.4 -o StrictHostKeychecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null",
+			"\nHost TestHost\n\tHostname 1.2.3.4\n\tUser ec2-user\n\tGlobalKnownHostsFile /dev/null\n\tStrictHostKeychecking no\n\tUserKnownHostsFile /dev/null",
 		},
 	}
 
