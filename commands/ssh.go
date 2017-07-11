@@ -66,7 +66,7 @@ var sshCmd = &cobra.Command{
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
+		if len(args) < 1 {
 			return fmt.Errorf("instance required")
 		}
 
@@ -87,6 +87,7 @@ var sshCmd = &cobra.Command{
 		client.SetStrictHostKeyChecking(!disableStrictHostKeyCheckingFlag)
 		client.InteractiveTerminalFunc = console.InteractiveTerminal
 		client.IP = connectionCtx.ip
+		client.ExtraArgs = args[1:len(args)]
 
 		if connectionCtx.user != "" {
 			client, err = client.DialWithUsers(connectionCtx.user)
