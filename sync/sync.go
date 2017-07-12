@@ -140,7 +140,7 @@ Loop:
 	}
 
 	if err := s.Commit(filepaths...); err != nil {
-		allErrors = append(allErrors, fmt.Errorf("storing %s: %s", strings.Join(filepaths, ", "), err))
+		allErrors = append(allErrors, fmt.Errorf("committing %s: %s", strings.Join(filepaths, ", "), err))
 	}
 
 	return graphs, concatErrors(allErrors)

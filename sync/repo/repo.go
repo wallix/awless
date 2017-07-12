@@ -180,6 +180,6 @@ func (r *gitRepo) Commit(relativePaths ...string) error {
 	msg := fmt.Sprintf("syncing %s", strings.Join(relativePaths, ", "))
 	committer := &object.Signature{Name: "awlessCLI", When: time.Now(), Email: "git@awless.io"}
 
-	_, err = wt.Commit(msg, &git.CommitOptions{All: true, Author: committer})
+	_, err = wt.Commit(msg, &git.CommitOptions{Author: committer})
 	return err
 }
