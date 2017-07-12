@@ -30,9 +30,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"attachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
-	"attachinstanceprofile": {
-		"instance": "The ID of the instance",
-	},
+	"attachinstanceprofile": {},
 	"attachinternetgateway": {
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
@@ -452,6 +450,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"detachinstance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
+	"detachinstanceprofile": {},
 	"detachinternetgateway": {
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",

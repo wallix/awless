@@ -128,6 +128,12 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Attach_Instanceprofile, nil
 
+	case "detachinstanceprofile":
+		if d.dryRun {
+			return d.Detach_Instanceprofile_DryRun, nil
+		}
+		return d.Detach_Instanceprofile, nil
+
 	case "createsecuritygroup":
 		if d.dryRun {
 			return d.Create_Securitygroup_DryRun, nil

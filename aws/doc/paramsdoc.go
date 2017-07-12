@@ -34,6 +34,7 @@ var manualParamsDoc = map[string]map[string]string{
 	"attachinstanceprofile": {
 		"instance": "The ID of the Instance",
 		"name":     "The name of the InstanceProfile to associate to the Instance",
+		"replace":  "If 'true' will replace existing instance profile with provided one",
 	},
 	"attachpolicy": {
 		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",
@@ -342,6 +343,11 @@ var manualParamsDoc = map[string]map[string]string{
 	},
 	"detachinstance": {
 		"id": "The ID of the instance to be detached from target group",
+	},
+	"detachinstanceprofile": {
+		"instance": "The ID of the Instance",
+		"name":     "The name of the InstanceProfile to detach from the Instance",
+		"replace":  "Not applicatble in the case of detach. Present for easy revert",
 	},
 	"detachpolicy": {
 		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",

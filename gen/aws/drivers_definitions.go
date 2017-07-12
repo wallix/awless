@@ -181,12 +181,26 @@ var DriversDefs = []driversDef{
 			},
 			// InstanceProfile
 			{
-				Action: "attach", Entity: cloud.InstanceProfile, DryRunUnsupported: true, Input: "AssociateIamInstanceProfileInput", Output: "AssociateIamInstanceProfileOutput", ApiMethod: "AssociateIamInstanceProfile",
+				Action: "attach", Entity: cloud.InstanceProfile, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
 					{AwsField: "IamInstanceProfile.Name", TemplateName: "name", AwsType: "awsstr"},
 				},
+				ExtraParams: []param{
+					{TemplateName: "replace"},
+				},
 			},
+			{
+				Action: "detach", Entity: cloud.InstanceProfile, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "instance"},
+					{TemplateName: "name"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "replace"},
+				},
+			},
+
 			// Security Group
 			{
 				Action: "create", Entity: cloud.SecurityGroup, ApiMethod: "CreateSecurityGroup", Input: "CreateSecurityGroupInput", Output: "CreateSecurityGroupOutput", OutputExtractor: "aws.StringValue(output.GroupId)",

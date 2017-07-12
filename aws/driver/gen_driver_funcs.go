@@ -734,47 +734,6 @@ func (d *Ec2Driver) Stop_Instance(ctx driver.Context, params map[string]interfac
 }
 
 // This function was auto generated
-func (d *Ec2Driver) Attach_Instanceprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["instance"]; !ok {
-		return nil, errors.New("attach instanceprofile: missing required params 'instance'")
-	}
-
-	if _, ok := params["name"]; !ok {
-		return nil, errors.New("attach instanceprofile: missing required params 'name'")
-	}
-
-	d.logger.Verbose("params dry run: attach instanceprofile ok")
-	return fakeDryRunId("instanceprofile"), nil
-}
-
-// This function was auto generated
-func (d *Ec2Driver) Attach_Instanceprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	input := &ec2.AssociateIamInstanceProfileInput{}
-	var err error
-
-	// Required params
-	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["name"], input, "IamInstanceProfile.Name", awsstr, ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	start := time.Now()
-	var output *ec2.AssociateIamInstanceProfileOutput
-	output, err = d.AssociateIamInstanceProfile(input)
-	output = output
-	if err != nil {
-		return nil, fmt.Errorf("attach instanceprofile: %s", err)
-	}
-	d.logger.ExtraVerbosef("ec2.AssociateIamInstanceProfile call took %s", time.Since(start))
-	d.logger.Info("attach instanceprofile done")
-	return output, nil
-}
-
-// This function was auto generated
 func (d *Ec2Driver) Create_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateSecurityGroupInput{}
 	input.DryRun = aws.Bool(true)

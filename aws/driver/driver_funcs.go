@@ -175,6 +175,155 @@ func removeString(arr []string, s string) (out []string) {
 	return
 }
 
+func (d *Ec2Driver) Attach_Instanceprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	instanceId, ok := params["instance"].(string)
+	if !ok {
+		return nil, errors.New("attach instanceprofile: missing required params 'instance'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("attach instanceprofile: missing required params 'name'")
+	}
+
+	replace, _ := strconv.ParseBool(fmt.Sprint(params["replace"]))
+	if replace {
+		in := &ec2.DescribeIamInstanceProfileAssociationsInput{
+			Filters: []*ec2.Filter{
+				{Name: aws.String("instance-id"), Values: []*string{aws.String(instanceId)}},
+			},
+		}
+		out, err := d.DescribeIamInstanceProfileAssociations(in)
+		if err != nil {
+			return nil, fmt.Errorf("dry run: replace mode on: cannot get : %s", err)
+		}
+		if assocs := out.IamInstanceProfileAssociations; len(assocs) > 0 {
+			for _, ass := range assocs {
+				d.logger.ExtraVerbosef("dry run: attach instanceprofile: existing instanceprofile %s (state: %s) on instance %s", aws.StringValue(ass.IamInstanceProfile.Id), aws.StringValue(ass.State), instanceId)
+
+			}
+		}
+	}
+
+	d.logger.Verbose("params dry run: attach instanceprofile ok")
+	return fakeDryRunId("instanceprofile"), nil
+}
+
+func (d *Ec2Driver) Attach_Instanceprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	instanceId, _ := params["instance"].(string)
+	profileName, _ := params["name"].(string)
+
+	replace, _ := strconv.ParseBool(fmt.Sprint(params["replace"]))
+	if replace {
+		out, err := d.DescribeIamInstanceProfileAssociations(
+			&ec2.DescribeIamInstanceProfileAssociationsInput{
+				Filters: []*ec2.Filter{
+					{Name: aws.String("instance-id"), Values: []*string{aws.String(instanceId)}},
+					{Name: aws.String("state"), Values: []*string{aws.String("associated")}},
+				},
+			})
+		if err != nil {
+			logger.Warningf("attach instanceprofile: replace mode on: dry run was ok but now cannot get instance profile association")
+		}
+		assoc := out.IamInstanceProfileAssociations
+		if len(assoc) > 0 {
+			start := time.Now()
+			assocId := aws.StringValue(assoc[0].AssociationId)
+			assocInstId := aws.StringValue(assoc[0].InstanceId)
+			oldProfileArn := aws.StringValue(assoc[0].IamInstanceProfile.Arn)
+			d.logger.ExtraVerbosef("attach profile: found existing profile to replace with %s", profileName)
+			if assocInstId == instanceId {
+				out, err := d.ReplaceIamInstanceProfileAssociation(
+					&ec2.ReplaceIamInstanceProfileAssociationInput{
+						AssociationId: aws.String(assocId),
+						IamInstanceProfile: &ec2.IamInstanceProfileSpecification{
+							Name: aws.String(profileName),
+						},
+					})
+				if err != nil {
+					return nil, fmt.Errorf("attach instanceprofile: replace mode on: cannot replace with new instance profile: %s", err)
+				}
+
+				d.logger.Verbosef("attach profile: replaced profile '%s' with '%s' on instance %s", oldProfileArn, profileName, instanceId)
+				d.logger.ExtraVerbosef("ec2.ReplaceIamInstanceProfileAssociation call took %s", time.Since(start))
+
+				return out, nil
+			}
+		}
+	}
+
+	input := &ec2.AssociateIamInstanceProfileInput{}
+	if err := setFieldWithType(instanceId, input, "InstanceId", awsstr, ctx); err != nil {
+		return nil, err
+	}
+	if err := setFieldWithType(profileName, input, "IamInstanceProfile.Name", awsstr, ctx); err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	output, err := d.AssociateIamInstanceProfile(input)
+	if err != nil {
+		return nil, fmt.Errorf("attach instanceprofile: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.AssociateIamInstanceProfile call took %s", time.Since(start))
+	d.logger.Info("attach instanceprofile done")
+	return output, nil
+}
+
+func (d *Ec2Driver) Detach_Instanceprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["instance"]; !ok {
+		return nil, errors.New("detach instanceprofile: missing required params 'instance'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New("detach instanceprofile: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: detach instanceprofile ok")
+	return fakeDryRunId("instanceprofile"), nil
+}
+
+func (d *Ec2Driver) Detach_Instanceprofile(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	instanceId, _ := params["instance"].(string)
+	profileName, _ := params["name"].(string)
+
+	out, err := d.DescribeIamInstanceProfileAssociations(
+		&ec2.DescribeIamInstanceProfileAssociationsInput{
+			Filters: []*ec2.Filter{
+				{Name: aws.String("instance-id"), Values: []*string{aws.String(instanceId)}},
+			},
+		})
+	if err != nil {
+		return nil, fmt.Errorf("detach instance profile: cannot list profile on instance %s: %s", instanceId, err)
+	}
+
+	assocs := out.IamInstanceProfileAssociations
+	if len(assocs) < 1 {
+		d.logger.Infof("detach instanceprofile: nothing to be detached on instance %s", instanceId)
+		return nil, nil
+	}
+
+	var lastId string
+	for _, ass := range assocs {
+		if strings.Contains(aws.StringValue(ass.IamInstanceProfile.Arn), profileName) {
+			input := &ec2.DisassociateIamInstanceProfileInput{
+				AssociationId: ass.AssociationId,
+			}
+
+			start := time.Now()
+			output, err := d.DisassociateIamInstanceProfile(input)
+			if err != nil {
+				return nil, fmt.Errorf("detach instanceprofile: %s", err)
+			}
+			d.logger.ExtraVerbosef("ec2.DisassociateIamInstanceProfile call took %s", time.Since(start))
+			id := aws.StringValue(output.IamInstanceProfileAssociation.IamInstanceProfile.Id)
+			d.logger.Infof("detach instanceprofile '%s' done", id)
+			lastId = id
+		}
+	}
+
+	return lastId, nil
+}
+
 func (d *EcsDriver) Attach_Containertask_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("attach containertask: missing required params 'name'")

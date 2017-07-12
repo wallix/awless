@@ -34,6 +34,7 @@ var APIPerTemplateDefName = map[string]string{
 	"stopinstance":              "ec2",
 	"checkinstance":             "ec2",
 	"attachinstanceprofile":     "ec2",
+	"detachinstanceprofile":     "ec2",
 	"createsecuritygroup":       "ec2",
 	"updatesecuritygroup":       "ec2",
 	"deletesecuritygroup":       "ec2",
@@ -247,7 +248,14 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "instanceprofile",
 		Api:            "ec2",
 		RequiredParams: []string{"instance", "name"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"replace"},
+	},
+	"detachinstanceprofile": {
+		Action:         "detach",
+		Entity:         "instanceprofile",
+		Api:            "ec2",
+		RequiredParams: []string{"instance", "name"},
+		ExtraParams:    []string{"replace"},
 	},
 	"createsecuritygroup": {
 		Action:         "create",
@@ -1161,6 +1169,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["stop"] = append(supported["stop"], "instance")
 	supported["check"] = append(supported["check"], "instance")
 	supported["attach"] = append(supported["attach"], "instanceprofile")
+	supported["detach"] = append(supported["detach"], "instanceprofile")
 	supported["create"] = append(supported["create"], "securitygroup")
 	supported["update"] = append(supported["update"], "securitygroup")
 	supported["delete"] = append(supported["delete"], "securitygroup")
