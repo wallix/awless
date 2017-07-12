@@ -429,7 +429,11 @@ func runSyncFor(tpl *template.Template) {
 }
 
 func resolveAliasFunc(entity, key, alias string) string {
-	gph := sync.LoadLocalGraphForService(aws.ServicePerResourceType[entity], config.GetAWSRegion())
+	gph, err := sync.LoadLocalGraphs(config.GetAWSRegion())
+	if err != nil {
+		fmt.Printf("resolve alias '%s': cannot load local graphs for region %s: %s\n", alias, config.GetAWSRegion(), err)
+		return ""
+	}
 	resType := key
 	if strings.Contains(key, "id") {
 		resType = entity
