@@ -134,7 +134,7 @@ func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string)
 	return nil, fmt.Errorf("Cannot proxy from %s to %s with users %q", c.IP, destinationHost, usernames)
 }
 
-func (c *Client) Close() error {
+func (c *Client) CloseAll() error {
 	if c != nil {
 		if c.Client != nil {
 			return c.Client.Close()
@@ -151,7 +151,7 @@ func (c *Client) Connect() (err error) {
 	if installed {
 		c.logger.Infof("Login as '%s' on '%s'; client '%s'", c.User, c.IP, args[0])
 		c.logger.ExtraVerbosef("running locally %s", args)
-		if err := c.Close(); err != nil {
+		if err := c.CloseAll(); err != nil {
 			c.logger.Warning("could not close properly SSH awless client before delegating")
 		}
 		return syscall.Exec(args[0], args, os.Environ())
