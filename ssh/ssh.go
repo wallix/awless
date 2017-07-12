@@ -134,24 +134,30 @@ func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string)
 	return nil, fmt.Errorf("Cannot proxy from %s to %s with users %q", c.IP, destinationHost, usernames)
 }
 
-func (c *Client) Connect() error {
-	defer func() {
+func (c *Client) Close() error {
+	if c != nil {
 		if c.Client != nil {
-			c.Client.Close()
-			if c.Proxy != nil {
-				c.Proxy.Close()
-			}
+			return c.Client.Close()
 		}
-	}()
+		if c.Proxy != nil {
+			return c.Proxy.Close()
+		}
+	}
+	return nil
+}
 
+func (c *Client) Connect() (err error) {
 	args, installed := c.localExec()
 	if installed {
 		c.logger.Infof("Login as '%s' on '%s'; client '%s'", c.User, c.IP, args[0])
 		c.logger.ExtraVerbosef("running locally %s", args)
+		if err := c.Close(); err != nil {
+			c.logger.Warning("could not close properly SSH awless client before delegating")
+		}
 		return syscall.Exec(args[0], args, os.Environ())
 	}
 
-	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s', using %s for auth", c.User, c.IP)
+	c.logger.Infof("No SSH. Fallback on builtin client. Login as '%s' on '%s'", c.User, c.IP)
 	return c.InteractiveTerminalFunc(c.Client)
 }
 

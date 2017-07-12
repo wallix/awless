@@ -43,6 +43,8 @@ func GetTerminalHeight() int {
 }
 
 func InteractiveTerminal(client *ssh.Client) error {
+	defer client.Close()
+
 	session, err := client.NewSession()
 	if err != nil {
 		return err
