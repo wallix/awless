@@ -27,6 +27,8 @@ import (
 	gosync "sync"
 	"time"
 
+	"runtime"
+
 	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
@@ -139,8 +141,10 @@ Loop:
 		filepaths = append(filepaths, filepath.Join(servicesByName[name].Region(), filename))
 	}
 
-	if err := s.Commit(filepaths...); err != nil {
-		allErrors = append(allErrors, fmt.Errorf("committing %s: %s", strings.Join(filepaths, ", "), err))
+	if runtime.GOOS != "windows" { // https://github.com/wallix/awless/issues/119
+		if err := s.Commit(filepaths...); err != nil {
+			allErrors = append(allErrors, fmt.Errorf("committing %s: %s", strings.Join(filepaths, ", "), err))
+		}
 	}
 
 	return graphs, concatErrors(allErrors)
