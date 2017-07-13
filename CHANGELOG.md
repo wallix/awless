@@ -1,5 +1,6 @@
 ## v0.1.2 [unreleased]
 
+- Profile info is now included in execution logs and appended when suggesting revert action (#120)
 - Instance Profiles: List them; attach them to an instance. Ex: `attach instanceprofiles name=...`, `awless ls instanceprofiles`
 - Replace in one command an InstanceProfile on a given instance with the `replace=true` param. Ex: `attach instanceprofile .... replace=true`
 

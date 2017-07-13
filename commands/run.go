@@ -104,6 +104,7 @@ var runCmd = &cobra.Command{
 		tplExec := &template.TemplateExecution{
 			Template: templ,
 			Locale:   config.GetAWSRegion(),
+			Profile:  config.GetAWSProfile(),
 			Source:   templ.String(),
 		}
 
@@ -272,7 +273,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 
 		if template.IsRevertible(tplExec.Template) {
 			fmt.Println()
-			logger.Infof("Revert this template with `awless revert %s`", tplExec.Template.ID)
+			logger.Infof("Revert this template with `awless revert %s -r %s -p %s`", tplExec.Template.ID, config.GetAWSRegion(), config.GetAWSProfile())
 		}
 
 		runSyncFor(tplExec.Template)
@@ -327,6 +328,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			tplExec := &template.TemplateExecution{
 				Template: templ,
 				Locale:   config.GetAWSRegion(),
+				Profile:  config.GetAWSProfile(),
 				Source:   templ.String(),
 			}
 
@@ -353,6 +355,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				tplExec := &template.TemplateExecution{
 					Template: templ,
 					Locale:   config.GetAWSRegion(),
+					Profile:  config.GetAWSProfile(),
 					Source:   templ.String(),
 				}
 

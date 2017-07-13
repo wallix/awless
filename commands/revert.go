@@ -52,7 +52,7 @@ var revertCmd = &cobra.Command{
 
 		if loc := loaded.Locale; loc != "" && loc != config.GetAWSRegion() {
 			logger.Errorf("This template was originally run in region %s. You are currently in region %s", loc, config.GetAWSRegion())
-			logger.Infof("You can revert it using the region flag: `awless revert %s -r %s`", revertId, loc)
+			logger.Infof("You can revert it using the region flag: `awless revert %s -r %s -p %s`", revertId, loc, loaded.Profile)
 			exitOn(errors.New("region mismatched"))
 		}
 
@@ -62,6 +62,7 @@ var revertCmd = &cobra.Command{
 		tplExec := &template.TemplateExecution{
 			Template: reverted,
 			Locale:   config.GetAWSRegion(),
+			Profile:  config.GetAWSProfile(),
 			Source:   reverted.String(),
 		}
 		exitOn(runTemplate(tplExec))

@@ -103,6 +103,9 @@ func (p *logPrinter) Print(t *TemplateExecution) error {
 	if t.Locale != "" {
 		buff.WriteString(fmt.Sprintf("\tRegion: %s", t.Locale))
 	}
+	if t.Profile != "" {
+		buff.WriteString(fmt.Sprintf("\tProfile: %s", t.Profile))
+	}
 	if !IsRevertible(t.Template) {
 		buff.WriteString(" (not revertible)")
 	}

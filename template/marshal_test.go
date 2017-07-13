@@ -15,6 +15,7 @@ func TestTemplateExecutionUnmarshalFromJSON(t *testing.T) {
 	err := tplExec.UnmarshalJSON([]byte(`{
 		"source": "create stuff",
 		"locale": "eu-west-2",
+		"profile": "admin",
 		"fillers": {
 			"mykey": "myvalue",
 			"mysecondkey": "mysecondvalue"
@@ -48,6 +49,9 @@ func TestTemplateExecutionUnmarshalFromJSON(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	if got, want := tplExec.Locale, "eu-west-2"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := tplExec.Profile, "admin"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 
@@ -114,18 +118,19 @@ func TestTemplateExecutionMarshalToJSON(t *testing.T) {
 	}
 
 	tcases := []struct {
-		source, locale, author string
-		templ                  *Template
-		fillers                map[string]interface{}
-		out                    string
+		source, locale, author, profile string
+		templ                           *Template
+		fillers                         map[string]interface{}
+		out                             string
 	}{
 		{
 			"create vpc\ncreate subnet\ncreate instance",
-			"us-west-2", "michael",
+			"us-west-2", "michael", "admin",
 			tmplWithErrors,
 			nil,
 			`{"source": "create vpc\ncreate subnet\ncreate instance",
 			  "locale": "us-west-2",
+			  "profile": "admin",
 			  "fillers": {}, 
 				"id": "12345",
 				"author": "michael",
@@ -138,13 +143,13 @@ func TestTemplateExecutionMarshalToJSON(t *testing.T) {
 		},
 		{
 			"create subnet cidr=10.0.0.0/24\ncreate instance name=@myinst",
-			"us-west-1", "michael",
+			"us-west-1", "", "admin",
 			MustParse("create subnet cidr=10.0.0.0/24\ncreate instance name=@myinst"),
 			map[string]interface{}{"two": "2"},
 			`{"source": "create subnet cidr=10.0.0.0/24\ncreate instance name=@myinst",
 			  "locale": "us-west-1",
+			  "profile": "admin",
 			  "fillers": {"two": "2"},
-			  "author": "michael",
 			  "id": "",
 			  "commands": [
 			    {"line": "create subnet cidr=10.0.0.0/24"},
@@ -154,11 +159,12 @@ func TestTemplateExecutionMarshalToJSON(t *testing.T) {
 		},
 		{
 			"create instance name='my instance'",
-			"eu-central-2", "michael",
+			"eu-central-2", "michael", "admin",
 			MustParse("create instance name='my instance'"),
 			map[string]interface{}{"three": "3"},
 			`{"source": "create instance name='my instance'",
 			  "locale": "eu-central-2",
+			  "profile": "admin",
 			  "author": "michael",
 			  "fillers": {"three": "3"},
 				"id": "",
@@ -169,7 +175,7 @@ func TestTemplateExecutionMarshalToJSON(t *testing.T) {
 		},
 		{
 			"create instance name=\"my instance '$&\\ special) chars\"",
-			"eu-central-1", "michael",
+			"eu-central-1", "michael", "",
 			MustParse("create instance name=\"my instance '$&\\ special) chars\""),
 			map[string]interface{}{"four": 4},
 			`{"source": "create instance name=\"my instance '$&\\ special) chars\"",
@@ -185,7 +191,7 @@ func TestTemplateExecutionMarshalToJSON(t *testing.T) {
 	}
 
 	for _, c := range tcases {
-		tplExec := TemplateExecution{Template: c.templ, Source: c.source, Author: c.author, Locale: c.locale, Fillers: c.fillers}
+		tplExec := TemplateExecution{Template: c.templ, Source: c.source, Author: c.author, Locale: c.locale, Profile: c.profile, Fillers: c.fillers}
 		actual, err := tplExec.MarshalJSON()
 		if err != nil {
 			t.Fatal(err)

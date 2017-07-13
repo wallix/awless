@@ -11,8 +11,8 @@ import (
 // without altering the template.Template model
 type TemplateExecution struct {
 	*Template
-	Author, Source, Locale string
-	Fillers                map[string]interface{}
+	Author, Source, Locale, Profile string
+	Fillers                         map[string]interface{}
 }
 
 func (t *TemplateExecution) MarshalJSON() ([]byte, error) {
@@ -21,6 +21,7 @@ func (t *TemplateExecution) MarshalJSON() ([]byte, error) {
 	out.Author = t.Author
 	out.Source = t.Source
 	out.Locale = t.Locale
+	out.Profile = t.Profile
 	out.Fillers = t.Fillers
 	if out.Fillers == nil {
 		out.Fillers = make(map[string]interface{}, 0) // friendlier for json, avoiding "fillers": null,
@@ -61,6 +62,7 @@ func (t *TemplateExecution) UnmarshalJSON(b []byte) error {
 
 	t.Source = v.Source
 	t.Locale = v.Locale
+	t.Profile = v.Profile
 	t.Author = v.Author
 	t.Fillers = v.Fillers
 
@@ -97,6 +99,7 @@ type toJSON struct {
 	Author   string                 `json:"author,omitempty"`
 	Source   string                 `json:"source"`
 	Locale   string                 `json:"locale"`
+	Profile  string                 `json:"profile,omitempty"`
 	Fillers  map[string]interface{} `json:"fillers"`
 	Commands []command              `json:"commands"`
 }
