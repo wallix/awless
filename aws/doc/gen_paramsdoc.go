@@ -548,4 +548,5 @@ var generatedParamsDoc = map[string]map[string]string{
 		"public": "Specify true to indicate that network interfaces created in the specified subnet should be assigned a public IPv4 address",
 	},
 	"updatetargetgroup": {},
+	"updaterecord":      {},
 }

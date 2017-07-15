@@ -144,6 +144,7 @@ var APIPerTemplateDefName = map[string]string{
 	"deletezone":                "route53",
 	"createrecord":              "route53",
 	"deleterecord":              "route53",
+	"updaterecord":              "route53",
 	"createfunction":            "lambda",
 	"deletefunction":            "lambda",
 	"createalarm":               "cloudwatch",
@@ -1020,6 +1021,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name", "ttl", "type", "value", "zone"},
 		ExtraParams:    []string{},
 	},
+	"updaterecord": {
+		Action:         "update",
+		Entity:         "record",
+		Api:            "route53",
+		RequiredParams: []string{"name", "ttl", "type", "value", "zone"},
+		ExtraParams:    []string{"comment"},
+	},
 	"createfunction": {
 		Action:         "create",
 		Entity:         "function",
@@ -1279,6 +1287,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "zone")
 	supported["create"] = append(supported["create"], "record")
 	supported["delete"] = append(supported["delete"], "record")
+	supported["update"] = append(supported["update"], "record")
 	supported["create"] = append(supported["create"], "function")
 	supported["delete"] = append(supported["delete"], "function")
 	supported["create"] = append(supported["create"], "alarm")
