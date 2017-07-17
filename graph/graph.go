@@ -199,17 +199,15 @@ func (g *Graph) UnmarshalMultiple(readers ...io.Reader) error {
 }
 
 func (g *Graph) MustMarshal() string {
-	b, err := g.Marshal()
-	if err != nil {
+	var buff bytes.Buffer
+	if err := tstore.NewBinaryEncoder(&buff).Encode(g.store.Snapshot().Triples()...); err != nil {
 		panic(err)
 	}
-	return string(b)
+	return string(buff.Bytes())
 }
 
-func (g *Graph) Marshal() ([]byte, error) {
-	var buff bytes.Buffer
-	err := tstore.NewBinaryEncoder(&buff).Encode(g.store.Snapshot().Triples()...)
-	return buff.Bytes(), err
+func (g *Graph) MarshalTo(w io.Writer) error {
+	return tstore.NewBinaryEncoder(w).Encode(g.store.Snapshot().Triples()...)
 }
 
 func (g *Graph) addRelation(one, other *Resource, pred string) error {
