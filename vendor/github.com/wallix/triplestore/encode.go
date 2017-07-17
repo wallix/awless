@@ -47,49 +47,48 @@ func NewBinaryEncoder(w io.Writer) Encoder {
 }
 
 func (enc *binaryEncoder) Encode(tris ...Triple) error {
+	var buf bytes.Buffer
 	for _, t := range tris {
-		b, err := encodeTriple(t)
-		if err != nil {
+		if err := encodeTriple(t, &buf); err != nil {
 			return err
 		}
 
-		if _, err := enc.w.Write(b); err != nil {
+		if _, err := enc.w.Write(buf.Bytes()); err != nil {
 			return err
 		}
+		buf.Reset()
 	}
 
 	return nil
 }
 
-func encodeTriple(t Triple) ([]byte, error) {
+func encodeTriple(t Triple, buff *bytes.Buffer) error {
 	sub, pred := t.Subject(), t.Predicate()
 
-	var buff bytes.Buffer
-
-	binary.Write(&buff, binary.BigEndian, wordLength(len(sub)))
+	binary.Write(buff, binary.BigEndian, wordLength(len(sub)))
 	buff.WriteString(sub)
 
-	binary.Write(&buff, binary.BigEndian, wordLength(len(pred)))
+	binary.Write(buff, binary.BigEndian, wordLength(len(pred)))
 	buff.WriteString(pred)
 
 	obj := t.Object()
 	if lit, isLit := obj.Literal(); isLit {
-		binary.Write(&buff, binary.BigEndian, literalTypeEncoding)
+		binary.Write(buff, binary.BigEndian, literalTypeEncoding)
 		typ := lit.Type()
-		binary.Write(&buff, binary.BigEndian, wordLength(len(typ)))
+		binary.Write(buff, binary.BigEndian, wordLength(len(typ)))
 		buff.WriteString(string(typ))
 
 		litVal := lit.Value()
-		binary.Write(&buff, binary.BigEndian, wordLength(len(litVal)))
+		binary.Write(buff, binary.BigEndian, wordLength(len(litVal)))
 		buff.WriteString(litVal)
 	} else {
-		binary.Write(&buff, binary.BigEndian, resourceTypeEncoding)
+		binary.Write(buff, binary.BigEndian, resourceTypeEncoding)
 		res, _ := obj.Resource()
-		binary.Write(&buff, binary.BigEndian, wordLength(len(res)))
+		binary.Write(buff, binary.BigEndian, wordLength(len(res)))
 		buff.WriteString(res)
 	}
 
-	return buff.Bytes(), nil
+	return nil
 }
 
 type ntriplesEncoder struct {
@@ -107,12 +106,13 @@ func NewNTriplesEncoderWithContext(w io.Writer, c *Context) Encoder {
 
 func (enc *ntriplesEncoder) Encode(tris ...Triple) error {
 	var buff bytes.Buffer
-	for _, t := range tris {
+
+	for i, t := range tris {
 		buff.WriteString(fmt.Sprintf("<%s> <%s> ", enc.buildIRI(t.Subject()), enc.buildIRI(t.Predicate())))
+
 		if rid, ok := t.Object().Resource(); ok {
 			buff.WriteString(fmt.Sprintf("<%s>", enc.buildIRI(rid)))
-		}
-		if lit, ok := t.Object().Literal(); ok {
+		} else if lit, ok := t.Object().Literal(); ok {
 			var namespace string
 			switch lit.Type() {
 			case XsdString:
@@ -123,7 +123,11 @@ func (enc *ntriplesEncoder) Encode(tris ...Triple) error {
 
 			buff.WriteString(fmt.Sprintf("%s%s", strconv.QuoteToASCII(lit.Value()), namespace))
 		}
-		buff.WriteString(" .\n")
+
+		buff.Write([]byte(" ."))
+		if i != len(tris)-1 {
+			buff.Write([]byte("\n"))
+		}
 	}
 
 	_, err := enc.w.Write(buff.Bytes())
