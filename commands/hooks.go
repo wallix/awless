@@ -81,7 +81,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		for _, s := range cloud.ServiceRegistry {
 			services = append(services, s)
 		}
-		sync.NewSyncer().Sync(services...)
+		sync.NewSyncer(logger.DefaultLogger).Sync(services...)
 	}
 
 	return nil

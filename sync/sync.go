@@ -111,7 +111,7 @@ Loop:
 			if res.err != nil {
 				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", res.service.Name(), res.err))
 			} else {
-				logger.ExtraVerbosef("sync: fetched %s service took %s", res.service.Name(), time.Since(res.start))
+				s.logger.ExtraVerbosef("sync: fetched %s service took %s", res.service.Name(), time.Since(res.start))
 			}
 			if serv := res.service; serv != nil {
 				servicesByName[serv.Name()] = serv
