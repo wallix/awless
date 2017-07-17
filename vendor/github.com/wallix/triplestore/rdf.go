@@ -51,6 +51,15 @@ func (t *triple) key() string {
 	return t.triKey
 }
 
+func (t *triple) clone() *triple {
+	return &triple{
+		sub:    t.sub,
+		pred:   t.pred,
+		obj:    t.obj,
+		triKey: t.triKey,
+	}
+}
+
 func (t *triple) Equal(other Triple) bool {
 	switch {
 	case t == nil:

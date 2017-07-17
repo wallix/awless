@@ -61,7 +61,7 @@ func (g *Graph) AddResource(resources ...*Resource) error {
 }
 
 func (g *Graph) AddGraph(other *Graph) {
-	g.store.Add(other.store.Snapshot().Triples()...)
+	g.store.Add(other.store.CopyTriples()...)
 }
 
 func (g *Graph) AddParentRelation(parent, child *Resource) error {
@@ -200,14 +200,14 @@ func (g *Graph) UnmarshalMultiple(readers ...io.Reader) error {
 
 func (g *Graph) MustMarshal() string {
 	var buff bytes.Buffer
-	if err := tstore.NewBinaryEncoder(&buff).Encode(g.store.Snapshot().Triples()...); err != nil {
+	if err := tstore.NewBinaryEncoder(&buff).Encode(g.store.CopyTriples()...); err != nil {
 		panic(err)
 	}
 	return string(buff.Bytes())
 }
 
 func (g *Graph) MarshalTo(w io.Writer) error {
-	return tstore.NewBinaryEncoder(w).Encode(g.store.Snapshot().Triples()...)
+	return tstore.NewBinaryEncoder(w).Encode(g.store.CopyTriples()...)
 }
 
 func (g *Graph) addRelation(one, other *Resource, pred string) error {
