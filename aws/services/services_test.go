@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsservices
 
 import (
 	"fmt"
@@ -37,8 +37,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/wallix/awless/aws/fetch"
 	"github.com/wallix/awless/cloud"
 	p "github.com/wallix/awless/cloud/properties"
+	"github.com/wallix/awless/fetch"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/graph/resourcetest"
 )
@@ -159,7 +161,11 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 	}
 
 	mock := &mockIam{groupdetails: groups, userdetails: usersDetails, roledetails: roles, managedpolicydetails: managedPolicies, users: users}
-	access := Access{IAMAPI: mock, region: "eu-west-1"}
+	access := Access{
+		IAMAPI:  mock,
+		region:  "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildAccessFetchFuncs(awsfetch.NewConfig(mock))),
+	}
 
 	g, err := access.FetchResources()
 	if err != nil {
@@ -480,7 +486,18 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	mockEcr := &mockEcr{repositorys: repositories}
 	mockEcs := &mockEcs{clusterNames: clusterNames, clusters: clusters, taskdefinitionNames: defNames, taskdefinitions: tasksDef, tasksNames: tasksNames, tasks: tasks, containerinstancesNames: containerInstancesNames, containerinstances: containerInstances}
-	InfraService = &Infra{EC2API: mock, ECRAPI: mockEcr, ECSAPI: mockEcs, ELBV2API: mockLb, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}, region: "eu-west-1"}
+	mockRds := &mockRds{}
+	mockAutoscaling := &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}
+	InfraService = &Infra{
+		EC2API:         mock,
+		ECRAPI:         mockEcr,
+		ECSAPI:         mockEcs,
+		ELBV2API:       mockLb,
+		RDSAPI:         mockRds,
+		AutoScalingAPI: mockAutoscaling,
+		region:         "eu-west-1",
+		fetcher:        fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(awsfetch.NewConfig(mock, mockEcr, mockEcs, mockLb, mockRds, mockAutoscaling))),
+	}
 	g, err := InfraService.FetchResources()
 	if err != nil {
 		t.Fatal(err)
@@ -669,7 +686,11 @@ func TestBuildStorageRdfGraph(t *testing.T) {
 
 	mocks3 := &mockS3{buckets: buckets, objects: objects, grants: bucketsACL}
 	StorageService = mocks3
-	storage := Storage{S3API: mocks3, region: "eu-west-1"}
+	storage := Storage{
+		S3API:   mocks3,
+		region:  "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildStorageFetchFuncs(awsfetch.NewConfig(mocks3))),
+	}
 
 	g, err := storage.FetchResources()
 	if err != nil {
@@ -714,7 +735,10 @@ func TestBuildDnsRdfGraph(t *testing.T) {
 	}
 	mockRoute53 := &mockRoute53{hostedzones: zonePages, resourcerecordsets: recordPages}
 
-	dns := Dns{Route53API: mockRoute53, region: "eu-west-1"}
+	dns := Dns{
+		Route53API: mockRoute53, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildDnsFetchFuncs(awsfetch.NewConfig(mockRoute53))),
+	}
 
 	g, err := dns.FetchResources()
 	if err != nil {
@@ -780,7 +804,10 @@ func TestBuildNotificationGraph(t *testing.T) {
 	sqs := &mockSqs{strings: queues, attributes: attributes}
 	sns := &mockSns{subscriptions: subscriptions, topics: topics}
 
-	service := Messaging{SNSAPI: sns, SQSAPI: sqs, region: "eu-west-1"}
+	service := Messaging{
+		SNSAPI: sns, SQSAPI: sqs, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildMessagingFetchFuncs(awsfetch.NewConfig(sqs, sns))),
+	}
 
 	g, err := service.FetchResources()
 	if err != nil {
@@ -847,7 +874,10 @@ func TestBuildLambdaGraph(t *testing.T) {
 
 	mock := &mockLambda{functionconfigurations: functions}
 
-	service := Lambda{LambdaAPI: mock, region: "eu-west-1"}
+	service := Lambda{
+		LambdaAPI: mock, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildLambdaFetchFuncs(awsfetch.NewConfig(mock))),
+	}
 
 	g, err := service.FetchResources()
 	if err != nil {
@@ -904,7 +934,10 @@ func TestBuildMonitoringGraph(t *testing.T) {
 
 	mock := &mockCloudwatch{metrics: metrics, metricalarms: alarms}
 
-	service := Monitoring{CloudWatchAPI: mock, region: "eu-west-1"}
+	service := Monitoring{
+		CloudWatchAPI: mock, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildMonitoringFetchFuncs(awsfetch.NewConfig(mock))),
+	}
 
 	g, err := service.FetchResources()
 	if err != nil {
@@ -1010,7 +1043,10 @@ func TestBuildCdnGraph(t *testing.T) {
 
 	mock := &mockCloudfront{distributionsummarys: distributions}
 
-	service := Cdn{CloudFrontAPI: mock, region: "eu-west-1"}
+	service := Cdn{
+		CloudFrontAPI: mock, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildCdnFetchFuncs(awsfetch.NewConfig(mock))),
+	}
 
 	g, err := service.FetchResources()
 	if err != nil {
@@ -1096,7 +1132,10 @@ func TestBuildCloudFormationGraph(t *testing.T) {
 
 	mock := &mockCloudformation{stacks: stacks}
 
-	service := Cloudformation{CloudFormationAPI: mock, region: "eu-west-1"}
+	service := Cloudformation{
+		CloudFormationAPI: mock, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildCloudformationFetchFuncs(awsfetch.NewConfig(mock))),
+	}
 
 	g, err := service.FetchResources()
 	if err != nil {
@@ -1162,11 +1201,15 @@ func TestBuildCloudFormationGraph(t *testing.T) {
 }
 
 func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
-
 	expectG := graph.NewGraph()
 	expectG.AddResource(resourcetest.Region("eu-west-1").Build())
 
-	access := Access{IAMAPI: &mockIam{}, region: "eu-west-1"}
+	mock := &mockIam{}
+
+	access := Access{
+		IAMAPI: mock, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildAccessFetchFuncs(awsfetch.NewConfig(mock))),
+	}
 
 	g, err := access.FetchResources()
 	if err != nil {
@@ -1178,7 +1221,15 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
 	}
 
-	infra := Infra{EC2API: &mockEc2{}, ELBV2API: &mockElbv2{}, RDSAPI: &mockRds{}, AutoScalingAPI: &mockAutoscaling{}, ECRAPI: &mockEcr{}, ECSAPI: &mockEcs{}, region: "eu-west-1"}
+	infra := Infra{
+		EC2API:   &mockEc2{},
+		ELBV2API: &mockElbv2{},
+		RDSAPI:   &mockRds{}, AutoScalingAPI: &mockAutoscaling{},
+		ECRAPI: &mockEcr{}, ECSAPI: &mockEcs{}, region: "eu-west-1",
+		fetcher: fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(awsfetch.NewConfig(
+			&mockEc2{}, &mockElbv2{}, &mockRds{}, &mockEcr{}, &mockEcs{}, &mockAutoscaling{},
+		))),
+	}
 
 	g, err = infra.FetchResources()
 	if err != nil {
@@ -1220,26 +1271,27 @@ func mustGetAppliedOnId(g *graph.Graph, res *graph.Resource) []string {
 
 func compareResources(t *testing.T, g *graph.Graph, resources []*graph.Resource, expected map[string]*graph.Resource, expectedChildren, expectedAppliedOn map[string][]string) {
 	if got, want := len(resources), len(expected); got != want {
-		t.Fatalf("got %d, want %d", got, want)
+		t.Errorf("got %d, want %d", got, want)
+		t.Fatalf("got %#v\nwant %#v\n", resources, expected)
 	}
 	for _, got := range resources {
 		want := expected[got.Id()]
 		if !reflect.DeepEqual(got, want) {
-			// fmt.Println("got:")
-			// pretty.Print(got)
-			// fmt.Println("\nwant:")
-			// pretty.Print(want)
-			t.Fatalf("got \n%#v\nwant\n%#v", got, want)
+			//fmt.Println("got:")
+			//pretty.Print(got)
+			//fmt.Println("\nwant:")
+			//pretty.Print(want)
+			t.Errorf("got \n%#v\nwant\n%#v", got, want)
 		}
 		children := mustGetChildrenId(g, got)
 		sort.Strings(children)
 		if g, w := children, expectedChildren[got.Id()]; !reflect.DeepEqual(g, w) {
-			t.Fatalf("'%s' children: got %v, want %v", got.Id(), g, w)
+			t.Errorf("'%s' children: got %v, want %v", got.Id(), g, w)
 		}
 		appliedOn := mustGetAppliedOnId(g, got)
 		sort.Strings(appliedOn)
 		if g, w := appliedOn, expectedAppliedOn[got.Id()]; !reflect.DeepEqual(g, w) {
-			t.Fatalf("'%s' appliedOn: got %v, want %v", got.Id(), g, w)
+			t.Errorf("'%s' appliedOn: got %v, want %v", got.Id(), g, w)
 		}
 	}
 }
@@ -1264,4 +1316,22 @@ func TestSliceOfSlice(t *testing.T) {
 			t.Fatalf("%d: got %+v, want %+v", i+1, got, want)
 		}
 	}
+}
+
+func sliceOfSlice(in []*string, maxLength int) (res [][]*string) {
+	if maxLength <= 0 {
+		return
+	}
+	if len(in) == 0 {
+		return
+	}
+	for i := 0; i < len(in); i += maxLength {
+		if i+maxLength < len(in) {
+			res = append(res, in[i:i+maxLength])
+		} else {
+			res = append(res, in[i:])
+		}
+	}
+
+	return
 }

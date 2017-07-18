@@ -31,17 +31,30 @@ type Resource struct {
 	kind, id string
 
 	Properties map[string]interface{}
+	Relations  map[string][]*Resource
 	Meta       map[string]interface{}
 }
 
 const notFoundResourceType = "notfound"
 
 func NotFoundResource(id string) *Resource {
-	return &Resource{id: id, kind: notFoundResourceType, Properties: make(map[string]interface{}), Meta: make(map[string]interface{})}
+	return &Resource{
+		id:         id,
+		kind:       notFoundResourceType,
+		Properties: make(map[string]interface{}),
+		Meta:       make(map[string]interface{}),
+		Relations:  make(map[string][]*Resource),
+	}
 }
 
 func InitResource(kind, id string) *Resource {
-	return &Resource{id: id, kind: kind, Properties: make(map[string]interface{}), Meta: make(map[string]interface{})}
+	return &Resource{
+		id:         id,
+		kind:       kind,
+		Properties: make(map[string]interface{}),
+		Meta:       make(map[string]interface{}),
+		Relations:  make(map[string][]*Resource),
+	}
 }
 
 func (res *Resource) String() string {

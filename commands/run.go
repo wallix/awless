@@ -35,9 +35,9 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless-scheduler/client"
-	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/doc"
 	"github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -243,7 +243,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 	}
 
 	if strings.TrimSpace(yesorno) == "y" {
-		me, err := aws.AccessService.(*aws.Access).GetIdentity()
+		me, err := awsservices.AccessService.(*awsservices.Access).GetIdentity()
 		if err != nil {
 			logger.Warningf("cannot resolve template author identity: %s", err)
 		} else {
@@ -284,7 +284,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 
 func validateTemplate(tpl *template.Template) {
 	unicityRule := &template.UniqueNameValidator{LookupGraph: func(key string) (*graph.Graph, bool) {
-		g := sync.LoadLocalGraphForService(aws.ServicePerResourceType[key], config.GetAWSRegion())
+		g := sync.LoadLocalGraphForService(awsservices.ServicePerResourceType[key], config.GetAWSRegion())
 		return g, true
 	}}
 
@@ -420,7 +420,7 @@ func runSyncFor(tpl *template.Template) {
 
 	defs := tpl.UniqueDefinitions(awsdriver.AWSLookupDefinitions)
 
-	services := aws.GetCloudServicesForAPIs(defs.Map(
+	services := awsservices.GetCloudServicesForAPIs(defs.Map(
 		func(d template.Definition) string { return d.Api },
 	)...)
 

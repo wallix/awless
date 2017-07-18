@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
@@ -38,7 +38,7 @@ func init() {
 	RootCmd.AddCommand(syncCmd)
 
 	servicesToSyncFlags = make(map[string]*bool)
-	for _, service := range aws.ServiceNames {
+	for _, service := range awsservices.ServiceNames {
 		servicesToSyncFlags[service] = new(bool)
 		syncCmd.Flags().BoolVar(servicesToSyncFlags[service], service, false, fmt.Sprintf("Sync '%s' service only", service))
 	}
@@ -86,7 +86,7 @@ var syncCmd = &cobra.Command{
 
 func displaySyncStats(serviceName string, g *graph.Graph) {
 	var strs []string
-	for rt, service := range aws.ServicePerResourceType {
+	for rt, service := range awsservices.ServicePerResourceType {
 		if service == serviceName {
 			res, err := g.GetAllResources(rt)
 			if err != nil {

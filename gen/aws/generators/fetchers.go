@@ -44,7 +44,7 @@ func generateFetcherFuncs() {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(FETCHERS_DIR, "gen_api.go"), buff.Bytes(), 0666); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(FETCHERS_DIR, "gen_fetchers.go"), buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -67,16 +67,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsfetch
 
 // DO NOT EDIT - This file was automatically generated with go generate
 
 import (
-  "fmt"
-	"sync"
-
+  "context"
+ 
   awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
+  "github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/aws/aws-sdk-go/aws/session"
   {{- range $index, $service := . }}
   {{- range $, $api := $service.Api }}
@@ -84,283 +83,77 @@ import (
   "github.com/aws/aws-sdk-go/service/{{ $api }}/{{ $api }}iface"
   {{- end }}
   {{- end }}
-	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/config"
-    "github.com/wallix/awless/graph"
-	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/driver"
-	"github.com/wallix/awless/aws/driver"
+  "github.com/wallix/awless/fetch"
+  "github.com/wallix/awless/graph"
+  "github.com/wallix/awless/aws/conv"
 )
 
-const accessDenied = "Access Denied"
-
-var ServiceNames = []string{
-	{{- range $index, $service := . }}
-  "{{ $service.Name }}",
-  {{- end }}
-}
-
-var ResourceTypes = []string {
 {{- range $index, $service := . }}
-    {{- range $idx, $fetcher := $service.Fetchers }}
-      "{{ $fetcher.ResourceType }}",
-    {{- end }}
-{{- end }}
-}
+func Build{{ Title $service.Name }}FetchFuncs(conf *Config) fetch.Funcs {
+	funcs := make(map[string]fetch.Func)
 
-var ServicePerAPI = map[string]string {
-{{- range $index, $service := . }}
-{{- range $, $api := $service.Api }}
-  "{{ $api }}": "{{ $service.Name }}",
-{{- end }}
-{{- end }}
-}
-
-var ServicePerResourceType = map[string]string {
-{{- range $index, $service := . }}
-  {{- range $idx, $fetcher := $service.Fetchers }}
-  "{{ $fetcher.ResourceType }}": "{{ $service.Name }}",
-  {{- end }}
-{{- end }}
-}
-
-var APIPerResourceType = map[string]string {
-{{- range $index, $service := . }}
-  {{- range $idx, $fetcher := $service.Fetchers }}
-  "{{ $fetcher.ResourceType }}": "{{ $fetcher.Api }}",
-  {{- end }}
-{{- end }}
-}
-
-var GlobalServices = []string{
-{{- range $index, $service := . }}
-    {{- if $service.Global }}
-      "{{ $service.Name }}",
-    {{- end }}
-{{- end }}
-}
-
-{{ range $index, $service := . }}
-type {{ Title $service.Name }} struct {
-	cache cacher
-  region string
-	config config
-	log *logger.Logger
-	{{- range $, $api := $service.Api }}
-		{{ $api }}iface.{{ ApiToInterface $api }}
-	{{- end }}
-}
-
-func New{{ Title $service.Name }}(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
-  {{- if $service.Global }}
-	region := "global"
-	{{- else}}
-	region := awssdk.StringValue(sess.Config.Region)
-	{{- end}}
-	return &{{ Title $service.Name }}{ 
-	{{- range $, $api := $service.Api }}
-		{{ApiToInterface $api }}: {{ $api }}.New(sess),
-	{{- end }}
-		config: awsconf,
-		region: region,
-		log: log,
-  }
-}
-
-func (s *{{ Title $service.Name }}) Name() string {
-  return "{{ $service.Name }}"
-}
-
-func (s *{{ Title $service.Name }}) Region() string {
-  return s.region
-}
-
-func (s *{{ Title $service.Name }}) Drivers() []driver.Driver {
-  return []driver.Driver{ 
-		{{- range $, $api := $service.Api }}
-		awsdriver.New{{ Title $api }}Driver(s.{{ ApiToInterface $api }}),
-		{{- end }}
-	}
-}
-
-func (s *{{ Title $service.Name }}) ResourceTypes() []string {
-	return []string{
-	{{- range $index, $fetcher := $service.Fetchers }}
-		"{{ $fetcher.ResourceType }}",
-	{{- end }}
-	}
-}
-
-func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
-	g := graph.NewGraph()
-	if s.IsSyncDisabled() {
-		return g, nil
-	}
-		
-	regionN := graph.InitResource(cloud.Region, s.region)
-	if err := g.AddResource(regionN); err != nil {
-		return g, err
-	}
-
-	{{- range $index, $fetcher := $service.Fetchers }}
-  var {{ $fetcher.ResourceType }}List []*{{ $fetcher.AWSType }}
-  {{- end }}
-
-	fetchError := new(multiError)
-
-	errc := make(chan error)
-	var wg sync.WaitGroup
-
-	{{ range $index, $fetcher := $service.Fetchers }}
-	if s.config.getBool("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync", true) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			var resGraph *graph.Graph
-			var err error
-			resGraph, {{ $fetcher.ResourceType }}List, err = s.fetch_all_{{ $fetcher.ResourceType }}_graph()
-			if err != nil {
-				errc <- err
-				return
-			}
-			g.AddGraph(resGraph)
-		}()
-	} else {
-		s.log.Verbose("sync: *disabled* for resource {{ $service.Name }}[{{ $fetcher.ResourceType }}]")
-	}
-  {{- end }}
-
-	go func() {
-		wg.Wait()
-		close(errc)
-	}()
-
-	for err := range errc {
-		switch ee := err.(type) {
-		case awserr.RequestFailure:
-			switch ee.Message() {
-			case accessDenied:
-				fetchError.add(cloud.ErrFetchAccessDenied)
-			default:
-				fetchError.add(ee)
-			}
-		case nil:
-			continue
-		default:
-			fetchError.add(ee)
-		}
-	}
-
-	errc = make(chan error)
-	{{- range $index, $fetcher := $service.Fetchers }}
-	if s.config.getBool("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync", true) {
-		for _, r := range {{ $fetcher.ResourceType }}List {
-			for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
-				wg.Add(1)
-				go func(f addParentFn, res *{{ $fetcher.AWSType }}) {
-					defer wg.Done()
-					err := f(g, res)
-					if err != nil {
-						errc <- err
-						return
-					}
-				}(fn, r)
-			}
-		}
-	}
-  {{- end }}
-
-	go func() {
-		wg.Wait()
-		close(errc)
-	}()
-
-	for err := range errc {
-		if err != nil {
-				fetchError.add(err)
-		}
-	}
-
-	if fetchError.hasAny() {
-		return g, fetchError
-	}
-
-	return g, nil
-}
-
-func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) {
-  switch t {
-  {{- range $index, $fetcher := $service.Fetchers }}
-  case "{{ $fetcher.ResourceType }}":
-		graph, _, err := s.fetch_all_{{ $fetcher.ResourceType }}_graph()
-    return graph, err
-  {{- end }}
-  default:
-    return nil, fmt.Errorf("aws {{ $service.Name }}: unsupported fetch for type %s", t)
-  }
-}
-
-{{ range $index, $fetcher := $service.Fetchers }}
-{{- if not $fetcher.ManualFetcher }}
-func (s *{{ Title $service.Name }}) fetch_all_{{ $fetcher.ResourceType }}_graph() (*graph.Graph, []*{{ $fetcher.AWSType }}, error) {
-  g := graph.NewGraph()
-	var cloudResources []*{{ $fetcher.AWSType }}
-	{{- if $fetcher.Multipage }}
-	var badResErr error
-	err := s.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }},
-		func(out *{{ $fetcher.Output }}, lastPage bool) (shouldContinue bool) {
-			{{- if ne $fetcher.OutputsContainers "" }}
-			for _, all := range out.{{ $fetcher.OutputsContainers }} {
-			{{- end }}
-				for _, output := range {{ if ne $fetcher.OutputsContainers "" }}all{{ else }}out{{ end }}.{{ $fetcher.OutputsExtractor }} {
-					if badResErr != nil {
-						return false
-					}
-					cloudResources = append(cloudResources, output)
-					var res *graph.Resource
-					if res, badResErr = newResource(output); badResErr != nil {
-						return false
-					}
-					if badResErr = g.AddResource(res); badResErr != nil {
-						return false
-					}
-				}
-			{{- if ne $fetcher.OutputsContainers "" }}
-			}
-			{{- end }}
-			return out.{{ $fetcher.NextPageMarker }} != nil
-		})
-	if err != nil {
-		return g, cloudResources, err
-	}
-
-	return g, cloudResources, badResErr
-	{{- else }}
+	addManual{{ Title $service.Name }}FetchFuncs(conf, funcs)
 	
-  out, err := s.{{ ApiToInterface $fetcher.Api }}.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }})
-  if err != nil {
-    return nil, cloudResources, err
-  }
+{{- range $index, $fetcher := $service.Fetchers }}
+	{{- if not $fetcher.ManualFetcher }}
 
-	for _, output := range out.{{ $fetcher.OutputsExtractor }} {
-			cloudResources = append(cloudResources, output)
-      res, err := newResource(output)
-      if err != nil {
-        return g, cloudResources, err
-      }
-			if err = g.AddResource(res); err != nil {
-				return g, cloudResources, err
-			}
-    }
+	funcs["{{ $fetcher.ResourceType }}"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*{{ $fetcher.AWSType }}
+
+		if !conf.getBoolDefaultTrue("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync") {
+			conf.Log.Verbose("sync: *disabled* for resource {{ $service.Name }}[{{ $fetcher.ResourceType }}]")
+			return resources, objects, nil
+		}
 		
-  return g, cloudResources, nil
-	{{ end }}
-}
+		{{- if $fetcher.Multipage }}
+		var badResErr error
+		err := conf.APIs.{{ Title $fetcher.Api}}.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }},
+			func(out *{{ $fetcher.Output }}, lastPage bool) (shouldContinue bool) {
+				{{- if ne $fetcher.OutputsContainers "" }}
+				for _, all := range out.{{ $fetcher.OutputsContainers }} {
+				{{- end }}
+					for _, output := range {{ if ne $fetcher.OutputsContainers "" }}all{{ else }}out{{ end }}.{{ $fetcher.OutputsExtractor }} {
+						if badResErr != nil {
+							return false
+						}
+						objects = append(objects, output)
+						var res *graph.Resource
+						if res, badResErr = awsconv.NewResource(output); badResErr != nil {
+							return false
+						}
+						resources = append(resources, res)
+					}
+				{{- if ne $fetcher.OutputsContainers "" }}
+				}
+				{{- end }}
+				return out.{{ $fetcher.NextPageMarker }} != nil
+			})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		return resources, objects, badResErr
+		{{- else }}
+		
+		out, err := conf.APIs.{{ Title $fetcher.Api}}.{{ $fetcher.ApiMethod }}(&{{ $fetcher.Input }})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range out.{{ $fetcher.OutputsExtractor }} {
+			objects = append(objects, output)
+			res, err := awsconv.NewResource(output)
+			if err != nil {
+				return resources, objects, err
+			}
+			resources = append(resources, res)
+		}
+			
+		return resources, objects, nil{{ end }}
+	}
 {{- end }}
-{{ end }}
-
-func (s *{{ Title $service.Name }}) IsSyncDisabled() bool {
-	return !s.config.getBool("aws.{{ $service.Name }}.sync", true)
+{{- end }}
+	return funcs
 }
-
-{{ end }}`
+{{- end }}`

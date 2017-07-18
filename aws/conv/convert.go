@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsconv
 
 import (
 	"bytes"
@@ -41,14 +41,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
 )
 
-func initResource(source interface{}) (*graph.Resource, error) {
+func InitResource(source interface{}) (*graph.Resource, error) {
 	var res *graph.Resource
 	switch ss := source.(type) {
 	// EC2
@@ -145,14 +144,14 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	case *route53.HostedZone:
 		res = graph.InitResource(cloud.Zone, awssdk.StringValue(ss.Id))
 	case *route53.ResourceRecordSet:
-		id := hashFields(awssdk.StringValue(ss.Name), awssdk.StringValue(ss.Type))
+		id := HashFields(awssdk.StringValue(ss.Name), awssdk.StringValue(ss.Type))
 		res = graph.InitResource(cloud.Record, id)
 		// Lambda
 	case *lambda.FunctionConfiguration:
 		res = graph.InitResource(cloud.Function, awssdk.StringValue(ss.FunctionArn))
 		// Monitoring
 	case *cloudwatch.Metric:
-		id := hashFields(awssdk.StringValue(ss.Namespace), awssdk.StringValue(ss.MetricName))
+		id := HashFields(awssdk.StringValue(ss.Namespace), awssdk.StringValue(ss.MetricName))
 		res = graph.InitResource(cloud.Metric, id)
 	case *cloudwatch.MetricAlarm:
 		res = graph.InitResource(cloud.Alarm, awssdk.StringValue(ss.AlarmArn))
@@ -168,8 +167,8 @@ func initResource(source interface{}) (*graph.Resource, error) {
 	return res, nil
 }
 
-func newResource(source interface{}) (*graph.Resource, error) {
-	res, err := initResource(source)
+func NewResource(source interface{}) (*graph.Resource, error) {
+	res, err := InitResource(source)
 	if err != nil {
 		return res, err
 	}
@@ -543,41 +542,6 @@ var extractHasATrueBoolInStructSliceFn = func(key string) transformFn {
 	}
 }
 
-var fetchAndExtractGrantsFn = func(i interface{}) (interface{}, error) {
-	b, ok := i.(*s3.Bucket)
-	if !ok {
-		return nil, fmt.Errorf("fetch grants: not a bucket but a %T", i)
-	}
-
-	acls, err := StorageService.(s3iface.S3API).GetBucketAcl(&s3.GetBucketAclInput{Bucket: b.Name})
-	if err != nil {
-		return nil, err
-	}
-	var grants []*graph.Grant
-	for _, acl := range acls.Grants {
-		displayName := awssdk.StringValue(acl.Grantee.DisplayName)
-		granteeType := awssdk.StringValue(acl.Grantee.Type)
-		granteeId := awssdk.StringValue(acl.Grantee.ID)
-
-		if awssdk.StringValue(acl.Grantee.EmailAddress) != "" {
-			displayName += "<" + awssdk.StringValue(acl.Grantee.EmailAddress) + ">"
-		}
-		if granteeType == "Group" {
-			granteeId += awssdk.StringValue(acl.Grantee.URI)
-		}
-		grant := &graph.Grant{
-			Permission: awssdk.StringValue(acl.Permission),
-			Grantee: graph.Grantee{
-				GranteeID:          granteeId,
-				GranteeType:        granteeType,
-				GranteeDisplayName: displayName,
-			},
-		}
-		grants = append(grants, grant)
-	}
-	return grants, nil
-}
-
 var extractDistributionOriginFn = func(i interface{}) (interface{}, error) {
 	if _, ok := i.(*cloudfront.Origins); !ok {
 		return nil, fmt.Errorf("extract origins: not a origins pointer but a %T", i)
@@ -642,7 +606,7 @@ func notEmpty(str *string) bool {
 	return awssdk.StringValue(str) != ""
 }
 
-func hashFields(fields ...interface{}) string {
+func HashFields(fields ...interface{}) string {
 	var buf bytes.Buffer
 	for _, field := range fields {
 		buf.WriteString(fmt.Sprint(field))

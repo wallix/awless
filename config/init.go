@@ -23,7 +23,7 @@ import (
 
 	"strconv"
 
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/database"
 )
 
@@ -73,7 +73,7 @@ func InitAwlessEnv() error {
 }
 
 func resolveRequiredConfigFromEnv() map[string]string {
-	region, ami := aws.ResolveRegionAndAmiFromEnv()
+	region, ami := awsservices.ResolveRegionAndAmiFromEnv()
 
 	resolved := make(map[string]string)
 	if region != "" {

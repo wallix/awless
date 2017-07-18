@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 )
 
 func BenchmarkSync(b *testing.B) {
@@ -35,22 +35,22 @@ func BenchmarkSync(b *testing.B) {
 
 	os.Setenv("__AWLESS_HOME", dir)
 
-	aws.InfraService = &aws.Infra{
+	awsservices.InfraService = &awsservices.Infra{
 		EC2API:         &ec2Mock{},
 		ELBV2API:       &elbMock{},
 		RDSAPI:         &rdsMock{},
 		ECRAPI:         &ecrMock{},
 		AutoScalingAPI: &autoscalingStub{},
 	}
-	aws.AccessService = &aws.Access{
+	awsservices.AccessService = &awsservices.Access{
 		IAMAPI: &iamMock{},
 		STSAPI: &stsMock{},
 	}
-	aws.StorageService = &aws.Storage{S3API: &s3Mock{}}
+	awsservices.StorageService = &awsservices.Storage{S3API: &s3Mock{}}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := NewSyncer().Sync(aws.InfraService, aws.AccessService, aws.StorageService)
+		_, err := NewSyncer().Sync(awsservices.InfraService, awsservices.AccessService, awsservices.StorageService)
 		if err != nil {
 			b.Fatal(err)
 		}

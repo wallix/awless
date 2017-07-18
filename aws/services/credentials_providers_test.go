@@ -1,4 +1,4 @@
-package aws
+package awsservices
 
 import (
 	"io/ioutil"

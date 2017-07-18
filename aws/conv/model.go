@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsconv
 
 import "github.com/wallix/awless/cloud"
 import "github.com/wallix/awless/cloud/properties"
@@ -369,7 +369,6 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	//S3
 	cloud.Bucket: {
 		properties.Created: {name: "CreationDate", transform: extractTimeFn},
-		properties.Grants:  {fetch: fetchAndExtractGrantsFn},
 	},
 	cloud.S3Object: {
 		properties.Key:      {name: "Key", transform: extractValueFn},

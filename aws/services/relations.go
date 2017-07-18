@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsservices
 
 import (
 	"errors"
@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/wallix/awless/aws/conv"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 )
@@ -164,7 +165,7 @@ func (fb funcBuilder) addRelationWithField() addParentFn {
 			return fmt.Errorf("add parent to %s: %T not a string pointer", fb.fieldName, structField.Interface())
 		}
 
-		res, err := initResource(i)
+		res, err := awsconv.InitResource(i)
 		if err != nil {
 			return err
 		}
@@ -185,7 +186,7 @@ func (fb funcBuilder) addRelationListWithStringField() addParentFn {
 			return err
 		}
 
-		res, err := initResource(i)
+		res, err := awsconv.InitResource(i)
 		if err != nil {
 			return err
 		}
@@ -220,7 +221,7 @@ func (fb funcBuilder) addRelationListWithField() addParentFn {
 			return err
 		}
 
-		res, err := initResource(i)
+		res, err := awsconv.InitResource(i)
 		if err != nil {
 			return err
 		}
@@ -301,7 +302,7 @@ func addRegionParent(g *graph.Graph, i interface{}) error {
 		return fmt.Errorf("aws fetch: expect exactly one region in cloud. but got %d", len(resources))
 	}
 	regionN := resources[0]
-	res, err := initResource(i)
+	res, err := awsconv.InitResource(i)
 	if err != nil {
 		return err
 	}
@@ -310,7 +311,7 @@ func addRegionParent(g *graph.Graph, i interface{}) error {
 }
 
 func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
-	res, err := initResource(i)
+	res, err := awsconv.InitResource(i)
 	if err != nil {
 		return err
 	}
@@ -351,7 +352,7 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 	if !ok {
 		return fmt.Errorf("aws fetch: not a user, but a %T", i)
 	}
-	n, err := initResource(user)
+	n, err := awsconv.InitResource(user)
 	if err != nil {
 		return err
 	}
@@ -382,7 +383,7 @@ func fetchTargetsAndAddRelations(g *graph.Graph, i interface{}) error {
 	if !ok {
 		return fmt.Errorf("add targets relation: not a target group, but a %T", i)
 	}
-	parent, err := initResource(group)
+	parent, err := awsconv.InitResource(group)
 	if err != nil {
 		return err
 	}
@@ -407,7 +408,7 @@ func addScalingGroupSubnets(g *graph.Graph, i interface{}) error {
 	if !ok {
 		return fmt.Errorf("add autoscaling group relation: not a autoscaling group, but a %T", i)
 	}
-	parent, err := initResource(group)
+	parent, err := awsconv.InitResource(group)
 	if err != nil {
 		return err
 	}
@@ -429,12 +430,12 @@ func addAlarmMetric(g *graph.Graph, i interface{}) error {
 	if !ok {
 		return fmt.Errorf("add alarm metric relation: not a alarm, but a %T", i)
 	}
-	parent, err := initResource(alarm)
+	parent, err := awsconv.InitResource(alarm)
 	if err != nil {
 		return err
 	}
 	if namespace, metric := awssdk.StringValue(alarm.Namespace), awssdk.StringValue(alarm.MetricName); namespace != "" && metric != "" {
-		id := hashFields(namespace, metric)
+		id := awsconv.HashFields(namespace, metric)
 		n := graph.InitResource(cloud.Metric, id)
 		err = g.AddAppliesOnRelation(parent, n)
 		if err != nil {

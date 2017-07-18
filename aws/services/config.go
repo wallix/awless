@@ -1,4 +1,4 @@
-package aws
+package awsservices
 
 type config map[string]interface{}
 

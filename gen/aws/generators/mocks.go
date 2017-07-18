@@ -44,7 +44,7 @@ func generateTestMocks() {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(FETCHERS_DIR, "gen_mocks_test.go"), buff.Bytes(), 0666); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(SERVICES_DIR, "gen_mocks_test.go"), buff.Bytes(), 0666); err != nil {
 		panic(err)
 	}
 }
@@ -67,7 +67,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsservices
 
 import (
 	"github.com/wallix/awless/template/driver"

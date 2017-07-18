@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/logger"
 )
@@ -49,18 +49,18 @@ var searchCmd = &cobra.Command{
 var awsImagesCmd = &cobra.Command{
 	Use:              "images",
 	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
-	Short:            fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first. Supported owners: %s", strings.Join(aws.SupportedAMIOwners, ", ")),
-	Long:             fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", aws.ImageQuerySpec, strings.Join(aws.SupportedAMIOwners, ", ")),
+	Short:            fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first. Supported owners: %s", strings.Join(awsservices.SupportedAMIOwners, ", ")),
+	Long:             fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsservices.ImageQuerySpec, strings.Join(awsservices.SupportedAMIOwners, ", ")),
 	Example:          "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --id-only\n  awless search images amazonlinux:::::instance-store --ids-only",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
-			exitOn(fmt.Errorf("expecting image query string. Expecting: %s (with everything optional expect for the owner)", aws.ImageQuerySpec))
+			exitOn(fmt.Errorf("expecting image query string. Expecting: %s (with everything optional expect for the owner)", awsservices.ImageQuerySpec))
 		}
 
-		resolver := &aws.ImageResolver{aws.InfraService.(*aws.Infra)}
+		resolver := &awsservices.ImageResolver{awsservices.InfraService.(*awsservices.Infra)}
 
-		query, err := aws.ParseImageQuery(args[0])
+		query, err := awsservices.ParseImageQuery(args[0])
 		exitOn(err)
 
 		logger.Infof("launching search for image in '%s' region. Query: '%s'", config.GetAWSRegion(), query)

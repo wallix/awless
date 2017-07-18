@@ -54,8 +54,10 @@ var (
 
 // Relations
 var (
-	ParentOf = fmt.Sprintf("%s:parentOf", CloudRelNS)
-	ApplyOn  = fmt.Sprintf("%s:applyOn", CloudRelNS)
+	ParentOf       = fmt.Sprintf("%s:parentOf", CloudRelNS)
+	ChildrenOfRel  = "childrenOf"
+	ApplyOn        = fmt.Sprintf("%s:applyOn", CloudRelNS)
+	DependingOnRel = "dependingOn"
 )
 
 type rdfProp struct {

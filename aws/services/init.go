@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package awsservices
 
 import (
 	"errors"
@@ -30,7 +30,7 @@ var (
 	AccessService, InfraService, StorageService, MessagingService, DnsService, LambdaService, MonitoringService, CdnService, CloudformationService cloud.Service
 )
 
-func InitServices(conf map[string]interface{}, log *logger.Logger, profileSetterCallback func(val string) error) error {
+func Init(conf map[string]interface{}, log *logger.Logger, profileSetterCallback func(val string) error) error {
 	awsconf := config(conf)
 	region := awsconf.region()
 	if region == "" {

@@ -7,7 +7,7 @@ import (
 	"unicode"
 
 	"github.com/chzyer/readline"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/template"
@@ -204,7 +204,7 @@ func appendIfContains(slice []string, value, subst string) []string {
 var resourcesTypesWithPlural []string
 
 func init() {
-	for _, r := range aws.ResourceTypes {
+	for _, r := range awsservices.ResourceTypes {
 		resourcesTypesWithPlural = append(resourcesTypesWithPlural, r, cloud.PluralizeResource(r))
 	}
 }

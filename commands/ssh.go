@@ -27,8 +27,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/config"
@@ -249,7 +249,7 @@ func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 	go func() {
 		var err error
 		defer wg.Done()
-		resourcesGraph, err = aws.InfraService.FetchByType(cloud.Instance)
+		resourcesGraph, err = awsservices.InfraService.FetchByType(cloud.Instance)
 		if err != nil {
 			errc <- err
 		}
@@ -259,7 +259,7 @@ func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 	go func() {
 		var err error
 		defer wg.Done()
-		sgroupsGraph, err = aws.InfraService.FetchByType(cloud.SecurityGroup)
+		sgroupsGraph, err = awsservices.InfraService.FetchByType(cloud.SecurityGroup)
 		if err != nil {
 			errc <- err
 		}

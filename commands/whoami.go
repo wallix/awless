@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/logger"
 )
 
@@ -60,7 +60,7 @@ var whoamiCmd = &cobra.Command{
 			return
 		}
 
-		me, err := aws.AccessService.(*aws.Access).GetIdentity()
+		me, err := awsservices.AccessService.(*awsservices.Access).GetIdentity()
 		exitOn(err)
 
 		if me.IsRoot() {
@@ -94,7 +94,7 @@ var whoamiCmd = &cobra.Command{
 
 		fmt.Printf("Username: %s, Id: %s, Account: %s\n", me.Resource, me.UserId, me.Account)
 
-		policies, err := aws.AccessService.(*aws.Access).GetUserPolicies(me.Resource)
+		policies, err := awsservices.AccessService.(*awsservices.Access).GetUserPolicies(me.Resource)
 		if err != nil {
 			logger.Error(err)
 			return

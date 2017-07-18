@@ -8,7 +8,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 )
 
 type scalingActivitiesTailer struct {
@@ -27,9 +27,9 @@ func (t *scalingActivitiesTailer) Name() string {
 }
 
 func (t *scalingActivitiesTailer) Tail(w io.Writer) error {
-	infra, ok := aws.InfraService.(*aws.Infra)
+	infra, ok := awsservices.InfraService.(*awsservices.Infra)
 	if !ok {
-		return fmt.Errorf("invalid cloud service, expected aws.Infra, got %T", aws.InfraService)
+		return fmt.Errorf("invalid cloud service, expected awsservices.Infra, got %T", awsservices.InfraService)
 	}
 	if err := t.displayLastEvents(infra, w); err != nil || !t.refresh || t.lastEventTime.IsZero() {
 		return err
@@ -50,7 +50,7 @@ func (t *scalingActivitiesTailer) Tail(w io.Writer) error {
 
 }
 
-func (t *scalingActivitiesTailer) displayLastEvents(infra *aws.Infra, w io.Writer) error {
+func (t *scalingActivitiesTailer) displayLastEvents(infra *awsservices.Infra, w io.Writer) error {
 	out, err := infra.AutoScalingAPI.DescribeScalingActivities(&autoscaling.DescribeScalingActivitiesInput{MaxRecords: awssdk.Int64(int64(t.nbEvents))})
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (t *scalingActivitiesTailer) displayLastEvents(infra *aws.Infra, w io.Write
 	return nil
 }
 
-func (t *scalingActivitiesTailer) displayNewEvents(infra *aws.Infra, w io.Writer) error {
+func (t *scalingActivitiesTailer) displayNewEvents(infra *awsservices.Infra, w io.Writer) error {
 	var eventFound bool
 	var newEvents []*event
 	lastEventTime := t.lastEventTime

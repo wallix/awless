@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/sync/repo"
@@ -136,7 +136,7 @@ func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
 
 	resourcesByTypes := make(map[string][]*Resource)
 
-	for _, typ := range aws.ResourceTypes {
+	for _, typ := range awsservices.ResourceTypes {
 		gRes, err := s.gph.GetAllResources(typ)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

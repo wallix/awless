@@ -28,7 +28,7 @@ import (
 
 	"runtime"
 
-	"github.com/wallix/awless/aws"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
@@ -169,7 +169,7 @@ func concatErrors(errs []error) error {
 
 func LoadLocalGraphForService(serviceName, region string) *graph.Graph {
 	regionDir := region
-	if aws.IsGlobalService(serviceName) {
+	if awsservices.IsGlobalService(serviceName) {
 		regionDir = "global"
 	}
 	path := filepath.Join(repo.BaseDir(), regionDir, fmt.Sprintf("%s%s", serviceName, fileExt))

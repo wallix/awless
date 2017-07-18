@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/wallix/awless/aws/services"
+
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
@@ -70,7 +71,7 @@ var historyCmd = &cobra.Command{
 		}
 
 		for _, diff := range diffs {
-			displayRevisionDiff(diff, aws.InfraService.Name(), root, verboseGlobalFlag)
+			displayRevisionDiff(diff, awsservices.InfraService.Name(), root, verboseGlobalFlag)
 		}
 
 		return nil
@@ -84,7 +85,7 @@ func displayRevisionDiff(diff *sync.Diff, cloudService string, root *graph.Resou
 	}
 
 	var graphdiff *graph.Diff
-	if cloudService == aws.InfraService.Name() {
+	if cloudService == awsservices.InfraService.Name() {
 		graphdiff = diff.InfraDiff
 	}
 
