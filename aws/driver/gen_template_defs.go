@@ -1026,7 +1026,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "record",
 		Api:            "route53",
 		RequiredParams: []string{"name", "ttl", "type", "value", "zone"},
-		ExtraParams:    []string{"comment"},
+		ExtraParams:    []string{},
 	},
 	"createfunction": {
 		Action:         "create",

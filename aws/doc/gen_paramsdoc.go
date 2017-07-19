@@ -512,6 +512,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
 		"username":       "The name of the user whose password you want to update",
 	},
+	"updaterecord": {},
 	"updates3object": {
 		"acl":     "The canned ACL to apply to the object",
 		"bucket":  "",
@@ -548,5 +549,4 @@ var generatedParamsDoc = map[string]map[string]string{
 		"public": "Specify true to indicate that network interfaces created in the specified subnet should be assigned a public IPv4 address",
 	},
 	"updatetargetgroup": {},
-	"updaterecord":      {},
 }

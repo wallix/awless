@@ -2296,74 +2296,12 @@ func (d *S3Driver) Update_Bucket(ctx driver.Context, params map[string]interface
 }
 
 func (d *Route53Driver) Create_Record_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["zone"]; !ok {
-		return nil, errors.New("create record: missing required params 'zone'")
-	}
-
-	if _, ok := params["name"]; !ok {
-		return nil, errors.New("create record: missing required params 'name'")
-	}
-
-	if _, ok := params["type"]; !ok {
-		return nil, errors.New("create record: missing required params 'type'")
-	}
-
-	if _, ok := params["value"]; !ok {
-		return nil, errors.New("create record: missing required params 'value'")
-	}
-
-	if _, ok := params["ttl"]; !ok {
-		return nil, errors.New("create record: missing required params 'ttl'")
-	}
-
-	d.logger.Verbose("params dry run: create record ok")
-	return nil, nil
+	return d.change_Record_DryRun(params, "create")
 }
 
 func (d *Route53Driver) Create_Record(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	input := &route53.ChangeResourceRecordSetsInput{}
-	var err error
-	// Required params
-	err = setFieldWithType(params["zone"], input, "HostedZoneId", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	resourceRecord := &route53.ResourceRecord{}
-	change := &route53.Change{ResourceRecordSet: &route53.ResourceRecordSet{ResourceRecords: []*route53.ResourceRecord{resourceRecord}}}
-	input.ChangeBatch = &route53.ChangeBatch{Changes: []*route53.Change{change}}
-	err = setFieldWithType("CREATE", change, "Action", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["name"], change, "ResourceRecordSet.Name", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["type"], change, "ResourceRecordSet.Type", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["ttl"], change, "ResourceRecordSet.TTL", awsint64)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["value"], resourceRecord, "Value", awsstr)
-	if err != nil {
-		return nil, err
-	}
-
-	// Extra params
-	if _, ok := params["comment"]; ok {
-		err = setFieldWithType(params["comment"], input, "ChangeBatch.Comment", awsstr)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	start := time.Now()
-	var output *route53.ChangeResourceRecordSetsOutput
-	output, err = d.ChangeResourceRecordSets(input)
-
+	output, err := d.changeResourceRecordSetsWrapper(params, "CREATE")
 	if err != nil {
 		return nil, fmt.Errorf("create record: %s", err)
 	}
@@ -2373,66 +2311,12 @@ func (d *Route53Driver) Create_Record(ctx driver.Context, params map[string]inte
 }
 
 func (d *Route53Driver) Delete_Record_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["zone"]; !ok {
-		return nil, errors.New("delete record: missing required params 'zone'")
-	}
-
-	if _, ok := params["name"]; !ok {
-		return nil, errors.New("delete record: missing required params 'name'")
-	}
-
-	if _, ok := params["type"]; !ok {
-		return nil, errors.New("delete record: missing required params 'type'")
-	}
-
-	if _, ok := params["value"]; !ok {
-		return nil, errors.New("delete record: missing required params 'value'")
-	}
-
-	if _, ok := params["ttl"]; !ok {
-		return nil, errors.New("delete record: missing required params 'value'")
-	}
-
-	d.logger.Verbose("params dry run: delete record ok")
-	return nil, nil
+	return d.change_Record_DryRun(params, "delete")
 }
 
 func (d *Route53Driver) Delete_Record(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	input := &route53.ChangeResourceRecordSetsInput{}
-	var err error
-	// Required params
-	err = setFieldWithType(params["zone"], input, "HostedZoneId", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	resourceRecord := &route53.ResourceRecord{}
-	change := &route53.Change{ResourceRecordSet: &route53.ResourceRecordSet{ResourceRecords: []*route53.ResourceRecord{resourceRecord}}}
-	input.ChangeBatch = &route53.ChangeBatch{Changes: []*route53.Change{change}}
-	err = setFieldWithType("DELETE", change, "Action", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["name"], change, "ResourceRecordSet.Name", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["type"], change, "ResourceRecordSet.Type", awsstr)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["ttl"], change, "ResourceRecordSet.TTL", awsint64)
-	if err != nil {
-		return nil, err
-	}
-	err = setFieldWithType(params["value"], resourceRecord, "Value", awsstr)
-	if err != nil {
-		return nil, err
-	}
-
 	start := time.Now()
-	var output *route53.ChangeResourceRecordSetsOutput
-	output, err = d.ChangeResourceRecordSets(input)
-
+	output, err := d.changeResourceRecordSetsWrapper(params, "DELETE")
 	if err != nil {
 		return nil, fmt.Errorf("delete record: %s", err)
 	}
@@ -2442,31 +2326,46 @@ func (d *Route53Driver) Delete_Record(ctx driver.Context, params map[string]inte
 }
 
 func (d *Route53Driver) Update_Record_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["zone"]; !ok {
-		return nil, errors.New("create record: missing required params 'zone'")
-	}
-
-	if _, ok := params["name"]; !ok {
-		return nil, errors.New("create record: missing required params 'name'")
-	}
-
-	if _, ok := params["type"]; !ok {
-		return nil, errors.New("create record: missing required params 'type'")
-	}
-
-	if _, ok := params["value"]; !ok {
-		return nil, errors.New("create record: missing required params 'value'")
-	}
-
-	if _, ok := params["ttl"]; !ok {
-		return nil, errors.New("create record: missing required params 'ttl'")
-	}
-
-	d.logger.Verbose("params dry run: create record ok")
-	return nil, nil
+	return d.change_Record_DryRun(params, "update")
 }
 
 func (d *Route53Driver) Update_Record(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	start := time.Now()
+	output, err := d.changeResourceRecordSetsWrapper(params, "UPSERT")
+	if err != nil {
+		return nil, fmt.Errorf("create record: %s", err)
+	}
+	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
+	d.logger.Info("update record done")
+	return aws.StringValue(output.ChangeInfo.Id), nil
+}
+
+func (d *Route53Driver) change_Record_DryRun(params map[string]interface{}, command string) (interface{}, error) {
+	if _, ok := params["zone"]; !ok {
+		return nil, errors.New(command + " record: missing required params 'zone'")
+	}
+
+	if _, ok := params["name"]; !ok {
+		return nil, errors.New(command + " record: missing required params 'name'")
+	}
+
+	if _, ok := params["type"]; !ok {
+		return nil, errors.New(command + " record: missing required params 'type'")
+	}
+
+	if _, ok := params["value"]; !ok {
+		return nil, errors.New(command + " record: missing required params 'value'")
+	}
+
+	if _, ok := params["ttl"]; !ok {
+		return nil, errors.New(command + " record: missing required params 'value'")
+	}
+
+	d.logger.Verbosef("params dry run: %s record ok", command)
+	return nil, nil
+}
+
+func (d *Route53Driver) changeResourceRecordSetsWrapper(params map[string]interface{}, action string) (*route53.ChangeResourceRecordSetsOutput, error) {
 	input := &route53.ChangeResourceRecordSetsInput{}
 	var err error
 	// Required params
@@ -2477,7 +2376,7 @@ func (d *Route53Driver) Update_Record(ctx driver.Context, params map[string]inte
 	resourceRecord := &route53.ResourceRecord{}
 	change := &route53.Change{ResourceRecordSet: &route53.ResourceRecordSet{ResourceRecords: []*route53.ResourceRecord{resourceRecord}}}
 	input.ChangeBatch = &route53.ChangeBatch{Changes: []*route53.Change{change}}
-	err = setFieldWithType("UPSERT", change, "Action", awsstr)
+	err = setFieldWithType(action, change, "Action", awsstr)
 	if err != nil {
 		return nil, err
 	}
@@ -2506,16 +2405,7 @@ func (d *Route53Driver) Update_Record(ctx driver.Context, params map[string]inte
 		}
 	}
 
-	start := time.Now()
-	var output *route53.ChangeResourceRecordSetsOutput
-	output, err = d.ChangeResourceRecordSets(input)
-
-	if err != nil {
-		return nil, fmt.Errorf("create record: %s", err)
-	}
-	d.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
-	d.logger.Info("update record done")
-	return aws.StringValue(output.ChangeInfo.Id), nil
+	return d.ChangeResourceRecordSets(input)
 }
 
 func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermission, error) {
