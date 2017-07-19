@@ -13,6 +13,7 @@ type Source interface {
 	Add(...Triple)
 	Remove(...Triple)
 	Snapshot() RDFGraph
+	CopyTriples() []Triple
 }
 
 // A RDFGraph is an immutable set of triples. It is a snapshot of a source and it is queryable.
@@ -100,6 +101,7 @@ func (s *source) Add(ts ...Triple) {
 		s.triples[tr.key()] = t
 	}
 }
+
 func (s *source) Remove(ts ...Triple) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -109,6 +111,15 @@ func (s *source) Remove(ts ...Triple) {
 		tr := t.(*triple)
 		delete(s.triples, tr.key())
 	}
+}
+
+func (s *source) CopyTriples() (out []Triple) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, t := range s.triples {
+		out = append(out, t.(*triple).clone())
+	}
+	return
 }
 
 func (s *source) Snapshot() RDFGraph {

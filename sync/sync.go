@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -111,7 +110,7 @@ Loop:
 			if res.err != nil {
 				allErrors = append(allErrors, fmt.Errorf("syncing %s: %s", res.service.Name(), res.err))
 			} else {
-				logger.ExtraVerbosef("sync: fetched %s service took %s", res.service.Name(), time.Since(res.start))
+				s.logger.ExtraVerbosef("sync: fetched %s service took %s", res.service.Name(), time.Since(res.start))
 			}
 			if serv := res.service; serv != nil {
 				servicesByName[serv.Name()] = serv
@@ -125,20 +124,25 @@ Loop:
 	var filepaths []string
 
 	for name, g := range graphs {
-		filename := fmt.Sprintf("%s%s", name, fileExt)
-		content, err := g.Marshal()
-		if err != nil {
-			allErrors = append(allErrors, fmt.Errorf("marshal %s: %s", filename, err))
-		}
-
-		serviceDir := filepath.Join(s.BaseDir(), servicesByName[name].Region())
+		serviceRegion := servicesByName[name].Region()
+		serviceDir := filepath.Join(s.BaseDir(), serviceRegion)
 		os.MkdirAll(serviceDir, 0700)
 
-		writePath := filepath.Join(serviceDir, filename)
-		if err = ioutil.WriteFile(writePath, content, 0600); err != nil {
-			allErrors = append(allErrors, fmt.Errorf("writing %s: %s", writePath, err))
+		filename := fmt.Sprintf("%s%s", name, fileExt)
+		fullpath := filepath.Join(serviceDir, filename)
+		f, err := os.OpenFile(fullpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+		if err != nil {
+			allErrors = append(allErrors, fmt.Errorf("opening %s: %s", fullpath, err))
+			continue
 		}
-		filepaths = append(filepaths, filepath.Join(servicesByName[name].Region(), filename))
+		if err := g.MarshalTo(f); err != nil {
+			allErrors = append(allErrors, fmt.Errorf("marshal to %s: %s", fullpath, err))
+		}
+
+		filepaths = append(filepaths, filepath.Join(serviceRegion, filename))
+		if err := f.Close(); err != nil {
+			allErrors = append(allErrors, fmt.Errorf("closing file %s: %s", fullpath, err))
+		}
 	}
 
 	if runtime.GOOS != "windows" { // https://github.com/wallix/awless/issues/119

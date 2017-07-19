@@ -613,10 +613,10 @@
 			"revisionTime": "2017-05-19T15:04:05Z"
 		},
 		{
-			"checksumSHA1": "u007t0ZTGJ4tSP5mMnMXCw8kEng=",
+			"checksumSHA1": "ioR3heOUohu5fiZgS2m4l/tMVmU=",
 			"path": "github.com/wallix/triplestore",
-			"revision": "68b230e1da892b195977e72a866e196d7380459a",
-			"revisionTime": "2017-06-26T15:09:12Z"
+			"revision": "d68dff50e711517f78c3830f87541dc917773d82",
+			"revisionTime": "2017-07-17T14:20:37Z"
 		},
 		{
 			"checksumSHA1": "iHiMTBffQvWYlOLu3130JXuQpgQ=",

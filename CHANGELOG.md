@@ -1,13 +1,17 @@
 ## v0.1.2 [unreleased]
 
-- Profile info is now included in execution logs and appended when suggesting revert action (#120)
-- Instance Profiles: List them; attach them to an instance. Ex: `attach instanceprofiles name=...`, `awless ls instanceprofiles`
-- Replace in one command an InstanceProfile on a given instance with the `replace=true` param. Ex: `attach instanceprofile .... replace=true`
-- Update Route53 record set `awless update record`
-
 ### Features
 
 - [#109](https://github.com/wallix/awless/issues/109): Support caching of STS credentials for Multi-Factor Authentication.
+- [#120](https://github.com/wallix/awless/issues/120): Profile info is now included in execution logs and appended when suggesting revert action
+- [#82](https://github.com/wallix/awless/issues/82): Better template TAB completion (e.g. complete list of parameters)
+
+
+### AWS Services
+
+- Instance Profiles: List them; attach them to an instance. Ex: `attach instanceprofile name=...`, `awless ls instanceprofiles`
+- Replace in one command an InstanceProfile on a given instance with the `replace=true` param. Ex: `attach instanceprofile .... replace=true`
+- Update Route53 records with `awless update record`
 
 ## v0.1.1 [2017-07-06]
 
