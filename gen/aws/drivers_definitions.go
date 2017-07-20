@@ -1279,6 +1279,16 @@ var DriversDefs = []driversDef{
 					{TemplateName: "ttl"},
 				},
 			},
+			{
+				Action: "update", Entity: cloud.Record, DryRunUnsupported: true, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "zone"},
+					{TemplateName: "name"},
+					{TemplateName: "type"},
+					{TemplateName: "value"},
+					{TemplateName: "ttl"},
+				},
+			},
 		},
 	},
 	{

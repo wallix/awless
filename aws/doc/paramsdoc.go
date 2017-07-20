@@ -440,4 +440,12 @@ var manualParamsDoc = map[string]map[string]string{
 		"stickiness":          "Indicates whether sticky sessions (of type load balancer cookies) are enabled. The value is true or false",
 		"stickinessduration":  "The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). The default value is 1 day (86400 seconds)",
 	},
+	"updaterecord": {
+		"zone":    "The ID of the hosted zone that contains the resource record sets that you want to change",
+		"name":    "The name of the domain you want to perform the action on. Enter a fully qualified domain name, for example, www.example.com. You can optionally include a trailing dot",
+		"type":    "The DNS record type. (A | AAAA | CNAME | MX | NAPTR | NS | PTR | SOA | SPF | SRV | TXT)",
+		"value":   "The current or new DNS record value",
+		"ttl":     "The resource record cache time to live (TTL), in seconds",
+		"comment": "Any comments you want to include about a change batch request",
+	},
 }
