@@ -115,7 +115,6 @@ func (f *fetcher) fetchResource(ctx context.Context, resourceType string, result
 	}
 
 	f.cache.Store(fmt.Sprintf("%s_objects", resourceType), objects)
-	f.cache.Store(fmt.Sprintf("%s_resources", resourceType), resources)
 
 	results <- FetchResult{
 		ResourceType: resourceType,
