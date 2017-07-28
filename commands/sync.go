@@ -18,6 +18,10 @@ package commands
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"runtime"
+	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -32,10 +36,12 @@ import (
 
 var (
 	servicesToSyncFlags map[string]*bool
+	profileSyncFlag     bool
 )
 
 func init() {
 	RootCmd.AddCommand(syncCmd)
+	syncCmd.Flags().BoolVar(&profileSyncFlag, "profile-sync", false, "Will dump a cpu and mem profiling file")
 
 	servicesToSyncFlags = make(map[string]*bool)
 	for _, service := range awsservices.ServiceNames {
@@ -68,11 +74,21 @@ var syncCmd = &cobra.Command{
 			localGraphs[service.Name()] = sync.LoadLocalGraphForService(service.Name(), config.GetAWSRegion())
 		}
 		logger.Infof("running sync for region '%s'", config.GetAWSRegion())
-		start := time.Now()
 
-		graphs, err := sync.DefaultSyncer.Sync(services...)
-		if err != nil {
-			logger.Verbose(err)
+		var syncErr error
+		var graphs map[string]*graph.Graph
+		syncFn := func() {
+			graphs, syncErr = sync.DefaultSyncer.Sync(services...)
+		}
+
+		start := time.Now()
+		if profileSyncFlag {
+			withProfiling(syncFn)
+		} else {
+			syncFn()
+		}
+		if syncErr != nil {
+			logger.Verbose(syncErr)
 		}
 
 		for k, g := range graphs {
@@ -82,6 +98,33 @@ var syncCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func withProfiling(fn func()) {
+	logger.Infof("sync profiling on")
+	mem, err := os.Create("mem-sync.prof")
+	if err != nil {
+		log.Fatal("could not create mem profile: ", err)
+	}
+	logger.Infof("running garbage collection before profiling")
+	runtime.GC() // cleaned up memeory before running function
+	defer mem.Close()
+
+	cpu, err := os.Create("cpu-sync.prof")
+	if err != nil {
+		log.Fatal("could not create cpu profile: ", err)
+	}
+	if err := pprof.StartCPUProfile(cpu); err != nil {
+		log.Fatal("could not start cpu profile: ", err)
+	}
+
+	fn()
+
+	pprof.StopCPUProfile()
+	if err := pprof.WriteHeapProfile(mem); err != nil {
+		log.Fatal("could not write memory profile: ", err)
+	}
+	logger.Infof("Generated profiling files %s and %s", cpu.Name(), mem.Name())
 }
 
 func displaySyncStats(serviceName string, g *graph.Graph) {

@@ -1,6 +1,7 @@
 *.test
 *.out
 *.svg
+*.prof
 awless
 *.zip
 .idea
