@@ -48,6 +48,10 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 	return g, nil
 }
 
+func (g *Graph) AsRDFGraphSnaphot() tstore.RDFGraph {
+	return g.store.Snapshot()
+}
+
 func (g *Graph) AddResource(resources ...*Resource) error {
 	for _, res := range resources {
 		triples, err := res.marshalFullRDF()
@@ -105,7 +109,7 @@ func (g *Graph) GetResource(t string, id string) (*Resource, error) {
 
 func (g *Graph) FindResource(id string) (*Resource, error) {
 	byId := &ById{id}
-	resources, err := byId.Resolve(g)
+	resources, err := byId.Resolve(g.store.Snapshot())
 	if err != nil {
 		return nil, err
 	}
@@ -120,18 +124,32 @@ func (g *Graph) FindResource(id string) (*Resource, error) {
 
 func (g *Graph) FindResourcesByProperty(key string, value interface{}) ([]*Resource, error) {
 	byProperty := ByProperty{key, value}
-	return byProperty.Resolve(g)
+	return byProperty.Resolve(g.store.Snapshot())
 }
 
 func (g *Graph) GetAllResources(typs ...string) ([]*Resource, error) {
 	byTypes := &ByTypes{typs}
-	return byTypes.Resolve(g)
+	return byTypes.Resolve(g.store.Snapshot())
 }
 
 func (g *Graph) ResolveResources(resolvers ...Resolver) ([]*Resource, error) {
 	var resources []*Resource
+	snap := g.store.Snapshot()
 	for _, resolv := range resolvers {
-		rs, err := resolv.Resolve(g)
+		rs, err := resolv.Resolve(snap)
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, rs...)
+	}
+
+	return resources, nil
+}
+
+func ResolveResourcesOnSnapShot(snap tstore.RDFGraph, resolvers ...Resolver) ([]*Resource, error) {
+	var resources []*Resource
+	for _, resolv := range resolvers {
+		rs, err := resolv.Resolve(snap)
 		if err != nil {
 			return resources, err
 		}

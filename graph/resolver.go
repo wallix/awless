@@ -9,16 +9,16 @@ import (
 )
 
 type Resolver interface {
-	Resolve(g *Graph) ([]*Resource, error)
+	Resolve(snap tstore.RDFGraph) ([]*Resource, error)
 }
 
 type ById struct {
 	Id string
 }
 
-func (r *ById) Resolve(g *Graph) ([]*Resource, error) {
+func (r *ById) Resolve(snap tstore.RDFGraph) ([]*Resource, error) {
 	resolver := &ByProperty{Key: properties.ID, Value: r.Id}
-	return resolver.Resolve(g)
+	return resolver.Resolve(snap)
 }
 
 type ByProperty struct {
@@ -26,7 +26,7 @@ type ByProperty struct {
 	Value interface{}
 }
 
-func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
+func (r *ByProperty) Resolve(snap tstore.RDFGraph) ([]*Resource, error) {
 	var resources []*Resource
 	if r.Value == nil {
 		return resources, nil
@@ -43,7 +43,6 @@ func (r *ByProperty) Resolve(g *Graph) ([]*Resource, error) {
 	if err != nil {
 		return resources, fmt.Errorf("resolve by property: unmarshaling property '%s': %s", r.Key, err)
 	}
-	snap := g.store.Snapshot()
 	for _, t := range snap.WithPredObj(rdfpropLabel, obj) {
 		rt, err := resolveResourceType(snap, t.Subject())
 		if err != nil {
@@ -63,11 +62,11 @@ type And struct {
 	Resolvers []Resolver
 }
 
-func (r *And) Resolve(g *Graph) (result []*Resource, err error) {
+func (r *And) Resolve(snap tstore.RDFGraph) (result []*Resource, err error) {
 	if len(r.Resolvers) == 0 {
 		return
 	}
-	result, err = r.Resolvers[0].Resolve(g)
+	result, err = r.Resolvers[0].Resolve(snap)
 	if err != nil {
 		return
 	}
@@ -77,7 +76,7 @@ func (r *And) Resolve(g *Graph) (result []*Resource, err error) {
 		return
 	}
 	for _, resolv := range r.Resolvers {
-		result, err = resolv.Resolve(gg)
+		result, err = resolv.Resolve(gg.store.Snapshot())
 		if err != nil {
 			return
 		}
@@ -94,9 +93,8 @@ type ByType struct {
 	Typ string
 }
 
-func (r *ByType) Resolve(g *Graph) ([]*Resource, error) {
+func (r *ByType) Resolve(snap tstore.RDFGraph) ([]*Resource, error) {
 	var resources []*Resource
-	snap := g.store.Snapshot()
 	typ := namespacedResourceType(r.Typ)
 	for _, t := range snap.WithPredObj(rdf.RdfType, tstore.Resource(typ)) {
 		r := InitResource(r.Typ, t.Subject())
@@ -113,11 +111,11 @@ type ByTypes struct {
 	Typs []string
 }
 
-func (r *ByTypes) Resolve(g *Graph) ([]*Resource, error) {
+func (r *ByTypes) Resolve(snap tstore.RDFGraph) ([]*Resource, error) {
 	var res []*Resource
 	for _, t := range r.Typs {
 		bt := &ByType{t}
-		all, err := bt.Resolve(g)
+		all, err := bt.Resolve(snap)
 		if err != nil {
 			return res, err
 		}

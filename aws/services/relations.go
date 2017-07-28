@@ -333,8 +333,9 @@ func addManagedPoliciesRelations(g *graph.Graph, i interface{}) error {
 		return fmt.Errorf("add parent to %s: not a valid attached policy list: %T", res.Id(), structField.Interface())
 	}
 
+	immutableRDFGraph := g.AsRDFGraphSnaphot()
 	for _, policy := range policies {
-		policies, err := g.ResolveResources(&graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: awssdk.StringValue(policy.PolicyName)}, &graph.ByType{Typ: cloud.Policy}}})
+		policies, err := graph.ResolveResourcesOnSnapShot(immutableRDFGraph, &graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: awssdk.StringValue(policy.PolicyName)}, &graph.ByType{Typ: cloud.Policy}}})
 		if err != nil {
 			return err
 		}
@@ -357,9 +358,10 @@ func userAddGroupsRelations(g *graph.Graph, i interface{}) error {
 		return err
 	}
 
+	immutableRDFGraph := g.AsRDFGraphSnaphot()
 	for _, group := range user.GroupList {
 		groupName := awssdk.StringValue(group)
-		resources, err := g.ResolveResources(&graph.And{Resolvers: []graph.Resolver{
+		resources, err := graph.ResolveResourcesOnSnapShot(immutableRDFGraph, &graph.And{Resolvers: []graph.Resolver{
 			&graph.ByProperty{Key: "Name", Value: groupName},
 			&graph.ByType{Typ: cloud.Group},
 		}})
