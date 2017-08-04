@@ -154,6 +154,9 @@ func (c *Client) Connect() (err error) {
 		if err := c.CloseAll(); err != nil {
 			c.logger.Warning("could not close properly SSH awless client before delegating")
 		}
+		if c.Proxy != nil {
+			return workaroundExeCVEThroughScript(args)
+		}
 		return syscall.Exec(args[0], args, os.Environ())
 	}
 
@@ -355,4 +358,35 @@ var trustKeyFunc func(hostname string, remote net.Addr, key gossh.PublicKey, key
 		return false
 	}
 	return strings.ToLower(yesorno) == "yes"
+}
+
+const tmpProxyCommandScriptFilename = "awless-ssh-proxycommand"
+
+// This hack is used to circumvent a bug i cannot yet figure out
+// Bug: when executing syscall.Exec(args[0], args, os.Environ()) and args contains
+// the proxy command (typically args := []string{"/usr/bin/ssh", "ec2-user@172.31.78.138", "-o", "StrictHostKeychecking=no", "-o", "ProxyCommand='ssh ec2-user@52.26.181.76 -W [%h]:%p'"}
+// we get an error like (in Go, Python):
+//     /bin/bash: 1: exec: ssh ec2-user@52.26.181.76 -W [172.31.78.138]:22: not found
+//     ssh_exchange_identification: Connection closed by remote host
+//
+// Since execve(2) can take as the first argument a filename, the workaround is to use
+// a temporary script to execute this command.
+//
+// Note that the file cannot be removed since we syscall for another process. So the first time
+// it is created and after that only truncated (reuse the same file)
+func workaroundExeCVEThroughScript(args []string) error {
+	logger.ExtraVerbosef("using script %s", tmpProxyCommandScriptFilename)
+	tmpExec, err := os.OpenFile(filepath.Join(os.TempDir(), tmpProxyCommandScriptFilename), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0700)
+	if err != nil {
+		return err
+	}
+
+	script := fmt.Sprintf("#! /bin/bash\n%s", strings.Join(args, " "))
+	if _, err := tmpExec.Write([]byte(script)); err != nil {
+		return err
+	}
+	if err := tmpExec.Close(); err != nil {
+		return err
+	}
+	return syscall.Exec(tmpExec.Name(), []string{}, os.Environ())
 }
