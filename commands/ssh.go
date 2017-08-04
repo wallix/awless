@@ -59,10 +59,20 @@ func init() {
 var sshCmd = &cobra.Command{
 	Use:   "ssh [USER@]INSTANCE",
 	Short: "Launch a SSH (Secure Shell) session to an instance given an id or alias",
+	Long:  "Launch a SSH (Secure Shell) session to an instance given an id or alias. All connection details are derived from a given instance name/id.",
 	Example: `  awless ssh i-8d43b21b                       # using the instance id
-  awless ssh ec2-user@redis-prod              # using the instance name and specify a user
-  awless ssh redis-prod -i keyname # using a key stored in ~/.ssh/keyname.pem
-  awless ssh redis-prod -i ./path/toward/key # with a keyfile`,
+  awless ssh redis-prod                       # using name only (other infos are derived)
+  awless ssh ec2-user@redis-prod              # forcing the user
+
+  awless ssh redis-prod -i keyname            # using a key stored in ~/.ssh/keyname.pem
+  awless ssh redis-prod -i ./path/toward/key  # with a keyfile
+  
+  awless ssh db-private --through my-bastion  # connect to a private inst through a public one
+  awless ssh db-private --private             # connect using the private IP (when you have a VPN, tunnel, etc ...)
+  
+  awless ssh redis-prod --print-cli           # Print out the full terminal command to connect to instance
+  awless ssh redis-prod --print-config        # Print out the full SSH config (i.e: ~/.ssh/config) to connect to instance`,
+
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
