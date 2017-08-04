@@ -254,14 +254,14 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*{{ $fetcher.AWSType }}) {
 			for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
 				wg.Add(1)
-				go func(f addParentFn, res *{{ $fetcher.AWSType }}) {
+				go func(f addParentFn, region string, res *{{ $fetcher.AWSType }}) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}

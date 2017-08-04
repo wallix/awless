@@ -402,14 +402,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Instance) {
 			for _, fn := range addParentsFns["instance"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Instance) {
+				go func(f addParentFn, region string, res *ec2.Instance) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -424,14 +424,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Subnet) {
 			for _, fn := range addParentsFns["subnet"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Subnet) {
+				go func(f addParentFn, region string, res *ec2.Subnet) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -446,14 +446,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Vpc) {
 			for _, fn := range addParentsFns["vpc"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Vpc) {
+				go func(f addParentFn, region string, res *ec2.Vpc) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -468,14 +468,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.KeyPairInfo) {
 			for _, fn := range addParentsFns["keypair"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.KeyPairInfo) {
+				go func(f addParentFn, region string, res *ec2.KeyPairInfo) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -490,14 +490,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.SecurityGroup) {
 			for _, fn := range addParentsFns["securitygroup"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.SecurityGroup) {
+				go func(f addParentFn, region string, res *ec2.SecurityGroup) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -512,14 +512,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Volume) {
 			for _, fn := range addParentsFns["volume"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Volume) {
+				go func(f addParentFn, region string, res *ec2.Volume) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -534,14 +534,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.InternetGateway) {
 			for _, fn := range addParentsFns["internetgateway"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.InternetGateway) {
+				go func(f addParentFn, region string, res *ec2.InternetGateway) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -556,14 +556,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.NatGateway) {
 			for _, fn := range addParentsFns["natgateway"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.NatGateway) {
+				go func(f addParentFn, region string, res *ec2.NatGateway) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -578,14 +578,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.RouteTable) {
 			for _, fn := range addParentsFns["routetable"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.RouteTable) {
+				go func(f addParentFn, region string, res *ec2.RouteTable) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -600,14 +600,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.AvailabilityZone) {
 			for _, fn := range addParentsFns["availabilityzone"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.AvailabilityZone) {
+				go func(f addParentFn, region string, res *ec2.AvailabilityZone) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -622,14 +622,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Image) {
 			for _, fn := range addParentsFns["image"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Image) {
+				go func(f addParentFn, region string, res *ec2.Image) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -644,14 +644,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.ImportImageTask) {
 			for _, fn := range addParentsFns["importimagetask"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.ImportImageTask) {
+				go func(f addParentFn, region string, res *ec2.ImportImageTask) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -666,14 +666,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Address) {
 			for _, fn := range addParentsFns["elasticip"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Address) {
+				go func(f addParentFn, region string, res *ec2.Address) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -688,14 +688,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ec2.Snapshot) {
 			for _, fn := range addParentsFns["snapshot"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ec2.Snapshot) {
+				go func(f addParentFn, region string, res *ec2.Snapshot) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -710,14 +710,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*elbv2.LoadBalancer) {
 			for _, fn := range addParentsFns["loadbalancer"] {
 				wg.Add(1)
-				go func(f addParentFn, res *elbv2.LoadBalancer) {
+				go func(f addParentFn, region string, res *elbv2.LoadBalancer) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -732,14 +732,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*elbv2.TargetGroup) {
 			for _, fn := range addParentsFns["targetgroup"] {
 				wg.Add(1)
-				go func(f addParentFn, res *elbv2.TargetGroup) {
+				go func(f addParentFn, region string, res *elbv2.TargetGroup) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -754,14 +754,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*elbv2.Listener) {
 			for _, fn := range addParentsFns["listener"] {
 				wg.Add(1)
-				go func(f addParentFn, res *elbv2.Listener) {
+				go func(f addParentFn, region string, res *elbv2.Listener) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -776,14 +776,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*rds.DBInstance) {
 			for _, fn := range addParentsFns["database"] {
 				wg.Add(1)
-				go func(f addParentFn, res *rds.DBInstance) {
+				go func(f addParentFn, region string, res *rds.DBInstance) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -798,14 +798,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*rds.DBSubnetGroup) {
 			for _, fn := range addParentsFns["dbsubnetgroup"] {
 				wg.Add(1)
-				go func(f addParentFn, res *rds.DBSubnetGroup) {
+				go func(f addParentFn, region string, res *rds.DBSubnetGroup) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -820,14 +820,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*autoscaling.LaunchConfiguration) {
 			for _, fn := range addParentsFns["launchconfiguration"] {
 				wg.Add(1)
-				go func(f addParentFn, res *autoscaling.LaunchConfiguration) {
+				go func(f addParentFn, region string, res *autoscaling.LaunchConfiguration) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -842,14 +842,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*autoscaling.Group) {
 			for _, fn := range addParentsFns["scalinggroup"] {
 				wg.Add(1)
-				go func(f addParentFn, res *autoscaling.Group) {
+				go func(f addParentFn, region string, res *autoscaling.Group) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -864,14 +864,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*autoscaling.ScalingPolicy) {
 			for _, fn := range addParentsFns["scalingpolicy"] {
 				wg.Add(1)
-				go func(f addParentFn, res *autoscaling.ScalingPolicy) {
+				go func(f addParentFn, region string, res *autoscaling.ScalingPolicy) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -886,14 +886,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ecr.Repository) {
 			for _, fn := range addParentsFns["repository"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ecr.Repository) {
+				go func(f addParentFn, region string, res *ecr.Repository) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -908,14 +908,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ecs.Cluster) {
 			for _, fn := range addParentsFns["containercluster"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ecs.Cluster) {
+				go func(f addParentFn, region string, res *ecs.Cluster) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -930,14 +930,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ecs.TaskDefinition) {
 			for _, fn := range addParentsFns["containertask"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ecs.TaskDefinition) {
+				go func(f addParentFn, region string, res *ecs.TaskDefinition) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -952,14 +952,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ecs.Container) {
 			for _, fn := range addParentsFns["container"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ecs.Container) {
+				go func(f addParentFn, region string, res *ecs.Container) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -974,14 +974,14 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*ecs.ContainerInstance) {
 			for _, fn := range addParentsFns["containerinstance"] {
 				wg.Add(1)
-				go func(f addParentFn, res *ecs.ContainerInstance) {
+				go func(f addParentFn, region string, res *ecs.ContainerInstance) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1115,14 +1115,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*iam.UserDetail) {
 			for _, fn := range addParentsFns["user"] {
 				wg.Add(1)
-				go func(f addParentFn, res *iam.UserDetail) {
+				go func(f addParentFn, region string, res *iam.UserDetail) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1137,14 +1137,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*iam.GroupDetail) {
 			for _, fn := range addParentsFns["group"] {
 				wg.Add(1)
-				go func(f addParentFn, res *iam.GroupDetail) {
+				go func(f addParentFn, region string, res *iam.GroupDetail) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1159,14 +1159,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*iam.RoleDetail) {
 			for _, fn := range addParentsFns["role"] {
 				wg.Add(1)
-				go func(f addParentFn, res *iam.RoleDetail) {
+				go func(f addParentFn, region string, res *iam.RoleDetail) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1181,14 +1181,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*iam.Policy) {
 			for _, fn := range addParentsFns["policy"] {
 				wg.Add(1)
-				go func(f addParentFn, res *iam.Policy) {
+				go func(f addParentFn, region string, res *iam.Policy) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1203,14 +1203,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*iam.AccessKeyMetadata) {
 			for _, fn := range addParentsFns["accesskey"] {
 				wg.Add(1)
-				go func(f addParentFn, res *iam.AccessKeyMetadata) {
+				go func(f addParentFn, region string, res *iam.AccessKeyMetadata) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1225,14 +1225,14 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*iam.InstanceProfile) {
 			for _, fn := range addParentsFns["instanceprofile"] {
 				wg.Add(1)
-				go func(f addParentFn, res *iam.InstanceProfile) {
+				go func(f addParentFn, region string, res *iam.InstanceProfile) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1357,14 +1357,14 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*s3.Bucket) {
 			for _, fn := range addParentsFns["bucket"] {
 				wg.Add(1)
-				go func(f addParentFn, res *s3.Bucket) {
+				go func(f addParentFn, region string, res *s3.Bucket) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1379,14 +1379,14 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*s3.Object) {
 			for _, fn := range addParentsFns["s3object"] {
 				wg.Add(1)
-				go func(f addParentFn, res *s3.Object) {
+				go func(f addParentFn, region string, res *s3.Object) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1517,14 +1517,14 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*sns.Subscription) {
 			for _, fn := range addParentsFns["subscription"] {
 				wg.Add(1)
-				go func(f addParentFn, res *sns.Subscription) {
+				go func(f addParentFn, region string, res *sns.Subscription) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1539,14 +1539,14 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*sns.Topic) {
 			for _, fn := range addParentsFns["topic"] {
 				wg.Add(1)
-				go func(f addParentFn, res *sns.Topic) {
+				go func(f addParentFn, region string, res *sns.Topic) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1561,14 +1561,14 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*string) {
 			for _, fn := range addParentsFns["queue"] {
 				wg.Add(1)
-				go func(f addParentFn, res *string) {
+				go func(f addParentFn, region string, res *string) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1693,14 +1693,14 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*route53.HostedZone) {
 			for _, fn := range addParentsFns["zone"] {
 				wg.Add(1)
-				go func(f addParentFn, res *route53.HostedZone) {
+				go func(f addParentFn, region string, res *route53.HostedZone) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1715,14 +1715,14 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*route53.ResourceRecordSet) {
 			for _, fn := range addParentsFns["record"] {
 				wg.Add(1)
-				go func(f addParentFn, res *route53.ResourceRecordSet) {
+				go func(f addParentFn, region string, res *route53.ResourceRecordSet) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1846,14 +1846,14 @@ func (s *Lambda) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*lambda.FunctionConfiguration) {
 			for _, fn := range addParentsFns["function"] {
 				wg.Add(1)
-				go func(f addParentFn, res *lambda.FunctionConfiguration) {
+				go func(f addParentFn, region string, res *lambda.FunctionConfiguration) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -1978,14 +1978,14 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*cloudwatch.Metric) {
 			for _, fn := range addParentsFns["metric"] {
 				wg.Add(1)
-				go func(f addParentFn, res *cloudwatch.Metric) {
+				go func(f addParentFn, region string, res *cloudwatch.Metric) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -2000,14 +2000,14 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*cloudwatch.MetricAlarm) {
 			for _, fn := range addParentsFns["alarm"] {
 				wg.Add(1)
-				go func(f addParentFn, res *cloudwatch.MetricAlarm) {
+				go func(f addParentFn, region string, res *cloudwatch.MetricAlarm) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -2131,14 +2131,14 @@ func (s *Cdn) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*cloudfront.DistributionSummary) {
 			for _, fn := range addParentsFns["distribution"] {
 				wg.Add(1)
-				go func(f addParentFn, res *cloudfront.DistributionSummary) {
+				go func(f addParentFn, region string, res *cloudfront.DistributionSummary) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
@@ -2262,14 +2262,14 @@ func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*cloudformation.Stack) {
 			for _, fn := range addParentsFns["stack"] {
 				wg.Add(1)
-				go func(f addParentFn, res *cloudformation.Stack) {
+				go func(f addParentFn, region string, res *cloudformation.Stack) {
 					defer wg.Done()
-					err := f(gph, res)
+					err := f(gph, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, r)
+				}(fn, s.region, r)
 			}
 		}
 	}
