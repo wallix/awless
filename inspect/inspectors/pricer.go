@@ -34,8 +34,11 @@ import (
 var pricesURL = "http://ec2-price.com"
 
 type Pricer struct {
-	total float64
-	count map[string]int
+	grandTotal float64
+	grandCount int
+	typeTotal  map[string]float64
+	typePrice  map[string]float64
+	typeCount  map[string]int
 }
 
 func (p *Pricer) Name() string {
@@ -53,13 +56,18 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 		return err
 	}
 
-	p.count = make(map[string]int)
-	pricePerType := make(map[string]float64)
+	p.typeCount = make(map[string]int)
+	p.typePrice = make(map[string]float64)
+	p.typeTotal = make(map[string]float64)
+	p.grandCount = 0
 
 	for _, inst := range instances {
-		typ := inst.Properties["Type"].(string)
-		pricePerType[typ] = 0.0
-		p.count[typ] = p.count[typ] + 1
+		if inst.Properties["State"] == "running" && inst.Properties["Lifecycle"] != "spot" {
+			typ := inst.Properties["Type"].(string)
+			p.typePrice[typ] = 0.0
+			p.typeCount[typ] = p.typeCount[typ] + 1
+			p.grandCount += 1
+		}
 	}
 
 	fmt.Printf("Fetching prices at %s for region %s\n\n", pricesURL, region)
@@ -72,7 +80,7 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 	var wg sync.WaitGroup
 	resultC := make(chan result)
 
-	for ty := range pricePerType {
+	for ty := range p.typePrice {
 		wg.Add(1)
 		go func(t string) {
 			defer wg.Done()
@@ -92,27 +100,30 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 	}()
 
 	for r := range resultC {
-		pricePerType[r.typ] = r.price
+		p.typePrice[r.typ] = r.price
 	}
 
-	for typ, count := range p.count {
-		p.total = p.total + (float64(count) * pricePerType[typ])
+	for typ, count := range p.typeCount {
+		p.typeTotal[typ] = float64(count) * p.typePrice[typ]
+		p.grandTotal = p.grandTotal + p.typeTotal[typ]
 	}
 
 	return nil
 }
 
 func (p *Pricer) Print(w io.Writer) {
-	tabw := tabwriter.NewWriter(w, 0, 8, 0, '\t', 0)
+	tabw := tabwriter.NewWriter(w, 5, 8, 2, '\t', 0)
 
-	fmt.Fprintln(tabw, "Instance\tCount\tEstimated total/day (no EBS)\t")
-	fmt.Fprintln(tabw, "--------\t-----\t----------------------------\t")
+	fmt.Fprintln(tabw, "Instance\tCount\tPrice ea.\tEstimated Total Cost (no EBS)")
+	fmt.Fprintln(tabw, "Type\tRunning\tPer Hour\tPer Day\tPer Month\t")
+	fmt.Fprintln(tabw, "--------\t--------\t---------\t---------\t---------\t")
 
-	for instType, count := range p.count {
-		fmt.Fprintf(tabw, "%s\t%d\t%s\t\n", instType, count, "")
+	for instType, count := range p.typeCount {
+		fmt.Fprintf(tabw, "%s\t%7d\t%8.5f\t%8.2f\t%8.2f\n", instType, count, p.typePrice[instType], p.typePrice[instType]*24, p.typeTotal[instType]*24*30)
 	}
 
-	fmt.Fprintf(tabw, "%s\t%s\t$%.2f\t\n", "", "", p.total*24)
+	fmt.Fprintln(tabw, "\t--------\t\t---------\t---------\t")
+	fmt.Fprintf(tabw, "Grand Total\t%7d\t\t%8.2f\t%8.2f\n", p.grandCount, p.grandTotal*24,p.grandTotal*24*30)
 
 	tabw.Flush()
 }
