@@ -92,6 +92,7 @@ import (
 	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/fetch"
 	"github.com/wallix/awless/aws/fetch"
+	tstore "github.com/wallix/triplestore"
 )
 
 const accessDenied = "Access Denied"
@@ -239,6 +240,8 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		return gph, err
 	}
 
+	snap := gph.AsRDFGraphSnaphot()
+
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
@@ -254,14 +257,14 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 		for _, r := range list.([]*{{ $fetcher.AWSType }}) {
 			for _, fn := range addParentsFns["{{ $fetcher.ResourceType }}"] {
 				wg.Add(1)
-				go func(f addParentFn, region string, res *{{ $fetcher.AWSType }}) {
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *{{ $fetcher.AWSType }}) {
 					defer wg.Done()
-					err := f(gph, region, res)
+					err := f(gph, snap, region, res)
 					if err != nil {
 						errc <- err
 						return
 					}
-				}(fn, s.region, r)
+				}(fn, snap, s.region, r)
 			}
 		}
 	}
