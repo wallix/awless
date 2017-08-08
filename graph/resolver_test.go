@@ -7,8 +7,7 @@ import (
 	"github.com/wallix/awless/graph/resourcetest"
 )
 
-func TestAndResolver(t *testing.T) {
-	t.Parallel()
+func TestResolvers(t *testing.T) {
 	g := graph.NewGraph()
 	g.AddResource(
 		resourcetest.Instance("inst_1").Prop("Name", "redis").Build(),
@@ -16,30 +15,57 @@ func TestAndResolver(t *testing.T) {
 		resourcetest.Subnet("sub_1").Prop("Name", "redis").Build(),
 	)
 
-	resources, err := g.ResolveResources(&graph.And{[]graph.Resolver{
-		&graph.ByType{Typ: "instance"},
-		&graph.ByProperty{Key: "Name", Value: "redis"},
-	},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := len(resources), 1; got != want {
-		t.Fatalf("got %d want %d", got, want)
-	}
-	if got, want := resources[0].Id(), "inst_1"; got != want {
-		t.Fatalf("got %s want %s", got, want)
-	}
+	t.Run("and", func(t *testing.T) {
+		resources, err := g.ResolveResources(&graph.And{[]graph.Resolver{
+			&graph.ByType{Typ: "instance"},
+			&graph.ByProperty{Key: "Name", Value: "redis"},
+		},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := len(resources), 1; got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+		if got, want := resources[0].Id(), "inst_1"; got != want {
+			t.Fatalf("got %s want %s", got, want)
+		}
 
-	resources, err = g.ResolveResources(&graph.And{[]graph.Resolver{
-		&graph.ByType{Typ: "subnet"},
-		&graph.ByProperty{Key: "ID", Value: "inst_2"},
-	},
+		resources, err = g.ResolveResources(&graph.And{[]graph.Resolver{
+			&graph.ByType{Typ: "subnet"},
+			&graph.ByProperty{Key: "ID", Value: "inst_2"},
+		},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := len(resources), 0; got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := len(resources), 0; got != want {
-		t.Fatalf("got %d want %d", got, want)
-	}
+
+	t.Run("by type and property", func(t *testing.T) {
+		resources, err := g.ResolveResources(&graph.ByTypeAndProperty{
+			Type: "instance", Key: "Name", Value: "redis",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := len(resources), 1; got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+		if got, want := resources[0].Id(), "inst_1"; got != want {
+			t.Fatalf("got %s want %s", got, want)
+		}
+
+		resources, err = g.ResolveResources(&graph.ByTypeAndProperty{
+			Type: "subnet", Key: "ID", Value: "inst_2",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := len(resources), 0; got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+	})
 }

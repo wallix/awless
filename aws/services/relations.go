@@ -327,7 +327,7 @@ func addManagedPoliciesRelations(g *graph.Graph, snap tstore.RDFGraph, region st
 	}
 
 	for _, policy := range policies {
-		policies, err := graph.ResolveResourcesOnSnapShot(snap, &graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: awssdk.StringValue(policy.PolicyName)}, &graph.ByType{Typ: cloud.Policy}}})
+		policies, err := graph.ResolveResourcesWithProp(snap, cloud.Policy, "Name", awssdk.StringValue(policy.PolicyName))
 		if err != nil {
 			return err
 		}
@@ -352,10 +352,7 @@ func userAddGroupsRelations(g *graph.Graph, snap tstore.RDFGraph, region string,
 
 	for _, group := range user.GroupList {
 		groupName := awssdk.StringValue(group)
-		resources, err := graph.ResolveResourcesOnSnapShot(snap, &graph.And{Resolvers: []graph.Resolver{
-			&graph.ByProperty{Key: "Name", Value: groupName},
-			&graph.ByType{Typ: cloud.Group},
-		}})
+		resources, err := graph.ResolveResourcesWithProp(snap, cloud.Group, "Name", groupName)
 		if err != nil {
 			return err
 		}

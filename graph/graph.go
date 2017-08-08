@@ -146,17 +146,13 @@ func (g *Graph) ResolveResources(resolvers ...Resolver) ([]*Resource, error) {
 	return resources, nil
 }
 
-func ResolveResourcesOnSnapShot(snap tstore.RDFGraph, resolvers ...Resolver) ([]*Resource, error) {
-	var resources []*Resource
-	for _, resolv := range resolvers {
-		rs, err := resolv.Resolve(snap)
-		if err != nil {
-			return resources, err
-		}
-		resources = append(resources, rs...)
+func ResolveResourcesWithProp(snap tstore.RDFGraph, resType, propName, propVal string) ([]*Resource, error) {
+	resolv := ByTypeAndProperty{
+		Type:  resType,
+		Key:   propName,
+		Value: propVal,
 	}
-
-	return resources, nil
+	return resolv.Resolve(snap)
 }
 
 func (g *Graph) ListResourcesDependingOn(start *Resource) ([]*Resource, error) {
