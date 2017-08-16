@@ -69,7 +69,6 @@ func (f *fileCacheProvider) Retrieve() (credentials.Value, error) {
 			f.creds.Expire()
 		}
 	}
-	f.log.ExtraVerbose("no valid cached credentials, getting new credentials")
 	credValue, err := f.creds.Get()
 	if err != nil {
 		return credValue, err

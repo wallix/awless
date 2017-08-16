@@ -70,7 +70,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 	awsConf := config.GetConfigWithPrefix("aws.")
-	logger.Verbosef("loading AWS session with profile '%v' and region '%v'", awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
+	logger.Verbosef("awless %s - loading AWS session with profile '%v' and region '%v'", config.Version, awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
 
 	if err := awsservices.Init(awsConf, logger.DefaultLogger, config.SetProfileCallback); err != nil {
 		return err
