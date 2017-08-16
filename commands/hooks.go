@@ -19,6 +19,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/services"
@@ -76,7 +77,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if config.TriggerSyncOnConfigUpdate {
+	if config.TriggerSyncOnConfigUpdate && !strings.HasPrefix(cmd.Name(), "sync") {
 		logger.Infof("Syncing new region '%s'", awsConf[config.RegionConfigKey])
 		var services []cloud.Service
 		for _, s := range cloud.ServiceRegistry {
