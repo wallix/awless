@@ -5,6 +5,7 @@
 - SSH `--through`: `awless ssh my-priv-inst --through my-pub-inst` allow you to connect to a private instance by going through a public one in ths same VPC. You need to have the same keypair (SSH key) on both instances. 
 - Flag `--profile-sync` on `awless sync` to enable live profiling. Will dump `mem` and `cpu` Go profiling files for later inspection
 - [#109](https://github.com/wallix/awless/issues/109): Support caching of STS credentials for Multi-Factor Authentication.
+- [#126](https://github.com/wallix/awless/issues/126): Flag `--no-alias` in `awless show` force the display of IDs in relations.
 - [#120](https://github.com/wallix/awless/issues/120): Profile info is now included in execution logs and appended when suggesting revert action
 - [#82](https://github.com/wallix/awless/issues/82): Better template TAB completion (e.g. complete list of parameters)
 

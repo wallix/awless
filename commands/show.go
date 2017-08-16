@@ -35,12 +35,14 @@ import (
 
 var (
 	listAllSiblingsFlag          bool
+	noAliasFlag                  bool
 	showPropertiesValuesOnlyFlag []string
 )
 
 func init() {
 	RootCmd.AddCommand(showCmd)
 	showCmd.Flags().BoolVar(&listAllSiblingsFlag, "siblings", false, "List all the resource's siblings")
+	showCmd.Flags().BoolVar(&noAliasFlag, "no-alias", false, "Disable the resolution of ID to alias")
 	showCmd.Flags().StringSliceVar(&showPropertiesValuesOnlyFlag, "values-for", []string{}, "Output values only for given properties keys")
 }
 
@@ -150,9 +152,9 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	var count int
 	for i := len(parents) - 1; i >= 0; i-- {
 		if count == 0 {
-			fmt.Fprintf(&parentsW, "%s\n", parents[i])
+			fmt.Fprintf(&parentsW, "%s\n", printResourceRef(parents[i]))
 		} else {
-			fmt.Fprintf(&parentsW, "%s↳ %s\n", strings.Repeat("\t", count), parents[i])
+			fmt.Fprintf(&parentsW, "%s↳ %s\n", strings.Repeat("\t", count), printResourceRef(parents[i]))
 		}
 		count++
 	}
@@ -168,7 +170,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 
 		display := r.String()
 		if r.Same(resource) {
-			display = renderGreenFn(resource.String())
+			display = renderGreenFn(printResourceRef(resource))
 		} else {
 			hasChildren = true
 		}
@@ -277,7 +279,7 @@ func deprefix(s string) string {
 
 func printResourceList(title string, list []*graph.Resource, shortenListMsg ...string) {
 	sort.Sort(byTypeAndString{list})
-	all := graph.Resources(list).Map(func(r *graph.Resource) string { return r.String() })
+	all := graph.Resources(list).Map(func(r *graph.Resource) string { return printResourceRef(r) })
 	count := len(all)
 	max := 3
 	if count > 0 {
@@ -287,6 +289,13 @@ func printResourceList(title string, list []*graph.Resource, shortenListMsg ...s
 			fmt.Printf("\n%s: %s\n", title, strings.Join(all, ", "))
 		}
 	}
+}
+
+func printResourceRef(r *graph.Resource) string {
+	if noAliasFlag {
+		return r.Format("%i[%t]")
+	}
+	return r.Format("%n[%t]")
 }
 
 type byTypeAndString struct {

@@ -70,12 +70,12 @@ func TestPrintResource(t *testing.T) {
 		exp string
 	}{
 		{res: &Resource{id: "inst_1", kind: "instance"}, exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Id": "notthis"}}, exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"ID": "notthis"}}, exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"ID": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
 		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Name": ""}}, exp: "inst_1[instance]"},
-		{res: &Resource{kind: "instance", Properties: map[string]interface{}{"Id": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
-		{res: &Resource{}, exp: "[none]"},
-		{res: nil, exp: "[none]"},
+		{res: &Resource{kind: "instance", Properties: map[string]interface{}{"ID": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{}, exp: "[<none>]"},
+		{res: nil, exp: "[<none>]"},
 	}
 	for _, tcase := range tcases {
 		if got, want := tcase.res.String(), tcase.exp; got != want {
@@ -84,9 +84,30 @@ func TestPrintResource(t *testing.T) {
 	}
 }
 
+func TestFormatResource(t *testing.T) {
+	tcases := []struct {
+		res         *Resource
+		layout, exp string
+	}{
+		{res: &Resource{id: "inst_1", kind: "instance"}, layout: "%i[%t]", exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Name": "to-display"}}, layout: "%n[%t]", exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Name": "to-display"}}, layout: "@%[Name]p[%t]", exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Test": "my-test-prop"}}, layout: "%i:%t:%[Test]p:%[Missing]p:", exp: "inst_1:instance:my-test-prop::"},
+		{res: &Resource{id: "prop%n", kind: "instance", Properties: map[string]interface{}{"Name": "to-display"}}, layout: "%i", exp: "prop%n"},
+		{res: &Resource{id: "inst_1", kind: "instance"}, layout: "", exp: ""},
+		{res: &Resource{id: "inst_1", kind: ""}, layout: "%i:%t", exp: "inst_1:<none>"},
+		{res: &Resource{}, layout: "%i:%t", exp: "<none>:<none>"},
+	}
+	for i, tcase := range tcases {
+		if got, want := tcase.res.Format(tcase.layout), tcase.exp; got != want {
+			t.Fatalf("%d: got %s, want %s", i+1, got, want)
+		}
+	}
+}
+
 func TestReduceResources(t *testing.T) {
 	res := Resources{{id: "1"}, {id: "2"}, {id: "3"}}
-	if got, want := res.Map(func(r *Resource) string { return r.String() }), []string{"1[]", "2[]", "3[]"}; !reflect.DeepEqual(got, want) {
+	if got, want := res.Map(func(r *Resource) string { return r.Format("%i") }), []string{"1", "2", "3"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 }

@@ -20,9 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"unicode"
 
+	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
 )
@@ -58,19 +60,54 @@ func InitResource(kind, id string) *Resource {
 }
 
 func (res *Resource) String() string {
-	var identifier string
-	if res == nil || (res.Id() == "" && res.Type() == "") {
-		return "[none]"
+	if res == nil {
+		res = &Resource{}
 	}
-	if res.kind == notFoundResourceType {
-		return fmt.Sprintf("%s[!not found!]", res.Id())
+	return res.Format("%n[%t]")
+}
+
+var (
+	layoutRegex = regexp.MustCompile("%(\\[(\\w+)\\])?(\\w)")
+)
+
+func (res *Resource) Format(layout string) (out string) {
+	out = layout
+	if matches := layoutRegex.FindAllStringSubmatch(layout, -1); matches != nil {
+		for _, match := range matches {
+			var val string
+			verb := match[len(match)-1]
+			switch verb {
+			case "i":
+				val = "<none>"
+				if id := res.Id(); id != "" {
+					val = id
+				}
+			case "t":
+				switch {
+				case res.Type() == notFoundResourceType:
+					val = "<not-found>"
+				case res.Type() != "":
+					val = res.Type()
+				default:
+					val = "<none>"
+				}
+			case "n":
+				val = res.Id()
+				if name, ok := res.Properties[properties.Name].(string); ok && name != "" {
+					val = "@" + name
+				}
+			case "p":
+				if v, ok := res.Properties[match[2]]; ok {
+					val = fmt.Sprint(v)
+				}
+			default:
+				return fmt.Sprintf("invalid verb '%s' in layout '%s'", verb, layout)
+
+			}
+			out = strings.Replace(out, match[0], val, 1)
+		}
 	}
-	if name, ok := res.Properties["Name"]; ok && name != "" {
-		identifier = fmt.Sprintf("@%v", name)
-	} else {
-		identifier = res.Id()
-	}
-	return fmt.Sprintf("%s[%s]", identifier, res.Type())
+	return
 }
 
 func (res *Resource) Type() string {
