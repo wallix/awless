@@ -1216,10 +1216,16 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result := g.MustMarshal()
-	if result != expectG.MustMarshal() {
-		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
+	expected := map[string]*graph.Resource{
+		"eu-west-1": resourcetest.Region("eu-west-1").Build(),
 	}
+	expectedChildren, expectedAppliedOn := map[string][]string{}, map[string][]string{}
+	resources, err := g.GetAllResources("region")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 
 	infra := Infra{
 		EC2API:   &mockEc2{},
@@ -1236,10 +1242,12 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result = g.MustMarshal()
-	if result != expectG.MustMarshal() {
-		t.Fatalf("got [%s]\nwant [%s]", result, expectG.MustMarshal())
+	resources, err = g.GetAllResources("region")
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 }
 
 func mustGetChildrenId(g *graph.Graph, res *graph.Resource) []string {

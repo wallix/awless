@@ -119,6 +119,13 @@ func (srvs Services) Names() (names []string) {
 
 var ServiceRegistry = make(map[string]Service)
 
+func AllServices() (out []Service) {
+	for _, srv := range ServiceRegistry {
+		out = append(out, srv)
+	}
+	return
+}
+
 func GetServiceForType(t string) (Service, error) {
 	for _, srv := range ServiceRegistry {
 		for _, typ := range srv.ResourceTypes() {

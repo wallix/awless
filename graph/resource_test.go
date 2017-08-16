@@ -162,8 +162,15 @@ func TestMarshalUnmarshalFullRdf(t *testing.T) {
 	}
 }
 
+func TestResourceMarshalWithoutProps(t *testing.T) {
+	res := InitResource("mytype", "myid")
+	if got, want := res.Properties, map[string]interface{}{properties.ID: "myid"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
+	}
+}
+
 func TestResourceMarshalUnmarshalHandlesNilValues(t *testing.T) {
-	r := instResource("inst1").prop(properties.Host, nil).prop(properties.Name, "any").build()
+	r := instResource("inst1").prop(properties.ID, "inst1").prop(properties.Host, nil).prop(properties.Name, "any").build()
 	g := NewGraph()
 	triples, err := r.marshalFullRDF()
 	if err != nil {
@@ -176,7 +183,7 @@ func TestResourceMarshalUnmarshalHandlesNilValues(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedNoNil := instResource("inst1").prop(properties.Name, "any").build()
+	expectedNoNil := instResource("inst1").prop(properties.ID, "inst1").prop(properties.Name, "any").build()
 	if got, want := rawRes, expectedNoNil; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
 	}

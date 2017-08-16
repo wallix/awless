@@ -35,11 +35,12 @@ func TestAddGraphRelation(t *testing.T) {
 
 		expTriples := tstore.Triples([]tstore.Triple{
 			tstore.SubjPred("inst_1", "rdf:type").Resource("cloud-owl:Instance"),
+			tstore.SubjPred("inst_1", "cloud:id").StringLiteral("inst_1"),
 			tstore.SubjPred("subnet_1", "cloud-rel:parentOf").Resource("inst_1"),
 		})
 
 		if got, want := tstore.Triples(g.store.Snapshot().Triples()), expTriples; !got.Equal(want) {
-			t.Fatalf("got\n%q\nwant\n%q\n", got, want)
+			t.Fatalf("got\n%v\nwant\n%v\n", got, want)
 		}
 	})
 
@@ -55,6 +56,7 @@ func TestAddGraphRelation(t *testing.T) {
 
 		expTriples := tstore.Triples([]tstore.Triple{
 			tstore.SubjPred("inst_1", "rdf:type").Resource("cloud-owl:Instance"),
+			tstore.SubjPred("inst_1", "cloud:id").StringLiteral("inst_1"),
 			tstore.SubjPred("subnet_1", "cloud-rel:applyOn").Resource("inst_1"),
 		})
 

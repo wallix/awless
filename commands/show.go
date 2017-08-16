@@ -24,6 +24,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
@@ -82,10 +83,17 @@ var showCmd = &cobra.Command{
 		}
 
 		if !localGlobalFlag && config.GetAutosync() {
-			srv, err := cloud.GetServiceForType(resource.Type())
-			exitOn(err)
-			logger.Verbosef("syncing service for %s type", resource.Type())
-			if _, err = sync.DefaultSyncer.Sync(srv); err != nil {
+			var services []cloud.Service
+			if resource.Type() == cloud.Region {
+				services = append(services, cloud.AllServices()...)
+			} else {
+				srv, err := cloud.GetServiceForType(resource.Type())
+				exitOn(err)
+				services = append(services, srv)
+			}
+
+			logger.Verbosef("syncing services for %s type", resource.Type())
+			if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
 				logger.Verbose(err)
 			}
 			resource, gph = findResourceInLocalGraphs(ref)
@@ -170,7 +178,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 
 		display := printResourceRef(r)
 		if r.Same(resource) {
-			display = renderGreenFn(printResourceRef(resource))
+			display = printResourceRef(resource, renderGreenFn)
 		} else {
 			hasChildren = true
 		}
@@ -181,7 +189,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 	exitOn(err)
 
 	if len(parents) > 0 || hasChildren {
-		fmt.Println(renderCyanBoldFn("\n# Relations:"))
+		fmt.Println(renderCyanBoldFn("\nLineage:"))
 		fmt.Printf(parentsW.String())
 		fmt.Printf(childrenW.String())
 	}
@@ -291,11 +299,15 @@ func printResourceList(title string, list []*graph.Resource, shortenListMsg ...s
 	}
 }
 
-func printResourceRef(r *graph.Resource) string {
-	if noAliasFlag {
-		return r.Format("%i[%t]")
+func printResourceRef(r *graph.Resource, idRenderFunc ...func(a ...interface{}) string) string {
+	render := fmt.Sprint
+	if len(idRenderFunc) > 0 {
+		render = idRenderFunc[0]
 	}
-	return r.Format("%n[%t]")
+	if noAliasFlag {
+		return r.Format(render("%i") + "[" + color.New(color.FgBlue, color.Bold).SprintFunc()("%t") + "]")
+	}
+	return r.Format(render("%n") + "[" + color.New(color.FgBlue, color.Bold).SprintFunc()("%t") + "]")
 }
 
 type byTypeAndString struct {
