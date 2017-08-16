@@ -168,7 +168,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 			tabs.WriteByte('\t')
 		}
 
-		display := r.String()
+		display := printResourceRef(r)
 		if r.Same(resource) {
 			display = renderGreenFn(printResourceRef(resource))
 		} else {
