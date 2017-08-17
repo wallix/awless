@@ -275,7 +275,7 @@ func (res *Resource) unmarshalFullRdf(gph tstore.RDFGraph) error {
 		}
 		propVal, err := getPropertyValue(gph, t.Object(), pred)
 		if err != nil {
-			return fmt.Errorf("unmarshalling property %s: val: %s", propKey, err)
+			return fmt.Errorf("unmarshalling property '%s' of resource '%s': %s", propKey, res.Id(), err)
 		}
 		if rdf.Properties.IsRDFList(pred) {
 			dataType, err := rdf.Properties.GetDataType(pred)

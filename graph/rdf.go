@@ -33,7 +33,7 @@ func getPropertyValue(gph tstore.RDFGraph, propObj tstore.Object, prop string) (
 	case definedBy == rdf.RdfsClass, dataType == rdf.RdfsClass:
 		id, ok := propObj.Resource()
 		if !ok {
-			return nil, fmt.Errorf("get property '%s': object not resource identifier", prop)
+			return nil, fmt.Errorf("get property '%s': '%+v' object not resource identifier", prop, propObj)
 		}
 		return id, nil
 	case definedBy == rdf.RdfsList && dataType == rdf.NetRoute:
