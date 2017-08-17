@@ -9,51 +9,100 @@ import (
 )
 
 func TestWholeCompilation(t *testing.T) {
-	env := NewEnv()
-
-	env.AddFillers(map[string]interface{}{
-		"instance.type":  "t2.micro",
-		"test.cidr":      "10.0.2.0/24",
-		"instance.count": 42,
-		"unused":         "filler",
-	})
-	env.AliasFunc = func(e, k, v string) string {
-		vals := map[string]string{
-			"vpc": "vpc-1234",
-		}
-		return vals[v]
-	}
-	env.DefLookupFunc = func(in string) (Definition, bool) {
-		t, ok := DefsExample[in]
-		return t, ok
-	}
-
 	tcases := []struct {
-		tpl    string
-		expect string
+		tpl                  string
+		expect               string
+		expProcessedFillers  map[string]interface{}
+		expResolvedVariables map[string]interface{}
 	}{
 		{
-			`subnetname = my-subnet
+			tpl: `subnetname = my-subnet
 vpcref=@vpc
 testsubnet = create subnet cidr={test.cidr} vpc=$vpcref name=$subnetname
 update subnet id=$testsubnet public=true
 instancecount = {instance.count}
 create instance subnet=$testsubnet image=ami-12345 count=$instancecount name='my test instance'`,
-			`testsubnet = create subnet cidr=10.0.2.0/24 name=my-subnet vpc=vpc-1234
+			expect: `testsubnet = create subnet cidr=10.0.2.0/24 name=my-subnet vpc=vpc-1234
 update subnet id=$testsubnet public=true
 create instance count=42 image=ami-12345 name='my test instance' subnet=$testsubnet type=t2.micro`,
+			expProcessedFillers:  map[string]interface{}{"instance.type": "t2.micro", "test.cidr": "10.0.2.0/24", "instance.count": 42},
+			expResolvedVariables: map[string]interface{}{"subnetname": "my-subnet", "vpcref": "vpc-1234", "instancecount": 42},
+		},
+		{
+			tpl: `
+create loadbalancer subnets=[sub-1234, sub-2345,@subalias,@subalias] name=mylb
+sub1 = create subnet cidr={test.cidr} vpc=@vpc name=subnet1
+sub2 = create subnet cidr=10.0.3.0/24 vpc=@vpc name=subnet2
+create loadbalancer subnets=[$sub1, $sub2, sub-3456,{backup-subnet}] name=mylb2
+`,
+			expect: `create loadbalancer name=mylb subnets=[sub-1234,sub-2345,sub-1111,sub-1111]
+sub1 = create subnet cidr=10.0.2.0/24 name=subnet1 vpc=vpc-1234
+sub2 = create subnet cidr=10.0.3.0/24 name=subnet2 vpc=vpc-1234
+create loadbalancer name=mylb2 subnets=[$sub1,$sub2,sub-3456,sub-0987]`,
+			expProcessedFillers:  map[string]interface{}{"test.cidr": "10.0.2.0/24", "backup-subnet": "sub-0987"},
+			expResolvedVariables: map[string]interface{}{},
+		},
+		{
+			tpl: `
+lb0 = create loadbalancer subnets=[sub-1234, sub-2345,@subalias,@subalias] name=mylb
+sub1 = create subnet cidr={test.cidr} vpc=@vpc name=subnet1
+sub2 = create subnet cidr=10.0.3.0/24 vpc=@vpc name=subnet2
+lb1 = create loadbalancer subnets=[$sub1, $sub2, sub-3456,{backup-subnet}] name=mylb2
+`,
+			expect: `lb0 = create loadbalancer name=mylb subnets=[sub-1234,sub-2345,sub-1111,sub-1111]
+sub1 = create subnet cidr=10.0.2.0/24 name=subnet1 vpc=vpc-1234
+sub2 = create subnet cidr=10.0.3.0/24 name=subnet2 vpc=vpc-1234
+lb1 = create loadbalancer name=mylb2 subnets=[$sub1,$sub2,sub-3456,sub-0987]`,
+			expProcessedFillers:  map[string]interface{}{"test.cidr": "10.0.2.0/24", "backup-subnet": "sub-0987"},
+			expResolvedVariables: map[string]interface{}{},
+		},
+		{
+			tpl: `
+			a = "mysubnet-1"
+b = $a
+c = {mysubnet2.hole}
+d = [$b,$c,{mysubnet3.hole},mysubnet-4]
+create loadbalancer subnets=$d name=lb1
+e=$b
+secondlb = create loadbalancer subnets=[$e,mysubnet-4,{mysubnet5.hole}] name=lb2
+`,
+			expect: `create loadbalancer name=lb1 subnets=[mysubnet-1,mysubnet-2,mysubnet-3,mysubnet-4]
+secondlb = create loadbalancer name=lb2 subnets=[mysubnet-1,mysubnet-4,mysubnet-5]`,
+			expProcessedFillers:  map[string]interface{}{"mysubnet2.hole": "mysubnet-2", "mysubnet3.hole": "mysubnet-3", "mysubnet5.hole": "mysubnet-5"},
+			expResolvedVariables: map[string]interface{}{"a": "mysubnet-1", "b": "mysubnet-1", "e": "mysubnet-1", "c": "mysubnet-2", "d": []interface{}{"mysubnet-1", "mysubnet-2", "mysubnet-3", "mysubnet-4"}},
 		},
 	}
 
 	for i, tcase := range tcases {
+		env := NewEnv()
+
+		env.AddFillers(map[string]interface{}{
+			"instance.type":  "t2.micro",
+			"test.cidr":      "10.0.2.0/24",
+			"instance.count": 42,
+			"unused":         "filler",
+			"backup-subnet":  "sub-0987",
+			"mysubnet2.hole": "mysubnet-2",
+			"mysubnet3.hole": "mysubnet-3",
+			"mysubnet5.hole": "mysubnet-5",
+		})
+		env.AliasFunc = func(e, k, v string) string {
+			vals := map[string]string{
+				"vpc":      "vpc-1234",
+				"subalias": "sub-1111",
+			}
+			return vals[v]
+		}
+		env.DefLookupFunc = func(in string) (Definition, bool) {
+			t, ok := DefsExample[in]
+			return t, ok
+		}
+
 		inTpl := MustParse(tcase.tpl)
 
 		pass := newMultiPass(NormalCompileMode...)
 
 		compiled, _, err := pass.compile(inTpl, env)
-		if err != nil {
-			t.Fatal(err)
-		}
 		if err != nil {
 			t.Fatalf("%d: %s", i+1, err)
 		}
@@ -62,28 +111,31 @@ create instance count=42 image=ami-12345 name='my test instance' subnet=$testsub
 			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
 		}
 
-		expProcessedFillers := map[string]interface{}{"instance.type": "t2.micro", "subnet.cidr": "10.0.2.0/24", "instance.count": 42}
-		if got, want := env.GetProcessedFillers(), expProcessedFillers; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %v, want %v", got, want)
+		if got, want := env.GetProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d: got %v, want %v", i+1, got, want)
+		}
+
+		if got, want := env.ResolvedVariables, tcase.expResolvedVariables; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d: got %v, want %v", i+1, got, want)
 		}
 	}
 }
 
-func TestReplaceVariableWithValue(t *testing.T) {
+func TestInlineVariableWithValue(t *testing.T) {
 	env := NewEnv()
 	tcases := []struct {
 		tpl      string
 		expError string
 		expTpl   string
 	}{
-		{"ip = 127.0.0.1\ncreate instance ip=$ip", "", "ip = 127.0.0.1\ncreate instance ip=127.0.0.1"},
-		{"ip = 1.2.3.4\ncreate instance ip=$ip\ncreate subnet cidr=$ip", "", "ip = 1.2.3.4\ncreate instance ip=1.2.3.4\ncreate subnet cidr=1.2.3.4"},
+		{"ip = 127.0.0.1\ncreate instance ip=$ip", "", "create instance ip=127.0.0.1"},
+		{"ip = 1.2.3.4\ncreate instance ip=$ip\ncreate subnet cidr=$ip", "", "create instance ip=1.2.3.4\ncreate subnet cidr=1.2.3.4"},
 	}
 
 	for i, tcase := range tcases {
 		inTpl := MustParse(tcase.tpl)
 
-		resolvedTpl, _, err := replaceVariableValuePass(inTpl, env)
+		resolvedTpl, _, err := inlineVariableValuePass(inTpl, env)
 		if tcase.expError != "" {
 			if err == nil {
 				t.Fatalf("%d: expected error, got nil", i+1)
@@ -92,30 +144,6 @@ func TestReplaceVariableWithValue(t *testing.T) {
 				t.Fatalf("%d: got %s, want %s", i+1, got, want)
 			}
 			continue
-		}
-		if got, want := resolvedTpl.String(), tcase.expTpl; got != want {
-			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
-		}
-	}
-}
-
-func TestRemoveVariablesPass(t *testing.T) {
-	env := NewEnv()
-	tcases := []struct {
-		tpl    string
-		expTpl string
-	}{
-		{"ip = 127.0.0.1\ncreate instance ip=127.0.0.1", "create instance ip=127.0.0.1"},
-		{"ip = 1.2.3.4\ncreate instance ip=1.2.3.4\ncreate subnet cidr=2.3.4.5\nsubnet=2.3.4.5", "create instance ip=1.2.3.4\ncreate subnet cidr=2.3.4.5"},
-		{"ip = {elasticip}\ncreate instance ip=$ip", "ip = {elasticip}\ncreate instance ip=$ip"},
-	}
-
-	for i, tcase := range tcases {
-		inTpl := MustParse(tcase.tpl)
-
-		resolvedTpl, _, err := removeValueStatementsPass(inTpl, env)
-		if err != nil {
-			t.Fatalf("%d: %v", i+1, err)
 		}
 		if got, want := resolvedTpl.String(), tcase.expTpl; got != want {
 			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
@@ -142,16 +170,40 @@ func TestDefaultEnvWithNilFunc(t *testing.T) {
 
 func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
 	env := NewEnv()
-	tpl := MustParse("create subnet\ncreate instance subnet=@mysubnet name={instance.name}\ncreate instance")
-
-	_, _, err := failOnUnresolvedAlias(tpl, env)
-	if err == nil || !strings.Contains(err.Error(), "unresolved alias") {
-		t.Fatalf("expected err unresolved alias. Got %s", err)
+	tcases := []struct {
+		tpl         string
+		expAliasErr string
+		expHolesErr string
+	}{
+		{tpl: "create subnet\ncreate instance subnet=@mysubnet name={instance.name}\ncreate instance", expAliasErr: "unresolved alias", expHolesErr: "unresolved holes"},
+		{tpl: "create subnet\ncreate instance subnet=@mysubnet\ncreate instance", expAliasErr: "unresolved alias: [mysubnet]"},
+		{tpl: "create subnet hole=@myhole\ncreate instance subnet=@mysubnet\ncreate instance", expAliasErr: "unresolved alias: [myhole mysubnet]"},
+		{tpl: "create subnet name=subnet\nname=@myinstance\ncreate instance name=$myinstance\ncreate instance", expAliasErr: "unresolved alias: [myinstance]"},
+		{tpl: "create subnet\ncreate instance name={instance.name}\ncreate instance", expHolesErr: "unresolved holes: [instance.name]"},
+		{tpl: "create subnet\ncreate instance name={instance.name}\ncreate instance\ncreate subnet name={subnet.name}", expHolesErr: "unresolved holes: [instance.name subnet.name]"},
+		{tpl: "subnetname = {subnet.name} create subnet name=$subnetname\ncreate instance name=instancename\ncreate instance", expHolesErr: "unresolved holes: [subnet.name]"},
+		{tpl: "create subnet\ncreate instance name=instancename\ncreate instance\ncreate subnet subnet=name"},
 	}
 
-	_, _, err = failOnUnresolvedHoles(tpl, env)
-	if err == nil || !strings.Contains(err.Error(), "unresolved holes") {
-		t.Fatalf("expected err unresolved holes. Got %s", err)
+	for i, tcase := range tcases {
+		tpl := MustParse(tcase.tpl)
+		_, _, err := failOnUnresolvedAlias(tpl, env)
+		if err == nil && tcase.expAliasErr != "" {
+			t.Fatalf("%d: unresolved aliases: got nil error, expect '%s'", i+1, tcase.expAliasErr)
+		} else if err != nil && tcase.expAliasErr == "" {
+			t.Fatalf("%d: unresolved aliases: got '%s' error, expect nil", i+1, err.Error())
+		} else if got, want := err, tcase.expAliasErr; got != nil && want != "" && !strings.Contains(err.Error(), want) {
+			t.Fatalf("%d: unresolved aliases: got '%s', want '%s'", i+1, got.Error(), want)
+		}
+
+		_, _, err = failOnUnresolvedHoles(tpl, env)
+		if err == nil && tcase.expHolesErr != "" {
+			t.Fatalf("%d: unresolved holes: got nil error, expect '%s'", i+1, tcase.expHolesErr)
+		} else if err != nil && tcase.expHolesErr == "" {
+			t.Fatalf("%d: unresolved holes: got '%s' error, expect nil", i+1, err.Error())
+		} else if got, want := err, tcase.expHolesErr; got != nil && want != "" && !strings.Contains(err.Error(), want) {
+			t.Fatalf("%d: unresolved holes: got '%s', want '%s'", i+1, got.Error(), want)
+		}
 	}
 }
 
@@ -168,6 +220,8 @@ func TestCheckInvalidReferencesDeclarationPass(t *testing.T) {
 		{"create instance subnet=$sub\nsub = create subnet", "'sub' is undefined in template"},
 		{"create instance\nip = 127.0.0.1", ""},
 		{"new_inst = create instance autoref=$new_inst\n", "'new_inst' is undefined in template"},
+		{"a = $test", "'test' is undefined in template"},
+		{"b = [test1,$test2,{test4}]", "'test2' is undefined in template"},
 	}
 
 	for i, tcase := range tcases {
@@ -193,15 +247,15 @@ func TestResolveAgainstDefinitionsPass(t *testing.T) {
 
 		resolveAgainstDefinitions(tpl, env)
 
-		assertCmdHoles(t, tpl, map[string]string{
-			"subnet": "instance.subnet",
-			"image":  "instance.image",
+		assertCmdHoles(t, tpl, map[string][]string{
+			"subnet": {"instance.subnet"},
+			"image":  {"instance.image"},
 		})
-		assertCmdParams(t, tpl, map[string]interface{}{
-			"type": "@custom_type",
+		assertCmdAliases(t, tpl, map[string][]string{
+			"type": {"custom_type"},
 		})
-		assertCmdRefs(t, tpl, map[string]string{
-			"count": "inst_num",
+		assertCmdRefs(t, tpl, map[string][]string{
+			"count": {"inst_num"},
 		})
 	})
 
@@ -329,18 +383,19 @@ func TestResolveHolesPass(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assertCmdHoles(t, tpl, map[string]string{})
+	assertCmdHoles(t, tpl, map[string][]string{})
 	assertCmdParams(t, tpl, map[string]interface{}{"type": "t2.micro", "count": 3})
 }
 
 type params map[string]interface{}
-type holes map[string]string
-type refs map[string]string
+type holes map[string][]string
+type refs map[string][]string
+type aliases map[string][]string
 
 func assertVariableValues(t *testing.T, tpl *Template, exp ...interface{}) {
 	for i, decl := range tpl.expressionNodesIterator() {
 		if vn, ok := decl.(*ast.ValueNode); ok {
-			if got, want := vn.Value, exp[i]; !reflect.DeepEqual(got, want) {
+			if got, want := vn.Value.Value(), exp[i]; !reflect.DeepEqual(got, want) {
 				t.Fatalf("variables value %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 			}
 		}
@@ -350,7 +405,7 @@ func assertVariableValues(t *testing.T, tpl *Template, exp ...interface{}) {
 
 func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
 	for i, cmd := range tpl.CommandNodesIterator() {
-		if got, want := params(cmd.Params), exp[i]; !reflect.DeepEqual(got, want) {
+		if got, want := params(cmd.ToDriverParams()), exp[i]; !reflect.DeepEqual(got, want) {
 			t.Fatalf("params: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}
@@ -358,7 +413,13 @@ func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
 
 func assertCmdHoles(t *testing.T, tpl *Template, exp ...holes) {
 	for i, cmd := range tpl.CommandNodesIterator() {
-		if got, want := holes(cmd.Holes), exp[i]; !reflect.DeepEqual(got, want) {
+		h := make(map[string][]string)
+		for k, p := range cmd.Params {
+			if withHoles, ok := p.(ast.WithHoles); ok && len(withHoles.GetHoles()) > 0 {
+				h[k] = withHoles.GetHoles()
+			}
+		}
+		if got, want := holes(h), exp[i]; !reflect.DeepEqual(got, want) {
 			t.Fatalf("holes: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}
@@ -366,7 +427,27 @@ func assertCmdHoles(t *testing.T, tpl *Template, exp ...holes) {
 
 func assertCmdRefs(t *testing.T, tpl *Template, exp ...refs) {
 	for i, cmd := range tpl.CommandNodesIterator() {
-		if got, want := refs(cmd.Refs), exp[i]; !reflect.DeepEqual(got, want) {
+		r := make(map[string][]string)
+		for k, p := range cmd.Params {
+			if withRefs, ok := p.(ast.WithRefs); ok && len(withRefs.GetRefs()) > 0 {
+				r[k] = withRefs.GetRefs()
+			}
+		}
+		if got, want := refs(r), exp[i]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("refs: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
+		}
+	}
+}
+
+func assertCmdAliases(t *testing.T, tpl *Template, exp ...aliases) {
+	for i, cmd := range tpl.CommandNodesIterator() {
+		r := make(map[string][]string)
+		for k, p := range cmd.Params {
+			if withAliases, ok := p.(ast.WithAlias); ok && len(withAliases.GetAliases()) > 0 {
+				r[k] = withAliases.GetAliases()
+			}
+		}
+		if got, want := aliases(r), exp[i]; !reflect.DeepEqual(got, want) {
 			t.Fatalf("refs: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}

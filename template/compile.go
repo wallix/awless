@@ -13,7 +13,7 @@ import (
 type Env struct {
 	Driver driver.Driver
 
-	ResolvedReferences map[string]interface{}
+	ResolvedVariables map[string]interface{}
 
 	Fillers          map[string]interface{}
 	DefLookupFunc    DefinitionLookupFunc
@@ -26,11 +26,11 @@ type Env struct {
 
 func NewEnv() *Env {
 	return &Env{
-		AliasFunc:          nil,
-		MissingHolesFunc:   nil,
-		Log:                logger.DiscardLogger,
-		ResolvedReferences: make(map[string]interface{}),
-		processedFillers:   make(map[string]interface{}),
+		AliasFunc:         nil,
+		MissingHolesFunc:  nil,
+		Log:               logger.DiscardLogger,
+		ResolvedVariables: make(map[string]interface{}),
+		processedFillers:  make(map[string]interface{}),
 	}
 }
 
@@ -74,9 +74,8 @@ var (
 		checkInvalidReferenceDeclarations,
 		resolveHolesPass,
 		resolveMissingHolesPass,
-		replaceVariableValuePass,
-		removeValueStatementsPass,
 		resolveAliasPass,
+		inlineVariableValuePass,
 	}
 
 	NormalCompileMode = append(
@@ -125,7 +124,8 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 	if env.DefLookupFunc == nil {
 		return tpl, env, fmt.Errorf("definition lookup function is undefined")
 	}
-	each := func(cmd *ast.CommandNode) error {
+
+	verifyValidParamsOnly := func(cmd *ast.CommandNode) error {
 		tplKey := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
 		def, ok := env.DefLookupFunc(tplKey)
 		if !ok {
@@ -133,22 +133,7 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 		}
 
 		for _, key := range cmd.Keys() {
-			var found bool
-
-			for _, k := range def.Required() {
-				if k == key {
-					found = true
-					break
-				}
-			}
-
-			for _, k := range def.Extra() {
-				if k == key {
-					found = true
-					break
-				}
-			}
-			if !found {
+			if !foundIn(key, def.Required()) && !foundIn(key, def.Extra()) {
 				var extraParams, requiredParams string
 				if len(def.Extra()) > 0 {
 					extraParams = fmt.Sprintf("\n\t- extra params: %s", strings.Join(def.Extra(), ", "))
@@ -159,42 +144,29 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 				return fmt.Errorf("%s %s: unexpected param key '%s'%s%s\n", cmd.Action, cmd.Entity, key, requiredParams, extraParams)
 			}
 		}
-
 		return nil
 	}
 
-	if err := tpl.visitCommandNodesE(each); err != nil {
+	if err := tpl.visitCommandNodesE(verifyValidParamsOnly); err != nil {
 		return tpl, env, err
 	}
 
 	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		if cmd.Holes == nil {
-			cmd.Holes = make(map[string]string)
-		}
-		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
-		def, _ := env.DefLookupFunc(key)
+		tplKey := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
+		def, _ := env.DefLookupFunc(tplKey)
 		for _, required := range def.Required() {
 			var isInParams bool
-			var isInRefs bool
 
 			for k := range cmd.Params {
 				if k == required {
 					isInParams = true
 				}
 			}
-			for k := range cmd.Refs {
-				if k == required {
-					isInRefs = true
-				}
-			}
 			normalized := fmt.Sprintf("%s.%s", cmd.Entity, required)
 
-			if isInParams || isInRefs {
-				delete(cmd.Holes, normalized)
-				continue
-			} else {
-				if _, ok := cmd.Holes[required]; !ok {
-					cmd.Holes[required] = normalized
+			if !isInParams {
+				if _, ok := cmd.Params[required]; !ok {
+					cmd.Params[required] = ast.NewHoleValue(normalized)
 				}
 			}
 		}
@@ -205,16 +177,17 @@ func resolveAgainstDefinitions(tpl *Template, env *Env) (*Template, *Env, error)
 
 func checkInvalidReferenceDeclarations(tpl *Template, env *Env) (*Template, *Env, error) {
 	usedRefs := make(map[string]struct{})
-	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		for _, v := range cmd.Refs {
-			usedRefs[v] = struct{}{}
+
+	for _, withRef := range tpl.WithRefsIterator() {
+		for _, ref := range withRef.GetRefs() {
+			usedRefs[ref] = struct{}{}
 		}
-	})
+	}
 
 	knownRefs := make(map[string]bool)
 
-	var each = func(cmd *ast.CommandNode) error {
-		for _, ref := range cmd.Refs {
+	var each = func(withRef ast.WithRefs) error {
+		for _, ref := range withRef.GetRefs() {
 			if _, ok := knownRefs[ref]; !ok {
 				return fmt.Errorf("using reference '$%s' but '%s' is undefined in template\n", ref, ref)
 			}
@@ -224,14 +197,14 @@ func checkInvalidReferenceDeclarations(tpl *Template, env *Env) (*Template, *Env
 
 	for _, st := range tpl.Statements {
 		switch n := st.Node.(type) {
-		case *ast.CommandNode:
+		case ast.WithRefs:
 			if err := each(n); err != nil {
 				return tpl, env, err
 			}
 		case *ast.DeclarationNode:
 			expr := st.Node.(*ast.DeclarationNode).Expr
 			switch nn := expr.(type) {
-			case *ast.CommandNode:
+			case ast.WithRefs:
 				if err := each(nn); err != nil {
 					return tpl, env, err
 				}
@@ -249,33 +222,33 @@ func checkInvalidReferenceDeclarations(tpl *Template, env *Env) (*Template, *Env
 	return tpl, env, nil
 }
 
-func replaceVariableValuePass(tpl *Template, env *Env) (*Template, *Env, error) {
-	tpl.visitDeclarationNodes(func(decl *ast.DeclarationNode) {
-		if value, isValueNode := decl.Expr.(*ast.ValueNode); isValueNode && value.IsResolved() {
-			env.ResolvedReferences[decl.Ident] = decl.Expr.Result()
-		}
-	})
-	tpl.visitCommandNodes(func(n *ast.CommandNode) {
-		n.ProcessRefs(env.ResolvedReferences)
-	})
-
-	env.Log.ExtraVerbosef("references resolved so far: %v", env.ResolvedReferences)
-
-	return tpl, env, nil
-}
-
-func removeValueStatementsPass(tpl *Template, env *Env) (*Template, *Env, error) {
+func inlineVariableValuePass(tpl *Template, env *Env) (*Template, *Env, error) {
 	newTpl := &Template{ID: tpl.ID, AST: tpl.AST.Clone()}
 	newTpl.Statements = []*ast.Statement{}
-	for _, stmt := range tpl.Statements {
-		if dcl, isDeclaration := stmt.Node.(*ast.DeclarationNode); isDeclaration {
-			if value, isValueNode := dcl.Expr.(*ast.ValueNode); isValueNode && value.IsResolved() {
-				continue
+
+	for i, st := range tpl.Statements {
+		decl, isDecl := st.Node.(*ast.DeclarationNode)
+		if isDecl {
+			value, isValue := decl.Expr.(*ast.ValueNode)
+			if isValue {
+				if val := value.Value.Value(); val != nil {
+					env.ResolvedVariables[decl.Ident] = val
+				}
+				for j := i + 1; j < len(tpl.Statements); j++ {
+					expr := extractExpressionNode(tpl.Statements[j])
+					if expr != nil {
+						if withRef, ok := expr.(ast.WithRefs); ok {
+							withRef.ReplaceRef(decl.Ident, value.Value)
+						}
+					}
+				}
+				if value.IsResolved() {
+					continue
+				}
 			}
 		}
-		newTpl.Statements = append(newTpl.Statements, stmt)
+		newTpl.Statements = append(newTpl.Statements, st)
 	}
-
 	return newTpl, env, nil
 }
 
@@ -318,29 +291,36 @@ func resolveMissingHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
 
 func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 	var emptyResolv []string
-	each := func(cmd *ast.CommandNode) {
-		for k, v := range cmd.Params {
-			if s, ok := v.(string); ok {
-				if strings.HasPrefix(s, "@") {
-					env.Log.ExtraVerbosef("alias: resolving %s for key %s", s, k)
-					alias := strings.TrimPrefix(s, "@")
-					if env.AliasFunc == nil {
-						continue
-					}
-					actual := env.AliasFunc(cmd.Entity, k, alias)
-					if actual == "" {
-						emptyResolv = append(emptyResolv, alias)
-					} else {
-						env.Log.ExtraVerbosef("alias: resolved '%s' to '%s' for key %s", alias, actual, k)
-						cmd.Params[k] = actual
-						delete(cmd.Holes, k)
-					}
-				}
+	resolvAliasFunc := func(entity string, key string) func(string) (string, bool) {
+		return func(alias string) (string, bool) {
+			if env.AliasFunc == nil {
+				return "", false
+			}
+			actual := env.AliasFunc(entity, key, alias)
+			if actual == "" {
+				emptyResolv = append(emptyResolv, alias)
+				return "", false
+			} else {
+				env.Log.ExtraVerbosef("alias: resolved '%s' to '%s' for key %s", alias, actual, key)
+				return actual, true
 			}
 		}
 	}
 
-	tpl.visitCommandNodes(each)
+	for _, expr := range tpl.expressionNodesIterator() {
+		switch ee := expr.(type) {
+		case *ast.CommandNode:
+			for k, v := range ee.Params {
+				if vv, ok := v.(ast.WithAlias); ok {
+					vv.ResolveAlias(resolvAliasFunc(ee.Entity, k))
+				}
+			}
+		case *ast.ValueNode:
+			if vv, ok := ee.Value.(ast.WithAlias); ok {
+				vv.ResolveAlias(resolvAliasFunc("", ""))
+			}
+		}
+	}
 
 	if len(emptyResolv) > 0 {
 		return tpl, env, fmt.Errorf("cannot resolve aliases: %q. Maybe you need to update your local model with `awless sync` ?", emptyResolv)
@@ -351,9 +331,9 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 
 func failOnUnresolvedHoles(tpl *Template, env *Env) (*Template, *Env, error) {
 	var unresolved []string
-	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		for _, v := range cmd.Holes {
-			unresolved = append(unresolved, v)
+	tpl.visitHoles(func(withHole ast.WithHoles) {
+		for _, hole := range withHole.GetHoles() {
+			unresolved = append(unresolved, hole)
 		}
 	})
 
@@ -366,17 +346,41 @@ func failOnUnresolvedHoles(tpl *Template, env *Env) (*Template, *Env, error) {
 
 func failOnUnresolvedAlias(tpl *Template, env *Env) (*Template, *Env, error) {
 	var unresolved []string
-	tpl.visitCommandNodes(func(cmd *ast.CommandNode) {
-		for _, v := range cmd.Params {
-			if s, ok := v.(string); ok && strings.HasPrefix(s, "@") {
-				unresolved = append(unresolved, s)
+
+	visitAliases := func(withAlias ast.WithAlias) {
+		for _, alias := range withAlias.GetAliases() {
+			unresolved = append(unresolved, alias)
+		}
+	}
+
+	for _, n := range tpl.expressionNodesIterator() {
+		switch nn := n.(type) {
+		case *ast.ValueNode:
+			if withAlias, ok := nn.Value.(ast.WithAlias); ok {
+				visitAliases(withAlias)
+			}
+		case *ast.CommandNode:
+			for _, param := range nn.Params {
+				if withAlias, ok := param.(ast.WithAlias); ok {
+					visitAliases(withAlias)
+				}
 			}
 		}
-	})
+	}
 
 	if len(unresolved) > 0 {
 		return tpl, env, fmt.Errorf("template contains unresolved alias: %v", unresolved)
 	}
 
 	return tpl, env, nil
+}
+
+func foundIn(key string, slice []string) (found bool) {
+	for _, k := range slice {
+		if k == key {
+			found = true
+			break
+		}
+	}
+	return
 }

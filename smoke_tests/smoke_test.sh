@@ -56,9 +56,13 @@ create route cidr=0.0.0.0/0 gateway=\$gateway table=\$rtable
 sgroupdesc = "authorize SSH from the Internet"
 sgroup = create securitygroup vpc=\$testvpc description=\$sgroupdesc name=ssh-from-internet
 update securitygroup id=\$sgroup inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=22
+internetGroupName = "http-from-internet"
+sgroupInternet = create securitygroup vpc=\$testvpc description=\$internetGroupName name=\$internetGroupName
+update securitygroup id=\$sgroupInternet inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=80
 testkey = create keypair name=$KEY_NAME
 instancecount = {instance.count} # testing var assignement from hole
-testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$sgroup
+instanceSecgroups = [\$sgroup,\$sgroupInternet]
+testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$instanceSecgroups
 create tag resource=\$testinstance key=Env value=Testing
 create policy name=AwlessSmokeTestPolicy resource=* action="ec2:Describe*" effect=Allow
 create group name=$GROUP_NAME

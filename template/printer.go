@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/oklog/ulid"
+	"github.com/wallix/awless/template/internal/ast"
 )
 
 type renderFunc func(...interface{}) string
@@ -55,29 +56,35 @@ func (p *defaultPrinter) Print(t *TemplateExecution) error {
 	buff := bufio.NewWriter(p.w)
 
 	tabw := tabwriter.NewWriter(buff, 0, 8, 0, '\t', 0)
-	for _, cmd := range t.CommandNodesIterator() {
+	for _, expr := range t.expressionNodesIterator() {
+		var action, entity string
+		switch e := expr.(type) {
+		case *ast.CommandNode:
+			action = e.Action
+			entity = e.Entity
+		}
+
 		var status string
 
-		if cmd.CmdErr != nil {
+		if expr.Err() != nil {
 			status = p.RenderKO("KO")
 		} else {
 			status = p.RenderOK("OK")
 		}
 
 		var line string
-		if v, ok := cmd.CmdResult.(string); ok && v != "" {
-			line = fmt.Sprintf("    %s\t%s = %s\t", status, cmd.Entity, v)
+		if v, ok := expr.Result().(string); ok && v != "" {
+			line = fmt.Sprintf("    %s\t%s = %s\t", status, entity, v)
 		} else {
-			line = fmt.Sprintf("    %s\t%s %s\t", status, cmd.Action, cmd.Entity)
+			line = fmt.Sprintf("    %s\t%s %s\t", status, action, entity)
 		}
 
 		fmt.Fprintln(tabw, line)
-		if cmd.CmdErr != nil {
-			for _, err := range formatMultiLineErrMsg(cmd.CmdErr.Error()) {
+		if expr.Err() != nil {
+			for _, err := range formatMultiLineErrMsg(expr.Err().Error()) {
 				fmt.Fprintf(tabw, "%s\t%s\n", "", err)
 			}
 		}
-
 	}
 
 	tabw.Flush()

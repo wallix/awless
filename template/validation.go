@@ -53,8 +53,7 @@ func (v *ParamIsSetValidator) Execute(t *Template) (errs []error) {
 	for _, cmd := range t.CommandNodesIterator() {
 		if cmd.Action == v.Action && cmd.Entity == v.Entity {
 			_, hasParam := cmd.Params[v.Param]
-			_, hasRef := cmd.Refs[v.Param]
-			if !hasParam && !hasRef {
+			if !hasParam {
 				errs = append(errs, fmt.Errorf(v.WarningMessage))
 			}
 		}

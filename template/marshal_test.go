@@ -65,7 +65,7 @@ func TestTemplateExecutionUnmarshalFromJSON(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	exp := map[string]interface{}{"cidr": "10.0.0.0/24"}
-	if got, want := cmds[0].Params, exp; !reflect.DeepEqual(got, want) {
+	if got, want := cmds[0].ToDriverParams(), exp; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	if got, want := cmds[0].CmdErr.Error(), "first error"; got != want {
@@ -78,7 +78,7 @@ func TestTemplateExecutionUnmarshalFromJSON(t *testing.T) {
 	if got, want := cmds[1].Entity, "subnet"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := len(cmds[1].Params), 0; got != want {
+	if got, want := len(cmds[1].ToDriverParams()), 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 	if cmds[1].CmdErr != nil {
@@ -95,7 +95,7 @@ func TestTemplateExecutionUnmarshalFromJSON(t *testing.T) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	exp = map[string]interface{}{"type": "t2.micro", "count": 4}
-	if got, want := cmds[2].Params, exp; !reflect.DeepEqual(got, want) {
+	if got, want := cmds[2].ToDriverParams(), exp; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	if got, want := cmds[2].CmdErr.Error(), "third error"; got != want {

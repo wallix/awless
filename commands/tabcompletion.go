@@ -128,7 +128,7 @@ func splitKeepLast(s, sep string) (last string) {
 	}
 	offset := strings.LastIndex(s, sep)
 	if offset+1 < len(s) {
-		last = s[offset+1 : len(s)]
+		last = s[offset+1:]
 	}
 	return
 }

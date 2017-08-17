@@ -36,4 +36,11 @@ var DefsExample = map[string]Definition{
 		RequiredParams: []string{"resource", "key", "value"},
 		ExtraParams:    []string{},
 	},
+	"createloadbalancer": {
+		Action:         "create",
+		Entity:         "loadbalancer",
+		Api:            "elbv2",
+		RequiredParams: []string{"name", "subnets"},
+		ExtraParams:    []string{"iptype", "scheme", "securitygroups"},
+	},
 }

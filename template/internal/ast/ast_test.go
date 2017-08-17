@@ -28,21 +28,15 @@ func TestCloneAST(t *testing.T) {
 		Ident: "myvar",
 		Expr: &CommandNode{
 			Action: "create", Entity: "vpc",
-			Refs:   map[string]string{"myname": "name"},
-			Params: map[string]interface{}{"count": 1},
-			Holes:  make(map[string]string),
+			Params: map[string]CompositeValue{"count": &interfaceValue{val: 1}, "myname": &referenceValue{ref: "name"}},
 		}}}, &Statement{Node: &DeclarationNode{
 		Ident: "myothervar",
 		Expr: &CommandNode{
 			Action: "create", Entity: "subnet",
-			Refs:   make(map[string]string),
-			Params: make(map[string]interface{}),
-			Holes:  map[string]string{"vpc": "myvar"},
+			Params: map[string]CompositeValue{"vpc": &holeValue{hole: "myvar"}},
 		}}}, &Statement{Node: &CommandNode{
 		Action: "create", Entity: "instance",
-		Refs:   make(map[string]string),
-		Params: make(map[string]interface{}),
-		Holes:  map[string]string{"subnet": "myothervar"},
+		Params: map[string]CompositeValue{"subnet": &holeValue{hole: "myothervar"}},
 	}},
 	)
 
@@ -52,7 +46,7 @@ func TestCloneAST(t *testing.T) {
 		t.Fatalf("\ngot %#v\n\nwant %#v", got, want)
 	}
 
-	clone.Statements[0].Node.(*DeclarationNode).Expr.(*CommandNode).Params["new"] = "trump"
+	clone.Statements[0].Node.(*DeclarationNode).Expr.(*CommandNode).Params["new"] = &interfaceValue{"mynode"}
 
 	if got, want := clone.Statements, tree.Statements; reflect.DeepEqual(got, want) {
 		t.Fatalf("\ngot %s\n\nwant %s", got, want)

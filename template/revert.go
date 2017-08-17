@@ -9,7 +9,7 @@ import (
 
 func (te *Template) Revert() (*Template, error) {
 	var lines []string
-	cmdsReverseIterator := te.CmdNodesReverseIterator()
+	cmdsReverseIterator := te.CommandNodesReverseIterator()
 	for i, cmd := range cmdsReverseIterator {
 		notLastCommand := (i != len(cmdsReverseIterator)-1)
 		if isRevertible(cmd) {
@@ -237,7 +237,7 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if cmd.Entity == "containertask" && cmd.Action == "start" {
-		t, ok := cmd.Params["type"].(string)
+		t, ok := cmd.ToDriverParams()["type"].(string)
 		return ok && (t == "service" || t == "task")
 	}
 

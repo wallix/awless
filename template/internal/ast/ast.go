@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -33,8 +34,10 @@ type AST struct {
 	Statements []*Statement
 
 	// state to build the AST
-	currentStatement *Statement
-	currentKey       string
+	currentStatement   *Statement
+	currentKey         string
+	currentListBuilder *listValueBuilder
+	stmtBuilder        *statementBuilder
 }
 
 type Statement struct {
@@ -62,72 +65,193 @@ type CommandNode struct {
 	CmdErr    error
 
 	Action, Entity string
-	Refs           map[string]string
-	Params         map[string]interface{}
-	Holes          map[string]string
+	Params         map[string]CompositeValue
 }
 
-func (n *CommandNode) Result() interface{} { return n.CmdResult }
-func (n *CommandNode) Err() error          { return n.CmdErr }
+func (c *CommandNode) Result() interface{} { return c.CmdResult }
+func (c *CommandNode) Err() error          { return c.CmdErr }
 
-func (n *CommandNode) Keys() (keys []string) {
-	for k := range n.Params {
+func (c *CommandNode) Keys() (keys []string) {
+	for k := range c.Params {
 		keys = append(keys, k)
 	}
-	for k := range n.Holes {
-		keys = append(keys, k)
-	}
-	for k := range n.Refs {
-		keys = append(keys, k)
-	}
-
 	return
 }
 
+func (c *CommandNode) String() string {
+	var all []string
+
+	for k, v := range c.Params {
+		all = append(all, fmt.Sprintf("%s=%s", k, v.String()))
+	}
+
+	sort.Strings(all)
+
+	var buff bytes.Buffer
+
+	fmt.Fprintf(&buff, "%s %s", c.Action, c.Entity)
+
+	if len(all) > 0 {
+		fmt.Fprintf(&buff, " %s", strings.Join(all, " "))
+	}
+
+	return buff.String()
+}
+
+func (c *CommandNode) clone() Node {
+	cmd := &CommandNode{
+		Action: c.Action, Entity: c.Entity,
+		Params: make(map[string]CompositeValue),
+	}
+
+	for k, v := range c.Params {
+		cmd.Params[k] = v.Clone()
+	}
+	return cmd
+}
+
+func (c *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
+	processed := make(map[string]interface{})
+
+	for _, param := range c.Params {
+		if withHoles, ok := param.(WithHoles); ok {
+			paramProcessed := withHoles.ProcessHoles(fills)
+			for k, v := range paramProcessed {
+				processed[k] = v
+			}
+		}
+	}
+	return processed
+}
+
+func (c *CommandNode) GetHoles() (holes []string) {
+	for _, param := range c.Params {
+		if withHoles, ok := param.(WithHoles); ok {
+			holes = append(holes, withHoles.GetHoles()...)
+		}
+	}
+	return
+}
+
+func (c *CommandNode) ProcessRefs(refs map[string]interface{}) {
+	for _, param := range c.Params {
+		if withRef, ok := param.(WithRefs); ok {
+			withRef.ProcessRefs(refs)
+		}
+	}
+}
+
+func (c *CommandNode) GetRefs() (refs []string) {
+	for _, param := range c.Params {
+		if withRef, ok := param.(WithRefs); ok {
+			refs = append(refs, withRef.GetRefs()...)
+		}
+	}
+	return
+}
+
+func (c *CommandNode) ReplaceRef(key string, value CompositeValue) {
+	for k, param := range c.Params {
+		if withRef, ok := param.(WithRefs); ok {
+			if withRef.IsRef(key) {
+				c.Params[k] = value
+			} else {
+				withRef.ReplaceRef(key, value)
+			}
+		}
+	}
+}
+
+func (c *CommandNode) IsRef(key string) bool {
+	return false
+}
+
+func (c *CommandNode) ToDriverParams() map[string]interface{} {
+	params := make(map[string]interface{})
+	for k, v := range c.Params {
+		if v.Value() != nil {
+			params[k] = v.Value()
+		}
+	}
+	return params
+}
+
+func (c *CommandNode) ToFillerParams() map[string]interface{} {
+	params := make(map[string]interface{})
+	for k, v := range c.Params {
+		if v.Value() != nil {
+			params[k] = v.Value()
+		}
+		if _, ok := v.(WithAlias); ok {
+			params[k] = v.String()
+		}
+	}
+	return params
+}
+
 type ValueNode struct {
-	Value interface{}
-	Hole  string
+	Value CompositeValue
 }
 
 func (n *ValueNode) clone() Node {
 	return &ValueNode{
-		Value: n.Value,
-		Hole:  n.Hole,
+		Value: n.Value.Clone(),
 	}
 }
 
 func (n *ValueNode) String() string {
-	if n.Hole != "" {
-		return fmt.Sprintf("{%s}", n.Hole)
-	}
-	return printParamValue(n.Value)
+	return n.Value.String()
 }
 
 func (n *ValueNode) Result() interface{} { return n.Value }
 func (n *ValueNode) Err() error          { return nil }
 
 func (n *ValueNode) IsResolved() bool {
-	return n.Hole == ""
+	if withHoles, ok := n.Value.(WithHoles); ok {
+		return len(withHoles.GetHoles()) == 0
+	}
+	return true
 }
 
 func (n *ValueNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
-	processed := make(map[string]interface{})
-	if n.Hole == "" {
-		return processed
+	if withHoles, ok := n.Value.(WithHoles); ok {
+		return withHoles.ProcessHoles(fills)
 	}
-	if val, ok := fills[n.Hole]; ok {
-		n.Value = val
-		processed[n.Hole] = val
-		n.Hole = ""
-	}
-	return processed
+	return make(map[string]interface{})
 }
 
-func (n *ValueNode) GetHoles() (holes []string) {
-	if n.Hole != "" {
-		holes = append(holes, n.Hole)
+func (n *ValueNode) ProcessRefs(refs map[string]interface{}) {
+	if withRef, ok := n.Value.(WithRefs); ok {
+		withRef.ProcessRefs(refs)
+	}
+}
+
+func (n *ValueNode) GetRefs() (refs []string) {
+	if withRef, ok := n.Value.(WithRefs); ok {
+		refs = append(refs, withRef.GetRefs()...)
 	}
 	return
+}
+
+func (n *ValueNode) ReplaceRef(key string, value CompositeValue) {
+	if withRef, ok := n.Value.(WithRefs); ok {
+		if withRef.IsRef(key) {
+			n.Value = value
+		} else {
+			withRef.ReplaceRef(key, value)
+		}
+	}
+}
+
+func (n *ValueNode) IsRef(key string) bool {
+	return false
+}
+
+func (n *ValueNode) GetHoles() []string {
+	if withHoles, ok := n.Value.(WithHoles); ok {
+		return withHoles.GetHoles()
+	}
+	return []string{}
 }
 
 func (s *Statement) Clone() *Statement {
@@ -146,60 +270,17 @@ func (a *AST) String() string {
 }
 
 func (n *DeclarationNode) clone() Node {
-	return &DeclarationNode{
+	decl := &DeclarationNode{
 		Ident: n.Ident,
-		Expr:  n.Expr.clone().(ExpressionNode),
 	}
+	if n.Expr != nil {
+		decl.Expr = n.Expr.clone().(ExpressionNode)
+	}
+	return decl
 }
 
 func (n *DeclarationNode) String() string {
 	return fmt.Sprintf("%s = %s", n.Ident, n.Expr)
-}
-
-func (n *CommandNode) clone() Node {
-	cmd := &CommandNode{
-		Action: n.Action, Entity: n.Entity,
-		Refs:   make(map[string]string),
-		Params: make(map[string]interface{}),
-		Holes:  make(map[string]string),
-	}
-
-	for k, v := range n.Refs {
-		cmd.Refs[k] = v
-	}
-	for k, v := range n.Params {
-		cmd.Params[k] = v
-	}
-	for k, v := range n.Holes {
-		cmd.Holes[k] = v
-	}
-
-	return cmd
-}
-
-func (n *CommandNode) String() string {
-	var all []string
-	for k, v := range n.Refs {
-		all = append(all, fmt.Sprintf("%s=$%s", k, v))
-	}
-	for k, v := range n.Params {
-		all = append(all, fmt.Sprintf("%s=%s", k, printParamValue(v)))
-	}
-	for k, v := range n.Holes {
-		all = append(all, fmt.Sprintf("%s={%s}", k, v))
-	}
-
-	sort.Strings(all)
-
-	var buff bytes.Buffer
-
-	fmt.Fprintf(&buff, "%s %s", n.Action, n.Entity)
-
-	if len(all) > 0 {
-		fmt.Fprintf(&buff, " %s", strings.Join(all, " "))
-	}
-
-	return buff.String()
 }
 
 func printParamValue(i interface{}) string {
@@ -215,40 +296,6 @@ func printParamValue(i interface{}) string {
 	}
 }
 
-func (n *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
-	processed := make(map[string]interface{})
-	if n.Params == nil {
-		n.Params = make(map[string]interface{})
-	}
-	for key, hole := range n.Holes {
-		if val, ok := fills[hole]; ok {
-			n.Params[key] = val
-			processed[n.Entity+"."+key] = val
-			delete(n.Holes, key)
-		}
-	}
-	return processed
-}
-
-func (n *CommandNode) GetHoles() (holes []string) {
-	for _, h := range n.Holes {
-		holes = append(holes, h)
-	}
-	return
-}
-
-func (n *CommandNode) ProcessRefs(fills map[string]interface{}) {
-	if n.Params == nil {
-		n.Params = make(map[string]interface{})
-	}
-	for key, ref := range n.Refs {
-		if val, ok := fills[ref]; ok {
-			n.Params[key] = val
-			delete(n.Refs, key)
-		}
-	}
-}
-
 func (a *AST) Clone() *AST {
 	clone := &AST{}
 	for _, stat := range a.Statements {
@@ -260,6 +307,12 @@ func (a *AST) Clone() *AST {
 var SimpleStringValue = regexp.MustCompile("^[a-zA-Z0-9-._:/+;~@<>*]+$") // in sync with [a-zA-Z0-9-._:/+;~@<>]+ in PEG (with ^ and $ around)
 
 func quoteStringIfNeeded(input string) string {
+	if _, err := strconv.Atoi(input); err == nil {
+		return "'" + input + "'"
+	}
+	if _, err := strconv.ParseFloat(input, 64); err == nil {
+		return "'" + input + "'"
+	}
 	if SimpleStringValue.MatchString(input) {
 		return input
 	} else {

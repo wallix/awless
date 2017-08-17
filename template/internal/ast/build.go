@@ -4,102 +4,143 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"strings"
 )
+
+type parameter struct {
+	key   string
+	value CompositeValue
+}
+
+type statementBuilder struct {
+	action                string
+	entity                string
+	declarationIdentifier string
+	isValue               bool
+	params                []*parameter
+	currentKey            string
+	currentValue          CompositeValue
+	listBuilder           *listValueBuilder
+}
+
+func (b *statementBuilder) build() *Statement {
+	if b.action == "" && b.entity == "" && b.declarationIdentifier == "" && !b.isValue {
+		return nil
+	}
+	var expr ExpressionNode
+	if b.isValue {
+		expr = &ValueNode{Value: b.currentValue}
+	} else {
+		cmdParams := make(map[string]CompositeValue)
+		for _, param := range b.params {
+			cmdParams[param.key] = param.value
+		}
+		expr = &CommandNode{Action: b.action, Entity: b.entity, Params: cmdParams}
+	}
+	if b.declarationIdentifier != "" {
+		decl := &DeclarationNode{Ident: b.declarationIdentifier, Expr: expr}
+		return &Statement{Node: decl}
+	}
+	return &Statement{Node: expr}
+}
+
+func (b *statementBuilder) addParamKey(key string) *statementBuilder {
+	b.currentKey = key
+	return b
+}
+
+func (b *statementBuilder) addParamValue(val CompositeValue) *statementBuilder {
+	b.currentValue = val
+	if b.listBuilder != nil {
+		b.listBuilder.add(b.currentValue)
+		b.currentValue = nil
+	} else {
+		if b.currentKey != "" {
+			b.params = append(b.params, &parameter{key: b.currentKey, value: b.currentValue})
+			b.currentKey = ""
+			b.currentValue = nil
+		}
+	}
+
+	return b
+}
+
+func (b *statementBuilder) newList() *statementBuilder {
+	b.listBuilder = &listValueBuilder{}
+	return b
+}
+
+func (b *statementBuilder) buildList() *statementBuilder {
+	if b.listBuilder != nil {
+		list := b.listBuilder.build()
+		b.listBuilder = nil
+		b.addParamValue(list)
+	}
+	return b
+}
 
 func (a *AST) addAction(text string) {
 	if IsInvalidAction(text) {
 		panic(fmt.Errorf("unknown action '%s'", text))
 	}
-
-	cmd := &CommandNode{Action: text}
-
-	decl := a.currentDeclaration()
-	if decl != nil {
-		decl.Expr = cmd
-	} else {
-		node := a.currentCommand()
-		if node == nil {
-			a.addStatement(cmd)
-		} else {
-			node.Action = text
-		}
-	}
+	a.stmtBuilder.action = text
 }
 
 func (a *AST) addEntity(text string) {
 	if IsInvalidEntity(text) {
 		panic(fmt.Errorf("unknown entity '%s'", text))
 	}
-	node := a.currentCommand()
-	node.Entity = text
+	a.stmtBuilder.entity = text
 }
 
 func (a *AST) addValue() {
-	val := &ValueNode{}
-
-	decl := a.currentDeclaration()
-	if decl != nil {
-		decl.Expr = val
-	}
+	a.stmtBuilder.isValue = true
 }
 
 func (a *AST) addDeclarationIdentifier(text string) {
-	a.addStatement(&DeclarationNode{Ident: text})
+	a.stmtBuilder.declarationIdentifier = text
 }
 
-func (a *AST) LineDone() {
-	a.currentStatement = nil
-	a.currentKey = ""
+func (a *AST) NewStatement() {
+	a.stmtBuilder = &statementBuilder{}
 }
 
-func (a *AST) addParam(i interface{}) {
-	if node := a.currentCommand(); node != nil {
-		node.Params[a.currentKey] = i
-	} else {
-		varDecl := a.currentDeclarationValue()
-		varDecl.Value = i
+func (a *AST) StatementDone() {
+
+	if stmt := a.stmtBuilder.build(); stmt != nil {
+		a.Statements = append(a.Statements, stmt)
 	}
+	a.stmtBuilder = nil
 }
 
 func (a *AST) addParamKey(text string) {
-	node := a.currentCommand()
-	if node.Params == nil {
-		node.Refs = make(map[string]string)
-		node.Params = make(map[string]interface{})
-		node.Holes = make(map[string]string)
-	}
-	a.currentKey = text
-}
-
-func (a *AST) addAliasParam(text string) {
-	a.addParam("@" + text)
+	a.stmtBuilder.addParamKey(text)
 }
 
 func (a *AST) addParamValue(text string) {
+	var val interface{}
 	i, err := strconv.Atoi(text)
 	if err == nil {
-		a.addParam(i)
+		val = i
 	} else {
 		f, err := strconv.ParseFloat(text, 64)
 		if err == nil {
-			a.addParam(f)
+			val = f
 		} else {
-			a.addParam(text)
+			val = text
 		}
 	}
+	a.stmtBuilder.addParamValue(&interfaceValue{val: val})
+}
+
+func (a *AST) addFirstValueInList() {
+	a.stmtBuilder.newList()
+}
+func (a *AST) lastValueInList() {
+	a.stmtBuilder.buildList()
 }
 
 func (a *AST) addStringValue(text string) {
-	a.addParam(text)
-}
-
-func (a *AST) addCsvValue(text string) {
-	var csv []string
-	for _, val := range strings.Split(text, ",") {
-		csv = append(csv, strings.TrimSpace(val))
-	}
-	a.addParam(csv)
+	a.stmtBuilder.addParamValue(&interfaceValue{val: text})
 }
 
 func (a *AST) addParamFloatValue(text string) {
@@ -107,7 +148,7 @@ func (a *AST) addParamFloatValue(text string) {
 	if err != nil {
 		panic(fmt.Sprintf("cannot convert '%s' to float", text))
 	}
-	a.addParam(num)
+	a.stmtBuilder.addParamValue(&interfaceValue{val: num})
 }
 
 func (a *AST) addParamIntValue(text string) {
@@ -115,7 +156,7 @@ func (a *AST) addParamIntValue(text string) {
 	if err != nil {
 		panic(fmt.Sprintf("cannot convert '%s' to int", text))
 	}
-	a.addParam(num)
+	a.stmtBuilder.addParamValue(&interfaceValue{val: num})
 }
 
 func (a *AST) addParamCidrValue(text string) {
@@ -123,7 +164,7 @@ func (a *AST) addParamCidrValue(text string) {
 	if err != nil {
 		panic(fmt.Sprintf("cannot convert '%s' to net cidr", text))
 	}
-	a.addParam(ipnet.String())
+	a.stmtBuilder.addParamValue(&interfaceValue{val: ipnet.String()})
 }
 
 func (a *AST) addParamIpValue(text string) {
@@ -131,80 +172,30 @@ func (a *AST) addParamIpValue(text string) {
 	if ip == nil {
 		panic(fmt.Sprintf("cannot convert '%s' to net ip", text))
 	}
-	a.addParam(ip.String())
+	a.stmtBuilder.addParamValue(&interfaceValue{val: ip.String()})
 }
 
 func (a *AST) addParamRefValue(text string) {
-	if node := a.currentCommand(); node != nil {
-		node.Refs[a.currentKey] = text
-	}
+	a.stmtBuilder.addParamValue(&referenceValue{ref: text})
 }
 
 func (a *AST) addParamHoleValue(text string) {
-	if node := a.currentCommand(); node != nil {
-		node.Holes[a.currentKey] = text
-	} else {
-		varDecl := a.currentDeclarationValue()
-		varDecl.Hole = text
-	}
+	a.stmtBuilder.addParamValue(&holeValue{hole: text})
 }
 
-func (a *AST) currentDeclaration() *DeclarationNode {
-	st := a.currentStatement
-	if st == nil {
-		return nil
-	}
-
-	switch st.Node.(type) {
-	case *DeclarationNode:
-		return st.Node.(*DeclarationNode)
-	}
-
-	return nil
+func (a *AST) addAliasParam(text string) {
+	a.stmtBuilder.addParamValue(&aliasValue{alias: text})
 }
 
-func (a *AST) currentCommand() *CommandNode {
-	st := a.currentStatement
-	if st == nil {
-		return nil
-	}
-
-	switch st.Node.(type) {
-	case *CommandNode:
-		return st.Node.(*CommandNode)
-	case *DeclarationNode:
-		expr := st.Node.(*DeclarationNode).Expr
-		switch expr.(type) {
-		case *CommandNode:
-			return expr.(*CommandNode)
-		}
-		return nil
-	default:
-		return nil
-	}
+type listValueBuilder struct {
+	vals []CompositeValue
 }
 
-func (a *AST) currentDeclarationValue() *ValueNode {
-	st := a.currentStatement
-	if st == nil {
-		return nil
-	}
-
-	switch st.Node.(type) {
-	case *DeclarationNode:
-		expr := st.Node.(*DeclarationNode).Expr
-		switch expr.(type) {
-		case *ValueNode:
-			return expr.(*ValueNode)
-		}
-		return nil
-	default:
-		return nil
-	}
+func (c *listValueBuilder) add(v CompositeValue) *listValueBuilder {
+	c.vals = append(c.vals, v)
+	return c
 }
 
-func (a *AST) addStatement(n Node) {
-	stat := &Statement{Node: n}
-	a.currentStatement = stat
-	a.Statements = append(a.Statements, stat)
+func (c *listValueBuilder) build() CompositeValue {
+	return &listValue{c.vals}
 }

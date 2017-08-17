@@ -76,7 +76,7 @@ func ParseParams(text string) (map[string]interface{}, error) {
 
 	switch n.(type) {
 	case *ast.CommandNode:
-		return (n.(*ast.CommandNode)).Params, nil
+		return (n.(*ast.CommandNode)).ToFillerParams(), nil
 	default:
 		return nil, fmt.Errorf("parse params: expected a command node")
 	}

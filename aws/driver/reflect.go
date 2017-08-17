@@ -116,19 +116,7 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int, interfs 
 			return
 		}
 	case awsstringslice:
-		switch vv := v.(type) {
-		case string:
-			v = []*string{&vv}
-		case *string:
-			v = []*string{vv}
-		case []*string:
-			v = vv
-		case []string:
-			v = aws.StringSlice(vv)
-		default:
-			str := fmt.Sprint(v)
-			v = []*string{&str}
-		}
+		v = castStringPointerSlice(v)
 	case awsdimensionslice:
 		sl := castStringSlice(v)
 		var dimensions []*cloudwatch.Dimension
@@ -405,6 +393,36 @@ func castStringSlice(v interface{}) []string {
 		return vv
 	default:
 		return []string{fmt.Sprint(v)}
+	}
+}
+
+func castStringPointerSlice(v interface{}) []*string {
+	switch vv := v.(type) {
+	case string:
+		return []*string{&vv}
+	case *string:
+		return []*string{vv}
+	case []*string:
+		return vv
+	case []string:
+		return aws.StringSlice(vv)
+	case []interface{}:
+		var slice []*string
+		for _, i := range vv {
+			switch ii := i.(type) {
+			case string:
+				slice = append(slice, &ii)
+			case *string:
+				slice = append(slice, ii)
+			default:
+				str := fmt.Sprint(ii)
+				slice = append(slice, &str)
+			}
+		}
+		return slice
+	default:
+		str := fmt.Sprint(v)
+		return []*string{&str}
 	}
 }
 

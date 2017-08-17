@@ -18,6 +18,7 @@ package template
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -41,37 +42,31 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	for _, sts := range s.Statements {
 		clone := sts.Clone()
 		current.Statements = append(current.Statements, clone)
-		switch clone.Node.(type) {
+		switch n := clone.Node.(type) {
 		case *ast.CommandNode:
-			cmd := clone.Node.(*ast.CommandNode)
-			fn, err := env.Driver.Lookup(cmd.Action, cmd.Entity)
-			if err != nil {
-				return current, err
-			}
-			cmd.ProcessRefs(vars)
-
-			ctx := driver.NewContext(env.ResolvedReferences)
-			if cmd.CmdResult, cmd.CmdErr = fn(ctx, cmd.Params); cmd.CmdErr != nil {
-				return current, nil
-			}
-		case *ast.DeclarationNode:
-			ident := clone.Node.(*ast.DeclarationNode).Ident
-			expr := clone.Node.(*ast.DeclarationNode).Expr
-			switch expr.(type) {
-			case *ast.CommandNode:
-				cmd := expr.(*ast.CommandNode)
-				fn, err := env.Driver.Lookup(cmd.Action, cmd.Entity)
-				if err != nil {
-					return current, err
-				}
-				cmd.ProcessRefs(vars)
-
-				ctx := driver.NewContext(env.ResolvedReferences)
-				if cmd.CmdResult, cmd.CmdErr = fn(ctx, cmd.Params); cmd.CmdErr != nil {
+			if err := runCmd(n, env, vars); err != nil {
+				if err == driverFunctionFailedErr {
 					return current, nil
 				}
-				vars[ident] = cmd.CmdResult
+				return current, err
 			}
+		case *ast.DeclarationNode:
+			ident := n.Ident
+			expr := n.Expr
+			switch cmd := expr.(type) {
+			case *ast.CommandNode:
+				if err := runCmd(cmd, env, vars); err != nil {
+					if err == driverFunctionFailedErr {
+						return current, nil
+					}
+					return current, err
+				}
+				vars[ident] = cmd.Result()
+			default:
+				return current, fmt.Errorf("unknown type of node: %T", expr)
+			}
+		default:
+			return current, fmt.Errorf("unknown type of node: %T", clone.Node)
 		}
 	}
 
@@ -134,6 +129,23 @@ func (t *Template) UniqueDefinitions(fn DefinitionLookupFunc) (definitions Defin
 	return
 }
 
+var driverFunctionFailedErr = errors.New("Driver function call failed")
+
+func runCmd(n *ast.CommandNode, env *Env, vars map[string]interface{}) error {
+	fn, err := env.Driver.Lookup(n.Action, n.Entity)
+	if err != nil {
+		return err
+	}
+	n.ProcessRefs(vars)
+
+	ctx := driver.NewContext(env.ResolvedVariables)
+	n.CmdResult, n.CmdErr = fn(ctx, n.ToDriverParams())
+	if n.CmdErr != nil {
+		return driverFunctionFailedErr
+	}
+	return nil
+}
+
 func (s *Template) visitHoles(fn func(n ast.WithHoles)) {
 	for _, n := range s.expressionNodesIterator() {
 		if h, ok := n.(ast.WithHoles); ok {
@@ -172,9 +184,9 @@ func (s *Template) visitDeclarationNodes(fn func(n *ast.DeclarationNode)) {
 
 func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 	for _, sts := range s.Statements {
-		switch sts.Node.(type) {
+		switch nn := sts.Node.(type) {
 		case *ast.CommandNode:
-			nodes = append(nodes, sts.Node.(*ast.CommandNode))
+			nodes = append(nodes, nn)
 		case *ast.DeclarationNode:
 			expr := sts.Node.(*ast.DeclarationNode).Expr
 			switch expr.(type) {
@@ -186,7 +198,23 @@ func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 	return
 }
 
-func (s *Template) CmdNodesReverseIterator() (nodes []*ast.CommandNode) {
+func (s *Template) WithRefsIterator() (nodes []ast.WithRefs) {
+	for _, sts := range s.Statements {
+		switch nn := sts.Node.(type) {
+		case ast.WithRefs:
+			nodes = append(nodes, nn)
+		case *ast.DeclarationNode:
+			expr := sts.Node.(*ast.DeclarationNode).Expr
+			switch nnn := expr.(type) {
+			case *ast.CommandNode:
+				nodes = append(nodes, nnn)
+			}
+		}
+	}
+	return
+}
+
+func (s *Template) CommandNodesReverseIterator() (nodes []*ast.CommandNode) {
 	for i := len(s.Statements) - 1; i >= 0; i-- {
 		sts := s.Statements[i]
 		switch sts.Node.(type) {
@@ -225,15 +253,22 @@ func (s *Template) declarationNodesIterator() (nodes []*ast.DeclarationNode) {
 }
 
 func (s *Template) expressionNodesIterator() (nodes []ast.ExpressionNode) {
-	for _, sts := range s.Statements {
-		switch n := sts.Node.(type) {
-		case *ast.DeclarationNode:
-			nodes = append(nodes, n.Expr)
-		case *ast.CommandNode:
-			nodes = append(nodes, n)
+	for _, st := range s.Statements {
+		if expr := extractExpressionNode(st); expr != nil {
+			nodes = append(nodes, expr)
 		}
 	}
 	return
+}
+
+func extractExpressionNode(st *ast.Statement) ast.ExpressionNode {
+	switch n := st.Node.(type) {
+	case *ast.DeclarationNode:
+		return n.Expr
+	case ast.ExpressionNode:
+		return n
+	}
+	return nil
 }
 
 type Errors struct {

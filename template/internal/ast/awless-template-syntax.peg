@@ -6,24 +6,29 @@ type Peg Peg {
 }
 
 Script   <- (BlankLine* Statement BlankLine*)+ WhiteSpacing EndOfFile
-Statement <- WhiteSpacing (CmdExpr / Declaration / Comment) WhiteSpacing EndOfLine*
+Statement <- { p.NewStatement() } WhiteSpacing (CmdExpr / Declaration / Comment) WhiteSpacing EndOfLine* { p.StatementDone() }
 Action <- [a-z]+
 Entity <- [a-z0-9]+
 Declaration <- <Identifier> { p.addDeclarationIdentifier(text) }
                Equal
                ( CmdExpr / ValueExpr )
-ValueExpr <- { p.addValue() } NoRefValue { p.LineDone() }
+ValueExpr <- { p.addValue() } CompositeValue
 CmdExpr <- <Action> { p.addAction(text) }
         MustWhiteSpacing <Entity> { p.addEntity(text) }
-        (MustWhiteSpacing Params)? { p.LineDone() }
+        (MustWhiteSpacing Params)?
 
 Params <- Param+
 Param <- <Identifier> { p.addParamKey(text) }
          Equal
-         Value
+         CompositeValue
          WhiteSpacing
 
 Identifier <- [a-zA-Z0-9-_.]+
+
+CompositeValue <- ListValue / Value
+
+ListValue <- {  p.addFirstValueInList() } '[' WhiteSpacing Value WhiteSpacing
+            (',' WhiteSpacing Value WhiteSpacing )* ']' {  p.lastValueInList() }
 
 NoRefValue <- HoleValue {  p.addParamHoleValue(text) }
         / AliasValue {  p.addAliasParam(text) }
@@ -39,7 +44,6 @@ Value <- RefValue {  p.addParamRefValue(text) }
         
 CustomTypedValue <- <CidrValue> { p.addParamCidrValue(text) }
         / <IpValue> { p.addParamIpValue(text) }
-        / <CSVValue> {p.addCsvValue(text)}
         / <IntRangeValue> { p.addParamValue(text) }
 
 OtherParamValue <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
@@ -47,7 +51,6 @@ OtherParamValue <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with templat
 DoubleQuotedValue <- [^"]*
 SingleQuotedValue <- [^']*
 
-CSVValue <- (OtherParamValue WhiteSpacing ',' WhiteSpacing)+ OtherParamValue
 CidrValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'/'[0-9]+
 IpValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+
 IntRangeValue <- [0-9]+'-'[0-9]+
@@ -56,7 +59,7 @@ RefValue <- '$'<Identifier>
 AliasValue <- '@'<OtherParamValue> / '@' DoubleQuote <DoubleQuotedValue> DoubleQuote / '@' SingleQuote <SingleQuotedValue> SingleQuote 
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
 
-Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)* { p.LineDone() }
+Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)*
 
 SingleQuote <- '\''
 DoubleQuote <- '"'
@@ -64,7 +67,7 @@ DoubleQuote <- '"'
 WhiteSpacing <- Whitespace*
 MustWhiteSpacing <- Whitespace+
 Equal <- WhiteSpacing '=' WhiteSpacing
-BlankLine <- WhiteSpacing EndOfLine { p.LineDone() }
+BlankLine <- WhiteSpacing EndOfLine
 Whitespace   <- ' ' / '\t'
 EndOfLine <- '\r\n' / '\n' / '\r'
 EndOfFile <- !.
