@@ -27,8 +27,6 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
-const ascSymbol = " ▲"
-
 type TimeFormat int
 
 const (
@@ -39,7 +37,7 @@ const (
 
 type ColumnDefinition interface {
 	propKey() string
-	title(bool) string
+	title(...string) string
 	format(i interface{}) string
 }
 
@@ -49,7 +47,7 @@ func (d ColumnDefinitions) resolveKey(name string) string {
 	low := strings.ToLower(name)
 	for _, def := range d {
 		switch low {
-		case strings.ToLower(def.propKey()), strings.ToLower(def.title(false)):
+		case strings.ToLower(def.propKey()), strings.ToLower(def.title()):
 			return def.propKey()
 		}
 	}
@@ -67,13 +65,13 @@ func (h StringColumnDefinition) format(i interface{}) string {
 	return fmt.Sprint(i)
 }
 func (h StringColumnDefinition) propKey() string { return h.Prop }
-func (h StringColumnDefinition) title(displayAscSymbol bool) string {
+func (h StringColumnDefinition) title(suffix ...string) string {
 	t := h.Friendly
 	if t == "" {
 		t = h.Prop
 	}
-	if displayAscSymbol {
-		t += ascSymbol
+	if len(suffix) > 0 {
+		t += suffix[0]
 	}
 	return t
 }

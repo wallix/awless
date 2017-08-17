@@ -45,6 +45,7 @@ type Displayer interface {
 type sorter interface {
 	sort(table)
 	columns() []int
+	symbol() string
 }
 
 type Builder struct {
@@ -56,6 +57,7 @@ type Builder struct {
 	format          string
 	rdfType         string
 	sort            []int
+	reverseSort     bool
 	maxwidth        int
 	dataSource      interface{}
 	root            *graph.Resource
@@ -115,7 +117,7 @@ func (b *Builder) buildGraphTagValueFilters() (funcs []graph.FilterFn) {
 }
 
 func (b *Builder) Build() (Displayer, error) {
-	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth, noHeaders: b.noHeaders}
+	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort, descending: b.reverseSort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth, noHeaders: b.noHeaders}
 
 	switch b.dataSource.(type) {
 	case *graph.Graph:
@@ -314,6 +316,13 @@ func WithSortBy(sortingBy ...string) optsFn {
 	}
 }
 
+func WithReverseSort(r bool) optsFn {
+	return func(b *Builder) *Builder {
+		b.reverseSort = r
+		return b
+	}
+}
+
 func WithMaxWidth(maxwidth int) optsFn {
 	return func(b *Builder) *Builder {
 		b.maxwidth = maxwidth
@@ -387,7 +396,7 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 
 	var head []string
 	for _, h := range d.headers {
-		head = append(head, h.title(false))
+		head = append(head, h.title())
 	}
 
 	if !d.noHeaders {
@@ -436,7 +445,7 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 
 	var head []string
 	for _, h := range d.headers {
-		head = append(head, h.title(false))
+		head = append(head, h.title())
 	}
 
 	if !d.noHeaders {
@@ -517,12 +526,16 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 		columnsToDisplay = []ColumnDefinition{}
 		currentWidth := 1 // first border
 		for j, h := range d.headers {
-			colW := colWidth(j, values, h, j == markColumnAsc) + 3 // +3 (tables margin + border)
+			var symbol string
+			if markColumnAsc == j {
+				symbol = d.sorter.symbol()
+			}
+			colW := colWidth(j, values, h, symbol) + 3 // +3 (tables margin + border)
 			if currentWidth+colW > d.maxwidth {
 				break
 			}
 			currentWidth += colW
-			maxWidthNoWraping += colWidthNoWraping(j, values, h, j == markColumnAsc) + 3
+			maxWidthNoWraping += colWidthNoWraping(j, values, h, symbol) + 3
 			columnsToDisplay = append(columnsToDisplay, h)
 		}
 	}
@@ -535,7 +548,11 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	if !d.noHeaders {
 		var displayHeaders []string
 		for i, h := range columnsToDisplay {
-			displayHeaders = append(displayHeaders, h.title(i == markColumnAsc))
+			var symbol string
+			if markColumnAsc == i {
+				symbol = d.sorter.symbol()
+			}
+			displayHeaders = append(displayHeaders, h.title(symbol))
 		}
 		table.SetHeader(displayHeaders)
 	}
@@ -564,7 +581,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	if len(columnsToDisplay) < len(d.headers) {
 		var hiddenColumns []string
 		for i := len(columnsToDisplay); i < len(d.headers); i++ {
-			hiddenColumns = append(hiddenColumns, "'"+d.headers[i].title(false)+"'")
+			hiddenColumns = append(hiddenColumns, "'"+d.headers[i].title()+"'")
 		}
 		if len(hiddenColumns) == 1 {
 			fmt.Fprint(w, color.New(color.FgRed).SprintfFunc()("Column truncated to fit terminal: %s\n", hiddenColumns[0]))
@@ -653,13 +670,15 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 				var row [4]interface{}
 				row[0] = t
 				row[1] = nameOrID(res)
-				row[2] = header.title(false)
+				row[2] = header.title()
 				row[3] = header.format(val)
 				values = append(values, row[:])
 			}
 		}
 	}
-	sort.Sort(byCols{table: values, sortBy: []int{0, 1, 2, 3}})
+
+	ds := defaultSorter{sortBy: []int{0, 1, 2, 3}}
+	ds.sort(values)
 
 	table := tablewriter.NewWriter(w)
 	table.SetAutoMergeCells(true)
@@ -667,7 +686,7 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 	table.SetColWidth(tableColWidth)
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
-	table.SetHeader([]string{"Type" + ascSymbol, "Name/Id", "Property", "Value"})
+	table.SetHeader([]string{"Type" + ds.symbol(), "Name/Id", "Property", "Value"})
 
 	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
 
@@ -784,13 +803,15 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		}
 	}
 
-	sort.Sort(byCols{table: values, sortBy: []int{0, 1, 2, 3}})
+	ds := defaultSorter{sortBy: []int{0, 1, 2, 3}}
+	ds.sort(values)
+
 	table := tablewriter.NewWriter(w)
 	table.SetAutoMergeCells(true)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
-	table.SetHeader([]string{"Type" + ascSymbol, "Name/Id", "Property", "Value"})
+	table.SetHeader([]string{"Type" + ds.symbol(), "Name/Id", "Property", "Value"})
 
 	for i := range values {
 		row := make([]string, len(values[i]))
@@ -868,34 +889,45 @@ func (d *diffTreeDisplayer) Print(w io.Writer) error {
 }
 
 type defaultSorter struct {
-	sortBy []int
+	sortBy     []int
+	descending bool
 }
 
 func (d *defaultSorter) sort(lines table) {
-	sort.Sort(byCols{table: lines, sortBy: d.sortBy})
+	var compare func(i, j int) bool
+	if d.descending {
+		compare = func(j, i int) bool {
+			for _, col := range d.sortBy {
+				if reflect.DeepEqual(lines[i][col], lines[j][col]) {
+					continue
+				}
+				return valueLowerOrEqual(lines[i][col], lines[j][col])
+			}
+			return false
+		}
+	} else {
+		compare = func(i, j int) bool {
+			for _, col := range d.sortBy {
+				if reflect.DeepEqual(lines[i][col], lines[j][col]) {
+					continue
+				}
+				return valueLowerOrEqual(lines[i][col], lines[j][col])
+			}
+			return false
+		}
+	}
+	sort.Slice(lines, compare)
 }
 
 func (d *defaultSorter) columns() []int {
 	return d.sortBy
 }
 
-type byCols struct {
-	table  table
-	sortBy []int
-}
-
-func (b byCols) Len() int { return len(b.table) }
-func (b byCols) Swap(i, j int) {
-	b.table[i], b.table[j] = b.table[j], b.table[i]
-}
-func (b byCols) Less(i, j int) bool {
-	for _, col := range b.sortBy {
-		if reflect.DeepEqual(b.table[i][col], b.table[j][col]) {
-			continue
-		}
-		return valueLowerOrEqual(b.table[i][col], b.table[j][col])
+func (d *defaultSorter) symbol() string {
+	if d.descending {
+		return " ▼"
 	}
-	return false
+	return " ▲"
 }
 
 func valueLowerOrEqual(a, b interface{}) bool {
@@ -941,7 +973,7 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 
 	normalized := make(map[string]int)
 	for i, h := range headers {
-		normalized[strings.ToLower(h.title(false))] = i
+		normalized[strings.ToLower(h.title())] = i
 	}
 
 	var ids []int
@@ -956,8 +988,8 @@ func resolveSortIndexes(headers []ColumnDefinition, sortingBy ...string) ([]int,
 	return ids, nil
 }
 
-func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
-	max := tablewriter.DisplayWidth(h.title(hasSortSign))
+func colWidth(j int, t table, h ColumnDefinition, sortSymbol string) int {
+	max := tablewriter.DisplayWidth(h.title(sortSymbol))
 	wraper := autoWraper{maxWidth: autowrapMaxSize, wrappingChar: " "}
 	for i := range t {
 		val := wraper.Wrap(h.format(t[i][j]))
@@ -978,8 +1010,8 @@ func colWidth(j int, t table, h ColumnDefinition, hasSortSign bool) int {
 	return max
 }
 
-func colWidthNoWraping(j int, t table, h ColumnDefinition, hasSortSign bool) int {
-	max := tablewriter.DisplayWidth(h.title(hasSortSign))
+func colWidthNoWraping(j int, t table, h ColumnDefinition, sortSymbol string) int {
+	max := tablewriter.DisplayWidth(h.title(sortSymbol))
 	for i := range t {
 		val := h.format(t[i][j])
 		valLen := tablewriter.DisplayWidth(val)

@@ -31,6 +31,63 @@ func init() {
 	color.NoColor = true
 }
 
+func TestSorting(t *testing.T) {
+	g := createInfraGraph()
+	headers := []ColumnDefinition{
+		StringColumnDefinition{Prop: "ID"},
+		StringColumnDefinition{Prop: "Name"},
+		StringColumnDefinition{Prop: "State"},
+		StringColumnDefinition{Prop: "Type"},
+		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
+	}
+	var w bytes.Buffer
+
+	t.Run("ascending", func(t *testing.T) {
+		w.Reset()
+		displayer, _ := BuildOptions(
+			WithHeaders(headers),
+			WithRdfType("instance"),
+			WithFormat("csv"),
+			WithSortBy("Name"),
+		).SetSource(g).Build()
+
+		expected := "ID,Name,State,Type,Public IP\n" +
+			"inst_3,apache,running,t2.xlarge,\n" +
+			"inst_2,django,stopped,t2.medium,\n" +
+			"inst_1,redis,running,t2.micro,1.2.3.4\n"
+
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := w.String(), expected; got != want {
+			t.Fatalf("got \n%q\n\nwant\n\n%q\n", got, want)
+		}
+	})
+
+	t.Run("descending", func(t *testing.T) {
+		w.Reset()
+		displayer, _ := BuildOptions(
+			WithHeaders(headers),
+			WithRdfType("instance"),
+			WithFormat("csv"),
+			WithSortBy("Name"),
+			WithReverseSort(true),
+		).SetSource(g).Build()
+
+		expected := "ID,Name,State,Type,Public IP\n" +
+			"inst_1,redis,running,t2.micro,1.2.3.4\n" +
+			"inst_2,django,stopped,t2.medium,\n" +
+			"inst_3,apache,running,t2.xlarge,\n"
+
+		if err := displayer.Print(&w); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := w.String(), expected; got != want {
+			t.Fatalf("got \n%q\n\nwant\n\n%q\n", got, want)
+		}
+	})
+}
+
 func TestJSONDisplays(t *testing.T) {
 	g := createInfraGraph()
 	var w bytes.Buffer

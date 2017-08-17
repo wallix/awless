@@ -19,7 +19,6 @@ package console
 import (
 	"fmt"
 	"io"
-	"sort"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/wallix/awless/graph"
@@ -50,15 +49,16 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 		if v := values[i]; v == nil {
 			values[i] = make([]interface{}, 2)
 		}
-		values[i][0] = header.title(false)
-		if l := len(header.title(false)); l > propertyNameMaxWith {
+		values[i][0] = header.title()
+		if l := len(header.title()); l > propertyNameMaxWith {
 			propertyNameMaxWith = l
 		}
 		values[i][1] = header.format(val)
 		i++
 	}
 
-	sort.Sort(byCols{table: values, sortBy: []int{0}})
+	ds := defaultSorter{sortBy: []int{0}}
+	ds.sort(values)
 
 	valueColumnMaxwidth := d.maxwidth - (propertyNameMaxWith + 7) // ( = border + 2 * margin + border + 2 * margin + border)
 	if valueColumnMaxwidth <= 0 {
@@ -70,7 +70,7 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	table.SetColWidth(valueColumnMaxwidth)
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader([]string{"Property" + ascSymbol, "Value"})
+	table.SetHeader([]string{"Property" + ds.symbol(), "Value"})
 
 	wraper := autoWraper{maxWidth: valueColumnMaxwidth, wrappingChar: " "}
 
