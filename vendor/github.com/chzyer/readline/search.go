@@ -96,10 +96,7 @@ func (o *opSearch) SearchChar(r rune) {
 	o.search(true)
 }
 
-func (o *opSearch) SearchMode(dir int) bool {
-	if o.width == 0 {
-		return false
-	}
+func (o *opSearch) SearchMode(dir int) {
 	alreadyInMode := o.inMode
 	o.inMode = true
 	o.dir = dir
@@ -109,7 +106,6 @@ func (o *opSearch) SearchMode(dir int) bool {
 	} else {
 		o.SearchRefresh(-1)
 	}
-	return true
 }
 
 func (o *opSearch) ExitSearchMode(revert bool) {

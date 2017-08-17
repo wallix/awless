@@ -7,9 +7,11 @@ package common
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	stdioutil "io/ioutil"
 	"strings"
 	"time"
 
@@ -22,7 +24,6 @@ import (
 
 const (
 	readErrorSecondsTimeout = 10
-	errLinesBuffer          = 1000
 )
 
 var (
@@ -64,6 +65,13 @@ type Command interface {
 	Close() error
 }
 
+// CommandKiller expands the Command interface, enableing it for being killed.
+type CommandKiller interface {
+	// Kill and close the session whatever the state it is. It will block until
+	// the command is terminated.
+	Kill() error
+}
+
 type client struct {
 	cmdr Commander
 }
@@ -96,7 +104,7 @@ type session struct {
 	advRefs       *packp.AdvRefs
 	packRun       bool
 	finished      bool
-	errLines      chan string
+	firstErrLine  chan string
 }
 
 func (c *client) newSession(s string, ep transport.Endpoint, auth transport.AuthMethod) (*session, error) {
@@ -128,26 +136,29 @@ func (c *client) newSession(s string, ep transport.Endpoint, auth transport.Auth
 		Stdin:         stdin,
 		Stdout:        stdout,
 		Command:       cmd,
-		errLines:      c.listenErrors(stderr),
+		firstErrLine:  c.listenFirstError(stderr),
 		isReceivePack: s == transport.ReceivePackServiceName,
 	}, nil
 }
 
-func (c *client) listenErrors(r io.Reader) chan string {
+func (c *client) listenFirstError(r io.Reader) chan string {
 	if r == nil {
 		return nil
 	}
 
-	errLines := make(chan string, errLinesBuffer)
+	errLine := make(chan string, 1)
 	go func() {
 		s := bufio.NewScanner(r)
-		for s.Scan() {
-			line := string(s.Bytes())
-			errLines <- line
+		if s.Scan() {
+			errLine <- s.Text()
+		} else {
+			close(errLine)
 		}
+
+		_, _ = io.Copy(stdioutil.Discard, r)
 	}()
 
-	return errLines
+	return errLine
 }
 
 // AdvertisedReferences retrieves the advertised references from the server.
@@ -209,7 +220,7 @@ func (s *session) handleAdvRefDecodeError(err error) error {
 
 // UploadPack performs a request to the server to fetch a packfile. A reader is
 // returned with the packfile content. The reader must be closed after reading.
-func (s *session) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
+func (s *session) UploadPack(ctx context.Context, req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
 	if req.IsEmpty() {
 		return nil, transport.ErrEmptyUploadPackRequest
 	}
@@ -224,11 +235,14 @@ func (s *session) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackRes
 
 	s.packRun = true
 
-	if err := uploadPack(s.Stdin, s.Stdout, req); err != nil {
+	in := s.StdinContext(ctx)
+	out := s.StdoutContext(ctx)
+
+	if err := uploadPack(in, out, req); err != nil {
 		return nil, err
 	}
 
-	r, err := ioutil.NonEmptyReader(s.Stdout)
+	r, err := ioutil.NonEmptyReader(out)
 	if err == ioutil.ErrEmptyReader {
 		if c, ok := s.Stdout.(io.Closer); ok {
 			_ = c.Close()
@@ -241,22 +255,45 @@ func (s *session) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackRes
 		return nil, err
 	}
 
-	rc := ioutil.NewReadCloser(r, s.Command)
+	rc := ioutil.NewReadCloser(r, s)
 	return DecodeUploadPackResponse(rc, req)
 }
 
-func (s *session) ReceivePack(req *packp.ReferenceUpdateRequest) (*packp.ReportStatus, error) {
+func (s *session) StdinContext(ctx context.Context) io.WriteCloser {
+	return ioutil.NewWriteCloserOnError(
+		ioutil.NewContextWriteCloser(ctx, s.Stdin),
+		s.onError,
+	)
+}
+
+func (s *session) StdoutContext(ctx context.Context) io.Reader {
+	return ioutil.NewReaderOnError(
+		ioutil.NewContextReader(ctx, s.Stdout),
+		s.onError,
+	)
+}
+
+func (s *session) onError(err error) {
+	if k, ok := s.Command.(CommandKiller); ok {
+		_ = k.Kill()
+	}
+
+	_ = s.Close()
+}
+
+func (s *session) ReceivePack(ctx context.Context, req *packp.ReferenceUpdateRequest) (*packp.ReportStatus, error) {
 	if _, err := s.AdvertisedReferences(); err != nil {
 		return nil, err
 	}
 
 	s.packRun = true
 
-	if err := req.Encode(s.Stdin); err != nil {
+	w := s.StdinContext(ctx)
+	if err := req.Encode(w); err != nil {
 		return nil, err
 	}
 
-	if err := s.Stdin.Close(); err != nil {
+	if err := w.Close(); err != nil {
 		return nil, err
 	}
 
@@ -267,11 +304,12 @@ func (s *session) ReceivePack(req *packp.ReferenceUpdateRequest) (*packp.ReportS
 	}
 
 	report := packp.NewReportStatus()
-	if err := report.Decode(s.Stdout); err != nil {
+	if err := report.Decode(s.StdoutContext(ctx)); err != nil {
 		return nil, err
 	}
 
 	if err := report.Error(); err != nil {
+		defer s.Close()
 		return report, err
 	}
 
@@ -296,13 +334,11 @@ func (s *session) finish() error {
 	return nil
 }
 
-func (s *session) Close() error {
-	if err := s.finish(); err != nil {
-		_ = s.Command.Close()
-		return err
-	}
+func (s *session) Close() (err error) {
+	err = s.finish()
 
-	return s.Command.Close()
+	defer ioutil.CheckClose(s.Command, &err)
+	return
 }
 
 func (s *session) checkNotFoundError() error {
@@ -312,7 +348,7 @@ func (s *session) checkNotFoundError() error {
 	select {
 	case <-t.C:
 		return ErrTimeoutExceeded
-	case line, ok := <-s.errLines:
+	case line, ok := <-s.firstErrLine:
 		if !ok {
 			return nil
 		}

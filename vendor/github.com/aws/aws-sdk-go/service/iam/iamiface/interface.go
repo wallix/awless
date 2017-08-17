@@ -21,7 +21,7 @@ import (
 //
 // The best way to use this interface is so the SDK's service client's calls
 // can be stubbed out for unit testing your code with the SDK without needing
-// to inject custom request handlers into the the SDK's request pipeline.
+// to inject custom request handlers into the SDK's request pipeline.
 //
 //    // myFunc uses an SDK service client to make a request to
 //    // AWS Identity and Access Management.
@@ -127,6 +127,10 @@ type IAMAPI interface {
 	CreateSAMLProvider(*iam.CreateSAMLProviderInput) (*iam.CreateSAMLProviderOutput, error)
 	CreateSAMLProviderWithContext(aws.Context, *iam.CreateSAMLProviderInput, ...request.Option) (*iam.CreateSAMLProviderOutput, error)
 	CreateSAMLProviderRequest(*iam.CreateSAMLProviderInput) (*request.Request, *iam.CreateSAMLProviderOutput)
+
+	CreateServiceLinkedRole(*iam.CreateServiceLinkedRoleInput) (*iam.CreateServiceLinkedRoleOutput, error)
+	CreateServiceLinkedRoleWithContext(aws.Context, *iam.CreateServiceLinkedRoleInput, ...request.Option) (*iam.CreateServiceLinkedRoleOutput, error)
+	CreateServiceLinkedRoleRequest(*iam.CreateServiceLinkedRoleInput) (*request.Request, *iam.CreateServiceLinkedRoleOutput)
 
 	CreateServiceSpecificCredential(*iam.CreateServiceSpecificCredentialInput) (*iam.CreateServiceSpecificCredentialOutput, error)
 	CreateServiceSpecificCredentialWithContext(aws.Context, *iam.CreateServiceSpecificCredentialInput, ...request.Option) (*iam.CreateServiceSpecificCredentialOutput, error)
@@ -573,6 +577,10 @@ type IAMAPI interface {
 	UpdateOpenIDConnectProviderThumbprint(*iam.UpdateOpenIDConnectProviderThumbprintInput) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error)
 	UpdateOpenIDConnectProviderThumbprintWithContext(aws.Context, *iam.UpdateOpenIDConnectProviderThumbprintInput, ...request.Option) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error)
 	UpdateOpenIDConnectProviderThumbprintRequest(*iam.UpdateOpenIDConnectProviderThumbprintInput) (*request.Request, *iam.UpdateOpenIDConnectProviderThumbprintOutput)
+
+	UpdateRoleDescription(*iam.UpdateRoleDescriptionInput) (*iam.UpdateRoleDescriptionOutput, error)
+	UpdateRoleDescriptionWithContext(aws.Context, *iam.UpdateRoleDescriptionInput, ...request.Option) (*iam.UpdateRoleDescriptionOutput, error)
+	UpdateRoleDescriptionRequest(*iam.UpdateRoleDescriptionInput) (*request.Request, *iam.UpdateRoleDescriptionOutput)
 
 	UpdateSAMLProvider(*iam.UpdateSAMLProviderInput) (*iam.UpdateSAMLProviderOutput, error)
 	UpdateSAMLProviderWithContext(aws.Context, *iam.UpdateSAMLProviderInput, ...request.Option) (*iam.UpdateSAMLProviderOutput, error)

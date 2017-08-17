@@ -15,12 +15,9 @@ Here the RDF triples implementation follows along the [W3C RDF concepts](https:/
 - Create and manage triples through a convenient DSL
 - Snapshot and query RDFGraphs
 - Encode triples to binary, [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), NTriples format
-- Decode triples from binary
+- Decode triples from binary, NTriples format
+- Stream encoding/decoding (for binary and NTriples format) for memory conscious program 
 - CLI (Command line interface) utility to read and convert triples files.
-
-Roadmap
-- RDF graph comparison
-- Encode to [Turtle syntax](https://en.wikipedia.org/wiki/Turtle_(syntax))
 
 ## Library 
 
@@ -185,7 +182,7 @@ for _, tri := range tris {
 
 ### Codec
 
-Triples can be encoded & decoded using either a simple binary format or more common clear format like NTriples, ...
+Triples can be encoded & decoded using either a simple binary format or more standard text format like NTriples, ...
 
 Triples can therefore be persisted to disk, serialized or sent over the network.
 

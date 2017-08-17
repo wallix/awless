@@ -18,12 +18,6 @@ type AutoCompleter interface {
 	Do(line []rune, pos int) (newLine [][]rune, length int)
 }
 
-type TabCompleter struct{}
-
-func (t *TabCompleter) Do([]rune, int) ([][]rune, int) {
-	return [][]rune{[]rune("\t")}, 0
-}
-
 type opCompleter struct {
 	w     io.Writer
 	op    *Operation
@@ -64,13 +58,10 @@ func (o *opCompleter) nextCandidate(i int) {
 	}
 }
 
-func (o *opCompleter) OnComplete() bool {
-	if o.width == 0 {
-		return false
-	}
+func (o *opCompleter) OnComplete() {
 	if o.IsInCompleteSelectMode() {
 		o.doSelect()
-		return true
+		return
 	}
 
 	buf := o.op.buf
@@ -79,7 +70,7 @@ func (o *opCompleter) OnComplete() bool {
 	if o.IsInCompleteMode() && o.candidateSource != nil && runes.Equal(rs, o.candidateSource) {
 		o.EnterCompleteSelectMode()
 		o.doSelect()
-		return true
+		return
 	}
 
 	o.ExitCompleteSelectMode()
@@ -87,7 +78,7 @@ func (o *opCompleter) OnComplete() bool {
 	newLines, offset := o.op.cfg.AutoComplete.Do(rs, buf.idx)
 	if len(newLines) == 0 {
 		o.ExitCompleteMode(false)
-		return true
+		return
 	}
 
 	// only Aggregate candidates in non-complete mode
@@ -95,19 +86,18 @@ func (o *opCompleter) OnComplete() bool {
 		if len(newLines) == 1 {
 			buf.WriteRunes(newLines[0])
 			o.ExitCompleteMode(false)
-			return true
+			return
 		}
 
 		same, size := runes.Aggregate(newLines)
 		if size > 0 {
 			buf.WriteRunes(same)
 			o.ExitCompleteMode(false)
-			return true
+			return
 		}
 	}
 
 	o.EnterCompleteMode(offset, newLines)
-	return true
 }
 
 func (o *opCompleter) IsInCompleteSelectMode() bool {
@@ -219,7 +209,7 @@ func (o *opCompleter) CompleteRefresh() {
 		}
 		buf.WriteString(string(same))
 		buf.WriteString(string(c))
-		buf.Write(bytes.Repeat([]byte(" "), colWidth-len(c)-len(same)))
+		buf.Write(bytes.Repeat([]byte(" "), colWidth-len(c)))
 
 		if inSelect {
 			buf.WriteString("\033[0m")

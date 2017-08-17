@@ -3,6 +3,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +15,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
 var DefaultServer = NewServer(DefaultLoader)
@@ -26,7 +28,19 @@ type server struct {
 // NewServer returns a transport.Transport implementing a git server,
 // independent of transport. Each transport must wrap this.
 func NewServer(loader Loader) transport.Transport {
-	return &server{loader, &handler{}}
+	return &server{
+		loader,
+		&handler{asClient: false},
+	}
+}
+
+// NewClient returns a transport.Transport implementing a client with an
+// embedded server.
+func NewClient(loader Loader) transport.Transport {
+	return &server{
+		loader,
+		&handler{asClient: true},
+	}
 }
 
 func (s *server) NewUploadPackSession(ep transport.Endpoint, auth transport.AuthMethod) (transport.UploadPackSession, error) {
@@ -47,24 +61,27 @@ func (s *server) NewReceivePackSession(ep transport.Endpoint, auth transport.Aut
 	return s.handler.NewReceivePackSession(sto)
 }
 
-type handler struct{}
+type handler struct {
+	asClient bool
+}
 
 func (h *handler) NewUploadPackSession(s storer.Storer) (transport.UploadPackSession, error) {
 	return &upSession{
-		session: session{storer: s},
+		session: session{storer: s, asClient: h.asClient},
 	}, nil
 }
 
 func (h *handler) NewReceivePackSession(s storer.Storer) (transport.ReceivePackSession, error) {
 	return &rpSession{
-		session:   session{storer: s},
+		session:   session{storer: s, asClient: h.asClient},
 		cmdStatus: map[plumbing.ReferenceName]error{},
 	}, nil
 }
 
 type session struct {
-	storer storer.Storer
-	caps   *capability.List
+	storer   storer.Storer
+	caps     *capability.List
+	asClient bool
 }
 
 func (s *session) Close() error {
@@ -107,10 +124,14 @@ func (s *upSession) AdvertisedReferences() (*packp.AdvRefs, error) {
 		return nil, err
 	}
 
+	if s.asClient && len(ar.References) == 0 {
+		return nil, transport.ErrEmptyRemoteRepository
+	}
+
 	return ar, nil
 }
 
-func (s *upSession) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
+func (s *upSession) UploadPack(ctx context.Context, req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
 	if req.IsEmpty() {
 		return nil, transport.ErrEmptyUploadPackRequest
 	}
@@ -148,7 +169,9 @@ func (s *upSession) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackR
 		pw.CloseWithError(err)
 	}()
 
-	return packp.NewUploadPackResponseWithPackfile(req, pr), nil
+	return packp.NewUploadPackResponseWithPackfile(req,
+		ioutil.NewContextReadCloser(ctx, pr),
+	), nil
 }
 
 func (s *upSession) objectsToUpload(req *packp.UploadPackRequest) ([]plumbing.Hash, error) {
@@ -203,7 +226,7 @@ var (
 	ErrUpdateReference = errors.New("failed to update ref")
 )
 
-func (s *rpSession) ReceivePack(req *packp.ReferenceUpdateRequest) (*packp.ReportStatus, error) {
+func (s *rpSession) ReceivePack(ctx context.Context, req *packp.ReferenceUpdateRequest) (*packp.ReportStatus, error) {
 	if s.caps == nil {
 		s.caps = capability.NewList()
 		if err := s.setSupportedCapabilities(s.caps); err != nil {
@@ -219,37 +242,18 @@ func (s *rpSession) ReceivePack(req *packp.ReferenceUpdateRequest) (*packp.Repor
 
 	//TODO: Implement 'atomic' update of references.
 
-	if err := s.writePackfile(req.Packfile); err != nil {
+	r := ioutil.NewContextReadCloser(ctx, req.Packfile)
+	if err := s.writePackfile(r); err != nil {
 		s.unpackErr = err
 		s.firstErr = err
 		return s.reportStatus(), err
 	}
 
-	updatedRefs := s.updatedReferences(req)
-
-	if s.caps.Supports(capability.Atomic) && s.firstErr != nil {
-		//TODO: add support for 'atomic' once we have reference
-		//      transactions, currently we do not announce it.
-		rs := s.reportStatus()
-		for _, cs := range rs.CommandStatuses {
-			if cs.Error() == nil {
-				cs.Status = ""
-			}
-		}
-	}
-
-	for name, ref := range updatedRefs {
-		//TODO: add support for 'delete-refs' once we can delete
-		//      references, currently we do not announce it.
-		err := s.storer.SetReference(ref)
-		s.setStatus(name, err)
-	}
-
+	s.updateReferences(req)
 	return s.reportStatus(), s.firstErr
 }
 
-func (s *rpSession) updatedReferences(req *packp.ReferenceUpdateRequest) map[plumbing.ReferenceName]*plumbing.Reference {
-	refs := map[plumbing.ReferenceName]*plumbing.Reference{}
+func (s *rpSession) updateReferences(req *packp.ReferenceUpdateRequest) {
 	for _, cmd := range req.Commands {
 		exists, err := referenceExists(s.storer, cmd.Name)
 		if err != nil {
@@ -265,19 +269,16 @@ func (s *rpSession) updatedReferences(req *packp.ReferenceUpdateRequest) map[plu
 			}
 
 			ref := plumbing.NewHashReference(cmd.Name, cmd.New)
-			refs[ref.Name()] = ref
+			err := s.storer.SetReference(ref)
+			s.setStatus(cmd.Name, err)
 		case packp.Delete:
 			if !exists {
 				s.setStatus(cmd.Name, ErrUpdateReference)
 				continue
 			}
 
-			if !s.caps.Supports(capability.DeleteRefs) {
-				s.setStatus(cmd.Name, fmt.Errorf("delete not supported"))
-				continue
-			}
-
-			refs[cmd.Name] = nil
+			err := s.storer.RemoveReference(cmd.Name)
+			s.setStatus(cmd.Name, err)
 		case packp.Update:
 			if !exists {
 				s.setStatus(cmd.Name, ErrUpdateReference)
@@ -290,11 +291,10 @@ func (s *rpSession) updatedReferences(req *packp.ReferenceUpdateRequest) map[plu
 			}
 
 			ref := plumbing.NewHashReference(cmd.Name, cmd.New)
-			refs[ref.Name()] = ref
+			err := s.storer.SetReference(ref)
+			s.setStatus(cmd.Name, err)
 		}
 	}
-
-	return refs
 }
 
 func (s *rpSession) failAtomicUpdate() (*packp.ReportStatus, error) {
@@ -365,6 +365,10 @@ func (*rpSession) setSupportedCapabilities(c *capability.List) error {
 	}
 
 	if err := c.Set(capability.OFSDelta); err != nil {
+		return err
+	}
+
+	if err := c.Set(capability.DeleteRefs); err != nil {
 		return err
 	}
 

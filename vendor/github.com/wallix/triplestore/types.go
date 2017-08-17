@@ -40,5 +40,5 @@ func (x XsdType) NTriplesNamespaced() string {
 		return string(x)
 	}
 
-	return fmt.Sprintf("^^<%s#%s>", XMLSchemaNamespace, splits[1])
+	return fmt.Sprintf("%s#%s", XMLSchemaNamespace, splits[1])
 }

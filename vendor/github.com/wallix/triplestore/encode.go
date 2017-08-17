@@ -2,16 +2,20 @@ package triplestore
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
 type Encoder interface {
 	Encode(tris ...Triple) error
+}
+
+type StreamEncoder interface {
+	StreamEncode(context.Context, <-chan Triple) error
 }
 
 func NewContext() *Context {
@@ -31,10 +35,6 @@ var RDFContext = &Context{
 	},
 }
 
-type binaryEncoder struct {
-	w io.Writer
-}
-
 type wordLength uint32
 
 const (
@@ -42,27 +42,60 @@ const (
 	literalTypeEncoding  = uint8(1)
 )
 
+type binaryEncoder struct {
+	w io.Writer
+}
+
+func NewBinaryStreamEncoder(w io.Writer) StreamEncoder {
+	return &binaryEncoder{w}
+}
+
 func NewBinaryEncoder(w io.Writer) Encoder {
 	return &binaryEncoder{w}
+}
+
+func (enc *binaryEncoder) StreamEncode(ctx context.Context, triples <-chan Triple) error {
+	if triples == nil {
+		return nil
+	}
+	var buf bytes.Buffer
+	for {
+		select {
+		case tri, ok := <-triples:
+			if !ok {
+				return nil
+			}
+			if err := enc.writeTriple(tri, &buf); err != nil {
+				return err
+			}
+		case <-ctx.Done():
+			return nil
+		}
+	}
 }
 
 func (enc *binaryEncoder) Encode(tris ...Triple) error {
 	var buf bytes.Buffer
 	for _, t := range tris {
-		if err := encodeTriple(t, &buf); err != nil {
+		if err := enc.writeTriple(t, &buf); err != nil {
 			return err
 		}
-
-		if _, err := enc.w.Write(buf.Bytes()); err != nil {
-			return err
-		}
-		buf.Reset()
 	}
-
 	return nil
 }
 
-func encodeTriple(t Triple, buff *bytes.Buffer) error {
+func (enc *binaryEncoder) writeTriple(t Triple, buf *bytes.Buffer) error {
+	if err := encodeBinTriple(t, buf); err != nil {
+		return err
+	}
+	if _, err := enc.w.Write(buf.Bytes()); err != nil {
+		return err
+	}
+	buf.Reset()
+	return nil
+}
+
+func encodeBinTriple(t Triple, buff *bytes.Buffer) error {
 	sub, pred := t.Subject(), t.Predicate()
 
 	binary.Write(buff, binary.BigEndian, wordLength(len(sub)))
@@ -96,6 +129,10 @@ type ntriplesEncoder struct {
 	c *Context
 }
 
+func NewNTriplesStreamEncoder(w io.Writer) StreamEncoder {
+	return &ntriplesEncoder{w: w}
+}
+
 func NewNTriplesEncoder(w io.Writer) Encoder {
 	return &ntriplesEncoder{w: w}
 }
@@ -104,40 +141,65 @@ func NewNTriplesEncoderWithContext(w io.Writer, c *Context) Encoder {
 	return &ntriplesEncoder{w: w, c: c}
 }
 
+func (enc *ntriplesEncoder) StreamEncode(ctx context.Context, triples <-chan Triple) error {
+	if triples == nil {
+		return nil
+	}
+	var buf bytes.Buffer
+	finalWrite := func() error {
+		_, err := enc.w.Write(buf.Bytes())
+		return err
+	}
+	for {
+		select {
+		case tri, ok := <-triples:
+			if !ok {
+				return finalWrite()
+			}
+			encodeNTriple(tri, enc.c, &buf)
+		case <-ctx.Done():
+			return finalWrite()
+		}
+	}
+}
+
 func (enc *ntriplesEncoder) Encode(tris ...Triple) error {
 	var buff bytes.Buffer
 
-	for i, t := range tris {
-		buff.WriteString(fmt.Sprintf("<%s> <%s> ", enc.buildIRI(t.Subject()), enc.buildIRI(t.Predicate())))
-
-		if rid, ok := t.Object().Resource(); ok {
-			buff.WriteString(fmt.Sprintf("<%s>", enc.buildIRI(rid)))
-		} else if lit, ok := t.Object().Literal(); ok {
-			var namespace string
-			switch lit.Type() {
-			case XsdString:
-				// namespace empty as per spec
-			default:
-				namespace = lit.Type().NTriplesNamespaced()
-			}
-
-			buff.WriteString(fmt.Sprintf("%s%s", strconv.QuoteToASCII(lit.Value()), namespace))
-		}
-
-		buff.Write([]byte(" ."))
-		if i != len(tris)-1 {
-			buff.Write([]byte("\n"))
-		}
+	for _, t := range tris {
+		encodeNTriple(t, enc.c, &buff)
 	}
-
 	_, err := enc.w.Write(buff.Bytes())
 	return err
 }
 
-func (enc *ntriplesEncoder) buildIRI(id string) string {
-	if enc.c != nil {
-		if enc.c.Prefixes != nil {
-			for k, uri := range enc.c.Prefixes {
+func encodeNTriple(t Triple, ctx *Context, buff *bytes.Buffer) {
+	buff.WriteString("<" + buildIRI(ctx, t.Subject()) + "> <" + buildIRI(ctx, t.Predicate()) + "> ")
+
+	if rid, ok := t.Object().Resource(); ok {
+		buff.WriteString("<" + buildIRI(ctx, rid) + ">")
+	} else if lit, ok := t.Object().Literal(); ok {
+		switch lit.Type() {
+		case XsdString:
+			// namespace empty as per spec
+			buff.WriteString("\"" + lit.Value() + "\"")
+		default:
+			if ctx != nil {
+				if _, ok := ctx.Prefixes["xsd"]; ok {
+					buff.WriteString("\"" + lit.Value() + "\"^^<" + lit.Type().NTriplesNamespaced() + ">")
+				}
+			} else {
+				buff.WriteString("\"" + lit.Value() + "\"^^<" + string(lit.Type()) + ">")
+			}
+		}
+	}
+	buff.Write([]byte(" .\n"))
+}
+
+func buildIRI(ctx *Context, id string) string {
+	if ctx != nil {
+		if ctx.Prefixes != nil {
+			for k, uri := range ctx.Prefixes {
 				prefix := k + ":"
 				if strings.HasPrefix(id, prefix) {
 					id = uri + url.QueryEscape(strings.TrimPrefix(id, prefix))
@@ -145,8 +207,8 @@ func (enc *ntriplesEncoder) buildIRI(id string) string {
 				}
 			}
 		}
-		if !strings.HasPrefix(id, "http") && enc.c.Base != "" {
-			id = enc.c.Base + url.QueryEscape(id)
+		if !strings.HasPrefix(id, "http") && ctx.Base != "" {
+			id = ctx.Base + url.QueryEscape(id)
 		}
 	}
 	return id

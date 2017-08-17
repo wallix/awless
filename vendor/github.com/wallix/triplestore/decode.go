@@ -3,15 +3,26 @@ package triplestore
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"sync"
 )
 
 type Decoder interface {
 	Decode() ([]Triple, error)
+}
+
+type DecodeResult struct {
+	Tri Triple
+	Err error
+}
+
+type StreamDecoder interface {
+	StreamDecode(context.Context) <-chan DecodeResult
 }
 
 // Use for retro compatibilty when changing file format on existing stores
@@ -27,14 +38,92 @@ func IsBinaryFormat(r io.Reader) bool {
 	if err != nil {
 		return false
 	}
-	dec := &binaryDecoder{r: bytes.NewReader(begin)}
-	_, err = dec.readWord()
+	_, err = readWord(bytes.NewReader(begin))
 	return err == nil
+}
+
+func NewNTriplesDecoder(r io.Reader) Decoder {
+	return &ntDecoder{r: r}
+}
+
+func NewNTriplesStreamDecoder(r io.Reader) StreamDecoder {
+	return &ntDecoder{r: r}
+}
+
+type ntDecoder struct {
+	r io.Reader
+}
+
+func (d *ntDecoder) Decode() ([]Triple, error) {
+	b, err := ioutil.ReadAll(d.r)
+	if err != nil {
+		return nil, err
+	}
+	return newNTParser(string(b)).parse()
+}
+
+func (d *ntDecoder) StreamDecode(ctx context.Context) <-chan DecodeResult {
+	decC := make(chan DecodeResult)
+
+	go func() {
+		defer close(decC)
+
+		scanner := bufio.NewScanner(d.r)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				if scanner.Scan() {
+					tris, err := newNTParser(scanner.Text()).parse()
+					if err != nil {
+						decC <- DecodeResult{Err: err}
+					} else if len(tris) == 1 {
+						decC <- DecodeResult{Tri: tris[0]}
+					}
+				} else {
+					if err := scanner.Err(); err != nil {
+						decC <- DecodeResult{Err: err}
+					}
+					return
+				}
+			}
+		}
+	}()
+
+	return decC
 }
 
 type binaryDecoder struct {
 	r       io.Reader
+	rc      io.ReadCloser // for stream decoding
 	triples []Triple
+}
+
+func NewBinaryStreamDecoder(r io.ReadCloser) StreamDecoder {
+	return &binaryDecoder{rc: r}
+}
+
+func (dec *binaryDecoder) StreamDecode(ctx context.Context) <-chan DecodeResult {
+	decC := make(chan DecodeResult)
+
+	go func() {
+		defer close(decC)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				tri, done, err := decodeTriple(dec.rc)
+				if done {
+					return
+				}
+				decC <- DecodeResult{Tri: tri, Err: err}
+			}
+		}
+	}()
+
+	return decC
 }
 
 func NewBinaryDecoder(r io.Reader) Decoder {
@@ -42,41 +131,45 @@ func NewBinaryDecoder(r io.Reader) Decoder {
 }
 
 func (dec *binaryDecoder) Decode() ([]Triple, error) {
+	var out []Triple
 	for {
-		done, err := dec.decodeTriple()
+		tri, done, err := decodeTriple(dec.r)
+		if tri != nil {
+			out = append(out, tri)
+		}
 		if done {
 			break
 		} else if err != nil {
-			return nil, err
+			return out, err
 		}
 	}
 
-	return dec.triples, nil
+	return out, nil
 }
 
-func (dec *binaryDecoder) decodeTriple() (bool, error) {
-	sub, err := dec.readWord()
+func decodeTriple(r io.Reader) (Triple, bool, error) {
+	sub, err := readWord(r)
 	if err == io.EOF {
-		return true, nil
+		return nil, true, nil
 	} else if err != nil {
-		return false, fmt.Errorf("subject: %s", err)
+		return nil, false, fmt.Errorf("subject: %s", err)
 	}
 
-	pred, err := dec.readWord()
+	pred, err := readWord(r)
 	if err != nil {
-		return false, fmt.Errorf("predicate: %s", err)
+		return nil, false, fmt.Errorf("predicate: %s", err)
 	}
 
 	var objType uint8
-	if err := binary.Read(dec.r, binary.BigEndian, &objType); err != nil {
-		return false, fmt.Errorf("object type: %s", err)
+	if err := binary.Read(r, binary.BigEndian, &objType); err != nil {
+		return nil, false, fmt.Errorf("object type: %s", err)
 	}
 
 	var decodedObj object
 	if objType == resourceTypeEncoding {
-		resource, err := dec.readWord()
+		resource, err := readWord(r)
 		if err != nil {
-			return false, fmt.Errorf("resource: %s", err)
+			return nil, false, fmt.Errorf("resource: %s", err)
 		}
 		decodedObj.resource = string(resource)
 
@@ -84,38 +177,36 @@ func (dec *binaryDecoder) decodeTriple() (bool, error) {
 		decodedObj.isLit = true
 		var decodedLiteral literal
 
-		litType, err := dec.readWord()
+		litType, err := readWord(r)
 		if err != nil {
-			return false, fmt.Errorf("literate type: %s", err)
+			return nil, false, fmt.Errorf("literate type: %s", err)
 		}
 		decodedLiteral.typ = XsdType(litType)
 
-		val, err := dec.readWord()
+		val, err := readWord(r)
 		if err != nil {
-			return false, fmt.Errorf("literate: %s", err)
+			return nil, false, fmt.Errorf("literate: %s", err)
 		}
 
 		decodedLiteral.val = string(val)
 		decodedObj.lit = decodedLiteral
 	}
 
-	dec.triples = append(dec.triples, &triple{
+	return &triple{
 		sub:  subject(string(sub)),
 		pred: predicate(string(pred)),
 		obj:  decodedObj,
-	})
-
-	return false, nil
+	}, false, nil
 }
 
-func (dec *binaryDecoder) readWord() ([]byte, error) {
+func readWord(r io.Reader) ([]byte, error) {
 	var len wordLength
-	if err := binary.Read(dec.r, binary.BigEndian, &len); err != nil {
+	if err := binary.Read(r, binary.BigEndian, &len); err != nil {
 		return nil, err
 	}
 
 	word := make([]byte, len)
-	if _, err := io.ReadFull(dec.r, word); err != nil {
+	if _, err := io.ReadFull(r, word); err != nil {
 		return nil, fmt.Errorf("triplestore: binary: cannot decode word of length %d bytes: %s", len, err)
 	}
 

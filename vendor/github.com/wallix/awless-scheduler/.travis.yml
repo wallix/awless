@@ -1,0 +1,7 @@
+language: go
+
+install:
+  go get github.com/wallix/awless
+
+go:
+  - 1.8

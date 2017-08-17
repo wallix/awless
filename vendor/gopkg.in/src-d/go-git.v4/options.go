@@ -103,6 +103,20 @@ func (o *PullOptions) Validate() error {
 	return nil
 }
 
+type TagFetchMode int
+
+var (
+	// TagFollowing any tag that points into the histories being fetched is also
+	// fetched. TagFollowing requires a server with `include-tag` capability
+	// in order to fetch the annotated tags objects.
+	TagFollowing TagFetchMode = 0
+	// AllTags fetch all tags from the remote (i.e., fetch remote tags
+	// refs/tags/* into local tags with the same name)
+	AllTags TagFetchMode = 1
+	//NoTags fetch no tags from the remote at all
+	NoTags TagFetchMode = 2
+)
+
 // FetchOptions describes how a fetch should be performed
 type FetchOptions struct {
 	// Name of the remote to fetch from. Defaults to origin.
@@ -117,6 +131,9 @@ type FetchOptions struct {
 	// stored, if nil nothing is stored and the capability (if supported)
 	// no-progress, is sent to the server to avoid send this information.
 	Progress sideband.Progress
+	// Tags describe how the tags will be fetched from the remote repository,
+	// by default is TagFollowing.
+	Tags TagFetchMode
 }
 
 // Validate validates the fields and sets the default values.
@@ -177,15 +194,24 @@ type SubmoduleUpdateOptions struct {
 	// the current repository but also in any nested submodules inside those
 	// submodules (and so on). Until the SubmoduleRescursivity is reached.
 	RecurseSubmodules SubmoduleRescursivity
+	// Auth credentials, if required, to use with the remote repository.
+	Auth transport.AuthMethod
 }
+
+var (
+	ErrBranchHashExclusive  = errors.New("Branch and Hash are mutually exclusive")
+	ErrCreateRequiresBranch = errors.New("Branch is mandatory when Create is used")
+)
 
 // CheckoutOptions describes how a checkout 31operation should be performed.
 type CheckoutOptions struct {
 	// Hash to be checked out, if used HEAD will in detached mode. Branch and
-	// Hash are mutual exclusive.
+	// Hash are mutually exclusive, if Create is not used.
 	Hash plumbing.Hash
 	// Branch to be checked out, if Branch and Hash are empty is set to `master`.
 	Branch plumbing.ReferenceName
+	// Create a new branch named Branch and start it at Hash.
+	Create bool
 	// Force, if true when switching branches, proceed even if the index or the
 	// working tree differs from HEAD. This is used to throw away local changes
 	Force bool
@@ -193,6 +219,14 @@ type CheckoutOptions struct {
 
 // Validate validates the fields and sets the default values.
 func (o *CheckoutOptions) Validate() error {
+	if !o.Create && !o.Hash.IsZero() && o.Branch != "" {
+		return ErrBranchHashExclusive
+	}
+
+	if o.Create && o.Branch == "" {
+		return ErrCreateRequiresBranch
+	}
+
 	if o.Branch == "" {
 		o.Branch = plumbing.Master
 	}

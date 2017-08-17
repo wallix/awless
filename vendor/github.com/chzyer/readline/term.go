@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux,!appengine netbsd openbsd solaris
+// +build darwin dragonfly freebsd linux,!appengine netbsd openbsd
 
 // Package terminal provides support functions for dealing with terminals, as
 // commonly found on UNIX systems.
@@ -19,17 +19,19 @@ package readline
 import (
 	"io"
 	"syscall"
+	"unsafe"
 )
 
 // State contains the state of a terminal.
 type State struct {
-	termios Termios
+	termios syscall.Termios
 }
 
 // IsTerminal returns true if the given file descriptor is a terminal.
 func IsTerminal(fd int) bool {
-	_, err := getTermios(fd)
-	return err == nil
+	var termios syscall.Termios
+	_, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlReadTermios, uintptr(unsafe.Pointer(&termios)), 0, 0, 0)
+	return err == 0
 }
 
 // MakeRaw put the terminal connected to the given file descriptor into raw
@@ -37,11 +39,8 @@ func IsTerminal(fd int) bool {
 // restored.
 func MakeRaw(fd int) (*State, error) {
 	var oldState State
-
-	if termios, err := getTermios(fd); err != nil {
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlReadTermios, uintptr(unsafe.Pointer(&oldState.termios)), 0, 0, 0); err != 0 {
 		return nil, err
-	} else {
-		oldState.termios = *termios
 	}
 
 	newState := oldState.termios
@@ -53,35 +52,47 @@ func MakeRaw(fd int) (*State, error) {
 	newState.Cflag &^= syscall.CSIZE | syscall.PARENB
 	newState.Cflag |= syscall.CS8
 
-	newState.Cc[syscall.VMIN] = 1
-	newState.Cc[syscall.VTIME] = 0
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlWriteTermios, uintptr(unsafe.Pointer(&newState)), 0, 0, 0); err != 0 {
+		return nil, err
+	}
 
-	return &oldState, setTermios(fd, &newState)
+	return &oldState, nil
 }
 
 // GetState returns the current state of a terminal which may be useful to
 // restore the terminal after a signal.
 func GetState(fd int) (*State, error) {
-	termios, err := getTermios(fd)
-	if err != nil {
+	var oldState State
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlReadTermios, uintptr(unsafe.Pointer(&oldState.termios)), 0, 0, 0); err != 0 {
 		return nil, err
 	}
 
-	return &State{termios: *termios}, nil
+	return &oldState, nil
 }
 
 // Restore restores the terminal connected to the given file descriptor to a
 // previous state.
 func restoreTerm(fd int, state *State) error {
-	return setTermios(fd, &state.termios)
+	_, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlWriteTermios, uintptr(unsafe.Pointer(&state.termios)), 0, 0, 0)
+	return err
+}
+
+// GetSize returns the dimensions of the given terminal.
+func GetSize(fd int) (width, height int, err error) {
+	var dimensions [4]uint16
+
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), uintptr(syscall.TIOCGWINSZ), uintptr(unsafe.Pointer(&dimensions)), 0, 0, 0); err != 0 {
+		return -1, -1, err
+	}
+	return int(dimensions[1]), int(dimensions[0]), nil
 }
 
 // ReadPassword reads a line of input from a terminal without local echo.  This
 // is commonly used for inputting passwords and other sensitive data. The slice
 // returned does not include the \n.
 func ReadPassword(fd int) ([]byte, error) {
-	oldState, err := getTermios(fd)
-	if err != nil {
+	var oldState syscall.Termios
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlReadTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); err != 0 {
 		return nil, err
 	}
 
@@ -89,12 +100,12 @@ func ReadPassword(fd int) ([]byte, error) {
 	newState.Lflag &^= syscall.ECHO
 	newState.Lflag |= syscall.ICANON | syscall.ISIG
 	newState.Iflag |= syscall.ICRNL
-	if err := setTermios(fd, newState); err != nil {
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlWriteTermios, uintptr(unsafe.Pointer(&newState)), 0, 0, 0); err != 0 {
 		return nil, err
 	}
 
 	defer func() {
-		setTermios(fd, oldState)
+		syscall.Syscall6(syscall.SYS_IOCTL, uintptr(fd), ioctlWriteTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0)
 	}()
 
 	var buf [16]byte

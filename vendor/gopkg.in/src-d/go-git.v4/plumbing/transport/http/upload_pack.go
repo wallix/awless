@@ -2,10 +2,10 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/format/pktline"
@@ -20,65 +20,19 @@ type upSession struct {
 }
 
 func newUploadPackSession(c *http.Client, ep transport.Endpoint, auth transport.AuthMethod) (transport.UploadPackSession, error) {
-	s := &session{
-		auth:     basicAuthFromEndpoint(ep),
-		client:   c,
-		endpoint: ep,
-	}
-	if auth != nil {
-		a, ok := auth.(AuthMethod)
-		if !ok {
-			return nil, transport.ErrInvalidAuthMethod
-		}
+	s, err := newSession(c, ep, auth)
 
-		s.auth = a
-	}
-
-	return &upSession{session: s}, nil
+	return &upSession{s}, err
 }
 
 func (s *upSession) AdvertisedReferences() (*packp.AdvRefs, error) {
-	if s.advRefs != nil {
-		return s.advRefs, nil
-	}
-
-	url := fmt.Sprintf(
-		"%s/info/refs?service=%s",
-		s.endpoint.String(), transport.UploadPackServiceName,
-	)
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	s.applyAuthToRequest(req)
-	s.applyHeadersToRequest(req, nil)
-	res, err := s.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := NewErr(res); err != nil {
-		_ = res.Body.Close()
-		return nil, err
-	}
-
-	ar := packp.NewAdvRefs()
-	if err := ar.Decode(res.Body); err != nil {
-		if err == packp.ErrEmptyAdvRefs {
-			err = transport.ErrEmptyRemoteRepository
-		}
-
-		return nil, err
-	}
-
-	transport.FilterUnsupportedCapabilities(ar.Capabilities)
-	s.advRefs = ar
-	return ar, nil
+	return advertisedReferences(s.session, transport.UploadPackServiceName)
 }
 
-func (s *upSession) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
+func (s *upSession) UploadPack(
+	ctx context.Context, req *packp.UploadPackRequest,
+) (*packp.UploadPackResponse, error) {
+
 	if req.IsEmpty() {
 		return nil, transport.ErrEmptyUploadPackRequest
 	}
@@ -97,7 +51,7 @@ func (s *upSession) UploadPack(req *packp.UploadPackRequest) (*packp.UploadPackR
 		return nil, err
 	}
 
-	res, err := s.doRequest(http.MethodPost, url, content)
+	res, err := s.doRequest(ctx, http.MethodPost, url, content)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +74,10 @@ func (s *upSession) Close() error {
 	return nil
 }
 
-func (s *upSession) doRequest(method, url string, content *bytes.Buffer) (*http.Response, error) {
+func (s *upSession) doRequest(
+	ctx context.Context, method, url string, content *bytes.Buffer,
+) (*http.Response, error) {
+
 	var body io.Reader
 	if content != nil {
 		body = content
@@ -131,10 +88,10 @@ func (s *upSession) doRequest(method, url string, content *bytes.Buffer) (*http.
 		return nil, plumbing.NewPermanentError(err)
 	}
 
-	s.applyHeadersToRequest(req, content)
+	applyHeadersToRequest(req, content, s.endpoint.Host(), transport.UploadPackServiceName)
 	s.applyAuthToRequest(req)
 
-	res, err := s.client.Do(req)
+	res, err := s.client.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, plumbing.NewUnexpectedError(err)
 	}
@@ -145,21 +102,6 @@ func (s *upSession) doRequest(method, url string, content *bytes.Buffer) (*http.
 	}
 
 	return res, nil
-}
-
-// it requires a bytes.Buffer, because we need to know the length
-func (s *upSession) applyHeadersToRequest(req *http.Request, content *bytes.Buffer) {
-	req.Header.Add("User-Agent", "git/1.0")
-	req.Header.Add("Host", s.endpoint.Host()) // host:port
-
-	if content == nil {
-		req.Header.Add("Accept", "*/*")
-		return
-	}
-
-	req.Header.Add("Accept", "application/x-git-upload-pack-result")
-	req.Header.Add("Content-Type", "application/x-git-upload-pack-request")
-	req.Header.Add("Content-Length", strconv.Itoa(content.Len()))
 }
 
 func uploadPackRequestToReader(req *packp.UploadPackRequest) (*bytes.Buffer, error) {

@@ -3,6 +3,7 @@ package triplestore
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -47,6 +48,10 @@ func (ts Triples) Equal(others Triples) bool {
 	}
 
 	return reflect.DeepEqual(this, other)
+}
+
+func (ts Triples) Sort() {
+	sort.Slice(ts, func(i, j int) bool { return ts[i].(*triple).key() > ts[j].(*triple).key() })
 }
 
 func (ts Triples) Map(fn func(Triple) string) (out []string) {

@@ -1,6 +1,7 @@
 package idxfile
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"io"
@@ -19,12 +20,12 @@ var (
 
 // Decoder reads and decodes idx files from an input stream.
 type Decoder struct {
-	io.Reader
+	*bufio.Reader
 }
 
 // NewDecoder builds a new idx stream decoder, that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{r}
+	return &Decoder{bufio.NewReader(r)}
 }
 
 // Decode reads from the stream and decode the content into the Idxfile struct.
@@ -103,7 +104,7 @@ func readObjectNames(idx *Idxfile, r io.Reader) error {
 			return err
 		}
 
-		idx.Entries = append(idx.Entries, Entry{Hash: ref})
+		idx.Entries = append(idx.Entries, &Entry{Hash: ref})
 	}
 
 	return nil
@@ -122,6 +123,7 @@ func readCRC32(idx *Idxfile, r io.Reader) error {
 
 func readOffsets(idx *Idxfile, r io.Reader) error {
 	c := int(idx.ObjectCount)
+
 	for i := 0; i < c; i++ {
 		o, err := binary.ReadUint32(r)
 		if err != nil {
@@ -129,6 +131,19 @@ func readOffsets(idx *Idxfile, r io.Reader) error {
 		}
 
 		idx.Entries[i].Offset = uint64(o)
+	}
+
+	for i := 0; i < c; i++ {
+		if idx.Entries[i].Offset <= offsetLimit {
+			continue
+		}
+
+		o, err := binary.ReadUint64(r)
+		if err != nil {
+			return err
+		}
+
+		idx.Entries[i].Offset = o
 	}
 
 	return nil

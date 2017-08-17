@@ -32,10 +32,6 @@ type Operation struct {
 	*opVim
 }
 
-func (o *Operation) SetBuffer(what string) {
-	o.buf.Set([]rune(what))
-}
-
 type wrapWriter struct {
 	r      *Operation
 	t      *Terminal
@@ -100,15 +96,6 @@ func (o *Operation) ioloop() {
 		keepInSearchMode := false
 		keepInCompleteMode := false
 		r := o.t.ReadRune()
-		if o.cfg.FuncFilterInputRune != nil {
-			var process bool
-			r, process = o.cfg.FuncFilterInputRune(r)
-			if !process {
-				o.buf.Refresh(nil) // to refresh the line
-				continue           // ignore this rune
-			}
-		}
-
 		if r == 0 { // io.EOF
 			if o.buf.Len() == 0 {
 				o.buf.Clean()
@@ -166,26 +153,15 @@ func (o *Operation) ioloop() {
 				o.t.Bell()
 				break
 			}
-			if o.OnComplete() {
-				keepInCompleteMode = true
-			} else {
-				o.t.Bell()
-				break
-			}
-
+			o.OnComplete()
+			keepInCompleteMode = true
 		case CharBckSearch:
-			if !o.SearchMode(S_DIR_BCK) {
-				o.t.Bell()
-				break
-			}
+			o.SearchMode(S_DIR_BCK)
 			keepInSearchMode = true
 		case CharCtrlU:
 			o.buf.KillFront()
 		case CharFwdSearch:
-			if !o.SearchMode(S_DIR_FWD) {
-				o.t.Bell()
-				break
-			}
+			o.SearchMode(S_DIR_FWD)
 			keepInSearchMode = true
 		case CharKill:
 			o.buf.Kill()
@@ -369,7 +345,6 @@ func (o *Operation) Runes() ([]rune, error) {
 	if o.cfg.Listener != nil {
 		o.cfg.Listener.OnChange(nil, 0, 0)
 	}
-
 	o.buf.Refresh(nil) // print prompt
 	o.t.KickRead()
 	select {
