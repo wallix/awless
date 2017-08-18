@@ -18,8 +18,8 @@ import (
 	"time"
 
 	"github.com/wallix/awless-scheduler/model"
-	"github.com/wallix/awless/aws"
 	"github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/template"
 	"github.com/wallix/awless/template/driver"
 )
@@ -41,7 +41,7 @@ var (
 
 	taskStore         store
 	defaultCompileEnv = awsdriver.DefaultTemplateEnv()
-	driversFunc       = func(region string) (driver.Driver, error) { return aws.NewDriver(region, "") }
+	driversFunc       = func(region string) (driver.Driver, error) { return awsservices.NewDriver(region, "") }
 )
 
 func main() {
@@ -269,7 +269,8 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _, err = template.Compile(tpl, awsdriver.DefaultTemplateEnv())
+	env := awsdriver.DefaultTemplateEnv()
+	_, _, err = template.Compile(tpl, env)
 
 	if err != nil {
 		errMsg := fmt.Sprintf("cannot compile template: %s", err)
@@ -285,7 +286,9 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = tpl.DryRun(d); err != nil {
+	env.Driver = d
+
+	if err = tpl.DryRun(env); err != nil {
 		errMsg := fmt.Sprintf("cannot dryrun template: %s", err)
 		log.Println(errMsg)
 		http.Error(w, errMsg, http.StatusUnprocessableEntity)

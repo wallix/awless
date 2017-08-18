@@ -33,7 +33,9 @@ type happyDriver struct {
 }
 
 func (*happyDriver) Lookup(...string) (driver.DriverFn, error) {
-	return func(params map[string]interface{}) (interface{}, error) { return params["name"], nil }, nil
+	return func(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+		return params["name"], nil
+	}, nil
 }
 func (*happyDriver) SetDryRun(bool)           {}
 func (*happyDriver) SetLogger(*logger.Logger) {}
@@ -42,7 +44,7 @@ type failDriver struct {
 }
 
 func (*failDriver) Lookup(...string) (driver.DriverFn, error) {
-	return func(params map[string]interface{}) (interface{}, error) {
+	return func(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 		return nil, errors.New("mock driver failure")
 	}, nil
 }

@@ -124,8 +124,8 @@
 [[projects]]
   name = "github.com/wallix/awless-scheduler"
   packages = ["client","model"]
-  revision = "479919b381e68937b4a2811f684859a64c4b3fc6"
-  version = "v0.0.5"
+  revision = "e49d8194851286ac48b298155cef00aa9fa7534d"
+  version = "v0.0.6"
 
 [[projects]]
   branch = "master"
@@ -178,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9734905da33f1f148e5d2bbd642923d86a6d68f75e7e5567706a2426539bc094"
+  inputs-digest = "56439e1330026b4ab06d87f90a93a868f3a2a2f3f41679beb0eab7f75c6d7399"
   solver-name = "gps-cdcl"
   solver-version = 1

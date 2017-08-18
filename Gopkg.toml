@@ -59,7 +59,7 @@
 
 [[constraint]]
   name = "github.com/wallix/awless-scheduler"
-  version = "0.0.5"
+  version = "0.0.6"
 
 [[constraint]]
   branch = "master"

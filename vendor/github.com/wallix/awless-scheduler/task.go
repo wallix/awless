@@ -67,11 +67,13 @@ func executeTask(tk *model.Task, d driver.Driver, env *template.Env) (executed *
 		return
 	}
 
-	if err = compiled.DryRun(d); err != nil {
+	env.Driver = d
+
+	if err = compiled.DryRun(env); err != nil {
 		return
 	}
 
-	if executed, err = compiled.Run(d); err != nil {
+	if executed, err = compiled.Run(env); err != nil {
 		return
 	}
 
