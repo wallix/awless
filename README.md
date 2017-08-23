@@ -14,7 +14,7 @@
 - explore and query your infrastructure and cloud resources, even **offline**
 - ensure smart defaults & security best practices
 - write and run powerful templates (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
-- connect to your instances easily
+- connect to your private & public instances easily
 
 # Install
 
@@ -42,7 +42,7 @@ Choose one of the following options:
 - Leveraging AWS `userdata` to provision instance on creation from remote (i.e http) or local scripts: `awless create instance userdata=http://...` 
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
-- Clean and simple ssh to instances: `awless ssh`
+- Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`
 - Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --id-only`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
@@ -57,7 +57,7 @@ Or read the [introductory blog post about awless](https://medium.com/@hbbio/awle
 
 # About
 
-`awless` is an open source project created by Henri Binsztok, Quentin Bourgerie, Simon Caplette and François-Xavier Aguessy at Wallix.
+`awless` is an open source project created by Henri Binsztok, Quentin Bourgerie, Simon Caplette and François-Xavier Aguessy at WALLIX.
 `awless` is released under the Apache License and sponsored by [Wallix](https://github.com/wallix).
 
     Disclaimer: Awless allows for easy resource creation with your cloud provider;
@@ -65,3 +65,4 @@ Or read the [introductory blog post about awless](https://medium.com/@hbbio/awle
     million instances using awless templates).
 
 Contributors are welcome! Please head to [Contributing (wiki)](https://github.com/wallix/awless/wiki/Contributing) to learn more.
+Note that `awless` uses [triplestore](https://github.com/wallix/triplestore) another project developped at WALLIX.
