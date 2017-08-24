@@ -69,6 +69,7 @@ func TestParseVariousTemplatesCorrectly(t *testing.T) {
 		{"support parameter value beginning with number", "create keypair name=123test", ""},
 		{"support prefix/suffixes around holes (values)", "name = prefix-{instance.name}-{instance.version}-suffix", ""},
 		{"support prefix/suffixes around holes (params)", "instance = create instance name=prefix-{instance.name}-{instance.version}-suffix", ""},
+		{"support suffix after holes", "instance = create instance name={instance.name}-suffix", ""},
 	}
 
 	for _, tcase := range tcases {

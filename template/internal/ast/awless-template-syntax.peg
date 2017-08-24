@@ -30,7 +30,8 @@ CompositeValue <- ListValue / Value
 ListValue <- {  p.addFirstValueInList() } '[' WhiteSpacing Value WhiteSpacing
             (',' WhiteSpacing Value WhiteSpacing )* ']' {  p.lastValueInList() }
 
-NoRefValue <- HoleValue {  p.addParamHoleValue(text) }
+NoRefValue <- HoleWithSuffixValue {  p.addHolesStringParam(text) }
+        / HoleValue {  p.addParamHoleValue(text) }
         / HolesStringValue {  p.addHolesStringParam(text) }
         / AliasValue {  p.addAliasParam(text) }
         / DoubleQuote CustomTypedValue DoubleQuote
@@ -60,6 +61,7 @@ RefValue <- '$'<Identifier>
 AliasValue <- '@'<OtherParamValue> / '@' DoubleQuote <DoubleQuotedValue> DoubleQuote / '@' SingleQuote <SingleQuotedValue> SingleQuote 
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
 HolesStringValue <- <(OtherParamValue? HoleValue OtherParamValue?)+>
+HoleWithSuffixValue <- <HoleValue OtherParamValue+ (OtherParamValue? HoleValue OtherParamValue?)*>
 
 Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)*
 
