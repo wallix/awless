@@ -7,7 +7,7 @@ SUCCESS_KEYWORD=successfull
 
 /bin/cat > $TMP_USERDATA_FILE <<EOF
 #!/bin/bash
-echo "{{.References.ssh_success_keyword}}" > /tmp/awless-ssh-userdata-success.txt
+echo "{{.Variables.ssh_success_keyword}}" > /tmp/awless-ssh-userdata-success.txt
 EOF
 
 BIN=./awless-test

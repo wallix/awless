@@ -32,21 +32,21 @@ type Driver interface {
 }
 
 type Context interface {
-	References() map[string]interface{}
+	Variables() map[string]interface{}
 }
 
-func NewContext(refs map[string]interface{}) Context {
-	return &context{refs: refs}
+func NewContext(vars map[string]interface{}) Context {
+	return &context{vars: vars}
 }
 
 var EmptyContext = &context{}
 
 type context struct {
-	refs map[string]interface{}
+	vars map[string]interface{}
 }
 
-func (c *context) References() map[string]interface{} {
-	return copyMap(c.refs)
+func (c *context) Variables() map[string]interface{} {
+	return copyMap(c.vars)
 }
 
 type DriverFn func(Context, map[string]interface{}) (interface{}, error)
