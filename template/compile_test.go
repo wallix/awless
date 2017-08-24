@@ -71,6 +71,18 @@ secondlb = create loadbalancer name=lb2 subnets=[mysubnet-1,mysubnet-4,mysubnet-
 			expProcessedFillers:  map[string]interface{}{"mysubnet2.hole": "mysubnet-2", "mysubnet3.hole": "mysubnet-3", "mysubnet5.hole": "mysubnet-5"},
 			expResolvedVariables: map[string]interface{}{"a": "mysubnet-1", "b": "mysubnet-1", "e": "mysubnet-1", "c": "mysubnet-2", "d": []interface{}{"mysubnet-1", "mysubnet-2", "mysubnet-3", "mysubnet-4"}},
 		},
+		{
+			tpl: `
+name = instance-{instance.name}-{version}
+name2 = my-test-{hole}
+create instance image=ami-1234 name=$name subnet=subnet-{version}
+create instance image=ami-1234 name=$name2 subnet=sub1234
+`,
+			expect: `create instance count=42 image=ami-1234 name=instance-myinstance-10 subnet=subnet-10 type=t2.micro
+create instance count=42 image=ami-1234 name=my-test-sub-2345 subnet=sub1234 type=t2.micro`,
+			expProcessedFillers:  map[string]interface{}{"instance.name": "myinstance", "version": 10, "instance.type": "t2.micro", "instance.count": 42},
+			expResolvedVariables: map[string]interface{}{"name": "instance-myinstance-10", "name2": "my-test-sub-2345"},
+		},
 	}
 
 	for i, tcase := range tcases {
@@ -85,11 +97,15 @@ secondlb = create loadbalancer name=lb2 subnets=[mysubnet-1,mysubnet-4,mysubnet-
 			"mysubnet2.hole": "mysubnet-2",
 			"mysubnet3.hole": "mysubnet-3",
 			"mysubnet5.hole": "mysubnet-5",
+			"version":        10,
+			"instance.name":  "myinstance",
+			"hole":           "@sub",
 		})
 		env.AliasFunc = func(e, k, v string) string {
 			vals := map[string]string{
 				"vpc":      "vpc-1234",
 				"subalias": "sub-1111",
+				"sub":      "sub-2345",
 			}
 			return vals[v]
 		}

@@ -31,6 +31,7 @@ ListValue <- {  p.addFirstValueInList() } '[' WhiteSpacing Value WhiteSpacing
             (',' WhiteSpacing Value WhiteSpacing )* ']' {  p.lastValueInList() }
 
 NoRefValue <- HoleValue {  p.addParamHoleValue(text) }
+        / HolesStringValue {  p.addHolesStringParam(text) }
         / AliasValue {  p.addAliasParam(text) }
         / DoubleQuote CustomTypedValue DoubleQuote
         / SingleQuote CustomTypedValue SingleQuote
@@ -58,6 +59,7 @@ IntRangeValue <- [0-9]+'-'[0-9]+
 RefValue <- '$'<Identifier>
 AliasValue <- '@'<OtherParamValue> / '@' DoubleQuote <DoubleQuotedValue> DoubleQuote / '@' SingleQuote <SingleQuotedValue> SingleQuote 
 HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
+HolesStringValue <- <(OtherParamValue? HoleValue OtherParamValue?)+>
 
 Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)*
 

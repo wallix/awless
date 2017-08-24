@@ -2,8 +2,9 @@
 
 ### Features
 
-- `awless` template language now support lists, for example: `create loadbalancer subnets=[$subnet1, $subnet2]`
+- `awless` template language now supports lists, for example: `create loadbalancer subnets=[$subnet1, $subnet2]`
 - Variables in `awless` template language now support references, holes and lists, for example: `mysecgroups = [$secgroup1, {my.secgroup},sg-123456]`
+- `awless` template language now supports *holes* in strings, for example: `create instance name={prefix}database{version}`
 
 ## v0.1.2 [2017-08-17]
 

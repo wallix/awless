@@ -213,6 +213,70 @@ func (h *holeValue) Clone() CompositeValue {
 	return &holeValue{val: h.val, hole: h.hole, alias: h.alias}
 }
 
+type holesStringValue struct {
+	holes []*holeValue
+	input string
+}
+
+func (h *holesStringValue) GetHoles() (res []string) {
+	for _, hole := range h.holes {
+		res = append(res, hole.GetHoles()...)
+	}
+	return
+}
+
+func (h *holesStringValue) Value() interface{} {
+	out := h.input
+	for _, hole := range h.holes {
+		if hole.Value() != nil {
+			out = strings.Replace(out, "{"+hole.hole+"}", fmt.Sprint(hole.Value()), 1)
+		}
+	}
+	return out
+}
+
+func (h *holesStringValue) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
+	processed := make(map[string]interface{})
+	for _, hole := range h.holes {
+		valProc := hole.ProcessHoles(fills)
+		for k, v := range valProc {
+			processed[k] = v
+		}
+	}
+	return processed
+}
+
+func (h *holesStringValue) String() string {
+	out := h.input
+	for _, hole := range h.holes {
+		if hole.Value() != nil {
+			out = strings.Replace(out, "{"+hole.hole+"}", hole.String(), 1)
+		}
+	}
+	return out
+}
+
+func (h *holesStringValue) GetAliases() (aliases []string) {
+	for _, hole := range h.holes {
+		aliases = append(aliases, hole.GetAliases()...)
+	}
+	return
+}
+
+func (h *holesStringValue) ResolveAlias(resolvFunc func(string) (string, bool)) {
+	for _, hole := range h.holes {
+		hole.ResolveAlias(resolvFunc)
+	}
+}
+
+func (h *holesStringValue) Clone() CompositeValue {
+	clone := &holesStringValue{input: h.input}
+	for _, hole := range h.holes {
+		clone.holes = append(clone.holes, hole.Clone().(*holeValue))
+	}
+	return clone
+}
+
 type aliasValue struct {
 	alias string
 	val   interface{}

@@ -45,6 +45,22 @@ func TestCompositeValues(t *testing.T) {
 			holesFillers: map[string]interface{}{"myhole": "my-value"},
 			expValue:     []interface{}{"test", 10, "my-value", "refvalue"},
 		},
+		{
+			val: &holesStringValue{
+				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2"}, {hole: "hole3"}},
+				input: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			},
+			expHoles: []string{"hole1", "hole2", "hole3"},
+			expValue: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+		},
+		{
+			val: &holesStringValue{
+				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2.name"}, {hole: "hole3"}},
+				input: "prefix-{hole1}middle1-{hole2.name}-middle2-{hole3}suffix",
+			},
+			holesFillers: map[string]interface{}{"hole1": "value1", "hole2.name": 2, "hole3": "value3"},
+			expValue:     "prefix-value1middle1-2-middle2-value3suffix",
+		},
 	}
 
 	for i, tcase := range tcases {
@@ -110,6 +126,13 @@ func TestCompositeValuesStringer(t *testing.T) {
 			),
 			expect: "[test,10,{myhole},$myref,@myalias]",
 		},
+		{
+			val: &holesStringValue{
+				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2"}, {hole: "hole3"}},
+				input: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			},
+			expect: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+		},
 	}
 
 	for i, tcase := range tcases {
@@ -143,7 +166,17 @@ func TestCloneValues(t *testing.T) {
 				&referenceValue{ref: "myref"},
 				&aliasValue{alias: "myalias"},
 			),
-			mutationFn: func(v CompositeValue) { v.(*listValue).ProcessHoles(map[string]interface{}{"myhole": "myvalue"}) }},
+			mutationFn: func(v CompositeValue) { v.(*listValue).ProcessHoles(map[string]interface{}{"myhole": "myvalue"}) },
+		},
+		{
+			from: &holesStringValue{
+				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2"}, {hole: "hole3"}},
+				input: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			},
+			mutationFn: func(v CompositeValue) {
+				v.(*holesStringValue).ProcessHoles(map[string]interface{}{"hole1": "myvalue"})
+			},
+		},
 	}
 	for i, tcase := range tcases {
 		clone := tcase.from.Clone()

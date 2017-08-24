@@ -67,6 +67,8 @@ func TestParseVariousTemplatesCorrectly(t *testing.T) {
 		{"support wildcard in quote", "create policy action=\"ec2:Get*\"", "create policy action=ec2:Get*"},
 		{"support single wildcard", "create policy resource=*", ""},
 		{"support parameter value beginning with number", "create keypair name=123test", ""},
+		{"support prefix/suffixes around holes (values)", "name = prefix-{instance.name}-{instance.version}-suffix", ""},
+		{"support prefix/suffixes around holes (params)", "instance = create instance name=prefix-{instance.name}-{instance.version}-suffix", ""},
 	}
 
 	for _, tcase := range tcases {

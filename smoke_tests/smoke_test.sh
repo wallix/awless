@@ -28,10 +28,10 @@ echo "Setting region $REGION, ami $AMI"
 $BIN config set aws.region $REGION
 $BIN config set instance.image $AMI
 
-SUFFIX=integ-test-$(date +%s)
+DATE=$(date +%s)
+SUFFIX=integ-test-$DATE
 INSTANCE_NAME=inst-$SUFFIX
-VPC_NAME=vpc-$SUFFIX
-SUBNET_NAME=subnet-$SUFFIX
+
 KEY_NAME=awless-integ-test-key
 GROUP_NAME=awless-integration-tests
 
@@ -44,9 +44,9 @@ fi
 
 /bin/cat > $TMP_FILE <<EOF
 ssh_success_keyword = $SUCCESS_KEYWORD
-vpcname = $VPC_NAME
+vpcname = vpc-integ-test-{date}
 testvpc = create vpc cidr={vpc-cidr} name=\$vpcname
-testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc name=$SUBNET_NAME
+testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc name=subnet-integ-test-{date}
 gateway = create internetgateway
 attach internetgateway id=\$gateway vpc=\$testvpc
 update subnet id=\$testsubnet public=true
@@ -62,7 +62,7 @@ update securitygroup id=\$sgroupInternet inbound=authorize protocol=tcp cidr=0.0
 testkey = create keypair name=$KEY_NAME
 instancecount = {instance.count} # testing var assignement from hole
 instanceSecgroups = [\$sgroup,\$sgroupInternet]
-testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=$INSTANCE_NAME userdata=$TMP_USERDATA_FILE securitygroup=\$instanceSecgroups
+testinstance = create instance subnet=\$testsubnet image={resolved-image} type=t2.nano count=\$instancecount keypair=\$testkey name=inst-integ-test-{date} userdata=$TMP_USERDATA_FILE securitygroup=\$instanceSecgroups
 create tag resource=\$testinstance key=Env value=Testing
 create policy name=AwlessSmokeTestPolicy resource=* action="ec2:Describe*" effect=Allow
 create group name=$GROUP_NAME
@@ -70,7 +70,7 @@ attach policy service=lambda access=readonly group=$GROUP_NAME
 EOF
 
 RESOLVED_AMI=$($BIN search images debian::jessie --id-only)
-$BIN run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 -e -f resolved-image=$RESOLVED_AMI
+$BIN run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 date=$DATE -e -f resolved-image=$RESOLVED_AMI
 
 ALIAS="\@$INSTANCE_NAME"
 eval "$BIN check instance id=$ALIAS state=running timeout=20 -f"
