@@ -15,8 +15,10 @@ func TestRevertOneliner(t *testing.T) {
 		{in: "create instanceprofile name=stuff", exp: "delete instanceprofile name=stuff"},
 		{in: "delete instanceprofile name=stuff", exp: "create instanceprofile name=stuff"},
 		{in: "create appscalingtarget dimension=dim max-capacity=10 min-capacity=4 resource=res role=role service-namespace=ecs", exp: "delete appscalingtarget dimension=dim resource=res service-namespace=ecs"},
-		//{in: "create appscalingpolicy dimension=my-dim name=my-name resource=my-res service-namespace=my-ns stepscaling-adjustment-type=my-sat stepscaling-adjustments=0:0.25:-1,0.25:0.75:0,0.75::+1 type=my-type", exp: "delete appscalingpolicy dimension=my-dim name=my-name resource=my-res service-namespace=my-ns"},
+		{in: "create appscalingpolicy dimension=my-dim name=my-name resource=my-res service-namespace=my-ns stepscaling-adjustment-type=my-sat stepscaling-adjustments=[0:0.25:-1,0.25:0.75:0,0.75::+1] type=my-type", exp: "delete appscalingpolicy dimension=my-dim name=my-name resource=my-res service-namespace=my-ns"},
 		{in: "attach containertask image=toto memory-hard-limit=64 container-name=test-container name=test-service", exp: "detach containertask container-name=test-container name=test-service"},
+		{in: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 inbound=authorize portrange=443 protocol=tcp", exp: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 inbound=revoke portrange=443 protocol=tcp"},
+		{in: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=revoke portrange=443 protocol=tcp", exp: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=authorize portrange=443 protocol=tcp"},
 	}
 
 	for _, tcase := range tcases {
@@ -99,7 +101,6 @@ func TestRevertTemplate(t *testing.T) {
 	t.Run("Revert load balancer creation", func(t *testing.T) {
 		tpl := MustParse(`
 loadbalancerfw = create securitygroup
-update securitygroup cidr=0.0.0.0/0 id=$loadbalancerfw inbound=authorize portrange=80 protocol=tcp
 lb = create loadbalancer groups=$loadbalancerfw name=loadbalancer
 create listener actiontype=forward loadbalancer=$lb
 inst1 = create instance
@@ -108,13 +109,13 @@ inst1 = create instance
 			if i == 0 {
 				cmd.CmdResult = "securitygroup-1"
 			}
-			if i == 2 {
+			if i == 1 {
 				cmd.CmdResult = "lb-1"
 			}
-			if i == 3 {
+			if i == 2 {
 				cmd.CmdResult = "list-1"
 			}
-			if i == 4 {
+			if i == 3 {
 				cmd.CmdResult = "i-1"
 			}
 		}

@@ -29,6 +29,8 @@ func (te *Template) Revert() (*Template, error) {
 				revertAction = "detach"
 			case "delete":
 				revertAction = "create"
+			case "update":
+				revertAction = "update"
 			}
 
 			switch cmd.Action {
@@ -149,6 +151,21 @@ func (te *Template) Revert() (*Template, error) {
 				default:
 					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				}
+			case "update":
+				switch cmd.Entity {
+				case "securitygroup":
+					for k, v := range cmd.Params {
+						if k == "inbound" || k == "outbound" {
+							if fmt.Sprint(v) == "authorize" {
+								params = append(params, fmt.Sprintf("%s=revoke", k))
+							} else if fmt.Sprint(v) == "revoke" {
+								params = append(params, fmt.Sprintf("%s=authorize", k))
+							}
+							continue
+						}
+						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+					}
+				}
 			}
 
 			// Prechecks
@@ -246,6 +263,10 @@ func isRevertible(cmd *ast.CommandNode) bool {
 	}
 
 	if cmd.Entity == "appscalingtarget" && cmd.Action == "create" {
+		return true
+	}
+
+	if cmd.Entity == "securitygroup" && cmd.Action == "update" {
 		return true
 	}
 
