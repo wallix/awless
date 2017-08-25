@@ -663,7 +663,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "LaunchConfigurationName", TemplateName: "launchconfiguration", AwsType: "awsstr"},
 					{AwsField: "MaxSize", TemplateName: "max-size", AwsType: "awsint64"},
 					{AwsField: "MinSize", TemplateName: "min-size", AwsType: "awsint64"},
-					{AwsField: "VPCZoneIdentifier", TemplateName: "subnets", AwsType: "awsstr"},
+					{AwsField: "VPCZoneIdentifier", TemplateName: "subnets", AwsType: "awscsvstr"},
 				},
 				ExtraParams: []param{
 					{AwsField: "DefaultCooldown", TemplateName: "cooldown", AwsType: "awsint64"},
@@ -688,7 +688,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "MaxSize", TemplateName: "max-size", AwsType: "awsint64"},
 					{AwsField: "MinSize", TemplateName: "min-size", AwsType: "awsint64"},
 					{AwsField: "NewInstancesProtectedFromScaleIn", TemplateName: "new-instances-protected", AwsType: "awsbool"},
-					{AwsField: "VPCZoneIdentifier", TemplateName: "subnets", AwsType: "awsstr"},
+					{AwsField: "VPCZoneIdentifier", TemplateName: "subnets", AwsType: "awscsvstr"},
 				},
 			},
 			{

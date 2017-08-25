@@ -166,6 +166,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		ParameterList     []*cloudformation.Parameter
 		PortMappings      []*ecs.PortMapping
 		StepAdjustments   []*applicationautoscaling.StepAdjustment
+		CSVString         *string
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -559,5 +560,33 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	}
 	if got, want := *any.StepAdjustments[1].ScalingAdjustment, int64(+1); got != want {
 		t.Fatalf("got %d, want %d", got, want)
+	}
+	err = setFieldWithType([]interface{}{"abcdef", "ghijk"}, &any, "CSVString", awscsvstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.CSVString, "abcdef,ghijk"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType([]string{"abcdef", "ghijk"}, &any, "CSVString", awscsvstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.CSVString, "abcdef,ghijk"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType("abcdef", &any, "CSVString", awscsvstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.CSVString, "abcdef"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType("abcdef,ghijk", &any, "CSVString", awscsvstr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.CSVString, "abcdef,ghijk"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
 	}
 }

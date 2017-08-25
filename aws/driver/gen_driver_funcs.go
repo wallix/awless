@@ -3067,7 +3067,7 @@ func (d *AutoscalingDriver) Create_Scalinggroup(ctx driver.Context, params map[s
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr, ctx)
+	err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awscsvstr, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -3195,7 +3195,7 @@ func (d *AutoscalingDriver) Update_Scalinggroup(ctx driver.Context, params map[s
 		}
 	}
 	if _, ok := params["subnets"]; ok {
-		err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awsstr, ctx)
+		err = setFieldWithType(params["subnets"], input, "VPCZoneIdentifier", awscsvstr, ctx)
 		if err != nil {
 			return nil, err
 		}

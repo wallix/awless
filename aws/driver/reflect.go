@@ -61,6 +61,7 @@ const (
 	awsecskeyvalue
 	awsportmappings
 	awsstepadjustments
+	awscsvstr
 )
 
 var (
@@ -117,6 +118,8 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int, interfs 
 		}
 	case awsstringslice:
 		v = castStringPointerSlice(v)
+	case awscsvstr:
+		v = strings.Join(castStringSlice(v), ",")
 	case awsdimensionslice:
 		sl := castStringSlice(v)
 		var dimensions []*cloudwatch.Dimension
@@ -391,6 +394,19 @@ func castStringSlice(v interface{}) []string {
 		return aws.StringValueSlice(vv)
 	case []string:
 		return vv
+	case []interface{}:
+		var slice []string
+		for _, i := range vv {
+			switch ii := i.(type) {
+			case string:
+				slice = append(slice, ii)
+			case *string:
+				slice = append(slice, *ii)
+			default:
+				slice = append(slice, fmt.Sprint(ii))
+			}
+		}
+		return slice
 	default:
 		return []string{fmt.Sprint(v)}
 	}

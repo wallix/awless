@@ -741,14 +741,12 @@ func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]i
 	}
 
 	d.logger.Verbose("params dry run: create policy ok")
-	return nil, nil
+	return fakeDryRunId("policy"), nil
 }
 
 func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	effect, _ := params["effect"].(string)
 	resource, _ := params["resource"].(string)
-	actions, multipleAction := params["action"].([]string)
-	action, singleAction := params["action"].(string)
 
 	if resource == "all" {
 		resource = "*"
@@ -756,11 +754,8 @@ func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interfac
 
 	stat := policyStatement{Effect: strings.Title(effect), Resource: resource}
 
-	if multipleAction {
-		stat.Actions = actions
-	}
-	if singleAction {
-		stat.Actions = []string{action}
+	if actions, ok := params["action"]; ok {
+		stat.Actions = castStringSlice(actions)
 	}
 
 	policy := &policyBody{
