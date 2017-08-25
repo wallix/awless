@@ -214,10 +214,11 @@ var DriversDefs = []driversDef{
 				Action: "update", Entity: cloud.SecurityGroup, ManualFuncDefinition: true,
 				RequiredParams: []param{
 					{TemplateName: "id"},
-					{TemplateName: "cidr"},
 					{TemplateName: "protocol"},
 				},
 				ExtraParams: []param{
+					{TemplateName: "cidr"},
+					{TemplateName: "securitygroup"},
 					{TemplateName: "inbound"}, // either inbound or outbound = either authorize or revoke
 					{TemplateName: "outbound"},
 					{TemplateName: "portrange"},

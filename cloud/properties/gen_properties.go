@@ -183,6 +183,7 @@ const (
 	Size                              = "Size"
 	SpotInstanceRequestId             = "SpotInstanceRequestId"
 	SpotPrice                         = "SpotPrice"
+	Source                            = "Source"
 	SSLSupportMethod                  = "SSLSupportMethod"
 	State                             = "State"
 	StateMessage                      = "StateMessage"

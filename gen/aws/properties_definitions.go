@@ -180,6 +180,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Size", RDFLabel: fmt.Sprintf("%s:size", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "SpotInstanceRequestId", RDFLabel: fmt.Sprintf("%s:spotInstanceRequestId", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "SpotPrice", RDFLabel: fmt.Sprintf("%s:spotPrice", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "Source", RDFLabel: fmt.Sprintf("%s:source", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "SSLSupportMethod", RDFLabel: fmt.Sprintf("%s:sslSupportMethod", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "State", RDFLabel: fmt.Sprintf("%s:state", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "StateMessage", RDFLabel: fmt.Sprintf("%s:stateMessage", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

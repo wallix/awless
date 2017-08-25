@@ -2404,12 +2404,16 @@ func (d *Route53Driver) changeResourceRecordSetsWrapper(params map[string]interf
 }
 
 func buildIpPermissionsFromParams(params map[string]interface{}) ([]*ec2.IpPermission, error) {
-	if _, ok := params["cidr"].(string); !ok {
-		return nil, fmt.Errorf("invalid cidr '%v'", params["cidr"])
+
+	ipPerm := &ec2.IpPermission{}
+	if cidr, ok := params["cidr"].(string); ok {
+		ipPerm.IpRanges = []*ec2.IpRange{{CidrIp: aws.String(cidr)}}
+	} else if secgroup, ok := params["securitygroup"].(string); ok {
+		ipPerm.UserIdGroupPairs = []*ec2.UserIdGroupPair{{GroupId: aws.String(secgroup)}}
+	} else {
+		return nil, errors.New("missing either 'cidr' or 'securitygroup' parameter")
 	}
-	ipPerm := &ec2.IpPermission{
-		IpRanges: []*ec2.IpRange{{CidrIp: aws.String(params["cidr"].(string))}},
-	}
+
 	if _, ok := params["protocol"].(string); !ok {
 		return nil, fmt.Errorf("invalid protocol '%v'", params["protocol"])
 	}

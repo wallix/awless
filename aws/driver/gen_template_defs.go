@@ -269,8 +269,8 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Action:         "update",
 		Entity:         "securitygroup",
 		Api:            "ec2",
-		RequiredParams: []string{"cidr", "id", "protocol"},
-		ExtraParams:    []string{"inbound", "outbound", "portrange"},
+		RequiredParams: []string{"id", "protocol"},
+		ExtraParams:    []string{"cidr", "inbound", "outbound", "portrange", "securitygroup"},
 	},
 	"deletesecuritygroup": {
 		Action:         "delete",

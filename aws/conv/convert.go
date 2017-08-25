@@ -346,6 +346,9 @@ var extractIpPermissionSliceFn = func(i interface{}) (interface{}, error) {
 			}
 			rule.IPRanges = append(rule.IPRanges, net)
 		}
+		for _, group := range ipPerm.UserIdGroupPairs {
+			rule.Sources = append(rule.Sources, awssdk.StringValue(group.GroupId))
+		}
 
 		rules = append(rules, rule)
 	}

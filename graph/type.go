@@ -44,6 +44,7 @@ type FirewallRule struct {
 	PortRange PortRange    `predicate:"net:portRange"`
 	Protocol  string       `predicate:"net:protocol"`
 	IPRanges  []*net.IPNet `predicate:"net:cidr"` // IPv4 or IPv6 range
+	Sources   []string     `predicate:"cloud:source"`
 }
 
 func (r *FirewallRule) Contains(ip string) bool {
@@ -57,7 +58,7 @@ func (r *FirewallRule) Contains(ip string) bool {
 }
 
 func (r *FirewallRule) String() string {
-	return fmt.Sprintf("PortRange:%+v; Protocol:%s; IPRanges:%+v", r.PortRange, r.Protocol, r.IPRanges)
+	return fmt.Sprintf("PortRange:%+v; Protocol:%s; IPRanges:%+v; Sources:%+v", r.PortRange, r.Protocol, r.IPRanges, r.Sources)
 }
 
 func (r *FirewallRule) marshalToTriples(id string) []tstore.Triple {
@@ -98,6 +99,15 @@ func (r *FirewallRule) unmarshalFromTriples(g tstore.RDFGraph, id string) error 
 		}
 		r.IPRanges = append(r.IPRanges, cidr)
 	}
+
+	sourceTs := g.WithSubjPred(id, rdf.Source)
+	for _, sourceT := range sourceTs {
+		source, err := tstore.ParseString(sourceT.Object())
+		if err != nil {
+			return fmt.Errorf("unmarshal firewall rule: source: %s", err)
+		}
+		r.Sources = append(r.Sources, source)
+	}
 	return nil
 }
 
@@ -123,9 +133,9 @@ func (p PortRange) String() string {
 	switch {
 	case p.Any:
 		return ":"
-	case p.FromPort == int64(0):
+	case p.FromPort == int64(-1):
 		return fmt.Sprintf("%d:%[1]d", p.ToPort)
-	case p.ToPort == int64(0):
+	case p.ToPort == int64(-1):
 		return fmt.Sprintf("%d:%[1]d", p.FromPort)
 	default:
 		return fmt.Sprintf("%d:%d", p.FromPort, p.ToPort)

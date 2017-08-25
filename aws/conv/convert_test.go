@@ -116,6 +116,14 @@ func TestTransformFunctions(t *testing.T) {
 					{CidrIpv6: awssdk.String("2001:db8::/110")},
 				},
 			},
+			{FromPort: awssdk.Int64(0),
+				ToPort:     awssdk.Int64(65535),
+				IpProtocol: awssdk.String("tcp"),
+				UserIdGroupPairs: []*ec2.UserIdGroupPair{
+					{GroupId: awssdk.String("group_1")},
+					{GroupId: awssdk.String("group_2")},
+				},
+			},
 		}
 
 		expected := []*graph.FirewallRule{
@@ -144,6 +152,13 @@ func TestTransformFunctions(t *testing.T) {
 					{IP: net.IPv4(1, 2, 3, 4), Mask: net.CIDRMask(32, 32)},
 					{IP: net.ParseIP("fd34:fe56:7891:2f3a::"), Mask: net.CIDRMask(64, 128)},
 					{IP: net.ParseIP("2001:db8::"), Mask: net.CIDRMask(110, 128)},
+				},
+			},
+			{
+				PortRange: graph.PortRange{FromPort: int64(0), ToPort: int64(65535), Any: false},
+				Protocol:  "tcp",
+				Sources: []string{
+					"group_1", "group_2",
 				},
 			},
 		}

@@ -5,6 +5,11 @@
 - `awless` template language now supports lists, for example: `create loadbalancer subnets=[$subnet1, $subnet2]`
 - Variables in `awless` template language now support references, holes and lists, for example: `mysecgroups = [$secgroup1, {my.secgroup},sg-123456]`
 - `awless` template language now supports *holes* in strings, for example: `create instance name={prefix}database{version}`
+- `awless update securitygroup` can now authorize/revoke access from another security group: `update securitygroup id=sg-12345 inbound=authorize portrange=any protocol=tcp securitygroup=sg-23456`
+
+### Fixes
+
+- Port ranges starting from *0* to *n* are no longer processed as from *n* to *n*.
 
 ## v0.1.2 [2017-08-17]
 

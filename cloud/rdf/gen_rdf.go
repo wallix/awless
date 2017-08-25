@@ -185,6 +185,7 @@ const (
 	Size                              = "cloud:size"
 	SpotInstanceRequestId             = "cloud:spotInstanceRequestId"
 	SpotPrice                         = "cloud:spotPrice"
+	Source                            = "cloud:source"
 	SSLSupportMethod                  = "cloud:sslSupportMethod"
 	State                             = "cloud:state"
 	StateMessage                      = "cloud:stateMessage"
@@ -383,6 +384,7 @@ var Labels = map[string]string{
 	properties.Size:                              Size,
 	properties.SpotInstanceRequestId:             SpotInstanceRequestId,
 	properties.SpotPrice:                         SpotPrice,
+	properties.Source:                            Source,
 	properties.SSLSupportMethod:                  SSLSupportMethod,
 	properties.State:                             State,
 	properties.StateMessage:                      StateMessage,
@@ -581,6 +583,7 @@ var Properties = RDFProperties{
 	Size:                      {ID: Size, RdfType: "rdf:Property", RdfsLabel: "Size", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	SpotInstanceRequestId: {ID: SpotInstanceRequestId, RdfType: "rdf:Property", RdfsLabel: "SpotInstanceRequestId", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SpotPrice:             {ID: SpotPrice, RdfType: "rdf:Property", RdfsLabel: "SpotPrice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Source:                {ID: Source, RdfType: "rdf:Property", RdfsLabel: "Source", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SSLSupportMethod:      {ID: SSLSupportMethod, RdfType: "rdf:Property", RdfsLabel: "SSLSupportMethod", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	State:                 {ID: State, RdfType: "rdf:Property", RdfsLabel: "State", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	StateMessage:          {ID: StateMessage, RdfType: "rdf:Property", RdfsLabel: "StateMessage", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

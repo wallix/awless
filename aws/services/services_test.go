@@ -18,6 +18,7 @@ package awsservices
 
 import (
 	"fmt"
+	"net"
 	"reflect"
 	"sort"
 	"testing"
@@ -263,7 +264,17 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	securityGroups := []*ec2.SecurityGroup{
-		{GroupId: awssdk.String("securitygroup_1"), GroupName: awssdk.String("my_securitygroup"), VpcId: awssdk.String("vpc_1")},
+		{
+			GroupId:   awssdk.String("securitygroup_1"),
+			GroupName: awssdk.String("my_securitygroup"),
+			VpcId:     awssdk.String("vpc_1"),
+			IpPermissions: []*ec2.IpPermission{
+				{FromPort: awssdk.Int64(22), ToPort: awssdk.Int64(80), IpProtocol: awssdk.String("tcp"), UserIdGroupPairs: []*ec2.UserIdGroupPair{{GroupId: awssdk.String("group_1")}, {GroupId: awssdk.String("group_2")}}},
+			},
+			IpPermissionsEgress: []*ec2.IpPermission{
+				{FromPort: awssdk.Int64(0), ToPort: awssdk.Int64(65535), IpProtocol: awssdk.String("tcp"), IpRanges: []*ec2.IpRange{{CidrIp: awssdk.String("10.20.0.0/16")}}},
+			},
+		},
 		{GroupId: awssdk.String("securitygroup_2"), VpcId: awssdk.String("vpc_1")},
 	}
 
@@ -534,6 +545,11 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 				return p[i].KeyName < p[j].KeyName
 			})
 		}
+		if p, ok := res.Properties[p.InboundRules].([]*graph.FirewallRule); ok {
+			for _, r := range p {
+				sort.Strings(r.Sources)
+			}
+		}
 	}
 
 	expected := map[string]*graph.Resource{
@@ -547,9 +563,11 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			Prop(p.Image, "ami-1234").Prop(p.Launched, now).Prop(p.State, "running").Prop(p.KeyPair, "my_key").Prop(p.SecurityGroups, []string{"securitygroup_1"}).Prop(p.Affinity, "inst_affinity").
 			Prop(p.AvailabilityZone, "inst_az").Prop(p.PlacementGroup, "inst_group").Prop(p.Host, "inst_host").Prop(p.Architecture, "x86").Prop(p.Hypervisor, "xen").Prop(p.Profile, "arn:instance:profile").
 			Prop(p.Lifecycle, "lifecycle").Prop(p.NetworkInterfaces, []string{"my-network-interface"}).Prop(p.PublicDNS, "my-instance.dns").Prop(p.RootDevice, "/dev/xvda").Prop(p.RootDeviceType, "ebs").Build(),
-		"vpc_1":            resourcetest.VPC("vpc_1").Build(),
-		"vpc_2":            resourcetest.VPC("vpc_2").Build(),
-		"securitygroup_1":  resourcetest.SecurityGroup("securitygroup_1").Prop(p.Name, "my_securitygroup").Prop(p.Vpc, "vpc_1").Build(),
+		"vpc_1": resourcetest.VPC("vpc_1").Build(),
+		"vpc_2": resourcetest.VPC("vpc_2").Build(),
+		"securitygroup_1": resourcetest.SecurityGroup("securitygroup_1").Prop(p.Name, "my_securitygroup").Prop(p.Vpc, "vpc_1").
+			Prop(p.InboundRules, []*graph.FirewallRule{{PortRange: graph.PortRange{FromPort: 22, ToPort: 80, Any: false}, Protocol: "tcp", Sources: []string{"group_1", "group_2"}}}).
+			Prop(p.OutboundRules, []*graph.FirewallRule{{PortRange: graph.PortRange{FromPort: 0, ToPort: 65535, Any: false}, Protocol: "tcp", IPRanges: []*net.IPNet{{IP: net.IP{0xa, 0x14, 0x0, 0x0}, Mask: net.CIDRMask(16, 32)}}}}).Build(),
 		"securitygroup_2":  resourcetest.SecurityGroup("securitygroup_2").Prop(p.Vpc, "vpc_1").Build(),
 		"sub_1":            resourcetest.Subnet("sub_1").Prop(p.Vpc, "vpc_1").Build(),
 		"sub_2":            resourcetest.Subnet("sub_2").Prop(p.Vpc, "vpc_1").Build(),
