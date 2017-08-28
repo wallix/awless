@@ -181,8 +181,7 @@ func (c *CommandNode) ToFillerParams() map[string]interface{} {
 	for k, v := range c.Params {
 		if v.Value() != nil {
 			params[k] = v.Value()
-		}
-		if _, ok := v.(WithAlias); ok {
+		} else if _, ok := v.(WithAlias); ok {
 			params[k] = v.String()
 		}
 	}
