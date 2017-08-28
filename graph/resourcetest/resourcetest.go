@@ -162,6 +162,10 @@ func ContainerInstance(id string) *rBuilder {
 	return new("containerinstance", id)
 }
 
+func NetworkInterface(id string) *rBuilder {
+	return new("networkinterface", id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

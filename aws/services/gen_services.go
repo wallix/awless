@@ -101,6 +101,7 @@ var ResourceTypes = []string{
 	"importimagetask",
 	"elasticip",
 	"snapshot",
+	"networkinterface",
 	"loadbalancer",
 	"targetgroup",
 	"listener",
@@ -169,6 +170,7 @@ var ServicePerResourceType = map[string]string{
 	"importimagetask":     "infra",
 	"elasticip":           "infra",
 	"snapshot":            "infra",
+	"networkinterface":    "infra",
 	"loadbalancer":        "infra",
 	"targetgroup":         "infra",
 	"listener":            "infra",
@@ -217,6 +219,7 @@ var APIPerResourceType = map[string]string{
 	"importimagetask":     "ec2",
 	"elasticip":           "ec2",
 	"snapshot":            "ec2",
+	"networkinterface":    "ec2",
 	"loadbalancer":        "elbv2",
 	"targetgroup":         "elbv2",
 	"listener":            "elbv2",
@@ -343,6 +346,7 @@ func (s *Infra) ResourceTypes() []string {
 		"importimagetask",
 		"elasticip",
 		"snapshot",
+		"networkinterface",
 		"loadbalancer",
 		"targetgroup",
 		"listener",
@@ -692,6 +696,28 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 			for _, fn := range addParentsFns["snapshot"] {
 				wg.Add(1)
 				go func(f addParentFn, snap tstore.RDFGraph, region string, res *ec2.Snapshot) {
+					defer wg.Done()
+					err := f(gph, snap, region, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, snap, s.region, r)
+			}
+		}
+	}
+	if s.config.getBool("aws.infra.networkinterface.sync", true) {
+		list, err := s.fetcher.Get("networkinterface_objects")
+		if err != nil {
+			return gph, err
+		}
+		if _, ok := list.([]*ec2.NetworkInterface); !ok {
+			return gph, errors.New("cannot cast to '[]*ec2.NetworkInterface' type from fetch context")
+		}
+		for _, r := range list.([]*ec2.NetworkInterface) {
+			for _, fn := range addParentsFns["networkinterface"] {
+				wg.Add(1)
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *ec2.NetworkInterface) {
 					defer wg.Done()
 					err := f(gph, snap, region, res)
 					if err != nil {

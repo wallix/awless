@@ -427,6 +427,32 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		return resources, objects, badResErr
 	}
 
+	funcs["networkinterface"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*ec2.NetworkInterface
+
+		if !conf.getBoolDefaultTrue("aws.infra.networkinterface.sync") {
+			conf.Log.Verbose("sync: *disabled* for resource infra[networkinterface]")
+			return resources, objects, nil
+		}
+
+		out, err := conf.APIs.Ec2.DescribeNetworkInterfaces(&ec2.DescribeNetworkInterfacesInput{})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range out.NetworkInterfaces {
+			objects = append(objects, output)
+			res, err := awsconv.NewResource(output)
+			if err != nil {
+				return resources, objects, err
+			}
+			resources = append(resources, res)
+		}
+
+		return resources, objects, nil
+	}
+
 	funcs["loadbalancer"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
 		var resources []*graph.Resource
 		var objects []*elbv2.LoadBalancer

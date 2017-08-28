@@ -306,6 +306,30 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		{ImageId: awssdk.String("img_2"), Name: awssdk.String("img_2_name"), Architecture: awssdk.String("img_2_arch"), Hypervisor: awssdk.String("img_2_hyper"), CreationDate: awssdk.String("2010-04-01T12:05:01.000Z")},
 	}
 
+	networkInterfaces := []*ec2.NetworkInterface{
+		{
+			Association:        &ec2.NetworkInterfaceAssociation{PublicIp: awssdk.String("1.2.3.4"), PublicDnsName: awssdk.String("my.ip.dns.name")},
+			Attachment:         &ec2.NetworkInterfaceAttachment{AttachmentId: awssdk.String("eni-attach-12345"), InstanceId: awssdk.String("inst_1"), InstanceOwnerId: awssdk.String("12345678")},
+			AvailabilityZone:   awssdk.String("us-west-1b"),
+			Description:        awssdk.String("my network interface description"),
+			Groups:             []*ec2.GroupIdentifier{{GroupId: awssdk.String("securitygroup_1")}, {GroupId: awssdk.String("securitygroup_2")}},
+			InterfaceType:      awssdk.String("type"),
+			Ipv6Addresses:      []*ec2.NetworkInterfaceIpv6Address{{Ipv6Address: awssdk.String("ab:cd:ef::")}, {Ipv6Address: awssdk.String("cd:ef:ab::")}},
+			MacAddress:         awssdk.String("01:23:34:56:78:9a"),
+			NetworkInterfaceId: awssdk.String("eni-1"),
+			OwnerId:            awssdk.String("12345678"),
+			PrivateDnsName:     awssdk.String("my.private.dns.name"),
+			PrivateIpAddress:   awssdk.String("10.10.20.12"),
+			Status:             awssdk.String("in-use"),
+			SubnetId:           awssdk.String("sub_1"),
+			VpcId:              awssdk.String("vpc_1"),
+		},
+		{
+			NetworkInterfaceId: awssdk.String("eni-2"),
+			SubnetId:           awssdk.String("sub_3"),
+			VpcId:              awssdk.String("vpc_2")},
+	}
+
 	availabilityZones := []*ec2.AvailabilityZone{
 		{ZoneName: awssdk.String("us-west-1a"), State: awssdk.String("available"), RegionName: awssdk.String("us-west-1"), Messages: []*ec2.AvailabilityZoneMessage{{Message: awssdk.String("msg 1")}, {Message: awssdk.String("msg 2")}}},
 		{ZoneName: awssdk.String("us-west-1b")},
@@ -493,7 +517,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		},
 	}
 
-	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones, natgateways: natgws}
+	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones, natgateways: natgws, networkinterfaces: networkInterfaces}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	mockEcr := &mockEcr{repositorys: repositories}
 	mockEcs := &mockEcs{clusterNames: clusterNames, clusters: clusters, taskdefinitionNames: defNames, taskdefinitions: tasksDef, tasksNames: tasksNames, tasks: tasks, containerinstancesNames: containerInstancesNames, containerinstances: containerInstances}
@@ -513,7 +537,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", cloud.NatGateway, "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerTask, cloud.Container, cloud.ContainerInstance)
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", cloud.NatGateway, "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerTask, cloud.Container, cloud.ContainerInstance, cloud.NetworkInterface)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -549,6 +573,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			for _, r := range p {
 				sort.Strings(r.Sources)
 			}
+		}
+		if p, ok := res.Properties[p.IPv6Addresses].([]string); ok {
+			sort.Strings(p)
 		}
 	}
 
@@ -614,6 +641,10 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 			Prop(p.Instance, "inst_2").Prop(p.PendingTasksCount, 4).Prop(p.Created, now.Add(-2*time.Hour)).Prop(p.RunningTasksCount, 2).Prop(p.State, "ACTIVE").Prop(p.Version, "2").Prop(p.AgentVersion, "0.0.5").Prop(p.DockerVersion, "v1.0.12").Prop(p.Cluster, "clust_1").Build(),
 		"cont_inst_2": resourcetest.ContainerInstance("cont_inst_2").Prop(p.Arn, "cont_inst_2").Prop(p.Instance, "inst_3").Prop(p.Cluster, "clust_1").Build(),
 		"cont_inst_3": resourcetest.ContainerInstance("cont_inst_3").Prop(p.Arn, "cont_inst_3").Prop(p.Instance, "inst_1").Prop(p.Cluster, "clust_2").Build(),
+		"eni-1": resourcetest.NetworkInterface("eni-1").Prop(p.PublicIP, "1.2.3.4").Prop(p.PublicDNS, "my.ip.dns.name").Prop(p.Attachment, "eni-attach-12345").Prop(p.Instance, "inst_1").Prop(p.InstanceOwner, "12345678").
+			Prop(p.AvailabilityZone, "us-west-1b").Prop(p.Description, "my network interface description").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.Type, "type").Prop(p.IPv6Addresses, []string{"ab:cd:ef::", "cd:ef:ab::"}).Prop(p.MACAddress, "01:23:34:56:78:9a").
+			Prop(p.Owner, "12345678").Prop(p.PrivateDNS, "my.private.dns.name").Prop(p.PrivateIP, "10.10.20.12").Prop(p.State, "in-use").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Build(),
+		"eni-2": resourcetest.NetworkInterface("eni-2").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
 	}
 
 	expectedChildren := map[string][]string{
@@ -621,9 +652,9 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
-		"sub_1":     {"inst_1"},
+		"sub_1":     {"eni-1", "inst_1"},
 		"sub_2":     {"inst_2"},
-		"sub_3":     {"inst_3", "inst_4", "inst_6"},
+		"sub_3":     {"eni-2", "inst_3", "inst_4", "inst_6"},
 		"vpc_1":     {"lb_1", "lb_3", "natgw_1", "rt_1", "securitygroup_1", "securitygroup_2", "sub_1", "sub_2", "tg_1"},
 		"vpc_2":     {"lb_2", "sub_3", "tg_2"},
 		"clust_1":   {"cont_inst_1", "cont_inst_2", "container_1", "container_2", "container_3"},
@@ -638,8 +669,8 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"my_key":          {"inst_4", "inst_6", "launchconfig_arn"},
 		"natgw_1":         {"sub_1"},
 		"rt_1":            {"sub_1"},
-		"securitygroup_1": {"inst_2", "inst_4", "inst_6", "lb_3"},
-		"securitygroup_2": {"inst_4", "lb_3"},
+		"securitygroup_1": {"eni-1", "inst_2", "inst_4", "inst_6", "lb_3"},
+		"securitygroup_2": {"eni-1", "inst_4", "lb_3"},
 		"tg_1":            {"inst_1"},
 		"tg_2":            {"inst_2", "inst_3"},
 		"asg_arn_1":       {"inst_1", "inst_3", "sub_1", "sub_2"},
@@ -653,6 +684,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"cont_inst_1":     {"container_1", "container_2", "container_3"},
 		"cont_inst_2":     {"container_4"},
 		"cont_inst_3":     {"container_5"},
+		"eni-1":           {"inst_1"},
 	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)

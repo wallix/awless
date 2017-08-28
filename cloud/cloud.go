@@ -46,6 +46,7 @@ const (
 	RouteTable       string = "routetable"
 	ElasticIP        string = "elasticip"
 	Snapshot         string = "snapshot"
+	NetworkInterface string = "networkinterface"
 	//loadbalancer
 	LoadBalancer string = "loadbalancer"
 	TargetGroup  string = "targetgroup"

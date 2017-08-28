@@ -149,6 +149,15 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		StorageColumnDefinition{Unit: gb, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 	},
+	cloud.NetworkInterface: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Vpc},
+		StringColumnDefinition{Prop: properties.Subnet},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Instance},
+		StringColumnDefinition{Prop: properties.PrivateIP},
+		StringColumnDefinition{Prop: properties.PublicIP},
+	},
 	// Loadbalancer
 	cloud.LoadBalancer: {
 		StringColumnDefinition{Prop: properties.Name},

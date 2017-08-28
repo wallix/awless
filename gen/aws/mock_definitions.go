@@ -48,6 +48,7 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "ec2.ImportImageTask", ApiMethod: "DescribeImportImageTasks", Input: "ec2.DescribeImportImageTasksInput", Output: "ec2.DescribeImportImageTasksOutput", OutputsExtractor: "ImportImageTasks"},
 			{FuncType: "list", AWSType: "ec2.Address", ApiMethod: "DescribeAddresses", Input: "ec2.DescribeAddressesInput", Output: "ec2.DescribeAddressesOutput", OutputsExtractor: "Addresses"},
 			{FuncType: "list", AWSType: "ec2.Snapshot", ApiMethod: "DescribeSnapshotsPages", Input: "ec2.DescribeSnapshotsInput", Output: "ec2.DescribeSnapshotsOutput", OutputsExtractor: "Snapshots", Multipage: true, NextPageMarker: "NextToken"},
+			{FuncType: "list", AWSType: "ec2.NetworkInterface", ApiMethod: "DescribeNetworkInterfaces", Input: "ec2.DescribeNetworkInterfacesInput", Output: "ec2.DescribeNetworkInterfacesOutput", OutputsExtractor: "NetworkInterfaces"},
 		},
 	},
 	{

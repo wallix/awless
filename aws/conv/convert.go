@@ -83,6 +83,8 @@ func InitResource(source interface{}) (*graph.Resource, error) {
 		}
 	case *ec2.Snapshot:
 		res = graph.InitResource(cloud.Snapshot, awssdk.StringValue(ss.SnapshotId))
+	case *ec2.NetworkInterface:
+		res = graph.InitResource(cloud.NetworkInterface, awssdk.StringValue(ss.NetworkInterfaceId))
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
 		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))

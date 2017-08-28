@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -85,6 +86,11 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Snapshot: {
 		addRegionParent,
 		funcBuilder{parent: cloud.Volume, fieldName: "VolumeId", relation: DEPENDING_ON}.build(),
+	},
+	cloud.NetworkInterface: {
+		funcBuilder{parent: cloud.Subnet, fieldName: "SubnetId", relation: PARENT_OF}.build(),
+		funcBuilder{parent: cloud.SecurityGroup, fieldName: "GroupId", listName: "Groups", relation: APPLIES_ON}.build(),
+		funcBuilder{parent: cloud.Instance, fieldName: "Attachment.InstanceId", relation: DEPENDING_ON}.build(),
 	},
 	// Loadbalancer
 	cloud.LoadBalancer: {
@@ -156,14 +162,21 @@ func (fb funcBuilder) build() addParentFn {
 
 func (fb funcBuilder) addRelationWithField() addParentFn {
 	return func(g *graph.Graph, snap tstore.RDFGraph, region string, i interface{}) error {
-		structField, err := verifyValidStructField(i, fb.fieldName)
+		vals, err := awsutil.ValuesAtPath(i, fb.fieldName)
 		if err != nil {
 			return err
 		}
-
-		str, ok := structField.Interface().(*string)
+		switch len(vals) {
+		case 0:
+			return nil
+		case 1:
+			break
+		default:
+			return fmt.Errorf("%d values found at path '%s' for value '%#v'", len(vals), fb.fieldName, i)
+		}
+		str, ok := vals[0].(*string)
 		if !ok {
-			return fmt.Errorf("add parent to %s: %T not a string pointer", fb.fieldName, structField.Interface())
+			return fmt.Errorf("add parent to %s: %T not a string pointer", fb.fieldName, vals[0])
 		}
 
 		res, err := awsconv.InitResource(i)

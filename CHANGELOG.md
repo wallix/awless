@@ -7,6 +7,10 @@
 - `awless` template language now supports *holes* in strings, for example: `create instance name={prefix}database{version}`
 - `awless update securitygroup` can now authorize/revoke access from another security group: `update securitygroup id=sg-12345 inbound=authorize portrange=any protocol=tcp securitygroup=sg-23456`
 
+### AWS Services
+
+- List network interfaces with `awless list networkinterfaces`
+
 ### Fixes
 
 - Port ranges starting from *0* to *n* are no longer processed as from *n* to *n*.

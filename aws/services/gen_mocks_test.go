@@ -75,6 +75,7 @@ type mockEc2 struct {
 	importimagetasks  []*ec2.ImportImageTask
 	addresss          []*ec2.Address
 	snapshots         []*ec2.Snapshot
+	networkinterfaces []*ec2.NetworkInterface
 }
 
 func (m *mockEc2) Name() string {
@@ -191,6 +192,10 @@ func (m *mockEc2) DescribeSnapshotsPages(input *ec2.DescribeSnapshotsInput, fn f
 		)
 	}
 	return nil
+}
+
+func (m *mockEc2) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInterfacesInput) (*ec2.DescribeNetworkInterfacesOutput, error) {
+	return &ec2.DescribeNetworkInterfacesOutput{NetworkInterfaces: m.networkinterfaces}, nil
 }
 
 type mockElbv2 struct {
