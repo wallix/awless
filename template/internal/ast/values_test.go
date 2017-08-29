@@ -34,6 +34,7 @@ func TestCompositeValues(t *testing.T) {
 			expAliases: []string{"myalias"},
 		},
 		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": "my-value"}, expValue: "my-value"},
+		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": "@myalias"}, expValue: nil, expAliases: []string{"myalias"}},
 		{
 			val: newCompositeValue(
 				&interfaceValue{val: "test"},
@@ -78,6 +79,8 @@ func TestCompositeValues(t *testing.T) {
 			if got, want := withHoles.GetHoles(), tcase.expHoles; !reflect.DeepEqual(got, want) {
 				t.Fatalf("%d: holes: got %#v, want %#v", i+1, got, want)
 			}
+		} else if withHoles, ok := tcase.val.(WithHoles); ok && len(withHoles.GetHoles()) > 0 {
+			t.Fatalf("%d: holes: expect to have no holes, got %v", i, withHoles.GetHoles())
 		}
 		if len(tcase.expRefs) > 0 {
 			withRefs, ok := tcase.val.(WithRefs)
@@ -87,7 +90,10 @@ func TestCompositeValues(t *testing.T) {
 			if got, want := withRefs.GetRefs(), tcase.expRefs; !reflect.DeepEqual(got, want) {
 				t.Fatalf("%d: refs: got %#v, want %#v", i+1, got, want)
 			}
+		} else if withRefs, ok := tcase.val.(WithRefs); ok && len(withRefs.GetRefs()) > 0 {
+			t.Fatalf("%d: refs: expect to have no refs, got %v", i, withRefs.GetRefs())
 		}
+
 		if len(tcase.expAliases) > 0 {
 			aliasVal, ok := tcase.val.(WithAlias)
 			if !ok {
@@ -96,7 +102,10 @@ func TestCompositeValues(t *testing.T) {
 			if got, want := aliasVal.GetAliases(), tcase.expAliases; !reflect.DeepEqual(got, want) {
 				t.Fatalf("%d: aliases: got %#v, want %#v", i+1, got, want)
 			}
+		} else if withAliases, ok := tcase.val.(WithAlias); ok && len(withAliases.GetAliases()) > 0 {
+			t.Fatalf("%d: aliases: expect to have no aliases, got %v", i, withAliases.GetAliases())
 		}
+
 		if got, want := tcase.val.Value(), tcase.expValue; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d: value: got %#v, want %#v", i+1, got, want)
 		}

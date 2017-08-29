@@ -162,7 +162,7 @@ func NewHoleValue(hole string) CompositeValue {
 }
 
 func (h *holeValue) GetHoles() (res []string) {
-	if h.val == nil {
+	if h.val == nil && h.alias == "" {
 		res = append(res, h.hole)
 	}
 	return
