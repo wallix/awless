@@ -12,17 +12,18 @@ import (
 )
 
 var (
-	outFormatFlag      string
-	baseFlag           string
-	dotPredicateFlag   string
-	filesFlag          arrayFlags
-	prefixesFlag       arrayFlags
-	useRdfPrefixesFlag bool
+	outFormatFlag, inFormatFlag string
+	baseFlag                    string
+	dotPredicateFlag            string
+	filesFlag                   arrayFlags
+	prefixesFlag                arrayFlags
+	useRdfPrefixesFlag          bool
 )
 
 func init() {
-	flag.StringVar(&outFormatFlag, "out-format", "ntriples", "output format (ntriples, bin)")
-	flag.Var(&filesFlag, "in", "input file paths")
+	flag.StringVar(&outFormatFlag, "out", "ntriples", "output format (ntriples, bin)")
+	flag.StringVar(&inFormatFlag, "in", "bin", "input format (ntriples, bin)")
+	flag.Var(&filesFlag, "files", "input file paths")
 	flag.BoolVar(&useRdfPrefixesFlag, "rdf-prefixes", false, "use default RDF prefixes (rdf, rdfs, xsd)")
 	flag.Var(&prefixesFlag, "prefix", "RDF custom prefixes (format: \"prefix:http://my.uri\"")
 	flag.StringVar(&baseFlag, "base", "", "RDF custom base prefix")
@@ -32,7 +33,7 @@ func init() {
 func main() {
 	flag.Parse()
 	if len(filesFlag) == 0 {
-		log.Fatal("need at list an argument `-in INPUT_FILE`")
+		log.Fatal("need at list an argument `-files INPUT_FILE`")
 	}
 	context, err := buildContext(useRdfPrefixesFlag, prefixesFlag, baseFlag)
 	if err != nil {
@@ -71,7 +72,17 @@ func convert(inFilePaths []string, outFormatFlag string, context *tstore.Context
 		inFiles = append(inFiles, in)
 	}
 
-	triples, err := tstore.NewDatasetDecoder(tstore.NewBinaryDecoder, inFiles...).Decode()
+	var inDecoder func(io.Reader) tstore.Decoder
+	switch inFormatFlag {
+	case "bin":
+		inDecoder = tstore.NewBinaryDecoder
+	case "ntriples":
+		inDecoder = tstore.NewLenientNTDecoder
+	default:
+		return fmt.Errorf("unknown in flag '%s': expect 'ntriples' or 'bin'", outFormatFlag)
+	}
+
+	triples, err := tstore.NewDatasetDecoder(inDecoder, inFiles...).Decode()
 	if err != nil {
 		return err
 	}
@@ -79,17 +90,16 @@ func convert(inFilePaths []string, outFormatFlag string, context *tstore.Context
 	var encoder tstore.Encoder
 	switch outFormatFlag {
 	case "ntriples":
-		encoder = tstore.NewNTriplesEncoderWithContext(os.Stdout, context)
+		encoder = tstore.NewLenientNTEncoderWithContext(os.Stdout, context)
 	case "bin":
 		encoder = tstore.NewBinaryEncoder(os.Stdout)
 	case "dot":
 		if dotPredicateFlag == "" {
 			return fmt.Errorf("missing -predicate param to output to dot format")
 		}
-
 		encoder = tstore.NewDotGraphEncoder(os.Stdout, dotPredicateFlag)
 	default:
-		return fmt.Errorf("unknown format %s, expected either 'ntriples', 'dot' or 'bin'", outFormatFlag)
+		return fmt.Errorf("unknown out flag '%s': expect 'ntriples, 'dot' or 'bin'", outFormatFlag)
 	}
 
 	if err := encoder.Encode(triples...); err != nil {

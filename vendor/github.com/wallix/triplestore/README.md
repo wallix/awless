@@ -8,15 +8,16 @@ Triple Store is a library to manipulate RDF triples in a fast and fluent fashion
 
 RDF triples allow to represent any data and its relations to other data. It is a very versatile concept and is used in [Linked Data](https://en.wikipedia.org/wiki/Linked_data), graphs traversal and storage, etc....
 
-Here the RDF triples implementation follows along the [W3C RDF concepts](https://www.w3.org/TR/rdf11-concepts/). (**Note that blank nodes and reification are not implemented**.). More digestible info on [RDF Wikipedia](https://en.wikipedia.org/wiki/Resource_Description_Framework)
+Here the RDF triples implementation follows along the [W3C RDF concepts](https://www.w3.org/TR/rdf11-concepts/). (**Note that reification is not implemented**.). More digestible info on [RDF Wikipedia](https://en.wikipedia.org/wiki/Resource_Description_Framework)
 
 ## Features overview
 
 - Create and manage triples through a convenient DSL
 - Snapshot and query RDFGraphs
-- Encode triples to binary, [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), NTriples format
-- Decode triples from binary, NTriples format
-- Stream encoding/decoding (for binary and NTriples format) for memory conscious program 
+- **Binary** encoding/decoding (**blank nodes and lang tag not supported yet**)
+- **Lenient NTriples** encoding/decoding (see W3C Test suite in _testdata/ntriples/w3c_suite/_)
+- [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) encoding
+- Stream encoding/decoding (for binary & NTriples format) for memory conscious program 
 - CLI (Command line interface) utility to read and convert triples files.
 
 ## Library 
@@ -102,6 +103,16 @@ triples = append(triples,
  	SubjPredLit("me", "male", true), // Boolean literal object
  	SubjPredLit("me", "born", time.now()) // Datetime literal object
  	SubjPredRes("me", "mother", "mum#121287"), // Resource object
+)
+```
+
+or with blank nodes and language tag in literal
+
+```go
+triples = append(triples,
+ 	SubjPred("me", "name").Bnode("jsmith"),
+ 	BnodePred("me", "name").StringLiteral("jsmith"),
+ 	SubjPred("me", "name").StringLiteralWithLang("jsmith", "en"),
 )
 ```
 
@@ -197,7 +208,7 @@ dec := NewBinaryDecoder(myReader)
 triples, err := dec.Decode()
 ```
 
-Create a file of triples under the NTriples format:
+Create a file of triples under the lenient NTriples format:
 
 ```go
 f, err := os.Create("./triples.nt")
@@ -206,7 +217,7 @@ if err != nil {
 }
 defer f.Close()
 
-enc := NewNTriplesEncoder(f)
+enc := NewLenientNTEncoder(f)
 err := enc.Encode(triples)
 
 ``` 
@@ -256,6 +267,18 @@ if err != nil {
 ...
 ```
 
+### triplestore CLI
+
+This CLI is mainly ised for triples files conversion and inspection. Install it with `go get github.com/wallix/triplestore/cmd/triplestore`. Then `triplestore -h` for help.
+
+Example of usage:
+
+```sh
+triplestore -in ntriples -out bin -files fuzz/ntriples/corpus/samples.nt 
+triplestore -in ntriples -out bin -files fuzz/ntriples/corpus/samples.nt 
+triplestore -in bin -files fuzz/binary/corpus/samples.bin
+```
+
 ### RDFGraph as a Tree
 
 A tree is defined from a RDFGraph given:
@@ -273,4 +296,3 @@ You can then navigate the tree using the existing API calls
 Have a look at the [godoc](https://godoc.org/github.com/wallix/triplestore) fro more info 
 
 Note that at the moment, constructing a new tree from a graph does not verify if the tree is valid namely no cycle and each child at most one parent.
-

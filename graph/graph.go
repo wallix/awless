@@ -40,12 +40,8 @@ func NewGraphFromFile(filepath string) (*Graph, error) {
 	if err != nil {
 		return g, err
 	}
-	ts, err := tstore.NewBinaryDecoder(f).Decode()
-	if err != nil {
-		return g, err
-	}
-	g.store.Add(ts...)
-	return g, nil
+	err = g.UnmarshalFromReaders(f)
+	return g, err
 }
 
 func (g *Graph) AsRDFGraphSnaphot() tstore.RDFGraph {
@@ -224,7 +220,7 @@ func (g *Graph) Accept(v Visitor) error {
 }
 
 func (g *Graph) Unmarshal(data []byte) error {
-	ts, err := tstore.NewBinaryDecoder(bytes.NewReader(data)).Decode()
+	ts, err := tstore.NewAutoDecoder(bytes.NewReader(data)).Decode()
 	if err != nil {
 		return err
 	}
@@ -232,8 +228,8 @@ func (g *Graph) Unmarshal(data []byte) error {
 	return nil
 }
 
-func (g *Graph) UnmarshalMultiple(readers ...io.Reader) error {
-	dec := tstore.NewDatasetDecoder(tstore.NewBinaryDecoder, readers...)
+func (g *Graph) UnmarshalFromReaders(readers ...io.Reader) error {
+	dec := tstore.NewDatasetDecoder(tstore.NewAutoDecoder, readers...)
 	ts, err := dec.Decode()
 	if err != nil {
 		return err
@@ -244,14 +240,14 @@ func (g *Graph) UnmarshalMultiple(readers ...io.Reader) error {
 
 func (g *Graph) MustMarshal() string {
 	var buff bytes.Buffer
-	if err := tstore.NewBinaryEncoder(&buff).Encode(g.store.CopyTriples()...); err != nil {
+	if err := tstore.NewLenientNTEncoder(&buff).Encode(g.store.CopyTriples()...); err != nil {
 		panic(err)
 	}
 	return string(buff.Bytes())
 }
 
 func (g *Graph) MarshalTo(w io.Writer) error {
-	return tstore.NewBinaryEncoder(w).Encode(g.store.CopyTriples()...)
+	return tstore.NewLenientNTEncoder(w).Encode(g.store.CopyTriples()...)
 }
 
 func (g *Graph) addRelation(one, other *Resource, pred string) error {

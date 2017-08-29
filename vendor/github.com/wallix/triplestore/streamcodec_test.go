@@ -77,7 +77,7 @@ func TestStreamNTriplesDecoding(t *testing.T) {
 	t.Run("handles done signal", func(t *testing.T) {
 		var buf bytes.Buffer
 		ctx, cancel := context.WithCancel(context.Background()) // will stop the decoding
-		dec := NewNTriplesStreamDecoder(ioutil.NopCloser(&buf))
+		dec := NewLenientNTStreamDecoder(ioutil.NopCloser(&buf))
 		results := dec.StreamDecode(ctx)
 
 		var wg sync.WaitGroup
@@ -96,11 +96,11 @@ func TestStreamNTriplesDecoding(t *testing.T) {
 
 	t.Run("handles normal stream", func(t *testing.T) {
 		var buf bytes.Buffer
-		if err := NewNTriplesEncoder(&buf).Encode(tris...); err != nil {
+		if err := NewLenientNTEncoder(&buf).Encode(tris...); err != nil {
 			t.Fatal(err)
 		}
 
-		dec := NewNTriplesStreamDecoder(ioutil.NopCloser(&buf))
+		dec := NewLenientNTStreamDecoder(ioutil.NopCloser(&buf))
 		results := dec.StreamDecode(context.Background())
 
 		var all []Triple
@@ -194,7 +194,7 @@ func TestStreamBinaryEncoding(t *testing.T) {
 
 func TestStreamNTriplesEncoding(t *testing.T) {
 	t.Run("handles nil stream", func(t *testing.T) {
-		enc := NewNTriplesStreamEncoder(bytes.NewBuffer(nil))
+		enc := NewLenientNTStreamEncoder(bytes.NewBuffer(nil))
 		if err := enc.StreamEncode(context.Background(), nil); err != nil {
 			t.Fatal(err)
 		}
@@ -216,12 +216,12 @@ func TestStreamNTriplesEncoding(t *testing.T) {
 
 		var buf bytes.Buffer
 
-		err := NewNTriplesStreamEncoder(&buf).StreamEncode(context.Background(), triC)
+		err := NewLenientNTStreamEncoder(&buf).StreamEncode(context.Background(), triC)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		out, err := NewNTriplesDecoder(&buf).Decode()
+		out, err := NewLenientNTDecoder(&buf).Decode()
 		if err != nil {
 			t.Fatal(err)
 		}

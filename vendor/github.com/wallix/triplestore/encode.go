@@ -129,15 +129,15 @@ type ntriplesEncoder struct {
 	c *Context
 }
 
-func NewNTriplesStreamEncoder(w io.Writer) StreamEncoder {
+func NewLenientNTStreamEncoder(w io.Writer) StreamEncoder {
 	return &ntriplesEncoder{w: w}
 }
 
-func NewNTriplesEncoder(w io.Writer) Encoder {
+func NewLenientNTEncoder(w io.Writer) Encoder {
 	return &ntriplesEncoder{w: w}
 }
 
-func NewNTriplesEncoderWithContext(w io.Writer, c *Context) Encoder {
+func NewLenientNTEncoderWithContext(w io.Writer, c *Context) Encoder {
 	return &ntriplesEncoder{w: w, c: c}
 }
 
@@ -174,22 +174,36 @@ func (enc *ntriplesEncoder) Encode(tris ...Triple) error {
 }
 
 func encodeNTriple(t Triple, ctx *Context, buff *bytes.Buffer) {
-	buff.WriteString("<" + buildIRI(ctx, t.Subject()) + "> <" + buildIRI(ctx, t.Predicate()) + "> ")
+	var sub string
+	if tt := t.(*triple); tt.isSubBnode {
+		sub = "_:" + buildIRI(ctx, t.Subject())
+	} else {
+		sub = "<" + buildIRI(ctx, t.Subject()) + ">"
+	}
+	buff.WriteString(sub + " <" + buildIRI(ctx, t.Predicate()) + "> ")
 
-	if rid, ok := t.Object().Resource(); ok {
-		buff.WriteString("<" + buildIRI(ctx, rid) + ">")
-	} else if lit, ok := t.Object().Literal(); ok {
-		switch lit.Type() {
-		case XsdString:
-			// namespace empty as per spec
-			buff.WriteString("\"" + lit.Value() + "\"")
-		default:
-			if ctx != nil {
-				if _, ok := ctx.Prefixes["xsd"]; ok {
-					buff.WriteString("\"" + lit.Value() + "\"^^<" + lit.Type().NTriplesNamespaced() + ">")
-				}
+	if obj := t.Object().(object); obj.isBnode {
+		buff.WriteString("_:" + obj.bnode)
+	} else {
+		if rid, ok := t.Object().Resource(); ok {
+			buff.WriteString("<" + buildIRI(ctx, rid) + ">")
+		} else if lit, ok := t.Object().Literal(); ok {
+			if lit.Lang() != "" {
+				buff.WriteString("\"" + lit.Value() + "\"@" + lit.Lang())
 			} else {
-				buff.WriteString("\"" + lit.Value() + "\"^^<" + string(lit.Type()) + ">")
+				switch lit.Type() {
+				case XsdString:
+					// namespace empty as per spec
+					buff.WriteString("\"" + lit.Value() + "\"")
+				default:
+					if ctx != nil {
+						if _, ok := ctx.Prefixes["xsd"]; ok {
+							buff.WriteString("\"" + lit.Value() + "\"^^<" + lit.Type().NTriplesNamespaced() + ">")
+						}
+					} else {
+						buff.WriteString("\"" + lit.Value() + "\"^^<" + string(lit.Type()) + ">")
+					}
+				}
 			}
 		}
 	}

@@ -69,9 +69,9 @@ func (s *server) rdfHandler(w http.ResponseWriter, r *http.Request) {
 
 	var encErr error
 	if r.FormValue("namespaced") == "true" {
-		encErr = tstore.NewNTriplesEncoderWithContext(w, tstore.RDFContext).Encode(tris...)
+		encErr = tstore.NewLenientNTEncoderWithContext(w, tstore.RDFContext).Encode(tris...)
 	} else {
-		encErr = tstore.NewNTriplesEncoder(w).Encode(tris...)
+		encErr = tstore.NewLenientNTEncoder(w).Encode(tris...)
 	}
 
 	if encErr != nil {
@@ -212,7 +212,7 @@ func loadLocalTriples() ([]tstore.Triple, error) {
 		readers = append(readers, reader)
 	}
 
-	dec := tstore.NewDatasetDecoder(tstore.NewBinaryDecoder, readers...)
+	dec := tstore.NewDatasetDecoder(tstore.NewAutoDecoder, readers...)
 	return dec.Decode()
 }
 

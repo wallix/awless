@@ -16,6 +16,23 @@ func SubjPredRes(s, p, r string) *triple {
 	}
 }
 
+func BnodePredRes(s, p, r string) *triple {
+	return &triple{
+		isSubBnode: true,
+		sub:        subject(s),
+		pred:       predicate(p),
+		obj:        Resource(r).(object),
+	}
+}
+
+func SubjPredBnode(s, p, r string) *triple {
+	return &triple{
+		sub:  subject(s),
+		pred: predicate(p),
+		obj:  object{bnode: r, isBnode: true},
+	}
+}
+
 func SubjPredLit(s, p string, l interface{}) (*triple, error) {
 	o, err := ObjectLiteral(l)
 	if err != nil {
@@ -29,30 +46,52 @@ func SubjPredLit(s, p string, l interface{}) (*triple, error) {
 }
 
 type tripleBuilder struct {
-	sub, pred string
+	sub, pred  string
+	isSubBnode bool
+	langtag    string
 }
 
 func SubjPred(s, p string) *tripleBuilder {
 	return &tripleBuilder{sub: s, pred: p}
 }
 
+func BnodePred(s, p string) *tripleBuilder {
+	return &tripleBuilder{sub: s, isSubBnode: true, pred: p}
+}
+
 func Resource(s string) Object {
 	return object{resource: s}
 }
 
+func (b *tripleBuilder) Lang(l string) *tripleBuilder {
+	b.langtag = l
+	return b
+}
+
 func (b *tripleBuilder) Resource(s string) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Resource(s).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Resource(s).(object),
 	}
 }
 
 func (b *tripleBuilder) Object(o Object) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  o.(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        o.(object),
+	}
+}
+
+func (b *tripleBuilder) Bnode(s string) *triple {
+	return &triple{
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        object{bnode: s, isBnode: true},
 	}
 }
 
@@ -198,9 +237,10 @@ func Int8Literal(i int8) Object {
 
 func (b *tripleBuilder) Int8Literal(i int8) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Int8Literal(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Int8Literal(i).(object),
 	}
 }
 
@@ -229,9 +269,10 @@ func Int16Literal(i int16) Object {
 
 func (b *tripleBuilder) Int16Literal(i int16) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Int16Literal(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Int16Literal(i).(object),
 	}
 }
 
@@ -260,9 +301,10 @@ func UintegerLiteral(i uint) Object {
 
 func (b *tripleBuilder) UintegerLiteral(i uint) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  UintegerLiteral(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        UintegerLiteral(i).(object),
 	}
 }
 
@@ -291,9 +333,10 @@ func Uint8Literal(i uint8) Object {
 
 func (b *tripleBuilder) Uint8(i uint8) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Uint8Literal(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Uint8Literal(i).(object),
 	}
 }
 
@@ -322,9 +365,10 @@ func Uint16Literal(i uint16) Object {
 
 func (b *tripleBuilder) Uint16(i uint16) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Uint16Literal(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Uint16Literal(i).(object),
 	}
 }
 
@@ -353,9 +397,10 @@ func Float64Literal(i float64) Object {
 
 func (b *tripleBuilder) Float64Literal(i float64) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Float64Literal(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Float64Literal(i).(object),
 	}
 }
 
@@ -380,9 +425,10 @@ func Float32Literal(i float32) Object {
 
 func (b *tripleBuilder) Float32Literal(i float32) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  Float32Literal(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        Float32Literal(i).(object),
 	}
 }
 
@@ -401,6 +447,7 @@ func ParseFloat32(obj Object) (float32, error) {
 
 	return 0, fmt.Errorf("cannot parse %s: object is not literal", XsdFloat)
 }
+
 func StringLiteral(s string) Object {
 	return object{
 		isLit: true,
@@ -408,11 +455,28 @@ func StringLiteral(s string) Object {
 	}
 }
 
+func StringLiteralWithLang(s, l string) Object {
+	return object{
+		isLit: true,
+		lit:   literal{typ: XsdString, val: s, langtag: l},
+	}
+}
+
 func (b *tripleBuilder) StringLiteral(s string) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  StringLiteral(s).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        StringLiteral(s).(object),
+	}
+}
+
+func (b *tripleBuilder) StringLiteralWithLang(s, l string) *triple {
+	return &triple{
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        StringLiteralWithLang(s, l).(object),
 	}
 }
 
@@ -442,9 +506,10 @@ func DateTimeLiteral(tm time.Time) Object {
 
 func (b *tripleBuilder) DateTimeLiteral(tm time.Time) *triple {
 	return &triple{
-		sub:  subject(b.sub),
-		pred: predicate(b.pred),
-		obj:  DateTimeLiteral(tm).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        subject(b.sub),
+		pred:       predicate(b.pred),
+		obj:        DateTimeLiteral(tm).(object),
 	}
 }
 

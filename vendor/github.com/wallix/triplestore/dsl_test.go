@@ -5,6 +5,85 @@ import (
 	"time"
 )
 
+func TestBuildTripleWithLangtag(t *testing.T) {
+	tri := SubjPred("bnode", "pred").StringLiteralWithLang("any", "estonian")
+	if got, want := tri.Subject(), "bnode"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := tri.Predicate(), "pred"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	lit, _ := tri.Object().Literal()
+	if got, want := lit.Lang(), "estonian"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := lit.Value(), "any"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	lit, _ = StringLiteralWithLang("any", "estonian").Literal()
+	if got, want := lit.Lang(), "estonian"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := lit.Value(), "any"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
+
+func TestBuildTripleWithBnode(t *testing.T) {
+	t.Run("subject as bnode", func(t *testing.T) {
+		tri := BnodePred("bnode", "pred").StringLiteral("any")
+		if got, want := tri.Subject(), "bnode"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if tri.isSubBnode != true {
+			t.Fatal("expecting subject to be bnode")
+		}
+		if got, want := tri.Predicate(), "pred"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+
+		tri = BnodePredRes("bnode", "pred", "any")
+		if got, want := tri.Subject(), "bnode"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if tri.isSubBnode != true {
+			t.Fatal("expecting subject to be bnode")
+		}
+		if got, want := tri.Predicate(), "pred"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		res, _ := tri.Object().Resource()
+		if got, want := res, "any"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+	})
+
+	t.Run("object as bnode", func(t *testing.T) {
+		tri := SubjPred("sub", "pred").Bnode("any")
+		if got, want := tri.Subject(), "sub"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if got, want := tri.Predicate(), "pred"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if obj := tri.obj; obj.isBnode != true {
+			t.Fatal("expecting obj to be bnode")
+		}
+
+		tri = SubjPredBnode("sub", "pred", "any")
+		if got, want := tri.Subject(), "sub"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if got, want := tri.Predicate(), "pred"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+		if obj := tri.obj; obj.isBnode != true {
+			t.Fatal("expecting obj to be bnode")
+		}
+	})
+}
+
 func TestBuildTriple(t *testing.T) {
 	tri := SubjPred("subject", "predicate").StringLiteral("any")
 	if got, want := tri.Subject(), "subject"; got != want {

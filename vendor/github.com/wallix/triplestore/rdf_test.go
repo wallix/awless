@@ -53,6 +53,14 @@ func TestTripleKey(t *testing.T) {
 		{one: SubjPred("sub", "pred").StringLiteral("true"), exp: "<sub><pred>\"true\"^^xsd:string"},
 		{one: SubjPred("sub", "pred").IntegerLiteral(42), exp: "<sub><pred>\"42\"^^xsd:integer"},
 		{one: SubjPred("sub", "pred").StringLiteral("42"), exp: "<sub><pred>\"42\"^^xsd:string"},
+
+		// bnodes
+		{one: BnodePred("", "").Resource(""), exp: "_:<><>"},
+		{one: BnodePred("", "").StringLiteral(""), exp: "_:<>\"\"^^xsd:string"},
+		{one: BnodePred("sub", "pred").Resource("Bonobo"), exp: "_:sub<pred><Bonobo>"},
+
+		{one: SubjPred("", "").Bnode(""), exp: "<><>_:"},
+		{one: SubjPred("", "").Bnode("any"), exp: "<><>_:any"},
 	}
 	for i, tcase := range tcases {
 		if got, want := tcase.one.key(), tcase.exp; got != want {

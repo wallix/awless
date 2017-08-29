@@ -1,42 +1,53 @@
 package triplestore
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestDetectBinaryFormat(t *testing.T) {
+func TestLooselyDetectNTFormatReturningFullReader(t *testing.T) {
 	var buff bytes.Buffer
 
-	if got, want := IsBinaryFormat(&buff), false; got != want {
+	ok, _ := IsNTFormat(&buff)
+	if got, want := ok, false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
 
 	triples := []Triple{
-		SubjPred("1", "2").Resource("3"),
+		SubjPred("bingo", "2").Resource("3"),
 		SubjPred("one", "two").Resource("three"),
 	}
-
 	NewBinaryEncoder(&buff).Encode(triples...)
-	if got, want := IsBinaryFormat(&buff), true; got != want {
+	orig := buff.String()
+	ok, r := IsNTFormat(&buff)
+	if got, want := ok, false; got != want {
 		t.Fatalf("got %t, want %t", got, want)
+	}
+	b, _ := ioutil.ReadAll(r)
+	if got, want := string(b), orig; got != want {
+		t.Fatalf("reader changed: got %s, want %s", got, want)
 	}
 
 	buff.Reset()
-	NewNTriplesEncoder(&buff).Encode(triples...)
-	if got, want := IsBinaryFormat(&buff), false; got != want {
+	NewLenientNTEncoder(&buff).Encode(triples...)
+	orig = buff.String()
+	ok, r = IsNTFormat(&buff)
+	if got, want := ok, true; got != want {
 		t.Fatalf("got %t, want %t", got, want)
 	}
+	b, _ = ioutil.ReadAll(r)
+	if got, want := string(b), orig; got != want {
+		t.Fatalf("reader changed: got %s, want %s", got, want)
+	}
 }
+
 func TestEncodeAndDecodeAllTripleTypes(t *testing.T) {
 	tcases := []struct {
 		in Triple
@@ -179,13 +190,13 @@ func TestEncodeDecodeNTriples(t *testing.T) {
 	for _, f := range filenames {
 		b, err := ioutil.ReadFile(f)
 
-		tris, err := NewNTriplesDecoder(bytes.NewReader(b)).Decode()
+		tris, err := NewLenientNTDecoder(bytes.NewReader(b)).Decode()
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		var buff bytes.Buffer
-		err = NewNTriplesEncoder(&buff).Encode(tris...)
+		err = NewLenientNTEncoder(&buff).Encode(tris...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -195,8 +206,8 @@ func TestEncodeDecodeNTriples(t *testing.T) {
 }
 
 func compareMultiline(t *testing.T, actual, expected []byte) {
-	expected = removeNTriplesCommentsAndEmptyLines(expected)
-	actual = removeNTriplesCommentsAndEmptyLines(actual)
+	expected = cleanupNTriplesForComparison(expected)
+	actual = cleanupNTriplesForComparison(actual)
 	actuals := bytes.Split(actual, []byte("\n"))
 	expecteds := bytes.Split(expected, []byte("\n"))
 
@@ -226,7 +237,7 @@ func TestEncodeNTriples(t *testing.T) {
 	}
 
 	var buff bytes.Buffer
-	enc := NewNTriplesEncoderWithContext(&buff, &Context{Base: "http://test.url#",
+	enc := NewLenientNTEncoderWithContext(&buff, &Context{Base: "http://test.url#",
 		Prefixes: map[string]string{
 			"xsd":   "<http://www.w3.org/2001/XMLSchema#",
 			"rdf":   "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -280,33 +291,4 @@ func TestEncodeDotGraph(t *testing.T) {
 			t.Fatalf("\n%q\n should contain \n%q\n", got, want)
 		}
 	}
-}
-
-func contains(arr [][]byte, s []byte) bool {
-	for _, a := range arr {
-		if bytes.Equal(s, a) {
-			return true
-		}
-	}
-	return false
-}
-
-var endOfLineComents = regexp.MustCompile(`(.*\.)\s+(#.*)`)
-
-func removeNTriplesCommentsAndEmptyLines(b []byte) []byte {
-	scn := bufio.NewScanner(bytes.NewReader(b))
-	var cleaned bytes.Buffer
-	for scn.Scan() {
-		line := scn.Text()
-		if empty, _ := regexp.MatchString(`^\s*$`, line); empty {
-		}
-		if comment, _ := regexp.MatchString(`^\s*#`, line); comment {
-			continue
-		}
-		l := endOfLineComents.ReplaceAll([]byte(line), []byte("$1"))
-		cleaned.Write(l)
-		cleaned.WriteByte('\n')
-	}
-
-	return cleaned.Bytes()
 }

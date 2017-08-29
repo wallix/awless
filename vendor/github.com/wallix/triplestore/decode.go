@@ -7,8 +7,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -27,26 +27,30 @@ type StreamDecoder interface {
 
 // Use for retro compatibilty when changing file format on existing stores
 func NewAutoDecoder(r io.Reader) Decoder {
-	if IsBinaryFormat(r) {
-		return NewBinaryDecoder(r)
+	ok, newR := IsNTFormat(r)
+	if ok {
+		return NewLenientNTDecoder(newR)
 	}
-	return NewNTriplesDecoder(r)
+	return NewBinaryDecoder(newR)
 }
 
-func IsBinaryFormat(r io.Reader) bool {
-	begin, err := bufio.NewReader(r).Peek(binary.Size(wordLength(0)) + 1)
-	if err != nil {
-		return false
+// Loosely detect if a ntriples format contrary to a binary format
+// Used for retro compatibilty when changing file format on existing stores
+// Detecttion work with ntriples format flushed by this library (i.e. no comment, no spaces, ...)
+func IsNTFormat(r io.Reader) (bool, io.Reader) {
+	firstChar := make([]byte, 1)
+	multi := io.MultiReader(bytes.NewReader(firstChar), r)
+	if _, err := r.Read(firstChar); err != nil {
+		return false, multi
 	}
-	_, err = readWord(bytes.NewReader(begin))
-	return err == nil
+	return bytes.Equal(firstChar, []byte{'<'}), multi
 }
 
-func NewNTriplesDecoder(r io.Reader) Decoder {
+func NewLenientNTDecoder(r io.Reader) Decoder {
 	return &ntDecoder{r: r}
 }
 
-func NewNTriplesStreamDecoder(r io.Reader) StreamDecoder {
+func NewLenientNTStreamDecoder(r io.Reader) StreamDecoder {
 	return &ntDecoder{r: r}
 }
 
@@ -55,11 +59,7 @@ type ntDecoder struct {
 }
 
 func (d *ntDecoder) Decode() ([]Triple, error) {
-	b, err := ioutil.ReadAll(d.r)
-	if err != nil {
-		return nil, err
-	}
-	return newNTParser(string(b)).parse()
+	return newLenientNTParser(d.r).parse()
 }
 
 func (d *ntDecoder) StreamDecode(ctx context.Context) <-chan DecodeResult {
@@ -75,7 +75,7 @@ func (d *ntDecoder) StreamDecode(ctx context.Context) <-chan DecodeResult {
 				return
 			default:
 				if scanner.Scan() {
-					tris, err := newNTParser(scanner.Text()).parse()
+					tris, err := newLenientNTParser(strings.NewReader(scanner.Text())).parse()
 					if err != nil {
 						decC <- DecodeResult{Err: err}
 					} else if len(tris) == 1 {

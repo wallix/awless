@@ -20,16 +20,18 @@ type Object interface {
 type Literal interface {
 	Type() XsdType
 	Value() string
+	Lang() string
 }
 
 type subject string
 type predicate string
 
 type triple struct {
-	sub    subject
-	pred   predicate
-	obj    object
-	triKey string
+	sub        subject
+	isSubBnode bool
+	pred       predicate
+	obj        object
+	triKey     string
 }
 
 func (t *triple) Object() Object {
@@ -46,7 +48,14 @@ func (t *triple) Predicate() string {
 
 func (t *triple) key() string {
 	if t.triKey == "" {
-		t.triKey = "<" + string(t.sub) + "><" + string(t.pred) + ">" + t.obj.key()
+		var sub string
+		if t.isSubBnode {
+			sub = "_:" + string(t.sub)
+		} else {
+			sub = "<" + string(t.sub) + ">"
+		}
+		t.triKey = sub + "<" + string(t.pred) + ">" + t.obj.key()
+		return t.triKey
 	}
 	return t.triKey
 }
@@ -76,9 +85,10 @@ func (t *triple) Equal(other Triple) bool {
 }
 
 type object struct {
-	isLit    bool
-	resource string
-	lit      literal
+	isLit           bool
+	isBnode         bool
+	resource, bnode string
+	lit             literal
 }
 
 func (o object) Literal() (Literal, bool) {
@@ -92,6 +102,9 @@ func (o object) Resource() (string, bool) {
 func (o object) key() string {
 	if o.isLit {
 		return "\"" + o.lit.val + "\"^^" + string(o.lit.typ)
+	}
+	if o.isBnode {
+		return "_:" + o.bnode
 	}
 	return "<" + o.resource + ">"
 }
@@ -117,8 +130,8 @@ func (o object) Equal(other Object) bool {
 }
 
 type literal struct {
-	typ XsdType
-	val string
+	typ          XsdType
+	val, langtag string
 }
 
 func (l literal) Type() XsdType {
@@ -127,4 +140,8 @@ func (l literal) Type() XsdType {
 
 func (l literal) Value() string {
 	return l.val
+}
+
+func (l literal) Lang() string {
+	return l.langtag
 }

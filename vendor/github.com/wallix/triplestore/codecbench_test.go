@@ -28,11 +28,11 @@ func BenchmarkEncodingMemallocation(b *testing.B) {
 
 }
 
-//BenchmarkAllEncoding/binary-4         	                2000	    658993 ns/op
-//BenchmarkAllEncoding/binary_streaming-4         	    1000	   1346275 ns/op
-//BenchmarkAllEncoding/ntriples-4                 	    5000	    427614 ns/op
-//BenchmarkAllEncoding/ntriples_streaming-4       	    2000	    988594 ns/op
-//BenchmarkAllEncoding/ntriples_with_context-4    	    2000	   1346434 ns/op
+//BenchmarkAllEncoding/binary-4         	            2000	    564322 ns/op
+//BenchmarkAllEncoding/binary_streaming-4         	    2000	   1028236 ns/op
+//BenchmarkAllEncoding/ntriples-4                 	    3000	    459709 ns/op
+//BenchmarkAllEncoding/ntriples_streaming-4       	    2000	    897432 ns/op
+//BenchmarkAllEncoding/ntriples_with_context-4    	    2000	   1151635 ns/op
 func BenchmarkAllEncoding(b *testing.B) {
 	var triples []Triple
 
@@ -67,7 +67,7 @@ func BenchmarkAllEncoding(b *testing.B) {
 	b.Run("ntriples", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			var buff bytes.Buffer
-			if err := NewNTriplesEncoder(&buff).Encode(triples...); err != nil {
+			if err := NewLenientNTEncoder(&buff).Encode(triples...); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -80,7 +80,7 @@ func BenchmarkAllEncoding(b *testing.B) {
 			go tripleChan(triples, triC)
 			b.StartTimer()
 			var buff bytes.Buffer
-			if err := NewNTriplesStreamEncoder(&buff).StreamEncode(context.Background(), triC); err != nil {
+			if err := NewLenientNTStreamEncoder(&buff).StreamEncode(context.Background(), triC); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -89,17 +89,17 @@ func BenchmarkAllEncoding(b *testing.B) {
 	b.Run("ntriples with context", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			var buff bytes.Buffer
-			if err := NewNTriplesEncoderWithContext(&buff, RDFContext).Encode(triples...); err != nil {
+			if err := NewLenientNTEncoderWithContext(&buff, RDFContext).Encode(triples...); err != nil {
 				b.Fatal(err)
 			}
 		}
 	})
 }
 
-//BenchmarkAllDecoding/binary-4                   	 3000000	       419 ns/op
-//BenchmarkAllDecoding/binary_streaming-4         	  300000	      5607 ns/op
-//BenchmarkAllDecoding/ntriples-4                 	 2000000	       596 ns/op
-//BenchmarkAllDecoding/ntriples_streaming-4       	 1000000	      2089 ns/op
+//BenchmarkAllDecoding/binary-4                   	 3000000	       480 ns/op
+//BenchmarkAllDecoding/binary_streaming-4         	  300000	      4352 ns/op
+//BenchmarkAllDecoding/ntriples-4                 	 1000000	      1196 ns/op
+//BenchmarkAllDecoding/ntriples_streaming-4       	 1000000	      1897 ns/op
 func BenchmarkAllDecoding(b *testing.B) {
 	binaryFile, err := os.Open(filepath.Join("testdata", "bench", "decode_1.bin"))
 	if err != nil {
@@ -137,7 +137,7 @@ func BenchmarkAllDecoding(b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
-			if _, err := NewNTriplesDecoder(ntFile).Decode(); err != nil {
+			if _, err := NewLenientNTDecoder(ntFile).Decode(); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -152,7 +152,7 @@ func BenchmarkAllDecoding(b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
-			results := NewNTriplesStreamDecoder(ntFile).StreamDecode(context.Background())
+			results := NewLenientNTStreamDecoder(ntFile).StreamDecode(context.Background())
 			for r := range results {
 				if r.Err != nil {
 					b.Fatal(r.Err)

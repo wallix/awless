@@ -200,7 +200,7 @@ func LoadLocalGraphs(region string) (*graph.Graph, error) {
 		readers = append(readers, reader)
 	}
 
-	err := g.UnmarshalMultiple(readers...)
+	err := g.UnmarshalFromReaders(readers...)
 	return g, err
 }
 
@@ -219,6 +219,6 @@ func LoadAllLocalGraphs() (*graph.Graph, error) {
 		readers = append(readers, reader)
 	}
 
-	err := g.UnmarshalMultiple(readers...)
+	err := g.UnmarshalFromReaders(readers...)
 	return g, err
 }
