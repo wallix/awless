@@ -53,6 +53,9 @@ func (l *listValue) Value() interface{} {
 			res = append(res, v)
 		}
 	}
+	if len(res) == 0 {
+		return nil
+	}
 	return res
 }
 
@@ -154,7 +157,7 @@ func (i *interfaceValue) Clone() CompositeValue {
 type holeValue struct {
 	hole  string
 	val   interface{}
-	alias string
+	alias WithAlias
 }
 
 func NewHoleValue(hole string) CompositeValue {
@@ -162,26 +165,35 @@ func NewHoleValue(hole string) CompositeValue {
 }
 
 func (h *holeValue) GetHoles() (res []string) {
-	if h.val == nil && h.alias == "" {
+	if h.val == nil && h.alias == nil {
 		res = append(res, h.hole)
 	}
 	return
 }
 
 func (h *holeValue) Value() interface{} {
+	if h.alias != nil {
+		return h.alias.(CompositeValue).Value()
+	}
 	return h.val
 }
 
 func (h *holeValue) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
 	processed := make(map[string]interface{})
 	if fill, ok := fills[h.hole]; ok {
-		if strFill, ok := fill.(string); ok && strings.HasPrefix(strFill, "@") {
-			h.alias = strFill[1:]
-			processed[h.hole] = strFill
-		} else if aliasValue, ok := fill.(*aliasValue); ok {
-			h.alias = aliasValue.alias
-			h.val = aliasValue.val
-			processed[h.hole] = aliasValue.String()
+		if withAlias, ok := fill.(WithAlias); ok {
+			h.alias = withAlias
+			switch vv := withAlias.(type) {
+			case *listValue:
+				var processedAliases []string
+				for _, alias := range vv.vals {
+					processedAliases = append(processedAliases, alias.String())
+				}
+				processed[h.hole] = processedAliases
+			case *aliasValue:
+				processed[h.hole] = vv.String()
+			}
+
 		} else {
 			h.val = fill
 			processed[h.hole] = fill
@@ -193,25 +205,25 @@ func (h *holeValue) ProcessHoles(fills map[string]interface{}) map[string]interf
 func (h *holeValue) String() string {
 	if h.val != nil {
 		return printParamValue(h.val)
+	} else if h.alias != nil {
+		return fmt.Sprint(h.alias)
 	} else {
 		return fmt.Sprintf("{%s}", h.hole)
 	}
 }
 
 func (h *holeValue) GetAliases() (aliases []string) {
-	if h.val == nil && h.alias != "" {
-		aliases = append(aliases, h.alias)
+	if h.val == nil && h.alias != nil {
+		return h.alias.GetAliases()
 	}
 	return
 }
 
 func (h *holeValue) ResolveAlias(resolvFunc func(string) (string, bool)) {
-	if h.val != nil || h.alias == "" {
-		return
+	if h.val == nil && h.alias != nil {
+		h.alias.ResolveAlias(resolvFunc)
 	}
-	if val, ok := resolvFunc(h.alias); ok {
-		h.val = val
-	}
+	return
 }
 
 func (h *holeValue) Clone() CompositeValue {

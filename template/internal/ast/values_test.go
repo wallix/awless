@@ -34,7 +34,8 @@ func TestCompositeValues(t *testing.T) {
 			expAliases: []string{"myalias"},
 		},
 		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": "my-value"}, expValue: "my-value"},
-		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": "@myalias"}, expValue: nil, expAliases: []string{"myalias"}},
+		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": &aliasValue{alias: "myalias"}}, expValue: nil, expAliases: []string{"myalias"}},
+		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": newCompositeValue(&aliasValue{alias: "myalias1"}, &aliasValue{alias: "myalias2"})}, expValue: nil, expAliases: []string{"myalias1", "myalias2"}},
 		{
 			val: newCompositeValue(
 				&interfaceValue{val: "test"},

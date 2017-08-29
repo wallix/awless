@@ -107,7 +107,7 @@ create loadbalancer name=mylb subnets={private.subnets}
 			"mysubnet5.hole":  "mysubnet-5",
 			"version":         10,
 			"instance.name":   "myinstance",
-			"hole":            "@sub",
+			"hole":            ast.NewAliasValue("sub"),
 			"private.subnets": []interface{}{"sub-1234", "sub-2345"},
 		})
 		env.AliasFunc = func(e, k, v string) string {
@@ -165,12 +165,20 @@ func TestExternallyProvidedParams(t *testing.T) {
 			expect:              `create instance count=1 image=ami-123 name=test subnet=subnet-111 type=t2.nano`,
 			expProcessedFillers: map[string]interface{}{"hole.name": "@subalias", "instance.type": "t2.nano"},
 		},
+		{
+			template:            `create loadbalancer name=elbv2 subnets={my.subnets}`,
+			externalParams:      "my.subnets=[@sub1, @sub2]",
+			expect:              `create loadbalancer name=elbv2 subnets=[subnet-123,subnet-234]`,
+			expProcessedFillers: map[string]interface{}{"my.subnets": []string{"@sub1", "@sub2"}},
+		},
 	}
 	for i, tcase := range tcases {
 		env := NewEnv()
 		env.AliasFunc = func(e, k, v string) string {
 			vals := map[string]string{
 				"subalias": "subnet-111",
+				"sub1":     "subnet-123",
+				"sub2":     "subnet-234",
 			}
 			return vals[v]
 		}
@@ -183,7 +191,6 @@ func TestExternallyProvidedParams(t *testing.T) {
 			t.Fatal(err)
 		}
 		env.Fillers = externalFillters
-
 		inTpl := MustParse(tcase.template)
 
 		pass := newMultiPass(NormalCompileMode...)
@@ -198,7 +205,7 @@ func TestExternallyProvidedParams(t *testing.T) {
 		}
 
 		if got, want := env.GetProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
-			t.Fatalf("%d: got %v, want %v", i+1, got, want)
+			t.Fatalf("%d: got %#v, want %#v", i+1, got, want)
 		}
 	}
 }
@@ -439,7 +446,7 @@ func TestResolveAliasPass(t *testing.T) {
 		}
 		return vals[v]
 	}
-	env.AddFillers(map[string]interface{}{"instance.ami": "@my-ami"})
+	env.AddFillers(map[string]interface{}{"instance.ami": ast.NewAliasValue("my-ami")})
 
 	pass := newMultiPass(resolveHolesPass, resolveAliasPass)
 
