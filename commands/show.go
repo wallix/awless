@@ -63,7 +63,7 @@ var showCmd = &cobra.Command{
 		}
 
 		ref := args[0]
-		notFound := fmt.Sprintf("resource with reference '%s' not found", deprefix(ref))
+		notFound := fmt.Errorf("resource with reference '%s' not found", deprefix(ref))
 
 		var resource *graph.Resource
 		var gph *graph.Graph
@@ -71,14 +71,12 @@ var showCmd = &cobra.Command{
 		resource, gph = findResourceInLocalGraphs(ref)
 
 		if resource == nil && localGlobalFlag {
-			logger.Info(notFound)
-			return nil
+			exitOn(notFound)
 		} else if resource == nil {
 			runFullSync()
 
 			if resource, gph = findResourceInLocalGraphs(ref); resource == nil {
-				logger.Info(notFound)
-				return nil
+				exitOn(notFound)
 			}
 		}
 
