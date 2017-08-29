@@ -133,6 +133,8 @@ func TestCompositeValuesStringer(t *testing.T) {
 			},
 			expect: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
 		},
+		{val: &holeValue{val: []interface{}{"val1", "val2"}}, expect: "[val1,val2]"},
+		{val: &referenceValue{val: []interface{}{"val1", 12}}, expect: "[val1,12]"},
 	}
 
 	for i, tcase := range tcases {

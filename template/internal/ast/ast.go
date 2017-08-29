@@ -287,7 +287,13 @@ func printParamValue(i interface{}) string {
 	case nil:
 		return ""
 	case []string:
-		return strings.Join(ii, ",")
+		return "[" + strings.Join(ii, ",") + "]"
+	case []interface{}:
+		var strs []string
+		for _, val := range ii {
+			strs = append(strs, fmt.Sprint(val))
+		}
+		return "[" + strings.Join(strs, ",") + "]"
 	case string:
 		return quoteStringIfNeeded(ii)
 	default:

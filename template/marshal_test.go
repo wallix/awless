@@ -188,6 +188,21 @@ func TestTemplateExecutionMarshalToJSON(t *testing.T) {
 				]
 			}`,
 		},
+		{
+			"create loadbalancer subnets={private.subnets}",
+			"eu-central-1", "michael", "",
+			MustParse("create loadbalancer subnets=[subnet-1234,subnet-2345]"),
+			map[string]interface{}{"private.subnets": []interface{}{"subnet-1234", "subnet-2345"}},
+			`{"source": "create loadbalancer subnets={private.subnets}",
+			  "fillers": {"private.subnets": ["subnet-1234","subnet-2345"]},
+			  "author": "michael",
+			  "locale": "eu-central-1",
+				"id": "",
+				"commands": [
+					{"line": "create loadbalancer subnets=[subnet-1234,subnet-2345]"}
+				]
+			}`,
+		},
 	}
 
 	for _, c := range tcases {

@@ -83,23 +83,32 @@ create instance count=42 image=ami-1234 name=my-test-sub-2345 subnet=sub1234 typ
 			expProcessedFillers:  map[string]interface{}{"instance.name": "myinstance", "version": 10, "instance.type": "t2.micro", "instance.count": 42},
 			expResolvedVariables: map[string]interface{}{"name": "instance-myinstance-10", "name2": "my-test-sub-2345"},
 		},
+		{
+			tpl: `
+create loadbalancer name=mylb subnets={private.subnets}
+`,
+			expect:               `create loadbalancer name=mylb subnets=[sub-1234,sub-2345]`,
+			expProcessedFillers:  map[string]interface{}{"private.subnets": []interface{}{"sub-1234", "sub-2345"}},
+			expResolvedVariables: map[string]interface{}{},
+		},
 	}
 
 	for i, tcase := range tcases {
 		env := NewEnv()
 
 		env.AddFillers(map[string]interface{}{
-			"instance.type":  "t2.micro",
-			"test.cidr":      "10.0.2.0/24",
-			"instance.count": 42,
-			"unused":         "filler",
-			"backup-subnet":  "sub-0987",
-			"mysubnet2.hole": "mysubnet-2",
-			"mysubnet3.hole": "mysubnet-3",
-			"mysubnet5.hole": "mysubnet-5",
-			"version":        10,
-			"instance.name":  "myinstance",
-			"hole":           "@sub",
+			"instance.type":   "t2.micro",
+			"test.cidr":       "10.0.2.0/24",
+			"instance.count":  42,
+			"unused":          "filler",
+			"backup-subnet":   "sub-0987",
+			"mysubnet2.hole":  "mysubnet-2",
+			"mysubnet3.hole":  "mysubnet-3",
+			"mysubnet5.hole":  "mysubnet-5",
+			"version":         10,
+			"instance.name":   "myinstance",
+			"hole":            "@sub",
+			"private.subnets": []interface{}{"sub-1234", "sub-2345"},
 		})
 		env.AliasFunc = func(e, k, v string) string {
 			vals := map[string]string{
