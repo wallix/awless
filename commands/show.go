@@ -100,9 +100,9 @@ var showCmd = &cobra.Command{
 		if resource != nil {
 			if len(showPropertiesValuesOnlyFlag) > 0 {
 				showResourceValuesOnlyFor(resource, showPropertiesValuesOnlyFlag)
-				return nil
+			} else {
+				showResource(resource, gph)
 			}
-			showResource(resource, gph)
 		}
 
 		return nil
@@ -137,7 +137,11 @@ func showResourceValuesOnlyFor(resource *graph.Resource, propKeys []string) {
 		}
 	}
 
-	fmt.Println(strings.Join(values, ","))
+	if len(values) > 0 {
+		fmt.Println(strings.Join(values, ","))
+	} else {
+		exitOn(fmt.Errorf("no values for %q", propKeys))
+	}
 }
 
 func showResource(resource *graph.Resource, gph *graph.Graph) {
