@@ -182,7 +182,7 @@ func (c *CommandNode) ToFillerParams() map[string]interface{} {
 		if v.Value() != nil {
 			params[k] = v.Value()
 		} else if _, ok := v.(WithAlias); ok {
-			params[k] = v.String()
+			params[k] = v
 		}
 	}
 	return params

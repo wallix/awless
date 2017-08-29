@@ -80,7 +80,7 @@ create instance image=ami-1234 name=$name2 subnet=sub1234
 `,
 			expect: `create instance count=42 image=ami-1234 name=instance-myinstance-10 subnet=subnet-10 type=t2.micro
 create instance count=42 image=ami-1234 name=my-test-sub-2345 subnet=sub1234 type=t2.micro`,
-			expProcessedFillers:  map[string]interface{}{"instance.name": "myinstance", "version": 10, "instance.type": "t2.micro", "instance.count": 42},
+			expProcessedFillers:  map[string]interface{}{"instance.name": "myinstance", "version": 10, "instance.type": "t2.micro", "instance.count": 42, "hole": "@sub"},
 			expResolvedVariables: map[string]interface{}{"name": "instance-myinstance-10", "name2": "my-test-sub-2345"},
 		},
 		{
@@ -141,6 +141,63 @@ create loadbalancer name=mylb subnets={private.subnets}
 		}
 
 		if got, want := env.ResolvedVariables, tcase.expResolvedVariables; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d: got %v, want %v", i+1, got, want)
+		}
+	}
+}
+
+func TestExternallyProvidedParams(t *testing.T) {
+	tcases := []struct {
+		template            string
+		externalParams      string
+		expect              string
+		expProcessedFillers map[string]interface{}
+	}{
+		{
+			template:            `create instance count=1 image=ami-123 name=test subnet={hole.name} type=t2.micro`,
+			externalParams:      "hole.name=subnet-2345",
+			expect:              `create instance count=1 image=ami-123 name=test subnet=subnet-2345 type=t2.micro`,
+			expProcessedFillers: map[string]interface{}{"hole.name": "subnet-2345"},
+		},
+		{
+			template:            `create instance count=1 image=ami-123 name=test subnet={hole.name} type={instance.type}`,
+			externalParams:      "instance.type=t2.nano hole.name=@subalias",
+			expect:              `create instance count=1 image=ami-123 name=test subnet=subnet-111 type=t2.nano`,
+			expProcessedFillers: map[string]interface{}{"hole.name": "@subalias", "instance.type": "t2.nano"},
+		},
+	}
+	for i, tcase := range tcases {
+		env := NewEnv()
+		env.AliasFunc = func(e, k, v string) string {
+			vals := map[string]string{
+				"subalias": "subnet-111",
+			}
+			return vals[v]
+		}
+		env.DefLookupFunc = func(in string) (Definition, bool) {
+			t, ok := DefsExample[in]
+			return t, ok
+		}
+		externalFillters, err := ParseParams(tcase.externalParams)
+		if err != nil {
+			t.Fatal(err)
+		}
+		env.Fillers = externalFillters
+
+		inTpl := MustParse(tcase.template)
+
+		pass := newMultiPass(NormalCompileMode...)
+
+		compiled, _, err := pass.compile(inTpl, env)
+		if err != nil {
+			t.Fatalf("%d: %s", i+1, err)
+		}
+
+		if got, want := compiled.String(), tcase.expect; got != want {
+			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
+		}
+
+		if got, want := env.GetProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d: got %v, want %v", i+1, got, want)
 		}
 	}

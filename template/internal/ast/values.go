@@ -177,6 +177,11 @@ func (h *holeValue) ProcessHoles(fills map[string]interface{}) map[string]interf
 	if fill, ok := fills[h.hole]; ok {
 		if strFill, ok := fill.(string); ok && strings.HasPrefix(strFill, "@") {
 			h.alias = strFill[1:]
+			processed[h.hole] = strFill
+		} else if aliasValue, ok := fill.(*aliasValue); ok {
+			h.alias = aliasValue.alias
+			h.val = aliasValue.val
+			processed[h.hole] = aliasValue.String()
 		} else {
 			h.val = fill
 			processed[h.hole] = fill
@@ -280,6 +285,10 @@ func (h *holesStringValue) Clone() CompositeValue {
 type aliasValue struct {
 	alias string
 	val   interface{}
+}
+
+func NewAliasValue(alias string) CompositeValue {
+	return &aliasValue{alias: alias}
 }
 
 func (a *aliasValue) Value() interface{} {
