@@ -16,9 +16,13 @@ import (
 func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 	completeFunc := func(string) []string { return []string{} }
 
-	if entityType, entityProp := guessEntityTypeFromHoleQuestion(hole); entityType != "" {
-		resources, err := g.GetAllResources(entityType)
-		exitOn(err)
+	if entityTypes, entityProp := guessEntityTypeFromHoleQuestion(hole); len(entityTypes) > 0 {
+		var resources []*graph.Resource
+		for _, entityType := range entityTypes {
+			res, err := g.GetAllResources(entityType)
+			resources = append(resources, res...)
+			exitOn(err)
+		}
 
 		if len(resources) == 0 {
 			return &prefixCompleter{callback: completeFunc}
@@ -151,15 +155,17 @@ func quotedSortedSet(list []string) (out []string) {
 	return
 }
 
-// Return 2 strings according to holes questions:
-// notmatching? -> ["", ""]
-// entitytype? -> [entitytype, ""]
-// entitytype.anything? -> [entitytype, anything]
-// entitytype.otherentitytype? -> [otherentitytype, ""]
-func guessEntityTypeFromHoleQuestion(hole string) (string, string) {
+// Return potential resource types and a prop
+// according to given holes questions.
+// See corresponding unit test for logic
+func guessEntityTypeFromHoleQuestion(hole string) (resolved []string, prop string) {
+	tokens := strings.Split(strings.TrimSpace(hole), ".")
+	if len(tokens) == 0 {
+		return
+	}
+
 	var types []string
-	splits := strings.Split(hole, ".")
-	for _, t := range splits {
+	for _, t := range tokens {
 		for _, r := range resourcesTypesWithPlural {
 			if t == r {
 				types = append(types, cloud.SingularizeResource(r))
@@ -168,18 +174,30 @@ func guessEntityTypeFromHoleQuestion(hole string) (string, string) {
 		}
 	}
 
-	var prop string
-	if len(splits) == 2 {
-		prop = splits[1]
+	if l := len(types); l > 0 {
+		if len(tokens) == 2 {
+			prop = tokens[1]
+		}
+		if l > 1 {
+			prop = ""
+		}
+		resolved = []string{types[l-1]}
+	} else if len(tokens) > 1 {
+		for i := len(tokens) - 1; i >= 0; i-- {
+			if len(tokens[i]) < 4 {
+				continue
+			}
+			for _, r := range awsservices.ResourceTypes {
+				if strings.Contains(r, tokens[i]) {
+					resolved = append(resolved, r)
+				}
+			}
+			if len(resolved) > 0 {
+				return
+			}
+		}
 	}
-
-	if l := len(types); l == 1 {
-		return types[0], prop
-	} else if l == 2 {
-		return types[1], ""
-	}
-
-	return "", ""
+	return
 }
 
 func keyCorrespondsToProperty(holekey, prop string) bool {

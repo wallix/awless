@@ -127,6 +127,50 @@ func TestAutoCompletion(t *testing.T) {
 	})
 }
 
+func TestGuessEntityType(t *testing.T) {
+	tcases := []struct {
+		hole, prop string
+		types      []string
+	}{
+		{hole: ""},
+		{hole: "any"},
+		{hole: "inst"},
+		{hole: "gateway"},
+		{hole: "gateway.", types: []string{"internetgateway", "natgateway"}},
+		{hole: "instance", types: []string{"instance"}},
+		{hole: "instance.ip", types: []string{"instance"}, prop: "ip"},
+		{hole: "subnets", types: []string{"subnet"}},
+		{hole: "subnet", types: []string{"subnet"}},
+		{hole: "subnets.cidr", types: []string{"subnet"}, prop: "cidr"},
+		{hole: "subnet.cidr", types: []string{"subnet"}, prop: "cidr"},
+		{hole: "subnet.cidr.any", types: []string{"subnet"}},
+		{hole: "vpc.instance", types: []string{"instance"}},
+		{hole: "route.gateway", types: []string{"internetgateway", "natgateway"}},
+		{hole: "route.table", types: []string{"routetable"}},
+
+		{hole: "zone.1", types: []string{"zone"}, prop: "1"},
+		{hole: "availabilityzone.1", types: []string{"availabilityzone"}, prop: "1"},
+
+		{hole: "gateway.1", types: []string{"internetgateway", "natgateway"}},
+		{hole: "gateway.in", types: []string{"internetgateway", "natgateway"}},
+		{hole: "gateway.inst", types: []string{"instance", "containerinstance", "instanceprofile"}},
+
+		{hole: "gateway.inst.any", types: []string{"instance", "containerinstance", "instanceprofile"}},
+		{hole: "gateway.any.inst", types: []string{"instance", "containerinstance", "instanceprofile"}},
+		{hole: "inst.any.any", types: []string{"instance", "containerinstance", "instanceprofile"}},
+	}
+
+	for _, tcase := range tcases {
+		types, prop := guessEntityTypeFromHoleQuestion(tcase.hole)
+		if got, want := types, tcase.types; !reflect.DeepEqual(got, want) {
+			t.Fatalf("case '%s': got %v, want %v", tcase.hole, got, want)
+		}
+		if got, want := prop, tcase.prop; got != want {
+			t.Fatalf("case '%s': property: got '%s', want '%s'", tcase.hole, got, want)
+		}
+	}
+}
+
 func toRune(arr ...string) [][]rune {
 	out := make([][]rune, len(arr))
 	for i, s := range arr {
