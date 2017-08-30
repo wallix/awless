@@ -61,6 +61,15 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("sleep"),
 )
 
+func filterInput(r rune) (rune, bool) {
+	switch r {
+	// block CtrlZ feature
+	case readline.CharCtrlZ:
+		return r, false
+	}
+	return r, true
+}
+
 func main() {
 	l, err := readline.NewEx(&readline.Config{
 		Prompt:          "\033[31m»\033[0m ",
@@ -68,6 +77,9 @@ func main() {
 		AutoComplete:    completer,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
+
+		HistorySearchFold:   true,
+		FuncFilterInputRune: filterInput,
 	})
 	if err != nil {
 		panic(err)
@@ -125,12 +137,11 @@ func main() {
 				println("you set:", strconv.Quote(string(pswd)))
 			}
 		case strings.HasPrefix(line, "setprompt"):
-			prompt := line[10:]
-			if prompt == "" {
+			if len(line) <= 10 {
 				log.Println("setprompt <prompt>")
 				break
 			}
-			l.SetPrompt(prompt)
+			l.SetPrompt(line[10:])
 		case strings.HasPrefix(line, "say"):
 			line := strings.TrimSpace(line[3:])
 			if len(line) == 0 {

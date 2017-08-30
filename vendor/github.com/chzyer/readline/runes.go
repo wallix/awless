@@ -3,11 +3,49 @@ package readline
 import (
 	"bytes"
 	"unicode"
+	"unicode/utf8"
 )
 
 var runes = Runes{}
+var TabWidth = 4
 
 type Runes struct{}
+
+func (Runes) EqualRune(a, b rune, fold bool) bool {
+	if a == b {
+		return true
+	}
+	if !fold {
+		return false
+	}
+	if a > b {
+		a, b = b, a
+	}
+	if b < utf8.RuneSelf && 'A' <= a && a <= 'Z' {
+		if b == a+'a'-'A' {
+			return true
+		}
+	}
+	return false
+}
+
+func (r Runes) EqualRuneFold(a, b rune) bool {
+	return r.EqualRune(a, b, true)
+}
+
+func (r Runes) EqualFold(a, b []rune) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := 0; i < len(a); i++ {
+		if r.EqualRuneFold(a[i], b[i]) {
+			continue
+		}
+		return false
+	}
+
+	return true
+}
 
 func (Runes) Equal(a, b []rune) bool {
 	if len(a) != len(b) {
@@ -21,12 +59,11 @@ func (Runes) Equal(a, b []rune) bool {
 	return true
 }
 
-// Search in runes from end to front
-func (Runes) IndexAllBck(r, sub []rune) int {
+func (rs Runes) IndexAllBckEx(r, sub []rune, fold bool) int {
 	for i := len(r) - len(sub); i >= 0; i-- {
 		found := true
 		for j := 0; j < len(sub); j++ {
-			if r[i+j] != sub[j] {
+			if !rs.EqualRune(r[i+j], sub[j], fold) {
 				found = false
 				break
 			}
@@ -38,15 +75,24 @@ func (Runes) IndexAllBck(r, sub []rune) int {
 	return -1
 }
 
+// Search in runes from end to front
+func (rs Runes) IndexAllBck(r, sub []rune) int {
+	return rs.IndexAllBckEx(r, sub, false)
+}
+
 // Search in runes from front to end
-func (Runes) IndexAll(r, sub []rune) int {
+func (rs Runes) IndexAll(r, sub []rune) int {
+	return rs.IndexAllEx(r, sub, false)
+}
+
+func (rs Runes) IndexAllEx(r, sub []rune, fold bool) int {
 	for i := 0; i < len(r); i++ {
 		found := true
 		if len(r[i:]) < len(sub) {
 			return -1
 		}
 		for j := 0; j < len(sub); j++ {
-			if r[i+j] != sub[j] {
+			if !rs.EqualRune(r[i+j], sub[j], fold) {
 				found = false
 				break
 			}
@@ -98,6 +144,9 @@ var doubleWidth = []*unicode.RangeTable{
 }
 
 func (Runes) Width(r rune) int {
+	if r == '\t' {
+		return TabWidth
+	}
 	if unicode.IsOneOf(zeroWidth, r) {
 		return 0
 	}
@@ -122,6 +171,13 @@ func (Runes) Copy(r []rune) []rune {
 	n := make([]rune, len(r))
 	copy(n, r)
 	return n
+}
+
+func (Runes) HasPrefixFold(r, prefix []rune) bool {
+	if len(r) < len(prefix) {
+		return false
+	}
+	return runes.EqualFold(r[:len(prefix)], prefix)
 }
 
 func (Runes) HasPrefix(r, prefix []rune) bool {

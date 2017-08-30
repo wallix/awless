@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"strings"
+	"sync"
 )
 
 type runeBufferBck struct {
@@ -25,14 +26,22 @@ type RuneBuffer struct {
 	width int
 
 	bck *runeBufferBck
+
+	offset string
+
+	sync.Mutex
 }
 
 func (r *RuneBuffer) OnWidthChange(newWidth int) {
+	r.Lock()
 	r.width = newWidth
+	r.Unlock()
 }
 
 func (r *RuneBuffer) Backup() {
+	r.Lock()
 	r.bck = &runeBufferBck{r.buf, r.idx}
+	r.Unlock()
 }
 
 func (r *RuneBuffer) Restore() {
@@ -57,23 +66,39 @@ func NewRuneBuffer(w io.Writer, prompt string, cfg *Config, width int) *RuneBuff
 }
 
 func (r *RuneBuffer) SetConfig(cfg *Config) {
+	r.Lock()
 	r.cfg = cfg
 	r.interactive = cfg.useInteractive()
+	r.Unlock()
 }
 
 func (r *RuneBuffer) SetMask(m rune) {
+	r.Lock()
 	r.cfg.MaskRune = m
+	r.Unlock()
 }
 
 func (r *RuneBuffer) CurrentWidth(x int) int {
+	r.Lock()
+	defer r.Unlock()
 	return runes.WidthAll(r.buf[:x])
 }
 
 func (r *RuneBuffer) PromptLen() int {
+	r.Lock()
+	width := r.promptLen()
+	r.Unlock()
+	return width
+}
+
+func (r *RuneBuffer) promptLen() int {
 	return runes.WidthAll(runes.ColorFilter(r.prompt))
 }
 
 func (r *RuneBuffer) RuneSlice(i int) []rune {
+	r.Lock()
+	defer r.Unlock()
+
 	if i > 0 {
 		rs := make([]rune, i)
 		copy(rs, r.buf[r.idx:r.idx+i])
@@ -85,16 +110,22 @@ func (r *RuneBuffer) RuneSlice(i int) []rune {
 }
 
 func (r *RuneBuffer) Runes() []rune {
+	r.Lock()
 	newr := make([]rune, len(r.buf))
 	copy(newr, r.buf)
+	r.Unlock()
 	return newr
 }
 
 func (r *RuneBuffer) Pos() int {
+	r.Lock()
+	defer r.Unlock()
 	return r.idx
 }
 
 func (r *RuneBuffer) Len() int {
+	r.Lock()
+	defer r.Unlock()
 	return len(r.buf)
 }
 
@@ -142,6 +173,8 @@ func (r *RuneBuffer) MoveForward() {
 }
 
 func (r *RuneBuffer) IsCursorInEnd() bool {
+	r.Lock()
+	defer r.Unlock()
 	return r.idx == len(r.buf)
 }
 
@@ -366,10 +399,19 @@ func (r *RuneBuffer) isInLineEdge() bool {
 }
 
 func (r *RuneBuffer) getSplitByLine(rs []rune) []string {
-	return SplitByLine(r.PromptLen(), r.width, rs)
+	return SplitByLine(r.promptLen(), r.width, rs)
 }
 
 func (r *RuneBuffer) IdxLine(width int) int {
+	r.Lock()
+	defer r.Unlock()
+	return r.idxLine(width)
+}
+
+func (r *RuneBuffer) idxLine(width int) int {
+	if width == 0 {
+		return 0
+	}
 	sp := r.getSplitByLine(r.buf[:r.idx])
 	return len(sp) - 1
 }
@@ -379,17 +421,27 @@ func (r *RuneBuffer) CursorLineCount() int {
 }
 
 func (r *RuneBuffer) Refresh(f func()) {
+	r.Lock()
+	defer r.Unlock()
+
 	if !r.interactive {
 		if f != nil {
 			f()
 		}
 		return
 	}
-	r.Clean()
+
+	r.clean()
 	if f != nil {
 		f()
 	}
 	r.print()
+}
+
+func (r *RuneBuffer) SetOffset(offset string) {
+	r.Lock()
+	r.offset = offset
+	r.Unlock()
 }
 
 func (r *RuneBuffer) print() {
@@ -412,7 +464,13 @@ func (r *RuneBuffer) output() []byte {
 		}
 
 	} else {
-		buf.Write([]byte(string(r.buf)))
+		for idx := range r.buf {
+			if r.buf[idx] == '\t' {
+				buf.WriteString(strings.Repeat(" ", TabWidth))
+			} else {
+				buf.WriteRune(r.buf[idx])
+			}
+		}
 		if r.isInLineEdge() {
 			buf.Write([]byte(" \b"))
 		}
@@ -468,30 +526,44 @@ func (r *RuneBuffer) Set(buf []rune) {
 }
 
 func (r *RuneBuffer) SetPrompt(prompt string) {
+	r.Lock()
 	r.prompt = []rune(prompt)
+	r.Unlock()
 }
 
 func (r *RuneBuffer) cleanOutput(w io.Writer, idxLine int) {
 	buf := bufio.NewWriter(w)
-	buf.Write([]byte("\033[J")) // just like ^k :)
 
-	if idxLine == 0 {
-		io.WriteString(buf, "\033[2K\r")
+	if r.width == 0 {
+		buf.WriteString(strings.Repeat("\r\b", len(r.buf)+r.promptLen()))
+		buf.Write([]byte("\033[J"))
 	} else {
-		for i := 0; i < idxLine; i++ {
-			io.WriteString(buf, "\033[2K\r\033[A")
+		buf.Write([]byte("\033[J")) // just like ^k :)
+		if idxLine == 0 {
+			buf.WriteString("\033[2K")
+			buf.WriteString("\r")
+		} else {
+			for i := 0; i < idxLine; i++ {
+				io.WriteString(buf, "\033[2K\r\033[A")
+			}
+			io.WriteString(buf, "\033[2K\r")
 		}
-		io.WriteString(buf, "\033[2K\r")
 	}
 	buf.Flush()
 	return
 }
 
 func (r *RuneBuffer) Clean() {
-	r.clean(r.IdxLine(r.width))
+	r.Lock()
+	r.clean()
+	r.Unlock()
 }
 
-func (r *RuneBuffer) clean(idxLine int) {
+func (r *RuneBuffer) clean() {
+	r.cleanWithIdxLine(r.idxLine(r.width))
+}
+
+func (r *RuneBuffer) cleanWithIdxLine(idxLine int) {
 	if r.hadClean || !r.interactive {
 		return
 	}

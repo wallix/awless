@@ -1,3 +1,20 @@
+// Readline is a pure go implementation for GNU-Readline kind library.
+//
+// example:
+// 	rl, err := readline.New("> ")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer rl.Close()
+//
+// 	for {
+// 		line, err := rl.Readline()
+// 		if err != nil { // io.EOF
+// 			break
+// 		}
+// 		println(line)
+// 	}
+//
 package readline
 
 import "io"
@@ -17,6 +34,8 @@ type Config struct {
 	// specify the max length of historys, it's 500 by default, set it to -1 to disable history
 	HistoryLimit           int
 	DisableAutoSaveHistory bool
+	// enable case-insensitive history searching
+	HistorySearchFold bool
 
 	// AutoCompleter will called once user press TAB
 	AutoComplete AutoCompleter
@@ -44,6 +63,10 @@ type Config struct {
 	// it use in IM usually.
 	UniqueEditLine bool
 
+	// filter input runes (may be used to disable CtrlZ or for translating some keys to different actions)
+	// -> output = new (translated) rune and true/false if continue with processing this one
+	FuncFilterInputRune func(rune) (rune, bool)
+
 	// force use interactive even stdout is not a tty
 	FuncIsTerminal      func() bool
 	FuncMakeRaw         func() error
@@ -70,7 +93,7 @@ func (c *Config) Init() error {
 	}
 	c.inited = true
 	if c.Stdin == nil {
-		c.Stdin = Stdin
+		c.Stdin = NewCancelableStdin(Stdin)
 	}
 	if c.Stdout == nil {
 		c.Stdout = Stdout
@@ -93,6 +116,9 @@ func (c *Config) Init() error {
 		c.EOFPrompt = ""
 	}
 
+	if c.AutoComplete == nil {
+		c.AutoComplete = &TabCompleter{}
+	}
 	if c.FuncGetWidth == nil {
 		c.FuncGetWidth = GetScreenWidth
 	}
@@ -213,6 +239,11 @@ func (i *Instance) Line() *Result {
 
 // err is one of (nil, io.EOF, readline.ErrInterrupt)
 func (i *Instance) Readline() (string, error) {
+	return i.Operation.String()
+}
+
+func (i *Instance) ReadlineWithDefault(what string) (string, error) {
+	i.Operation.SetBuffer(what)
 	return i.Operation.String()
 }
 
