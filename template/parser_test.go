@@ -70,6 +70,7 @@ func TestParseVariousTemplatesCorrectly(t *testing.T) {
 		{"support prefix/suffixes around holes (values)", "name = prefix-{instance.name}-{instance.version}-suffix", ""},
 		{"support prefix/suffixes around holes (params)", "instance = create instance name=prefix-{instance.name}-{instance.version}-suffix", ""},
 		{"support suffix after holes", "instance = create instance name={instance.name}-suffix", ""},
+		{"retro-compatibility with old lists without []", "create loadbalancer subnets=subnet-1,subnet-2", "create loadbalancer subnets=[subnet-1,subnet-2]"},
 	}
 
 	for _, tcase := range tcases {

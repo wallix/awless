@@ -91,6 +91,14 @@ create loadbalancer name=mylb subnets={private.subnets}
 			expProcessedFillers:  map[string]interface{}{"private.subnets": []interface{}{"sub-1234", "sub-2345"}},
 			expResolvedVariables: map[string]interface{}{},
 		},
+		{
+			tpl: `
+create loadbalancer name=mylb subnets=subnet-1, subnet-2
+`,
+			expect:               `create loadbalancer name=mylb subnets=[subnet-1,subnet-2]`,
+			expProcessedFillers:  map[string]interface{}{},
+			expResolvedVariables: map[string]interface{}{},
+		}, //retro-compatibility with old list style, without brackets
 	}
 
 	for i, tcase := range tcases {
@@ -171,6 +179,12 @@ func TestExternallyProvidedParams(t *testing.T) {
 			expect:              `create loadbalancer name=elbv2 subnets=[subnet-123,subnet-234]`,
 			expProcessedFillers: map[string]interface{}{"my.subnets": []string{"@sub1", "@sub2"}},
 		},
+		{
+			template:            `create loadbalancer name={my.name} subnets={my.subnets}`,
+			externalParams:      "my.subnets=sub1, sub2 my.name=loadbalancername",
+			expect:              `create loadbalancer name=loadbalancername subnets=[sub1,sub2]`,
+			expProcessedFillers: map[string]interface{}{"my.name": "loadbalancername", "my.subnets": []interface{}{"sub1", "sub2"}},
+		}, //retro-compatibility with old list style, without brackets
 	}
 	for i, tcase := range tcases {
 		env := NewEnv()
