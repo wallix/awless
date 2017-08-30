@@ -18,11 +18,9 @@ func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 
 	if entityTypes, entityProp := guessEntityTypeFromHoleQuestion(hole); len(entityTypes) > 0 {
 		var resources []*graph.Resource
-		for _, entityType := range entityTypes {
-			res, err := g.GetAllResources(entityType)
-			resources = append(resources, res...)
-			exitOn(err)
-		}
+		res, err := g.GetAllResources(entityTypes...)
+		resources = append(resources, res...)
+		exitOn(err)
 
 		if len(resources) == 0 {
 			return &prefixCompleter{callback: completeFunc}

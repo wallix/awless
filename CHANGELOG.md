@@ -6,6 +6,7 @@
 - Variables in `awless` template language now support references, holes and lists, for example: `mysecgroups = [$secgroup1, {my.secgroup},sg-123456]`
 - `awless` template language now supports *holes* in strings, for example: `create instance name={prefix}database{version}`
 - `awless update securitygroup` can now authorize/revoke access from another security group: `update securitygroup id=sg-12345 inbound=authorize portrange=any protocol=tcp securitygroup=sg-23456`
+- Template CLI prompt: better TAB completion of resources and their properties
 
 ### AWS Services
 
