@@ -180,7 +180,11 @@ func (c *Client) SSHConfigString(hostname string) string {
 		extraOpts["Port"] = strconv.Itoa(c.Port)
 	}
 	if c.Proxy != nil {
-		extraOpts["ProxyCommand"] = fmt.Sprintf("ssh %s@%s -W [%%h]:%%p", c.Proxy.User, c.Proxy.IP)
+		var keyArg string
+		if k := c.Proxy.Keypath; len(k) > 0 {
+			keyArg = fmt.Sprintf("-i %s", k)
+		}
+		extraOpts["ProxyCommand"] = fmt.Sprintf("ssh %s %s@%s -W [%%h]:%%p", keyArg, c.Proxy.User, c.Proxy.IP)
 	}
 
 	params := struct {
@@ -223,7 +227,11 @@ func (c *Client) localExec() ([]string, bool) {
 		args = append(args, "-o", "StrictHostKeychecking=no")
 	}
 	if c.Proxy != nil {
-		args = append(args, "-o", fmt.Sprintf("ProxyCommand='ssh %s@%s -W [%%h]:%%p'", c.Proxy.User, c.Proxy.IP))
+		var keyArg string
+		if k := c.Proxy.Keypath; len(k) > 0 {
+			keyArg = fmt.Sprintf("-i %s", k)
+		}
+		args = append(args, "-o", fmt.Sprintf("ProxyCommand='ssh %s %s@%s -W [%%h]:%%p'", keyArg, c.Proxy.User, c.Proxy.IP))
 	}
 
 	return args, exists

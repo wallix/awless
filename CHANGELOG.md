@@ -16,6 +16,7 @@
 
 - [#130](https://github.com/wallix/awless/issues/130): Better exit status code in `awless show` command
 - Port ranges starting from *0* to *n* are no longer processed as from *n* to *n*.
+- `awless ssh --through`: works without an SSH agent running; correct StrictHostkeyChecking; correct display for `--print-config`
 
 ## v0.1.2 [2017-08-17]
 

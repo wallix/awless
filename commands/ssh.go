@@ -154,7 +154,11 @@ var sshCmd = &cobra.Command{
 		}
 
 		if printSSHConfigFlag {
-			fmt.Println(targetClient.SSHConfigString(connectionCtx.instanceName))
+			host := connectionCtx.instanceName
+			if proxyInstanceThroughFlag != "" {
+				host = args[0]
+			}
+			fmt.Println(targetClient.SSHConfigString(host))
 			return nil
 		}
 
