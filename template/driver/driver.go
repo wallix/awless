@@ -33,6 +33,7 @@ type Driver interface {
 
 type Context interface {
 	Variables() map[string]interface{}
+	References() map[string]interface{} // retro-compatibility with v0.1.2
 }
 
 func NewContext(vars map[string]interface{}) Context {
@@ -46,6 +47,10 @@ type context struct {
 }
 
 func (c *context) Variables() map[string]interface{} {
+	return copyMap(c.vars)
+}
+
+func (c *context) References() map[string]interface{} { // retro-compatibility with v0.1.2
 	return copyMap(c.vars)
 }
 
