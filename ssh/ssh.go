@@ -184,7 +184,7 @@ func (c *Client) SSHConfigString(hostname string) string {
 		if k := c.Proxy.Keypath; len(k) > 0 {
 			keyArg = fmt.Sprintf("-i %s", k)
 		}
-		extraOpts["ProxyCommand"] = fmt.Sprintf("ssh %s %s@%s -W [%%h]:%%p", keyArg, c.Proxy.User, c.Proxy.IP)
+		extraOpts["ProxyCommand"] = fmt.Sprintf("ssh %s %s@%s -W %%h:%%p", keyArg, c.Proxy.User, c.Proxy.IP)
 	}
 
 	params := struct {
@@ -231,7 +231,7 @@ func (c *Client) localExec() ([]string, bool) {
 		if k := c.Proxy.Keypath; len(k) > 0 {
 			keyArg = fmt.Sprintf("-i %s", k)
 		}
-		args = append(args, "-o", fmt.Sprintf("ProxyCommand='ssh %s %s@%s -W [%%h]:%%p'", keyArg, c.Proxy.User, c.Proxy.IP))
+		args = append(args, "-o", fmt.Sprintf("ProxyCommand='ssh %s %s@%s -W %%h:%%p'", keyArg, c.Proxy.User, c.Proxy.IP))
 	}
 
 	return args, exists
