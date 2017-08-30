@@ -121,12 +121,14 @@ func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string)
 		c.logger.ExtraVerbosef("proxied successfully with user %s", user)
 
 		return &Client{
-			Client: gossh.NewClient(conn, chans, reqs),
-			Proxy:  c,
-			IP:     destinationHost,
-			User:   user,
-			Port:   22,
+			Client:  gossh.NewClient(conn, chans, reqs),
+			Proxy:   c,
+			IP:      destinationHost,
+			User:    user,
+			Keypath: c.Keypath,
+			Port:    c.Port,
 			InteractiveTerminalFunc: func(*gossh.Client) error { return nil },
+			StrictHostKeyChecking:   c.StrictHostKeyChecking,
 			logger:                  logger.DiscardLogger,
 		}, nil
 	}
@@ -375,8 +377,9 @@ const tmpProxyCommandScriptFilename = "awless-ssh-proxycommand"
 // Note that the file cannot be removed since we syscall for another process. So the first time
 // it is created and after that only truncated (reuse the same file)
 func workaroundExeCVEThroughScript(args []string) error {
-	logger.ExtraVerbosef("using script %s", tmpProxyCommandScriptFilename)
-	tmpExec, err := os.OpenFile(filepath.Join(os.TempDir(), tmpProxyCommandScriptFilename), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0700)
+	fpath := filepath.Join(os.TempDir(), tmpProxyCommandScriptFilename)
+	logger.ExtraVerbosef("using script %s", fpath)
+	tmpExec, err := os.OpenFile(fpath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0700)
 	if err != nil {
 		return err
 	}
