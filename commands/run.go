@@ -404,6 +404,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
 				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr.String(), extraStr.String()),
+				Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
 				RunE:              run(templDef),
 				ValidArgs:         validArgs,
 			},

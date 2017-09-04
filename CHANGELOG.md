@@ -7,6 +7,7 @@
 - `awless` template language now supports *holes* in strings, for example: `create instance name={prefix}database{version}`
 - `awless update securitygroup` can now authorize/revoke access from another security group: `update securitygroup id=sg-12345 inbound=authorize portrange=any protocol=tcp securitygroup=sg-23456`
 - Template CLI prompt: better TAB completion of resources and their properties
+- Man CLI examples for all one liners command. For example, `awless create instance -h` will display relevant CLI examples
 
 ### AWS Services
 
