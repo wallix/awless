@@ -2,6 +2,7 @@ package awsconfig
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"sort"
@@ -10,6 +11,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/chzyer/readline"
 )
 
 func ParseRegion(i string) (interface{}, error) {
@@ -33,18 +35,39 @@ func ParseInstanceType(i string) (interface{}, error) {
 }
 
 func StdinRegionSelector() string {
-	fmt.Println("Please choose one region:")
-	var region string
-
-	fmt.Println(strings.Join(allRegions(), ", "))
-	fmt.Println()
-	fmt.Print("Enter region? ")
-	fmt.Scan(&region)
-	for !IsValidRegion(region) {
-		fmt.Printf("'%s' is not a valid region\n", region)
-		fmt.Print("Enter region? ")
-		fmt.Scan(&region)
+	var regionItems []readline.PrefixCompleterInterface
+	for _, r := range allRegions() {
+		regionItems = append(regionItems, readline.PcItem(r))
 	}
+	var regionCompleter = readline.NewPrefixCompleter(regionItems...)
+
+	fmt.Println("Please enter one region: (Ctrl+C to quit, Tab for completion)")
+	var region string
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:       " > ",
+		AutoComplete: regionCompleter,
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error while selecting region: %s", err)
+		return ""
+	}
+	defer rl.Close()
+
+	for !IsValidRegion(region) {
+		line, err := rl.Readline()
+		if err == readline.ErrInterrupt || err == io.EOF {
+			os.Exit(1)
+		} else if err != nil {
+			fmt.Fprintf(os.Stderr, "error while selecting region: %s", err)
+			return ""
+		}
+
+		region = strings.TrimSpace(line)
+		if !IsValidRegion(region) {
+			fmt.Fprintf(os.Stderr, "'%s' is not a valid region\n", region)
+		}
+	}
+
 	return region
 }
 
