@@ -141,6 +141,9 @@ func onVersionUpgrade(cmd *cobra.Command, args []string) error {
 }
 
 func verifyNewVersionHook(cmd *cobra.Command, args []string) error {
+	if localGlobalFlag {
+		return nil
+	}
 	config.VerifyNewVersionAvailable("https://updates.awless.io", os.Stderr)
 	return nil
 }
