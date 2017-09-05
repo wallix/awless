@@ -25,11 +25,20 @@ func TestAutoCompletion(t *testing.T) {
 		if len(list) != 0 {
 			t.Fatalf("expected empty, got %q", list)
 		}
-		list, _ = holeAutoCompletion(g, "instance.ip").Do([]rune{}, 0)
+	})
+
+	t.Run("empty when property valid but undefined", func(t *testing.T) {
+		list, _ := holeAutoCompletion(g, "subnet.vpc").Do([]rune{}, 0)
 		if len(list) != 0 {
 			t.Fatalf("expected empty, got %q", list)
 		}
+	})
 
+	t.Run("fallbacks on entity when property invalid", func(t *testing.T) {
+		list, _ := holeAutoCompletion(g, "subnet.wrong").Do([]rune{}, 0)
+		if got, want := list, toRune("'@subnet 1'", "'@subnet 2'", "s-5", "s-6"); !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %q, want %q", got, want)
+		}
 	})
 
 	t.Run("match on entity type", func(t *testing.T) {

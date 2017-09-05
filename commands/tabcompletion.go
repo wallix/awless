@@ -57,8 +57,8 @@ func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 					suggest = quotedSortedSet(suggest)
 					return
 				}
+				return &prefixCompleter{callback: completeFunc, splitChar: ","}
 			}
-			return &prefixCompleter{callback: completeFunc, splitChar: ","}
 		}
 
 		completeFunc = func(s string) (suggest []string) {
