@@ -58,7 +58,7 @@ var awsImagesCmd = &cobra.Command{
 			exitOn(fmt.Errorf("expecting image query string. Expecting: %s (with everything optional expect for the owner)", awsservices.ImageQuerySpec))
 		}
 
-		resolver := &awsservices.ImageResolver{awsservices.InfraService.(*awsservices.Infra)}
+		resolver := &awsservices.ImageResolver{InfraService: awsservices.InfraService.(*awsservices.Infra)}
 
 		query, err := awsservices.ParseImageQuery(args[0])
 		exitOn(err)

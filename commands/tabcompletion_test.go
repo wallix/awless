@@ -125,6 +125,17 @@ func TestAutoCompletion(t *testing.T) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
+
+	t.Run("support [ for multiple properties ", func(t *testing.T) {
+		list, _ := holeAutoCompletion(g, "alarm.dimensions").Do([]rune{'[', 'a', 'b'}, 3)
+		if got, want := list, toRune("c:val1", "d:val2"); !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		list, _ = holeAutoCompletion(g, "alarm.dimensions").Do([]rune{'[', 'a', 'b', 'c', ':', 'v', 'a', 'l', '1', ','}, 10)
+		if got, want := list, toRune("abc:val1", "abd:val2", "def:val3"); !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+	})
 }
 
 func TestGuessEntityType(t *testing.T) {

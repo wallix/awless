@@ -106,6 +106,7 @@ func doInternal(p *prefixCompleter, line string, pos int, origLine []rune) (newL
 		line = splitKeepLast(line, p.splitChar)
 	}
 	for _, suggest := range p.callback(line) {
+		line = strings.TrimLeft(line, "[")
 		if len(line) >= len(suggest) {
 			if strings.HasPrefix(line, suggest) {
 				if len(line) != len(suggest) {
@@ -211,6 +212,8 @@ func keyCorrespondsToProperty(holekey, prop string) bool {
 }
 
 func appendIfContains(slice []string, value, subst string) []string {
+	subst = strings.TrimLeft(subst, "[")
+
 	if strings.Contains(value, subst) && value != "" {
 		return append(slice, value)
 	}
