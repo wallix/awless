@@ -237,7 +237,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 	case 1:
 		return resources[0], g
 	default:
-		logger.Infof("%d resources found with name '%s'. Show a specific resource with:", len(resources), deprefix(ref))
+		logger.Infof("%d resources found with name '%s' in region '%s'. Show a specific resource with:", len(resources), deprefix(ref), config.GetAWSRegion())
 		for _, res := range resources {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("\t`awless show %s` to show the %s", res.Id(), res.Type()))
@@ -254,7 +254,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 }
 
 func resolveResourceFromRef(ref string) (*graph.Graph, []*graph.Resource) {
-	g, err := sync.LoadAllLocalGraphs()
+	g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
 	exitOn(err)
 
 	name := deprefix(ref)
