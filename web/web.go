@@ -122,6 +122,14 @@ func (s *server) showResourceHandler(w http.ResponseWriter, r *http.Request) {
 	applies, _ := s.gph.ListResourcesAppliedOn(res)
 	resource.AddAppliesOn(applies...)
 
+	var parents []*graph.Resource
+	s.gph.Accept(&graph.ParentsVisitor{From: res, Each: graph.VisitorCollectFunc(&parents)})
+	resource.AddParents(parents...)
+
+	var children []*graph.Resource
+	s.gph.Accept(&graph.ChildrenVisitor{From: res, Each: graph.VisitorCollectFunc(&children)})
+	resource.AddChildren(children...)
+
 	if err := t.Execute(w, resource); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -136,7 +144,7 @@ func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
 
 	resourcesByTypes := make(map[string][]*Resource)
 
-	for _, typ := range awsservices.ResourceTypes {
+	for _, typ := range append(awsservices.ResourceTypes, "region") {
 		gRes, err := s.gph.GetAllResources(typ)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -157,6 +165,8 @@ func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
 type Resource struct {
 	Id, Type   string
 	Properties map[string]interface{}
+	Parents    []*Resource
+	Children   []*Resource
 	DependsOn  []*Resource
 	AppliesOn  []*Resource
 }
@@ -170,6 +180,18 @@ func (r *Resource) AddDependsOn(gr ...*graph.Resource) {
 func (r *Resource) AddAppliesOn(gr ...*graph.Resource) {
 	for _, res := range gr {
 		r.AppliesOn = append(r.AppliesOn, newResource(res))
+	}
+}
+
+func (r *Resource) AddParents(gr ...*graph.Resource) {
+	for _, res := range gr {
+		r.Parents = append(r.Parents, newResource(res))
+	}
+}
+
+func (r *Resource) AddChildren(gr ...*graph.Resource) {
+	for _, res := range gr {
+		r.Children = append(r.Children, newResource(res))
 	}
 }
 
@@ -221,6 +243,25 @@ const showResourceTpl = `<!DOCTYPE html>
 	  <li><b>{{$name}}:</b> {{$val}}</li>
         {{end}}
         </ul>
+
+	{{if (len .Parents) gt 0}}
+	<h4>Parents:</h4>
+	<ul>
+	{{range .Parents}}
+	  <li>{{.Type}} <a href="/resources/{{ urlquery .Id}}">{{.Id}}</a></li>
+	{{end}}
+	</ul>
+	{{end}}
+
+	{{if (len .Children) gt 0}}
+	<h4>Children:</h4>
+	<ul>
+	{{range .Children}}
+	  <li>{{.Type}} <a href="/resources/{{ urlquery .Id}}">{{.Id}}</a></li>
+	{{end}}
+	</ul>
+	{{end}}
+
 
 	{{if (len .DependsOn) gt 0}}
 	<h4>Depends on:</h4>
