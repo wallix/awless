@@ -8,6 +8,7 @@
 - `awless update securitygroup` can now authorize/revoke access from another security group: `update securitygroup id=sg-12345 inbound=authorize portrange=any protocol=tcp securitygroup=sg-23456`
 - Template CLI prompt: better TAB completion of resources and their properties
 - Man CLI examples for all one liners command. For example, `awless create instance -h` will display relevant CLI examples
+- Add `Type` (AWS/Customer managed) and `Attached` (true/false) columns in `awless list policies`
 
 ### AWS Services
 

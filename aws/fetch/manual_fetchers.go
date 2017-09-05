@@ -482,13 +482,20 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		objectsC := make(chan *iam.Policy)
 		resourcesC := make(chan *graph.Resource)
 
-		processPagePolicies := func(page *iam.ListPoliciesOutput) bool {
+		processPagePolicies := func(page *iam.ListPoliciesOutput, isAttached bool) bool {
 			for _, p := range page.Policies {
 				objectsC <- p
 				res, rerr := awsconv.NewResource(p)
 				if rerr != nil {
 					return false
 				}
+				if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
+					res.Properties[properties.Type] = "AWS Managed"
+				} else {
+					res.Properties[properties.Type] = "Customer Managed"
+				}
+				res.Properties[properties.Attached] = isAttached
+
 				resourcesC <- res
 			}
 			return page.Marker != nil
@@ -502,7 +509,7 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			defer wg.Done()
 			err := conf.APIs.Iam.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
 				func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
-					return processPagePolicies(out)
+					return processPagePolicies(out, true)
 				})
 			if err != nil {
 				errC <- err
@@ -515,7 +522,7 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			defer wg.Done()
 			err := conf.APIs.Iam.ListPoliciesPages(&iam.ListPoliciesInput{Scope: awssdk.String("Local")},
 				func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
-					return processPagePolicies(out)
+					return processPagePolicies(out, false)
 				})
 			if err != nil {
 				errC <- err

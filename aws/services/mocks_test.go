@@ -44,9 +44,12 @@ func (m *mockIam) ListUsersPages(input *iam.ListUsersInput, fn func(p *iam.ListU
 }
 
 func (m *mockIam) ListPoliciesPages(input *iam.ListPoliciesInput, fn func(p *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool)) error {
+	if awssdk.BoolValue(input.OnlyAttached) == false {
+		return nil
+	}
 	var policies []*iam.Policy
 	for _, p := range m.managedpolicydetails {
-		policy := &iam.Policy{PolicyId: p.PolicyId, PolicyName: p.PolicyName}
+		policy := &iam.Policy{PolicyId: p.PolicyId, PolicyName: p.PolicyName, Arn: p.Arn}
 		policies = append(policies, policy)
 	}
 	fn(&iam.ListPoliciesOutput{Policies: policies}, true)

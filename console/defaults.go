@@ -299,8 +299,13 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 	cloud.Policy: {
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Type},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Updated, Friendly: "Updated"}},
+		ColoredValueColumnDefinition{
+			StringColumnDefinition: StringColumnDefinition{Prop: properties.Attached},
+			ColoredValues:          map[string]color.Attribute{"false": color.FgYellow},
+		},
 	},
 	cloud.Group: {
 		StringColumnDefinition{Prop: properties.ID},

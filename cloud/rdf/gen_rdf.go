@@ -38,6 +38,7 @@ const (
 	Arn                               = "cloud:arn"
 	Association                       = "cloud:association"
 	Attachable                        = "cloud:attachable"
+	Attached                          = "cloud:attached"
 	Attachment                        = "cloud:attachment"
 	Attributes                        = "cloud:attributes"
 	AutoUpgrade                       = "cloud:autoUpgrade"
@@ -162,8 +163,8 @@ const (
 	PreferredMaintenanceDate          = "cloud:preferredMaintenanceDate"
 	PriceClass                        = "cloud:priceClass"
 	Private                           = "cloud:private"
-	PrivateIP                         = "net:privateIP"
 	PrivateDNS                        = "cloud:privateDNS"
+	PrivateIP                         = "net:privateIP"
 	Profile                           = "cloud:profile"
 	Progress                          = "cloud:progress"
 	Protocol                          = "net:protocol"
@@ -242,6 +243,7 @@ var Labels = map[string]string{
 	properties.Arn:                               Arn,
 	properties.Association:                       Association,
 	properties.Attachable:                        Attachable,
+	properties.Attached:                          Attached,
 	properties.Attachment:                        Attachment,
 	properties.Attributes:                        Attributes,
 	properties.AutoUpgrade:                       AutoUpgrade,
@@ -366,8 +368,8 @@ var Labels = map[string]string{
 	properties.PreferredMaintenanceDate:          PreferredMaintenanceDate,
 	properties.PriceClass:                        PriceClass,
 	properties.Private:                           Private,
-	properties.PrivateIP:                         PrivateIP,
 	properties.PrivateDNS:                        PrivateDNS,
+	properties.PrivateIP:                         PrivateIP,
 	properties.Profile:                           Profile,
 	properties.Progress:                          Progress,
 	properties.Protocol:                          Protocol,
@@ -446,6 +448,7 @@ var Properties = RDFProperties{
 	Arn:                     {ID: Arn, RdfType: "rdf:Property", RdfsLabel: "Arn", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Association:             {ID: Association, RdfType: "rdf:Property", RdfsLabel: "Association", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Attachable:              {ID: Attachable, RdfType: "rdf:Property", RdfsLabel: "Attachable", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	Attached:                {ID: Attached, RdfType: "rdf:Property", RdfsLabel: "Attached", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Attachment:              {ID: Attachment, RdfType: "rdf:Property", RdfsLabel: "Attachment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Attributes:              {ID: Attributes, RdfType: "rdf:Property", RdfsLabel: "Attributes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	AutoUpgrade:             {ID: AutoUpgrade, RdfType: "rdf:Property", RdfsLabel: "AutoUpgrade", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
@@ -570,8 +573,8 @@ var Properties = RDFProperties{
 	PreferredMaintenanceDate: {ID: PreferredMaintenanceDate, RdfType: "rdf:Property", RdfsLabel: "PreferredMaintenanceDate", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PriceClass:               {ID: PriceClass, RdfType: "rdf:Property", RdfsLabel: "PriceClass", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Private:                  {ID: Private, RdfType: "rdf:Property", RdfsLabel: "Private", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	PrivateIP:                {ID: PrivateIP, RdfType: "rdf:Property", RdfsLabel: "PrivateIP", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PrivateDNS:               {ID: PrivateDNS, RdfType: "rdf:Property", RdfsLabel: "PrivateDNS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	PrivateIP:                {ID: PrivateIP, RdfType: "rdf:Property", RdfsLabel: "PrivateIP", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Profile:                  {ID: Profile, RdfType: "rdf:Property", RdfsLabel: "Profile", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Progress:                 {ID: Progress, RdfType: "rdf:Property", RdfsLabel: "Progress", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Protocol:                 {ID: Protocol, RdfType: "rdf:Property", RdfsLabel: "Protocol", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
