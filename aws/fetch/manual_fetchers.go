@@ -29,7 +29,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var objects []*ecs.ContainerInstance
 		var resources []*graph.Resource
 
-		if !conf.getBoolDefaultTrue("aws.infra.containerinstance.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.containerinstance.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[containerinstance]")
 			return resources, objects, nil
 		}
@@ -83,7 +83,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var objects []*ecs.Container
 		var resources []*graph.Resource
 
-		if !conf.getBoolDefaultTrue("aws.infra.container.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.container.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[container]")
 			return resources, objects, nil
 		}
@@ -151,7 +151,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var objects []*ecs.TaskDefinition
 		var resources []*graph.Resource
 
-		if !conf.getBoolDefaultTrue("aws.infra.containertask.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.containertask.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[containertask]")
 			return resources, objects, nil
 		}
@@ -283,7 +283,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var resources []*graph.Resource
 		var objects []*ecs.Cluster
 
-		if !conf.getBoolDefaultTrue("aws.infra.containercluster.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.containercluster.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[containercluster]")
 			return resources, objects, nil
 		}
@@ -320,7 +320,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var objects []*elbv2.Listener
 		var resources []*graph.Resource
 
-		if !conf.getBoolDefaultTrue("aws.infra.listener.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.listener.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[listener]")
 			return resources, objects, nil
 		}
@@ -384,7 +384,7 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var resources []*graph.Resource
 		var objects []*iam.UserDetail
 
-		if !conf.getBoolDefaultTrue("aws.access.user.sync") {
+		if !conf.getBoolDefaultTrue("aws.access.user.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource access[user]")
 			return resources, objects, nil
 		}
@@ -473,7 +473,7 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var resources []*graph.Resource
 		var objects []*iam.Policy
 
-		if !conf.getBoolDefaultTrue("aws.access.policy.sync") {
+		if !conf.getBoolDefaultTrue("aws.access.policy.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource access[policy]")
 			return resources, objects, nil
 		}
@@ -555,7 +555,7 @@ func addManualStorageFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var resources []*graph.Resource
 		var objects []*s3.Bucket
 
-		if !conf.getBoolDefaultTrue("aws.storage.bucket.sync") {
+		if !conf.getBoolDefaultTrue("aws.storage.bucket.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource storage[bucket]")
 			return resources, objects, nil
 		}
@@ -589,7 +589,7 @@ func addManualStorageFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 
 		resourcesC := make(chan *graph.Resource)
 
-		if !conf.getBoolDefaultTrue("aws.storage.s3object.sync") {
+		if !conf.getBoolDefaultTrue("aws.storage.s3object.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource storage[s3object]")
 			return resources, objects, nil
 		}
@@ -619,7 +619,7 @@ func addManualMessagingFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var objects []*string
 		var resources []*graph.Resource
 
-		if !conf.getBoolDefaultTrue("aws.messaging.queue.sync") {
+		if !conf.getBoolDefaultTrue("aws.messaging.queue.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource messaging[queue]")
 			return resources, objects, nil
 		}
@@ -722,7 +722,7 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var objects []*route53.ResourceRecordSet
 		var resources []*graph.Resource
 
-		if !conf.getBoolDefaultTrue("aws.dns.record.sync") {
+		if !conf.getBoolDefaultTrue("aws.dns.record.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource dns[record]")
 			return resources, objects, nil
 		}

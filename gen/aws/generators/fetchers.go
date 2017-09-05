@@ -101,7 +101,7 @@ func Build{{ Title $service.Name }}FetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*{{ $fetcher.AWSType }}
 
-		if !conf.getBoolDefaultTrue("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync") {
+		if !conf.getBoolDefaultTrue("aws.{{ $service.Name }}.{{ $fetcher.ResourceType }}.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource {{ $service.Name }}[{{ $fetcher.ResourceType }}]")
 			return resources, objects, nil
 		}

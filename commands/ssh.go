@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -263,7 +264,7 @@ func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 	go func() {
 		var err error
 		defer wg.Done()
-		resourcesGraph, err = awsservices.InfraService.FetchByType(cloud.Instance)
+		resourcesGraph, err = awsservices.InfraService.FetchByType(context.WithValue(context.Background(), "force", true), cloud.Instance)
 		if err != nil {
 			errc <- err
 		}
@@ -273,7 +274,7 @@ func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 	go func() {
 		var err error
 		defer wg.Done()
-		sgroupsGraph, err = awsservices.InfraService.FetchByType(cloud.SecurityGroup)
+		sgroupsGraph, err = awsservices.InfraService.FetchByType(context.WithValue(context.Background(), "force", true), cloud.SecurityGroup)
 		if err != nil {
 			errc <- err
 		}

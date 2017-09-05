@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sort"
@@ -100,7 +101,7 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 			} else {
 				srv, err := cloud.GetServiceForType(resType)
 				exitOn(err)
-				g, err = srv.FetchByType(resType)
+				g, err = srv.FetchByType(context.WithValue(context.Background(), "force", true), resType)
 				exitOn(err)
 			}
 

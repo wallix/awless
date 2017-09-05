@@ -50,7 +50,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Instance
 
-		if !conf.getBoolDefaultTrue("aws.infra.instance.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.instance.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[instance]")
 			return resources, objects, nil
 		}
@@ -83,7 +83,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Subnet
 
-		if !conf.getBoolDefaultTrue("aws.infra.subnet.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.subnet.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[subnet]")
 			return resources, objects, nil
 		}
@@ -109,7 +109,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Vpc
 
-		if !conf.getBoolDefaultTrue("aws.infra.vpc.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.vpc.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[vpc]")
 			return resources, objects, nil
 		}
@@ -135,7 +135,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.KeyPairInfo
 
-		if !conf.getBoolDefaultTrue("aws.infra.keypair.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.keypair.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[keypair]")
 			return resources, objects, nil
 		}
@@ -161,7 +161,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.SecurityGroup
 
-		if !conf.getBoolDefaultTrue("aws.infra.securitygroup.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.securitygroup.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[securitygroup]")
 			return resources, objects, nil
 		}
@@ -187,7 +187,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Volume
 
-		if !conf.getBoolDefaultTrue("aws.infra.volume.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.volume.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[volume]")
 			return resources, objects, nil
 		}
@@ -218,7 +218,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.InternetGateway
 
-		if !conf.getBoolDefaultTrue("aws.infra.internetgateway.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.internetgateway.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[internetgateway]")
 			return resources, objects, nil
 		}
@@ -244,7 +244,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.NatGateway
 
-		if !conf.getBoolDefaultTrue("aws.infra.natgateway.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.natgateway.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[natgateway]")
 			return resources, objects, nil
 		}
@@ -270,7 +270,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.RouteTable
 
-		if !conf.getBoolDefaultTrue("aws.infra.routetable.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.routetable.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[routetable]")
 			return resources, objects, nil
 		}
@@ -296,7 +296,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.AvailabilityZone
 
-		if !conf.getBoolDefaultTrue("aws.infra.availabilityzone.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.availabilityzone.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[availabilityzone]")
 			return resources, objects, nil
 		}
@@ -322,7 +322,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Image
 
-		if !conf.getBoolDefaultTrue("aws.infra.image.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.image.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[image]")
 			return resources, objects, nil
 		}
@@ -348,7 +348,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.ImportImageTask
 
-		if !conf.getBoolDefaultTrue("aws.infra.importimagetask.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.importimagetask.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[importimagetask]")
 			return resources, objects, nil
 		}
@@ -374,7 +374,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Address
 
-		if !conf.getBoolDefaultTrue("aws.infra.elasticip.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.elasticip.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[elasticip]")
 			return resources, objects, nil
 		}
@@ -400,7 +400,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.Snapshot
 
-		if !conf.getBoolDefaultTrue("aws.infra.snapshot.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.snapshot.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[snapshot]")
 			return resources, objects, nil
 		}
@@ -431,7 +431,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ec2.NetworkInterface
 
-		if !conf.getBoolDefaultTrue("aws.infra.networkinterface.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.networkinterface.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[networkinterface]")
 			return resources, objects, nil
 		}
@@ -457,7 +457,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*elbv2.LoadBalancer
 
-		if !conf.getBoolDefaultTrue("aws.infra.loadbalancer.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.loadbalancer.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[loadbalancer]")
 			return resources, objects, nil
 		}
@@ -488,7 +488,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*elbv2.TargetGroup
 
-		if !conf.getBoolDefaultTrue("aws.infra.targetgroup.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.targetgroup.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[targetgroup]")
 			return resources, objects, nil
 		}
@@ -514,7 +514,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*rds.DBInstance
 
-		if !conf.getBoolDefaultTrue("aws.infra.database.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.database.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[database]")
 			return resources, objects, nil
 		}
@@ -545,7 +545,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*rds.DBSubnetGroup
 
-		if !conf.getBoolDefaultTrue("aws.infra.dbsubnetgroup.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.dbsubnetgroup.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[dbsubnetgroup]")
 			return resources, objects, nil
 		}
@@ -576,7 +576,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*autoscaling.LaunchConfiguration
 
-		if !conf.getBoolDefaultTrue("aws.infra.launchconfiguration.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.launchconfiguration.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[launchconfiguration]")
 			return resources, objects, nil
 		}
@@ -607,7 +607,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*autoscaling.Group
 
-		if !conf.getBoolDefaultTrue("aws.infra.scalinggroup.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.scalinggroup.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[scalinggroup]")
 			return resources, objects, nil
 		}
@@ -638,7 +638,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*autoscaling.ScalingPolicy
 
-		if !conf.getBoolDefaultTrue("aws.infra.scalingpolicy.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.scalingpolicy.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[scalingpolicy]")
 			return resources, objects, nil
 		}
@@ -669,7 +669,7 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*ecr.Repository
 
-		if !conf.getBoolDefaultTrue("aws.infra.repository.sync") {
+		if !conf.getBoolDefaultTrue("aws.infra.repository.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[repository]")
 			return resources, objects, nil
 		}
@@ -706,7 +706,7 @@ func BuildAccessFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*iam.GroupDetail
 
-		if !conf.getBoolDefaultTrue("aws.access.group.sync") {
+		if !conf.getBoolDefaultTrue("aws.access.group.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource access[group]")
 			return resources, objects, nil
 		}
@@ -737,7 +737,7 @@ func BuildAccessFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*iam.RoleDetail
 
-		if !conf.getBoolDefaultTrue("aws.access.role.sync") {
+		if !conf.getBoolDefaultTrue("aws.access.role.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource access[role]")
 			return resources, objects, nil
 		}
@@ -768,7 +768,7 @@ func BuildAccessFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*iam.AccessKeyMetadata
 
-		if !conf.getBoolDefaultTrue("aws.access.accesskey.sync") {
+		if !conf.getBoolDefaultTrue("aws.access.accesskey.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource access[accesskey]")
 			return resources, objects, nil
 		}
@@ -799,7 +799,7 @@ func BuildAccessFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*iam.InstanceProfile
 
-		if !conf.getBoolDefaultTrue("aws.access.instanceprofile.sync") {
+		if !conf.getBoolDefaultTrue("aws.access.instanceprofile.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource access[instanceprofile]")
 			return resources, objects, nil
 		}
@@ -842,7 +842,7 @@ func BuildMessagingFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*sns.Subscription
 
-		if !conf.getBoolDefaultTrue("aws.messaging.subscription.sync") {
+		if !conf.getBoolDefaultTrue("aws.messaging.subscription.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource messaging[subscription]")
 			return resources, objects, nil
 		}
@@ -873,7 +873,7 @@ func BuildMessagingFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*sns.Topic
 
-		if !conf.getBoolDefaultTrue("aws.messaging.topic.sync") {
+		if !conf.getBoolDefaultTrue("aws.messaging.topic.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource messaging[topic]")
 			return resources, objects, nil
 		}
@@ -910,7 +910,7 @@ func BuildDnsFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*route53.HostedZone
 
-		if !conf.getBoolDefaultTrue("aws.dns.zone.sync") {
+		if !conf.getBoolDefaultTrue("aws.dns.zone.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource dns[zone]")
 			return resources, objects, nil
 		}
@@ -947,7 +947,7 @@ func BuildLambdaFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*lambda.FunctionConfiguration
 
-		if !conf.getBoolDefaultTrue("aws.lambda.function.sync") {
+		if !conf.getBoolDefaultTrue("aws.lambda.function.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource lambda[function]")
 			return resources, objects, nil
 		}
@@ -984,7 +984,7 @@ func BuildMonitoringFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*cloudwatch.Metric
 
-		if !conf.getBoolDefaultTrue("aws.monitoring.metric.sync") {
+		if !conf.getBoolDefaultTrue("aws.monitoring.metric.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource monitoring[metric]")
 			return resources, objects, nil
 		}
@@ -1015,7 +1015,7 @@ func BuildMonitoringFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*cloudwatch.MetricAlarm
 
-		if !conf.getBoolDefaultTrue("aws.monitoring.alarm.sync") {
+		if !conf.getBoolDefaultTrue("aws.monitoring.alarm.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource monitoring[alarm]")
 			return resources, objects, nil
 		}
@@ -1052,7 +1052,7 @@ func BuildCdnFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*cloudfront.DistributionSummary
 
-		if !conf.getBoolDefaultTrue("aws.cdn.distribution.sync") {
+		if !conf.getBoolDefaultTrue("aws.cdn.distribution.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource cdn[distribution]")
 			return resources, objects, nil
 		}
@@ -1089,7 +1089,7 @@ func BuildCloudformationFetchFuncs(conf *Config) fetch.Funcs {
 		var resources []*graph.Resource
 		var objects []*cloudformation.Stack
 
-		if !conf.getBoolDefaultTrue("aws.cloudformation.stack.sync") {
+		if !conf.getBoolDefaultTrue("aws.cloudformation.stack.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource cloudformation[stack]")
 			return resources, objects, nil
 		}

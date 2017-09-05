@@ -1,6 +1,14 @@
 package awsfetch
 
-import "strings"
+import (
+	"context"
+	"strings"
+)
+
+func getBoolFromContext(ctx context.Context, key string) bool {
+	v, ok := ctx.Value(key).(bool)
+	return v && ok
+}
 
 func sliceOfSlice(in []*string, maxLength int) (res [][]*string) {
 	if maxLength <= 0 {

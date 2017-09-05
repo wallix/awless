@@ -17,6 +17,7 @@ limitations under the License.
 package cloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -104,9 +105,9 @@ type Service interface {
 	Name() string
 	Drivers() []driver.Driver
 	ResourceTypes() []string
-	FetchResources() (*graph.Graph, error)
 	IsSyncDisabled() bool
-	FetchByType(t string) (*graph.Graph, error)
+	Fetch(context.Context) (*graph.Graph, error)
+	FetchByType(context.Context, string) (*graph.Graph, error)
 }
 
 type Services []Service

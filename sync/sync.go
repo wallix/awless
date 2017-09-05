@@ -17,6 +17,7 @@ limitations under the License.
 package sync
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -87,7 +88,7 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 		go func(srv cloud.Service) {
 			defer workers.Done()
 			start := time.Now()
-			g, err := srv.FetchResources()
+			g, err := srv.Fetch(context.Background())
 			resultc <- &result{service: srv, gph: g, start: start, err: err}
 		}(service)
 	}

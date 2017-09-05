@@ -209,15 +209,14 @@ func (s *{{ Title $service.Name }}) ResourceTypes() []string {
 	}
 }
 
-func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
+func (s *{{ Title $service.Name }}) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-  gph, err := s.fetcher.Fetch(ctx)
+  gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 	
 	for _, e := range *fetch.WrapError(err) {
@@ -288,10 +287,9 @@ func (s *{{ Title $service.Name }}) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *{{ Title $service.Name }}) FetchByType(t string) (*graph.Graph, error) {
+func (s *{{ Title $service.Name }}) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-  return s.fetcher.FetchByType(ctx, t)
+  return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *{{ Title $service.Name }}) IsSyncDisabled() bool {

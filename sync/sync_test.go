@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -68,10 +69,10 @@ type mockService struct {
 	g            *graph.Graph
 }
 
-func (s *mockService) Region() string                             { return s.region }
-func (s *mockService) Name() string                               { return s.name }
-func (s *mockService) Drivers() []driver.Driver                   { return nil }
-func (s *mockService) ResourceTypes() []string                    { return []string{} }
-func (s *mockService) FetchResources() (*graph.Graph, error)      { return s.g, nil }
-func (s *mockService) IsSyncDisabled() bool                       { return false }
-func (s *mockService) FetchByType(t string) (*graph.Graph, error) { return nil, nil }
+func (s *mockService) Region() string                                            { return s.region }
+func (s *mockService) Name() string                                              { return s.name }
+func (s *mockService) Drivers() []driver.Driver                                  { return nil }
+func (s *mockService) ResourceTypes() []string                                   { return []string{} }
+func (s *mockService) Fetch(context.Context) (*graph.Graph, error)               { return s.g, nil }
+func (s *mockService) IsSyncDisabled() bool                                      { return false }
+func (s *mockService) FetchByType(context.Context, string) (*graph.Graph, error) { return nil, nil }

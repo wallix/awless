@@ -17,6 +17,7 @@ limitations under the License.
 package awsservices
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"reflect"
@@ -168,7 +169,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildAccessFetchFuncs(awsfetch.NewConfig(mock))),
 	}
 
-	g, err := access.FetchResources()
+	g, err := access.Fetch(context.Background())
 	if err != nil {
 		fmt.Printf("%#v", err)
 		t.Fatal(err)
@@ -533,7 +534,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		region:         "eu-west-1",
 		fetcher:        fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(awsfetch.NewConfig(mock, mockEcr, mockEcs, mockLb, mockRds, mockAutoscaling))),
 	}
-	g, err := InfraService.FetchResources()
+	g, err := InfraService.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -742,7 +743,7 @@ func TestBuildStorageRdfGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildStorageFetchFuncs(awsfetch.NewConfig(mocks3))),
 	}
 
-	g, err := storage.FetchResources()
+	g, err := storage.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -790,7 +791,7 @@ func TestBuildDnsRdfGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildDnsFetchFuncs(awsfetch.NewConfig(mockRoute53))),
 	}
 
-	g, err := dns.FetchResources()
+	g, err := dns.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -859,7 +860,7 @@ func TestBuildNotificationGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildMessagingFetchFuncs(awsfetch.NewConfig(sqs, sns))),
 	}
 
-	g, err := service.FetchResources()
+	g, err := service.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -929,7 +930,7 @@ func TestBuildLambdaGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildLambdaFetchFuncs(awsfetch.NewConfig(mock))),
 	}
 
-	g, err := service.FetchResources()
+	g, err := service.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -989,7 +990,7 @@ func TestBuildMonitoringGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildMonitoringFetchFuncs(awsfetch.NewConfig(mock))),
 	}
 
-	g, err := service.FetchResources()
+	g, err := service.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1098,7 +1099,7 @@ func TestBuildCdnGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildCdnFetchFuncs(awsfetch.NewConfig(mock))),
 	}
 
-	g, err := service.FetchResources()
+	g, err := service.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1187,7 +1188,7 @@ func TestBuildCloudFormationGraph(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildCloudformationFetchFuncs(awsfetch.NewConfig(mock))),
 	}
 
-	g, err := service.FetchResources()
+	g, err := service.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1261,7 +1262,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		fetcher: fetch.NewFetcher(awsfetch.BuildAccessFetchFuncs(awsfetch.NewConfig(mock))),
 	}
 
-	g, err := access.FetchResources()
+	g, err := access.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1287,7 +1288,7 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 		))),
 	}
 
-	g, err = infra.FetchResources()
+	g, err = infra.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

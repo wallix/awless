@@ -363,15 +363,14 @@ func (s *Infra) ResourceTypes() []string {
 	}
 }
 
-func (s *Infra) FetchResources() (*graph.Graph, error) {
+func (s *Infra) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -1033,10 +1032,9 @@ func (s *Infra) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Infra) FetchByType(t string) (*graph.Graph, error) {
+func (s *Infra) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Infra) IsSyncDisabled() bool {
@@ -1100,15 +1098,14 @@ func (s *Access) ResourceTypes() []string {
 	}
 }
 
-func (s *Access) FetchResources() (*graph.Graph, error) {
+func (s *Access) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -1286,10 +1283,9 @@ func (s *Access) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Access) FetchByType(t string) (*graph.Graph, error) {
+func (s *Access) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Access) IsSyncDisabled() bool {
@@ -1344,15 +1340,14 @@ func (s *Storage) ResourceTypes() []string {
 	}
 }
 
-func (s *Storage) FetchResources() (*graph.Graph, error) {
+func (s *Storage) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -1442,10 +1437,9 @@ func (s *Storage) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Storage) FetchByType(t string) (*graph.Graph, error) {
+func (s *Storage) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Storage) IsSyncDisabled() bool {
@@ -1506,15 +1500,14 @@ func (s *Messaging) ResourceTypes() []string {
 	}
 }
 
-func (s *Messaging) FetchResources() (*graph.Graph, error) {
+func (s *Messaging) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -1626,10 +1619,9 @@ func (s *Messaging) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Messaging) FetchByType(t string) (*graph.Graph, error) {
+func (s *Messaging) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Messaging) IsSyncDisabled() bool {
@@ -1684,15 +1676,14 @@ func (s *Dns) ResourceTypes() []string {
 	}
 }
 
-func (s *Dns) FetchResources() (*graph.Graph, error) {
+func (s *Dns) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -1782,10 +1773,9 @@ func (s *Dns) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Dns) FetchByType(t string) (*graph.Graph, error) {
+func (s *Dns) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Dns) IsSyncDisabled() bool {
@@ -1839,15 +1829,14 @@ func (s *Lambda) ResourceTypes() []string {
 	}
 }
 
-func (s *Lambda) FetchResources() (*graph.Graph, error) {
+func (s *Lambda) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -1915,10 +1904,9 @@ func (s *Lambda) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Lambda) FetchByType(t string) (*graph.Graph, error) {
+func (s *Lambda) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Lambda) IsSyncDisabled() bool {
@@ -1973,15 +1961,14 @@ func (s *Monitoring) ResourceTypes() []string {
 	}
 }
 
-func (s *Monitoring) FetchResources() (*graph.Graph, error) {
+func (s *Monitoring) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -2071,10 +2058,9 @@ func (s *Monitoring) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Monitoring) FetchByType(t string) (*graph.Graph, error) {
+func (s *Monitoring) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Monitoring) IsSyncDisabled() bool {
@@ -2128,15 +2114,14 @@ func (s *Cdn) ResourceTypes() []string {
 	}
 }
 
-func (s *Cdn) FetchResources() (*graph.Graph, error) {
+func (s *Cdn) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -2204,10 +2189,9 @@ func (s *Cdn) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Cdn) FetchByType(t string) (*graph.Graph, error) {
+func (s *Cdn) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Cdn) IsSyncDisabled() bool {
@@ -2261,15 +2245,14 @@ func (s *Cloudformation) ResourceTypes() []string {
 	}
 }
 
-func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
+func (s *Cloudformation) Fetch(ctx context.Context) (*graph.Graph, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
 
 	allErrors := new(fetch.Error)
 
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	gph, err := s.fetcher.Fetch(ctx)
+	gph, err := s.fetcher.Fetch(context.WithValue(ctx, "region", s.region))
 	defer s.fetcher.Reset()
 
 	for _, e := range *fetch.WrapError(err) {
@@ -2337,10 +2320,9 @@ func (s *Cloudformation) FetchResources() (*graph.Graph, error) {
 	return gph, nil
 }
 
-func (s *Cloudformation) FetchByType(t string) (*graph.Graph, error) {
+func (s *Cloudformation) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
 	defer s.fetcher.Reset()
-	ctx := context.WithValue(context.Background(), "region", s.region)
-	return s.fetcher.FetchByType(ctx, t)
+	return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }
 
 func (s *Cloudformation) IsSyncDisabled() bool {

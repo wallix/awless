@@ -15,6 +15,7 @@
 
 ### Fixes
 
+- Fix regression: listing a resource returned no results when this resource was disabled for sync. Listing should always fetch the resources and display what is on your cloud.
 - [#130](https://github.com/wallix/awless/issues/130): Better exit status code in `awless show` command
 - Port ranges starting from *0* to *n* are no longer processed as from *n* to *n*.
 - `awless ssh --through`: works without an SSH agent running; correct StrictHostkeyChecking; correct display for `--print-config`
