@@ -737,7 +737,7 @@ func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]i
 	_, resource := params["resource"]
 
 	if !effect || !action || !resource {
-		return nil, errors.New("create role: effect, action and resource are required values")
+		return nil, errors.New("create policy: effect, action and resource are required values")
 	}
 
 	d.logger.Verbose("params dry run: create policy ok")
