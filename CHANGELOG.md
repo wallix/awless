@@ -9,6 +9,7 @@
 - Template CLI prompt: better TAB completion of resources and their properties
 - Man CLI examples for all one liners command. For example, `awless create instance -h` will display relevant CLI examples
 - Add `Type` (AWS/Customer managed) and `Attached` (true/false) columns in `awless list policies`
+- [#129](https://github.com/wallix/awless/issues/129): flag `--color=always/never` to force enabling/disabling of colored output.
 
 ### AWS Services
 

@@ -30,6 +30,7 @@ var (
 	versionGlobalFlag      bool
 	awsRegionGlobalFlag    string
 	awsProfileGlobalFlag   string
+	awsColorGlobalFlag     string
 
 	renderGreenFn    = color.New(color.FgGreen).SprintFunc()
 	renderRedFn      = color.New(color.FgRed).SprintFunc()
@@ -44,6 +45,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&forceGlobalFlag, "force", "f", false, "Force the command and bypass any confirmation prompt")
 	RootCmd.PersistentFlags().StringVarP(&awsRegionGlobalFlag, "aws-region", "r", "", "Overwrite AWS region")
 	RootCmd.PersistentFlags().StringVarP(&awsProfileGlobalFlag, "aws-profile", "p", "", "Overwrite AWS profile")
+	RootCmd.PersistentFlags().StringVar(&awsColorGlobalFlag, "color", "auto", "Force enabling/disabling colors in display (auto, never, always)")
 
 	RootCmd.Flags().BoolVar(&versionGlobalFlag, "version", false, "Print awless version")
 

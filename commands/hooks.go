@@ -21,6 +21,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
@@ -61,6 +62,13 @@ func initAwlessEnvHook(cmd *cobra.Command, args []string) error {
 		if err := config.SetVolatile(config.ProfileConfigKey, envProfile); err != nil {
 			return err
 		}
+	}
+
+	switch awsColorGlobalFlag {
+	case "never":
+		color.NoColor = true
+	case "always":
+		color.NoColor = false
 	}
 
 	return nil
