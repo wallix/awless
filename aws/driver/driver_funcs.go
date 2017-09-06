@@ -833,7 +833,7 @@ func (d *IamDriver) Create_Role_DryRun(ctx driver.Context, params map[string]int
 	}
 
 	d.logger.Verbose("params dry run: create role ok")
-	return nil, nil
+	return fakeDryRunId(cloud.Role), nil
 }
 
 type principal struct {
