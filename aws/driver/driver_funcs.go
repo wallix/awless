@@ -2111,7 +2111,7 @@ func (d *S3Driver) Create_S3object_DryRun(ctx driver.Context, params map[string]
 	}
 
 	d.logger.Verbose("params dry run: create s3object ok")
-	return nil, nil
+	return fakeDryRunId("s3object"), nil
 }
 
 type progressReadSeeker struct {

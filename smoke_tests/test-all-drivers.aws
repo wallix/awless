@@ -1,29 +1,20 @@
 # Run this template in eu-west-2: awless config set aws.region eu-west-2
 # Need few holes filled withlocal files : 
-#      void.ova-file=~/Desktop/void.ova
-#      cloudformation.policy-file=~/Downloads/cloudformation.policy :
-# {
-#  "Statement" : [
-#    {
-#          "Effect" : "Allow",
-#          "Action" : "Update:*",
-#          "Principal": "*",
-#          "Resource" : "*"
-#        }
-#  ]
-# }
-#      cloudformation.templatefile=~/Downloads/wordpress-sample-cf.template
-#      lambda.zipfile=~/Downloads/s3-get-object-python.zip 
-#      random.string=$(env LC_CTYPE=C tr -dc "a-zA-Z0-9-_\$\?"
-#      principal.account=XXXXXXXXX
-#      principal.user="arn:aws:iam::XXXXXXXXX:user/YYYYY"
-#      cloudformation.role="arn:aws:iam::XXXXXXX:role/my-full-test-role-cloudformation"
-#      lambda.role="arn:aws:iam::XXXXXXX:role/my-full-test-role-lambda"
-#      queue.arn="arn:aws:sqs:eu-west-2:XXXXXXX:my-full-test-queue"
-#      ecs.role="arn:aws:iam::XXXXXXX:role/ecsServiceRole"
-#      appscaling.role="arn:aws:iam::XXXXXXX:role/ecsAutoscaleRole"
+# awless run ./smoke_tests/test-all-drivers.aws \      
+#      cloudformation.templatefile=./smoke_tests/test-cloudformation-sample.template \
+#      lambda.zipfile=./smoke_tests/test-lambda-function.zip \
+#      void.ova=./smoke_tests/test.ova \
+#      cloudformation.policy-file=./smoke_tests/test-cloudformation.policy \
+#      random.string=$(env LC_CTYPE=C tr -dc "a-zA-Z0-9-_\$\?" \
+#      principal.account=$(awless whoami --account-only) \
+#      principal.user=$(awless whoami --name-only)
 
+
+
+account = {principal.account}
+userArn = arn:aws:iam::{principal.account}:user/{principal.user}
 azone = eu-west-2a
+
 vpc = create vpc cidr=10.0.0.0/16 name=my-full-test-vpc
 igw = create internetgateway
 attach internetgateway id=$igw vpc=$vpc
@@ -39,15 +30,15 @@ attach role instanceprofile=my-full-test-instanceprofile name=my-full-test-role-
 create role name=my-full-test-role-rds principal-service="rds.amazonaws.com"
 create role name=my-full-test-role-cloudformation principal-service="cloudformation.amazonaws.com"
 create role name=my-full-test-role principal-service="ec2.amazonaws.com" sleep-after=15
-create role name=my-full-test-role-2 principal-account={principal.account}
-create role name=my-full-test-role-3 principal-user={principal.user}
+create role name=my-full-test-role-2 principal-account=$account
+create role name=my-full-test-role-3 principal-user=$userArn
 create user name=my-full-test-user
 create accesskey user=my-full-test-user
 create loginprofile password=my-full-test-password username=my-full-test-user password-reset=false
 create group name=my-full-test-group
 attach user group=my-full-test-group name=my-full-test-user
 detach user group=my-full-test-group name=my-full-test-user
-policy = create policy name=my-full-test-policy action="ec2:*" description="my full test policy" effect=Allow resource={principal.user}
+policy = create policy name=my-full-test-policy action="ec2:*" description="my full test policy" effect=Allow resource=$userArn
 attach policy arn=$policy group=my-full-test-group
 detach policy arn=$policy group=my-full-test-group
 attach policy arn=$policy role=my-full-test-role
@@ -70,8 +61,9 @@ check instance id=$instance state=stopped timeout=180
 update instance id=$instance type=t2.nano
 start instance id=$instance
 copy image name=my-full-test-image-import source-id=ami-699fbf09 source-region=us-west-1 description="my import image full test" encrypted=false
-create stack name=my-full-test-cf-template template-file={cloudformation.templatefile} capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM disable-rollback=true parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} role={cloudformation.role} timeout=180
-create stack name=my-full-test-cf-template-2 template-file={cloudformation.templatefile} on-failure=DELETE parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} resource-types="AWS::EC2::*" role={cloudformation.role} timeout=180
+cloudformationRole = arn:aws:iam::{principal.account}:role/my-full-test-role-cloudformation
+create stack name=my-full-test-cf-template template-file={cloudformation.templatefile} capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM disable-rollback=true parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} role=$cloudformationRole timeout=180
+create stack name=my-full-test-cf-template-2 template-file={cloudformation.templatefile} on-failure=DELETE parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} resource-types="AWS::EC2::*" role=$cloudformationRole timeout=180
 webbucket = create bucket name=my-full-test-bucket-website acl=private
 update bucket name=$webbucket enforce-https=true index-suffix="index.html" public-website=true redirect-hostname=my-full-test-bucket-website.awless.io
 bucket = create bucket name=my-full-test-bucket acl=bucket-owner-read
@@ -92,7 +84,7 @@ eip = create elasticip domain=vpc
 check instance id=$instance state=running timeout=180
 attach elasticip id=$eip allow-reassociation=false instance=$instance privateip=10.0.0.5
 lbinstance = create instance image=ami-f1949e95 name=my-full-test-lbinst subnet=subnet-69bd4324 type=t2.nano
-lb = create loadbalancer name=my-full-test-loadbalancer subnets=subnet-69bd4324,subnet-a103a4da iptype=ipv4 scheme=internet-facing securitygroups=@mysecgroup
+lb = create loadbalancer name=my-full-test-loadbalancer subnets=[subnet-69bd4324,subnet-a103a4da] iptype=ipv4 scheme=internet-facing securitygroups=@mysecgroup
 check loadbalancer id=$lb state=provisioning timeout=180
 tg = create targetgroup name=my-full-test-targetgroup port=80 protocol=HTTP vpc=@awless-tests-vpc healthcheckinterval=60 healthcheckpath="/hc" healthcheckport=80 healthcheckprotocol=HTTP healthchecktimeout=10 healthythreshold=3 matcher=200 unhealthythreshold=5
 create listener actiontype=forward loadbalancer=$lb port=80 protocol=HTTP targetgroup=$tg
@@ -114,9 +106,10 @@ start alarm names=$alarm
 detach alarm action-arn=$scalpol name=$alarm
 attach alarm action-arn=$scalpol name=$alarm
 create queue name=my-full-test-queue delay=0 max-msg-size=262144 msg-wait=0 policy="" redrive-policy="" retention-period=345600 visibility-timeout=30
-create subscription endpoint={queue.arn} protocol=sqs topic=$notifTopic
-create function handler=lambda_handler name=my-full-test-lambda role={lambda.role} runtime=python3.6 description="my lambda from local file" memory=128 publish=false timeout=60 zipfile={lambda.zipfile}
-create function handler=lambda_handler name=my-full-test-lambda-from-s3 role={lambda.role} runtime=python3.6 bucket=awless.test.bucket.eu-west-2 description="my lambda from a s3 file" memory=128 object=s3-get-object-python.zip publish=true timeout=60
+create subscription endpoint=arn:aws:sqs:eu-west-2:{principal.account}:my-full-test-queue protocol=sqs topic=$notifTopic
+lambdaRole = arn:aws:iam::{principal.account}:role/my-full-test-role-lambda
+create function handler=lambda_handler name=my-full-test-lambda role=$lambdaRole runtime=python3.6 description="my lambda from local file" memory=128 publish=false timeout=60 zipfile={lambda.zipfile}
+create function handler=lambda_handler name=my-full-test-lambda-from-s3 role=$lambdaRole runtime=python3.6 bucket=awless.test.bucket.eu-west-2 description="my lambda from a s3 file" memory=128 object=s3-get-object-python.zip publish=true timeout=60
 dbsubgroup = create dbsubnetgroup description="my full test dbsubnetgroup" name=my-full-test-dbsubnetgroup subnets=subnet-69bd4324,subnet-a103a4da
 create database engine=mariadb id=my-full-test-db password=awless12345 size=8 type=db.t2.micro username=awlessuser autoupgrade=true availabilityzone=$azone backupretention=2 dbname=awlesstestdb encrypted=false iamrole=my-full-test-role-rds license=general-public-license multiaz=false port=3306 public=false storagetype=standard subnetgroup=$dbsubgroup vpcsecuritygroups=@mysecgroup
 zone = create zone callerreference={random.string} name=awlesstest.io. comment="my full test domain" isprivate=true vpcid=$vpc vpcregion=eu-west-2
@@ -127,8 +120,9 @@ update distribution enable=true id=$cdn
 create repository name=my-full-test-repository
 attach containertask name=my-full-test-containertask image=alpine memory-hard-limit=64 container-name=my-full-test-container command="/bin/bash echo $HELLO $WORLD" env="HELLO:Hello,WORLD:world!" ports=80:80/tcp,9090,9191/udp privileged=true workdir=/root
 create containercluster name=my-full-test-container-cluster
-start containertask type=service name=my-full-test-containertask cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role={ecs.role}
-create appscalingtarget dimension=ecs:service:DesiredCount max-capacity=3 min-capacity=1 resource=service/my-full-test-container-cluster/my-full-test-service-deployment role={appscaling.role} service-namespace=ecs
+ecsRoleArn = arn:aws:iam::{principal.account}:role/ecsServiceRole
+start containertask type=service name=my-full-test-containertask cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role=$ecsRoleArn
+create appscalingtarget dimension=ecs:service:DesiredCount max-capacity=3 min-capacity=1 resource=service/my-full-test-container-cluster/my-full-test-service-deployment role=arn:aws:iam::{principal.account}:role/ecsAutoscaleRole service-namespace=ecs
 create appscalingpolicy dimension=ecs:service:DesiredCount name=my-full-test-appscalingpol resource=service/my-full-test-container-cluster/my-full-test-service-deployment service-namespace=ecs stepscaling-adjustment-type=ChangeInCapacity stepscaling-adjustments=0::+1,:0:-1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-cooldown=60
 create appscalingpolicy dimension=ecs:service:DesiredCount name=my-full-test-appscalingpol-2 resource=service/my-full-test-container-cluster/my-full-test-service-deployment service-namespace=ecs stepscaling-adjustment-type=PercentChangeInCapacity stepscaling-adjustments=0::+1,:0:-1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-min-adjustment-magnitude=1
 
@@ -145,7 +139,7 @@ update loginprofile password=my-full-test-second-password username=my-full-test-
 # create database cluster= dbsecuritygroups= domain= optiongroup= parametergroup= timezone= maintenancewindow="02:30-04:30" backupwindow="00:30-02:30" version="10.1.14" iops=1000 
 # create zone delegationsetid=012345678 
 # create distribution certificate=
-# update stack name=my-full-test-cf-template capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} policy-update-file={cloudformation.policy-file} role={cloudformation.role} template-file={cloudformation.templatefile} use-previous-template=false
+# update stack name=my-full-test-cf-template capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} policy-update-file={cloudformation.policy-file} role=$cloudformationRole template-file={cloudformation.templatefile} use-previous-template=false
 # authenticate registry
-# start containertask type=task name=my-full-test-containertask cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role={ecs.role} # For now as, no instances in the container cluster
+# start containertask type=task name=my-full-test-containertask cluster=my-full-test-container-cluster deployment-name=my-full-test-service-deployment desired-count=1 loadbalancer.container-name=my-full-test-container loadbalancer.container-port=80 loadbalancer.targetgroup=$tg role=$ecsRoleArn # For now as, no instances in the container cluster
 
