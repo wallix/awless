@@ -2,6 +2,7 @@
 
 ### Features
 
+- `awless show` command 'not found' error now suggests if resource with same reference exists in other locally synced regions
 - `awless` template language now supports lists, for example: `create loadbalancer subnets=[$subnet1, $subnet2]`
 - Variables in `awless` template language now support references, holes and lists, for example: `mysecgroups = [$secgroup1, {my.secgroup},sg-123456]`
 - `awless` template language now supports *holes* in strings, for example: `create instance name={prefix}database{version}`

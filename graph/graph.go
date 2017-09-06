@@ -127,6 +127,19 @@ func (g *Graph) FindResourcesByProperty(key string, value interface{}) ([]*Resou
 	return byProperty.Resolve(g.store.Snapshot())
 }
 
+func (g *Graph) FindAncestor(res *Resource, resourceType string) *Resource {
+	var found *Resource
+	find := func(res *Resource, depth int) error {
+		if res.Type() == resourceType {
+			found = res
+			return nil
+		}
+		return nil
+	}
+	g.Accept(&ParentsVisitor{From: res, Each: find})
+	return found
+}
+
 func (g *Graph) GetAllResources(typs ...string) ([]*Resource, error) {
 	byTypes := &ByTypes{typs}
 	return byTypes.Resolve(g.store.Snapshot())

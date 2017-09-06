@@ -313,7 +313,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 			invalidEntityErr := fmt.Errorf("invalid entity '%s'", args[0])
 
-			_, resources := resolveResourceFromRef(args[0])
+			_, resources := resolveResourceFromRefInCurrentRegion(args[0])
 			if len(resources) != 1 {
 				return invalidEntityErr
 			}

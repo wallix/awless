@@ -22,6 +22,42 @@ import (
 	tstore "github.com/wallix/triplestore"
 )
 
+func TestFindAncestors(t *testing.T) {
+	g := NewGraph()
+	inst := InitResource("instance", "inst_1")
+	sub := InitResource("subnet", "subnet_1")
+	region := InitResource("region", "north-korea")
+	g.AddResource(inst, sub, region)
+	g.AddParentRelation(sub, inst)
+	g.AddParentRelation(region, sub)
+
+	res := g.FindAncestor(inst, "region")
+	if got, want := res.Id(), "north-korea"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := res.Type(), "region"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	res = g.FindAncestor(inst, "subnet")
+	if got, want := res.Id(), "subnet_1"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := res.Type(), "subnet"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	res = g.FindAncestor(sub, "region")
+	if got, want := res.Id(), "north-korea"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := res.Type(), "region"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	res = g.FindAncestor(region, "region")
+	if res != nil {
+		t.Fatalf("got %v, want nil", res)
+	}
+}
+
 func TestAddGraphRelation(t *testing.T) {
 	t.Run("Add parent", func(t *testing.T) {
 		g := NewGraph()

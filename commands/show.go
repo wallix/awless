@@ -71,12 +71,12 @@ var showCmd = &cobra.Command{
 		resource, gph = findResourceInLocalGraphs(ref)
 
 		if resource == nil && localGlobalFlag {
-			exitOn(notFound)
+			exitOn(decorateWithSuggestion(notFound, ref))
 		} else if resource == nil {
 			runFullSync()
 
 			if resource, gph = findResourceInLocalGraphs(ref); resource == nil {
-				exitOn(notFound)
+				exitOn(decorateWithSuggestion(notFound, ref))
 			}
 		}
 
@@ -230,7 +230,7 @@ func runFullSync() {
 }
 
 func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
-	g, resources := resolveResourceFromRef(ref)
+	g, resources := resolveResourceFromRefInCurrentRegion(ref)
 	switch len(resources) {
 	case 0:
 		return nil, nil
@@ -253,10 +253,19 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 	return nil, nil
 }
 
-func resolveResourceFromRef(ref string) (*graph.Graph, []*graph.Resource) {
+func resolveResourceFromRefInCurrentRegion(ref string) (*graph.Graph, []*graph.Resource) {
 	g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
 	exitOn(err)
+	return resolveResourceFromRef(g, ref)
+}
 
+func resolveResourceFromRefInAllLocalRegion(ref string) (*graph.Graph, []*graph.Resource) {
+	g, err := sync.LoadAllLocalGraphs()
+	exitOn(err)
+	return resolveResourceFromRef(g, ref)
+}
+
+func resolveResourceFromRef(g *graph.Graph, ref string) (*graph.Graph, []*graph.Resource) {
 	name := deprefix(ref)
 	byName := &graph.ByProperty{Key: "Name", Value: name}
 
@@ -265,26 +274,36 @@ func resolveResourceFromRef(ref string) (*graph.Graph, []*graph.Resource) {
 		rs, err := g.ResolveResources(byName)
 		exitOn(err)
 		return g, rs
-	} else {
-		rs, err := g.ResolveResources(&graph.ById{Id: name})
-		exitOn(err)
-
-		if len(rs) > 0 {
-			return g, rs
-		} else {
-			rs, err := g.ResolveResources(
-				byName,
-				&graph.ByProperty{Key: "Arn", Value: name},
-			)
-			exitOn(err)
-
-			return g, rs
-		}
 	}
+	rs, err := g.ResolveResources(&graph.ById{Id: name})
+	exitOn(err)
+
+	if len(rs) > 0 {
+		return g, rs
+	}
+
+	rs, err = g.ResolveResources(
+		byName,
+		&graph.ByProperty{Key: "Arn", Value: name},
+	)
+	exitOn(err)
+
+	return g, rs
 }
 
 func deprefix(s string) string {
 	return strings.TrimPrefix(s, "@")
+}
+
+func decorateWithSuggestion(err error, ref string) error {
+	buf := bytes.NewBufferString(fmt.Sprintf("%s in region %s", err.Error(), config.GetAWSRegion()))
+	g, resources := resolveResourceFromRefInAllLocalRegion(ref)
+	for _, res := range resources {
+		if found := g.FindAncestor(res, cloud.Region); found != nil {
+			buf.WriteString(fmt.Sprintf("\n\tfound previously synced under region %s as %s. Show it with `awless show %s -r %s --local`", found.Id(), res, res.Id(), found.Id()))
+		}
+	}
+	return errors.New(buf.String())
 }
 
 func printResourceList(title string, list []*graph.Resource, shortenListMsg ...string) {
