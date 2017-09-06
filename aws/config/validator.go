@@ -44,7 +44,7 @@ func StdinRegionSelector() string {
 	fmt.Println("Please enter one region: (Ctrl+C to quit, Tab for completion)")
 	var region string
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:       " > ",
+		Prompt:       "> ",
 		AutoComplete: regionCompleter,
 	})
 	if err != nil {
