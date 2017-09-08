@@ -42,7 +42,7 @@ func init() {
 
 var logCmd = &cobra.Command{
 	Use:               "log",
-	Short:             "Shows the cloud infrastructure changes log",
+	Short:             "Show the log of template actions against your cloud infrastructure",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 

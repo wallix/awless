@@ -76,7 +76,7 @@ func init() {
 
 var runCmd = &cobra.Command{
 	Use:               "run PATH",
-	Short:             "Run a template given a filepath or a URL (prefixed with http)",
+	Short:             "Run a template given a filepath or URL",
 	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls\n  awless run repo:create_vpc",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),

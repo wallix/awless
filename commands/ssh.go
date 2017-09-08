@@ -59,8 +59,8 @@ func init() {
 
 var sshCmd = &cobra.Command{
 	Use:   "ssh [USER@]INSTANCE",
-	Short: "Launch a SSH (Secure Shell) session to an instance given an id or alias",
-	Long:  "Launch a SSH (Secure Shell) session to an instance given an id or alias. All connection details are derived from a given instance name/id.",
+	Short: "Launch a SSH session to an instance given an id or alias",
+	Long:  "Launch a SSH session to an instance given an id or alias. All connection details are derived from a given instance name/id.",
 	Example: `  awless ssh i-8d43b21b                       # using the instance id
   awless ssh redis-prod                       # using name only (other infos are derived)
   awless ssh ec2-user@redis-prod              # forcing the user

@@ -52,7 +52,7 @@ func init() {
 
 var syncCmd = &cobra.Command{
 	Use:               "sync",
-	Short:             "Manual sync of your remote resources to your local rdf store. For example when auto sync unset",
+	Short:             "Manual sync of remote resources to the local store (ex: when autosync is unset)",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
