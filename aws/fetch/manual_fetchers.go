@@ -482,47 +482,28 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		objectsC := make(chan *iam.Policy)
 		resourcesC := make(chan *graph.Resource)
 
-		processPagePolicies := func(page *iam.ListPoliciesOutput, isAttached bool) bool {
-			for _, p := range page.Policies {
-				objectsC <- p
-				res, rerr := awsconv.NewResource(p)
-				if rerr != nil {
-					return false
-				}
-				if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
-					res.Properties[properties.Type] = "AWS Managed"
-				} else {
-					res.Properties[properties.Type] = "Customer Managed"
-				}
-				res.Properties[properties.Attached] = isAttached
-
-				resourcesC <- res
-			}
-			return page.Marker != nil
-		}
-
 		var wg sync.WaitGroup
 
-		// Return all policies that are only attached
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := conf.APIs.Iam.ListPoliciesPages(&iam.ListPoliciesInput{OnlyAttached: awssdk.Bool(true)},
-				func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
-					return processPagePolicies(out, true)
-				})
-			if err != nil {
-				errC <- err
-			}
-		}()
+			err := conf.APIs.Iam.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String("LocalManagedPolicy"), awssdk.String("AWSManagedPolicy")}},
+				func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
+					for _, p := range out.Policies {
+						res, rerr := awsconv.NewResource(p)
+						if rerr != nil {
+							return false
+						}
+						if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
+							res.Properties[properties.Type] = "AWS Managed"
+						} else {
+							res.Properties[properties.Type] = "Customer Managed"
+						}
+						res.Properties[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
 
-		// Return only self managed policies (local scope)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			err := conf.APIs.Iam.ListPoliciesPages(&iam.ListPoliciesInput{Scope: awssdk.String("Local")},
-				func(out *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool) {
-					return processPagePolicies(out, false)
+						resourcesC <- res
+					}
+					return out.Marker != nil
 				})
 			if err != nil {
 				errC <- err

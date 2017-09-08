@@ -43,7 +43,7 @@ func (m *mockIam) ListUsersPages(input *iam.ListUsersInput, fn func(p *iam.ListU
 	return nil
 }
 
-func (m *mockIam) ListPoliciesPages(input *iam.ListPoliciesInput, fn func(p *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool)) error {
+/*func (m *mockIam) ListPoliciesPages(input *iam.ListPoliciesInput, fn func(p *iam.ListPoliciesOutput, lastPage bool) (shouldContinue bool)) error {
 	if awssdk.BoolValue(input.OnlyAttached) == false {
 		return nil
 	}
@@ -54,10 +54,15 @@ func (m *mockIam) ListPoliciesPages(input *iam.ListPoliciesInput, fn func(p *iam
 	}
 	fn(&iam.ListPoliciesOutput{Policies: policies}, true)
 	return nil
-}
+}*/
 
 func (m *mockIam) GetAccountAuthorizationDetailsPages(input *iam.GetAccountAuthorizationDetailsInput, fn func(p *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool)) error {
-	fn(&iam.GetAccountAuthorizationDetailsOutput{GroupDetailList: m.groupdetails, Policies: m.managedpolicydetails, RoleDetailList: m.roledetails, UserDetailList: m.userdetails}, true)
+	fn(&iam.GetAccountAuthorizationDetailsOutput{
+		GroupDetailList: m.groupdetails,
+		Policies:        m.managedpolicydetails,
+		RoleDetailList:  m.roledetails,
+		UserDetailList:  m.userdetails,
+	}, true)
 	return nil
 }
 

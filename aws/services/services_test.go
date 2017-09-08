@@ -49,9 +49,9 @@ import (
 
 func TestBuildAccessRdfGraph(t *testing.T) {
 	managedPolicies := []*iam.ManagedPolicyDetail{
-		{PolicyId: awssdk.String("managed_policy_1"), PolicyName: awssdk.String("nmanaged_policy_1")},
-		{PolicyId: awssdk.String("managed_policy_2"), PolicyName: awssdk.String("nmanaged_policy_2")},
-		{PolicyId: awssdk.String("managed_policy_3"), PolicyName: awssdk.String("nmanaged_policy_3"), Arn: awssdk.String("arn:aws:iam::aws:policy/managed_policy_3")},
+		{PolicyId: awssdk.String("managed_policy_1"), PolicyName: awssdk.String("nmanaged_policy_1"), AttachmentCount: awssdk.Int64(3)},
+		{PolicyId: awssdk.String("managed_policy_2"), PolicyName: awssdk.String("nmanaged_policy_2"), AttachmentCount: awssdk.Int64(0)},
+		{PolicyId: awssdk.String("managed_policy_3"), PolicyName: awssdk.String("nmanaged_policy_3"), Arn: awssdk.String("arn:aws:iam::aws:policy/managed_policy_3"), AttachmentCount: awssdk.Int64(1)},
 	}
 
 	groups := []*iam.GroupDetail{
@@ -189,7 +189,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 
 	expected := map[string]*graph.Resource{
 		"managed_policy_1": resourcetest.Policy("managed_policy_1").Prop(p.Name, "nmanaged_policy_1").Prop(p.Type, "Customer Managed").Prop(p.Attached, true).Build(),
-		"managed_policy_2": resourcetest.Policy("managed_policy_2").Prop(p.Name, "nmanaged_policy_2").Prop(p.Type, "Customer Managed").Prop(p.Attached, true).Build(),
+		"managed_policy_2": resourcetest.Policy("managed_policy_2").Prop(p.Name, "nmanaged_policy_2").Prop(p.Type, "Customer Managed").Prop(p.Attached, false).Build(),
 		"managed_policy_3": resourcetest.Policy("managed_policy_3").Prop(p.Name, "nmanaged_policy_3").Prop(p.Arn, "arn:aws:iam::aws:policy/managed_policy_3").Prop(p.Type, "AWS Managed").Prop(p.Attached, true).Build(),
 		"group_1":          resourcetest.Group("group_1").Prop(p.Name, "ngroup_1").Prop(p.InlinePolicies, []string{"npolicy_1"}).Build(),
 		"group_2":          resourcetest.Group("group_2").Prop(p.Name, "ngroup_2").Prop(p.InlinePolicies, []string{"npolicy_1"}).Build(),
