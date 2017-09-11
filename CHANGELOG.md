@@ -2,6 +2,8 @@
 
 ### Features
 
+- `awless show policy-name/policy-id` now displays the current policy Document (in JSON).
+
 ### Fixes
 - `awless ssh --through`: no reusing same conn to avoid EOF. Bug: only first user (amazonlinux) was successful (usually ec2-user) !!
 - `awless ssh --through`: on new proxy client catching error that where shadowed
