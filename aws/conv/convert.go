@@ -19,10 +19,12 @@ package awsconv
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/adler32"
 	"net"
+	"net/url"
 	"reflect"
 	"sync"
 	"time"
@@ -605,6 +607,24 @@ var extractContainersImagesFn = func(i interface{}) (interface{}, error) {
 		keyVals = append(keyVals, keyval)
 	}
 	return keyVals, nil
+}
+
+func extractDocumentDefaultVersion(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*iam.PolicyVersion); !ok {
+		return nil, fmt.Errorf("extract default version of document, not a policy version slice but a %T", i)
+	}
+	for _, version := range i.([]*iam.PolicyVersion) {
+		if awssdk.BoolValue(version.IsDefaultVersion) {
+			docStr := awssdk.StringValue(version.Document)
+			if str, err := url.QueryUnescape(docStr); err == nil {
+				var buff bytes.Buffer
+				err = json.Compact(&buff, []byte(str))
+				return buff.String(), err
+			}
+			return docStr, nil
+		}
+	}
+	return "", nil
 }
 
 func notEmpty(str *string) bool {

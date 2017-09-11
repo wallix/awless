@@ -500,7 +500,6 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 							res.Properties[properties.Type] = "Customer Managed"
 						}
 						res.Properties[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
-
 						resourcesC <- res
 					}
 					return out.Marker != nil

@@ -84,6 +84,7 @@ const (
 	Dimensions                        = "Dimensions"
 	DisableRollback                   = "DisableRollback"
 	DockerVersion                     = "DockerVersion"
+	Document                          = "Document"
 	Enabled                           = "Enabled"
 	Encrypted                         = "Encrypted"
 	Endpoint                          = "Endpoint"

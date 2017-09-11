@@ -86,6 +86,7 @@ const (
 	Dimensions                        = "cloud:dimensions"
 	DisableRollback                   = "cloud:disableRollback"
 	DockerVersion                     = "cloud:dockerVersion"
+	Document                          = "cloud:document"
 	Enabled                           = "cloud:enabled"
 	Encrypted                         = "cloud:encrypted"
 	Endpoint                          = "cloud:endpoint"
@@ -291,6 +292,7 @@ var Labels = map[string]string{
 	properties.Dimensions:                        Dimensions,
 	properties.DisableRollback:                   DisableRollback,
 	properties.DockerVersion:                     DockerVersion,
+	properties.Document:                          Document,
 	properties.Enabled:                           Enabled,
 	properties.Encrypted:                         Encrypted,
 	properties.Endpoint:                          Endpoint,
@@ -496,6 +498,7 @@ var Properties = RDFProperties{
 	Dimensions:              {ID: Dimensions, RdfType: "rdf:Property", RdfsLabel: "Dimensions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	DisableRollback:         {ID: DisableRollback, RdfType: "rdf:Property", RdfsLabel: "DisableRollback", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	DockerVersion:           {ID: DockerVersion, RdfType: "rdf:Property", RdfsLabel: "DockerVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Document:                {ID: Document, RdfType: "rdf:Property", RdfsLabel: "Document", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Enabled:                 {ID: Enabled, RdfType: "rdf:Property", RdfsLabel: "Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Encrypted:               {ID: Encrypted, RdfType: "rdf:Property", RdfsLabel: "Encrypted", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Endpoint:                {ID: Endpoint, RdfType: "rdf:Property", RdfsLabel: "Endpoint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

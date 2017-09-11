@@ -81,6 +81,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Dimensions", RDFLabel: fmt.Sprintf("%s:dimensions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.KeyValue},
 	{AwlessLabel: "DisableRollback", RDFLabel: fmt.Sprintf("%s:disableRollback", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "DockerVersion", RDFLabel: fmt.Sprintf("%s:dockerVersion", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "Document", RDFLabel: fmt.Sprintf("%s:document", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Enabled", RDFLabel: fmt.Sprintf("%s:enabled", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Encrypted", RDFLabel: fmt.Sprintf("%s:encrypted", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Endpoint", RDFLabel: fmt.Sprintf("%s:endpoint", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

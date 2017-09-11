@@ -17,6 +17,7 @@ limitations under the License.
 package graph
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"sort"
@@ -439,6 +440,91 @@ func (o *DistributionOrigin) unmarshalFromTriples(gph tstore.RDFGraph, id string
 		return fmt.Errorf("unmarshal DistributionOrigin: extract Config: %s", err)
 	}
 	return nil
+}
+
+type Policy struct {
+	Version    string             `json:",omitempty"`
+	ID         string             `json:"Id,omitempty"`
+	Statements compositeStatement `json:"Statement,omitempty"`
+}
+
+type PolicyStatement struct {
+	ID           string              `json:"Sid,omitempty"`
+	Principal    *StatementPrincipal `json:",omitempty"`
+	NotPrincipal *StatementPrincipal `json:",omitempty"`
+	Effect       string              `json:",omitempty"`
+	Actions      compositeString     `json:"Action,omitempty"`
+	NotActions   compositeString     `json:"NotAction,omitempty"`
+	Resources    compositeString     `json:"Resource,omitempty"`
+	NotResources compositeString     `json:"NotResource,omitempty"`
+	Condition    interface{}         `json:",omitempty"`
+}
+
+type StatementPrincipal struct {
+	AWS       compositeString `json:",omitempty"`
+	Service   compositeString `json:",omitempty"`
+	Federated compositeString `json:",omitempty"`
+}
+
+// To support AWS JSON for Policy in which Principal, Action,... can be either string or slice of string
+type compositeString []string
+
+func (c *compositeString) UnmarshalJSON(data []byte) (err error) {
+	var str string
+	if err = json.Unmarshal(data, &str); err == nil {
+		*c = []string{str}
+		return
+	}
+
+	var slice []string
+	if err = json.Unmarshal(data, &slice); err != nil {
+		return
+	}
+	*c = slice
+	return
+}
+
+// To support AWS JSON for Policy in which Statement can be either Statement or slice of Statement
+type compositeStatement []*PolicyStatement
+
+func (c *compositeStatement) UnmarshalJSON(data []byte) (err error) {
+	var statement *PolicyStatement
+	if err = json.Unmarshal(data, &statement); err == nil {
+		*c = []*PolicyStatement{statement}
+		return
+	}
+
+	var slice []*PolicyStatement
+	if err = json.Unmarshal(data, &slice); err != nil {
+		return
+	}
+	*c = slice
+	return
+}
+
+// To support AWS JSON for Policy in which a principal can be either a JSON object, either "*"
+func (c *StatementPrincipal) UnmarshalJSON(data []byte) (err error) {
+	var wildCardString string
+	if err = json.Unmarshal(data, &wildCardString); err == nil {
+		if wildCardString == "*" {
+			c.AWS = []string{"*"} // according to doc, "Principal":"*" is equivalent to "Principal":{"AWS":"*"}
+			return
+		} else {
+			return fmt.Errorf("unmarshaling policy: a principal string can only contain '*', but got %s", wildCardString)
+		}
+	}
+
+	type aliasPrincipal struct {
+		AWS       compositeString `json:",omitempty"`
+		Service   compositeString `json:",omitempty"`
+		Federated compositeString `json:",omitempty"`
+	}
+	var principal *aliasPrincipal
+	if err = json.Unmarshal(data, &principal); err != nil {
+		return
+	}
+	*c = StatementPrincipal(*principal)
+	return
 }
 
 func extractUniqueLiteralTextFromGraph(gph tstore.RDFGraph, subj, pred string) (string, error) {

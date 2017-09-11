@@ -380,6 +380,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Description: {name: "Description", transform: extractValueFn},
 		properties.Attachable:  {name: "IsAttachable", transform: extractValueFn},
 		properties.Path:        {name: "Path", transform: extractValueFn},
+		properties.Document:    {name: "PolicyVersionList", transform: extractDocumentDefaultVersion},
 	},
 	cloud.AccessKey: {
 		properties.Username: {name: "UserName", transform: extractValueFn},
