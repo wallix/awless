@@ -1,3 +1,11 @@
+## v0.1.4 [unreleased]
+
+### Features
+
+### Fixes
+- `awless ssh --through`: no reusing same conn to avoid EOF. Bug: only first user (amazonlinux) was successful (usually ec2-user) !!
+- `awless ssh --through`: on new proxy client catching error that where shadowed
+
 ## v0.1.3 [2017-09-06]
 
 ### Features

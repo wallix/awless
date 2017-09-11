@@ -67,10 +67,10 @@ var sshCmd = &cobra.Command{
 
   awless ssh redis-prod -i keyname            # using a key stored in ~/.ssh/keyname.pem
   awless ssh redis-prod -i ./path/toward/key  # with a keyfile
-  
+
   awless ssh db-private --through my-bastion  # connect to a private inst through a public one
   awless ssh db-private --private             # connect using the private IP (when you have a VPN, tunnel, etc ...)
-  
+
   awless ssh redis-prod --print-cli           # Print out the full terminal command to connect to instance
   awless ssh redis-prod --print-config        # Print out the full SSH config (i.e: ~/.ssh/config) to connect to instance`,
 
@@ -152,6 +152,7 @@ var sshCmd = &cobra.Command{
 			} else {
 				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, awsconfig.DefaultAMIUsers...)
 			}
+			exitOn(err)
 		}
 
 		if printSSHConfigFlag {

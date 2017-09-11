@@ -102,12 +102,12 @@ func (c *Client) DialWithUsers(usernames ...string) error {
 
 func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string) (*Client, error) {
 	hostport := fmt.Sprintf("%s:22", destinationHost)
-	netConn, err := c.Dial("tcp", hostport)
-	if err != nil {
-		return nil, err
-	}
-	c.logger.ExtraVerbosef("valid tcp connect from %s to %s", c.IP, destinationHost)
 	for _, user := range usernames {
+		netConn, err := c.Dial("tcp", hostport)
+		if err != nil {
+			return nil, err
+		}
+		c.logger.ExtraVerbosef("valid new tcp connection from %s to %s", c.IP, destinationHost)
 		newConfig := *c.Config
 		newConfig.User = user
 		if !c.StrictHostKeyChecking {
@@ -115,7 +115,8 @@ func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string)
 		}
 		conn, chans, reqs, err := gossh.NewClientConn(netConn, hostport, &newConfig)
 		if err != nil {
-			c.logger.ExtraVerbosef("cannot proxy with user %s", user)
+			netConn.Close()
+			c.logger.ExtraVerbosef("cannot proxy with user %s (err: %s)", user, err)
 			continue
 		}
 		c.logger.ExtraVerbosef("proxied successfully with user %s", user)
@@ -133,7 +134,7 @@ func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string)
 		}, nil
 	}
 
-	return nil, fmt.Errorf("Cannot proxy from %s to %s with users %q", c.IP, destinationHost, usernames)
+	return nil, fmt.Errorf("cannot proxy from %s to %s with users %q", c.IP, destinationHost, usernames)
 }
 
 func (c *Client) CloseAll() error {
