@@ -48,6 +48,8 @@ func (te *Template) Revert() (*Template, error) {
 				case "containertask":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
 					params = append(params, fmt.Sprintf("container-name=%s", quoteParamIfNeeded(cmd.Params["container-name"])))
+				case "networkinterface":
+					params = append(params, fmt.Sprintf("attachment=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				default:
 					for k, v := range cmd.Params {
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))

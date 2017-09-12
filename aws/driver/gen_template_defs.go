@@ -44,6 +44,11 @@ var APIPerTemplateDefName = map[string]string{
 	"copyimage":                 "ec2",
 	"importimage":               "ec2",
 	"deleteimage":               "ec2",
+	"createnetworkinterface":    "ec2",
+	"deletenetworkinterface":    "ec2",
+	"attachnetworkinterface":    "ec2",
+	"detachnetworkinterface":    "ec2",
+	"checknetworkinterface":     "ec2",
 	"createvolume":              "ec2",
 	"checkvolume":               "ec2",
 	"deletevolume":              "ec2",
@@ -319,6 +324,41 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "image",
 		Api:            "ec2",
 		RequiredParams: []string{"delete-snapshots", "id"},
+		ExtraParams:    []string{},
+	},
+	"createnetworkinterface": {
+		Action:         "create",
+		Entity:         "networkinterface",
+		Api:            "ec2",
+		RequiredParams: []string{"subnet"},
+		ExtraParams:    []string{"description", "privateip", "securitygroups"},
+	},
+	"deletenetworkinterface": {
+		Action:         "delete",
+		Entity:         "networkinterface",
+		Api:            "ec2",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
+	"attachnetworkinterface": {
+		Action:         "attach",
+		Entity:         "networkinterface",
+		Api:            "ec2",
+		RequiredParams: []string{"device-index", "id", "instance"},
+		ExtraParams:    []string{},
+	},
+	"detachnetworkinterface": {
+		Action:         "detach",
+		Entity:         "networkinterface",
+		Api:            "ec2",
+		RequiredParams: []string{},
+		ExtraParams:    []string{"attachment", "force", "id", "instance"},
+	},
+	"checknetworkinterface": {
+		Action:         "check",
+		Entity:         "networkinterface",
+		Api:            "ec2",
+		RequiredParams: []string{"id", "state", "timeout"},
 		ExtraParams:    []string{},
 	},
 	"createvolume": {
@@ -1187,6 +1227,11 @@ func DriverSupportedActions() map[string][]string {
 	supported["copy"] = append(supported["copy"], "image")
 	supported["import"] = append(supported["import"], "image")
 	supported["delete"] = append(supported["delete"], "image")
+	supported["create"] = append(supported["create"], "networkinterface")
+	supported["delete"] = append(supported["delete"], "networkinterface")
+	supported["attach"] = append(supported["attach"], "networkinterface")
+	supported["detach"] = append(supported["detach"], "networkinterface")
+	supported["check"] = append(supported["check"], "networkinterface")
 	supported["create"] = append(supported["create"], "volume")
 	supported["check"] = append(supported["check"], "volume")
 	supported["delete"] = append(supported["delete"], "volume")

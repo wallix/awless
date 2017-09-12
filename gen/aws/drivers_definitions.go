@@ -292,6 +292,50 @@ var DriversDefs = []driversDef{
 				},
 			},
 
+			// Network Interface
+			{
+				Action: "create", Entity: cloud.NetworkInterface, ApiMethod: "CreateNetworkInterface", Input: "CreateNetworkInterfaceInput", Output: "CreateNetworkInterfaceOutput", OutputExtractor: "aws.StringValue(output.NetworkInterface.NetworkInterfaceId)",
+				RequiredParams: []param{
+					{AwsField: "SubnetId", TemplateName: "subnet", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+					{AwsField: "Groups", TemplateName: "securitygroups", AwsType: "awsstringslice"},
+					{AwsField: "PrivateIpAddress", TemplateName: "privateip", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.NetworkInterface, ApiMethod: "DeleteNetworkInterface", Input: "DeleteNetworkInterfaceInput", Output: "DeleteNetworkInterfaceOutput",
+				RequiredParams: []param{
+					{AwsField: "NetworkInterfaceId", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "attach", Entity: cloud.NetworkInterface, ApiMethod: "AttachNetworkInterface", Input: "AttachNetworkInterfaceInput", Output: "AttachNetworkInterfaceOutput", OutputExtractor: "aws.StringValue(output.AttachmentId)",
+				RequiredParams: []param{
+					{AwsField: "NetworkInterfaceId", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
+					{AwsField: "DeviceIndex", TemplateName: "device-index", AwsType: "awsint64"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.NetworkInterface, ManualFuncDefinition: true,
+				ExtraParams: []param{
+					{AwsField: "AttachmentId", TemplateName: "attachment", AwsType: "awsstr"},
+					{AwsField: "InstanceId", TemplateName: "instance", AwsType: "awsstr"},
+					{AwsField: "NetworkInterfaceId", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "Force", TemplateName: "force", AwsType: "awsbool"},
+				},
+			},
+			{
+				Action: "check", Entity: cloud.NetworkInterface, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "id"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
+
 			// VOLUME
 			{
 				Action: "create", Entity: cloud.Volume, ApiMethod: "CreateVolume", Input: "CreateVolumeInput", Output: "Volume", OutputExtractor: "aws.StringValue(output.VolumeId)",

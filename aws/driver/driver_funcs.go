@@ -175,6 +175,173 @@ func removeString(arr []string, s string) (out []string) {
 	return
 }
 
+func (d *Ec2Driver) Detach_Networkinterface_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	_, hasAttachment := params["attachment"]
+	instanceId, hasInstance := params["instance"].(string)
+	netInterfaceId, hasId := params["id"].(string)
+
+	input := &ec2.DetachNetworkInterfaceInput{}
+	input.DryRun = aws.Bool(true)
+
+	if hasAttachment {
+		if _, ok := params["attachment"]; ok {
+			if err := setFieldWithType(params["attachment"], input, "AttachmentId", awsstr, ctx); err != nil {
+				return nil, err
+			}
+		}
+	} else if hasInstance && hasId {
+		attachId, err := d.findAttachmentBetweenInstanceAndNetworkInterface(instanceId, netInterfaceId)
+		if err == nil && attachId != "" {
+			input.SetAttachmentId(attachId)
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("dry run: detach networkinterface: either required 'attachment' or ('instance' and 'id')")
+	}
+
+	if _, ok := params["force"]; ok {
+		if err := setFieldWithType(params["force"], input, "Force", awsbool, ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	_, err := d.DetachNetworkInterface(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound):
+			id := fakeDryRunId("networkinterface")
+			d.logger.Verbose("dry run: detach networkinterface ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: detach networkinterface: %s", err)
+}
+
+func (d *Ec2Driver) Detach_Networkinterface(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	_, hasAttachment := params["attachment"]
+	instanceId, hasInstance := params["instance"].(string)
+	netInterfaceId, hasId := params["id"].(string)
+
+	input := &ec2.DetachNetworkInterfaceInput{}
+
+	if hasAttachment {
+		if _, ok := params["attachment"]; ok {
+			if err := setFieldWithType(params["attachment"], input, "AttachmentId", awsstr, ctx); err != nil {
+				return nil, err
+			}
+		}
+	} else if hasInstance && hasId {
+		attachId, err := d.findAttachmentBetweenInstanceAndNetworkInterface(instanceId, netInterfaceId)
+		if err == nil && attachId != "" {
+			input.SetAttachmentId(attachId)
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("dry run: detach networkinterface: either required 'attachment' or ('instance' and 'id')")
+	}
+
+	if _, ok := params["force"]; ok {
+		if err := setFieldWithType(params["force"], input, "Force", awsbool, ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	if _, err := d.DetachNetworkInterface(input); err != nil {
+		return nil, fmt.Errorf("detach networkinterface: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DetachNetworkInterface call took %s", time.Since(start))
+	d.logger.Info("detach networkinterface done")
+	return nil, nil
+}
+
+func (d *Ec2Driver) findAttachmentBetweenInstanceAndNetworkInterface(instanceId, netInterfaceId string) (string, error) {
+	filters := &ec2.DescribeInstancesInput{}
+	filters.SetFilters([]*ec2.Filter{
+		&ec2.Filter{Name: aws.String("network-interface.network-interface-id"), Values: aws.StringSlice([]string{netInterfaceId})},
+		&ec2.Filter{Name: aws.String("instance-id"), Values: aws.StringSlice([]string{instanceId})},
+	})
+	if out, err := d.DescribeInstances(filters); err != nil {
+		return "", err
+	} else if reserv := out.Reservations; len(reserv) == 1 && len(reserv[0].Instances) == 1 {
+		for _, neti := range reserv[0].Instances[0].NetworkInterfaces {
+			if netInterfaceId == aws.StringValue(neti.NetworkInterfaceId) {
+				return aws.StringValue(neti.Attachment.AttachmentId), nil
+			}
+		}
+	}
+	return "", fmt.Errorf("not found: attachment between instance '%s' and network interface '%s'", instanceId, netInterfaceId)
+}
+
+func (d *Ec2Driver) Check_Networkinterface_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("check network interface: missing required params 'id'")
+	}
+
+	states := map[string]struct{}{
+		"available":   {},
+		"attaching":   {},
+		"detaching":   {},
+		"in-use":      {},
+		notFoundState: {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check network interface: missing required params 'state'")
+	} else {
+		if _, stok := states[state]; !stok {
+			return nil, fmt.Errorf("check network interface: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check network interface: missing required params 'timeout'")
+	}
+
+	if _, ok := params["timeout"].(int); !ok {
+		return nil, errors.New("check network interface: timeout param is not int")
+	}
+	d.logger.Verbose("dry run: check network interface ok")
+	return nil, nil
+}
+
+func (d *Ec2Driver) Check_Networkinterface(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DescribeNetworkInterfacesInput{
+		NetworkInterfaceIds: []*string{aws.String(fmt.Sprint(params["id"]))},
+	}
+
+	c := &checker{
+		description: fmt.Sprintf("network interface %s", params["id"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeNetworkInterfaces(input)
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "NetworkInterfaceNotFound" {
+						return notFoundState, nil
+					}
+				} else {
+					return "", err
+				}
+			} else {
+				for _, neti := range output.NetworkInterfaces {
+					if aws.StringValue(neti.NetworkInterfaceId) == fmt.Sprint(params["id"]) {
+						return aws.StringValue(neti.Status), nil
+					}
+				}
+			}
+			return notFoundState, nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
+}
+
 func (d *Ec2Driver) Attach_Instanceprofile_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	instanceId, ok := params["instance"].(string)
 	if !ok {
@@ -1318,7 +1485,7 @@ func (d *Ec2Driver) Check_Volume_DryRun(ctx driver.Context, params map[string]in
 	if _, ok := params["timeout"].(int); !ok {
 		return nil, errors.New("check volume: timeout param is not int")
 	}
-	d.logger.Verbose("dry run: check instance ok")
+	d.logger.Verbose("dry run: check volume ok")
 	return nil, nil
 }
 

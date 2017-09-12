@@ -1092,6 +1092,211 @@ func (d *Ec2Driver) Import_Image(ctx driver.Context, params map[string]interface
 }
 
 // This function was auto generated
+func (d *Ec2Driver) Create_Networkinterface_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateNetworkInterfaceInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["securitygroups"]; ok {
+		err = setFieldWithType(params["securitygroups"], input, "Groups", awsstringslice, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["privateip"]; ok {
+		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = d.CreateNetworkInterface(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("networkinterface")
+			d.logger.Verbose("dry run: create networkinterface ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: create networkinterface: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Create_Networkinterface(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.CreateNetworkInterfaceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["description"]; ok {
+		err = setFieldWithType(params["description"], input, "Description", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["securitygroups"]; ok {
+		err = setFieldWithType(params["securitygroups"], input, "Groups", awsstringslice, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["privateip"]; ok {
+		err = setFieldWithType(params["privateip"], input, "PrivateIpAddress", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *ec2.CreateNetworkInterfaceOutput
+	output, err = d.CreateNetworkInterface(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create networkinterface: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.CreateNetworkInterface call took %s", time.Since(start))
+	id := aws.StringValue(output.NetworkInterface.NetworkInterfaceId)
+
+	d.logger.Infof("create networkinterface '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Networkinterface_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteNetworkInterfaceInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "NetworkInterfaceId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.DeleteNetworkInterface(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			id := fakeDryRunId("networkinterface")
+			d.logger.Verbose("dry run: delete networkinterface ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: delete networkinterface: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Delete_Networkinterface(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.DeleteNetworkInterfaceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "NetworkInterfaceId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.DeleteNetworkInterfaceOutput
+	output, err = d.DeleteNetworkInterface(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete networkinterface: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.DeleteNetworkInterface call took %s", time.Since(start))
+	d.logger.Info("delete networkinterface done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Attach_Networkinterface_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AttachNetworkInterfaceInput{}
+	input.DryRun = aws.Bool(true)
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "NetworkInterfaceId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["device-index"], input, "DeviceIndex", awsint64, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = d.AttachNetworkInterface(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			fmt.Println(code, err)
+			id := fakeDryRunId("networkinterface")
+			d.logger.Verbose("dry run: attach networkinterface ok")
+			return id, nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: attach networkinterface: %s", err)
+}
+
+// This function was auto generated
+func (d *Ec2Driver) Attach_Networkinterface(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &ec2.AttachNetworkInterfaceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "NetworkInterfaceId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["instance"], input, "InstanceId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["device-index"], input, "DeviceIndex", awsint64, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *ec2.AttachNetworkInterfaceOutput
+	output, err = d.AttachNetworkInterface(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("attach networkinterface: %s", err)
+	}
+	d.logger.ExtraVerbosef("ec2.AttachNetworkInterface call took %s", time.Since(start))
+	id := aws.StringValue(output.AttachmentId)
+
+	d.logger.Infof("attach networkinterface '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
 func (d *Ec2Driver) Create_Volume_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &ec2.CreateVolumeInput{}
 	input.DryRun = aws.Bool(true)

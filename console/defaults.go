@@ -157,6 +157,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Instance},
 		StringColumnDefinition{Prop: properties.PrivateIP},
 		StringColumnDefinition{Prop: properties.PublicIP},
+		StringColumnDefinition{Prop: properties.Description},
 	},
 	// Loadbalancer
 	cloud.LoadBalancer: {

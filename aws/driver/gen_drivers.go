@@ -188,6 +188,36 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Image, nil
 
+	case "createnetworkinterface":
+		if d.dryRun {
+			return d.Create_Networkinterface_DryRun, nil
+		}
+		return d.Create_Networkinterface, nil
+
+	case "deletenetworkinterface":
+		if d.dryRun {
+			return d.Delete_Networkinterface_DryRun, nil
+		}
+		return d.Delete_Networkinterface, nil
+
+	case "attachnetworkinterface":
+		if d.dryRun {
+			return d.Attach_Networkinterface_DryRun, nil
+		}
+		return d.Attach_Networkinterface, nil
+
+	case "detachnetworkinterface":
+		if d.dryRun {
+			return d.Detach_Networkinterface_DryRun, nil
+		}
+		return d.Detach_Networkinterface, nil
+
+	case "checknetworkinterface":
+		if d.dryRun {
+			return d.Check_Networkinterface_DryRun, nil
+		}
+		return d.Check_Networkinterface, nil
+
 	case "createvolume":
 		if d.dryRun {
 			return d.Create_Volume_DryRun, nil

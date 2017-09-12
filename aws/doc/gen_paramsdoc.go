@@ -35,6 +35,11 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
 	},
+	"attachnetworkinterface": {
+		"device-index": "The index of the device for the network interface attachment",
+		"id":           "The ID of the network interface",
+		"instance":     "The ID of the instance",
+	},
 	"attachpolicy": {},
 	"attachrole": {
 		"instanceprofile": "The name of the instance profile to update",
@@ -54,15 +59,16 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":       "The ID of the EBS volume",
 		"instance": "The ID of the instance",
 	},
-	"authenticateregistry": {},
-	"checkdatabase":        {},
-	"checkdistribution":    {},
-	"checkinstance":        {},
-	"checkloadbalancer":    {},
-	"checknatgateway":      {},
-	"checkscalinggroup":    {},
-	"checksecuritygroup":   {},
-	"checkvolume":          {},
+	"authenticateregistry":  {},
+	"checkdatabase":         {},
+	"checkdistribution":     {},
+	"checkinstance":         {},
+	"checkloadbalancer":     {},
+	"checknatgateway":       {},
+	"checknetworkinterface": {},
+	"checkscalinggroup":     {},
+	"checksecuritygroup":    {},
+	"checkvolume":           {},
 	"copyimage": {
 		"description":   "A description for the new AMI in the destination region",
 		"encrypted":     "Specifies whether the destination snapshots of the copied image should be encrypted",
@@ -205,6 +211,12 @@ var generatedParamsDoc = map[string]map[string]string{
 	"createnatgateway": {
 		"elasticip-id": "The allocation ID of an Elastic IP address to associate with the NAT gateway",
 		"subnet":       "The subnet in which to create the NAT gateway",
+	},
+	"createnetworkinterface": {
+		"description":    "A description for the network interface",
+		"privateip":      "The primary private IPv4 address of the network interface",
+		"securitygroups": "The IDs of one or more security groups",
+		"subnet":         "The ID of the subnet to associate with the network interface",
 	},
 	"createpolicy": {},
 	"createqueue": {
@@ -376,6 +388,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deletenatgateway": {
 		"id": "The ID of the NAT gateway",
 	},
+	"deletenetworkinterface": {
+		"id": "The ID of the network interface",
+	},
 	"deletepolicy": {
 		"arn": "The Amazon Resource Name (ARN) of the IAM policy you want to delete",
 	},
@@ -455,7 +470,8 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
 	},
-	"detachpolicy": {},
+	"detachnetworkinterface": {},
+	"detachpolicy":           {},
 	"detachrole": {
 		"instanceprofile": "The name of the instance profile to update",
 		"name":            "The name of the role to remove",

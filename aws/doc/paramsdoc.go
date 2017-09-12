@@ -77,6 +77,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"state":   "The state of the NAT Gateway to reach (provisioning | active | failed | not-found)",
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
+	"checknetworkinterface": {
+		"id":      "The ID of the Network Interface to check",
+		"state":   "The state of the Network Interface to reach (available | attaching | detaching | in-use | not-found)",
+		"timeout": "The time (in seconds) after which the check is failed",
+	},
 	"checkscalinggroup": {
 		"name":    "The name of the AutoScaling Group to check",
 		"count":   "The number of Instances + Loadbalancers + TargetGroups in the AutoScaling Group to reach",
@@ -349,6 +354,13 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":     "The name of the InstanceProfile to detach from the Instance",
 		"replace":  "Not applicatble in the case of detach. Present for easy revert",
 	},
+	"detachnetworkinterface": {
+		"attachment": "The ID of the attachment",
+		"force":      "Specifies whether to force a detachment",
+		"id":         "The ID of the network interface",
+		"instance":   "The ID of the instance this network interface is attached to",
+	},
+
 	"detachpolicy": {
 		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",
 		"service": "Service string to retrieve an AWS policy. Ex: 'ec2', 'cloudfront', 'rds'",
