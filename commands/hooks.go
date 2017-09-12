@@ -86,12 +86,14 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	}
 
 	if config.TriggerSyncOnConfigUpdate && !strings.HasPrefix(cmd.Name(), "sync") {
-		logger.Infof("Syncing new region '%s'", awsConf[config.RegionConfigKey])
 		var services []cloud.Service
 		for _, s := range cloud.ServiceRegistry {
 			services = append(services, s)
 		}
-		sync.NewSyncer(logger.DefaultLogger).Sync(services...)
+		if !noSyncGlobalFlag {
+			logger.Infof("Syncing new region '%s'", awsConf[config.RegionConfigKey])
+			sync.NewSyncer(logger.DefaultLogger).Sync(services...)
+		}
 	}
 
 	return nil
@@ -107,7 +109,11 @@ func includeHookIf(cond *bool, hook func(*cobra.Command, []string) error) func(*
 }
 
 func initSyncerHook(cmd *cobra.Command, args []string) error {
-	sync.DefaultSyncer = sync.NewSyncer(logger.DefaultLogger)
+	if noSyncGlobalFlag {
+		sync.DefaultSyncer = sync.NoOpSyncer()
+	} else {
+		sync.DefaultSyncer = sync.NewSyncer(logger.DefaultLogger)
+	}
 	return nil
 }
 

@@ -51,9 +51,12 @@ type Repo interface {
 	BaseDir() string
 }
 
-type noRevisionRepo struct {
-	basedir string
-}
+type NullRepo struct{}
+
+func (NullRepo) Commit(files ...string) error         { return nil }
+func (NullRepo) List() ([]*Rev, error)                { return nil, nil }
+func (NullRepo) LoadRev(version string) (*Rev, error) { return nil, nil }
+func (NullRepo) BaseDir() string                      { return "" }
 
 type gitRepo struct {
 	repo    *git.Repository

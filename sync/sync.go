@@ -45,6 +45,16 @@ type Syncer interface {
 	Sync(...cloud.Service) (map[string]*graph.Graph, error)
 }
 
+type noopsyncer struct {
+	repo.NullRepo
+}
+
+func NoOpSyncer() Syncer { return new(noopsyncer) }
+
+func (s *noopsyncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
+	return map[string]*graph.Graph{}, nil
+}
+
 type syncer struct {
 	repo.Repo
 	logger *logger.Logger

@@ -2,6 +2,7 @@
 
 ### Features
 
+- Global `--no-sync` flag to not run any sync on command
 - `awless show policy-name/policy-id` now displays the current policy Document (in JSON).
 
 ### Fixes
