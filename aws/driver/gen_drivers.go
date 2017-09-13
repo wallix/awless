@@ -844,6 +844,12 @@ func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Create_Policy, nil
 
+	case "updatepolicy":
+		if d.dryRun {
+			return d.Update_Policy_DryRun, nil
+		}
+		return d.Update_Policy, nil
+
 	case "deletepolicy":
 		if d.dryRun {
 			return d.Delete_Policy_DryRun, nil

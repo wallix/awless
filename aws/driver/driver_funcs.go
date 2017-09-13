@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"mime"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -261,8 +262,8 @@ func (d *Ec2Driver) Detach_Networkinterface(ctx driver.Context, params map[strin
 func (d *Ec2Driver) findAttachmentBetweenInstanceAndNetworkInterface(instanceId, netInterfaceId string) (string, error) {
 	filters := &ec2.DescribeInstancesInput{}
 	filters.SetFilters([]*ec2.Filter{
-		&ec2.Filter{Name: aws.String("network-interface.network-interface-id"), Values: aws.StringSlice([]string{netInterfaceId})},
-		&ec2.Filter{Name: aws.String("instance-id"), Values: aws.StringSlice([]string{instanceId})},
+		{Name: aws.String("network-interface.network-interface-id"), Values: aws.StringSlice([]string{netInterfaceId})},
+		{Name: aws.String("instance-id"), Values: aws.StringSlice([]string{instanceId})},
 	})
 	if out, err := d.DescribeInstances(filters); err != nil {
 		return "", err
@@ -912,22 +913,9 @@ func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]i
 }
 
 func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	effect, _ := params["effect"].(string)
-	resource, _ := params["resource"].(string)
-
-	if resource == "all" {
-		resource = "*"
-	}
-
-	stat := policyStatement{Effect: strings.Title(effect), Resource: resource}
-
-	if actions, ok := params["action"]; ok {
-		stat.Actions = castStringSlice(actions)
-	}
-
 	policy := &policyBody{
 		Version:   "2012-10-17",
-		Statement: []policyStatement{stat},
+		Statement: []policyStatement{buildStatementFromParams(params)},
 	}
 
 	b, err := json.MarshalIndent(policy, "", " ")
@@ -955,6 +943,114 @@ func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interfac
 	}
 
 	return aws.StringValue(output.(*iam.CreatePolicyOutput).Policy.Arn), nil
+}
+
+func buildStatementFromParams(params map[string]interface{}) policyStatement {
+	effect, _ := params["effect"].(string)
+	resource, _ := params["resource"].(string)
+
+	if resource == "all" {
+		resource = "*"
+	}
+
+	stat := policyStatement{Effect: strings.Title(effect), Resource: resource}
+
+	if actions, ok := params["action"]; ok {
+		stat.Actions = castStringSlice(actions)
+	}
+	return stat
+}
+
+func (d *IamDriver) Update_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	_, effect := params["effect"]
+	_, action := params["action"]
+	_, resource := params["resource"]
+	_, arn := params["arn"]
+
+	if !effect || !action || !resource || !arn {
+		return nil, errors.New("update policy: arn, effect, action and resource are required values")
+	}
+
+	d.logger.Verbose("params dry run: update policy ok")
+	return nil, nil
+}
+
+func (d *IamDriver) Update_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	document, err := d.getPolicyLastVersionDocument(ctx, params["arn"])
+	if err != nil {
+		return nil, err
+	}
+	var defaultPolicyDocument *struct {
+		Version    string             `json:",omitempty"`
+		ID         string             `json:"Id,omitempty"`
+		Statements []*json.RawMessage `json:"Statement,omitempty"`
+	}
+
+	if err = json.Unmarshal([]byte(document), &defaultPolicyDocument); err != nil {
+		return nil, err
+	}
+
+	var newStatement json.RawMessage
+	if newStatement, err = json.Marshal(buildStatementFromParams(params)); err != nil {
+		return nil, err
+	}
+	defaultPolicyDocument.Statements = append(defaultPolicyDocument.Statements, &newStatement)
+
+	b, err := json.MarshalIndent(defaultPolicyDocument, "", " ")
+	if err != nil {
+		return nil, errors.New("cannot marshal policy document")
+	}
+
+	d.logger.ExtraVerbosef("policy document json:\n%s\n", string(b))
+
+	call := &driverCall{
+		d:      d,
+		desc:   "update policy",
+		fn:     d.CreatePolicyVersion,
+		logger: d.logger,
+		setters: []setter{
+			{val: params["arn"], fieldPath: "PolicyArn", fieldType: awsstr},
+			{val: true, fieldPath: "SetAsDefault", fieldType: awsbool},
+			{val: string(b), fieldPath: "PolicyDocument", fieldType: awsstr},
+		},
+	}
+
+	_, err = call.execute(&iam.CreatePolicyVersionInput{})
+
+	return nil, err
+}
+
+func (d *IamDriver) getPolicyLastVersionDocument(ctx driver.Context, arn interface{}) (string, error) {
+	listVersionsInput := &iam.ListPolicyVersionsInput{}
+	if err := setFieldWithType(arn, listVersionsInput, "PolicyArn", awsstr, ctx); err != nil {
+		return "", err
+	}
+	listVersionsOut, err := d.ListPolicyVersions(listVersionsInput)
+	if err != nil {
+		return "", err
+	}
+	var defaultVersion *iam.PolicyVersion
+	for _, version := range listVersionsOut.Versions {
+		if aws.BoolValue(version.IsDefaultVersion) {
+			policyDetailInput := &iam.GetPolicyVersionInput{VersionId: version.VersionId}
+			if err := setFieldWithType(arn, policyDetailInput, "PolicyArn", awsstr, ctx); err != nil {
+				return "", err
+			}
+			policyDetailOutput, err := d.GetPolicyVersion(policyDetailInput)
+			if err != nil {
+				return "", err
+			}
+			defaultVersion = policyDetailOutput.PolicyVersion
+		}
+	}
+	if defaultVersion == nil {
+		return "", fmt.Errorf("update policy: can not find default version for policy with arn '%s'", arn)
+	}
+	document, err := url.QueryUnescape(aws.StringValue(defaultVersion.Document))
+	if err != nil {
+		return "", fmt.Errorf("decoding policy document: %s", err)
+	}
+	return document, nil
 }
 
 func (d *IamDriver) Delete_Role_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {

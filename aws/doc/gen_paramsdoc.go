@@ -528,6 +528,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
 		"username":       "The name of the user whose password you want to update",
 	},
+	"updatepolicy": {},
 	"updaterecord": {},
 	"updates3object": {
 		"acl":     "The canned ACL to apply to the object",

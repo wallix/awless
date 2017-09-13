@@ -18,6 +18,7 @@ package awsdriver
 
 import (
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"testing"
@@ -26,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
@@ -155,6 +157,166 @@ func TestDriver(t *testing.T) {
 			t.Fatalf("got %t, want %t", got, want)
 		}
 	})
+
+	t.Run("Create policy", func(t *testing.T) {
+		awsMockIam := &mockIam{}
+		iamDriv := NewIamDriver(awsMockIam).(*IamDriver)
+		policyName := "AwlessInfraReadonlyPolicy"
+		policyDesc := "Readonly access to infra resources"
+		expectedPolicyDocument := `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "ec2:Describe*",
+    "autoscaling:Describe*",
+    "elasticloadbalancing:Describe*"
+   ],
+   "Resource": "*"
+  }
+ ]
+}`
+
+		awsMockIam.verifyCreatePolicyInput = func(input *iam.CreatePolicyInput) error {
+			if got, want := aws.StringValue(input.PolicyName), policyName; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			if got, want := aws.StringValue(input.Description), policyDesc; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			if got, want := aws.StringValue(input.PolicyDocument), expectedPolicyDocument; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			return nil
+		}
+		id, err := iamDriv.Create_Policy(driver.EmptyContext, map[string]interface{}{
+			"name":        policyName,
+			"effect":      "Allow",
+			"action":      []interface{}{"ec2:Describe*", "autoscaling:Describe*", "elasticloadbalancing:Describe*"},
+			"resource":    "*",
+			"description": policyDesc,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := id.(string), "mynewpolicy"; got != want {
+			t.Fatalf("got %s, want %s", got, want)
+		}
+	})
+
+	t.Run("Update policy", func(t *testing.T) {
+		policyArn := "arn:aws:iam::0123456789:policy/AwlessInfraReadonlyPolicy"
+		previousPolicyDocument := `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "ec2:AttachVolume",
+    "ec2:DetachVolume"
+   ],
+   "Resource": "arn:aws:ec2:eu-west-1:0123456789:instance/*",
+   "Condition": {
+    "StringEquals": {
+     "ec2:ResourceTag/department": "dev"
+    }
+   }
+  },
+  {
+   "Effect": "Allow",
+   "Action": [
+    "ec2:AttachVolume",
+    "ec2:DetachVolume"
+   ],
+   "Resource": "arn:aws:ec2:eu-west-1:0123456789:volume/*",
+   "Condition": {
+    "StringEquals": {
+     "ec2:ResourceTag/volume_user": "${aws:username}"}
+    }
+  }
+ ]
+}`
+
+		awsMockIam := &mockIam{policyVersions: []*iam.PolicyVersion{
+			{
+				Document:         aws.String("not this one"),
+				IsDefaultVersion: aws.Bool(false),
+				VersionId:        aws.String("v1"),
+			},
+			{
+				Document:         aws.String(url.QueryEscape(previousPolicyDocument)),
+				IsDefaultVersion: aws.Bool(true),
+				VersionId:        aws.String("v2"),
+			},
+		}}
+		iamDriv := NewIamDriver(awsMockIam).(*IamDriver)
+
+		expectedNewVersionPolicyDocument := `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "ec2:AttachVolume",
+    "ec2:DetachVolume"
+   ],
+   "Resource": "arn:aws:ec2:eu-west-1:0123456789:instance/*",
+   "Condition": {
+    "StringEquals": {
+     "ec2:ResourceTag/department": "dev"
+    }
+   }
+  },
+  {
+   "Effect": "Allow",
+   "Action": [
+    "ec2:AttachVolume",
+    "ec2:DetachVolume"
+   ],
+   "Resource": "arn:aws:ec2:eu-west-1:0123456789:volume/*",
+   "Condition": {
+    "StringEquals": {
+     "ec2:ResourceTag/volume_user": "${aws:username}"
+    }
+   }
+  },
+  {
+   "Effect": "Deny",
+   "Action": [
+    "ec2:AttachVolume",
+    "DescribeVolumeAttribute"
+   ],
+   "Resource": "arn:aws:ec2:eu-west-1:0123456789:volume/*"
+  }
+ ]
+}`
+
+		awsMockIam.verifyCreatePolicyVersionInput = func(input *iam.CreatePolicyVersionInput) error {
+			if got, want := aws.StringValue(input.PolicyArn), policyArn; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			if got, want := aws.StringValue(input.PolicyDocument), expectedNewVersionPolicyDocument; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+			if got, want := aws.BoolValue(input.SetAsDefault), true; got != want {
+				t.Fatalf("got %t, want %t", got, want)
+			}
+			return nil
+		}
+		out, err := iamDriv.Update_Policy(driver.EmptyContext, map[string]interface{}{
+			"arn":      policyArn,
+			"effect":   "Deny",
+			"action":   []interface{}{"ec2:AttachVolume", "DescribeVolumeAttribute"},
+			"resource": "arn:aws:ec2:eu-west-1:0123456789:volume/*",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out != nil {
+			t.Fatalf("got %#v, expected nil output", out)
+		}
+	})
 }
 
 func TestBuildIpPermissionsFromParams(t *testing.T) {
@@ -267,6 +429,36 @@ func TestBuildIpPermissionsFromParams(t *testing.T) {
 
 type mockIam struct {
 	iamiface.IAMAPI
+	policyVersions                 []*iam.PolicyVersion
+	verifyCreatePolicyInput        func(*iam.CreatePolicyInput) error
+	verifyCreatePolicyVersionInput func(*iam.CreatePolicyVersionInput) error
+}
+
+func (m *mockIam) CreatePolicy(input *iam.CreatePolicyInput) (*iam.CreatePolicyOutput, error) {
+	if err := m.verifyCreatePolicyInput(input); err != nil {
+		return nil, err
+	}
+	return &iam.CreatePolicyOutput{Policy: &iam.Policy{Arn: aws.String("mynewpolicy")}}, nil
+}
+
+func (m *mockIam) CreatePolicyVersion(input *iam.CreatePolicyVersionInput) (*iam.CreatePolicyVersionOutput, error) {
+	if err := m.verifyCreatePolicyVersionInput(input); err != nil {
+		return nil, err
+	}
+	return &iam.CreatePolicyVersionOutput{PolicyVersion: &iam.PolicyVersion{VersionId: aws.String("mynewpolicyversion")}}, nil
+}
+
+func (m *mockIam) ListPolicyVersions(input *iam.ListPolicyVersionsInput) (*iam.ListPolicyVersionsOutput, error) {
+	return &iam.ListPolicyVersionsOutput{Versions: m.policyVersions}, nil
+}
+
+func (m *mockIam) GetPolicyVersion(input *iam.GetPolicyVersionInput) (*iam.GetPolicyVersionOutput, error) {
+	for _, v := range m.policyVersions {
+		if v.VersionId == input.VersionId {
+			return &iam.GetPolicyVersionOutput{PolicyVersion: v}, nil
+		}
+	}
+	return nil, nil
 }
 
 type mockS3 struct {

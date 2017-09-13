@@ -1124,6 +1124,15 @@ var DriversDefs = []driversDef{
 				},
 			},
 			{
+				Action: "update", Entity: cloud.Policy, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "arn"},
+					{TemplateName: "effect"},
+					{TemplateName: "action"},
+					{TemplateName: "resource"},
+				},
+			},
+			{
 				Action: "delete", Entity: cloud.Policy, DryRunUnsupported: true, Input: "DeletePolicyInput", Output: "DeletePolicyOutput", ApiMethod: "DeletePolicy",
 				RequiredParams: []param{
 					{AwsField: "PolicyArn", TemplateName: "arn", AwsType: "awsstr"},

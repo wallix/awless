@@ -227,6 +227,7 @@ var cliExamplesDoc = map[string][]string{
 	"updatedistribution":        {},
 	"updateinstance":            {},
 	"updateloginprofile":        {},
+	"updatepolicy":              {},
 	"updaterecord":              {},
 	"updates3object":            {},
 	"updatescalinggroup":        {},

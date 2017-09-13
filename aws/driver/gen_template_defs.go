@@ -130,6 +130,7 @@ var APIPerTemplateDefName = map[string]string{
 	"createinstanceprofile":     "iam",
 	"deleteinstanceprofile":     "iam",
 	"createpolicy":              "iam",
+	"updatepolicy":              "iam",
 	"deletepolicy":              "iam",
 	"attachpolicy":              "iam",
 	"detachpolicy":              "iam",
@@ -928,6 +929,13 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"action", "effect", "name", "resource"},
 		ExtraParams:    []string{"description"},
 	},
+	"updatepolicy": {
+		Action:         "update",
+		Entity:         "policy",
+		Api:            "iam",
+		RequiredParams: []string{"action", "arn", "effect", "resource"},
+		ExtraParams:    []string{},
+	},
 	"deletepolicy": {
 		Action:         "delete",
 		Entity:         "policy",
@@ -1313,6 +1321,7 @@ func DriverSupportedActions() map[string][]string {
 	supported["create"] = append(supported["create"], "instanceprofile")
 	supported["delete"] = append(supported["delete"], "instanceprofile")
 	supported["create"] = append(supported["create"], "policy")
+	supported["update"] = append(supported["update"], "policy")
 	supported["delete"] = append(supported["delete"], "policy")
 	supported["attach"] = append(supported["attach"], "policy")
 	supported["detach"] = append(supported["detach"], "policy")

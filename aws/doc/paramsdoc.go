@@ -204,7 +204,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":        "The friendly name of the policy",
 		"description": "A friendly description of the policy",
 		"effect":      "The Effect element is required and specifies whether the policy will result in an allow or an explicit deny (Allow | Deny)",
-		"action":      "The Action element describes the specific action or actions that will be allowed or denied. You specify a value using a namespace that identifies a service followed by the name of the action to allow or deny (eg. sqs:SendMessage, s3:*)",
+		"action":      "The Action elements describing the actions that will be allowed or denied. You specify a value using a namespace that identifies a service followed by the name of the action to allow or deny (eg. sqs:SendMessage, s3:*). Use a list for multiple actions.",
 		"resource":    "The Amazon Resource Name (ARN) of the Resource element which specifies the object or objects that the policy covers",
 	},
 	"createqueue": {
@@ -413,6 +413,12 @@ var manualParamsDoc = map[string]map[string]string{
 	},
 	"updateinstance": {
 		"type": "Changes the instance type to the specified value",
+	},
+	"updatepolicy": {
+		"arn":      "The Amazon Resource Name (ARN) of the IAM policy you want to attach",
+		"effect":   "The Effect element is required and specifies whether the policy will result in an allow or an explicit deny (Allow | Deny)",
+		"action":   "The Action elements describing the actions that will be allowed or denied. You specify a value using a namespace that identifies a service followed by the name of the action to allow or deny (eg. sqs:SendMessage, s3:*). Use a list for multiple actions.",
+		"resource": "The Amazon Resource Name (ARN) of the Resource element which specifies the object or objects that the policy covers",
 	},
 	"updates3object": {
 		"acl":     "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
