@@ -112,6 +112,8 @@ var APIPerTemplateDefName = map[string]string{
 	"attachcontainertask":       "ecs",
 	"detachcontainertask":       "ecs",
 	"deletecontainertask":       "ecs",
+	"createcertificate":         "acm",
+	"deletecertificate":         "acm",
 	"createuser":                "iam",
 	"deleteuser":                "iam",
 	"attachuser":                "iam",
@@ -803,6 +805,20 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{"name"},
 		ExtraParams:    []string{"all-versions"},
 	},
+	"createcertificate": {
+		Action:         "create",
+		Entity:         "certificate",
+		Api:            "acm",
+		RequiredParams: []string{"domains"},
+		ExtraParams:    []string{"validation-domains"},
+	},
+	"deletecertificate": {
+		Action:         "delete",
+		Entity:         "certificate",
+		Api:            "acm",
+		RequiredParams: []string{"arn"},
+		ExtraParams:    []string{},
+	},
 	"createuser": {
 		Action:         "create",
 		Entity:         "user",
@@ -1303,6 +1319,8 @@ func DriverSupportedActions() map[string][]string {
 	supported["attach"] = append(supported["attach"], "containertask")
 	supported["detach"] = append(supported["detach"], "containertask")
 	supported["delete"] = append(supported["delete"], "containertask")
+	supported["create"] = append(supported["create"], "certificate")
+	supported["delete"] = append(supported["delete"], "certificate")
 	supported["create"] = append(supported["create"], "user")
 	supported["delete"] = append(supported["delete"], "user")
 	supported["attach"] = append(supported["attach"], "user")

@@ -25,6 +25,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/acm"
+	"github.com/aws/aws-sdk-go/service/acm/acmiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -317,6 +319,82 @@ func TestDriver(t *testing.T) {
 			t.Fatalf("got %#v, expected nil output", out)
 		}
 	})
+
+	t.Run("Request certificate", func(t *testing.T) {
+		awsMockAcm := &mockACM{}
+		acmDriv := NewAcmDriver(awsMockAcm).(*AcmDriver)
+
+		tcases := []struct {
+			domains                    []interface{}
+			validationDomains          []interface{}
+			expDomainName              string
+			expSubjectAlternativeNames []string
+			expDomainValidationOptions []*acm.DomainValidationOption
+			expErr                     error
+		}{
+			{
+				domains:                    []interface{}{"my.domain.1", "my.domain.2", "my.domain.3"},
+				validationDomains:          []interface{}{"domain.1", "2"},
+				expDomainName:              "my.domain.1",
+				expSubjectAlternativeNames: []string{"my.domain.2", "my.domain.3"},
+				expDomainValidationOptions: []*acm.DomainValidationOption{
+					{DomainName: aws.String("my.domain.1"), ValidationDomain: aws.String("domain.1")},
+					{DomainName: aws.String("my.domain.2"), ValidationDomain: aws.String("2")},
+				},
+			},
+			{
+				domains:                    []interface{}{"my.domain.1", "my.domain.2", "my.domain.3"},
+				validationDomains:          []interface{}{},
+				expDomainName:              "my.domain.1",
+				expSubjectAlternativeNames: []string{"my.domain.2", "my.domain.3"},
+			},
+			{
+				domains:           []interface{}{"my.domain.1"},
+				validationDomains: []interface{}{"my.domain.1", "my.domain.2", "my.domain.3"},
+				expErr:            fmt.Errorf("there is more validation-domains than certificate domains: [my.domain.1 my.domain.2 my.domain.3]"),
+			},
+
+			{
+				domains:                    []interface{}{"my.domain.1", "my.domain.2"},
+				validationDomains:          []interface{}{"domain.1", "domain.2"},
+				expDomainName:              "my.domain.1",
+				expSubjectAlternativeNames: []string{"my.domain.2"},
+				expDomainValidationOptions: []*acm.DomainValidationOption{
+					{DomainName: aws.String("my.domain.1"), ValidationDomain: aws.String("domain.1")},
+					{DomainName: aws.String("my.domain.2"), ValidationDomain: aws.String("domain.2")},
+				},
+			},
+		}
+
+		for i, tcase := range tcases {
+			awsMockAcm.verifyRequestCertificateInput = func(input *acm.RequestCertificateInput) error {
+				if got, want := aws.StringValue(input.DomainName), tcase.expDomainName; got != want {
+					t.Fatalf("%d: got %s, want %s", i+1, got, want)
+				}
+				if got, want := aws.StringValueSlice(input.SubjectAlternativeNames), tcase.expSubjectAlternativeNames; !reflect.DeepEqual(got, want) {
+					t.Fatalf("%d: got %#v, want %#v", i+1, got, want)
+				}
+				if got, want := input.DomainValidationOptions, tcase.expDomainValidationOptions; !reflect.DeepEqual(got, want) {
+					t.Fatalf("%d: got %#v, want %#v", i+1, got, want)
+				}
+				return nil
+			}
+			id, err := acmDriv.Create_Certificate(driver.EmptyContext, map[string]interface{}{
+				"domains":            tcase.domains,
+				"validation-domains": tcase.validationDomains,
+			})
+			if got, want := err, tcase.expErr; !reflect.DeepEqual(got, want) {
+				t.Fatalf("%d: got %#v, want %#v", i+1, got, want)
+			}
+			if err != nil {
+				continue
+			}
+			if got, want := id.(string), "mynewcertificate"; got != want {
+				t.Fatalf("%d: got %s, want %s", i+1, got, want)
+			}
+		}
+
+	})
 }
 
 func TestBuildIpPermissionsFromParams(t *testing.T) {
@@ -511,4 +589,16 @@ func (m *mockEc2) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput,
 
 func (m *mockEc2) CreateTagsRequest(input *ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
 	return &request.Request{Error: m.verifyTagInput(input)}, &ec2.CreateTagsOutput{}
+}
+
+type mockACM struct {
+	acmiface.ACMAPI
+	verifyRequestCertificateInput func(*acm.RequestCertificateInput) error
+}
+
+func (m *mockACM) RequestCertificate(input *acm.RequestCertificateInput) (*acm.RequestCertificateOutput, error) {
+	if err := m.verifyRequestCertificateInput(input); err != nil {
+		return nil, err
+	}
+	return &acm.RequestCertificateOutput{CertificateArn: aws.String("mynewcertificate")}, nil
 }

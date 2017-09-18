@@ -17,6 +17,7 @@ limitations under the License.
 package awsdriver
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -36,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -897,6 +899,75 @@ func (d *EcsDriver) Stop_Containertask(ctx driver.Context, params map[string]int
 		return nil, err
 	}
 	return nil, fmt.Errorf("stop containertask: invalid type '%s'", typ)
+}
+
+// This function was auto generated
+func (d *AcmDriver) Create_Certificate_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["domains"]; !ok {
+		return nil, errors.New("create certificate: missing required params 'domains'")
+	}
+
+	d.logger.Verbose("params dry run: create certificate ok")
+	return fakeDryRunId("certificate"), nil
+}
+
+// This function was auto generated
+func (d *AcmDriver) Create_Certificate(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &acm.RequestCertificateInput{}
+
+	domains := castStringSlice(params["domains"])
+	if len(domains) == 0 {
+		return nil, fmt.Errorf("'domains' must contain at least one element")
+	}
+	// Required params
+	err := setFieldWithType(domains[0], input, "DomainName", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(domains) > 1 {
+		if err = setFieldWithType(domains[1:], input, "SubjectAlternativeNames", awsstringslice, ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	domainsToValidate := make(map[string]string)
+	// Extra params
+	if _, ok := params["validation-domains"]; ok {
+		var validationOptions []*acm.DomainValidationOption
+		validation := castStringSlice(params["validation-domains"])
+		for i, validationDomain := range validation {
+			if i >= len(domains) {
+				return nil, fmt.Errorf("there is more validation-domains than certificate domains: %v", params["validation-domains"])
+			}
+			domainsToValidate[domains[i]] = validationDomain
+			validationOptions = append(validationOptions, &acm.DomainValidationOption{DomainName: aws.String(domains[i]), ValidationDomain: aws.String(validationDomain)})
+		}
+		input.DomainValidationOptions = validationOptions
+	}
+	if len(domainsToValidate) < len(domains) {
+		for i := len(domainsToValidate); i < len(domains); i++ {
+			domainsToValidate[domains[i]] = domains[i]
+		}
+	}
+
+	start := time.Now()
+	var output *acm.RequestCertificateOutput
+	output, err = d.RequestCertificate(input)
+	if err != nil {
+		return nil, fmt.Errorf("create certificate: %s", err)
+	}
+	d.logger.ExtraVerbosef("acm.RequestCertificate call took %s", time.Since(start))
+	id := aws.StringValue(output.CertificateArn)
+
+	d.logger.Infof("create certificate '%s' done", id)
+	if len(domainsToValidate) > 0 {
+		var helpMsg bytes.Buffer
+		for domain, validationDomain := range domainsToValidate {
+			helpMsg.WriteString(fmt.Sprintf("\n\t->%s: {admin/administrator/hostmaster/postmaster/webmaster}@%s", domain, validationDomain))
+		}
+		d.logger.Warningf("validate your certificates by following the instructions sent by email to %s", helpMsg.String())
+	}
+	return id, nil
 }
 
 func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {

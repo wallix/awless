@@ -11,6 +11,7 @@ var entities = map[Entity]struct{}{
 	"appscalingpolicy":    {},
 	"scalinggroup":        {},
 	"bucket":              {},
+	"certificate":         {},
 	"container":           {},
 	"containercluster":    {},
 	"containerservice":    {},

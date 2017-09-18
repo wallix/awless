@@ -119,6 +119,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"acl":  "The canned ACL to apply to the bucket",
 		"name": "",
 	},
+	"createcertificate": {},
 	"createcontainercluster": {
 		"name": "The name of your cluster",
 	},
@@ -341,6 +342,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deletebucket": {
 		"name": "",
+	},
+	"deletecertificate": {
+		"arn": "String that contains the ARN of the ACM Certificate to be deleted",
 	},
 	"deletecontainercluster": {
 		"id": "The short name or full Amazon Resource Name (ARN) of the cluster to delete",

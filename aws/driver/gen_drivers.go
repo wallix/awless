@@ -717,6 +717,18 @@ func NewAcmDriver(api acmiface.ACMAPI) driver.Driver {
 func (d *AcmDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
 	switch strings.Join(lookups, "") {
 
+	case "createcertificate":
+		if d.dryRun {
+			return d.Create_Certificate_DryRun, nil
+		}
+		return d.Create_Certificate, nil
+
+	case "deletecertificate":
+		if d.dryRun {
+			return d.Delete_Certificate_DryRun, nil
+		}
+		return d.Delete_Certificate, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

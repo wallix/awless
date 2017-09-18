@@ -969,8 +969,24 @@ var DriversDefs = []driversDef{
 		},
 	},
 	{
-		Api:     "acm",
-		Drivers: []driver{},
+		Api: "acm",
+		Drivers: []driver{
+			{
+				Action: "create", Entity: cloud.Certificate, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "domains"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "validation-domains"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Certificate, ApiMethod: "DeleteCertificate", Input: "DeleteCertificateInput", Output: "DeleteCertificateOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "CertificateArn", TemplateName: "arn", AwsType: "awsstr"},
+				},
+			},
+		},
 	},
 	{
 		Api:     "sts",

@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -4112,6 +4113,39 @@ func (d *EcsDriver) Update_Containertask(ctx driver.Context, params map[string]i
 	}
 	d.logger.ExtraVerbosef("ecs.UpdateService call took %s", time.Since(start))
 	d.logger.Info("update containertask done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *AcmDriver) Delete_Certificate_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("delete certificate: missing required params 'arn'")
+	}
+
+	d.logger.Verbose("params dry run: delete certificate ok")
+	return fakeDryRunId("certificate"), nil
+}
+
+// This function was auto generated
+func (d *AcmDriver) Delete_Certificate(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &acm.DeleteCertificateInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["arn"], input, "CertificateArn", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *acm.DeleteCertificateOutput
+	output, err = d.DeleteCertificate(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete certificate: %s", err)
+	}
+	d.logger.ExtraVerbosef("acm.DeleteCertificate call took %s", time.Since(start))
+	d.logger.Info("delete certificate done")
 	return output, nil
 }
 

@@ -351,6 +351,20 @@ stop containertask cluster=cl deployment-name=dpname type=service`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert create certificate", func(t *testing.T) {
+		tpl := MustParse("create certificate domain=test.awless.io")
+		tpl.CommandNodesIterator()[0].CmdResult = "my-certificate-arn"
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete certificate arn=my-certificate-arn`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {

@@ -126,6 +126,10 @@ var manualParamsDoc = map[string]map[string]string{
 		"acl":  "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",
 		"name": "The name of bucket to create",
 	},
+	"createcertificate": {
+		"domains":            "Main and Additional Fully qualified domain names (FQDNs) to be included in the Certificate name and Subject Alternative Name of the ACM Certificate",
+		"validation-domains": "The domain name that you want ACM to use to send you validation emails. This domain name is the suffix of the email addresses that you want ACM to use. This must be the same as the DomainName value or a superdomain of the domain value.",
+	},
 	"createdatabase": {
 		"autoupgrade":       "Set to true to indicate that minor version patches are applied automatically",
 		"backupwindow":      "Specifies the daily time range during which automated backups are created if automated backups are enabled, as determined by the BackupRetentionPeriod (format hh24:mi-hh24:mi)",
