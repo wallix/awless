@@ -10,7 +10,7 @@
 - Update IAM policies, to add statements with `awless update policy`
 - Add ACM certificates in infra:
     - `awless list certificates`
-    - `awless create/delete certificate domains=my.firstdomain.com,my.seconddomain.com validation-domains=firstdomain.com,seconddomain.com`
+    - `awless create/delete/check certificate domains=my.firstdomain.com,my.seconddomain.com validation-domains=firstdomain.com,seconddomain.com`
 
 ### Fixes
 - `awless ssh --through`: no reusing same conn to avoid EOF. Bug: only first user (amazonlinux) was successful (usually ec2-user) !!

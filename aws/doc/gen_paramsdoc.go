@@ -60,6 +60,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"instance": "The ID of the instance",
 	},
 	"authenticateregistry":  {},
+	"checkcertificate":      {},
 	"checkdatabase":         {},
 	"checkdistribution":     {},
 	"checkinstance":         {},

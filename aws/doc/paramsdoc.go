@@ -52,6 +52,11 @@ var manualParamsDoc = map[string]map[string]string{
 		"accounts":   "A list of AWS account IDs that are associated with the registries for which to authenticate",
 		"no-confirm": "Do not ask confirmation before effectively running `docker login` command",
 	},
+	"checkcertificate": {
+		"arn":     "The Amazon Resource Name (ARN) of the certificate to check",
+		"state":   "The state of the certificate to reach (issued | pending_validation | not-found)",
+		"timeout": "The time (in seconds) after which the check is failed",
+	},
 	"checkdatabase": {
 		"id":      "The ID of the RDS Database to check",
 		"state":   "The state of the RDS Database to reach (available | backing-up | creating | deleting | failed | maintenance | modifying | rebooting | renaming | resetting-master-credentials | restore-error | storage-full | upgrading | not-found)",

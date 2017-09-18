@@ -295,7 +295,7 @@ func (d *Ec2Driver) Check_Networkinterface_DryRun(ctx driver.Context, params map
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check network interface: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check network interface: invalid state '%s'", state)
 		}
 	}
@@ -901,7 +901,6 @@ func (d *EcsDriver) Stop_Containertask(ctx driver.Context, params map[string]int
 	return nil, fmt.Errorf("stop containertask: invalid type '%s'", typ)
 }
 
-// This function was auto generated
 func (d *AcmDriver) Create_Certificate_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["domains"]; !ok {
 		return nil, errors.New("create certificate: missing required params 'domains'")
@@ -911,7 +910,6 @@ func (d *AcmDriver) Create_Certificate_DryRun(ctx driver.Context, params map[str
 	return fakeDryRunId("certificate"), nil
 }
 
-// This function was auto generated
 func (d *AcmDriver) Create_Certificate(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	input := &acm.RequestCertificateInput{}
 
@@ -968,6 +966,67 @@ func (d *AcmDriver) Create_Certificate(ctx driver.Context, params map[string]int
 		d.logger.Warningf("validate your certificates by following the instructions sent by email to %s", helpMsg.String())
 	}
 	return id, nil
+}
+
+func (d *AcmDriver) Check_Certificate_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("check certificate: missing required params 'arn'")
+	}
+
+	states := map[string]struct{}{
+		"issued":             {},
+		"pending_validation": {},
+		notFoundState:        {},
+	}
+
+	if state, ok := params["state"].(string); !ok {
+		return nil, errors.New("check certificate: missing required params 'state'")
+	} else {
+		if _, stok := states[strings.ToLower(state)]; !stok {
+			return nil, fmt.Errorf("check certificate: invalid state '%s'", state)
+		}
+	}
+
+	if _, ok := params["timeout"]; !ok {
+		return nil, errors.New("check certificate: missing required params 'timeout'")
+	}
+
+	d.logger.Verbose("params dry run: check certificate ok")
+	return nil, nil
+}
+
+func (d *AcmDriver) Check_Certificate(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &acm.DescribeCertificateInput{}
+
+	// Required params
+	err := setFieldWithType(params["arn"], input, "CertificateArn", awsstr)
+	if err != nil {
+		return nil, err
+	}
+	c := &checker{
+		description: fmt.Sprintf("certificate %s", params["arn"]),
+		timeout:     time.Duration(params["timeout"].(int)) * time.Second,
+		frequency:   5 * time.Second,
+		fetchFunc: func() (string, error) {
+			output, err := d.DescribeCertificate(input)
+			if err != nil {
+				if awserr, ok := err.(awserr.Error); ok {
+					if awserr.Code() == "CertificateNotFound" {
+						return notFoundState, nil
+					}
+				} else {
+					return "", err
+				}
+			}
+			if output.Certificate == nil {
+				return notFoundState, nil
+			}
+			return aws.StringValue(output.Certificate.Status), nil
+		},
+		expect: fmt.Sprint(params["state"]),
+		logger: d.logger,
+	}
+	return nil, c.check()
 }
 
 func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
@@ -1492,7 +1551,7 @@ func (d *Ec2Driver) Check_Instance_DryRun(ctx driver.Context, params map[string]
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check instance: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check instance: invalid state '%s'", state)
 		}
 	}
@@ -1579,7 +1638,7 @@ func (d *Ec2Driver) Check_Securitygroup_DryRun(ctx driver.Context, params map[st
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check securitygroup: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check securitygroup: invalid state '%s'", state)
 		}
 	}
@@ -1640,7 +1699,7 @@ func (d *Ec2Driver) Check_Volume_DryRun(ctx driver.Context, params map[string]in
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check volume: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check volume: invalid state '%s'", state)
 		}
 	}
@@ -1707,7 +1766,7 @@ func (d *Ec2Driver) Check_Natgateway_DryRun(ctx driver.Context, params map[strin
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check natgateway: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check natgateway: invalid state '%s'", state)
 		}
 	}
@@ -1782,7 +1841,7 @@ func (d *RdsDriver) Check_Database_DryRun(ctx driver.Context, params map[string]
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check database: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check database: invalid state '%s'", state)
 		}
 	}
@@ -1850,7 +1909,7 @@ func (d *Elbv2Driver) Check_Loadbalancer_DryRun(ctx driver.Context, params map[s
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check loadbalancer: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check loadbalancer: invalid state '%s'", state)
 		}
 	}
@@ -2085,15 +2144,15 @@ func (d *CloudfrontDriver) Check_Distribution_DryRun(ctx driver.Context, params 
 	}
 
 	states := map[string]struct{}{
-		"Deployed":    {},
-		"InProgress":  {},
+		"deployed":    {},
+		"inprogress":  {},
 		notFoundState: {},
 	}
 
 	if state, ok := params["state"].(string); !ok {
 		return nil, errors.New("check distribution: missing required params 'state'")
 	} else {
-		if _, stok := states[state]; !stok {
+		if _, stok := states[strings.ToLower(state)]; !stok {
 			return nil, fmt.Errorf("check distribution: invalid state '%s'", state)
 		}
 	}
@@ -3360,7 +3419,7 @@ func (c *checker) check() error {
 		if err != nil {
 			return fmt.Errorf("check %s: %s", c.description, err)
 		}
-		if got == c.expect {
+		if strings.ToLower(got) == strings.ToLower(c.expect) {
 			c.logger.Infof("check %s %s '%s' done", c.description, c.checkName, c.expect)
 			return nil
 		}

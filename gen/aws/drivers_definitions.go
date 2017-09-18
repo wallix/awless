@@ -986,6 +986,14 @@ var DriversDefs = []driversDef{
 					{AwsField: "CertificateArn", TemplateName: "arn", AwsType: "awsstr"},
 				},
 			},
+			{
+				Action: "check", Entity: cloud.Certificate, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "arn"},
+					{TemplateName: "state"},
+					{TemplateName: "timeout"},
+				},
+			},
 		},
 	},
 	{

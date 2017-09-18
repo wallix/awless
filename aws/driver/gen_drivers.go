@@ -729,6 +729,12 @@ func (d *AcmDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Delete_Certificate, nil
 
+	case "checkcertificate":
+		if d.dryRun {
+			return d.Check_Certificate_DryRun, nil
+		}
+		return d.Check_Certificate, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}
