@@ -76,6 +76,12 @@ var mocksDefs = []*mockDef{
 		},
 	},
 	{
+		Api: "acm",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "acm.CertificateSummary", ApiMethod: "ListCertificatesPages", Input: "acm.ListCertificatesInput", Output: "acm.ListCertificatesOutput", OutputsExtractor: "CertificateSummaryList", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
+	{
 		Api: "iam",
 		Funcs: []*mockFuncDef{
 			{FuncType: "list", AWSType: "iam.UserDetail", Manual: true},

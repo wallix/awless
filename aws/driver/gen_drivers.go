@@ -20,6 +20,7 @@ package awsdriver
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/acm/acmiface"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
@@ -695,6 +696,26 @@ func (d *EcsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 			return d.Delete_Containertask_DryRun, nil
 		}
 		return d.Delete_Containertask, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type AcmDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	acmiface.ACMAPI
+}
+
+func (d *AcmDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *AcmDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewAcmDriver(api acmiface.ACMAPI) driver.Driver {
+	return &AcmDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *AcmDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

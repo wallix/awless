@@ -279,6 +279,11 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
 		StringColumnDefinition{Prop: properties.AgentConnected},
 	},
+	//ACM
+	cloud.Certificate: {
+		StringColumnDefinition{Prop: properties.Arn},
+		StringColumnDefinition{Prop: properties.Name},
+	},
 	//IAM
 	cloud.User: {
 		StringColumnDefinition{Prop: properties.ID},

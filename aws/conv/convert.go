@@ -30,6 +30,7 @@ import (
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
@@ -117,6 +118,9 @@ func InitResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Container, awssdk.StringValue(ss.ContainerArn))
 	case *ecs.ContainerInstance:
 		res = graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(ss.ContainerInstanceArn))
+		// ACM
+	case *acm.CertificateSummary:
+		res = graph.InitResource(cloud.Certificate, awssdk.StringValue(ss.CertificateArn))
 	// IAM
 	case *iam.User:
 		res = graph.InitResource(cloud.User, awssdk.StringValue(ss.UserId))

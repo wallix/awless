@@ -1253,7 +1253,6 @@ func (d *Ec2Driver) Attach_Networkinterface_DryRun(ctx driver.Context, params ma
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			fmt.Println(code, err)
 			id := fakeDryRunId("networkinterface")
 			d.logger.Verbose("dry run: attach networkinterface ok")
 			return id, nil

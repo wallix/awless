@@ -27,6 +27,7 @@ import (
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
@@ -523,11 +524,19 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		},
 	}
 
+	//ACM
+	certificates := []*acm.CertificateSummary{
+		{CertificateArn: awssdk.String("arn:certif_1234"), DomainName: awssdk.String("domain-name.1")},
+		{CertificateArn: awssdk.String("arn:certif_2345"), DomainName: awssdk.String("domain-name.2")},
+		{CertificateArn: awssdk.String("arn:certif_3456"), DomainName: awssdk.String("domain-name.3")},
+	}
+
 	mock := &mockEc2{vpcs: vpcs, securitygroups: securityGroups, subnets: subnets, instances: instances, keypairinfos: keypairs, internetgateways: igws, routetables: routeTables, images: images, availabilityzones: availabilityZones, natgateways: natgws, networkinterfaces: networkInterfaces}
 	mockLb := &mockElbv2{loadbalancers: lbPages, targetgroups: targetGroups, listeners: listeners, targethealthdescriptions: targetHealths}
 	mockEcr := &mockEcr{repositorys: repositories}
 	mockEcs := &mockEcs{clusterNames: clusterNames, clusters: clusters, taskdefinitionNames: defNames, taskdefinitions: tasksDef, tasksNames: tasksNames, tasks: tasks, containerinstancesNames: containerInstancesNames, containerinstances: containerInstances}
 	mockRds := &mockRds{}
+	mockAcm := &mockAcm{certificatesummarys: certificates}
 	mockAutoscaling := &mockAutoscaling{launchconfigurations: launchConfigs, groups: scalingGroups}
 	InfraService = &Infra{
 		EC2API:         mock,
@@ -535,15 +544,16 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		ECSAPI:         mockEcs,
 		ELBV2API:       mockLb,
 		RDSAPI:         mockRds,
+		ACMAPI:         mockAcm,
 		AutoScalingAPI: mockAutoscaling,
 		region:         "eu-west-1",
-		fetcher:        fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(awsfetch.NewConfig(mock, mockEcr, mockEcs, mockLb, mockRds, mockAutoscaling))),
+		fetcher:        fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(awsfetch.NewConfig(mock, mockEcr, mockEcs, mockLb, mockRds, mockAutoscaling, mockAcm))),
 	}
 	g, err := InfraService.Fetch(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", cloud.NatGateway, "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerTask, cloud.Container, cloud.ContainerInstance, cloud.NetworkInterface)
+	resources, err := g.GetAllResources("region", "instance", "vpc", "securitygroup", "subnet", "keypair", "internetgateway", cloud.NatGateway, "routetable", "loadbalancer", "targetgroup", "listener", "launchconfiguration", "scalinggroup", "image", "availabilityzone", "repository", cloud.ContainerCluster, cloud.ContainerTask, cloud.Container, cloud.ContainerInstance, cloud.NetworkInterface, cloud.Certificate)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -650,11 +660,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"eni-1": resourcetest.NetworkInterface("eni-1").Prop(p.PublicIP, "1.2.3.4").Prop(p.PublicDNS, "my.ip.dns.name").Prop(p.Attachment, "eni-attach-12345").Prop(p.Instance, "inst_1").Prop(p.InstanceOwner, "12345678").
 			Prop(p.AvailabilityZone, "us-west-1b").Prop(p.Description, "my network interface description").Prop(p.SecurityGroups, []string{"securitygroup_1", "securitygroup_2"}).Prop(p.Type, "type").Prop(p.IPv6Addresses, []string{"ab:cd:ef::", "cd:ef:ab::"}).Prop(p.MACAddress, "01:23:34:56:78:9a").
 			Prop(p.Owner, "12345678").Prop(p.PrivateDNS, "my.private.dns.name").Prop(p.PrivateIP, "10.10.20.12").Prop(p.State, "in-use").Prop(p.Subnet, "sub_1").Prop(p.Vpc, "vpc_1").Build(),
-		"eni-2": resourcetest.NetworkInterface("eni-2").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"eni-2":           resourcetest.NetworkInterface("eni-2").Prop(p.Subnet, "sub_3").Prop(p.Vpc, "vpc_2").Build(),
+		"arn:certif_1234": resourcetest.Certificate("arn:certif_1234").Prop(p.Arn, "arn:certif_1234").Prop(p.Name, "domain-name.1").Build(),
+		"arn:certif_2345": resourcetest.Certificate("arn:certif_2345").Prop(p.Arn, "arn:certif_2345").Prop(p.Name, "domain-name.2").Build(),
+		"arn:certif_3456": resourcetest.Certificate("arn:certif_3456").Prop(p.Arn, "arn:certif_3456").Prop(p.Name, "domain-name.3").Build(),
 	}
 
 	expectedChildren := map[string][]string{
-		"eu-west-1": {"asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "cs_3:1", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "natgw_1", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
+		"eu-west-1": {"arn:certif_1234", "arn:certif_2345", "arn:certif_3456", "asg_arn_1", "asg_arn_2", "clust_1", "clust_2", "clust_3", "cs_1:1", "cs_2:1", "cs_2:2", "cs_3:1", "igw_1", "img_1", "img_2", "launchconfig_arn", "my_key", "natgw_1", "repo_1", "repo_2", "repo_3", "us-west-1a", "us-west-1b", "vpc_1", "vpc_2"},
 		"lb_1":      {"list_1", "list_1.2"},
 		"lb_2":      {"list_2"},
 		"lb_3":      {"list_3"},
@@ -1284,12 +1297,16 @@ func TestBuildEmptyRdfGraphWhenNoData(t *testing.T) {
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)
 
 	infra := Infra{
-		EC2API:   &mockEc2{},
-		ELBV2API: &mockElbv2{},
-		RDSAPI:   &mockRds{}, AutoScalingAPI: &mockAutoscaling{},
-		ECRAPI: &mockEcr{}, ECSAPI: &mockEcs{}, region: "eu-west-1",
+		EC2API:         &mockEc2{},
+		ELBV2API:       &mockElbv2{},
+		RDSAPI:         &mockRds{},
+		AutoScalingAPI: &mockAutoscaling{},
+		ECRAPI:         &mockEcr{},
+		ECSAPI:         &mockEcs{},
+		ACMAPI:         &mockAcm{},
+		region:         "eu-west-1",
 		fetcher: fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(awsfetch.NewConfig(
-			&mockEc2{}, &mockElbv2{}, &mockRds{}, &mockEcr{}, &mockEcs{}, &mockAutoscaling{},
+			&mockEc2{}, &mockElbv2{}, &mockRds{}, &mockEcr{}, &mockEcs{}, &mockAutoscaling{}, &mockAcm{},
 		))),
 	}
 

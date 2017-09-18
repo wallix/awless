@@ -349,6 +349,11 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.AgentVersion:      {name: "VersionInfo", transform: extractFieldFn("AgentVersion")},
 		properties.DockerVersion:     {name: "VersionInfo", transform: extractFieldFn("DockerVersion")},
 	},
+	//ACM
+	cloud.Certificate: {
+		properties.Arn:  {name: "CertificateArn", transform: extractValueFn},
+		properties.Name: {name: "DomainName", transform: extractValueFn},
+	},
 	//IAM
 	cloud.User: {
 		properties.Name:             {name: "UserName", transform: extractValueFn},

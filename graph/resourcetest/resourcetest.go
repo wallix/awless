@@ -166,6 +166,10 @@ func NetworkInterface(id string) *rBuilder {
 	return new("networkinterface", id)
 }
 
+func Certificate(id string) *rBuilder {
+	return new("certificate", id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b

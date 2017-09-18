@@ -48,6 +48,7 @@ const (
 	ElasticIP        string = "elasticip"
 	Snapshot         string = "snapshot"
 	NetworkInterface string = "networkinterface"
+	Certificate      string = "certificate"
 	//loadbalancer
 	LoadBalancer string = "loadbalancer"
 	TargetGroup  string = "targetgroup"

@@ -23,6 +23,8 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/acm"
+	"github.com/aws/aws-sdk-go/service/acm/acmiface"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -434,6 +436,66 @@ func (m *mockAutoscaling) DescribePoliciesPages(input *autoscaling.DescribePolic
 	}
 	for i, page := range pages {
 		fn(&autoscaling.DescribePoliciesOutput{ScalingPolicies: page, NextToken: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+type mockAcm struct {
+	acmiface.ACMAPI
+	certificatesummarys []*acm.CertificateSummary
+}
+
+func (m *mockAcm) Name() string {
+	return ""
+}
+
+func (m *mockAcm) Region() string {
+	return ""
+}
+
+func (m *mockAcm) Provider() string {
+	return ""
+}
+
+func (m *mockAcm) ProviderAPI() string {
+	return ""
+}
+
+func (s *mockAcm) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewAcmDriver(s.ACMAPI),
+	}
+}
+
+func (m *mockAcm) ResourceTypes() []string {
+	return []string{}
+}
+
+func (m *mockAcm) Fetch(context.Context) (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockAcm) IsSyncDisabled() bool {
+	return false
+}
+
+func (m *mockAcm) FetchByType(context.Context, string) (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockAcm) ListCertificatesPages(input *acm.ListCertificatesInput, fn func(p *acm.ListCertificatesOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*acm.CertificateSummary
+	for i := 0; i < len(m.certificatesummarys); i += 2 {
+		page := []*acm.CertificateSummary{m.certificatesummarys[i]}
+		if i+1 < len(m.certificatesummarys) {
+			page = append(page, m.certificatesummarys[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&acm.ListCertificatesOutput{CertificateSummaryList: page, NextToken: aws.String(strconv.Itoa(i + 1))},
 			i < len(pages),
 		)
 	}

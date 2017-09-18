@@ -28,6 +28,8 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/acm"
+	"github.com/aws/aws-sdk-go/service/acm/acmiface"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -115,6 +117,7 @@ var ResourceTypes = []string{
 	"containertask",
 	"container",
 	"containerinstance",
+	"certificate",
 	"user",
 	"group",
 	"role",
@@ -143,6 +146,7 @@ var ServicePerAPI = map[string]string{
 	"ecr":         "infra",
 	"ecs":         "infra",
 	"applicationautoscaling": "infra",
+	"acm":            "infra",
 	"iam":            "access",
 	"sts":            "access",
 	"s3":             "storage",
@@ -184,6 +188,7 @@ var ServicePerResourceType = map[string]string{
 	"containertask":       "infra",
 	"container":           "infra",
 	"containerinstance":   "infra",
+	"certificate":         "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -233,6 +238,7 @@ var APIPerResourceType = map[string]string{
 	"containertask":       "ecs",
 	"container":           "ecs",
 	"containerinstance":   "ecs",
+	"certificate":         "acm",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -271,6 +277,7 @@ type Infra struct {
 	ecriface.ECRAPI
 	ecsiface.ECSAPI
 	applicationautoscalingiface.ApplicationAutoScalingAPI
+	acmiface.ACMAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
@@ -282,6 +289,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 	ecrAPI := ecr.New(sess)
 	ecsAPI := ecs.New(sess)
 	applicationautoscalingAPI := applicationautoscaling.New(sess)
+	acmAPI := acm.New(sess)
 
 	fetchConfig := awsfetch.NewConfig(
 		ec2API,
@@ -291,6 +299,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		ecrAPI,
 		ecsAPI,
 		applicationautoscalingAPI,
+		acmAPI,
 	)
 	fetchConfig.Extra = awsconf
 	fetchConfig.Log = log
@@ -303,10 +312,11 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		ECRAPI:         ecrAPI,
 		ECSAPI:         ecsAPI,
 		ApplicationAutoScalingAPI: applicationautoscalingAPI,
-		fetcher:                   fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(fetchConfig)),
-		config:                    awsconf,
-		region:                    region,
-		log:                       log,
+		ACMAPI:  acmAPI,
+		fetcher: fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(fetchConfig)),
+		config:  awsconf,
+		region:  region,
+		log:     log,
 	}
 }
 
@@ -327,6 +337,7 @@ func (s *Infra) Drivers() []driver.Driver {
 		awsdriver.NewEcrDriver(s.ECRAPI),
 		awsdriver.NewEcsDriver(s.ECSAPI),
 		awsdriver.NewApplicationautoscalingDriver(s.ApplicationAutoScalingAPI),
+		awsdriver.NewAcmDriver(s.ACMAPI),
 	}
 }
 
@@ -360,6 +371,7 @@ func (s *Infra) ResourceTypes() []string {
 		"containertask",
 		"container",
 		"containerinstance",
+		"certificate",
 	}
 }
 
@@ -1003,6 +1015,28 @@ func (s *Infra) Fetch(ctx context.Context) (*graph.Graph, error) {
 			for _, fn := range addParentsFns["containerinstance"] {
 				wg.Add(1)
 				go func(f addParentFn, snap tstore.RDFGraph, region string, res *ecs.ContainerInstance) {
+					defer wg.Done()
+					err := f(gph, snap, region, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, snap, s.region, r)
+			}
+		}
+	}
+	if s.config.getBool("aws.infra.certificate.sync", true) {
+		list, err := s.fetcher.Get("certificate_objects")
+		if err != nil {
+			return gph, err
+		}
+		if _, ok := list.([]*acm.CertificateSummary); !ok {
+			return gph, errors.New("cannot cast to '[]*acm.CertificateSummary' type from fetch context")
+		}
+		for _, r := range list.([]*acm.CertificateSummary) {
+			for _, fn := range addParentsFns["certificate"] {
+				wg.Add(1)
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *acm.CertificateSummary) {
 					defer wg.Done()
 					err := f(gph, snap, region, res)
 					if err != nil {

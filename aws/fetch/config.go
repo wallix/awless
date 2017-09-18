@@ -3,6 +3,7 @@ package awsfetch
 import (
 	"reflect"
 
+	"github.com/aws/aws-sdk-go/service/acm/acmiface"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
@@ -42,6 +43,7 @@ type AWSAPI struct {
 	Cloudwatch             cloudwatchiface.CloudWatchAPI
 	Cloudfront             cloudfrontiface.CloudFrontAPI
 	Cloudformation         cloudformationiface.CloudFormationAPI
+	Acm                    acmiface.ACMAPI
 }
 
 type Config struct {

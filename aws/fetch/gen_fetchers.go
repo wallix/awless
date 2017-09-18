@@ -24,6 +24,7 @@ import (
 	"context"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
@@ -677,6 +678,37 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		err := conf.APIs.Ecr.DescribeRepositoriesPages(&ecr.DescribeRepositoriesInput{},
 			func(out *ecr.DescribeRepositoriesOutput, lastPage bool) (shouldContinue bool) {
 				for _, output := range out.Repositories {
+					if badResErr != nil {
+						return false
+					}
+					objects = append(objects, output)
+					var res *graph.Resource
+					if res, badResErr = awsconv.NewResource(output); badResErr != nil {
+						return false
+					}
+					resources = append(resources, res)
+				}
+				return out.NextToken != nil
+			})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		return resources, objects, badResErr
+	}
+
+	funcs["certificate"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*acm.CertificateSummary
+
+		if !conf.getBoolDefaultTrue("aws.infra.certificate.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource infra[certificate]")
+			return resources, objects, nil
+		}
+		var badResErr error
+		err := conf.APIs.Acm.ListCertificatesPages(&acm.ListCertificatesInput{},
+			func(out *acm.ListCertificatesOutput, lastPage bool) (shouldContinue bool) {
+				for _, output := range out.CertificateSummaryList {
 					if badResErr != nil {
 						return false
 					}
