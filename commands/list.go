@@ -38,6 +38,7 @@ var (
 	listingTagFiltersFlag      []string
 	listingTagKeyFiltersFlag   []string
 	listingTagValueFiltersFlag []string
+	listingColumnsFlag         []string
 	listOnlyIDs                bool
 	noHeadersFlag              bool
 	sortBy                     []string
@@ -69,6 +70,7 @@ func init() {
 	listCmd.PersistentFlags().StringSliceVar(&listingTagFiltersFlag, "tag", []string{}, "Filter EC2 resources given tags (case sensitive!). Ex: --tag Env=Production")
 	listCmd.PersistentFlags().StringSliceVar(&listingTagKeyFiltersFlag, "tag-key", []string{}, "Filter EC2 resources given a tag key only (case sensitive!). Ex: --tag-key Env")
 	listCmd.PersistentFlags().StringSliceVar(&listingTagValueFiltersFlag, "tag-value", []string{}, "Filter EC2 resources given a tag value only (case sensitive!). Ex: --tag-value Staging")
+	listCmd.PersistentFlags().StringSliceVar(&listingColumnsFlag, "columns", []string{}, "Select the properties to display in the columns. Ex: --columns id,name,cidr")
 	listCmd.PersistentFlags().BoolVar(&listOnlyIDs, "ids", false, "List only ids")
 	listCmd.PersistentFlags().BoolVar(&noHeadersFlag, "no-headers", false, "Do not display headers")
 	listCmd.PersistentFlags().BoolVar(&reverseFlag, "reverse", false, "Use in conjunction with --sort to reverse sort")
@@ -132,7 +134,7 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 func printResources(g *graph.Graph, resType string) {
 	displayer, err := console.BuildOptions(
 		console.WithRdfType(resType),
-		console.WithHeaders(console.DefaultsColumnDefinitions[resType]),
+		console.WithColumns(listingColumnsFlag),
 		console.WithFilters(listingFiltersFlag),
 		console.WithTagFilters(listingTagFiltersFlag),
 		console.WithTagKeyFilters(listingTagKeyFiltersFlag),

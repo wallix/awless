@@ -2,6 +2,7 @@
 
 ### Features
 
+- [#87](https://github.com/wallix/awless/issues/87): Customize columns displayed in `awless list` with `--columns`: `awless ls instances --sort name --columns name,vpc,state,privateip`
 - Global `--no-sync` flag to not run any sync on command
 - `awless show policy-name/policy-id` now displays the current policy Document (in JSON).
 

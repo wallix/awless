@@ -21,8 +21,10 @@ import (
 	"time"
 )
 
+var globalNow = time.Now().UTC()
+
 func HumanizeTime(t time.Time) string {
-	d := time.Now().UTC().Sub(t)
+	d := globalNow.Sub(t)
 	switch {
 	case d.Seconds() <= time.Second.Seconds():
 		return "now"

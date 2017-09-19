@@ -42,13 +42,10 @@ func TestResourceDisplay(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-	}
+	columns := []string{"ID", "Name"}
 
 	displayer, _ := BuildOptions(
-		WithHeaders(headers),
+		WithColumns(columns),
 		WithFormat("table"),
 	).SetSource(r).Build()
 

@@ -49,19 +49,19 @@ type sorter interface {
 }
 
 type Builder struct {
-	filters         []string
-	tagFilters      []string
-	tagKeyFilters   []string
-	tagValueFilters []string
-	headers         []ColumnDefinition
-	format          string
-	rdfType         string
-	sort            []int
-	reverseSort     bool
-	maxwidth        int
-	dataSource      interface{}
-	root            *graph.Resource
-	noHeaders       bool
+	filters           []string
+	tagFilters        []string
+	tagKeyFilters     []string
+	tagValueFilters   []string
+	columnDefinitions []ColumnDefinition
+	format            string
+	rdfType           string
+	sort              []int
+	reverseSort       bool
+	maxwidth          int
+	dataSource        interface{}
+	root              *graph.Resource
+	noHeaders         bool
 }
 
 func (b *Builder) SetSource(i interface{}) *Builder {
@@ -74,13 +74,13 @@ func (b *Builder) buildGraphFilters() (funcs []graph.FilterFn, err error) {
 		splits := strings.SplitN(f, "=", 2)
 		if len(splits) == 2 {
 			name, val := strings.TrimSpace(strings.Title(splits[0])), strings.TrimSpace(splits[1])
-			key := ColumnDefinitions(b.headers).resolveKey(name)
+			key := ColumnDefinitions(b.columnDefinitions).resolveKey(name)
 
 			if key != "" {
 				funcs = append(funcs, graph.BuildPropertyFilterFunc(key, val))
 			} else {
 				var allowed []string
-				for _, h := range b.headers {
+				for _, h := range b.columnDefinitions {
 					allowed = append(allowed, h.propKey())
 				}
 				err = fmt.Errorf("Invalid filter key '%s'. Expecting any of: %s. (Note: filter keys/values are case insensitive)", name, strings.Join(allowed, ", "))
@@ -117,7 +117,7 @@ func (b *Builder) buildGraphTagValueFilters() (funcs []graph.FilterFn) {
 }
 
 func (b *Builder) Build() (Displayer, error) {
-	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort, descending: b.reverseSort}, rdfType: b.rdfType, headers: b.headers, maxwidth: b.maxwidth, noHeaders: b.noHeaders}
+	base := fromGraphDisplayer{sorter: &defaultSorter{sortBy: b.sort, descending: b.reverseSort}, rdfType: b.rdfType, columnDefinitions: b.columnDefinitions, maxwidth: b.maxwidth, noHeaders: b.noHeaders}
 
 	switch b.dataSource.(type) {
 	case *graph.Graph:
@@ -203,7 +203,7 @@ func (b *Builder) Build() (Displayer, error) {
 			return dis, nil
 		}
 	case *graph.Resource:
-		dis := &tableResourceDisplayer{headers: b.headers, maxwidth: b.maxwidth}
+		dis := &tableResourceDisplayer{columnDefinitions: b.columnDefinitions, maxwidth: b.maxwidth}
 		dis.SetResource(b.dataSource.(*graph.Resource))
 		return dis, nil
 	case *graph.Diff:
@@ -240,8 +240,8 @@ func BuildOptions(opts ...optsFn) *Builder {
 		fn(b)
 	}
 
-	if len(b.headers) == 0 {
-		b.headers = DefaultsColumnDefinitions[b.rdfType]
+	if len(b.columnDefinitions) == 0 {
+		b.columnDefinitions = DefaultsColumnDefinitions[b.rdfType]
 	}
 
 	return b
@@ -254,9 +254,33 @@ func WithFormat(format string) optsFn {
 	}
 }
 
-func WithHeaders(h []ColumnDefinition) optsFn {
+func WithColumns(properties []string) optsFn {
 	return func(b *Builder) *Builder {
-		b.headers = h
+		if len(properties) == 0 {
+			properties = ColumnsInListing[b.rdfType]
+		}
+		var columns []ColumnDefinition
+		for _, p := range properties {
+			var found bool
+			for _, definition := range DefaultsColumnDefinitions[b.rdfType] {
+				if strings.ToLower(p) == strings.ToLower(definition.propKey()) || strings.ToLower(p) == strings.ToLower(definition.title()) {
+					found = true
+					columns = append(columns, definition)
+					continue
+				}
+			}
+			if !found {
+				columns = append(columns, StringColumnDefinition{Prop: strings.Title(p)})
+			}
+		}
+		b.columnDefinitions = columns
+		return b
+	}
+}
+
+func WithColumnDefinitions(definitions []ColumnDefinition) optsFn {
+	return func(b *Builder) *Builder {
+		b.columnDefinitions = definitions
 		return b
 	}
 }
@@ -292,7 +316,7 @@ func WithTagValueFilters(fs []string) optsFn {
 func WithIDsOnly(only bool) optsFn {
 	return func(b *Builder) *Builder {
 		if only {
-			b.headers = []ColumnDefinition{
+			b.columnDefinitions = []ColumnDefinition{
 				&StringColumnDefinition{Prop: "ID"},
 				&StringColumnDefinition{Prop: "Name"},
 			}
@@ -305,7 +329,7 @@ func WithIDsOnly(only bool) optsFn {
 
 func WithSortBy(sortingBy ...string) optsFn {
 	return func(b *Builder) *Builder {
-		indexes, err := resolveSortIndexes(b.headers, sortingBy...)
+		indexes, err := resolveSortIndexes(b.columnDefinitions, sortingBy...)
 		if err != nil {
 			fmt.Fprint(os.Stderr, err, "\n")
 		}
@@ -355,11 +379,11 @@ type table [][]interface{}
 
 type fromGraphDisplayer struct {
 	sorter
-	g         *graph.Graph
-	rdfType   string
-	headers   []ColumnDefinition
-	maxwidth  int
-	noHeaders bool
+	g                 *graph.Graph
+	rdfType           string
+	columnDefinitions []ColumnDefinition
+	maxwidth          int
+	noHeaders         bool
 }
 
 func (d *fromGraphDisplayer) setGraph(g *graph.Graph) {
@@ -376,16 +400,16 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 		return err
 	}
 
-	if len(d.headers) == 0 {
+	if len(d.columnDefinitions) == 0 {
 		return nil
 	}
 
 	values := make(table, len(resources))
 	for i, res := range resources {
 		if v := values[i]; v == nil {
-			values[i] = make([]interface{}, len(d.headers))
+			values[i] = make([]interface{}, len(d.columnDefinitions))
 		}
-		for j, h := range d.headers {
+		for j, h := range d.columnDefinitions {
 			values[i][j] = res.Properties[h.propKey()]
 		}
 	}
@@ -395,7 +419,7 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 	var buff bytes.Buffer
 
 	var head []string
-	for _, h := range d.headers {
+	for _, h := range d.columnDefinitions {
 		head = append(head, h.title())
 	}
 
@@ -405,7 +429,7 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 
 	for i := range values {
 		var props []string
-		for j, h := range d.headers {
+		for j, h := range d.columnDefinitions {
 			props = append(props, h.format(values[i][j]))
 		}
 		buff.WriteString(strings.Join(props, ",") + "\n")
@@ -427,16 +451,16 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 		return err
 	}
 
-	if len(d.headers) == 0 {
+	if len(d.columnDefinitions) == 0 {
 		return nil
 	}
 
 	values := make(table, len(resources))
 	for i, res := range resources {
 		if v := values[i]; v == nil {
-			values[i] = make([]interface{}, len(d.headers))
+			values[i] = make([]interface{}, len(d.columnDefinitions))
 		}
-		for j, h := range d.headers {
+		for j, h := range d.columnDefinitions {
 			values[i][j] = res.Properties[h.propKey()]
 		}
 	}
@@ -444,7 +468,7 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 	d.sorter.sort(values)
 
 	var head []string
-	for _, h := range d.headers {
+	for _, h := range d.columnDefinitions {
 		head = append(head, h.title())
 	}
 
@@ -454,7 +478,7 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 
 	for i := range values {
 		var props []string
-		for j, h := range d.headers {
+		for j, h := range d.columnDefinitions {
 			props = append(props, h.format(values[i][j]))
 		}
 		fmt.Fprintln(w, strings.Join(props, "\t"))
@@ -499,7 +523,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 		w.Write([]byte("No results found.\n"))
 		return nil
 	}
-	if len(d.headers) == 0 {
+	if len(d.columnDefinitions) == 0 {
 		w.Write([]byte("No columns to display.\n"))
 		return nil
 	}
@@ -507,9 +531,9 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	values := make(table, len(resources))
 	for i, res := range resources {
 		if v := values[i]; v == nil {
-			values[i] = make([]interface{}, len(d.headers))
+			values[i] = make([]interface{}, len(d.columnDefinitions))
 		}
-		for j, h := range d.headers {
+		for j, h := range d.columnDefinitions {
 			values[i][j] = res.Properties[h.propKey()]
 		}
 	}
@@ -520,12 +544,12 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 		markColumnAsc = d.sorter.columns()[0]
 	}
 
-	columnsToDisplay := d.headers
+	columnsToDisplay := d.columnDefinitions
 	maxWidthNoWraping := 1
 	if d.maxwidth != 0 {
 		columnsToDisplay = []ColumnDefinition{}
 		currentWidth := 1 // first border
-		for j, h := range d.headers {
+		for j, h := range d.columnDefinitions {
 			var symbol string
 			if markColumnAsc == j {
 				symbol = d.sorter.symbol()
@@ -578,10 +602,10 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 	}
 
 	table.Render()
-	if len(columnsToDisplay) < len(d.headers) {
+	if len(columnsToDisplay) < len(d.columnDefinitions) {
 		var hiddenColumns []string
-		for i := len(columnsToDisplay); i < len(d.headers); i++ {
-			hiddenColumns = append(hiddenColumns, "'"+d.headers[i].title()+"'")
+		for i := len(columnsToDisplay); i < len(d.columnDefinitions); i++ {
+			hiddenColumns = append(hiddenColumns, "'"+d.columnDefinitions[i].title()+"'")
 		}
 		if len(hiddenColumns) == 1 {
 			fmt.Fprint(w, color.New(color.FgRed).SprintfFunc()("Column truncated to fit terminal: %s\n", hiddenColumns[0]))
@@ -615,8 +639,8 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 		}
 
 		for _, res := range resources {
-			var row = make([]interface{}, len(d.headers))
-			for j, h := range d.headers {
+			var row = make([]interface{}, len(d.columnDefinitions))
+			for j, h := range d.columnDefinitions {
 				row[j] = res.Properties[h.propKey()]
 			}
 			values = append(values, row)
@@ -628,7 +652,7 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 	var lines []string
 
 	for i := range values {
-		for j := range d.headers {
+		for j := range d.columnDefinitions {
 			v := values[i][j]
 			if v != nil {
 				val := fmt.Sprint(v)

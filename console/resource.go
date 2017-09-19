@@ -25,9 +25,9 @@ import (
 )
 
 type tableResourceDisplayer struct {
-	maxwidth int
-	r        *graph.Resource
-	headers  []ColumnDefinition
+	maxwidth          int
+	r                 *graph.Resource
+	columnDefinitions []ColumnDefinition
 }
 
 func (d *tableResourceDisplayer) Print(w io.Writer) error {
@@ -37,7 +37,7 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	propertyNameMaxWith := 13
 	for prop, val := range d.r.Properties {
 		var header ColumnDefinition
-		for _, h := range d.headers {
+		for _, h := range d.columnDefinitions {
 			if h.propKey() == prop {
 				header = h
 			}

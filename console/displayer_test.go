@@ -33,20 +33,14 @@ func init() {
 
 func TestSorting(t *testing.T) {
 	g := createInfraGraph()
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "State"},
-		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
-	}
+	columns := []string{"ID", "Name", "State", "Type", "PublicIP"}
 	var w bytes.Buffer
 
 	t.Run("ascending", func(t *testing.T) {
 		w.Reset()
 		displayer, _ := BuildOptions(
-			WithHeaders(headers),
 			WithRdfType("instance"),
+			WithColumns(columns),
 			WithFormat("csv"),
 			WithSortBy("Name"),
 		).SetSource(g).Build()
@@ -67,8 +61,8 @@ func TestSorting(t *testing.T) {
 	t.Run("descending", func(t *testing.T) {
 		w.Reset()
 		displayer, _ := BuildOptions(
-			WithHeaders(headers),
 			WithRdfType("instance"),
+			WithColumns(columns),
 			WithFormat("csv"),
 			WithSortBy("Name"),
 			WithReverseSort(true),
@@ -137,17 +131,11 @@ func TestJSONDisplays(t *testing.T) {
 
 func TestTabularDisplays(t *testing.T) {
 	g := createInfraGraph()
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "State"},
-		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
-	}
+	columns := []string{"ID", "Name", "State", "Type", "PublicIP"}
 
 	displayer, _ := BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -164,8 +152,8 @@ func TestTabularDisplays(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithFormat("csv"),
 		WithSortBy("Name"),
 	).SetSource(g).Build()
@@ -183,20 +171,11 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n%q\n\nwant\n\n%q\n", got, want)
 	}
 
-	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		ColoredValueColumnDefinition{
-			StringColumnDefinition: StringColumnDefinition{Prop: "State"},
-			ColoredValues:          map[string]color.Attribute{"running": color.FgGreen},
-		},
-		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
-	}
+	columns = []string{"ID", "Name", "State", "Type", "PublicIP"}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 	).SetSource(g).Build()
 
 	expected = `|  ID ▲  |  NAME  |  STATE  |   TYPE    | PUBLIC IP |
@@ -214,8 +193,8 @@ func TestTabularDisplays(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithSortBy("state", "id"),
 	).SetSource(g).Build()
 
@@ -234,8 +213,8 @@ func TestTabularDisplays(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithSortBy("state", "name"),
 	).SetSource(g).Build()
 
@@ -253,14 +232,11 @@ func TestTabularDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-	}
+	columns = []string{"ID", "Name"}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithFormat("porcelain"),
 	).SetSource(g).Build()
 
@@ -319,10 +295,7 @@ func TestMultiResourcesDisplays(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	displayer, _ = BuildOptions(
-		WithHeaders([]ColumnDefinition{StringColumnDefinition{Prop: "ID"}}),
-		WithFormat("porcelain"),
-	).SetSource(g).Build()
+	displayer, _ = BuildOptions(WithColumns([]string{"ID"}), WithFormat("porcelain")).SetSource(g).Build()
 
 	expected = `inst_1
 inst_2
@@ -428,23 +401,23 @@ func TestDateLists(t *testing.T) {
 		resourcetest.User("user2").Prop("Name", "my_username_2").Prop("PasswordLastUsed", time.Unix(1482405203, 0).UTC()).Build(),
 		resourcetest.User("user3").Prop("Name", "my_username_3").Prop("PasswordLastUsed", time.Unix(1481358937, 0).UTC()).Build(),
 	)
+	globalNow = time.Unix(1505832866, 0)
+	defer func() {
+		globalNow = time.Now().UTC()
+	}()
 
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: "PasswordLastUsed"}, Format: Short},
-	}
+	columns := []string{"ID", "Name", "PasswordLastUsed"}
 
 	displayer, _ := BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("user"),
+		WithColumns(columns),
 	).SetSource(g).Build()
 
 	expected := `| ID ▲  |     NAME      | PASSWORDLASTUSED |
 |-------|---------------|------------------|
 | user1 | my_username_1 |                  |
-| user2 | my_username_2 | 12/22/16 11:13   |
-| user3 | my_username_3 | 12/10/16 08:35   |
+| user2 | my_username_2 | 9 months         |
+| user3 | my_username_3 | 9 months         |
 `
 	var w bytes.Buffer
 	if err := displayer.Print(&w); err != nil {
@@ -455,16 +428,16 @@ func TestDateLists(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("user"),
+		WithColumns(columns),
 		WithSortBy("passwordlastused"),
 	).SetSource(g).Build()
 
 	expected = `|  ID   |     NAME      | PASSWORDLASTUSED ▲ |
 |-------|---------------|--------------------|
 | user1 | my_username_1 |                    |
-| user2 | my_username_2 | 12/22/16 11:13     |
-| user3 | my_username_3 | 12/10/16 08:35     |
+| user2 | my_username_2 | 9 months           |
+| user3 | my_username_3 | 9 months           |
 `
 	w.Reset()
 	if err := displayer.Print(&w); err != nil {
@@ -477,17 +450,11 @@ func TestDateLists(t *testing.T) {
 
 func TestMaxWidth(t *testing.T) {
 	g := createInfraGraph()
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "State"},
-		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
-	}
+	columns := []string{"ID", "Name", "State", "Type", "PublicIP"}
 
 	displayer, _ := BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithSortBy("state", "name"),
 		WithMaxWidth(55),
 	).SetSource(g).Build()
@@ -506,19 +473,13 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	headers = []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "State"},
-		StringColumnDefinition{Prop: "Type"},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
-	}
+	columns = []string{"ID", "Name", "State", "Type", "PublicIP"}
 
 	autowrapMaxSize = 4
 	tableColWidth = 4
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithSortBy("state", "name"),
 		WithMaxWidth(45),
 	).SetSource(g).Build()
@@ -544,8 +505,8 @@ func TestMaxWidth(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithSortBy("state", "name"),
 		WithMaxWidth(70),
 	).SetSource(g).Build()
@@ -564,7 +525,7 @@ func TestMaxWidth(t *testing.T) {
 		t.Fatalf("got \n%s\n\nwant\n\n%s\n", got, want)
 	}
 
-	headers = []ColumnDefinition{
+	columnDefs := []ColumnDefinition{
 		StringColumnDefinition{Prop: "ID", Friendly: "I"},
 		StringColumnDefinition{Prop: "Name", Friendly: "N"},
 		StringColumnDefinition{Prop: "State", Friendly: "S"},
@@ -572,12 +533,14 @@ func TestMaxWidth(t *testing.T) {
 		StringColumnDefinition{Prop: "PublicIP", Friendly: "P"},
 	}
 
-	displayer, _ = BuildOptions(
-		WithHeaders(headers),
+	builder := BuildOptions(
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithSortBy("s", "n"),
 		WithMaxWidth(40),
-	).SetSource(g).Build()
+	)
+
+	displayer, _ = builder.SetSource(g).Build()
 
 	expected = `|  I   |  N   | S ▲  |  T   |  P   |
 |------|------|------|------|------|
@@ -600,8 +563,8 @@ func TestMaxWidth(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithSortBy("s", "n"),
 		WithMaxWidth(50),
 	).SetSource(g).Build()
@@ -617,8 +580,8 @@ func TestMaxWidth(t *testing.T) {
 	autowrapMaxSize = 5
 	tableColWidth = 5
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithSortBy("s", "n"),
 		WithMaxWidth(29),
 	).SetSource(g).Build()
@@ -782,15 +745,11 @@ func createDiff(root *graph.Resource) (*graph.Diff, error) {
 
 func TestEmotyDisplays(t *testing.T) {
 	g := graph.NewGraph()
-	headers := []ColumnDefinition{
-		StringColumnDefinition{Prop: "ID"},
-		StringColumnDefinition{Prop: "Name"},
-		StringColumnDefinition{Prop: "PublicIP", Friendly: "Public IP"},
-	}
+	columns := []string{"ID", "Name", "PublicIP"}
 
 	displayer, _ := BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumns(columns),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -804,7 +763,7 @@ func TestEmotyDisplays(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
+		WithColumns(columns),
 		WithRdfType("instance"),
 		WithFormat("table"),
 	).SetSource(g).Build()
@@ -819,11 +778,11 @@ func TestEmotyDisplays(t *testing.T) {
 	}
 
 	g = createInfraGraph()
-	headers = []ColumnDefinition{}
+	columns = []string{}
 	DefaultsColumnDefinitions = make(map[string][]ColumnDefinition)
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
+		WithColumns(columns),
 		WithRdfType("instance"),
 		WithFormat("csv"),
 	).SetSource(g).Build()
@@ -838,7 +797,7 @@ func TestEmotyDisplays(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
+		WithColumns(columns),
 		WithRdfType("instance"),
 		WithFormat("table"),
 	).SetSource(g).Build()
@@ -855,7 +814,7 @@ func TestEmotyDisplays(t *testing.T) {
 
 func TestNoHeadersDisplay(t *testing.T) {
 	g := createInfraGraph()
-	headers := []ColumnDefinition{
+	columnDefs := []ColumnDefinition{
 		StringColumnDefinition{Prop: "ID"},
 		StringColumnDefinition{Prop: "Name"},
 		StringColumnDefinition{Prop: "State"},
@@ -864,8 +823,8 @@ func TestNoHeadersDisplay(t *testing.T) {
 	}
 
 	displayer, _ := BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithFormat("csv"),
 	).SetSource(g).Build()
 
@@ -882,8 +841,8 @@ func TestNoHeadersDisplay(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithFormat("csv"),
 		WithNoHeaders(true),
 	).SetSource(g).Build()
@@ -901,8 +860,8 @@ func TestNoHeadersDisplay(t *testing.T) {
 	}
 
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithFormat("tsv"),
 		WithNoHeaders(true),
 	).SetSource(g).Build()
@@ -922,8 +881,8 @@ func TestNoHeadersDisplay(t *testing.T) {
 	autowrapMaxSize = 20
 	tableColWidth = 20
 	displayer, _ = BuildOptions(
-		WithHeaders(headers),
 		WithRdfType("instance"),
+		WithColumnDefinitions(columnDefs),
 		WithFormat("table"),
 		WithNoHeaders(true),
 	).SetSource(g).Build()
