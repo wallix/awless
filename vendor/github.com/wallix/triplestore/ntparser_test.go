@@ -326,6 +326,47 @@ func TestLexerPeekRunes(t *testing.T) {
 			t.Fatalf("input [%s]: got %q, want %q", tcase.input, got, want)
 		}
 	}
+
+	t.Run("read, unread & peek mixed", func(t *testing.T) {
+		l := newNTLexer(strings.NewReader("abc d"))
+
+		l.readRune()
+		if got, want := string(l.current), "a"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		l.readRune()
+		if got, want := string(l.current), "b"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		peek, _ := l.peekNextNonWithespaceRune()
+		if got, want := string(peek), "c"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		l.readRune()
+		if got, want := string(l.current), "c"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		l.unreadRune()
+		if got, want := string(l.current), "b"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		l.readRune()
+		if got, want := string(l.current), "c"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		peek, _ = l.peekNextNonWithespaceRune()
+		if got, want := string(peek), "d"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		l.readRune()
+		if got, want := string(l.current), " "; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+		l.readRune()
+		if got, want := string(l.current), "d"; got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+	})
 }
 
 func TestLexerReadUnreadRunes(t *testing.T) {

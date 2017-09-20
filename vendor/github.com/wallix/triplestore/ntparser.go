@@ -180,10 +180,6 @@ func newNTLexer(r io.Reader) *ntLexer {
 	return &ntLexer{reader: bufio.NewReader(r)}
 }
 
-func (l *ntLexer) reset(input []byte) {
-	l.current, l.width, l.index = 0, 0, 0
-}
-
 func (l *ntLexer) nextToken() (ntToken, error) {
 	if err := l.readRune(); err != nil {
 		return ntToken{}, err
@@ -246,72 +242,65 @@ func (l *ntLexer) nextToken() (ntToken, error) {
 }
 
 func (l *ntLexer) readRune() (err error) {
-	l.current, l.width, err = l.reader.ReadRune()
-	if l.current == utf8.RuneError && l.width == 1 {
-		return errors.New("lexer read: invalid utf8 encoding")
-	}
-	if err == io.EOF || l.width == 0 {
-		l.current = 0
-		return nil
+	if ahead := l.ahead(); len(ahead) > 0 {
+		l.current, l.width = utf8.DecodeRune(ahead)
+	} else {
+		l.current, l.width, err = l.read()
 	}
 	l.index = l.index + l.width
-	l.buff = append(l.buff, []byte(string(l.current))...)
 	return nil
 }
 
 func (l *ntLexer) unreadRune() {
-	for i := 0; i < l.width; i++ {
-		l.reader.UnreadByte()
-	}
 	l.index = l.index - l.width
-	l.buff = l.buff[:len(l.buff)-l.width]
-	if len(l.buff) > 0 {
-		l.current, _ = utf8.DecodeLastRune(l.buff)
+	if len(l.buff) >= l.index {
+		if l.current, l.width = utf8.DecodeLastRune(l.buff[:l.index]); l.current == utf8.RuneError {
+			l.current, l.width = 0, 0
+		}
+	} else {
+		l.current, l.width = 0, 0
 	}
+}
+
+func (l *ntLexer) read() (next rune, width int, err error) {
+	next, width, err = l.reader.ReadRune()
+	if next == utf8.RuneError && width == 1 {
+		err = errors.New("lexer read: invalid utf8 encoding")
+		return
+	}
+	if err == io.EOF || width == 0 {
+		return 0, width, nil
+	}
+	l.buff = append(l.buff, string(next)...)
+	return
+}
+
+func (l *ntLexer) ahead() (ahead []byte) {
+	if len(l.buff) >= l.index {
+		ahead = l.buff[l.index:]
+	}
+	return
 }
 
 func (l *ntLexer) peekNextNonWithespaceRune() (found rune, err error) {
-	index := 1
-	var last byte
 	for {
-		b, err := l.reader.Peek(index)
-		if err == io.EOF {
-			return 0, nil
-		}
+		found, _, err = l.read()
 		if err != nil {
-			return 0, err
+			return
 		}
-		if l := len(b); l > 0 {
-			last = b[l-1]
-		} else {
-			last = 0
-		}
-		if last != ' ' && last != '\t' {
-			break
-		}
-		index++
-	}
-
-	for {
-		b, err := l.reader.Peek(index)
-		if err == io.EOF {
-			return 0, nil
-		}
-		if err != nil {
-			return 0, err
-		}
-		r, _ := utf8.DecodeLastRune(b)
-		if r == utf8.RuneError {
-			index++
-			continue
-		} else {
-			return r, err
+		if found != ' ' && found != '\t' {
+			return
 		}
 	}
 }
 
+func (l *ntLexer) resetBuff() {
+	l.buff = nil
+	l.index = 0
+}
+
 func (l *ntLexer) readNode() (string, error) {
-	l.buff = []byte{}
+	l.resetBuff()
 	for {
 		if err := l.readRune(); err != nil {
 			return "", err
@@ -332,7 +321,7 @@ func (l *ntLexer) readNode() (string, error) {
 }
 
 func (l *ntLexer) readStringLiteral() (string, error) {
-	l.buff = []byte{}
+	l.resetBuff()
 	for {
 		if err := l.readRune(); err != nil {
 			return "", err
@@ -353,7 +342,7 @@ func (l *ntLexer) readStringLiteral() (string, error) {
 }
 
 func (l *ntLexer) readBnode() (string, error) {
-	l.buff = []byte{}
+	l.resetBuff()
 	for {
 		if err := l.readRune(); err != nil {
 			return "", err
@@ -392,7 +381,7 @@ func (l *ntLexer) readBnode() (string, error) {
 }
 
 func (l *ntLexer) readComment() (string, error) {
-	l.buff = []byte{}
+	l.resetBuff()
 	for {
 		if err := l.readRune(); err != nil {
 			return "", err
@@ -409,5 +398,5 @@ func (l *ntLexer) readComment() (string, error) {
 }
 
 func (l *ntLexer) extractString() string {
-	return string(l.buff[:len(l.buff)-l.width])
+	return string(l.buff[:l.index-l.width])
 }
