@@ -3,7 +3,7 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/applicationautoscaling","service/applicationautoscaling/applicationautoscalingiface","service/autoscaling","service/autoscaling/autoscalingiface","service/cloudformation","service/cloudformation/cloudformationiface","service/cloudfront","service/cloudfront/cloudfrontiface","service/cloudwatch","service/cloudwatch/cloudwatchiface","service/ec2","service/ec2/ec2iface","service/ecr","service/ecr/ecriface","service/ecs","service/ecs/ecsiface","service/elbv2","service/elbv2/elbv2iface","service/iam","service/iam/iamiface","service/lambda","service/lambda/lambdaiface","service/rds","service/rds/rdsiface","service/route53","service/route53/route53iface","service/s3","service/s3/s3iface","service/sns","service/sns/snsiface","service/sqs","service/sqs/sqsiface","service/sts","service/sts/stsiface"]
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/acm","service/acm/acmiface","service/applicationautoscaling","service/applicationautoscaling/applicationautoscalingiface","service/autoscaling","service/autoscaling/autoscalingiface","service/cloudformation","service/cloudformation/cloudformationiface","service/cloudfront","service/cloudfront/cloudfrontiface","service/cloudwatch","service/cloudwatch/cloudwatchiface","service/ec2","service/ec2/ec2iface","service/ecr","service/ecr/ecriface","service/ecs","service/ecs/ecsiface","service/elbv2","service/elbv2/elbv2iface","service/iam","service/iam/iamiface","service/lambda","service/lambda/lambdaiface","service/rds","service/rds/rdsiface","service/route53","service/route53/route53iface","service/s3","service/s3/s3iface","service/sns","service/sns/snsiface","service/sqs","service/sqs/sqsiface","service/sts","service/sts/stsiface"]
   revision = "af01be3e6edf79e6f07b5816cfe0d2c6717e5c7f"
   version = "v1.10.41"
 
@@ -178,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1dd0ffc2c7e35fe6dd57f0e1f5f7c252e7b3f3e226d825a600986a9cf40ed98f"
+  inputs-digest = "9bd5c22e95b65f758bf77ff310a2c086915656863cf0162900b0885581919d19"
   solver-name = "gps-cdcl"
   solver-version = 1
