@@ -1,20 +1,21 @@
 [![Build Status](https://api.travis-ci.org/wallix/awless.svg?branch=master)](https://travis-ci.org/wallix/awless)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wallix/awless)](https://goreportcard.com/report/github.com/wallix/awless)
 
-`awless` is a fast, powerful and easy-to-use command line interface (CLI) to manage Amazon Web Services.
+`awless` is a powerful, innovative and small surface command line interface (CLI) to manage Amazon Web Services.
 
 [Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki) | [Changelog](https://github.com/wallix/awless/blob/master/CHANGELOG.md#readme)
 
 # Why awless
 
-`awless` will help you achieve your goals without leaving your terminal:
+`awless` stands out by providing the following features:
 
-- run frequent actions by using simple commands
-- get nice and readable output (for humans) that machine know how to parse too
-- explore and query your infrastructure and cloud resources, even **offline**
+- small and hierarchichal set of commands
+- greater output's readability with numerous machine and human friendly formats
+- exploration of your cloud infrastructure and resources relations, **even offline**
+- create and revert fully-fledged infrastructures through a new simple and powerful templating language (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
+- local log of all your cloud modifications done through `awless`
+- connect easily through smart SSH to your private & public instances
 - ensure smart defaults & security best practices
-- write and run powerful templates (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
-- connect to your private & public instances easily
 
 # Install
 
@@ -33,16 +34,16 @@ Choose one of the following options:
 <em>Note that this video is in <a href="https://en.wikipedia.org/wiki/APNG">APNG</a>. On Chrome, you need <a href="https://chrome.google.com/webstore/detail/apng/ehkepjiconegkhpodgoaeamnpckdbblp">an extension</a> to view it.</em>
 </p>
 
-- Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation and Lambda: `awless list`
-- Output formats either human (Markdown-compatible tables, trees) or machine readable (csv, tsv, json, ...): `--format`
-- Listing can be filtered via *resource properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
-- Explore a resource given only an *id*, name or arn (properties, relations, dependencies, ...): `awless show`
-- Creation, update and deletion (CRUD) of cloud resources and complex infrastructure with smart defaults and sound autocomplete through powerful awless templates: `awless run my-awless-templates/create_my_infra.txt`
+- Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.: `awless list`
+- Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
+- Listing filters via *resource properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
+- Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.: `awless show`
+- Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
-- Leveraging AWS `userdata` to provision instance on creation from remote (i.e http) or local scripts: `awless create instance userdata=http://...` 
+- Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=http://...` 
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
-- Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`
+- Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
 - Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --id-only`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
