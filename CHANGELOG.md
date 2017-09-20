@@ -2,6 +2,7 @@
 
 ### Features
 
+- Local storage of cloud data (RDF store) now done using the NTriples text format instead of a binary format (transition completely transparent for the user). New format allows more friendly git revisioning of data compared to a binary format.
 - [#87](https://github.com/wallix/awless/issues/87): Customize columns displayed in `awless list` with `--columns`: `awless ls instances --sort name --columns name,vpc,state,privateip`
 - Global `--no-sync` flag to not run any sync on command
 - `awless show policy-name/policy-id` now displays the current policy Document (in JSON).
