@@ -37,6 +37,7 @@ const (
 	Architecture                      = "cloud:architecture"
 	Arn                               = "cloud:arn"
 	Association                       = "cloud:association"
+	Associations                      = "cloud:associations"
 	Attachable                        = "cloud:attachable"
 	Attached                          = "cloud:attached"
 	Attachment                        = "cloud:attachment"
@@ -243,6 +244,7 @@ var Labels = map[string]string{
 	properties.Architecture:                      Architecture,
 	properties.Arn:                               Arn,
 	properties.Association:                       Association,
+	properties.Associations:                      Associations,
 	properties.Attachable:                        Attachable,
 	properties.Attached:                          Attached,
 	properties.Attachment:                        Attachment,
@@ -449,6 +451,7 @@ var Properties = RDFProperties{
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Arn:                     {ID: Arn, RdfType: "rdf:Property", RdfsLabel: "Arn", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Association:             {ID: Association, RdfType: "rdf:Property", RdfsLabel: "Association", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Associations:            {ID: Associations, RdfType: "rdf:Property", RdfsLabel: "Associations", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	Attachable:              {ID: Attachable, RdfType: "rdf:Property", RdfsLabel: "Attachable", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Attached:                {ID: Attached, RdfType: "rdf:Property", RdfsLabel: "Attached", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Attachment:              {ID: Attachment, RdfType: "rdf:Property", RdfsLabel: "Attachment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

@@ -35,6 +35,7 @@ const (
 	Architecture                      = "Architecture"
 	Arn                               = "Arn"
 	Association                       = "Association"
+	Associations                      = "Associations"
 	Attachable                        = "Attachable"
 	Attached                          = "Attached"
 	Attachment                        = "Attachment"
