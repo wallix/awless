@@ -63,7 +63,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid cloud service, expected awsservices.Cloudformation, got %T", awsservices.CloudformationService)
 	}
 
-	if t.refreshFrequency < 2*time.Second {
+	if t.refreshFrequency < 5*time.Second {
 		return fmt.Errorf("invalid refresh frequency: %s", t.refreshFrequency)
 	}
 
@@ -93,7 +93,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 			}
 		}
 
-		err := t.displayNewEvents(cfn, w)
+		err := t.displayLastEvents(cfn, w)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	return nil
 }
 
-// get last N events
+// get all events never than last seen event
 func (t *stackEventTailer) getLatestEvents(cfn *awsservices.Cloudformation) (stackEvents, error) {
 	params := &cloudformation.DescribeStackEventsInput{
 		StackName: &t.stackName,
@@ -116,46 +116,25 @@ func (t *stackEventTailer) getLatestEvents(cfn *awsservices.Cloudformation) (sta
 			return nil, err
 		}
 
-		stEvents = append(stEvents, resp.StackEvents...)
-		if len(stEvents) > t.nbEvents || resp.NextToken == nil {
-			break
-		}
-
-		params.NextToken = resp.NextToken
-	}
-
-	return stEvents, nil
-}
-
-// get all events never than last seen event
-func (t *stackEventTailer) getNewEvents(cfn *awsservices.Cloudformation) (stackEvents, error) {
-	params := &cloudformation.DescribeStackEventsInput{
-		StackName: &t.stackName,
-	}
-
-	var stEvents stackEvents
-
-	for {
-		resp, err := cfn.DescribeStackEvents(params)
-		if err != nil {
-			return nil, err
-		}
-
 		for _, e := range resp.StackEvents {
+			// if lastEventID == nil, then it's first run, and we just take first N events
+			if t.lastEventID == nil && len(stEvents) >= t.nbEvents {
+				return stEvents, nil
+			}
+
+			// if lastEventID found, then take all unseen events
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
-				break
+				return stEvents, nil
 			}
 			stEvents = append(stEvents, e)
 		}
 
 		if resp.NextToken == nil {
-			break
+			return stEvents, nil
 		}
 
 		params.NextToken = resp.NextToken
 	}
-
-	return stEvents, nil
 }
 
 func (t *stackEventTailer) displayLastEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
@@ -166,23 +145,10 @@ func (t *stackEventTailer) displayLastEvents(cfn *awsservices.Cloudformation, w 
 
 	if len(events) > 0 {
 		t.lastEventID = events[0].EventId
-		return events[:t.nbEvents].printReverse(w)
+		return events.printReverse(w)
 	}
 
 	return nil
-}
-
-func (t *stackEventTailer) displayNewEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
-	events, err := t.getNewEvents(cfn)
-	if err != nil {
-		return err
-	}
-
-	if len(events) > 0 {
-		t.lastEventID = events[0].EventId
-	}
-
-	return events.printReverse(w)
 }
 
 func (t *stackEventTailer) isStackBeingDeployed(cfn *awsservices.Cloudformation) (bool, error) {
@@ -213,20 +179,26 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 		}
 
 		for _, e := range resp.StackEvents {
+			// if lastEventID == nil then it's first run of this method
+			// if lastEventID == nil then it's not first run and print only new messages
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
 				return stEvents, false, nil
 			}
 			stEvents = append(stEvents, e)
-			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_IN_PROGRESS") {
+			// looking for the message which says that stack update or create started
+			// making it as a first messages in the deployment events
+			if *e.ResourceType == "WS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_IN_PROGRESS") {
 				return stEvents, false, nil
 			}
 
+			// if we found next message, then stack create/update completed successfully
 			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_COMPLETE") {
 				return stEvents, true, nil
 			}
 
+			// if we found next message, then stack create/update failed
 			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_FAILED") {
-				return stEvents, true, fmt.Errorf("Deployment failed")
+				return stEvents, true, fmt.Errorf("Deployment failed with error: %s", *e.ResourceStatusReason)
 			}
 		}
 
