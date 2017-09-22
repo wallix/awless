@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -36,6 +37,7 @@ func init() {
 	tailCmd.PersistentFlags().IntVarP(&tailNumberEventsFlag, "number", "n", 10, "Number of events to display")
 
 	tailCmd.AddCommand(scalingActivitiesCmd)
+	tailCmd.AddCommand(stackEventsCmd)
 }
 
 var tailCmd = &cobra.Command{
@@ -52,5 +54,18 @@ var scalingActivitiesCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		exitOn(awstailers.NewScalingActivitiesTailer(tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag).Tail(os.Stdout))
+	},
+}
+
+var stackEventsCmd = &cobra.Command{
+	Use:   "stack-events",
+	Short: "Watch stack-events",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 1 {
+			exitOn(fmt.Errorf("expecting stack-name string"))
+		}
+
+		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag).Tail(os.Stdout))
 	},
 }
