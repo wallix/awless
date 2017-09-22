@@ -104,7 +104,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	return nil
 }
 
-// get all events never than last seen event
+// get N latest events
 func (t *stackEventTailer) getLatestEvents(cfn *awsservices.Cloudformation) (stackEvents, error) {
 	params := &cloudformation.DescribeStackEventsInput{
 		StackName: &t.stackName,
