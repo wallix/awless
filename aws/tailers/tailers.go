@@ -12,14 +12,14 @@ import (
 )
 
 type scalingActivitiesTailer struct {
-	refresh          bool
-	refreshFrequency time.Duration
+	follow           bool
+	pollingFrequency time.Duration
 	lastEventTime    time.Time
 	nbEvents         int
 }
 
-func NewScalingActivitiesTailer(nbEvents int, enableRefresh bool, frequency time.Duration) *scalingActivitiesTailer {
-	return &scalingActivitiesTailer{refresh: enableRefresh, refreshFrequency: frequency, nbEvents: nbEvents}
+func NewScalingActivitiesTailer(nbEvents int, follow bool, frequency time.Duration) *scalingActivitiesTailer {
+	return &scalingActivitiesTailer{nbEvents: nbEvents, follow: follow, pollingFrequency: frequency}
 }
 
 func (t *scalingActivitiesTailer) Name() string {
@@ -31,18 +31,26 @@ func (t *scalingActivitiesTailer) Tail(w io.Writer) error {
 	if !ok {
 		return fmt.Errorf("invalid cloud service, expected awsservices.Infra, got %T", awsservices.InfraService)
 	}
-	if err := t.displayLastEvents(infra, w); err != nil || !t.refresh || t.lastEventTime.IsZero() {
+	if err := t.displayLastEvents(infra, w); err != nil {
 		return err
 	}
 
-	if t.refreshFrequency < 5*time.Second {
-		return fmt.Errorf("invalid refresh frequency: %s", t.refreshFrequency)
+	if t.lastEventTime.IsZero() {
+		return nil
 	}
-	ticker := time.NewTicker(t.refreshFrequency)
+
+	if !t.follow {
+		return nil
+	}
+
+	if t.pollingFrequency < 5*time.Second {
+		return fmt.Errorf("invalid refresh frequency: %s", t.pollingFrequency)
+	}
+
+	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		err := t.displayNewEvents(infra, w)
-		if err != nil {
+		if err := t.displayNewEvents(infra, w); err != nil {
 			return err
 		}
 	}
