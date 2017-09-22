@@ -375,7 +375,6 @@ var extractNameValueFn = func(i interface{}) (interface{}, error) {
 		nameValues = append(nameValues, keyval)
 	}
 	return nameValues, nil
-
 }
 
 var extractECSAttributesFn = func(i interface{}) (interface{}, error) {
@@ -389,7 +388,19 @@ var extractECSAttributesFn = func(i interface{}) (interface{}, error) {
 		keyVals = append(keyVals, keyval)
 	}
 	return keyVals, nil
+}
 
+var extractRouteTableAssociationsFn = func(i interface{}) (interface{}, error) {
+	if _, ok := i.([]*ec2.RouteTableAssociation); !ok {
+		return nil, fmt.Errorf("extract route table associations: not an association slice but a %T", i)
+	}
+	var keyVals []*graph.KeyValue
+	for _, assoc := range i.([]*ec2.RouteTableAssociation) {
+		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(assoc.RouteTableAssociationId), Value: awssdk.StringValue(assoc.SubnetId)}
+
+		keyVals = append(keyVals, keyval)
+	}
+	return keyVals, nil
 }
 
 var extractFieldFn = func(field string) transformFn {

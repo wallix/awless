@@ -305,7 +305,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 	}
 
 	routeTables := []*ec2.RouteTable{
-		{RouteTableId: awssdk.String("rt_1"), VpcId: awssdk.String("vpc_1"), Associations: []*ec2.RouteTableAssociation{{RouteTableId: awssdk.String("rt_1"), SubnetId: awssdk.String("sub_1")}}},
+		{
+			RouteTableId: awssdk.String("rt_1"),
+			VpcId:        awssdk.String("vpc_1"),
+			Associations: []*ec2.RouteTableAssociation{
+				{RouteTableId: awssdk.String("rt_1"), SubnetId: awssdk.String("sub_1"), RouteTableAssociationId: awssdk.String("assoc_1")},
+				{RouteTableId: awssdk.String("rt_1"), SubnetId: awssdk.String("sub_2"), RouteTableAssociationId: awssdk.String("assoc_2"), Main: awssdk.Bool(true)},
+			},
+		},
 	}
 
 	images := []*ec2.Image{
@@ -585,6 +592,14 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 				return p[i].KeyName < p[j].KeyName
 			})
 		}
+		if p, ok := res.Properties[p.Associations].([]*graph.KeyValue); ok {
+			sort.Slice(p, func(i, j int) bool {
+				if p[i].KeyName == p[j].KeyName {
+					return p[i].Value < p[j].Value
+				}
+				return p[i].KeyName < p[j].KeyName
+			})
+		}
 		if p, ok := res.Properties[p.InboundRules].([]*graph.FirewallRule); ok {
 			for _, r := range p {
 				sort.Strings(r.Sources)
@@ -621,7 +636,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"my_key":           resourcetest.KeyPair("my_key").Build(),
 		"igw_1":            resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
 		"natgw_1":          resourcetest.NatGw("natgw_1").Prop(p.Vpc, "vpc_1").Prop(p.Subnet, "sub_1").Build(),
-		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, false).Build(),
+		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, true).Prop(p.Associations, []*graph.KeyValue{{KeyName: "assoc_1", Value: "sub_1"}, {KeyName: "assoc_2", Value: "sub_2"}}).Build(),
 		"lb_1":             resourcetest.LoadBalancer("lb_1").Prop(p.Arn, "lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
 		"lb_2":             resourcetest.LoadBalancer("lb_2").Prop(p.Arn, "lb_2").Prop(p.Vpc, "vpc_2").Build(),
 		"lb_3":             resourcetest.LoadBalancer("lb_3").Prop(p.Arn, "lb_3").Prop(p.Vpc, "vpc_1").Build(),
@@ -687,7 +702,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"lb_3":            {"tg_1"},
 		"my_key":          {"inst_4", "inst_6", "launchconfig_arn"},
 		"natgw_1":         {"sub_1"},
-		"rt_1":            {"sub_1"},
+		"rt_1":            {"sub_1", "sub_2"},
 		"securitygroup_1": {"eni-1", "inst_2", "inst_4", "inst_6", "lb_3"},
 		"securitygroup_2": {"eni-1", "inst_4", "lb_3"},
 		"tg_1":            {"inst_1"},

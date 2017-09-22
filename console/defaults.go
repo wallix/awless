@@ -29,7 +29,7 @@ var ColumnsInListing = map[string][]string{
 	cloud.SecurityGroup:       {properties.ID, properties.Vpc, properties.InboundRules, properties.OutboundRules, properties.Name, properties.Description},
 	cloud.InternetGateway:     {properties.ID, properties.Name, properties.Vpcs},
 	cloud.NatGateway:          {properties.ID, properties.State, properties.Vpc, properties.Subnet, properties.Created},
-	cloud.RouteTable:          {properties.ID, properties.Name, properties.Vpc, properties.Main, properties.Routes},
+	cloud.RouteTable:          {properties.ID, properties.Name, properties.Vpc, properties.Main, properties.Routes, properties.Associations},
 	cloud.Keypair:             {properties.ID, properties.Fingerprint},
 	cloud.Image:               {properties.ID, properties.Name, properties.State, properties.Location, properties.Public, properties.Type, properties.Created, properties.Architecture, properties.Hypervisor, properties.Virtualization},
 	cloud.ImportImageTask:     {properties.ID, properties.Description, properties.Image, properties.Progress, properties.State, properties.StateMessage},
@@ -141,6 +141,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Vpc},
 		StringColumnDefinition{Prop: properties.Main},
 		RoutesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Routes}},
+		KeyValuesColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Associations}},
 	},
 	cloud.Keypair: {
 		StringColumnDefinition{Prop: properties.ID},

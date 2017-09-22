@@ -1,4 +1,4 @@
-## v0.1.4 [unreleased]
+## v0.1.4 [2017-09-21]
 
 ### Features
 
@@ -13,6 +13,7 @@
 - Add ACM certificates in infra:
     - `awless list certificates`
     - `awless create/delete/check certificate domains=my.firstdomain.com,my.seconddomain.com validation-domains=firstdomain.com,seconddomain.com`
+- [#123](https://github.com/wallix/awless/issues/123): Listing route tables display the association IDs.
 
 ### Fixes
 - `awless ssh --through`: no reusing same conn to avoid EOF. Bug: only first user (amazonlinux) was successful (usually ec2-user) !!

@@ -148,7 +148,7 @@ func onVersionUpgrade(cmd *cobra.Command, args []string) error {
 		}); err != nil {
 			fmt.Printf("cannot store upgraded version in db: %s\n", err)
 		}
-		logger.Infof("awless has just been upgraded from %s to %s", lastVersion, config.Version)
+		logger.Infof("You have just upgraded awless from %s to %s", lastVersion, config.Version)
 	}
 
 	return nil

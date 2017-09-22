@@ -10,12 +10,13 @@
 `awless` stands out by providing the following features:
 
 - small and hierarchichal set of commands
-- greater output's readability with numerous machine and human friendly formats
-- exploration of your cloud infrastructure and resources relations, **even offline**
 - create and revert fully-fledged infrastructures through a new simple and powerful templating language (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
 - local log of all your cloud modifications done through `awless`
-- connect easily through smart SSH to your private & public instances
+- exploration of your cloud infrastructure and resources relations, **even offline** using a local graph storage
+- greater output's readability with numerous machine and human friendly formats
 - ensure smart defaults & security best practices
+- connect easily through smart SSH to your private & public instances
+
 
 # Install
 
@@ -36,7 +37,7 @@ Choose one of the following options:
 
 - Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.: `awless list`
 - Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
-- Listing filters via *resource properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
+- Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
 - Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.: `awless show`
 - Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
@@ -55,6 +56,10 @@ Choose one of the following options:
 Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/Getting-Started).
 
 Or read the [introductory blog post about awless](https://medium.com/@hbbio/awless-io-a-mighty-cli-for-aws-a0d48bdb59a4).
+
+More articles:
+
+   - [Simplified user management for AWS](https://medium.com/@awlessCLI/simplified-user-management-for-aws-6f828ccab387)
 
 # About
 

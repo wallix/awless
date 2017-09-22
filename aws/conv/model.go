@@ -140,11 +140,12 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:   {name: "State", transform: extractValueFn},
 	},
 	cloud.RouteTable: {
-		properties.Name:   {name: "Tags", transform: extractTagFn("Name")},
-		properties.Vpc:    {name: "VpcId", transform: extractValueFn},
-		properties.Routes: {name: "Routes", transform: extractRoutesSliceFn},
-		properties.Main:   {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
-		properties.Tags:   {name: "Tags", transform: extractTagsFn},
+		properties.Name:         {name: "Tags", transform: extractTagFn("Name")},
+		properties.Vpc:          {name: "VpcId", transform: extractValueFn},
+		properties.Routes:       {name: "Routes", transform: extractRoutesSliceFn},
+		properties.Main:         {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
+		properties.Associations: {name: "Associations", transform: extractRouteTableAssociationsFn},
+		properties.Tags:         {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.AvailabilityZone: {
 		properties.Name:     {name: "ZoneName", transform: extractValueFn},

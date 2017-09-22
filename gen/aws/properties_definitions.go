@@ -32,6 +32,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Architecture", RDFLabel: fmt.Sprintf("%s:architecture", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Arn", RDFLabel: fmt.Sprintf("%s:arn", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Association", RDFLabel: fmt.Sprintf("%s:association", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "Associations", RDFLabel: fmt.Sprintf("%s:associations", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.KeyValue},
 	{AwlessLabel: "Attachable", RDFLabel: fmt.Sprintf("%s:attachable", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Attached", RDFLabel: fmt.Sprintf("%s:attached", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Attachment", RDFLabel: fmt.Sprintf("%s:attachment", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
