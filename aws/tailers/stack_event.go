@@ -19,6 +19,7 @@ type stackEventTailer struct {
 	pollingFrequency time.Duration
 	lastEventID      *string
 	nbEvents         int
+	deploymentStatus deploymentStatus
 }
 
 type stackEvents []*cloudformation.StackEvent
@@ -61,9 +62,13 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		isDeploymentFinished, err := t.displayRelevantEvents(cfn, w)
-		if err != nil || isDeploymentFinished {
+		err := t.displayRelevantEvents(cfn, w)
+		if err != nil {
 			return err
+		}
+
+		if t.deploymentStatus.isFinished {
+			return t.deploymentStatus.err
 		}
 	}
 
@@ -132,46 +137,62 @@ func (t *stackEventTailer) isStackBeingDeployed(cfn *awsservices.Cloudformation)
 	return strings.HasSuffix(*stacks.Stacks[0].StackStatus, "_IN_PROGRESS"), nil
 }
 
+type deploymentStatus struct {
+	isFinished bool
+	err        error
+}
+
 // get last N events relevant for current deployment in progress
-func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (stackEvents, bool, error) {
+func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (stEvents stackEvents, err error) {
 	params := &cloudformation.DescribeStackEventsInput{
 		StackName: &t.stackName,
 	}
 
-	var stEvents stackEvents
+	var resp *cloudformation.DescribeStackEventsOutput
 
 	for {
-		resp, err := cfn.DescribeStackEvents(params)
+		resp, err = cfn.DescribeStackEvents(params)
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
 
 		for _, e := range resp.StackEvents {
 			// if lastEventID == nil then it's first run of this method
 			// if lastEventID == nil then it's not first run and print only new messages
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
-				return stEvents, false, nil
+				return stEvents, nil
 			}
 			stEvents = append(stEvents, e)
+
 			// looking for the message which says that stack update or create started
 			// making it as a first messages in the deployment events
-			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_IN_PROGRESS") {
-				return stEvents, false, nil
+			if *e.ResourceType == "AWS::CloudFormation::Stack" &&
+				strings.HasSuffix(*e.ResourceStatus, "UPDATE_IN_PROGRESS") || strings.HasSuffix(*e.ResourceStatus, "CREATE_IN_PROGRESS") {
+				return stEvents, nil
 			}
 
-			// if we found next message, then stack create/update completed successfully
+			// if we found message, that stack create/update completed
+			// then marking build as complete, but keep tailing
 			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_COMPLETE") {
-				return stEvents, true, nil
+				t.deploymentStatus.isFinished = true
 			}
 
-			// if we found next message, then stack create/update failed
+			// if we found message, that stack create/update failed
+			// then marking build as complete, but keep tailing
 			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_FAILED") {
-				return stEvents, true, fmt.Errorf("Deployment failed with error: %s", *e.ResourceStatusReason)
+				t.deploymentStatus.isFinished = true
+				t.deploymentStatus.err = fmt.Errorf("Deployment failed with error: %s", *e.ResourceStatusReason)
+			}
+
+			// if we found next message, then any resource create/update failed,
+			// then marking build as failed, but keep tailing
+			if strings.HasSuffix(*e.ResourceStatus, "_FAILED") {
+				t.deploymentStatus.err = fmt.Errorf("Deployment failed. ResourceType: %s, ResourceID: %s, Error: %s", *e.ResourceType, *e.LogicalResourceId, *e.ResourceStatusReason)
 			}
 		}
 
 		if resp.NextToken == nil {
-			return stEvents, false, nil
+			return stEvents, nil
 		}
 
 		params.NextToken = resp.NextToken
@@ -179,19 +200,17 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 
 }
 
-func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation, w io.Writer) (bool, error) {
-	events, deploymentFinished, err := t.getRelevantEvents(cfn)
-	if !deploymentFinished && err != nil {
-		return deploymentFinished, err
+func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
+	events, err := t.getRelevantEvents(cfn)
+	if err != nil {
+		return err
 	}
 
 	if len(events) > 0 {
 		t.lastEventID = events[0].EventId
 	}
 
-	events.printReverse(w)
-
-	return deploymentFinished, err
+	return events.printReverse(w)
 }
 
 func coloredResourceStatus(str string) string {
