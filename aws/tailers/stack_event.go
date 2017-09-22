@@ -9,6 +9,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/fatih/color"
 	"github.com/wallix/awless/aws/services"
 )
 
@@ -23,23 +24,24 @@ type stackEventTailer struct {
 
 type stackEvents []*cloudformation.StackEvent
 
-func (e stackEvents) print(w io.Writer) error {
-	tab := tabwriter.NewWriter(w, 35, 8, 0, '\t', 0)
-	for i, event := range e {
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t%d", event.Timestamp.Format(time.RFC3339), *event.LogicalResourceId, *event.ResourceType, *event.ResourceStatus, i)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintln(tab)
+func coloredResourceStatus(str string) string {
+	switch {
+	case strings.HasSuffix(str, "_IN_PROGRESS"):
+		return color.New(color.FgYellow).SprintFunc()(str)
+	case strings.HasSuffix(str, "_COMPLETE"):
+		return color.New(color.FgGreen).SprintFunc()(str)
+	case strings.HasSuffix(str, "_FAILED"):
+		return color.New(color.FgRed).SprintFunc()(str)
+	default:
+		return str
 	}
-	tab.Flush()
-	return nil
+
 }
 
 func (e stackEvents) printReverse(w io.Writer) error {
 	tab := tabwriter.NewWriter(w, 35, 8, 0, '\t', 0)
 	for i := len(e) - 1; i >= 0; i-- {
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, *e[i].ResourceStatus)
+		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus))
 		if err != nil {
 			return err
 		}
