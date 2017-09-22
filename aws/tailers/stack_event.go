@@ -21,10 +21,23 @@ type stackEventTailer struct {
 
 type stackEvents []*cloudformation.StackEvent
 
-func (e *stackEvents) print(w io.Writer) error {
+func (e stackEvents) print(w io.Writer) error {
 	tab := tabwriter.NewWriter(w, 35, 8, 0, '\t', 0)
-	for _, event := range *e {
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", event.Timestamp.Format(time.RFC3339), *event.LogicalResourceId, *event.ResourceType, *event.ResourceStatus)
+	for i, event := range e {
+		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t%d", event.Timestamp.Format(time.RFC3339), *event.LogicalResourceId, *event.ResourceType, *event.ResourceStatus, i)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(tab)
+	}
+	tab.Flush()
+	return nil
+}
+
+func (e stackEvents) printReverse(w io.Writer) error {
+	tab := tabwriter.NewWriter(w, 35, 8, 0, '\t', 0)
+	for i := len(e) - 1; i >= 0; i-- {
+		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, *e[i].ResourceStatus)
 		if err != nil {
 			return err
 		}
@@ -52,7 +65,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return err
 	}
 
-	if t.refreshFrequency < 5*time.Second {
+	if t.refreshFrequency < 2*time.Second {
 		return fmt.Errorf("invalid refresh frequency: %s", t.refreshFrequency)
 	}
 
@@ -68,12 +81,13 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	return nil
 }
 
-func (t *stackEventTailer) getAllEvents(cfn *awsservices.Cloudformation) ([]*cloudformation.StackEvent, error) {
+// get last N events
+func (t *stackEventTailer) getLatestEvents(cfn *awsservices.Cloudformation) (stackEvents, error) {
 	params := &cloudformation.DescribeStackEventsInput{
 		StackName: &t.stackName,
 	}
 
-	var events []*cloudformation.StackEvent
+	var stEvents stackEvents
 
 	for {
 		resp, err := cfn.DescribeStackEvents(params)
@@ -81,7 +95,38 @@ func (t *stackEventTailer) getAllEvents(cfn *awsservices.Cloudformation) ([]*clo
 			return nil, err
 		}
 
-		events = append(events, resp.StackEvents...)
+		stEvents = append(stEvents, resp.StackEvents...)
+		if len(stEvents) > t.nbEvents || resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
+	}
+
+	return stEvents, nil
+}
+
+// get all events never than last seen event
+func (t *stackEventTailer) getNewEvents(cfn *awsservices.Cloudformation) (stackEvents, error) {
+	params := &cloudformation.DescribeStackEventsInput{
+		StackName: &t.stackName,
+	}
+
+	var stEvents stackEvents
+
+	for {
+		resp, err := cfn.DescribeStackEvents(params)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range resp.StackEvents {
+			if *e.EventId == *t.lastEventID {
+				break
+			}
+			stEvents = append(stEvents, e)
+		}
+
 		if resp.NextToken == nil {
 			break
 		}
@@ -89,39 +134,32 @@ func (t *stackEventTailer) getAllEvents(cfn *awsservices.Cloudformation) ([]*clo
 		params.NextToken = resp.NextToken
 	}
 
-	return events, nil
+	return stEvents, nil
 }
 
 func (t *stackEventTailer) displayLastEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
-	events, err := t.getAllEvents(cfn)
-	if err != nil {
-		return err
-	}
-	t.lastEventID = events[len(events)-1].EventId
-	lastEvents := stackEvents(events[:t.nbEvents])
-
-	return lastEvents.print(w)
-}
-
-func (t *stackEventTailer) displayNewEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
-	events, err := t.getAllEvents(cfn)
+	events, err := t.getLatestEvents(cfn)
 	if err != nil {
 		return err
 	}
 
-	var newEvents stackEvents
-
-	for i, e := range events {
-		if e.EventId == t.lastEventID {
-			newEvents = stackEvents(events[i:])
-			break
-		}
-	}
-
-	if len(newEvents) > 0 {
-		t.lastEventID = events[len(newEvents)-1].EventId
-		return newEvents.print(w)
+	if len(events) > 0 {
+		t.lastEventID = events[0].EventId
+		return events[:t.nbEvents].printReverse(w)
 	}
 
 	return nil
+}
+
+func (t *stackEventTailer) displayNewEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
+	events, err := t.getNewEvents(cfn)
+	if err != nil {
+		return err
+	}
+
+	if len(events) > 0 {
+		t.lastEventID = events[0].EventId
+	}
+
+	return events.printReverse(w)
 }
