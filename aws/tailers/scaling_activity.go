@@ -44,7 +44,7 @@ func (t *scalingActivitiesTailer) Tail(w io.Writer) error {
 	}
 
 	if t.pollingFrequency < 5*time.Second {
-		return fmt.Errorf("invalid refresh frequency: %s", t.pollingFrequency)
+		return fmt.Errorf("invalid polling frequency: %s", t.pollingFrequency)
 	}
 
 	ticker := time.NewTicker(t.pollingFrequency)

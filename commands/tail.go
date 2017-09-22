@@ -26,7 +26,7 @@ import (
 )
 
 var tailFollowFrequencyFlag time.Duration
-var tailEnableFollowFlag, stackEventsWatchDeployment bool
+var tailEnableFollowFlag bool
 var tailNumberEventsFlag int
 
 func init() {
@@ -37,8 +37,6 @@ func init() {
 	tailCmd.PersistentFlags().IntVarP(&tailNumberEventsFlag, "number", "n", 10, "Number of events to display")
 
 	tailCmd.AddCommand(scalingActivitiesCmd)
-
-	stackEventsCmd.PersistentFlags().BoolVar(&stackEventsWatchDeployment, "watch-deployment", false, "Follow all events from current deployment and exit")
 	tailCmd.AddCommand(stackEventsCmd)
 }
 
@@ -68,6 +66,6 @@ var stackEventsCmd = &cobra.Command{
 			exitOn(fmt.Errorf("expecting stack-name string"))
 		}
 
-		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag, stackEventsWatchDeployment).Tail(os.Stdout))
+		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag).Tail(os.Stdout))
 	},
 }

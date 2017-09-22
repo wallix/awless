@@ -15,44 +15,16 @@ import (
 
 type stackEventTailer struct {
 	stackName        string
-	refresh          bool
-	watchDeployment  bool
-	refreshFrequency time.Duration
+	follow           bool
+	pollingFrequency time.Duration
 	lastEventID      *string
 	nbEvents         int
 }
 
 type stackEvents []*cloudformation.StackEvent
 
-func coloredResourceStatus(str string) string {
-	switch {
-	case strings.HasSuffix(str, "_IN_PROGRESS"):
-		return color.New(color.FgYellow).SprintFunc()(str)
-	case strings.HasSuffix(str, "_COMPLETE"):
-		return color.New(color.FgGreen).SprintFunc()(str)
-	case strings.HasSuffix(str, "_FAILED"):
-		return color.New(color.FgRed).SprintFunc()(str)
-	default:
-		return str
-	}
-
-}
-
-func (e stackEvents) printReverse(w io.Writer) error {
-	tab := tabwriter.NewWriter(w, 35, 8, 0, '\t', 0)
-	for i := len(e) - 1; i >= 0; i-- {
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus))
-		if err != nil {
-			return err
-		}
-		fmt.Fprintln(tab)
-	}
-	tab.Flush()
-	return nil
-}
-
-func NewCloudformationEventsTailer(stackName string, nbEvents int, enableRefresh bool, frequency time.Duration, watchDeployment bool) *stackEventTailer {
-	return &stackEventTailer{stackName: stackName, refresh: enableRefresh, refreshFrequency: frequency, nbEvents: nbEvents, watchDeployment: watchDeployment}
+func NewCloudformationEventsTailer(stackName string, nbEvents int, enableFollow bool, frequency time.Duration) *stackEventTailer {
+	return &stackEventTailer{stackName: stackName, follow: enableFollow, pollingFrequency: frequency, nbEvents: nbEvents}
 }
 
 func (t *stackEventTailer) Name() string {
@@ -65,38 +37,32 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid cloud service, expected awsservices.Cloudformation, got %T", awsservices.CloudformationService)
 	}
 
-	if t.refreshFrequency < 5*time.Second {
-		return fmt.Errorf("invalid refresh frequency: %s", t.refreshFrequency)
+	if t.pollingFrequency < 5*time.Second {
+		return fmt.Errorf("invalid polling frequency: %s", t.pollingFrequency)
 	}
 
-	if t.watchDeployment {
-		deploying, err := t.isStackBeingDeployed(cfn)
-		if err != nil {
+	if !t.follow {
+		if err := t.displayLastEvents(cfn, w); err != nil {
 			return err
 		}
 
-		if !deploying {
-			return fmt.Errorf("Stack %s not being deployed at the moment", t.stackName)
-		}
-
-	} else {
-		if err := t.displayLastEvents(cfn, w); err != nil || !t.refresh {
-			return err
-		}
+		return nil
 	}
 
-	ticker := time.NewTicker(t.refreshFrequency)
+	isDeploying, err := t.isStackBeingDeployed(cfn)
+	if err != nil {
+		return err
+	}
+
+	if !isDeploying {
+		return fmt.Errorf("Stack %s not being deployed at the moment", t.stackName)
+	}
+
+	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		if t.watchDeployment {
-			isDeploymentFinished, err := t.displayRelevantEvents(cfn, w)
-			if err != nil || isDeploymentFinished {
-				return err
-			}
-		}
-
-		err := t.displayLastEvents(cfn, w)
-		if err != nil {
+		isDeploymentFinished, err := t.displayRelevantEvents(cfn, w)
+		if err != nil || isDeploymentFinished {
 			return err
 		}
 	}
@@ -226,4 +192,32 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 	events.printReverse(w)
 
 	return deploymentFinished, err
+}
+
+func coloredResourceStatus(str string) string {
+	switch {
+	case strings.HasSuffix(str, "_IN_PROGRESS"):
+		return color.New(color.FgYellow).SprintFunc()(str)
+	case strings.HasSuffix(str, "_COMPLETE"):
+		return color.New(color.FgGreen).SprintFunc()(str)
+	case strings.HasSuffix(str, "_FAILED"):
+		return color.New(color.FgRed).SprintFunc()(str)
+	default:
+		return str
+	}
+
+}
+
+// TODO: add filters for printed fields
+func (e stackEvents) printReverse(w io.Writer) error {
+	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
+	for i := len(e) - 1; i >= 0; i-- {
+		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus))
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(tab)
+	}
+	tab.Flush()
+	return nil
 }
