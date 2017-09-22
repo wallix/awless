@@ -189,7 +189,7 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 			stEvents = append(stEvents, e)
 			// looking for the message which says that stack update or create started
 			// making it as a first messages in the deployment events
-			if *e.ResourceType == "WS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_IN_PROGRESS") {
+			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_IN_PROGRESS") {
 				return stEvents, false, nil
 			}
 
