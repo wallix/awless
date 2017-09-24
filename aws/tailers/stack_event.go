@@ -266,7 +266,8 @@ func (e stackEvents) printErrorsReverse(w io.Writer) error {
 	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
 
 	tab.Write([]byte("\nFailed events summary:\n"))
-	tab.Write([]byte(color.New(color.Bold).Sprint("Logical ID\tType\tStatus\tStatus Reason\n")))
+	tab.Write([]byte(color.New(color.Bold).Sprint("Logical ID\tType\tStatus\tStatus Reason")))
+	tab.Write([]byte("\n"))
 
 	for i := len(e) - 1; i >= 0; i-- {
 		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\n", *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus), *e[i].ResourceStatusReason)
