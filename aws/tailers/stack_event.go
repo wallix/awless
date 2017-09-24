@@ -19,13 +19,20 @@ type stackEventTailer struct {
 	pollingFrequency time.Duration
 	lastEventID      *string
 	nbEvents         int
+	filters          []string
 	deploymentStatus deploymentStatus
 }
 
 type stackEvents []*cloudformation.StackEvent
 
 func NewCloudformationEventsTailer(stackName string, nbEvents int, enableFollow bool, frequency time.Duration) *stackEventTailer {
-	return &stackEventTailer{stackName: stackName, follow: enableFollow, pollingFrequency: frequency, nbEvents: nbEvents}
+	return &stackEventTailer{
+		stackName:        stackName,
+		follow:           enableFollow,
+		pollingFrequency: frequency,
+		nbEvents:         nbEvents,
+		filters:          []string{"Timestamp", "Logical ID", "Type", "Status"}, // TODO: allow to set filters from command line
+	}
 }
 
 func (t *stackEventTailer) Name() string {
@@ -59,16 +66,22 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("Stack %s not being deployed at the moment", t.stackName)
 	}
 
+	// if this is first run, print header to the stack events output
+	var isFirstRun = true
+
 	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		err := t.displayRelevantEvents(cfn, w)
+		err := t.displayRelevantEvents(cfn, w, isFirstRun)
 		if err != nil {
 			return err
 		}
 
-		if t.deploymentStatus.isFinished {
-			return t.deploymentStatus.err
+		isFirstRun = false
+
+		if len(t.deploymentStatus.failedEvents) > 0 {
+			t.deploymentStatus.failedEvents.printErrorsReverse(w)
+			return fmt.Errorf("Deployment failed")
 		}
 	}
 
@@ -118,7 +131,7 @@ func (t *stackEventTailer) displayLastEvents(cfn *awsservices.Cloudformation, w 
 
 	if len(events) > 0 {
 		t.lastEventID = events[0].EventId
-		return events.printReverse(w)
+		return events.printReverse(w, t.filters, true)
 	}
 
 	return nil
@@ -138,8 +151,8 @@ func (t *stackEventTailer) isStackBeingDeployed(cfn *awsservices.Cloudformation)
 }
 
 type deploymentStatus struct {
-	isFinished bool
-	err        error
+	isFinished   bool
+	failedEvents stackEvents
 }
 
 // get last N events relevant for current deployment in progress
@@ -181,13 +194,12 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 			// then marking build as complete, but keep tailing
 			if *e.ResourceType == "AWS::CloudFormation::Stack" && strings.HasSuffix(*e.ResourceStatus, "_FAILED") {
 				t.deploymentStatus.isFinished = true
-				t.deploymentStatus.err = fmt.Errorf("Deployment failed with error: %s", *e.ResourceStatusReason)
 			}
 
 			// if we found next message, then any resource create/update failed,
 			// then marking build as failed, but keep tailing
 			if strings.HasSuffix(*e.ResourceStatus, "_FAILED") {
-				t.deploymentStatus.err = fmt.Errorf("Deployment failed. ResourceType: %s, ResourceID: %s, Error: %s", *e.ResourceType, *e.LogicalResourceId, *e.ResourceStatusReason)
+				t.deploymentStatus.failedEvents = append(t.deploymentStatus.failedEvents, e)
 			}
 		}
 
@@ -200,7 +212,7 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 
 }
 
-func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
+func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation, w io.Writer, isFirstRun bool) error {
 	events, err := t.getRelevantEvents(cfn)
 	if err != nil {
 		return err
@@ -210,7 +222,7 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 		t.lastEventID = events[0].EventId
 	}
 
-	return events.printReverse(w)
+	return events.printReverse(w, t.filters, isFirstRun)
 }
 
 func coloredResourceStatus(str string) string {
@@ -228,14 +240,34 @@ func coloredResourceStatus(str string) string {
 }
 
 // TODO: add filters for printed fields
-func (e stackEvents) printReverse(w io.Writer) error {
+func (e stackEvents) printReverse(w io.Writer, filters []string, withHeader bool) error {
 	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
+	if withHeader {
+		tab.Write([]byte(color.New(color.Bold).Sprint(strings.Join(filters, "\t"))))
+		tab.Write([]byte("\n"))
+	}
 	for i := len(e) - 1; i >= 0; i-- {
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\t", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus))
+		// TODO: Create output based on filters
+		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\n", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus))
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(tab)
+	}
+	tab.Flush()
+	return nil
+}
+
+func (e stackEvents) printErrorsReverse(w io.Writer) error {
+	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
+
+	tab.Write([]byte("\nFailed events summary:\n"))
+	tab.Write([]byte(color.New(color.Bold).Sprint("Logical ID\tType\tStatus\tStatus Reason\n")))
+
+	for i := len(e) - 1; i >= 0; i-- {
+		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\n", *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus), *e[i].ResourceStatusReason)
+		if err != nil {
+			return err
+		}
 	}
 	tab.Flush()
 	return nil
