@@ -100,11 +100,11 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 
 		if t.deploymentStatus.isFinished {
 			if len(t.deploymentStatus.failedEvents) > 0 {
-				var errBuf *bytes.Buffer
+				var errBuf bytes.Buffer
 				errBuf.WriteString("Deployment failed.\nFailed events summary:\n")
 
 				t.deploymentStatus.failedEvents.printReverse(
-					errBuf,
+					&errBuf,
 					[]string{FilterStackEventLogicalID, FilterStackEventType, FilterStackEventStatus, FilterStackEventStatusReason},
 				)
 
