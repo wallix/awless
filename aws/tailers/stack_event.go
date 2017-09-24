@@ -60,10 +60,17 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid polling frequency: %s", t.pollingFrequency)
 	}
 
+	// create new tabwriter and
+	// add header based on filters
+	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
+	tab.Write(t.filters.header())
+
 	if !t.follow {
-		if err := t.displayLastEvents(cfn, w); err != nil {
+		if err := t.displayLastEvents(cfn, tab); err != nil {
 			return err
 		}
+
+		tab.Flush()
 
 		return nil
 	}
@@ -83,17 +90,25 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		err := t.displayRelevantEvents(cfn, w, isFirstRun)
+		err := t.displayRelevantEvents(cfn, tab, isFirstRun)
 		if err != nil {
 			return err
 		}
 
+		tab.Flush()
 		isFirstRun = false
 
 		if t.deploymentStatus.isFinished {
 			if len(t.deploymentStatus.failedEvents) > 0 {
-				t.deploymentStatus.failedEvents.printErrorsReverse(w)
-				return fmt.Errorf("Deployment failed")
+				var errBuf *bytes.Buffer
+				errBuf.WriteString("Deployment failed.\nFailed events summary:\n")
+
+				t.deploymentStatus.failedEvents.printReverse(
+					errBuf,
+					[]string{FilterStackEventLogicalID, FilterStackEventType, FilterStackEventStatus, FilterStackEventStatusReason},
+				)
+
+				return fmt.Errorf(errBuf.String())
 			}
 
 			return nil
@@ -146,7 +161,7 @@ func (t *stackEventTailer) displayLastEvents(cfn *awsservices.Cloudformation, w 
 
 	if len(events) > 0 {
 		t.lastEventID = events[0].EventId
-		return events.printReverse(w, t.filters, true)
+		return events.printReverse(w, t.filters)
 	}
 
 	return nil
@@ -237,7 +252,7 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 		t.lastEventID = events[0].EventId
 	}
 
-	return events.printReverse(w, t.filters, isFirstRun)
+	return events.printReverse(w, t.filters)
 }
 
 func coloredResourceStatus(str string) string {
@@ -254,32 +269,11 @@ func coloredResourceStatus(str string) string {
 
 }
 
-func (e stackEvents) printReverse(w io.Writer, f filters, withHeader bool) error {
-	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
-	if withHeader {
-		tab.Write(f.header())
-	}
+func (e stackEvents) printReverse(w io.Writer, f filters) error {
 	for i := len(e) - 1; i >= 0; i-- {
-		tab.Write(filterEvent(e[i], f))
+		w.Write(filterEvent(e[i], f))
 	}
-	tab.Flush()
-	return nil
-}
 
-func (e stackEvents) printErrorsReverse(w io.Writer) error {
-	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
-
-	tab.Write([]byte("\nFailed events summary:\n"))
-	tab.Write([]byte(color.New(color.Bold).Sprint("Logical ID\tType\tStatus\tStatus Reason")))
-	tab.Write([]byte("\n"))
-
-	for i := len(e) - 1; i >= 0; i-- {
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\n", *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus), *e[i].ResourceStatusReason)
-		if err != nil {
-			return err
-		}
-	}
-	tab.Flush()
 	return nil
 }
 
