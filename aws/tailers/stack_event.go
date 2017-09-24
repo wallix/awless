@@ -1,6 +1,7 @@
 package awstailers
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
@@ -13,25 +14,35 @@ import (
 	"github.com/wallix/awless/aws/services"
 )
 
+const (
+	FilterStackEventLogicalID    = "id"
+	FilterStackEventTimestamp    = "ts"
+	FilterStackEventStatus       = "status"
+	FilterStackEventStatusReason = "reason"
+	FilterStackEventType         = "type"
+)
+
+type filters []string
+
 type stackEventTailer struct {
 	stackName        string
 	follow           bool
 	pollingFrequency time.Duration
 	lastEventID      *string
 	nbEvents         int
-	filters          []string
+	filters          filters
 	deploymentStatus deploymentStatus
 }
 
 type stackEvents []*cloudformation.StackEvent
 
-func NewCloudformationEventsTailer(stackName string, nbEvents int, enableFollow bool, frequency time.Duration) *stackEventTailer {
+func NewCloudformationEventsTailer(stackName string, nbEvents int, enableFollow bool, frequency time.Duration, f filters) *stackEventTailer {
 	return &stackEventTailer{
 		stackName:        stackName,
 		follow:           enableFollow,
 		pollingFrequency: frequency,
 		nbEvents:         nbEvents,
-		filters:          []string{"Timestamp", "Logical ID", "Type", "Status"}, // TODO: allow to set filters from command line
+		filters:          f,
 	}
 }
 
@@ -239,19 +250,13 @@ func coloredResourceStatus(str string) string {
 
 }
 
-// TODO: add filters for printed fields
-func (e stackEvents) printReverse(w io.Writer, filters []string, withHeader bool) error {
+func (e stackEvents) printReverse(w io.Writer, f filters, withHeader bool) error {
 	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
 	if withHeader {
-		tab.Write([]byte(color.New(color.Bold).Sprint(strings.Join(filters, "\t"))))
-		tab.Write([]byte("\n"))
+		tab.Write(f.header())
 	}
 	for i := len(e) - 1; i >= 0; i-- {
-		// TODO: Create output based on filters
-		_, err := fmt.Fprintf(tab, "%s\t%s\t%s\t%s\n", e[i].Timestamp.Format(time.RFC3339), *e[i].LogicalResourceId, *e[i].ResourceType, coloredResourceStatus(*e[i].ResourceStatus))
-		if err != nil {
-			return err
-		}
+		tab.Write(filterEvent(e[i], f))
 	}
 	tab.Flush()
 	return nil
@@ -271,4 +276,60 @@ func (e stackEvents) printErrorsReverse(w io.Writer) error {
 	}
 	tab.Flush()
 	return nil
+}
+
+func (f filters) header() []byte {
+	var buf bytes.Buffer
+	// var bold = color.New(color.Bo)
+	for i, filter := range f {
+		switch filter {
+		case FilterStackEventLogicalID:
+			buf.WriteString("Logical ID")
+		case FilterStackEventTimestamp:
+			buf.WriteString("Timestamp")
+		case FilterStackEventStatus:
+			buf.WriteString("Status")
+		case FilterStackEventStatusReason:
+			buf.WriteString("Status Reason")
+		case FilterStackEventType:
+			buf.WriteString("Type")
+		}
+
+		if i != len(f)-1 {
+			buf.WriteRune('\t')
+		}
+
+	}
+
+	// with "\n" formatted with bold, tabwriter somehow shift lines
+	// so we need to add "\n" after string being bolded
+	return []byte(color.New(color.Bold).Sprintf(buf.String()) + "\n")
+}
+
+func filterEvent(e *cloudformation.StackEvent, filters []string) (out []byte) {
+	var buf bytes.Buffer
+
+	for i, f := range filters {
+		switch {
+		case f == FilterStackEventLogicalID && e.LogicalResourceId != nil:
+			buf.WriteString(*e.LogicalResourceId)
+		case f == FilterStackEventTimestamp && e.Timestamp != nil:
+			buf.WriteString(e.Timestamp.Format(time.RFC3339))
+		case f == FilterStackEventStatus && e.ResourceStatus != nil:
+			buf.WriteString(coloredResourceStatus(*e.ResourceStatus))
+		case f == FilterStackEventStatusReason && e.ResourceStatusReason != nil:
+			buf.WriteString(*e.ResourceStatusReason)
+		case f == FilterStackEventType && e.ResourceType != nil:
+			buf.WriteString(*e.ResourceType)
+		}
+
+		if i != len(filters)-1 {
+			buf.WriteRune('\t')
+		}
+
+	}
+
+	buf.WriteRune('\n')
+
+	return buf.Bytes()
 }

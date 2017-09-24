@@ -28,6 +28,7 @@ import (
 var tailFollowFrequencyFlag time.Duration
 var tailEnableFollowFlag bool
 var tailNumberEventsFlag int
+var stackEventsFilters []string
 
 func init() {
 	RootCmd.AddCommand(tailCmd)
@@ -37,6 +38,16 @@ func init() {
 	tailCmd.PersistentFlags().IntVarP(&tailNumberEventsFlag, "number", "n", 10, "Number of events to display")
 
 	tailCmd.AddCommand(scalingActivitiesCmd)
+
+	stackEventsCmd.PersistentFlags().StringArrayVar(&stackEventsFilters, "filters",
+		[]string{awstailers.FilterStackEventTimestamp, awstailers.FilterStackEventLogicalID, awstailers.FilterStackEventType, awstailers.FilterStackEventStatus},
+		fmt.Sprintf("Filter the output columns. Valid filters: %s, %s, %s, %s, %s",
+			awstailers.FilterStackEventLogicalID,
+			awstailers.FilterStackEventStatus,
+			awstailers.FilterStackEventStatusReason,
+			awstailers.FilterStackEventTimestamp,
+			awstailers.FilterStackEventType))
+
 	tailCmd.AddCommand(stackEventsCmd)
 }
 
@@ -66,6 +77,6 @@ var stackEventsCmd = &cobra.Command{
 			exitOn(fmt.Errorf("expecting stack-name string"))
 		}
 
-		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag).Tail(os.Stdout))
+		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag, stackEventsFilters).Tail(os.Stdout))
 	},
 }
