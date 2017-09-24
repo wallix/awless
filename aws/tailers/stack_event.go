@@ -90,9 +90,13 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 
 		isFirstRun = false
 
-		if len(t.deploymentStatus.failedEvents) > 0 {
-			t.deploymentStatus.failedEvents.printErrorsReverse(w)
-			return fmt.Errorf("Deployment failed")
+		if t.deploymentStatus.isFinished {
+			if len(t.deploymentStatus.failedEvents) > 0 {
+				t.deploymentStatus.failedEvents.printErrorsReverse(w)
+				return fmt.Errorf("Deployment failed")
+			}
+
+			return nil
 		}
 	}
 
