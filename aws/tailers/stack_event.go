@@ -98,19 +98,15 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("Stack %s not being deployed at the moment", t.stackName)
 	}
 
-	// if this is first run, print header to the stack events output
-	var isFirstRun = true
-
 	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		err := t.displayRelevantEvents(cfn, tab, isFirstRun)
+		err := t.displayRelevantEvents(cfn, tab)
 		if err != nil {
 			return err
 		}
 
 		tab.Flush()
-		isFirstRun = false
 
 		if t.deploymentStatus.isFinished {
 			if len(t.deploymentStatus.failedEvents) > 0 {
@@ -250,7 +246,7 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 
 }
 
-func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation, w io.Writer, isFirstRun bool) error {
+func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation, w io.Writer) error {
 	events, err := t.getRelevantEvents(cfn)
 	if err != nil {
 		return err
