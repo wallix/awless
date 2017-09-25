@@ -572,9 +572,11 @@ var DriversDefs = []driversDef{
 					{AwsField: "Subnets", TemplateName: "subnets", AwsType: "awsstringslice"},
 				},
 				ExtraParams: []param{
+					{AwsField: "SubnetMappings", TemplateName: "subnet-mappings", AwsType: "awssubnetmappings"},
 					{AwsField: "IpAddressType", TemplateName: "iptype", AwsType: "awsstr"},
 					{AwsField: "Scheme", TemplateName: "scheme", AwsType: "awsstr"},
 					{AwsField: "SecurityGroups", TemplateName: "securitygroups", AwsType: "awsstringslice"},
+					{AwsField: "Type", TemplateName: "type", AwsType: "awsstr"},
 				},
 			},
 			{

@@ -23,6 +23,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/elbv2"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -165,6 +167,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		EmptyMapAttribute map[string]*string
 		ParameterList     []*cloudformation.Parameter
 		PortMappings      []*ecs.PortMapping
+		SubnetMappings    []*elbv2.SubnetMapping
 		StepAdjustments   []*applicationautoscaling.StepAdjustment
 		CSVString         *string
 		SixDigitsString   *string
@@ -534,6 +537,26 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatalf("got %d, want %d", got, want)
 	}
 	if got, want := *any.PortMappings[2].Protocol, "udp"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	err = setFieldWithType([]string{"subnet-123:eipalloc-123", "subnet-456:eipalloc-456"}, &any, "SubnetMappings", awssubnetmappings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.SubnetMappings), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.SubnetMappings[0].SubnetId, "subnet-123"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.SubnetMappings[0].AllocationId, "eipalloc-123"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.SubnetMappings[1].SubnetId, "subnet-456"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.SubnetMappings[1].AllocationId, "eipalloc-456"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 

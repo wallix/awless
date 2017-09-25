@@ -577,7 +577,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "loadbalancer",
 		Api:            "elbv2",
 		RequiredParams: []string{"name", "subnets"},
-		ExtraParams:    []string{"iptype", "scheme", "securitygroups"},
+		ExtraParams:    []string{"iptype", "scheme", "securitygroups", "subnet-mappings", "type"},
 	},
 	"deleteloadbalancer": {
 		Action:         "delete",

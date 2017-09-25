@@ -28,6 +28,8 @@ import (
 	gotemplate "text/template"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/elbv2"
+
 	"bytes"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -60,6 +62,7 @@ const (
 	awsparameterslice
 	awsecskeyvalue
 	awsportmappings
+	awssubnetmappings
 	awsstepadjustments
 	awscsvstr
 	aws6digitsstring
@@ -160,6 +163,17 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int, interfs 
 			parameters = append(parameters, &cloudformation.Parameter{ParameterKey: aws.String(splits[0]), ParameterValue: aws.String(splits[1])})
 		}
 		v = parameters
+	case awssubnetmappings:
+		sl := castStringSlice(v)
+		var subnetMappings []*elbv2.SubnetMapping
+		for i, s := range sl {
+			splits := strings.Split(s, ":")
+			if len(splits) != 2 {
+				return fmt.Errorf("invalid element %d in subnet mapping %v, expect format [subnet-123:eipalloc-321, subnet-234:eipalloc-678, ...]", i+1, splits)
+			}
+			subnetMappings = append(subnetMappings, &elbv2.SubnetMapping{SubnetId: aws.String(splits[0]), AllocationId: aws.String(splits[1])})
+		}
+		v = subnetMappings
 	case awsportmappings:
 		sl := castStringSlice(v)
 		var portMappings []*ecs.PortMapping

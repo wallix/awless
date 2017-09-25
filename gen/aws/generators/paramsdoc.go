@@ -154,7 +154,7 @@ func loadAllRefs() map[string]string {
 		wg.Add(1)
 		go func(ref string) {
 			defer wg.Done()
-			file, err := os.Open(filepath.Join(os.Getenv("GOPATH"), "src", "github.com", "aws", "aws-sdk-go", "models", "apis", ref))
+			file, err := os.Open(filepath.Join(ROOT_DIR, "vendor", "github.com", "aws", "aws-sdk-go", "models", "apis", ref))
 			if err != nil {
 				panic(err)
 			}

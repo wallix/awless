@@ -2690,6 +2690,12 @@ func (d *Elbv2Driver) Create_Loadbalancer(ctx driver.Context, params map[string]
 	}
 
 	// Extra params
+	if _, ok := params["subnet-mappings"]; ok {
+		err = setFieldWithType(params["subnet-mappings"], input, "SubnetMappings", awssubnetmappings, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if _, ok := params["iptype"]; ok {
 		err = setFieldWithType(params["iptype"], input, "IpAddressType", awsstr, ctx)
 		if err != nil {
@@ -2704,6 +2710,12 @@ func (d *Elbv2Driver) Create_Loadbalancer(ctx driver.Context, params map[string]
 	}
 	if _, ok := params["securitygroups"]; ok {
 		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["type"]; ok {
+		err = setFieldWithType(params["type"], input, "Type", awsstr, ctx)
 		if err != nil {
 			return nil, err
 		}
