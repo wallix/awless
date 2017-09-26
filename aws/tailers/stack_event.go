@@ -10,6 +10,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
 	"github.com/wallix/awless/aws/services"
 )
@@ -23,13 +24,9 @@ const (
 
 	// valid stack status codes
 	// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
-	cfStackEventUpdateInProgress = "UPDATE_IN_PROGRESS"
-	cfStackEventCreateInProgress = "CREATE_IN_PROGRESS"
-	cfStackEventDeleteInProgress = "DELETE_IN_PROGRESS"
 	cfStackEventCompleteSuffix   = "_COMPLETE"
 	cfStackEventFailedSuffix     = "_FAILED"
 	cfStackEventInProgressSuffix = "_IN_PROGRESS"
-	cfStackType                  = "AWS::CloudFormation::Stack"
 )
 
 type filters []string
@@ -338,15 +335,15 @@ func (e *stackEvent) filter(filters []string) (out []byte) {
 }
 
 func (s *stackEvent) isDeploymentStart() bool {
-	return (s.ResourceType != nil && *s.ResourceType == cfStackType) &&
+	return (s.ResourceType != nil && *s.ResourceType == configservice.ResourceTypeAwsCloudFormationStack) &&
 		(s.ResourceStatus != nil &&
-			*s.ResourceStatus == cfStackEventCreateInProgress ||
-			*s.ResourceStatus == cfStackEventDeleteInProgress ||
-			*s.ResourceStatus == cfStackEventUpdateInProgress)
+			*s.ResourceStatus == cloudformation.ResourceStatusCreateInProgress ||
+			*s.ResourceStatus == cloudformation.ResourceStatusDeleteInProgress ||
+			*s.ResourceStatus == cloudformation.ResourceStatusUpdateInProgress)
 }
 
 func (s *stackEvent) isDeploymentFinished() bool {
-	return (s.ResourceType != nil && *s.ResourceType == cfStackType) &&
+	return (s.ResourceType != nil && *s.ResourceType == configservice.ResourceTypeAwsCloudFormationStack) &&
 		(s.ResourceStatus != nil &&
 			strings.HasSuffix(*s.ResourceStatus, cfStackEventCompleteSuffix) ||
 			strings.HasSuffix(*s.ResourceStatus, cfStackEventFailedSuffix))
