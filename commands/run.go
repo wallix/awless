@@ -215,6 +215,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 	awsDriver.SetLogger(logger.DefaultLogger)
 	env.Driver = awsDriver
 
+	logger.Info("Starting dry run...")
 	if err = tplExec.Template.DryRun(env); err != nil {
 		switch t := err.(type) {
 		case *template.Errors:
@@ -223,7 +224,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 				logger.Errorf(e.Error())
 			}
 		}
-		exitOn(errors.New("Dryrun failed"))
+		exitOn(errors.New("Dry run failed"))
 	}
 
 	fmt.Printf("%s\n", renderGreenFn(tplExec.Template))
