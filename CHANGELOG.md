@@ -1,5 +1,13 @@
 ## v0.1.5 [unreleased]
 
+### Features
+
+- Complete flow to enable MFA for a user, including QRCode generation
+
+### AWS Services
+
+- Manage and listing of MFA devices: `awless create/delete/attach/detach mfadevice`, `awless list mfadevices`
+
 ## v0.1.4 [2017-09-21]
 
 ### Features

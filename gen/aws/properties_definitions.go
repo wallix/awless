@@ -35,6 +35,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "Associations", RDFLabel: fmt.Sprintf("%s:associations", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.KeyValue},
 	{AwlessLabel: "Attachable", RDFLabel: fmt.Sprintf("%s:attachable", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
 	{AwlessLabel: "Attached", RDFLabel: fmt.Sprintf("%s:attached", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},
+	{AwlessLabel: "AttachedAt", RDFLabel: fmt.Sprintf("%s:attachedAt", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdDateTime},
 	{AwlessLabel: "Attachment", RDFLabel: fmt.Sprintf("%s:attachment", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Attributes", RDFLabel: fmt.Sprintf("%s:attributes", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.KeyValue},
 	{AwlessLabel: "AutoUpgrade", RDFLabel: fmt.Sprintf("%s:autoUpgrade", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdBoolean},

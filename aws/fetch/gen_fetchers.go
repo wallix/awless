@@ -857,6 +857,37 @@ func BuildAccessFetchFuncs(conf *Config) fetch.Funcs {
 
 		return resources, objects, badResErr
 	}
+
+	funcs["mfadevice"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*iam.VirtualMFADevice
+
+		if !conf.getBoolDefaultTrue("aws.access.mfadevice.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource access[mfadevice]")
+			return resources, objects, nil
+		}
+		var badResErr error
+		err := conf.APIs.Iam.ListVirtualMFADevicesPages(&iam.ListVirtualMFADevicesInput{},
+			func(out *iam.ListVirtualMFADevicesOutput, lastPage bool) (shouldContinue bool) {
+				for _, output := range out.VirtualMFADevices {
+					if badResErr != nil {
+						return false
+					}
+					objects = append(objects, output)
+					var res *graph.Resource
+					if res, badResErr = awsconv.NewResource(output); badResErr != nil {
+						return false
+					}
+					resources = append(resources, res)
+				}
+				return out.Marker != nil
+			})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		return resources, objects, badResErr
+	}
 	return funcs
 }
 func BuildStorageFetchFuncs(conf *Config) fetch.Funcs {

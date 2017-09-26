@@ -138,6 +138,8 @@ func InitResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.AccessKey, awssdk.StringValue(ss.AccessKeyId))
 	case *iam.InstanceProfile:
 		res = graph.InitResource(cloud.InstanceProfile, awssdk.StringValue(ss.InstanceProfileId))
+	case *iam.VirtualMFADevice:
+		res = graph.InitResource(cloud.MFADevice, awssdk.StringValue(ss.SerialNumber))
 	// S3
 	case *s3.Bucket:
 		res = graph.InitResource(cloud.Bucket, awssdk.StringValue(ss.Name))

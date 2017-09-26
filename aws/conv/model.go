@@ -393,6 +393,9 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.State:    {name: "Status", transform: extractValueFn},
 		properties.Created:  {name: "CreateDate", transform: extractTimeFn},
 	},
+	cloud.MFADevice: {
+		properties.AttachedAt: {name: "EnableDate", transform: extractTimeFn},
+	},
 	//S3
 	cloud.Bucket: {
 		properties.Created: {name: "CreationDate", transform: extractTimeFn},

@@ -124,6 +124,7 @@ var ResourceTypes = []string{
 	"policy",
 	"accesskey",
 	"instanceprofile",
+	"mfadevice",
 	"bucket",
 	"s3object",
 	"subscription",
@@ -195,6 +196,7 @@ var ServicePerResourceType = map[string]string{
 	"policy":              "access",
 	"accesskey":           "access",
 	"instanceprofile":     "access",
+	"mfadevice":           "access",
 	"bucket":              "storage",
 	"s3object":            "storage",
 	"subscription":        "messaging",
@@ -245,6 +247,7 @@ var APIPerResourceType = map[string]string{
 	"policy":              "iam",
 	"accesskey":           "iam",
 	"instanceprofile":     "iam",
+	"mfadevice":           "iam",
 	"bucket":              "s3",
 	"s3object":            "s3",
 	"subscription":        "sns",
@@ -1129,6 +1132,7 @@ func (s *Access) ResourceTypes() []string {
 		"policy",
 		"accesskey",
 		"instanceprofile",
+		"mfadevice",
 	}
 }
 
@@ -1288,6 +1292,28 @@ func (s *Access) Fetch(ctx context.Context) (*graph.Graph, error) {
 			for _, fn := range addParentsFns["instanceprofile"] {
 				wg.Add(1)
 				go func(f addParentFn, snap tstore.RDFGraph, region string, res *iam.InstanceProfile) {
+					defer wg.Done()
+					err := f(gph, snap, region, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, snap, s.region, r)
+			}
+		}
+	}
+	if s.config.getBool("aws.access.mfadevice.sync", true) {
+		list, err := s.fetcher.Get("mfadevice_objects")
+		if err != nil {
+			return gph, err
+		}
+		if _, ok := list.([]*iam.VirtualMFADevice); !ok {
+			return gph, errors.New("cannot cast to '[]*iam.VirtualMFADevice' type from fetch context")
+		}
+		for _, r := range list.([]*iam.VirtualMFADevice) {
+			for _, fn := range addParentsFns["mfadevice"] {
+				wg.Add(1)
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *iam.VirtualMFADevice) {
 					defer wg.Done()
 					err := f(gph, snap, region, res)
 					if err != nil {

@@ -40,6 +40,7 @@ const (
 	Associations                      = "cloud:associations"
 	Attachable                        = "cloud:attachable"
 	Attached                          = "cloud:attached"
+	AttachedAt                        = "cloud:attachedAt"
 	Attachment                        = "cloud:attachment"
 	Attributes                        = "cloud:attributes"
 	AutoUpgrade                       = "cloud:autoUpgrade"
@@ -247,6 +248,7 @@ var Labels = map[string]string{
 	properties.Associations:                      Associations,
 	properties.Attachable:                        Attachable,
 	properties.Attached:                          Attached,
+	properties.AttachedAt:                        AttachedAt,
 	properties.Attachment:                        Attachment,
 	properties.Attributes:                        Attributes,
 	properties.AutoUpgrade:                       AutoUpgrade,
@@ -454,6 +456,7 @@ var Properties = RDFProperties{
 	Associations:            {ID: Associations, RdfType: "rdf:Property", RdfsLabel: "Associations", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	Attachable:              {ID: Attachable, RdfType: "rdf:Property", RdfsLabel: "Attachable", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Attached:                {ID: Attached, RdfType: "rdf:Property", RdfsLabel: "Attached", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
+	AttachedAt:              {ID: AttachedAt, RdfType: "rdf:Property", RdfsLabel: "AttachedAt", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:dateTime"},
 	Attachment:              {ID: Attachment, RdfType: "rdf:Property", RdfsLabel: "Attachment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Attributes:              {ID: Attributes, RdfType: "rdf:Property", RdfsLabel: "Attributes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "cloud-owl:KeyValue"},
 	AutoUpgrade:             {ID: AutoUpgrade, RdfType: "rdf:Property", RdfsLabel: "AutoUpgrade", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},

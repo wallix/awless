@@ -512,6 +512,7 @@ type mockIam struct {
 	instanceprofiles     []*iam.InstanceProfile
 	managedpolicydetails []*iam.ManagedPolicyDetail
 	users                []*iam.User
+	virtualmfadevices    []*iam.VirtualMFADevice
 }
 
 func (m *mockIam) Name() string {
@@ -580,6 +581,23 @@ func (m *mockIam) ListInstanceProfilesPages(input *iam.ListInstanceProfilesInput
 	}
 	for i, page := range pages {
 		fn(&iam.ListInstanceProfilesOutput{InstanceProfiles: page, Marker: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+func (m *mockIam) ListVirtualMFADevicesPages(input *iam.ListVirtualMFADevicesInput, fn func(p *iam.ListVirtualMFADevicesOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*iam.VirtualMFADevice
+	for i := 0; i < len(m.virtualmfadevices); i += 2 {
+		page := []*iam.VirtualMFADevice{m.virtualmfadevices[i]}
+		if i+1 < len(m.virtualmfadevices) {
+			page = append(page, m.virtualmfadevices[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&iam.ListVirtualMFADevicesOutput{VirtualMFADevices: page, Marker: aws.String(strconv.Itoa(i + 1))},
 			i < len(pages),
 		)
 	}

@@ -92,6 +92,7 @@ var mocksDefs = []*mockDef{
 			{FuncType: "list", AWSType: "iam.InstanceProfile", ApiMethod: "ListInstanceProfilesPages", Input: "iam.ListInstanceProfilesInput", Output: "iam.ListInstanceProfilesOutput", OutputsExtractor: "InstanceProfiles", Multipage: true, NextPageMarker: "Marker"},
 			{FuncType: "list", AWSType: "iam.ManagedPolicyDetail", Manual: true},
 			{FuncType: "list", AWSType: "iam.User", Manual: true},
+			{FuncType: "list", AWSType: "iam.VirtualMFADevice", ApiMethod: "ListVirtualMFADevicesPages", Input: "iam.ListVirtualMFADevicesInput", Output: "iam.ListVirtualMFADevicesOutput", OutputsExtractor: "VirtualMFADevices", Multipage: true, NextPageMarker: "Marker"},
 		},
 	},
 	{

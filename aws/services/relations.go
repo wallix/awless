@@ -148,6 +148,9 @@ var addParentsFns = map[string][]addParentFn{
 	cloud.Alarm:            {addRegionParent, addAlarmMetric},
 	cloud.Metric:           {addRegionParent},
 	cloud.Stack:            {addRegionParent},
+	cloud.MFADevice: {
+		funcBuilder{parent: cloud.User, fieldName: "User.UserId", relation: DEPENDING_ON}.build(),
+	},
 }
 
 func (fb funcBuilder) build() addParentFn {

@@ -38,6 +38,7 @@ const (
 	Associations                      = "Associations"
 	Attachable                        = "Attachable"
 	Attached                          = "Attached"
+	AttachedAt                        = "AttachedAt"
 	Attachment                        = "Attachment"
 	Attributes                        = "Attributes"
 	AutoUpgrade                       = "AutoUpgrade"

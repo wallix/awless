@@ -167,8 +167,13 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 			UserId: awssdk.String("usr_11"),
 		},
 	}
+	now := time.Now().UTC()
+	mfaDevices := []*iam.VirtualMFADevice{
+		{EnableDate: awssdk.Time(now), SerialNumber: awssdk.String("mfa-device-1"), User: &iam.User{UserId: awssdk.String("usr_1")}},
+		{SerialNumber: awssdk.String("mfa-device-2")},
+	}
 
-	mock := &mockIam{groupdetails: groups, userdetails: usersDetails, roledetails: roles, managedpolicydetails: managedPolicies, users: users}
+	mock := &mockIam{groupdetails: groups, userdetails: usersDetails, roledetails: roles, managedpolicydetails: managedPolicies, users: users, virtualmfadevices: mfaDevices}
 	access := Access{
 		IAMAPI:  mock,
 		region:  "eu-west-1",
@@ -181,7 +186,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resources, err := g.GetAllResources("policy", "group", "role", "user")
+	resources, err := g.GetAllResources("policy", "group", "role", "user", cloud.MFADevice)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,6 +221,8 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		"usr_9":            resourcetest.User("usr_9").Prop(p.InlinePolicies, []string{"npolicy_4"}).Build(),
 		"usr_10":           resourcetest.User("usr_10").Build(),
 		"usr_11":           resourcetest.User("usr_11").Build(),
+		"mfa-device-1":     resourcetest.MfaDevice("mfa-device-1").Prop(p.AttachedAt, now).Build(),
+		"mfa-device-2":     resourcetest.MfaDevice("mfa-device-2").Build(),
 	}
 
 	expectedChildren := map[string][]string{}
@@ -227,6 +234,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 		"managed_policy_1": {"group_1", "role_1", "usr_1", "usr_3"},
 		"managed_policy_2": {"group_2", "role_3", "usr_3"},
 		"managed_policy_3": {"group_3", "usr_6"},
+		"mfa-device-1":     {"usr_1"},
 	}
 
 	compareResources(t, g, resources, expected, expectedChildren, expectedAppliedOn)

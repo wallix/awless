@@ -82,6 +82,10 @@ func User(id string) *rBuilder {
 	return new("user", id)
 }
 
+func MfaDevice(id string) *rBuilder {
+	return new("mfadevice", id)
+}
+
 func Listener(id string) *rBuilder {
 	return new("listener", id)
 }

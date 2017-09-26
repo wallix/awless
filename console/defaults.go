@@ -58,6 +58,7 @@ var ColumnsInListing = map[string][]string{
 	cloud.Policy:              {properties.ID, properties.Name, properties.Type, properties.Created, properties.Updated, properties.Attached},
 	cloud.Group:               {properties.ID, properties.Name, properties.Created},
 	cloud.AccessKey:           {properties.ID, properties.State, properties.Username, properties.Created},
+	cloud.MFADevice:           {properties.ID, properties.AttachedAt},
 	cloud.Bucket:              {properties.ID, properties.Grants, properties.Created},
 	cloud.S3Object:            {properties.ID, properties.Bucket, properties.Modified, properties.Owner, properties.Size, properties.Class},
 	cloud.Subscription:        {properties.Arn, properties.Topic, properties.Endpoint, properties.Protocol, properties.Owner},
@@ -374,6 +375,10 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.State},
 		StringColumnDefinition{Prop: properties.Username},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+	},
+	cloud.MFADevice: {
+		StringColumnDefinition{Prop: properties.ID},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.AttachedAt}},
 	},
 	// S3
 	cloud.Bucket: {

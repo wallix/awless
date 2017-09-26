@@ -106,6 +106,7 @@ var FetchersDefs = []fetchersDef{
 			{Api: "iam", ResourceType: cloud.Policy, AWSType: "iam.Policy", ManualFetcher: true},
 			{Api: "iam", ResourceType: cloud.AccessKey, AWSType: "iam.AccessKeyMetadata", ApiMethod: "ListAccessKeysPages", Input: "iam.ListAccessKeysInput{}", Output: "iam.ListAccessKeysOutput", OutputsExtractor: "AccessKeyMetadata", Multipage: true, NextPageMarker: "Marker"},
 			{Api: "iam", ResourceType: cloud.InstanceProfile, AWSType: "iam.InstanceProfile", ApiMethod: "ListInstanceProfilesPages", Input: "iam.ListInstanceProfilesInput{}", Output: "iam.ListInstanceProfilesOutput", OutputsExtractor: "InstanceProfiles", Multipage: true, NextPageMarker: "Marker"},
+			{Api: "iam", ResourceType: cloud.MFADevice, AWSType: "iam.VirtualMFADevice", ApiMethod: "ListVirtualMFADevicesPages", Input: "iam.ListVirtualMFADevicesInput{}", Output: "iam.ListVirtualMFADevicesOutput", OutputsExtractor: "VirtualMFADevices", Multipage: true, NextPageMarker: "Marker"},
 		},
 	},
 	{
