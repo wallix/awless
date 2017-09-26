@@ -36,6 +36,8 @@ var (
 
 	renderGreenFn    = color.New(color.FgGreen).SprintFunc()
 	renderRedFn      = color.New(color.FgRed).SprintFunc()
+	renderYellowFn   = color.New(color.FgYellow).SprintFunc()
+	renderBlueFn     = color.New(color.FgBlue).SprintFunc()
 	renderCyanBoldFn = color.New(color.FgCyan, color.Bold).SprintFunc()
 )
 

@@ -3,7 +3,10 @@ package template
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"time"
 
+	"github.com/oklog/ulid"
 	"github.com/wallix/awless/template/internal/ast"
 )
 
@@ -13,6 +16,16 @@ type TemplateExecution struct {
 	*Template
 	Author, Source, Locale, Profile string
 	Fillers                         map[string]interface{}
+}
+
+// The ID of a template is stored as an ULID therefore the ID
+// capture the date and template IDs are sortable lexicagraphically
+func (t *TemplateExecution) Date() time.Time {
+	parsed, err := ulid.Parse(t.ID)
+	if err != nil {
+		panic(err)
+	}
+	return time.Unix(int64(parsed.Time())/int64(1000), time.Nanosecond.Nanoseconds())
 }
 
 func (t *TemplateExecution) MarshalJSON() ([]byte, error) {
@@ -92,6 +105,34 @@ func (t *TemplateExecution) UnmarshalJSON(b []byte) error {
 	*(t.Template) = *tpl
 
 	return nil
+}
+
+type TemplateExecutionStats struct {
+	KOCount, OKCount, CmdCount int
+	ActionEntityCount          map[string]int
+	Oneliner                   string
+}
+
+func (t *TemplateExecution) Stats() *TemplateExecutionStats {
+	stats := &TemplateExecutionStats{ActionEntityCount: make(map[string]int)}
+
+	var actionentity string
+	for _, cmd := range t.CommandNodesIterator() {
+		actionentity = fmt.Sprintf("%s %s", cmd.Action, cmd.Entity)
+		if cmd.Err() != nil {
+			stats.KOCount++
+		} else {
+			stats.OKCount++
+		}
+		stats.CmdCount++
+		stats.ActionEntityCount[actionentity]++
+	}
+
+	if stats.CmdCount == 1 {
+		stats.Oneliner = actionentity
+	}
+
+	return stats
 }
 
 type toJSON struct {

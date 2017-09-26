@@ -23,13 +23,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/database"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template"
 )
 
 var (
-	deleteAllLogsFlag    bool
-	deleteFromIdLogsFlag string
-	logsAsRawJSONFlag    bool
+	deleteAllLogsFlag             bool
+	deleteFromIdLogsFlag          string
+	limitLogCountFlag             int
+	rawJSONLogFlag, idOnlyLogFlag bool
+	fullLogFlag, shortLogFlag     bool
 )
 
 func init() {
@@ -37,16 +38,37 @@ func init() {
 
 	logCmd.Flags().BoolVar(&deleteAllLogsFlag, "delete-all", false, "Delete all logs from local db")
 	logCmd.Flags().StringVar(&deleteFromIdLogsFlag, "delete", "", "Delete a specifc log entry given its id")
-	logCmd.Flags().BoolVar(&logsAsRawJSONFlag, "raw-json", false, "Display logs as raw json")
+	logCmd.Flags().IntVarP(&limitLogCountFlag, "number", "n", 0, "Limit log output to the last n logs")
+	logCmd.Flags().BoolVar(&rawJSONLogFlag, "raw", false, "Display logs as raw json with template context info, ususally for debug")
+	logCmd.Flags().BoolVar(&shortLogFlag, "short", false, "Display one or more template log with less info")
+	logCmd.Flags().BoolVar(&fullLogFlag, "full", false, "Display template logs with full info")
+	logCmd.Flags().BoolVar(&idOnlyLogFlag, "id-only", false, "Show only log template IDs (i.e. revert IDs)")
 }
 
 var logCmd = &cobra.Command{
-	Use:               "log",
-	Short:             "Show the log of template actions against your cloud infrastructure",
+	Use:               "log [REVERTID]",
+	Short:             "Show all awless template actions against your cloud infrastructure",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
 
 	RunE: func(c *cobra.Command, args []string) error {
+		var all []*database.LoadedTemplate
+
+		printer := getPrinter(args)
+
+		if len(args) > 0 {
+			exitOn(database.Execute(func(db *database.DB) error {
+				single, err := db.GetLoadedTemplate(args[0])
+				if err != nil {
+					return err
+				}
+				all = append(all, single)
+				return nil
+			}))
+			print(all, printer)
+			return nil
+		}
+
 		if deleteAllLogsFlag {
 			exitOn(database.Execute(func(db *database.DB) error {
 				return db.DeleteTemplates()
@@ -61,37 +83,61 @@ var logCmd = &cobra.Command{
 			return nil
 		}
 
-		var all []*database.LoadedTemplate
-		err := database.Execute(func(db *database.DB) (dberr error) {
+		exitOn(database.Execute(func(db *database.DB) (dberr error) {
 			all, dberr = db.ListTemplates()
 			return
-		})
-		exitOn(err)
+		}))
 
-		var printer template.Printer
-		if logsAsRawJSONFlag {
-			printer = template.NewJSONPrinter(os.Stdout)
-		} else {
-			logPrinter := template.NewLogPrinter(os.Stdout)
-			logPrinter.RenderKO = renderRedFn
-			logPrinter.RenderOK = renderGreenFn
-			printer = logPrinter
-		}
-
-		for _, loaded := range all {
-			if loaded.Err != nil {
-				logger.Errorf("Template '%s' in error: %s", string(loaded.Key), loaded.Err)
-				logger.Verbosef("Template raw content\n%s", loaded.Raw)
-				fmt.Println()
-				continue
-			}
-
-			if err := printer.Print(loaded.TplExec); err != nil {
-				logger.Error(err.Error())
-			}
-			fmt.Println()
-		}
-
+		print(all, printer)
 		return nil
 	},
+}
+
+func print(all []*database.LoadedTemplate, printer logPrinter) {
+	if limitLogCountFlag > 0 && limitLogCountFlag < len(all) {
+		all = all[len(all)-limitLogCountFlag:]
+	}
+
+	for i, loaded := range all {
+		if loaded.Err != nil {
+			logger.Errorf("Template '%s' in error: %s", string(loaded.Key), loaded.Err)
+			logger.Verbosef("Template raw content\n%s", loaded.Raw)
+			fmt.Println()
+			continue
+		}
+
+		if err := printer.print(loaded.TplExec); err != nil {
+			logger.Error(err.Error())
+		}
+
+		if i < len(all)-1 {
+			fmt.Println()
+		}
+	}
+
+	if shortLogFlag {
+		fmt.Println()
+	}
+}
+
+func getPrinter(args []string) logPrinter {
+	var defaultPrinter logPrinter
+	if len(args) > 0 {
+		defaultPrinter = &fullLogPrinter{os.Stdout}
+	} else {
+		defaultPrinter = &statLogPrinter{os.Stdout}
+	}
+
+	switch {
+	case rawJSONLogFlag:
+		return &rawJSONPrinter{os.Stdout}
+	case idOnlyLogFlag:
+		return &idOnlyPrinter{os.Stdout}
+	case shortLogFlag:
+		return &shortLogPrinter{os.Stdout}
+	case fullLogFlag:
+		return &fullLogPrinter{os.Stdout}
+	default:
+		return defaultPrinter
+	}
 }

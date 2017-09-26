@@ -91,6 +91,29 @@ type LoadedTemplate struct {
 	Key, Raw string
 }
 
+func (db *DB) GetLoadedTemplate(id string) (*LoadedTemplate, error) {
+	loadedTpl := &LoadedTemplate{}
+
+	err := db.bolt.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TEMPLATES_BUCKET))
+		if b == nil {
+			return errors.New("no templates stored yet")
+		}
+		if content := b.Get([]byte(id)); content != nil {
+			tplExec := &template.TemplateExecution{}
+			terr := tplExec.UnmarshalJSON(content)
+			loadedTpl.TplExec = tplExec
+			loadedTpl.Err = terr
+			loadedTpl.Key = string(id)
+			loadedTpl.Raw = string(content)
+			return nil
+		}
+		return fmt.Errorf("no content for id '%s'", id)
+	})
+
+	return loadedTpl, err
+}
+
 func (db *DB) ListTemplates() ([]*LoadedTemplate, error) {
 	var results []*LoadedTemplate
 

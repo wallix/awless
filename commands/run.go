@@ -215,7 +215,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 	awsDriver.SetLogger(logger.DefaultLogger)
 	env.Driver = awsDriver
 
-	logger.Info("Starting dry run...")
+	logger.Info("Dry running template...")
 	if err = tplExec.Template.DryRun(env); err != nil {
 		switch t := err.(type) {
 		case *template.Errors:
@@ -261,10 +261,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 			logger.Errorf("Running template error: %s", err)
 		}
 
-		printer := template.NewDefaultPrinter(os.Stdout)
-		printer.RenderKO = renderRedFn
-		printer.RenderOK = renderGreenFn
-		printer.Print(tplExec)
+		newDefaultTemplatePrinter(os.Stdout).print(tplExec)
 
 		if err = database.Execute(func(db *database.DB) error {
 			return db.AddTemplate(tplExec)

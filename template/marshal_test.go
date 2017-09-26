@@ -10,6 +10,50 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
+func TestGetStatsFromTemplateExecution(t *testing.T) {
+	tplExec := &TemplateExecution{}
+	if err := tplExec.UnmarshalJSON([]byte(`{
+		"commands": [
+			{"line": "create vpc"},
+			{"line": "create subnet"},
+			{"line": "create instance"},
+			{"line": "create instance"},
+			{"line": "create instance"},
+			{"line": "create subnet"},
+			{"line": "attach policy"},
+			{"line": "stop instance"},
+			{"line": "detach policy", "errors": ["any"]}
+		]}`)); err != nil {
+		t.Fatal(err)
+	}
+	expected := map[string]int{
+		"create instance": 3, "create vpc": 1, "create subnet": 2, "attach policy": 1, "stop instance": 1, "detach policy": 1,
+	}
+	stats := tplExec.Stats()
+	if got, want := stats.ActionEntityCount, expected; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if got, want := stats.OKCount, 8; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := stats.KOCount, 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := stats.CmdCount, 9; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := stats.Oneliner, ""; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	if err := tplExec.UnmarshalJSON([]byte(`{"commands": [{"line": "create vpc"}]}`)); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := tplExec.Stats().Oneliner, "create vpc"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+}
+
 func TestTemplateExecutionUnmarshalFromJSON(t *testing.T) {
 	tplExec := &TemplateExecution{}
 	err := tplExec.UnmarshalJSON([]byte(`{
