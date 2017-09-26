@@ -4723,6 +4723,137 @@ func (d *IamDriver) Delete_Policy(ctx driver.Context, params map[string]interfac
 }
 
 // This function was auto generated
+func (d *IamDriver) Delete_Mfadevice_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete mfadevice: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete mfadevice ok")
+	return fakeDryRunId("mfadevice"), nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Delete_Mfadevice(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeleteVirtualMFADeviceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "SerialNumber", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeleteVirtualMFADeviceOutput
+	output, err = d.DeleteVirtualMFADevice(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete mfadevice: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeleteVirtualMFADevice call took %s", time.Since(start))
+	d.logger.Info("delete mfadevice done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Attach_Mfadevice_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("attach mfadevice: missing required params 'id'")
+	}
+
+	if _, ok := params["user"]; !ok {
+		return nil, errors.New("attach mfadevice: missing required params 'user'")
+	}
+
+	if _, ok := params["mfa-code-1"]; !ok {
+		return nil, errors.New("attach mfadevice: missing required params 'mfa-code-1'")
+	}
+
+	if _, ok := params["mfa-code-2"]; !ok {
+		return nil, errors.New("attach mfadevice: missing required params 'mfa-code-2'")
+	}
+
+	d.logger.Verbose("params dry run: attach mfadevice ok")
+	return fakeDryRunId("mfadevice"), nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Attach_Mfadevice(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &iam.EnableMFADeviceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "SerialNumber", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["user"], input, "UserName", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["mfa-code-1"], input, "AuthenticationCode1", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["mfa-code-2"], input, "AuthenticationCode2", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.EnableMFADeviceOutput
+	output, err = d.EnableMFADevice(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("attach mfadevice: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.EnableMFADevice call took %s", time.Since(start))
+	d.logger.Info("attach mfadevice done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Detach_Mfadevice_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("detach mfadevice: missing required params 'id'")
+	}
+
+	if _, ok := params["user"]; !ok {
+		return nil, errors.New("detach mfadevice: missing required params 'user'")
+	}
+
+	d.logger.Verbose("params dry run: detach mfadevice ok")
+	return fakeDryRunId("mfadevice"), nil
+}
+
+// This function was auto generated
+func (d *IamDriver) Detach_Mfadevice(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &iam.DeactivateMFADeviceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "SerialNumber", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["user"], input, "UserName", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeactivateMFADeviceOutput
+	output, err = d.DeactivateMFADevice(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("detach mfadevice: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeactivateMFADevice call took %s", time.Since(start))
+	d.logger.Info("detach mfadevice done")
+	return output, nil
+}
+
+// This function was auto generated
 func (d *S3Driver) Create_Bucket_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
 		return nil, errors.New("create bucket: missing required params 'name'")

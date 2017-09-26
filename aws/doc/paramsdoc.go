@@ -209,6 +209,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"scheme": "The routing range of the loadbalancer (internet-facing | internal)",
 		"iptype": "The type of IP addresses used by the subnets for your load balancer: IPv4 or IPv4 and IPv6 (ipv4 | dualstack)",
 	},
+	"createmfadevice": {
+		"name": "The name of the virtual MFA device",
+	},
 	"createpolicy": {
 		"name":        "The friendly name of the policy",
 		"description": "A friendly description of the policy",

@@ -72,3 +72,11 @@
 [[constraint]]
   name = "gopkg.in/src-d/go-git.v4"
   version = "4.0.0-rc13"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/boombuler/barcode"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/qianlnk/qrcode"

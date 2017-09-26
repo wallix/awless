@@ -35,6 +35,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
 	},
+	"attachmfadevice": {
+		"id":         "The serial number that uniquely identifies the MFA device",
+		"mfa-code-1": "An authentication code emitted by the device",
+		"mfa-code-2": "A subsequent authentication code emitted by the device",
+		"user":       "The name of the IAM user for whom you want to enable the MFA device",
+	},
 	"attachnetworkinterface": {
 		"device-index": "The index of the device for the network interface attachment",
 		"id":           "The ID of the network interface",
@@ -210,6 +216,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"password-reset": "Specifies whether the user is required to set a new password on next sign-in",
 		"username":       "The name of the IAM user to create a password for",
 	},
+	"createmfadevice": {},
 	"createnatgateway": {
 		"elasticip-id": "The allocation ID of an Elastic IP address to associate with the NAT gateway",
 		"subnet":       "The subnet in which to create the NAT gateway",
@@ -390,6 +397,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	"deleteloginprofile": {
 		"username": "The name of the user whose password you want to delete",
 	},
+	"deletemfadevice": {
+		"id": "The serial number that uniquely identifies the MFA device",
+	},
 	"deletenatgateway": {
 		"id": "The ID of the NAT gateway",
 	},
@@ -474,6 +484,10 @@ var generatedParamsDoc = map[string]map[string]string{
 	"detachinternetgateway": {
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
+	},
+	"detachmfadevice": {
+		"id":   "The serial number that uniquely identifies the MFA device",
+		"user": "The name of the user whose MFA device you want to deactivate",
 	},
 	"detachnetworkinterface": {},
 	"detachpolicy":           {},

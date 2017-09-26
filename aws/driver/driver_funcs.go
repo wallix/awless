@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"mime"
@@ -49,6 +50,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/qr"
+	"github.com/fatih/color"
 	"github.com/mitchellh/ioprogress"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/console"
@@ -1624,6 +1628,74 @@ func (d *Ec2Driver) Check_Instance(ctx driver.Context, params map[string]interfa
 		logger: d.logger,
 	}
 	return nil, c.check()
+}
+
+func (d *IamDriver) Create_Mfadevice_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["name"].(string); !ok {
+		return nil, errors.New("create mfadevice: missing required params 'name'")
+	}
+
+	d.logger.Verbose("params dry run: create mfadevice ok")
+	return fakeDryRunId("mfadevice"), nil
+}
+
+func (d *IamDriver) Create_Mfadevice(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	name := params["name"]
+	input := &iam.CreateVirtualMFADeviceInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(name, input, "VirtualMFADeviceName", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.CreateVirtualMFADeviceOutput
+	output, err = d.CreateVirtualMFADevice(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create mfadevice: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.CreateVirtualMFADevice call took %s", time.Since(start))
+
+	d.logger.Infof("MFA virtual device created. Here is the secret to create virtual device: %s.", string(output.VirtualMFADevice.Base32StringSeed))
+	d.logger.Infof("You can also use this QRCode:")
+
+	qrCodeURI := fmt.Sprintf("otpauth://totp/AWS:%s?secret=%s", name, string(output.VirtualMFADevice.Base32StringSeed))
+	qrcode, err := qr.Encode(qrCodeURI, qr.L, qr.Auto)
+	if err != nil {
+		return nil, fmt.Errorf("create mfadevice: encode qrcode: %s", err)
+	}
+	qrCodeDisplaySize := 40
+	qrcode, err = barcode.Scale(qrcode, qrCodeDisplaySize, qrCodeDisplaySize)
+	if err != nil {
+		return nil, fmt.Errorf("create mfadevice: scale qrcode: %s", err)
+	}
+	displayQRCode(os.Stderr, qrcode)
+	d.logger.Warning("This is your only opportunity to view the secret. You will not have access to the secret again after this step.\n")
+
+	id := aws.StringValue(output.VirtualMFADevice.SerialNumber)
+
+	d.logger.Infof("create mfadevice '%s' done", id)
+	return id, nil
+}
+
+func displayQRCode(w io.Writer, qrCode barcode.Barcode) {
+	white := color.New(color.BgWhite)
+	black := color.New(color.BgBlack)
+	for x := 0; x < qrCode.Bounds().Dx(); x++ {
+		for y := 0; y < qrCode.Bounds().Dy(); y++ {
+			r32, g32, b32, _ := qrCode.At(x, y).RGBA()
+			r, g, b := int(r32>>8), int(g32>>8), int(b32>>8)
+			if (r+g+b)/3 > 180 {
+				white.Fprint(w, "  ")
+			} else {
+				black.Fprint(w, "  ")
+			}
+		}
+		fmt.Println()
+	}
 }
 
 func (d *Ec2Driver) Check_Securitygroup_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {

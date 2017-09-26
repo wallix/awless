@@ -19,6 +19,8 @@ func TestRevertOneliner(t *testing.T) {
 		{in: "attach containertask image=toto memory-hard-limit=64 container-name=test-container name=test-service", exp: "detach containertask container-name=test-container name=test-service"},
 		{in: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 inbound=authorize portrange=443 protocol=tcp", exp: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 inbound=revoke portrange=443 protocol=tcp"},
 		{in: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=revoke portrange=443 protocol=tcp", exp: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=authorize portrange=443 protocol=tcp"},
+		{in: "attach mfadevice id=my-mfa-device-id user=toto mfa-code-1=1234 mfa-code-2=2345", exp: "detach mfadevice id=my-mfa-device-id user=toto"},
+		{in: "detach mfadevice id=my-mfa-device-id user=toto", exp: "attach mfadevice id=my-mfa-device-id user=toto"},
 	}
 
 	for _, tcase := range tcases {

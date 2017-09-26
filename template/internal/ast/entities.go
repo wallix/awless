@@ -25,6 +25,7 @@ var entities = map[Entity]struct{}{
 	"instance":            {},
 	"image":               {},
 	"internetgateway":     {},
+	"mfadevice":           {},
 	"natgateway":          {},
 	"networkinterface":    {},
 	"instanceprofile":     {},

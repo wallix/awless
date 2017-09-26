@@ -63,6 +63,7 @@ const (
 	Policy       string = "policy"
 	AccessKey    string = "accesskey"
 	LoginProfile string = "loginprofile"
+	MFADevice    string = "mfadevice"
 	//storage
 	Bucket   string = "bucket"
 	S3Object string = "s3object"

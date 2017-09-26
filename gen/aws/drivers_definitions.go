@@ -1188,6 +1188,34 @@ var DriversDefs = []driversDef{
 					{TemplateName: "role"},
 				},
 			},
+			{
+				Action: "create", Entity: cloud.MFADevice, ManualFuncDefinition: true,
+				RequiredParams: []param{
+					{TemplateName: "name"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.MFADevice, DryRunUnsupported: true, Input: "DeleteVirtualMFADeviceInput", Output: "DeleteVirtualMFADeviceOutput", ApiMethod: "DeleteVirtualMFADevice",
+				RequiredParams: []param{
+					{AwsField: "SerialNumber", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "attach", Entity: cloud.MFADevice, DryRunUnsupported: true, Input: "EnableMFADeviceInput", Output: "EnableMFADeviceOutput", ApiMethod: "EnableMFADevice",
+				RequiredParams: []param{
+					{AwsField: "SerialNumber", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
+					{AwsField: "AuthenticationCode1", TemplateName: "mfa-code-1", AwsType: "awsstr"},
+					{AwsField: "AuthenticationCode2", TemplateName: "mfa-code-2", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "detach", Entity: cloud.MFADevice, DryRunUnsupported: true, Input: "DeactivateMFADeviceInput", Output: "DeactivateMFADeviceOutput", ApiMethod: "DeactivateMFADevice",
+				RequiredParams: []param{
+					{AwsField: "SerialNumber", TemplateName: "id", AwsType: "awsstr"},
+					{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
+				},
+			},
 		},
 	},
 	{

@@ -907,6 +907,30 @@ func (d *IamDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 		}
 		return d.Detach_Policy, nil
 
+	case "createmfadevice":
+		if d.dryRun {
+			return d.Create_Mfadevice_DryRun, nil
+		}
+		return d.Create_Mfadevice, nil
+
+	case "deletemfadevice":
+		if d.dryRun {
+			return d.Delete_Mfadevice_DryRun, nil
+		}
+		return d.Delete_Mfadevice, nil
+
+	case "attachmfadevice":
+		if d.dryRun {
+			return d.Attach_Mfadevice_DryRun, nil
+		}
+		return d.Attach_Mfadevice, nil
+
+	case "detachmfadevice":
+		if d.dryRun {
+			return d.Detach_Mfadevice_DryRun, nil
+		}
+		return d.Detach_Mfadevice, nil
+
 	default:
 		return nil, driver.ErrDriverFnNotFound
 	}

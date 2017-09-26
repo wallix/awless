@@ -15,6 +15,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/boombuler/barcode"
+  packages = [".","qr","utils"]
+  revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
+
+[[projects]]
+  branch = "master"
   name = "github.com/chzyer/readline"
   packages = ["."]
   revision = "41eea22f717c616615e1e59aa06cf831f9901f35"
@@ -178,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9bd5c22e95b65f758bf77ff310a2c086915656863cf0162900b0885581919d19"
+  inputs-digest = "4348f052451e39cc57230c72266968af36edcc897fe460d83ff3eb4db2c4ea48"
   solver-name = "gps-cdcl"
   solver-version = 1

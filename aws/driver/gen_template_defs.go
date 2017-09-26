@@ -137,6 +137,10 @@ var APIPerTemplateDefName = map[string]string{
 	"deletepolicy":              "iam",
 	"attachpolicy":              "iam",
 	"detachpolicy":              "iam",
+	"createmfadevice":           "iam",
+	"deletemfadevice":           "iam",
+	"attachmfadevice":           "iam",
+	"detachmfadevice":           "iam",
 	"createbucket":              "s3",
 	"updatebucket":              "s3",
 	"deletebucket":              "s3",
@@ -981,6 +985,34 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		RequiredParams: []string{},
 		ExtraParams:    []string{"access", "arn", "group", "role", "service", "user"},
 	},
+	"createmfadevice": {
+		Action:         "create",
+		Entity:         "mfadevice",
+		Api:            "iam",
+		RequiredParams: []string{"name"},
+		ExtraParams:    []string{},
+	},
+	"deletemfadevice": {
+		Action:         "delete",
+		Entity:         "mfadevice",
+		Api:            "iam",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
+	"attachmfadevice": {
+		Action:         "attach",
+		Entity:         "mfadevice",
+		Api:            "iam",
+		RequiredParams: []string{"id", "mfa-code-1", "mfa-code-2", "user"},
+		ExtraParams:    []string{},
+	},
+	"detachmfadevice": {
+		Action:         "detach",
+		Entity:         "mfadevice",
+		Api:            "iam",
+		RequiredParams: []string{"id", "user"},
+		ExtraParams:    []string{},
+	},
 	"createbucket": {
 		Action:         "create",
 		Entity:         "bucket",
@@ -1352,6 +1384,10 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "policy")
 	supported["attach"] = append(supported["attach"], "policy")
 	supported["detach"] = append(supported["detach"], "policy")
+	supported["create"] = append(supported["create"], "mfadevice")
+	supported["delete"] = append(supported["delete"], "mfadevice")
+	supported["attach"] = append(supported["attach"], "mfadevice")
+	supported["detach"] = append(supported["detach"], "mfadevice")
 	supported["create"] = append(supported["create"], "bucket")
 	supported["update"] = append(supported["update"], "bucket")
 	supported["delete"] = append(supported["delete"], "bucket")
