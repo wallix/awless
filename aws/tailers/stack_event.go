@@ -71,8 +71,6 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid polling frequency: %s, must be greater than 5s", t.pollingFrequency)
 	}
 
-	// create new tabwriter and
-	// add header based on filters
 	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
 	tab.Write(t.filters.header())
 
@@ -98,8 +96,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	ticker := time.NewTicker(t.pollingFrequency)
 	defer ticker.Stop()
 	for range ticker.C {
-		err := t.displayRelevantEvents(cfn, tab)
-		if err != nil {
+		if err := t.displayRelevantEvents(cfn, tab); err != nil {
 			return err
 		}
 
@@ -184,7 +181,7 @@ func (t *stackEventTailer) isStackBeingDeployed(cfn *awsservices.Cloudformation)
 		return false, fmt.Errorf("Stack not found")
 	}
 
-	return strings.HasSuffix(*stacks.Stacks[0].StackStatus, "_IN_PROGRESS"), nil
+	return strings.HasSuffix(*stacks.Stacks[0].StackStatus, cfStackEventInProgressSuffix), nil
 }
 
 type deploymentStatus struct {
