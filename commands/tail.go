@@ -40,13 +40,13 @@ func init() {
 	tailCmd.AddCommand(scalingActivitiesCmd)
 
 	stackEventsCmd.PersistentFlags().StringArrayVar(&stackEventsFilters, "filters",
-		[]string{awstailers.FilterStackEventTimestamp, awstailers.FilterStackEventLogicalID, awstailers.FilterStackEventType, awstailers.FilterStackEventStatus},
+		[]string{awstailers.StackEventTimestamp, awstailers.StackEventLogicalID, awstailers.StackEventType, awstailers.StackEventStatus},
 		fmt.Sprintf("Filter the output columns. Valid filters: %s, %s, %s, %s, %s",
-			awstailers.FilterStackEventLogicalID,
-			awstailers.FilterStackEventStatus,
-			awstailers.FilterStackEventStatusReason,
-			awstailers.FilterStackEventTimestamp,
-			awstailers.FilterStackEventType))
+			awstailers.StackEventLogicalID,
+			awstailers.StackEventStatus,
+			awstailers.StackEventStatusReason,
+			awstailers.StackEventTimestamp,
+			awstailers.StackEventType))
 
 	tailCmd.AddCommand(stackEventsCmd)
 }

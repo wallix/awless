@@ -16,17 +16,17 @@ import (
 )
 
 const (
-	FilterStackEventLogicalID    = "id"
-	FilterStackEventTimestamp    = "ts"
-	FilterStackEventStatus       = "status"
-	FilterStackEventStatusReason = "reason"
-	FilterStackEventType         = "type"
+	StackEventLogicalID    = "id"
+	StackEventTimestamp    = "ts"
+	StackEventStatus       = "status"
+	StackEventStatusReason = "reason"
+	StackEventType         = "type"
 
 	// valid stack status codes
 	// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
-	cfStackEventCompleteSuffix   = "_COMPLETE"
-	cfStackEventFailedSuffix     = "_FAILED"
-	cfStackEventInProgressSuffix = "_IN_PROGRESS"
+	StackEventComplete   = "COMPLETE"
+	StackEventFailed     = "FAILED"
+	StackEventInProgress = "IN_PROGRESS"
 )
 
 type filters []string
@@ -105,7 +105,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		if t.deploymentStatus.isFinished {
 			if len(t.deploymentStatus.failedEvents) > 0 {
 				var errBuf bytes.Buffer
-				var f filters = []string{FilterStackEventLogicalID, FilterStackEventType, FilterStackEventStatus, FilterStackEventStatusReason}
+				var f filters = []string{StackEventLogicalID, StackEventType, StackEventStatus, StackEventStatusReason}
 
 				errBuf.WriteString("Deployment failed.\nFailed events summary:\n")
 				errBuf.Write(f.header())
@@ -181,7 +181,7 @@ func (t *stackEventTailer) isStackBeingDeployed(cfn *awsservices.Cloudformation)
 		return false, fmt.Errorf("Stack not found")
 	}
 
-	return strings.HasSuffix(*stacks.Stacks[0].StackStatus, cfStackEventInProgressSuffix), nil
+	return strings.HasSuffix(*stacks.Stacks[0].StackStatus, StackEventInProgress), nil
 }
 
 type deploymentStatus struct {
@@ -255,11 +255,11 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 
 func coloredResourceStatus(str string) string {
 	switch {
-	case strings.HasSuffix(str, cfStackEventInProgressSuffix):
+	case strings.HasSuffix(str, StackEventInProgress):
 		return color.New(color.FgYellow).SprintFunc()(str)
-	case strings.HasSuffix(str, cfStackEventCompleteSuffix):
+	case strings.HasSuffix(str, StackEventComplete):
 		return color.New(color.FgGreen).SprintFunc()(str)
-	case strings.HasSuffix(str, cfStackEventFailedSuffix):
+	case strings.HasSuffix(str, StackEventFailed):
 		return color.New(color.FgRed).SprintFunc()(str)
 	default:
 		return str
@@ -277,18 +277,17 @@ func (e stackEvents) printReverse(w io.Writer, f filters) error {
 
 func (f filters) header() []byte {
 	var buf bytes.Buffer
-	// var bold = color.New(color.Bo)
 	for i, filter := range f {
 		switch filter {
-		case FilterStackEventLogicalID:
+		case StackEventLogicalID:
 			buf.WriteString("Logical ID")
-		case FilterStackEventTimestamp:
+		case StackEventTimestamp:
 			buf.WriteString("Timestamp")
-		case FilterStackEventStatus:
+		case StackEventStatus:
 			buf.WriteString("Status")
-		case FilterStackEventStatusReason:
+		case StackEventStatusReason:
 			buf.WriteString("Status Reason")
-		case FilterStackEventType:
+		case StackEventType:
 			buf.WriteString("Type")
 		}
 
@@ -308,15 +307,15 @@ func (e *stackEvent) filter(filters []string) (out []byte) {
 
 	for i, f := range filters {
 		switch {
-		case f == FilterStackEventLogicalID && e.LogicalResourceId != nil:
+		case f == StackEventLogicalID && e.LogicalResourceId != nil:
 			buf.WriteString(*e.LogicalResourceId)
-		case f == FilterStackEventTimestamp && e.Timestamp != nil:
+		case f == StackEventTimestamp && e.Timestamp != nil:
 			buf.WriteString(e.Timestamp.Format(time.RFC3339))
-		case f == FilterStackEventStatus && e.ResourceStatus != nil:
+		case f == StackEventStatus && e.ResourceStatus != nil:
 			buf.WriteString(coloredResourceStatus(*e.ResourceStatus))
-		case f == FilterStackEventStatusReason && e.ResourceStatusReason != nil:
+		case f == StackEventStatusReason && e.ResourceStatusReason != nil:
 			buf.WriteString(*e.ResourceStatusReason)
-		case f == FilterStackEventType && e.ResourceType != nil:
+		case f == StackEventType && e.ResourceType != nil:
 			buf.WriteString(*e.ResourceType)
 		}
 
@@ -342,10 +341,10 @@ func (s *stackEvent) isDeploymentStart() bool {
 func (s *stackEvent) isDeploymentFinished() bool {
 	return (s.ResourceType != nil && *s.ResourceType == configservice.ResourceTypeAwsCloudFormationStack) &&
 		(s.ResourceStatus != nil &&
-			strings.HasSuffix(*s.ResourceStatus, cfStackEventCompleteSuffix) ||
-			strings.HasSuffix(*s.ResourceStatus, cfStackEventFailedSuffix))
+			strings.HasSuffix(*s.ResourceStatus, StackEventComplete) ||
+			strings.HasSuffix(*s.ResourceStatus, StackEventFailed))
 }
 
 func (s *stackEvent) isFailed() bool {
-	return (s.ResourceStatus != nil && strings.HasSuffix(*s.ResourceStatus, cfStackEventFailedSuffix))
+	return (s.ResourceStatus != nil && strings.HasSuffix(*s.ResourceStatus, StackEventFailed))
 }
