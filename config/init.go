@@ -50,8 +50,8 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
-		fmt.Println("Welcome to awless! Resolving environment data...")
-		fmt.Println()
+		fmt.Fprintln(os.Stderr, "Welcome to awless! Resolving environment data...")
+		fmt.Fprintln(os.Stderr)
 
 		if err = InitConfig(resolveRequiredConfigFromEnv()); err != nil {
 			return err
@@ -61,7 +61,7 @@ func InitAwlessEnv() error {
 			return db.SetStringValue("current.version", Version)
 		})
 		if err != nil {
-			fmt.Printf("cannot store current version in db: %s\n", err)
+			fmt.Fprintf(os.Stderr, "cannot store current version in db: %s\n", err)
 		}
 	}
 
