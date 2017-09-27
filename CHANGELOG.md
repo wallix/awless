@@ -8,6 +8,7 @@
 ### AWS Services
 
 - Manage and listing of MFA devices: `awless create/delete/attach/detach mfadevice`, `awless list mfadevices`
+- Add conditions in policies `awless create policy ... conditions=\"aws:MultiFactorAuthPresent==true\"`
 
 ## v0.1.4 [2017-09-21]
 

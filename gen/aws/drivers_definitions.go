@@ -1149,6 +1149,7 @@ var DriversDefs = []driversDef{
 				},
 				ExtraParams: []param{
 					{AwsField: "Description", TemplateName: "description", AwsType: "awsstr"},
+					{TemplateName: "conditions"},
 				},
 			},
 			{
@@ -1158,6 +1159,9 @@ var DriversDefs = []driversDef{
 					{TemplateName: "effect"},
 					{TemplateName: "action"},
 					{TemplateName: "resource"},
+				},
+				ExtraParams: []param{
+					{TemplateName: "conditions"},
 				},
 			},
 			{

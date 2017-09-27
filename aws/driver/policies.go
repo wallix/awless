@@ -1,10 +1,16 @@
 package awsdriver
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var awsPolicies = initAWSPolicies()
@@ -28,6 +34,146 @@ type policy struct {
 	Name string `json:"PolicyName"`
 	Id   string `json:"PolicyId"`
 	Arn  string `json:"Arn"`
+}
+
+type policyConditions []*policyCondition
+
+func (c *policyConditions) MarshalJSON() ([]byte, error) {
+	if c == nil {
+		return []byte("\"\""), nil
+	}
+	var buff bytes.Buffer
+	buff.WriteRune('{')
+	for i, cond := range *c {
+		buff.WriteString(fmt.Sprintf("\"%s\":{\"%s\":\"%s\"}", cond.Type, cond.Key, cond.Value))
+		if i < len(*c)-1 {
+			buff.WriteRune(',')
+		}
+	}
+	buff.WriteRune('}')
+	return buff.Bytes(), nil
+}
+
+type policyCondition struct {
+	Type  string
+	Key   string
+	Value string
+}
+
+var conditionRegex = regexp.MustCompile("^([a-zA-Z0-9:_\\-\\[\\]\\*]+)(==|!=|~~|!~|<=|>=|<|>)(.*)$")
+
+func parseCondition(condition string) (*policyCondition, error) {
+	matches := conditionRegex.FindStringSubmatch(condition)
+	if len(matches) < 4 {
+		return nil, fmt.Errorf("invalid condition '%s'", condition)
+	}
+	key, operator, value := matches[1], matches[2], matches[3]
+	key = strings.TrimSpace(key)
+	value = strings.TrimSpace(value)
+	if strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'") && len(value) >= 2 {
+		value = value[1 : len(value)-1]
+	}
+	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") && len(value) >= 2 {
+		value = value[1 : len(value)-1]
+	}
+
+	if strings.ToLower(value) == "null" {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "Null", Key: key, Value: "true"}, nil
+		case "!=":
+			return &policyCondition{Type: "Null", Key: key, Value: "false"}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for null value '%s', expected either '==' or '!='", operator, value)
+		}
+	} else if strings.HasPrefix(value, "arn:") {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "ArnEquals", Key: key, Value: value}, nil
+		case "!=":
+			return &policyCondition{Type: "ArnNotEquals", Key: key, Value: value}, nil
+		case "~~":
+			return &policyCondition{Type: "ArnLike", Key: key, Value: value}, nil
+		case "!~":
+			return &policyCondition{Type: "ArnNotLike", Key: key, Value: value}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for arn value '%s', expected either '==', '!=', '~~' or '!~'", operator, value)
+		}
+	} else if _, _, cidrErr := net.ParseCIDR(value); cidrErr == nil || net.ParseIP(value) != nil {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "IpAddress", Key: key, Value: value}, nil
+		case "!=":
+			return &policyCondition{Type: "NotIpAddress", Key: key, Value: value}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for IP value '%s', expected either '==' or '!='", operator, value)
+		}
+	} else if _, err := time.Parse("2006-01-02T15:04:05Z", value); err == nil {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "DateEquals", Key: key, Value: value}, nil
+		case "!=":
+			return &policyCondition{Type: "DateNotEquals", Key: key, Value: value}, nil
+		case "<":
+			return &policyCondition{Type: "DateLessThan", Key: key, Value: value}, nil
+		case "<=":
+			return &policyCondition{Type: "DateLessThanEquals", Key: key, Value: value}, nil
+		case ">":
+			return &policyCondition{Type: "DateGreaterThan", Key: key, Value: value}, nil
+		case ">=":
+			return &policyCondition{Type: "DateGreaterThanEquals", Key: key, Value: value}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for date value '%s', expected either '==', '!=', '>', '>=', '<' or '<='", operator, value)
+		}
+	} else if _, err := strconv.Atoi(value); err == nil {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "NumericEquals", Key: key, Value: value}, nil
+		case "!=":
+			return &policyCondition{Type: "NumericNotEquals", Key: key, Value: value}, nil
+		case "<":
+			return &policyCondition{Type: "NumericLessThan", Key: key, Value: value}, nil
+		case "<=":
+			return &policyCondition{Type: "NumericLessThanEquals", Key: key, Value: value}, nil
+		case ">":
+			return &policyCondition{Type: "NumericGreaterThan", Key: key, Value: value}, nil
+		case ">=":
+			return &policyCondition{Type: "NumericGreaterThanEquals", Key: key, Value: value}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for int value '%s', expected either '==', '!=', '>', '>=', '<' or '<='", operator, value)
+		}
+	} else if b, err := strconv.ParseBool(value); err == nil {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "Bool", Key: key, Value: fmt.Sprint(b)}, nil
+		case "!=":
+			return &policyCondition{Type: "Bool", Key: key, Value: fmt.Sprint(!b)}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for bool value '%s', expected either '==' or '!='", operator, value)
+		}
+	} else if _, err := base64.StdEncoding.DecodeString(value); value != "" && err == nil {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "BinaryEquals", Key: key, Value: value}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for binary value '%s', expected '=='", operator, value)
+		}
+	} else {
+		switch operator {
+		case "==":
+			return &policyCondition{Type: "StringEquals", Key: key, Value: value}, nil
+		case "!=":
+			return &policyCondition{Type: "StringNotEquals", Key: key, Value: value}, nil
+		case "~~":
+			return &policyCondition{Type: "StringLike", Key: key, Value: value}, nil
+		case "!~":
+			return &policyCondition{Type: "StringNotLike", Key: key, Value: value}, nil
+		default:
+			return nil, fmt.Errorf("invalid operator '%s' for string value '%s', expected either '==', '!=', '~~' or '!~'", operator, value)
+		}
+	}
+
+	return nil, nil
 }
 
 func initAWSPolicies() (all []*policy) {

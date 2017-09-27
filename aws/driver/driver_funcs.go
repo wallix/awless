@@ -1047,14 +1047,18 @@ func (d *IamDriver) Create_Policy_DryRun(ctx driver.Context, params map[string]i
 }
 
 func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	stat, err := buildStatementFromParams(params)
+	if err != nil {
+		return nil, err
+	}
 	policy := &policyBody{
 		Version:   "2012-10-17",
-		Statement: []policyStatement{buildStatementFromParams(params)},
+		Statement: []*policyStatement{stat},
 	}
 
 	b, err := json.MarshalIndent(policy, "", " ")
 	if err != nil {
-		return nil, errors.New("cannot marshal policy document")
+		return nil, fmt.Errorf("cannot marshal policy document: %s", err)
 	}
 
 	d.logger.ExtraVerbosef("policy document json:\n%s\n", string(b))
@@ -1079,7 +1083,7 @@ func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interfac
 	return aws.StringValue(output.(*iam.CreatePolicyOutput).Policy.Arn), nil
 }
 
-func buildStatementFromParams(params map[string]interface{}) policyStatement {
+func buildStatementFromParams(params map[string]interface{}) (*policyStatement, error) {
 	effect, _ := params["effect"].(string)
 	resource, _ := params["resource"].(string)
 
@@ -1087,12 +1091,22 @@ func buildStatementFromParams(params map[string]interface{}) policyStatement {
 		resource = "*"
 	}
 
-	stat := policyStatement{Effect: strings.Title(effect), Resource: resource}
+	stat := &policyStatement{Effect: strings.Title(effect), Resource: resource}
 
 	if actions, ok := params["action"]; ok {
 		stat.Actions = castStringSlice(actions)
 	}
-	return stat
+	if conditions, ok := params["conditions"]; ok {
+		condStr := castStringSlice(conditions)
+		for _, str := range condStr {
+			cond, err := parseCondition(str)
+			if err != nil {
+				return stat, err
+			}
+			stat.Conditions = append(stat.Conditions, cond)
+		}
+	}
+	return stat, nil
 }
 
 func (d *IamDriver) Update_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
@@ -1123,16 +1137,20 @@ func (d *IamDriver) Update_Policy(ctx driver.Context, params map[string]interfac
 	if err = json.Unmarshal([]byte(document), &defaultPolicyDocument); err != nil {
 		return nil, err
 	}
+	stat, err := buildStatementFromParams(params)
+	if err != nil {
+		return nil, err
+	}
 
 	var newStatement json.RawMessage
-	if newStatement, err = json.Marshal(buildStatementFromParams(params)); err != nil {
+	if newStatement, err = json.Marshal(stat); err != nil {
 		return nil, err
 	}
 	defaultPolicyDocument.Statements = append(defaultPolicyDocument.Statements, &newStatement)
 
 	b, err := json.MarshalIndent(defaultPolicyDocument, "", " ")
 	if err != nil {
-		return nil, errors.New("cannot marshal policy document")
+		return nil, fmt.Errorf("cannot marshal policy document: %s", err)
 	}
 
 	d.logger.ExtraVerbosef("policy document json:\n%s\n", string(b))
@@ -1239,15 +1257,16 @@ type principal struct {
 }
 
 type policyStatement struct {
-	Effect    string     `json:",omitempty"`
-	Actions   []string   `json:"Action,omitempty"`
-	Resource  string     `json:",omitempty"`
-	Principal *principal `json:",omitempty"`
+	Effect     string           `json:",omitempty"`
+	Actions    []string         `json:"Action,omitempty"`
+	Resource   string           `json:",omitempty"`
+	Principal  *principal       `json:",omitempty"`
+	Conditions policyConditions `json:"Condition,omitempty"`
 }
 
 type policyBody struct {
 	Version   string
-	Statement []policyStatement
+	Statement []*policyStatement
 }
 
 func (d *IamDriver) Create_Role(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
@@ -1266,7 +1285,7 @@ func (d *IamDriver) Create_Role(ctx driver.Context, params map[string]interface{
 
 	trust := &policyBody{
 		Version:   "2012-10-17",
-		Statement: []policyStatement{{Effect: "Allow", Actions: []string{"sts:AssumeRole"}, Principal: princ}},
+		Statement: []*policyStatement{{Effect: "Allow", Actions: []string{"sts:AssumeRole"}, Principal: princ}},
 	}
 
 	b, err := json.MarshalIndent(trust, "", " ")
@@ -1494,12 +1513,12 @@ func (d *IamDriver) Create_Accesskey(ctx driver.Context, params map[string]inter
 	d.logger.ExtraVerbosef("iam.CreateAccessKey call took %s", time.Since(start))
 
 	d.logger.Infof("Access key created. Here are the crendentials for user %s:", aws.StringValue(output.AccessKey.UserName))
-	fmt.Println()
-	fmt.Println(strings.Repeat("*", 64))
-	fmt.Printf("aws_access_key_id = %s\n", aws.StringValue(output.AccessKey.AccessKeyId))
-	fmt.Printf("aws_secret_access_key = %s\n", aws.StringValue(output.AccessKey.SecretAccessKey))
-	fmt.Println(strings.Repeat("*", 64))
-	fmt.Println()
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, strings.Repeat("*", 64))
+	fmt.Fprintf(os.Stderr, "aws_access_key_id = %s\n", aws.StringValue(output.AccessKey.AccessKeyId))
+	fmt.Fprintf(os.Stderr, "aws_secret_access_key = %s\n", aws.StringValue(output.AccessKey.SecretAccessKey))
+	fmt.Fprintln(os.Stderr, strings.Repeat("*", 64))
+	fmt.Fprintln(os.Stderr)
 	d.logger.Warning("This is your only opportunity to view the secret access keys.")
 	d.logger.Warning("Save the user's new access key ID and secret access key in a safe and secure place.")
 	d.logger.Warning("You will not have access to the secret keys again after this step.\n")
@@ -1694,7 +1713,7 @@ func displayQRCode(w io.Writer, qrCode barcode.Barcode) {
 				black.Fprint(w, "  ")
 			}
 		}
-		fmt.Println()
+		fmt.Fprintln(w)
 	}
 }
 
