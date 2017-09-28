@@ -45,7 +45,7 @@ var historyCmd = &cobra.Command{
 	Hidden:            true,
 	Short:             "(in progress) Show a infra resource history & changes using your locally sync snapshots",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		region := config.GetAWSRegion()

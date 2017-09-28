@@ -32,6 +32,7 @@ var (
 	awsRegionGlobalFlag    string
 	awsProfileGlobalFlag   string
 	awsColorGlobalFlag     string
+	networkMonitorFlag     bool
 
 	renderGreenFn    = color.New(color.FgGreen).SprintFunc()
 	renderRedFn      = color.New(color.FgRed).SprintFunc()
@@ -48,6 +49,8 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&awsRegionGlobalFlag, "aws-region", "r", "", "Override AWS region temporarily for the current command")
 	RootCmd.PersistentFlags().StringVarP(&awsProfileGlobalFlag, "aws-profile", "p", "", "Override AWS profile temporarily for the current command")
 	RootCmd.PersistentFlags().StringVar(&awsColorGlobalFlag, "color", "auto", "Force enabling/disabling colors in display (auto, never, always)")
+	RootCmd.PersistentFlags().BoolVar(&networkMonitorFlag, "network-monitor", false, "Debug requests with network monitor")
+	RootCmd.PersistentFlags().MarkHidden("network-monitor")
 
 	RootCmd.Flags().BoolVar(&versionGlobalFlag, "version", false, "Print awless version")
 

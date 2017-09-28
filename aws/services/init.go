@@ -30,14 +30,14 @@ var (
 	AccessService, InfraService, StorageService, MessagingService, DnsService, LambdaService, MonitoringService, CdnService, CloudformationService cloud.Service
 )
 
-func Init(conf map[string]interface{}, log *logger.Logger, profileSetterCallback func(val string) error) error {
+func Init(conf map[string]interface{}, log *logger.Logger, profileSetterCallback func(val string) error, enableNetworkMonitor bool) error {
 	awsconf := config(conf)
 	region := awsconf.region()
 	if region == "" {
 		return errors.New("empty AWS region. Set it with `awless config set aws.region`")
 	}
 
-	sb := newSessionResolver().withRegion(region).withProfile(awsconf.profile())
+	sb := newSessionResolver().withRegion(region).withProfile(awsconf.profile()).withNetworkMonitor(enableNetworkMonitor)
 	sb = sb.withProfileSetter(profileSetterCallback).withLogger(log).withCredentialResolvers()
 
 	sess, err := sb.resolve()

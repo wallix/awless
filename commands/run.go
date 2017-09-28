@@ -79,7 +79,7 @@ var runCmd = &cobra.Command{
 	Short:             "Run a template given a filepath or URL",
 	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls\n  awless run repo:create_vpc",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if listRemoteTemplatesFlag {
@@ -306,7 +306,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		Long:              fmt.Sprintf("Allow to %s: %v", action, strings.Join(entities, ", ")),
 		Annotations:       map[string]string{"one-liner": "true"},
 		PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
-		PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
+		PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("missing ENTITY")
@@ -402,7 +402,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			&cobra.Command{
 				Use:               templDef.Entity,
 				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
-				PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
+				PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
 				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr.String(), extraStr.String()),
 				Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),

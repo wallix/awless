@@ -54,7 +54,7 @@ var syncCmd = &cobra.Command{
 	Use:               "sync",
 	Short:             "Manual sync of remote resources to the local store (ex: when autosync is unset)",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var services []cloud.Service

@@ -47,11 +47,12 @@ var searchCmd = &cobra.Command{
 }
 
 var awsImagesCmd = &cobra.Command{
-	Use:              "images",
-	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
-	Short:            fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first. Supported owners: %s", strings.Join(awsservices.SupportedAMIOwners, ", ")),
-	Long:             fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsservices.ImageQuerySpec, strings.Join(awsservices.SupportedAMIOwners, ", ")),
-	Example:          "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --id-only\n  awless search images amazonlinux:::::instance-store --ids-only",
+	Use:               "images",
+	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
+	PersistentPostRun: applyHooks(networkMonitorHook),
+	Short:             fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first. Supported owners: %s", strings.Join(awsservices.SupportedAMIOwners, ", ")),
+	Long:              fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsservices.ImageQuerySpec, strings.Join(awsservices.SupportedAMIOwners, ", ")),
+	Example:           "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --id-only\n  awless search images amazonlinux:::::instance-store --ids-only",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {

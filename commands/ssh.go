@@ -75,7 +75,7 @@ var sshCmd = &cobra.Command{
   awless ssh redis-prod --print-config        # Print out the full SSH config (i.e: ~/.ssh/config) to connect to instance`,
 
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, firstInstallDoneHook),
-	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade),
+	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

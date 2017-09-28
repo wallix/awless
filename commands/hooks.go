@@ -81,7 +81,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	awsConf := config.GetConfigWithPrefix("aws.")
 	logger.Verbosef("awless %s - loading AWS session with profile '%v' and region '%v'", config.Version, awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
 
-	if err := awsservices.Init(awsConf, logger.DefaultLogger, config.SetProfileCallback); err != nil {
+	if err := awsservices.Init(awsConf, logger.DefaultLogger, config.SetProfileCallback, networkMonitorFlag); err != nil {
 		return err
 	}
 
@@ -163,7 +163,9 @@ func verifyNewVersionHook(cmd *cobra.Command, args []string) error {
 }
 
 func networkMonitorHook(cmd *cobra.Command, args []string) error {
-	awsservices.DefaultNetworkMonitor.DisplayStats(os.Stderr)
+	if networkMonitorFlag {
+		awsservices.DefaultNetworkMonitor.DisplayStats(os.Stderr)
+	}
 	return nil
 }
 

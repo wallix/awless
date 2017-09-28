@@ -107,6 +107,11 @@ func (s *sessionResolver) withLogger(l *logger.Logger) *sessionResolver {
 	return s
 }
 
+func (s *sessionResolver) withNetworkMonitor(enableNetworkMonitor bool) *sessionResolver {
+	s.enableNetworkMonitorRequestsHandlers = enableNetworkMonitor
+	return s
+}
+
 func (s *sessionResolver) resolve() (*session.Session, error) {
 	session, err := session.NewSessionWithOptions(session.Options{
 		Config: awssdk.Config{
