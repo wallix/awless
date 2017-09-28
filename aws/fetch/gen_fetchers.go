@@ -796,37 +796,6 @@ func BuildAccessFetchFuncs(conf *Config) fetch.Funcs {
 		return resources, objects, badResErr
 	}
 
-	funcs["accesskey"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
-		var resources []*graph.Resource
-		var objects []*iam.AccessKeyMetadata
-
-		if !conf.getBoolDefaultTrue("aws.access.accesskey.sync") && !getBoolFromContext(ctx, "force") {
-			conf.Log.Verbose("sync: *disabled* for resource access[accesskey]")
-			return resources, objects, nil
-		}
-		var badResErr error
-		err := conf.APIs.Iam.ListAccessKeysPages(&iam.ListAccessKeysInput{},
-			func(out *iam.ListAccessKeysOutput, lastPage bool) (shouldContinue bool) {
-				for _, output := range out.AccessKeyMetadata {
-					if badResErr != nil {
-						return false
-					}
-					objects = append(objects, output)
-					var res *graph.Resource
-					if res, badResErr = awsconv.NewResource(output); badResErr != nil {
-						return false
-					}
-					resources = append(resources, res)
-				}
-				return out.Marker != nil
-			})
-		if err != nil {
-			return resources, objects, err
-		}
-
-		return resources, objects, badResErr
-	}
-
 	funcs["instanceprofile"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
 		var resources []*graph.Resource
 		var objects []*iam.InstanceProfile

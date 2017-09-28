@@ -536,6 +536,89 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			}
 		}
 	}
+	funcs["accesskey"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*iam.AccessKeyMetadata
+
+		if !conf.getBoolDefaultTrue("aws.access.accesskey.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource access[accesskey]")
+			return resources, objects, nil
+		}
+
+		var wg sync.WaitGroup
+		resourcesC := make(chan *graph.Resource)
+		objectsC := make(chan *iam.AccessKeyMetadata)
+		errC := make(chan error)
+		var hasError bool
+
+		conf.APIs.Iam.ListUsersPages(&iam.ListUsersInput{}, func(outUsers *iam.ListUsersOutput, lastPage bool) bool {
+
+			for _, user := range outUsers.Users {
+				wg.Add(1)
+				go func(u *iam.User) {
+					userRes, err := awsconv.InitResource(u)
+					if err != nil {
+						hasError = true
+						errC <- err
+						return
+					}
+					defer wg.Done()
+
+					err = conf.APIs.Iam.ListAccessKeysPages(&iam.ListAccessKeysInput{UserName: u.UserName},
+						func(out *iam.ListAccessKeysOutput, lastPage bool) (shouldContinue bool) {
+							for _, output := range out.AccessKeyMetadata {
+								objectsC <- output
+								res, e := awsconv.NewResource(output)
+								if e != nil {
+									errC <- e
+									hasError = true
+									return false
+								}
+								res.Relations[rdf.ChildrenOfRel] = append(res.Relations[rdf.ChildrenOfRel], userRes)
+								resourcesC <- res
+							}
+							return out.Marker != nil
+						})
+					if err != nil {
+						hasError = true
+						errC <- err
+						return
+					}
+				}(user)
+			}
+			return !hasError
+		})
+
+		go func() {
+			wg.Wait()
+			close(errC)
+			close(objectsC)
+			close(resourcesC)
+		}()
+
+		for {
+			select {
+			case e := <-errC:
+				if e != nil {
+					return resources, objects, e
+				}
+			case r, ok := <-resourcesC:
+				if !ok {
+					return resources, objects, nil
+				}
+				if r != nil {
+					resources = append(resources, r)
+				}
+			case o, ok := <-objectsC:
+				if !ok {
+					return resources, objects, nil
+				}
+				if o != nil {
+					objects = append(objects, o)
+				}
+			}
+		}
+	}
 }
 func addManualStorageFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 	funcs["bucket"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {

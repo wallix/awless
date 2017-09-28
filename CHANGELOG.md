@@ -9,6 +9,7 @@
 
 - Manage and listing of MFA devices: `awless create/delete/attach/detach mfadevice`, `awless list mfadevices`
 - Add conditions in policies `awless create policy ... conditions=\"aws:MultiFactorAuthPresent==true\"`
+- List the access keys of all users with `awless list accesskeys` (previously, only current user)
 
 ## v0.1.4 [2017-09-21]
 
