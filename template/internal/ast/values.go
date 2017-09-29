@@ -230,66 +230,112 @@ func (h *holeValue) Clone() CompositeValue {
 	return &holeValue{val: h.val, hole: h.hole, alias: h.alias}
 }
 
-type holesStringValue struct {
-	holes []*holeValue
-	input string
+type concatenationValue struct {
+	vals []CompositeValue
 }
 
-func (h *holesStringValue) GetHoles() (res []string) {
-	for _, hole := range h.holes {
-		res = append(res, hole.GetHoles()...)
+func (c *concatenationValue) GetHoles() (res []string) {
+	for _, val := range c.vals {
+		if withHoles, ok := val.(WithHoles); ok {
+			res = append(res, withHoles.GetHoles()...)
+		}
 	}
 	return
 }
 
-func (h *holesStringValue) Value() interface{} {
-	out := h.input
-	for _, hole := range h.holes {
-		if hole.Value() != nil {
-			out = strings.Replace(out, "{"+hole.hole+"}", fmt.Sprint(hole.Value()), 1)
+func (c *concatenationValue) GetRefs() (res []string) {
+	for _, val := range c.vals {
+		if withRefs, ok := val.(WithRefs); ok {
+			res = append(res, withRefs.GetRefs()...)
 		}
 	}
-	return out
+	return
 }
 
-func (h *holesStringValue) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
+func (c *concatenationValue) Value() interface{} {
+	var buff bytes.Buffer
+	for _, val := range c.vals {
+		if val.Value() != nil {
+			buff.WriteString(fmt.Sprint(val.Value()))
+		}
+	}
+	return buff.String()
+}
+
+func (c *concatenationValue) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
 	processed := make(map[string]interface{})
-	for _, hole := range h.holes {
-		valProc := hole.ProcessHoles(fills)
-		for k, v := range valProc {
-			processed[k] = v
+	for _, val := range c.vals {
+		if withHoles, ok := val.(WithHoles); ok {
+			valProc := withHoles.ProcessHoles(fills)
+			for k, v := range valProc {
+				processed[k] = v
+			}
 		}
 	}
 	return processed
 }
 
-func (h *holesStringValue) String() string {
-	out := h.input
-	for _, hole := range h.holes {
-		if hole.Value() != nil {
-			out = strings.Replace(out, "{"+hole.hole+"}", hole.String(), 1)
+func (c *concatenationValue) ProcessRefs(fills map[string]interface{}) {
+	for _, val := range c.vals {
+		if withRefs, ok := val.(WithRefs); ok {
+			withRefs.ProcessRefs(fills)
 		}
 	}
-	return out
 }
 
-func (h *holesStringValue) GetAliases() (aliases []string) {
-	for _, hole := range h.holes {
-		aliases = append(aliases, hole.GetAliases()...)
+func (c *concatenationValue) ReplaceRef(key string, value CompositeValue) {
+	for k, param := range c.vals {
+		if withRef, ok := param.(WithRefs); ok {
+			if withRef.IsRef(key) {
+				c.vals[k] = value
+			} else {
+				withRef.ReplaceRef(key, value)
+			}
+		}
+	}
+}
+
+func (c *concatenationValue) IsRef(key string) bool {
+	return false
+}
+
+func (c *concatenationValue) String() string {
+	if len(c.GetHoles())+len(c.GetRefs())+len(c.GetAliases()) == 0 {
+		return quoteStringIfNeeded(c.Value().(string))
+	}
+	var elems []string
+	for _, val := range c.vals {
+		str := val.String()
+		if val.Value() != nil && !isQuoted(str) {
+			elems = append(elems, quoteString(str))
+			continue
+		}
+		elems = append(elems, str)
+	}
+	return strings.Join(elems, "+")
+}
+
+func (c *concatenationValue) GetAliases() (res []string) {
+	for _, val := range c.vals {
+		if alias, ok := val.(WithAlias); ok {
+			res = append(res, alias.GetAliases()...)
+		}
 	}
 	return
 }
 
-func (h *holesStringValue) ResolveAlias(resolvFunc func(string) (string, bool)) {
-	for _, hole := range h.holes {
-		hole.ResolveAlias(resolvFunc)
+func (c *concatenationValue) ResolveAlias(resolvFunc func(string) (string, bool)) {
+	for _, val := range c.vals {
+		if alias, ok := val.(WithAlias); ok {
+			alias.ResolveAlias(resolvFunc)
+		}
 	}
 }
 
-func (h *holesStringValue) Clone() CompositeValue {
-	clone := &holesStringValue{input: h.input}
-	for _, hole := range h.holes {
-		clone.holes = append(clone.holes, hole.Clone().(*holeValue))
+func (c *concatenationValue) Clone() CompositeValue {
+	clone := &concatenationValue{}
+	for _, val := range c.vals {
+		clone.vals = append(clone.vals, val.Clone())
 	}
 	return clone
 }

@@ -45,7 +45,7 @@ fi
 ssh_success_keyword = $SUCCESS_KEYWORD
 vpcname = vpc-integ-test-{date}
 testvpc = create vpc cidr={vpc-cidr} name=\$vpcname
-testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc name=subnet-integ-test-{date}
+testsubnet = create subnet cidr={sub-cidr} vpc=\$testvpc name="subnet-integ-test-" + {date}
 gateway = create internetgateway
 attach internetgateway id=\$gateway vpc=\$testvpc
 update subnet id=\$testsubnet public=true

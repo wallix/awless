@@ -33,16 +33,16 @@ ListValue <- {  p.addFirstValueInList() } '[' (WhiteSpacing Value WhiteSpacing)?
 ListWithoutSquareBrackets <- {  p.addFirstValueInList() } (WhiteSpacing Value WhiteSpacing)
                         (',' WhiteSpacing Value WhiteSpacing )+ {  p.lastValueInList() }
 
-NoRefValue <- HoleWithSuffixValue {  p.addHolesStringParam(text) }
-        / HoleValue {  p.addParamHoleValue(text) }
-        / HolesStringValue {  p.addHolesStringParam(text) }
+NoRefValue <- ConcatenationValue
+        / HoleWithSuffixValue
+        / HoleValue
+        / HolesStringValue
         / AliasValue {  p.addAliasParam(text) }
         / DoubleQuote CustomTypedValue DoubleQuote
         / SingleQuote CustomTypedValue SingleQuote
         / CustomTypedValue
-        / DoubleQuote <DoubleQuotedValue> { p.addStringValue(text) } DoubleQuote
-        / SingleQuote <SingleQuotedValue> { p.addStringValue(text) } SingleQuote
-        / <OtherParamValue> { p.addParamValue(text) }
+        / QuotedStringValue
+        / UnquotedParamValue
 
 Value <- RefValue {  p.addParamRefValue(text) }
       / NoRefValue
@@ -51,20 +51,28 @@ CustomTypedValue <- <CidrValue> { p.addParamCidrValue(text) }
         / <IpValue> { p.addParamIpValue(text) }
         / <IntRangeValue> { p.addParamValue(text) }
 
-OtherParamValue <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
+UnquotedParamValue <- <UnquotedParam> { p.addParamValue(text) }
+UnquotedParam <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
 
-DoubleQuotedValue <- [^"]*
-SingleQuotedValue <- [^']*
+ConcatenationValue <- { p.addFirstValueInConcatenation() } HoleValue ( WhiteSpacing '+' WhiteSpacing (QuotedStringValue / HoleValue))+ {  p.lastValueInConcatenation() }
+        / { p.addFirstValueInConcatenation() } QuotedStringValue ( WhiteSpacing '+' WhiteSpacing (QuotedStringValue / HoleValue))+ {  p.lastValueInConcatenation() }
+
+QuotedStringValue <- QuotedString { p.addStringValue(text) }
+QuotedString <- DoubleQuotedValue / SingleQuotedValue
+
+DoubleQuotedValue <- DoubleQuote <[^"]*> DoubleQuote
+SingleQuotedValue <- SingleQuote <[^']*> SingleQuote
 
 CidrValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'/'[0-9]+
 IpValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+
 IntRangeValue <- [0-9]+'-'[0-9]+
 
 RefValue <- '$'<Identifier>
-AliasValue <- '@'<OtherParamValue> / '@' DoubleQuote <DoubleQuotedValue> DoubleQuote / '@' SingleQuote <SingleQuotedValue> SingleQuote 
-HoleValue <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
-HolesStringValue <- <(OtherParamValue? HoleValue OtherParamValue?)+>
-HoleWithSuffixValue <- <HoleValue OtherParamValue+ (OtherParamValue? HoleValue OtherParamValue?)*>
+AliasValue <- '@'<UnquotedParam> / '@' DoubleQuotedValue / '@' SingleQuotedValue
+HoleValue <- Hole {  p.addParamHoleValue(text) }
+Hole <- '{'WhiteSpacing<Identifier>WhiteSpacing'}'
+HolesStringValue <- { p.addFirstValueInConcatenation() } <(UnquotedParamValue? HoleValue UnquotedParamValue?)+> {  p.lastValueInConcatenation() }
+HoleWithSuffixValue <- { p.addFirstValueInConcatenation() } <HoleValue UnquotedParamValue+ (UnquotedParamValue? HoleValue UnquotedParamValue?)*> {  p.lastValueInConcatenation() }
 
 Comment <- '#'(!EndOfLine .)* / '//'(!EndOfLine .)*
 

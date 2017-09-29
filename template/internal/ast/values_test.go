@@ -16,6 +16,7 @@ func TestCompositeValues(t *testing.T) {
 		expValue     interface{}
 	}{
 		{val: &interfaceValue{val: "test"}, expValue: "test"},
+		{val: &interfaceValue{val: "test with spe${cial ch'ars"}, expValue: "test with spe${cial ch'ars"},
 		{val: &interfaceValue{val: 10}, expValue: 10},
 		{val: &holeValue{hole: "myhole"}, expHoles: []string{"myhole"}},
 		{val: &referenceValue{ref: "myref"}, expRefs: []string{"myref"}},
@@ -48,20 +49,32 @@ func TestCompositeValues(t *testing.T) {
 			expValue:     []interface{}{"test", 10, "my-value", "refvalue"},
 		},
 		{
-			val: &holesStringValue{
-				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2"}, {hole: "hole3"}},
-				input: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
 			},
 			expHoles: []string{"hole1", "hole2", "hole3"},
-			expValue: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			expValue: "prefix-middle1--middle2-suffix",
 		},
 		{
-			val: &holesStringValue{
-				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2.name"}, {hole: "hole3"}},
-				input: "prefix-{hole1}middle1-{hole2.name}-middle2-{hole3}suffix",
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2.name"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
 			},
 			holesFillers: map[string]interface{}{"hole1": "value1", "hole2.name": 2, "hole3": "value3"},
 			expValue:     "prefix-value1middle1-2-middle2-value3suffix",
+		},
+		{
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
+			},
+			expHoles: []string{"instance.name", "version"},
+			expValue: "ins$\\ta{nce}-",
+		},
+		{
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
+			},
+			holesFillers: map[string]interface{}{"instance.name": "toto", "version": 2},
+			expValue:     "ins$\\ta{nce}-toto2",
 		},
 	}
 
@@ -137,14 +150,37 @@ func TestCompositeValuesStringer(t *testing.T) {
 			expect: "[test,10,{myhole},$myref,@myalias]",
 		},
 		{
-			val: &holesStringValue{
-				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2"}, {hole: "hole3"}},
-				input: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
 			},
-			expect: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			expect: "'prefix-'+{hole1}+'middle1-'+{hole2}+'-middle2-'+{hole3}+'suffix'",
 		},
 		{val: &holeValue{val: []interface{}{"val1", "val2"}}, expect: "[val1,val2]"},
 		{val: &referenceValue{val: []interface{}{"val1", 12}}, expect: "[val1,12]"},
+		{
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
+			},
+			expect: "'ins$\\ta{nce}-'+{instance.name}+{version}",
+		},
+		{
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name", val: "toto"}, &holeValue{hole: "version"}},
+			},
+			expect: "'ins$\\ta{nce}-'+'toto'+{version}",
+		},
+		{
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name", val: "toto"}, &holeValue{hole: "version", val: 2}},
+			},
+			expect: "'ins$\\ta{nce}-toto2'",
+		},
+		{
+			val: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "instance-"}, &holeValue{hole: "instance.name", val: "toto"}, &holeValue{hole: "version", val: 2}},
+			},
+			expect: "instance-toto2",
+		},
 	}
 
 	for i, tcase := range tcases {
@@ -181,12 +217,11 @@ func TestCloneValues(t *testing.T) {
 			mutationFn: func(v CompositeValue) { v.(*listValue).ProcessHoles(map[string]interface{}{"myhole": "myvalue"}) },
 		},
 		{
-			from: &holesStringValue{
-				holes: []*holeValue{{hole: "hole1"}, {hole: "hole2"}, {hole: "hole3"}},
-				input: "prefix-{hole1}middle1-{hole2}-middle2-{hole3}suffix",
+			from: &concatenationValue{
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
 			},
 			mutationFn: func(v CompositeValue) {
-				v.(*holesStringValue).ProcessHoles(map[string]interface{}{"hole1": "myvalue"})
+				v.(*concatenationValue).ProcessHoles(map[string]interface{}{"hole1": "myvalue"})
 			},
 		},
 	}

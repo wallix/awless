@@ -85,6 +85,18 @@ create instance count=42 image=ami-1234 name=my-test-sub-2345 subnet=sub1234 typ
 		},
 		{
 			tpl: `
+name = "ins$\ta{nce}-"+{instance.name}+{version}
+name2 = {hole}+{hole}+"text-with $Special {char-s"
+create instance image=ami-1234 name=$name subnet=subnet-{version}
+create instance image=ami-1234 name=$name2 subnet=sub1234
+`,
+			expect: `create instance count=42 image=ami-1234 name='ins$\ta{nce}-myinstance10' subnet=subnet-10 type=t2.micro
+create instance count=42 image=ami-1234 name='sub-2345sub-2345text-with $Special {char-s' subnet=sub1234 type=t2.micro`,
+			expProcessedFillers:  map[string]interface{}{"instance.name": "myinstance", "version": 10, "instance.type": "t2.micro", "instance.count": 42, "hole": "@sub"},
+			expResolvedVariables: map[string]interface{}{"name": "ins$\\ta{nce}-myinstance10", "name2": "sub-2345sub-2345text-with $Special {char-s"},
+		},
+		{
+			tpl: `
 create loadbalancer name=mylb subnets={private.subnets}
 `,
 			expect:               `create loadbalancer name=mylb subnets=[sub-1234,sub-2345]`,

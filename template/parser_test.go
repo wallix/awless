@@ -67,10 +67,13 @@ func TestParseVariousTemplatesCorrectly(t *testing.T) {
 		{"support wildcard in quote", "create policy action=\"ec2:Get*\"", "create policy action=ec2:Get*"},
 		{"support single wildcard", "create policy resource=*", ""},
 		{"support parameter value beginning with number", "create keypair name=123test", ""},
-		{"support prefix/suffixes around holes (values)", "name = prefix-{instance.name}-{instance.version}-suffix", ""},
-		{"support prefix/suffixes around holes (params)", "instance = create instance name=prefix-{instance.name}-{instance.version}-suffix", ""},
-		{"support suffix after holes", "instance = create instance name={instance.name}-suffix", ""},
+		{"support prefix/suffixes around holes (values)", "name = prefix-{instance.name}-{instance.version}-suffix", "name = 'prefix-'+{instance.name}+'-'+{instance.version}+'-suffix'"},
+		{"support prefix/suffixes around holes (params)", "instance = create instance name=prefix-{instance.name}-{instance.version}-suffix", "instance = create instance name='prefix-'+{instance.name}+'-'+{instance.version}+'-suffix'"},
+		{"support suffix after holes", "instance = create instance name={instance.name}-suffix", "instance = create instance name={instance.name}+'-suffix'"},
 		{"retro-compatibility with old lists without []", "create loadbalancer subnets=subnet-1,subnet-2", "create loadbalancer subnets=[subnet-1,subnet-2]"},
+		{"support concatenation with '+' of quoted string and holes", "instance = create instance name='prefix-'+{instance.name}+{instance.version}+'-suffix'", ""},
+		{"support concatenation with '+' of quoted string and holes", "instance = create instance name='pre${}fix-' + {instance.name}+'middle-' +{instance.version}+ '-suffix'", "instance = create instance name='pre${}fix-'+{instance.name}+'middle-'+{instance.version}+'-suffix'"},
+		{"support concatenation with '+' of quoted string and holes with a hole as prefix", "instance = create instance name={instance.name}+'midl${}fix-'+'midle2${}fix-'+{instance.version}+'-suffix'", ""},
 	}
 
 	for _, tcase := range tcases {

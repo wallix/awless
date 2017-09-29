@@ -4,6 +4,7 @@
 
 - Complete flow to enable MFA for a user, including QRCode generation
 - [#143](https://github.com/wallix/awless/issues/143): Follow CloudFormation stack events: `awless tail stack-events my-stack-name --follow`. Thanks to @Trane9991.
+- Support concatenation between `{holes}` and `"quoted strings"` in template with `+` operator: `policy = create policy ... resource="arn:aws:iam::" + {account.id} + ":mfa/${aws:username}"`
 
 ### AWS Services
 

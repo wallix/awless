@@ -21,6 +21,7 @@ type statementBuilder struct {
 	currentKey            string
 	currentValue          CompositeValue
 	listBuilder           *listValueBuilder
+	concatenationBuilder  *concatenationValueBuilder
 }
 
 func (b *statementBuilder) build() *Statement {
@@ -51,7 +52,10 @@ func (b *statementBuilder) addParamKey(key string) *statementBuilder {
 
 func (b *statementBuilder) addParamValue(val CompositeValue) *statementBuilder {
 	b.currentValue = val
-	if b.listBuilder != nil {
+	if b.concatenationBuilder != nil {
+		b.concatenationBuilder.add(b.currentValue)
+		b.currentValue = nil
+	} else if b.listBuilder != nil {
 		b.listBuilder.add(b.currentValue)
 		b.currentValue = nil
 	} else {
@@ -140,6 +144,18 @@ func (a *AST) lastValueInList() {
 	a.stmtBuilder.buildList()
 }
 
+func (a *AST) addFirstValueInConcatenation() {
+	a.stmtBuilder.concatenationBuilder = &concatenationValueBuilder{}
+}
+
+func (a *AST) lastValueInConcatenation() {
+	if a.stmtBuilder.concatenationBuilder != nil {
+		concat := a.stmtBuilder.concatenationBuilder.build()
+		a.stmtBuilder.concatenationBuilder = nil
+		a.stmtBuilder.addParamValue(concat)
+	}
+}
+
 func (a *AST) addStringValue(text string) {
 	a.stmtBuilder.addParamValue(&interfaceValue{val: text})
 }
@@ -186,14 +202,6 @@ func (a *AST) addParamHoleValue(text string) {
 
 var holeRegex = regexp.MustCompile("{([a-zA-Z0-9-_.]+)}")
 
-func (a *AST) addHolesStringParam(text string) {
-	var holes []*holeValue
-	for _, match := range holeRegex.FindAllStringSubmatch(text, -1) {
-		holes = append(holes, &holeValue{hole: match[1]})
-	}
-	a.stmtBuilder.addParamValue(&holesStringValue{holes: holes, input: text})
-}
-
 func (a *AST) addAliasParam(text string) {
 	a.stmtBuilder.addParamValue(&aliasValue{alias: text})
 }
@@ -209,4 +217,17 @@ func (c *listValueBuilder) add(v CompositeValue) *listValueBuilder {
 
 func (c *listValueBuilder) build() CompositeValue {
 	return &listValue{c.vals}
+}
+
+type concatenationValueBuilder struct {
+	vals []CompositeValue
+}
+
+func (c *concatenationValueBuilder) add(v CompositeValue) *concatenationValueBuilder {
+	c.vals = append(c.vals, v)
+	return c
+}
+
+func (c *concatenationValueBuilder) build() CompositeValue {
+	return &concatenationValue{c.vals}
 }

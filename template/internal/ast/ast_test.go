@@ -52,3 +52,27 @@ func TestCloneAST(t *testing.T) {
 		t.Fatalf("\ngot %s\n\nwant %s", got, want)
 	}
 }
+
+func TestIsQuoted(t *testing.T) {
+	tcases := []struct {
+		in  string
+		out bool
+	}{
+		{"", false},
+		{"'", false},
+		{"\"", false},
+		{"''", true},
+		{"\"\"", true},
+		{"\"'", false},
+		{"'\"", false},
+		{"'test\"", false},
+		{"\"test'", false},
+		{"\"test\"", true},
+		{"'test'", true},
+	}
+	for i, tcase := range tcases {
+		if got, want := isQuoted(tcase.in), tcase.out; got != want {
+			t.Fatalf("%d: got %t, want %t", i+1, got, want)
+		}
+	}
+}
