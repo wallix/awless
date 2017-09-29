@@ -542,7 +542,23 @@ func TestTemplateParsing(t *testing.T) {
 					if err := assertAliases(n, map[string][]string{"subnet": {"default-subnet"}}); err != nil {
 						return err
 					}
-
+					return nil
+				},
+			},
+			{
+				input: `create policy name=policyName effect=Allow action=[ec2:Describe*,autoscaling:Describe*,elasticloadbalancing:Describe*] resource=["arn:aws:iam::0123456789:mfa/${aws:username}", "arn:aws:iam::0123456789:user/${aws:username}"] conditions=["aws:MultiFactorAuthPresent==true", "aws:TokenIssueTime!=Null"]`,
+				verifyFn: func(n ast.Node) error {
+					if err := assertCmdNodeParams(n, map[string]interface{}{
+						"name":       "policyName",
+						"effect":     "Allow",
+						"action":     []interface{}{"ec2:Describe*", "autoscaling:Describe*", "elasticloadbalancing:Describe*"},
+						"resource":   []interface{}{"arn:aws:iam::0123456789:mfa/${aws:username}", "arn:aws:iam::0123456789:user/${aws:username}"},
+						"conditions": []interface{}{"aws:MultiFactorAuthPresent==true", "aws:TokenIssueTime!=Null"}}); err != nil {
+						return err
+					}
+					if err := assertHoles(n, map[string][]string{}); err != nil {
+						return err
+					}
 					return nil
 				},
 			},

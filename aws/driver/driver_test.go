@@ -175,7 +175,10 @@ func TestDriver(t *testing.T) {
     "autoscaling:Describe*",
     "elasticloadbalancing:Describe*"
    ],
-   "Resource": "*",
+   "Resource": [
+    "arn:aws:iam::0123456789:mfa/${aws:username}",
+    "arn:aws:iam::0123456789:user/${aws:username}"
+   ],
    "Condition": {
     "Bool": {
      "aws:MultiFactorAuthPresent": "true"
@@ -204,7 +207,7 @@ func TestDriver(t *testing.T) {
 			"name":        policyName,
 			"effect":      "Allow",
 			"action":      []interface{}{"ec2:Describe*", "autoscaling:Describe*", "elasticloadbalancing:Describe*"},
-			"resource":    "*",
+			"resource":    []interface{}{"arn:aws:iam::0123456789:mfa/${aws:username}", "arn:aws:iam::0123456789:user/${aws:username}"},
 			"conditions":  []interface{}{"aws:MultiFactorAuthPresent==true", "aws:TokenIssueTime!=Null"},
 			"description": policyDesc,
 		})
@@ -304,7 +307,9 @@ func TestDriver(t *testing.T) {
     "ec2:AttachVolume",
     "DescribeVolumeAttribute"
    ],
-   "Resource": "arn:aws:ec2:eu-west-1:0123456789:volume/*",
+   "Resource": [
+    "arn:aws:ec2:eu-west-1:0123456789:volume/*"
+   ],
    "Condition": {
     "Bool": {
      "aws:MultiFactorAuthPresent": "true"

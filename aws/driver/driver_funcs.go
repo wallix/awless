@@ -1085,13 +1085,15 @@ func (d *IamDriver) Create_Policy(ctx driver.Context, params map[string]interfac
 
 func buildStatementFromParams(params map[string]interface{}) (*policyStatement, error) {
 	effect, _ := params["effect"].(string)
-	resource, _ := params["resource"].(string)
 
-	if resource == "all" {
-		resource = "*"
+	stat := &policyStatement{Effect: strings.Title(effect)}
+	if resource, ok := params["resource"]; ok {
+		res := castStringSlice(resource)
+		if len(res) == 1 && res[0] == "all" {
+			res[0] = "*"
+		}
+		stat.Resources = res
 	}
-
-	stat := &policyStatement{Effect: strings.Title(effect), Resource: resource}
 
 	if actions, ok := params["action"]; ok {
 		stat.Actions = castStringSlice(actions)
@@ -1259,7 +1261,7 @@ type principal struct {
 type policyStatement struct {
 	Effect     string           `json:",omitempty"`
 	Actions    []string         `json:"Action,omitempty"`
-	Resource   string           `json:",omitempty"`
+	Resources  []string         `json:"Resource,omitempty"`
 	Principal  *principal       `json:",omitempty"`
 	Conditions policyConditions `json:"Condition,omitempty"`
 }
