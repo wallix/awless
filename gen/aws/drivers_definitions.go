@@ -1209,8 +1209,8 @@ var DriversDefs = []driversDef{
 				RequiredParams: []param{
 					{AwsField: "SerialNumber", TemplateName: "id", AwsType: "awsstr"},
 					{AwsField: "UserName", TemplateName: "user", AwsType: "awsstr"},
-					{AwsField: "AuthenticationCode1", TemplateName: "mfa-code-1", AwsType: "awsstr"},
-					{AwsField: "AuthenticationCode2", TemplateName: "mfa-code-2", AwsType: "awsstr"},
+					{AwsField: "AuthenticationCode1", TemplateName: "mfa-code-1", AwsType: "aws6digitsstring"},
+					{AwsField: "AuthenticationCode2", TemplateName: "mfa-code-2", AwsType: "aws6digitsstring"},
 				},
 			},
 			{

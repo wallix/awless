@@ -4791,11 +4791,11 @@ func (d *IamDriver) Attach_Mfadevice(ctx driver.Context, params map[string]inter
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["mfa-code-1"], input, "AuthenticationCode1", awsstr, ctx)
+	err = setFieldWithType(params["mfa-code-1"], input, "AuthenticationCode1", aws6digitsstring, ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = setFieldWithType(params["mfa-code-2"], input, "AuthenticationCode2", awsstr, ctx)
+	err = setFieldWithType(params["mfa-code-2"], input, "AuthenticationCode2", aws6digitsstring, ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -167,6 +167,7 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		PortMappings      []*ecs.PortMapping
 		StepAdjustments   []*applicationautoscaling.StepAdjustment
 		CSVString         *string
+		SixDigitsString   *string
 	}{Field: "initial", MapAttribute: map[string]*string{"test": aws.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -587,6 +588,20 @@ func TestSetFieldWithMultiType(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, want := *any.CSVString, "abcdef,ghijk"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType("123456", &any, "SixDigitsString", aws6digitsstring)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.SixDigitsString, "123456"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	err = setFieldWithType("2345", &any, "SixDigitsString", aws6digitsstring)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *any.SixDigitsString, "002345"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 }

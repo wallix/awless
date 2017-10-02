@@ -62,6 +62,7 @@ const (
 	awsportmappings
 	awsstepadjustments
 	awscsvstr
+	aws6digitsstring
 )
 
 var (
@@ -106,6 +107,12 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType int, interfs 
 		if err != nil {
 			return
 		}
+	case aws6digitsstring:
+		v, err = castInt(v)
+		if err != nil {
+			return
+		}
+		v = fmt.Sprintf("%06d", v)
 	case awsfloat:
 		v, err = castFloat(v)
 		if err != nil {
