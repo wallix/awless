@@ -218,7 +218,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"effect":      "The Effect element is required and specifies whether the policy will result in an allow or an explicit deny (Allow | Deny)",
 		"action":      "The Action elements describing the actions that will be allowed or denied. You specify a value using a namespace that identifies a service followed by the name of the action to allow or deny (eg. sqs:SendMessage, s3:*). Use a list for multiple actions.",
 		"resource":    "The Amazon Resource Name (ARN) of the Resource element which specifies the object or objects that the policy covers",
-		"conditions":  "List of conditions necessary for the policy to be in effect (e.g. [aws:UserAgent!=My user agent,s3:prefix~~home/,aws:CurrentTime>=2013-06-30T00:00:00Z,aws:SourceIp!=203.0.113.0/24,aws:SourceArn==arn:aws:sns:eu-west-1:*:*])",
+		"conditions":  "List of conditions necessary for the policy to be in effect (e.g. [aws:UserAgent!=My user agent,s3:prefix=~home/,aws:CurrentTime>=2013-06-30T00:00:00Z,aws:SourceIp!=203.0.113.0/24,aws:SourceArn==arn:aws:sns:eu-west-1:*:*])",
 	},
 	"createqueue": {
 		"delay":              "The length of time, in seconds, for which the delivery of all messages in the queue is delayed. Valid values: An integer from 0 to 900 seconds (15 minutes). The default is 0",
@@ -432,7 +432,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"effect":     "The Effect element is required and specifies whether the policy will result in an allow or an explicit deny (Allow | Deny)",
 		"action":     "The Action elements describing the actions that will be allowed or denied. You specify a value using a namespace that identifies a service followed by the name of the action to allow or deny (eg. sqs:SendMessage, s3:*). Use a list for multiple actions.",
 		"resource":   "The Amazon Resource Name (ARN) of the Resource element which specifies the object or objects that the policy covers",
-		"conditions": "List of conditions necessary for the policy to be in effect (e.g. [aws:UserAgent!=My user agent,s3:prefix~~home/,aws:CurrentTime>=2013-06-30T00:00:00Z,aws:SourceIp!=203.0.113.0/24,aws:SourceArn==arn:aws:sns:eu-west-1:*:*])",
+		"conditions": "List of conditions necessary for the policy to be in effect (e.g. [aws:UserAgent!=My user agent,s3:prefix=~home/,aws:CurrentTime>=2013-06-30T00:00:00Z,aws:SourceIp!=203.0.113.0/24,aws:SourceArn==arn:aws:sns:eu-west-1:*:*])",
 	},
 	"updates3object": {
 		"acl":     "The canned ACL to apply to the bucket (private | public-read | public-read-write | aws-exec-read | authenticated-read | bucket-owner-read | bucket-owner-full-control | log-delivery-write)",

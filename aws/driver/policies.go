@@ -60,7 +60,7 @@ type policyCondition struct {
 	Value string
 }
 
-var conditionRegex = regexp.MustCompile("^([a-zA-Z0-9:_\\-\\[\\]\\*]+)(==|!=|~~|!~|<=|>=|<|>)(.*)$")
+var conditionRegex = regexp.MustCompile("^([a-zA-Z0-9:_\\-\\[\\]\\*]+)(==|!=|=~|!~|<=|>=|<|>)(.*)$")
 
 func parseCondition(condition string) (*policyCondition, error) {
 	matches := conditionRegex.FindStringSubmatch(condition)
@@ -92,12 +92,12 @@ func parseCondition(condition string) (*policyCondition, error) {
 			return &policyCondition{Type: "ArnEquals", Key: key, Value: value}, nil
 		case "!=":
 			return &policyCondition{Type: "ArnNotEquals", Key: key, Value: value}, nil
-		case "~~":
+		case "=~":
 			return &policyCondition{Type: "ArnLike", Key: key, Value: value}, nil
 		case "!~":
 			return &policyCondition{Type: "ArnNotLike", Key: key, Value: value}, nil
 		default:
-			return nil, fmt.Errorf("invalid operator '%s' for arn value '%s', expected either '==', '!=', '~~' or '!~'", operator, value)
+			return nil, fmt.Errorf("invalid operator '%s' for arn value '%s', expected either '==', '!=', '=~' or '!~'", operator, value)
 		}
 	} else if _, _, cidrErr := net.ParseCIDR(value); cidrErr == nil || net.ParseIP(value) != nil {
 		switch operator {
@@ -164,12 +164,12 @@ func parseCondition(condition string) (*policyCondition, error) {
 			return &policyCondition{Type: "StringEquals", Key: key, Value: value}, nil
 		case "!=":
 			return &policyCondition{Type: "StringNotEquals", Key: key, Value: value}, nil
-		case "~~":
+		case "=~":
 			return &policyCondition{Type: "StringLike", Key: key, Value: value}, nil
 		case "!~":
 			return &policyCondition{Type: "StringNotLike", Key: key, Value: value}, nil
 		default:
-			return nil, fmt.Errorf("invalid operator '%s' for string value '%s', expected either '==', '!=', '~~' or '!~'", operator, value)
+			return nil, fmt.Errorf("invalid operator '%s' for string value '%s', expected either '==', '!=', '=~' or '!~'", operator, value)
 		}
 	}
 

@@ -538,7 +538,7 @@ func TestBuildPolicyConditions(t *testing.T) {
 	}{
 		{"aws:UserAgent==Example Corp Java Client", &policyCondition{Type: "StringEquals", Key: "aws:UserAgent", Value: "Example Corp Java Client"}},
 		{"aws:UserAgent!=Example Corp Java Client", &policyCondition{Type: "StringNotEquals", Key: "aws:UserAgent", Value: "Example Corp Java Client"}},
-		{"s3:prefix~~'home/'", &policyCondition{Type: "StringLike", Key: "s3:prefix", Value: "home/"}},
+		{"s3:prefix=~'home/'", &policyCondition{Type: "StringLike", Key: "s3:prefix", Value: "home/"}},
 		{"s3:prefix!~\"\"", &policyCondition{Type: "StringNotLike", Key: "s3:prefix", Value: ""}},
 		{"s3:prefix!~", &policyCondition{Type: "StringNotLike", Key: "s3:prefix", Value: ""}},
 		{"s3:max-keys==10", &policyCondition{Type: "NumericEquals", Key: "s3:max-keys", Value: "10"}},
@@ -561,7 +561,7 @@ func TestBuildPolicyConditions(t *testing.T) {
 		{"aws:SourceIp==2001:DB8:1234:5678::/64", &policyCondition{Type: "IpAddress", Key: "aws:SourceIp", Value: "2001:DB8:1234:5678::/64"}},
 		{"aws:SourceArn==arn:aws:sns:REGION:123456789012:TOPIC-ID", &policyCondition{Type: "ArnEquals", Key: "aws:SourceArn", Value: "arn:aws:sns:REGION:123456789012:TOPIC-ID"}},
 		{"aws:SourceArn!=arn:aws:sns:*:*:TOPIC-ID", &policyCondition{Type: "ArnNotEquals", Key: "aws:SourceArn", Value: "arn:aws:sns:*:*:TOPIC-ID"}},
-		{"aws:SourceArn~~arn:aws:sns:*:*:TOPIC-ID", &policyCondition{Type: "ArnLike", Key: "aws:SourceArn", Value: "arn:aws:sns:*:*:TOPIC-ID"}},
+		{"aws:SourceArn=~arn:aws:sns:*:*:TOPIC-ID", &policyCondition{Type: "ArnLike", Key: "aws:SourceArn", Value: "arn:aws:sns:*:*:TOPIC-ID"}},
 		{"aws:SourceArn!~arn:aws:sns:*:*:TOPIC-ID", &policyCondition{Type: "ArnNotLike", Key: "aws:SourceArn", Value: "arn:aws:sns:*:*:TOPIC-ID"}},
 		{"aws:TokenIssueTime==Null", &policyCondition{Type: "Null", Key: "aws:TokenIssueTime", Value: "true"}},
 		{"aws:TokenIssueTime!=Null", &policyCondition{Type: "Null", Key: "aws:TokenIssueTime", Value: "false"}},
