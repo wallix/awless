@@ -22,7 +22,7 @@ type fullLogPrinter struct {
 }
 
 func (p *fullLogPrinter) print(t *template.TemplateExecution) error {
-	writeSimpleLogHeader(t, p.w)
+	writeMultilineLogHeader(t, p.w)
 
 	for _, cmd := range t.CommandNodesIterator() {
 		var status string
@@ -51,7 +51,7 @@ type statLogPrinter struct {
 }
 
 func (p *statLogPrinter) print(t *template.TemplateExecution) error {
-	writeRichLogHeader(t, p.w)
+	writeLogHeader(t, p.w)
 
 	fmt.Fprintln(p.w)
 
@@ -68,7 +68,7 @@ type shortLogPrinter struct {
 }
 
 func (p *shortLogPrinter) print(t *template.TemplateExecution) error {
-	writeRichLogHeader(t, p.w)
+	writeLogHeader(t, p.w)
 	return nil
 }
 
@@ -122,7 +122,7 @@ func (p *idOnlyPrinter) print(t *template.TemplateExecution) error {
 	return nil
 }
 
-func writeRichLogHeader(t *template.TemplateExecution, w io.Writer) {
+func writeLogHeader(t *template.TemplateExecution, w io.Writer) {
 	stats := t.Stats()
 
 	fmt.Fprint(w, renderYellowFn(t.ID))
@@ -156,19 +156,23 @@ func writeRichLogHeader(t *template.TemplateExecution, w io.Writer) {
 	}
 }
 
-func writeSimpleLogHeader(t *template.TemplateExecution, w io.Writer) {
-	fmt.Fprintf(w, "ID: %s\tDate: %s", renderYellowFn(t.ID), t.Date().Format(time.Stamp))
-	if t.Author != "" {
-		fmt.Fprintf(w, "\tAuthor: %s", t.Author)
+func writeMultilineLogHeader(t *template.TemplateExecution, w io.Writer) {
+	color.New(color.FgYellow).Fprintf(w, "id %s", t.ID)
+	if !template.IsRevertible(t.Template) {
+		fmt.Fprintln(w, " (not revertible)")
+	} else {
+		fmt.Fprintln(w)
 	}
-	if t.Locale != "" {
-		fmt.Fprintf(w, "\tRegion: %s", t.Locale)
+
+	fmt.Fprintf(w, "Date: %s\n", t.Date().Format(time.RFC1123Z))
+	if t.Author != "" {
+		fmt.Fprintf(w, "Author: %s\n", t.Author)
 	}
 	if t.Profile != "" {
-		fmt.Fprintf(w, "\tProfile: %s", t.Profile)
+		fmt.Fprintf(w, "Profile: %s\n", t.Profile)
 	}
-	if !template.IsRevertible(t.Template) {
-		fmt.Fprintf(w, " (not revertible)")
+	if t.Locale != "" {
+		fmt.Fprintf(w, "Region: %s\n", t.Locale)
 	}
 	fmt.Fprintln(w)
 }
