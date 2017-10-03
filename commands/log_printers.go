@@ -24,6 +24,10 @@ type fullLogPrinter struct {
 func (p *fullLogPrinter) print(t *template.TemplateExecution) error {
 	writeMultilineLogHeader(t, p.w)
 
+	if t.Message != "" {
+		fmt.Fprintf(p.w, "\t%s\n\n", t.Message)
+	}
+
 	for _, cmd := range t.CommandNodesIterator() {
 		var status string
 		if cmd.CmdErr != nil {
@@ -53,13 +57,10 @@ type statLogPrinter struct {
 func (p *statLogPrinter) print(t *template.TemplateExecution) error {
 	writeLogHeader(t, p.w)
 
-	fmt.Fprintln(p.w)
-
-	if stats := t.Stats(); stats.CmdCount > 1 {
-		for _, line := range alignActionEntityCount(stats.ActionEntityCount) {
-			fmt.Fprintf(p.w, "\t%s\n", line)
-		}
+	if t.Message != "" {
+		fmt.Fprintf(p.w, "\n\t%s\n", t.Message)
 	}
+
 	return nil
 }
 
@@ -130,14 +131,6 @@ func writeLogHeader(t *template.TemplateExecution, w io.Writer) {
 		color.New(color.FgGreen).Fprint(w, " OK")
 	} else {
 		color.New(color.FgRed).Fprint(w, " KO")
-	}
-
-	fmt.Fprint(w, " - ")
-
-	if total := stats.CmdCount; total == 1 {
-		fmt.Fprint(w, stats.Oneliner)
-	} else {
-		fmt.Fprintf(w, "%d commands", total)
 	}
 
 	fmt.Fprintf(w, " (%s ago)", console.HumanizeTime(t.Date()))

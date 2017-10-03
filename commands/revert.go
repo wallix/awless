@@ -18,6 +18,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/config"
@@ -42,17 +43,17 @@ var revertCmd = &cobra.Command{
 			return errors.New("REVERTID required (see `awless log` to list revert ids)")
 		}
 
-		revertId := args[0]
+		revertID := args[0]
 
 		var loaded *template.TemplateExecution
 		exitOn(database.Execute(func(db *database.DB) (terr error) {
-			loaded, terr = db.GetTemplate(revertId)
+			loaded, terr = db.GetTemplate(revertID)
 			return
 		}))
 
 		if loc := loaded.Locale; loc != "" && loc != config.GetAWSRegion() {
 			logger.Errorf("This template was originally run in region %s. You are currently in region %s", loc, config.GetAWSRegion())
-			logger.Infof("You can revert it using the region flag: `awless revert %s -r %s -p %s`", revertId, loc, loaded.Profile)
+			logger.Infof("You can revert it using the region flag: `awless revert %s -r %s -p %s`", revertID, loc, loaded.Profile)
 			exitOn(errors.New("region mismatched"))
 		}
 
@@ -65,6 +66,8 @@ var revertCmd = &cobra.Command{
 			Profile:  config.GetAWSProfile(),
 			Source:   reverted.String(),
 		}
+		tplExec.SetMessage(fmt.Sprintf("Revert: %s", loaded.Message))
+
 		exitOn(runTemplate(tplExec))
 
 		return nil

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -14,18 +15,37 @@ import (
 // without altering the template.Template model
 type TemplateExecution struct {
 	*Template
-	Author, Source, Locale, Profile string
-	Fillers                         map[string]interface{}
+	Author, Source, Locale string
+	Profile, Path, Message string
+	Fillers                map[string]interface{}
 }
 
-// The ID of a template is stored as an ULID therefore the ID
-// capture the date and template IDs are sortable lexicagraphically
+// Date extract the date from the ulid template identifier
 func (t *TemplateExecution) Date() time.Time {
 	parsed, err := ulid.Parse(t.ID)
 	if err != nil {
 		panic(err)
 	}
 	return time.Unix(int64(parsed.Time())/int64(1000), time.Nanosecond.Nanoseconds())
+}
+
+func (t *TemplateExecution) IsOneLiner() bool {
+	var count int
+	for range t.CommandNodesIterator() {
+		count++
+	}
+	return count == 1
+}
+
+const maxMsgLen = 140
+
+// SetMessage set the value of Message, truncating it if exceeds max len
+func (t *TemplateExecution) SetMessage(s string) {
+	out := strings.TrimSpace(s)
+	if len(out) > maxMsgLen {
+		out = out[:maxMsgLen-3] + "..."
+	}
+	t.Message = out
 }
 
 func (t *TemplateExecution) MarshalJSON() ([]byte, error) {
@@ -35,6 +55,8 @@ func (t *TemplateExecution) MarshalJSON() ([]byte, error) {
 	out.Source = t.Source
 	out.Locale = t.Locale
 	out.Profile = t.Profile
+	out.Message = t.Message
+	out.Path = t.Path
 	out.Fillers = t.Fillers
 	if out.Fillers == nil {
 		out.Fillers = make(map[string]interface{}, 0) // friendlier for json, avoiding "fillers": null,
@@ -76,6 +98,8 @@ func (t *TemplateExecution) UnmarshalJSON(b []byte) error {
 	t.Source = v.Source
 	t.Locale = v.Locale
 	t.Profile = v.Profile
+	t.Message = v.Message
+	t.Path = v.Path
 	t.Author = v.Author
 	t.Fillers = v.Fillers
 
@@ -141,6 +165,8 @@ type toJSON struct {
 	Source   string                 `json:"source"`
 	Locale   string                 `json:"locale"`
 	Profile  string                 `json:"profile,omitempty"`
+	Message  string                 `json:"message,omitempty"`
+	Path     string                 `json:"path,omitempty"`
 	Fillers  map[string]interface{} `json:"fillers"`
 	Commands []command              `json:"commands"`
 }

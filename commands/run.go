@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -48,15 +49,19 @@ import (
 	"github.com/wallix/awless/template/driver"
 )
 
-var scheduleRunInFlag string
-var scheduleRevertInFlag string
-var listRemoteTemplatesFlag bool
+var (
+	scheduleRunInFlag       string
+	scheduleRevertInFlag    string
+	runLogMessage           string
+	listRemoteTemplatesFlag bool
+)
 
 func init() {
 	RootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolVar(&listRemoteTemplatesFlag, "list", false, "List templates available at https://github.com/wallix/awless-templates")
 	runCmd.Flags().StringVar(&scheduleRunInFlag, "run-in", "", "Postpone the execution of this template")
 	runCmd.Flags().StringVar(&scheduleRevertInFlag, "revert-in", "", "Schedule the revertion of this template")
+	runCmd.Flags().StringVarP(&runLogMessage, "message", "m", "", "Add a message for this template execution to be persisted in your logs")
 
 	var actions []string
 	for a := range awsdriver.DriverSupportedActions() {
@@ -74,6 +79,8 @@ func init() {
 	}
 }
 
+const maxMsgLen = 140
+
 var runCmd = &cobra.Command{
 	Use:               "run PATH",
 	Short:             "Run a template given a filepath or URL",
@@ -90,7 +97,11 @@ var runCmd = &cobra.Command{
 			return errors.New("missing PATH arg (filepath or url)")
 		}
 
-		content, err := getTemplateText(args[0])
+		if len(runLogMessage) > maxMsgLen {
+			exitOn(fmt.Errorf("message to be persisted should not exceed %d characters", maxMsgLen))
+		}
+
+		content, fullPath, err := getTemplateText(args[0])
 		exitOn(err)
 
 		logger.Verbosef("Loaded template text:\n\n%s\n", removeComments(content))
@@ -103,6 +114,8 @@ var runCmd = &cobra.Command{
 
 		tplExec := &template.TemplateExecution{
 			Template: templ,
+			Path:     fullPath,
+			Message:  strings.TrimSpace(runLogMessage),
 			Locale:   config.GetAWSRegion(),
 			Profile:  config.GetAWSProfile(),
 			Source:   templ.String(),
@@ -262,6 +275,19 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 		}
 
 		newDefaultTemplatePrinter(os.Stdout).print(tplExec)
+
+		if tplExec.Message == "" {
+			if tplExec.IsOneLiner() {
+				tplExec.SetMessage(fmt.Sprintf("Run %s", tplExec.Template))
+			} else if path := tplExec.Path; path != "" {
+				stats := tplExec.Stats()
+				if stats.KOCount > 0 {
+					tplExec.SetMessage(fmt.Sprintf("Run %d/%d commands from %s", stats.OKCount, stats.CmdCount, path))
+				} else {
+					tplExec.SetMessage(fmt.Sprintf("Run %d commands from %s", stats.OKCount, path))
+				}
+			}
+		}
 
 		if err = database.Execute(func(db *database.DB) error {
 			return db.AddTemplate(tplExec)
@@ -491,32 +517,45 @@ type templateMetadata struct {
 	Tags                        []string
 }
 
-func getTemplateText(path string) (content []byte, err error) {
+func getTemplateText(path string) (content []byte, expanded string, err error) {
 	if strings.HasPrefix(path, "repo:") {
 		path = fmt.Sprintf("%s/%s", DEFAULT_REPO_PREFIX, strings.TrimPrefix(path[5:], "/"))
 		path = fmt.Sprintf("%s%s", strings.TrimSuffix(path, FILE_EXT), FILE_EXT)
 	}
 
+	expanded = path
+
 	if strings.HasPrefix(path, "http") {
 		logger.ExtraVerbosef("fetching remote template at '%s'", path)
 		content, err = readHttpContent(path)
 	} else {
-		content, err = ioutil.ReadFile(path)
+		f, ferr := os.Open(path)
+		if ferr != nil {
+			return nil, "", ferr
+		}
+		defer f.Close()
+
+		var perr error
+		expanded, perr = filepath.Abs(f.Name())
+		if perr != nil {
+			expanded = path
+		}
+		content, err = ioutil.ReadAll(f)
 	}
 
 	if err != nil {
-		return nil, err
+		return content, expanded, err
 	}
 
 	requiredVersion, ok := detectMinimalVersionInTemplate(content)
 	if ok {
 		comp, _ := config.CompareSemver(requiredVersion, config.Version)
 		if comp > 0 {
-			return content, fmt.Errorf("This template has metadata indicating to be parsed with at least awless version %s. Your current version is %s", requiredVersion, config.Version)
+			return content, expanded, fmt.Errorf("This template has metadata indicating to be parsed with at least awless version %s. Your current version is %s", requiredVersion, config.Version)
 		}
 	}
 
-	return content, nil
+	return content, expanded, nil
 }
 
 func removeComments(b []byte) []byte {
