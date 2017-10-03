@@ -238,6 +238,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"comment": "Any comments you want to include about a change batch request",
 	},
 	"createrole": {
+		"conditions":        "List of conditions necessary for the policy to be in effect (e.g. [aws:UserAgent!=My user agent,s3:prefix=~home/,aws:CurrentTime>=2013-06-30T00:00:00Z,aws:SourceIp!=203.0.113.0/24,aws:SourceArn==arn:aws:sns:eu-west-1:*:*])",
 		"name":              "The name of the role to create",
 		"principal-account": "The ID of the account that can perform actions and access resources of the role (you can know your account ID with `awless whoami`)",
 		"principal-user":    "The Amazon Resource Name (ARN) of the user that can perform actions and access resources of the role",

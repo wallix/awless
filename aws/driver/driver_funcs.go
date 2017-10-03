@@ -1284,10 +1284,22 @@ func (d *IamDriver) Create_Role(ctx driver.Context, params map[string]interface{
 	} else if pService != nil {
 		princ.Service = fmt.Sprint(pService)
 	}
+	statementParams := map[string]interface{}{
+		"action": "sts:AssumeRole",
+		"effect": "Allow",
+	}
+	if cond, ok := params["conditions"]; ok {
+		statementParams["conditions"] = cond
+	}
 
+	stat, err := buildStatementFromParams(statementParams)
+	if err != nil {
+		return nil, err
+	}
+	stat.Principal = princ
 	trust := &policyBody{
 		Version:   "2012-10-17",
-		Statement: []*policyStatement{{Effect: "Allow", Actions: []string{"sts:AssumeRole"}, Principal: princ}},
+		Statement: []*policyStatement{stat},
 	}
 
 	b, err := json.MarshalIndent(trust, "", " ")

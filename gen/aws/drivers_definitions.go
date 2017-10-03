@@ -1100,6 +1100,7 @@ var DriversDefs = []driversDef{
 					{TemplateName: "principal-account"},
 					{TemplateName: "principal-user"},
 					{TemplateName: "principal-service"},
+					{TemplateName: "conditions"},
 					{TemplateName: "sleep-after"},
 				},
 			},

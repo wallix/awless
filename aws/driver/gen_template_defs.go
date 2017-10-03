@@ -913,7 +913,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "role",
 		Api:            "iam",
 		RequiredParams: []string{"name"},
-		ExtraParams:    []string{"principal-account", "principal-service", "principal-user", "sleep-after"},
+		ExtraParams:    []string{"conditions", "principal-account", "principal-service", "principal-user", "sleep-after"},
 	},
 	"deleterole": {
 		Action:         "delete",

@@ -419,7 +419,113 @@ func TestDriver(t *testing.T) {
 				t.Fatalf("%d: got %s, want %s", i+1, got, want)
 			}
 		}
+	})
 
+	t.Run("Create role", func(t *testing.T) {
+		awsMockIam := &mockIam{}
+		iamDriv := NewIamDriver(awsMockIam).(*IamDriver)
+		tcases := []struct {
+			inputParams                 map[string]interface{}
+			expRoleName                 string
+			expAssumeRolePolicyDocument string
+		}{
+			{
+				inputParams: map[string]interface{}{"name": "TestRole", "principal-account": "123456789"},
+				expRoleName: "TestRole",
+				expAssumeRolePolicyDocument: `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "sts:AssumeRole"
+   ],
+   "Principal": {
+    "AWS": "123456789"
+   }
+  }
+ ]
+}`,
+			},
+			{
+				inputParams: map[string]interface{}{"name": "TestRole", "principal-service": "ec2.amazonaws.com"},
+				expRoleName: "TestRole",
+				expAssumeRolePolicyDocument: `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "sts:AssumeRole"
+   ],
+   "Principal": {
+    "Service": "ec2.amazonaws.com"
+   }
+  }
+ ]
+}`,
+			},
+			{
+				inputParams: map[string]interface{}{"name": "TestRole", "principal-user": "myuser"},
+				expRoleName: "TestRole",
+				expAssumeRolePolicyDocument: `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "sts:AssumeRole"
+   ],
+   "Principal": {
+    "AWS": "myuser"
+   }
+  }
+ ]
+}`,
+			},
+			{
+				inputParams: map[string]interface{}{"name": "TestRole", "principal-account": "123456789", "conditions": []interface{}{"aws:MultiFactorAuthPresent==true"}},
+				expRoleName: "TestRole",
+				expAssumeRolePolicyDocument: `{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "sts:AssumeRole"
+   ],
+   "Principal": {
+    "AWS": "123456789"
+   },
+   "Condition": {
+    "Bool": {
+     "aws:MultiFactorAuthPresent": "true"
+    }
+   }
+  }
+ ]
+}`,
+			},
+		}
+
+		for i, tcase := range tcases {
+			awsMockIam.verifyCreateRoleInput = func(input *iam.CreateRoleInput) error {
+				if got, want := aws.StringValue(input.RoleName), tcase.expRoleName; got != want {
+					t.Fatalf("%d: got %s, want %s", i+1, got, want)
+				}
+				if got, want := aws.StringValue(input.AssumeRolePolicyDocument), tcase.expAssumeRolePolicyDocument; got != want {
+					t.Fatalf("%d: got %s, want %s", i+1, got, want)
+				}
+				return nil
+			}
+			id, err := iamDriv.Create_Role(driver.EmptyContext, tcase.inputParams)
+			if err != nil {
+				t.Fatalf("%d: %s", i+1, err)
+			}
+			if got, want := id.(string), "mynewrole"; got != want {
+				t.Fatalf("%d:got %s, want %s", i+1, got, want)
+			}
+		}
 	})
 }
 
@@ -582,6 +688,7 @@ type mockIam struct {
 	policyVersions                 []*iam.PolicyVersion
 	verifyCreatePolicyInput        func(*iam.CreatePolicyInput) error
 	verifyCreatePolicyVersionInput func(*iam.CreatePolicyVersionInput) error
+	verifyCreateRoleInput          func(*iam.CreateRoleInput) error
 }
 
 func (m *mockIam) CreatePolicy(input *iam.CreatePolicyInput) (*iam.CreatePolicyOutput, error) {
@@ -589,6 +696,13 @@ func (m *mockIam) CreatePolicy(input *iam.CreatePolicyInput) (*iam.CreatePolicyO
 		return nil, err
 	}
 	return &iam.CreatePolicyOutput{Policy: &iam.Policy{Arn: aws.String("mynewpolicy")}}, nil
+}
+
+func (m *mockIam) CreateRole(input *iam.CreateRoleInput) (*iam.CreateRoleOutput, error) {
+	if err := m.verifyCreateRoleInput(input); err != nil {
+		return nil, err
+	}
+	return &iam.CreateRoleOutput{Role: &iam.Role{Arn: aws.String("mynewrole")}}, nil
 }
 
 func (m *mockIam) CreatePolicyVersion(input *iam.CreatePolicyVersionInput) (*iam.CreatePolicyVersionOutput, error) {
@@ -609,6 +723,16 @@ func (m *mockIam) GetPolicyVersion(input *iam.GetPolicyVersionInput) (*iam.GetPo
 		}
 	}
 	return nil, nil
+}
+
+//Not implemented
+
+func (m *mockIam) CreateInstanceProfile(input *iam.CreateInstanceProfileInput) (*iam.CreateInstanceProfileOutput, error) {
+	return &iam.CreateInstanceProfileOutput{}, nil
+}
+
+func (m *mockIam) AddRoleToInstanceProfile(input *iam.AddRoleToInstanceProfileInput) (*iam.AddRoleToInstanceProfileOutput, error) {
+	return &iam.AddRoleToInstanceProfileOutput{}, nil
 }
 
 type mockS3 struct {
