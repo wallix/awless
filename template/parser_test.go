@@ -763,6 +763,22 @@ mysecondvar = {var-hole}
 	})
 }
 
+func TestFixedFuzzingCrashedOutputs(t *testing.T) {
+	tcases := []struct {
+		text      string
+		expectErr bool
+	}{
+		{"none none ip=1234.1234.1234.1234", true},
+	}
+
+	for i, tcase := range tcases {
+		_, err := Parse(tcase.text)
+		if got, want := err != nil, tcase.expectErr; got != want {
+			t.Fatalf("%d: expected error: got %t, want %t", i+1, got, want)
+		}
+	}
+}
+
 func assertParams(n ast.Node, expected map[string]interface{}) error {
 	compare := func(got, want map[string]interface{}) error {
 		if !reflect.DeepEqual(got, want) {

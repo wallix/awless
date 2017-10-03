@@ -160,26 +160,10 @@ func (a *AST) addStringValue(text string) {
 	a.stmtBuilder.addParamValue(&interfaceValue{val: text})
 }
 
-func (a *AST) addParamFloatValue(text string) {
-	num, err := strconv.ParseFloat(text, 64)
-	if err != nil {
-		panic(fmt.Sprintf("cannot convert '%s' to float", text))
-	}
-	a.stmtBuilder.addParamValue(&interfaceValue{val: num})
-}
-
-func (a *AST) addParamIntValue(text string) {
-	num, err := strconv.Atoi(text)
-	if err != nil {
-		panic(fmt.Sprintf("cannot convert '%s' to int", text))
-	}
-	a.stmtBuilder.addParamValue(&interfaceValue{val: num})
-}
-
 func (a *AST) addParamCidrValue(text string) {
 	_, ipnet, err := net.ParseCIDR(text)
 	if err != nil {
-		panic(fmt.Sprintf("cannot convert '%s' to net cidr", text))
+		panic(fmt.Errorf("cannot convert '%s' to net cidr", text))
 	}
 	a.stmtBuilder.addParamValue(&interfaceValue{val: ipnet.String()})
 }
@@ -187,7 +171,7 @@ func (a *AST) addParamCidrValue(text string) {
 func (a *AST) addParamIpValue(text string) {
 	ip := net.ParseIP(text)
 	if ip == nil {
-		panic(fmt.Sprintf("cannot convert '%s' to net ip", text))
+		panic(fmt.Errorf("cannot convert '%s' to net ip", text))
 	}
 	a.stmtBuilder.addParamValue(&interfaceValue{val: ip.String()})
 }

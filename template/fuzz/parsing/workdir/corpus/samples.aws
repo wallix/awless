@@ -1,0 +1,10 @@
+# comment
+cidr=10.0.0.0/16
+name=cockroachdb-vpc
+id=$gateway
+vpc=$vpc
+cidr=10.0.128.0/20
+name=@cockroachdb-pubsubnet-1
+availabilityzone={availabilityzone.1}
+subnet="cockroachdb-pubsubnet-1"
+name={hole.test}+'-pubsubnet-1'
