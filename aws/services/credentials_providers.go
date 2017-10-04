@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/wallix/awless/aws/driver"
@@ -71,6 +72,13 @@ func (f *fileCacheProvider) Retrieve() (credentials.Value, error) {
 	}
 	credValue, err := f.creds.Get()
 	if err != nil {
+		if batcherr, ok := err.(awserr.BatchedErrors); !ok || batcherr.Code() != "NoCredentialProviders" {
+			if failure, ok := err.(awserr.RequestFailure); ok {
+				f.log.Errorf("%s: %s\n", failure.Code(), failure.Message())
+			} else {
+				f.log.Errorf("%s\n", err)
+			}
+		}
 		return credValue, err
 	}
 
@@ -136,7 +144,7 @@ type credentialsPrompterProvider struct {
 
 func (c *credentialsPrompterProvider) Retrieve() (credentials.Value, error) {
 	c.retrieved = false
-	fmt.Fprintf(c.out, "Cannot resolve AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n", c.profile)
+	fmt.Fprintf(c.out, "Cannot resolve AWS credentials for profile '%s' (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)", c.profile)
 	creds := awsdriver.NewCredsPrompter(c.profile)
 	creds.ProfileSetterCallback = c.profileSetterCallback
 	if err := creds.Prompt(); err != nil {
