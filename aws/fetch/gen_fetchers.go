@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/efs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -726,6 +727,58 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		}
 
 		return resources, objects, badResErr
+	}
+
+	funcs["filesystem"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*efs.FileSystemDescription
+
+		if !conf.getBoolDefaultTrue("aws.infra.filesystem.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource infra[filesystem]")
+			return resources, objects, nil
+		}
+
+		out, err := conf.APIs.Efs.DescribeFileSystems(&efs.DescribeFileSystemsInput{})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range out.FileSystems {
+			objects = append(objects, output)
+			res, err := awsconv.NewResource(output)
+			if err != nil {
+				return resources, objects, err
+			}
+			resources = append(resources, res)
+		}
+
+		return resources, objects, nil
+	}
+
+	funcs["mounttarget"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*efs.MountTargetDescription
+
+		if !conf.getBoolDefaultTrue("aws.infra.mounttarget.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource infra[mounttarget]")
+			return resources, objects, nil
+		}
+
+		out, err := conf.APIs.Efs.DescribeMountTargets(&efs.DescribeMountTargetsInput{})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range out.MountTargets {
+			objects = append(objects, output)
+			res, err := awsconv.NewResource(output)
+			if err != nil {
+				return resources, objects, err
+			}
+			resources = append(resources, res)
+		}
+
+		return resources, objects, nil
 	}
 	return funcs
 }

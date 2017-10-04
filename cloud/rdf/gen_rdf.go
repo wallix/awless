@@ -96,6 +96,7 @@ const (
 	EngineVersion                     = "cloud:engineVersion"
 	ExitCode                          = "cloud:exitCode"
 	Failover                          = "cloud:failover"
+	FileSystem                        = "cloud:fileSystem"
 	Fingerprint                       = "cloud:fingerprint"
 	GlobalID                          = "cloud:globalID"
 	GranteeType                       = "cloud:granteeType"
@@ -118,6 +119,7 @@ const (
 	Instances                         = "cloud:instances"
 	InsufficientDataActions           = "cloud:insufficientDataActions"
 	IOPS                              = "cloud:iops"
+	IP                                = "net:IP"
 	IPType                            = "net:ipType"
 	IPv6Addresses                     = "cloud:ipv6Addresses"
 	IPv6Enabled                       = "cloud:ipv6Enabled"
@@ -144,6 +146,7 @@ const (
 	MultiAZ                           = "cloud:multiAZ"
 	Name                              = "cloud:name"
 	Namespace                         = "cloud:namemespace"
+	NetworkInterface                  = "cloud:networkInterface"
 	NetworkInterfaces                 = "cloud:networkInterfaces"
 	NewInstancesProtected             = "cloud:newInstancesProtected"
 	Notifications                     = "cloud:notifications"
@@ -159,6 +162,7 @@ const (
 	Path                              = "cloud:path"
 	PathPrefix                        = "cloud:pathPrefix"
 	PendingTasksCount                 = "cloud:pendingTasksCount"
+	PerformanceMode                   = "cloud:performanceNode"
 	PlacementGroup                    = "cloud:placementGroup"
 	Port                              = "net:port"
 	PortRange                         = "net:portRange"
@@ -207,6 +211,7 @@ const (
 	Timeout                           = "cloud:timezone"
 	Timezone                          = "cloud:timeout"
 	TLSVersionRequired                = "cloud:tlsVersionRequired"
+	Token                             = "cloud:token"
 	Topic                             = "cloud:topic"
 	TrafficPolicyInstance             = "cloud:trafficPolicyInstance"
 	TTL                               = "cloud:ttl"
@@ -304,6 +309,7 @@ var Labels = map[string]string{
 	properties.EngineVersion:                     EngineVersion,
 	properties.ExitCode:                          ExitCode,
 	properties.Failover:                          Failover,
+	properties.FileSystem:                        FileSystem,
 	properties.Fingerprint:                       Fingerprint,
 	properties.GlobalID:                          GlobalID,
 	properties.GranteeType:                       GranteeType,
@@ -326,6 +332,7 @@ var Labels = map[string]string{
 	properties.Instances:                         Instances,
 	properties.InsufficientDataActions:           InsufficientDataActions,
 	properties.IOPS:                              IOPS,
+	properties.IP:                                IP,
 	properties.IPType:                            IPType,
 	properties.IPv6Addresses:                     IPv6Addresses,
 	properties.IPv6Enabled:                       IPv6Enabled,
@@ -352,6 +359,7 @@ var Labels = map[string]string{
 	properties.MultiAZ:                           MultiAZ,
 	properties.Name:                              Name,
 	properties.Namespace:                         Namespace,
+	properties.NetworkInterface:                  NetworkInterface,
 	properties.NetworkInterfaces:                 NetworkInterfaces,
 	properties.NewInstancesProtected:             NewInstancesProtected,
 	properties.Notifications:                     Notifications,
@@ -367,6 +375,7 @@ var Labels = map[string]string{
 	properties.Path:                              Path,
 	properties.PathPrefix:                        PathPrefix,
 	properties.PendingTasksCount:                 PendingTasksCount,
+	properties.PerformanceMode:                   PerformanceMode,
 	properties.PlacementGroup:                    PlacementGroup,
 	properties.Port:                              Port,
 	properties.PortRange:                         PortRange,
@@ -415,6 +424,7 @@ var Labels = map[string]string{
 	properties.Timeout:                           Timeout,
 	properties.Timezone:                          Timezone,
 	properties.TLSVersionRequired:                TLSVersionRequired,
+	properties.Token:                             Token,
 	properties.Topic:                             Topic,
 	properties.TrafficPolicyInstance:             TrafficPolicyInstance,
 	properties.TTL:                               TTL,
@@ -512,6 +522,7 @@ var Properties = RDFProperties{
 	EngineVersion:           {ID: EngineVersion, RdfType: "rdf:Property", RdfsLabel: "EngineVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	ExitCode:                {ID: ExitCode, RdfType: "rdf:Property", RdfsLabel: "ExitCode", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Failover:                {ID: Failover, RdfType: "rdf:Property", RdfsLabel: "Failover", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	FileSystem:              {ID: FileSystem, RdfType: "rdf:Property", RdfsLabel: "FileSystem", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Fingerprint:             {ID: Fingerprint, RdfType: "rdf:Property", RdfsLabel: "Fingerprint", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	GlobalID:                {ID: GlobalID, RdfType: "rdf:Property", RdfsLabel: "GlobalID", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	GranteeType:             {ID: GranteeType, RdfType: "rdf:Property", RdfsLabel: "GranteeType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -534,6 +545,7 @@ var Properties = RDFProperties{
 	Instances:               {ID: Instances, RdfType: "rdf:Property", RdfsLabel: "Instances", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	InsufficientDataActions: {ID: InsufficientDataActions, RdfType: "rdf:Property", RdfsLabel: "InsufficientDataActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	IOPS:                     {ID: IOPS, RdfType: "rdf:Property", RdfsLabel: "IOPS", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	IP:                       {ID: IP, RdfType: "rdf:Property", RdfsLabel: "IP", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	IPType:                   {ID: IPType, RdfType: "rdf:Property", RdfsLabel: "IPType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	IPv6Addresses:            {ID: IPv6Addresses, RdfType: "rdf:Property", RdfsLabel: "IPv6Addresses", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	IPv6Enabled:              {ID: IPv6Enabled, RdfType: "rdf:Property", RdfsLabel: "IPv6Enabled", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
@@ -560,6 +572,7 @@ var Properties = RDFProperties{
 	MultiAZ:                  {ID: MultiAZ, RdfType: "rdf:Property", RdfsLabel: "MultiAZ", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Name:                     {ID: Name, RdfType: "rdf:Property", RdfsLabel: "Name", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Namespace:                {ID: Namespace, RdfType: "rdf:Property", RdfsLabel: "Namespace", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	NetworkInterface:         {ID: NetworkInterface, RdfType: "rdf:Property", RdfsLabel: "NetworkInterface", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	NetworkInterfaces:        {ID: NetworkInterfaces, RdfType: "rdf:Property", RdfsLabel: "NetworkInterfaces", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	NewInstancesProtected:    {ID: NewInstancesProtected, RdfType: "rdf:Property", RdfsLabel: "NewInstancesProtected", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:boolean"},
 	Notifications:            {ID: Notifications, RdfType: "rdf:Property", RdfsLabel: "Notifications", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
@@ -575,6 +588,7 @@ var Properties = RDFProperties{
 	Path:                     {ID: Path, RdfType: "rdf:Property", RdfsLabel: "Path", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PathPrefix:               {ID: PathPrefix, RdfType: "rdf:Property", RdfsLabel: "PathPrefix", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PendingTasksCount:        {ID: PendingTasksCount, RdfType: "rdf:Property", RdfsLabel: "PendingTasksCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	PerformanceMode:          {ID: PerformanceMode, RdfType: "rdf:Property", RdfsLabel: "PerformanceMode", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	PlacementGroup:           {ID: PlacementGroup, RdfType: "rdf:Property", RdfsLabel: "PlacementGroup", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Port:                     {ID: Port, RdfType: "rdf:Property", RdfsLabel: "Port", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	PortRange:                {ID: PortRange, RdfType: "rdfs:subPropertyOf", RdfsLabel: "PortRange", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
@@ -623,6 +637,7 @@ var Properties = RDFProperties{
 	Timeout:                   {ID: Timeout, RdfType: "rdf:Property", RdfsLabel: "Timeout", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Timezone:                  {ID: Timezone, RdfType: "rdf:Property", RdfsLabel: "Timezone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	TLSVersionRequired:        {ID: TLSVersionRequired, RdfType: "rdf:Property", RdfsLabel: "TLSVersionRequired", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Token:                     {ID: Token, RdfType: "rdf:Property", RdfsLabel: "Token", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Topic:                     {ID: Topic, RdfType: "rdf:Property", RdfsLabel: "Topic", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	TrafficPolicyInstance: {ID: TrafficPolicyInstance, RdfType: "rdf:Property", RdfsLabel: "TrafficPolicyInstance", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	TTL:  {ID: TTL, RdfType: "rdf:Property", RdfsLabel: "TTL", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},

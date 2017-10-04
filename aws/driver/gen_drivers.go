@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/efs/efsiface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -392,6 +393,50 @@ func (d *Ec2Driver) Lookup(lookups ...string) (driverFn driver.DriverFn, err err
 			return d.Detach_Elasticip_DryRun, nil
 		}
 		return d.Detach_Elasticip, nil
+
+	default:
+		return nil, driver.ErrDriverFnNotFound
+	}
+}
+
+type EfsDriver struct {
+	dryRun bool
+	logger *logger.Logger
+	efsiface.EFSAPI
+}
+
+func (d *EfsDriver) SetDryRun(dry bool)         { d.dryRun = dry }
+func (d *EfsDriver) SetLogger(l *logger.Logger) { d.logger = l }
+func NewEfsDriver(api efsiface.EFSAPI) driver.Driver {
+	return &EfsDriver{false, logger.DiscardLogger, api}
+}
+
+func (d *EfsDriver) Lookup(lookups ...string) (driverFn driver.DriverFn, err error) {
+	switch strings.Join(lookups, "") {
+
+	case "createfilesystem":
+		if d.dryRun {
+			return d.Create_Filesystem_DryRun, nil
+		}
+		return d.Create_Filesystem, nil
+
+	case "deletefilesystem":
+		if d.dryRun {
+			return d.Delete_Filesystem_DryRun, nil
+		}
+		return d.Delete_Filesystem, nil
+
+	case "createmounttarget":
+		if d.dryRun {
+			return d.Create_Mounttarget_DryRun, nil
+		}
+		return d.Create_Mounttarget, nil
+
+	case "deletemounttarget":
+		if d.dryRun {
+			return d.Delete_Mounttarget_DryRun, nil
+		}
+		return d.Delete_Mounttarget, nil
 
 	default:
 		return nil, driver.ErrDriverFnNotFound

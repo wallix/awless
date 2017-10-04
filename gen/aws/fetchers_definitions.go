@@ -62,7 +62,7 @@ type fetcher struct {
 var FetchersDefs = []fetchersDef{
 	{
 		Name: "infra",
-		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr", "ecs", "applicationautoscaling", "acm"},
+		Api:  []string{"ec2", "elbv2", "rds", "autoscaling", "ecr", "ecs", "applicationautoscaling", "acm", "efs"},
 		Fetchers: []fetcher{
 			{Api: "ec2", ResourceType: cloud.Instance, AWSType: "ec2.Instance", ApiMethod: "DescribeInstancesPages", Input: "ec2.DescribeInstancesInput{}", Output: "ec2.DescribeInstancesOutput", OutputsExtractor: "Instances", OutputsContainers: "Reservations", Multipage: true, NextPageMarker: "NextToken"},
 			{Api: "ec2", ResourceType: cloud.Subnet, AWSType: "ec2.Subnet", ApiMethod: "DescribeSubnets", Input: "ec2.DescribeSubnetsInput{}", Output: "ec2.DescribeSubnetsOutput", OutputsExtractor: "Subnets"},
@@ -93,6 +93,8 @@ var FetchersDefs = []fetchersDef{
 			{Api: "ecs", ResourceType: cloud.Container, AWSType: "ecs.Container", ManualFetcher: true},
 			{Api: "ecs", ResourceType: cloud.ContainerInstance, AWSType: "ecs.ContainerInstance", ManualFetcher: true},
 			{Api: "acm", ResourceType: cloud.Certificate, AWSType: "acm.CertificateSummary", ApiMethod: "ListCertificatesPages", Input: "acm.ListCertificatesInput{}", Output: "acm.ListCertificatesOutput", OutputsExtractor: "CertificateSummaryList", Multipage: true, NextPageMarker: "NextToken"},
+			{Api: "efs", ResourceType: cloud.Filesystem, AWSType: "efs.FileSystemDescription", ApiMethod: "DescribeFileSystems", Input: "efs.DescribeFileSystemsInput{}", Output: "efs.DescribeFileSystemsOutput", OutputsExtractor: "FileSystems", Multipage: false, NextPageMarker: "NextMarker"},
+			{Api: "efs", ResourceType: cloud.Mounttarget, AWSType: "efs.MountTargetDescription", ApiMethod: "DescribeMountTargets", Input: "efs.DescribeMountTargetsInput{}", Output: "efs.DescribeMountTargetsOutput", OutputsExtractor: "MountTargets", Multipage: false, NextPageMarker: "NextMarker"},
 		},
 	},
 	{

@@ -33,6 +33,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/efs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -2657,6 +2658,190 @@ func (d *Ec2Driver) Detach_Elasticip(ctx driver.Context, params map[string]inter
 	}
 	d.logger.ExtraVerbosef("ec2.DisassociateAddress call took %s", time.Since(start))
 	d.logger.Info("detach elasticip done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Create_Filesystem_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["token"]; !ok {
+		return nil, errors.New("create filesystem: missing required params 'token'")
+	}
+
+	d.logger.Verbose("params dry run: create filesystem ok")
+	return fakeDryRunId("filesystem"), nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Create_Filesystem(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &efs.CreateFileSystemInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["token"], input, "CreationToken", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["encrypted"]; ok {
+		err = setFieldWithType(params["encrypted"], input, "Encrypted", awsbool, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["kmskey"]; ok {
+		err = setFieldWithType(params["kmskey"], input, "KmsKeyId", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["performance-mode"]; ok {
+		err = setFieldWithType(params["performance-mode"], input, "PerformanceMode", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *efs.FileSystemDescription
+	output, err = d.CreateFileSystem(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create filesystem: %s", err)
+	}
+	d.logger.ExtraVerbosef("efs.CreateFileSystem call took %s", time.Since(start))
+	id := aws.StringValue(output.FileSystemId)
+
+	d.logger.Infof("create filesystem '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Delete_Filesystem_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete filesystem: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete filesystem ok")
+	return fakeDryRunId("filesystem"), nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Delete_Filesystem(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &efs.DeleteFileSystemInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "FileSystemId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *efs.DeleteFileSystemOutput
+	output, err = d.DeleteFileSystem(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete filesystem: %s", err)
+	}
+	d.logger.ExtraVerbosef("efs.DeleteFileSystem call took %s", time.Since(start))
+	d.logger.Info("delete filesystem done")
+	return output, nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Create_Mounttarget_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["filesystem"]; !ok {
+		return nil, errors.New("create mounttarget: missing required params 'filesystem'")
+	}
+
+	if _, ok := params["subnet"]; !ok {
+		return nil, errors.New("create mounttarget: missing required params 'subnet'")
+	}
+
+	d.logger.Verbose("params dry run: create mounttarget ok")
+	return fakeDryRunId("mounttarget"), nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Create_Mounttarget(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &efs.CreateMountTargetInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["filesystem"], input, "FileSystemId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = setFieldWithType(params["subnet"], input, "SubnetId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extra params
+	if _, ok := params["ip"]; ok {
+		err = setFieldWithType(params["ip"], input, "IpAddress", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["securitygroups"]; ok {
+		err = setFieldWithType(params["securitygroups"], input, "SecurityGroups", awsstringslice, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, ok := params["performance-mode"]; ok {
+		err = setFieldWithType(params["performance-mode"], input, "PerformanceMode", awsstr, ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := time.Now()
+	var output *efs.MountTargetDescription
+	output, err = d.CreateMountTarget(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("create mounttarget: %s", err)
+	}
+	d.logger.ExtraVerbosef("efs.CreateMountTarget call took %s", time.Since(start))
+	id := aws.StringValue(output.MountTargetId)
+
+	d.logger.Infof("create mounttarget '%s' done", id)
+	return id, nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Delete_Mounttarget_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["id"]; !ok {
+		return nil, errors.New("delete mounttarget: missing required params 'id'")
+	}
+
+	d.logger.Verbose("params dry run: delete mounttarget ok")
+	return fakeDryRunId("mounttarget"), nil
+}
+
+// This function was auto generated
+func (d *EfsDriver) Delete_Mounttarget(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	input := &efs.DeleteMountTargetInput{}
+	var err error
+
+	// Required params
+	err = setFieldWithType(params["id"], input, "MountTargetId", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *efs.DeleteMountTargetOutput
+	output, err = d.DeleteMountTarget(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete mounttarget: %s", err)
+	}
+	d.logger.ExtraVerbosef("efs.DeleteMountTarget call took %s", time.Since(start))
+	d.logger.Info("delete mounttarget done")
 	return output, nil
 }
 

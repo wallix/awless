@@ -158,6 +158,12 @@ var generatedParamsDoc = map[string]map[string]string{
 	"createelasticip": {
 		"domain": "Set to vpc to allocate the address for use with instances in a VPC",
 	},
+	"createfilesystem": {
+		"encrypted":        "A boolean value that, if true, creates an encrypted file system",
+		"kmskey":           "The id of the AWS KMS CMK that will be used to protect the encrypted file system",
+		"performance-mode": "The PerformanceMode of the file system",
+		"token":            "String of up to 64 ASCII characters",
+	},
 	"createfunction": {
 		"description": "A short, user-defined function description",
 		"handler":     "The function within your code that Lambda calls to begin execution",
@@ -219,6 +225,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"username":       "The name of the IAM user to create a password for",
 	},
 	"createmfadevice": {},
+	"createmounttarget": {
+		"filesystem":     "ID of the file system for which to create the mount target",
+		"ip":             "Valid IPv4 address within the address range of the specified subnet",
+		"securitygroups": "Up to five VPC security group IDs, of the form sg-xxxxxxxx",
+		"subnet":         "ID of the subnet to add the mount target in",
+	},
 	"createnatgateway": {
 		"elasticip-id": "The allocation ID of an Elastic IP address to associate with the NAT gateway",
 		"subnet":       "The subnet in which to create the NAT gateway",
@@ -369,6 +381,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id": "The allocation ID",
 		"ip": "The Elastic IP address",
 	},
+	"deletefilesystem": {
+		"id": "ID of the file system you want to delete",
+	},
 	"deletefunction": {
 		"id":      "The Lambda function to delete",
 		"version": "Using this optional parameter you can specify a function version (but not the $LATEST version) to direct AWS Lambda to delete a specific function version",
@@ -401,6 +416,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deletemfadevice": {
 		"id": "The serial number that uniquely identifies the MFA device",
+	},
+	"deletemounttarget": {
+		"id": "ID of the mount target to delete (String)",
 	},
 	"deletenatgateway": {
 		"id": "The ID of the NAT gateway",

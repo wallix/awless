@@ -39,6 +39,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/efs"
+	"github.com/aws/aws-sdk-go/service/efs/efsiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -496,6 +498,84 @@ func (m *mockAcm) ListCertificatesPages(input *acm.ListCertificatesInput, fn fun
 	}
 	for i, page := range pages {
 		fn(&acm.ListCertificatesOutput{CertificateSummaryList: page, NextToken: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+type mockEfs struct {
+	efsiface.EFSAPI
+	filesystemdescriptions  []*efs.FileSystemDescription
+	mounttargetdescriptions []*efs.MountTargetDescription
+}
+
+func (m *mockEfs) Name() string {
+	return ""
+}
+
+func (m *mockEfs) Region() string {
+	return ""
+}
+
+func (m *mockEfs) Provider() string {
+	return ""
+}
+
+func (m *mockEfs) ProviderAPI() string {
+	return ""
+}
+
+func (s *mockEfs) Drivers() []driver.Driver {
+	return []driver.Driver{
+		awsdriver.NewEfsDriver(s.EFSAPI),
+	}
+}
+
+func (m *mockEfs) ResourceTypes() []string {
+	return []string{}
+}
+
+func (m *mockEfs) Fetch(context.Context) (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockEfs) IsSyncDisabled() bool {
+	return false
+}
+
+func (m *mockEfs) FetchByType(context.Context, string) (*graph.Graph, error) {
+	return nil, nil
+}
+
+func (m *mockEfs) DescribeFileSystems(input *efs.DescribeFileSystemsInput, fn func(p *efs.DescribeFileSystemsOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*efs.FileSystemDescription
+	for i := 0; i < len(m.filesystemdescriptions); i += 2 {
+		page := []*efs.FileSystemDescription{m.filesystemdescriptions[i]}
+		if i+1 < len(m.filesystemdescriptions) {
+			page = append(page, m.filesystemdescriptions[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&efs.DescribeFileSystemsOutput{FileSystems: page, NextMarker: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
+}
+
+func (m *mockEfs) DescribeMountTargets(input *efs.DescribeMountTargetsInput, fn func(p *efs.DescribeMountTargetsOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*efs.MountTargetDescription
+	for i := 0; i < len(m.mounttargetdescriptions); i += 2 {
+		page := []*efs.MountTargetDescription{m.mounttargetdescriptions[i]}
+		if i+1 < len(m.mounttargetdescriptions) {
+			page = append(page, m.mounttargetdescriptions[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&efs.DescribeMountTargetsOutput{MountTargets: page, NextMarker: aws.String(strconv.Itoa(i + 1))},
 			i < len(pages),
 		)
 	}

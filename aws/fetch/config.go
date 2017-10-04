@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/efs/efsiface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -44,6 +45,7 @@ type AWSAPI struct {
 	Cloudfront             cloudfrontiface.CloudFrontAPI
 	Cloudformation         cloudformationiface.CloudFormationAPI
 	Acm                    acmiface.ACMAPI
+	Efs                    efsiface.EFSAPI
 }
 
 type Config struct {

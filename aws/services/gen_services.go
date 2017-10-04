@@ -46,6 +46,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/efs"
+	"github.com/aws/aws-sdk-go/service/efs/efsiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -118,6 +120,8 @@ var ResourceTypes = []string{
 	"container",
 	"containerinstance",
 	"certificate",
+	"filesystem",
+	"mounttarget",
 	"user",
 	"group",
 	"role",
@@ -148,6 +152,7 @@ var ServicePerAPI = map[string]string{
 	"ecs":         "infra",
 	"applicationautoscaling": "infra",
 	"acm":            "infra",
+	"efs":            "infra",
 	"iam":            "access",
 	"sts":            "access",
 	"s3":             "storage",
@@ -190,6 +195,8 @@ var ServicePerResourceType = map[string]string{
 	"container":           "infra",
 	"containerinstance":   "infra",
 	"certificate":         "infra",
+	"filesystem":          "infra",
+	"mounttarget":         "infra",
 	"user":                "access",
 	"group":               "access",
 	"role":                "access",
@@ -241,6 +248,8 @@ var APIPerResourceType = map[string]string{
 	"container":           "ecs",
 	"containerinstance":   "ecs",
 	"certificate":         "acm",
+	"filesystem":          "efs",
+	"mounttarget":         "efs",
 	"user":                "iam",
 	"group":               "iam",
 	"role":                "iam",
@@ -281,6 +290,7 @@ type Infra struct {
 	ecsiface.ECSAPI
 	applicationautoscalingiface.ApplicationAutoScalingAPI
 	acmiface.ACMAPI
+	efsiface.EFSAPI
 }
 
 func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.Service {
@@ -293,6 +303,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 	ecsAPI := ecs.New(sess)
 	applicationautoscalingAPI := applicationautoscaling.New(sess)
 	acmAPI := acm.New(sess)
+	efsAPI := efs.New(sess)
 
 	fetchConfig := awsfetch.NewConfig(
 		ec2API,
@@ -303,6 +314,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		ecsAPI,
 		applicationautoscalingAPI,
 		acmAPI,
+		efsAPI,
 	)
 	fetchConfig.Extra = awsconf
 	fetchConfig.Log = log
@@ -316,6 +328,7 @@ func NewInfra(sess *session.Session, awsconf config, log *logger.Logger) cloud.S
 		ECSAPI:         ecsAPI,
 		ApplicationAutoScalingAPI: applicationautoscalingAPI,
 		ACMAPI:  acmAPI,
+		EFSAPI:  efsAPI,
 		fetcher: fetch.NewFetcher(awsfetch.BuildInfraFetchFuncs(fetchConfig)),
 		config:  awsconf,
 		region:  region,
@@ -341,6 +354,7 @@ func (s *Infra) Drivers() []driver.Driver {
 		awsdriver.NewEcsDriver(s.ECSAPI),
 		awsdriver.NewApplicationautoscalingDriver(s.ApplicationAutoScalingAPI),
 		awsdriver.NewAcmDriver(s.ACMAPI),
+		awsdriver.NewEfsDriver(s.EFSAPI),
 	}
 }
 
@@ -375,6 +389,8 @@ func (s *Infra) ResourceTypes() []string {
 		"container",
 		"containerinstance",
 		"certificate",
+		"filesystem",
+		"mounttarget",
 	}
 }
 
@@ -1040,6 +1056,50 @@ func (s *Infra) Fetch(ctx context.Context) (*graph.Graph, error) {
 			for _, fn := range addParentsFns["certificate"] {
 				wg.Add(1)
 				go func(f addParentFn, snap tstore.RDFGraph, region string, res *acm.CertificateSummary) {
+					defer wg.Done()
+					err := f(gph, snap, region, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, snap, s.region, r)
+			}
+		}
+	}
+	if s.config.getBool("aws.infra.filesystem.sync", true) {
+		list, err := s.fetcher.Get("filesystem_objects")
+		if err != nil {
+			return gph, err
+		}
+		if _, ok := list.([]*efs.FileSystemDescription); !ok {
+			return gph, errors.New("cannot cast to '[]*efs.FileSystemDescription' type from fetch context")
+		}
+		for _, r := range list.([]*efs.FileSystemDescription) {
+			for _, fn := range addParentsFns["filesystem"] {
+				wg.Add(1)
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *efs.FileSystemDescription) {
+					defer wg.Done()
+					err := f(gph, snap, region, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, snap, s.region, r)
+			}
+		}
+	}
+	if s.config.getBool("aws.infra.mounttarget.sync", true) {
+		list, err := s.fetcher.Get("mounttarget_objects")
+		if err != nil {
+			return gph, err
+		}
+		if _, ok := list.([]*efs.MountTargetDescription); !ok {
+			return gph, errors.New("cannot cast to '[]*efs.MountTargetDescription' type from fetch context")
+		}
+		for _, r := range list.([]*efs.MountTargetDescription) {
+			for _, fn := range addParentsFns["mounttarget"] {
+				wg.Add(1)
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *efs.MountTargetDescription) {
 					defer wg.Done()
 					err := f(gph, snap, region, res)
 					if err != nil {

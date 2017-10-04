@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/efs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -88,6 +89,11 @@ func InitResource(source interface{}) (*graph.Resource, error) {
 		res = graph.InitResource(cloud.Snapshot, awssdk.StringValue(ss.SnapshotId))
 	case *ec2.NetworkInterface:
 		res = graph.InitResource(cloud.NetworkInterface, awssdk.StringValue(ss.NetworkInterfaceId))
+	// efs
+	case *efs.FileSystemDescription:
+		res = graph.InitResource(cloud.Filesystem, awssdk.StringValue(ss.FileSystemId))
+	case *efs.MountTargetDescription:
+		res = graph.InitResource(cloud.Mounttarget, awssdk.StringValue(ss.MountTargetId))
 	// Loadbalancer
 	case *elbv2.LoadBalancer:
 		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))

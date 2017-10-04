@@ -377,6 +377,7 @@ var DriversDefs = []driversDef{
 					{AwsField: "Force", TemplateName: "force", AwsType: "awsbool"},
 				},
 			},
+
 			// Snapshot
 			{
 				Action: "create", Entity: cloud.Snapshot, ApiMethod: "CreateSnapshot", Input: "CreateSnapshotInput", Output: "Snapshot", OutputExtractor: "aws.StringValue(output.SnapshotId)",
@@ -557,6 +558,48 @@ var DriversDefs = []driversDef{
 				Action: "detach", Entity: cloud.ElasticIP, ApiMethod: "DisassociateAddress", Input: "DisassociateAddressInput", Output: "DisassociateAddressOutput",
 				RequiredParams: []param{
 					{AwsField: "AssociationId", TemplateName: "association", AwsType: "awsstr"},
+				},
+			},
+		},
+	},
+	{
+		Api: "efs",
+		Drivers: []driver{
+			// Filesystem
+			{
+				Action: "create", Entity: cloud.Filesystem, ApiMethod: "CreateFileSystem", Input: "CreateFileSystemInput", Output: "FileSystemDescription", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.FileSystemId)",
+				RequiredParams: []param{
+					{AwsField: "CreationToken", TemplateName: "token", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "Encrypted", TemplateName: "encrypted", AwsType: "awsbool"},
+					{AwsField: "KmsKeyId", TemplateName: "kmskey", AwsType: "awsstr"},
+					{AwsField: "PerformanceMode", TemplateName: "performance-mode", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Filesystem, ApiMethod: "DeleteFileSystem", Input: "DeleteFileSystemInput", Output: "DeleteFileSystemOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "FileSystemId", TemplateName: "id", AwsType: "awsstr"},
+				},
+			},
+			// Mounttarget
+			{
+				Action: "create", Entity: cloud.Mounttarget, ApiMethod: "CreateMountTarget", Input: "CreateMountTargetInput", Output: "MountTargetDescription", DryRunUnsupported: true, OutputExtractor: "aws.StringValue(output.MountTargetId)",
+				RequiredParams: []param{
+					{AwsField: "FileSystemId", TemplateName: "filesystem", AwsType: "awsstr"},
+					{AwsField: "SubnetId", TemplateName: "subnet", AwsType: "awsstr"},
+				},
+				ExtraParams: []param{
+					{AwsField: "IpAddress", TemplateName: "ip", AwsType: "awsstr"},
+					{AwsField: "SecurityGroups", TemplateName: "securitygroups", AwsType: "awsstringslice"},
+					{AwsField: "PerformanceMode", TemplateName: "performance-mode", AwsType: "awsstr"},
+				},
+			},
+			{
+				Action: "delete", Entity: cloud.Mounttarget, ApiMethod: "DeleteMountTarget", Input: "DeleteMountTargetInput", Output: "DeleteMountTargetOutput", DryRunUnsupported: true,
+				RequiredParams: []param{
+					{AwsField: "MountTargetId", TemplateName: "id", AwsType: "awsstr"},
 				},
 			},
 		},

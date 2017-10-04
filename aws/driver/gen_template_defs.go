@@ -78,6 +78,10 @@ var APIPerTemplateDefName = map[string]string{
 	"deleteelasticip":           "ec2",
 	"attachelasticip":           "ec2",
 	"detachelasticip":           "ec2",
+	"createfilesystem":          "efs",
+	"deletefilesystem":          "efs",
+	"createmounttarget":         "efs",
+	"deletemounttarget":         "efs",
 	"createloadbalancer":        "elbv2",
 	"deleteloadbalancer":        "elbv2",
 	"checkloadbalancer":         "elbv2",
@@ -570,6 +574,34 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "elasticip",
 		Api:            "ec2",
 		RequiredParams: []string{"association"},
+		ExtraParams:    []string{},
+	},
+	"createfilesystem": {
+		Action:         "create",
+		Entity:         "filesystem",
+		Api:            "efs",
+		RequiredParams: []string{"token"},
+		ExtraParams:    []string{"encrypted", "kmskey", "performance-mode"},
+	},
+	"deletefilesystem": {
+		Action:         "delete",
+		Entity:         "filesystem",
+		Api:            "efs",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{},
+	},
+	"createmounttarget": {
+		Action:         "create",
+		Entity:         "mounttarget",
+		Api:            "efs",
+		RequiredParams: []string{"filesystem", "subnet"},
+		ExtraParams:    []string{"ip", "performance-mode", "securitygroups"},
+	},
+	"deletemounttarget": {
+		Action:         "delete",
+		Entity:         "mounttarget",
+		Api:            "efs",
+		RequiredParams: []string{"id"},
 		ExtraParams:    []string{},
 	},
 	"createloadbalancer": {
@@ -1325,6 +1357,10 @@ func DriverSupportedActions() map[string][]string {
 	supported["delete"] = append(supported["delete"], "elasticip")
 	supported["attach"] = append(supported["attach"], "elasticip")
 	supported["detach"] = append(supported["detach"], "elasticip")
+	supported["create"] = append(supported["create"], "filesystem")
+	supported["delete"] = append(supported["delete"], "filesystem")
+	supported["create"] = append(supported["create"], "mounttarget")
+	supported["delete"] = append(supported["delete"], "mounttarget")
 	supported["create"] = append(supported["create"], "loadbalancer")
 	supported["delete"] = append(supported["delete"], "loadbalancer")
 	supported["check"] = append(supported["check"], "loadbalancer")

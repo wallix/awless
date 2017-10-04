@@ -394,6 +394,27 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StorageColumnDefinition{Unit: b, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
 		StringColumnDefinition{Prop: properties.Class},
 	},
+	// EFS
+	cloud.Filesystem: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.Name},
+		StorageColumnDefinition{Unit: b, StringColumnDefinition: StringColumnDefinition{Prop: properties.Size}},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Token},
+		StringColumnDefinition{Prop: properties.Owner},
+		StringColumnDefinition{Prop: properties.Encrypted},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created}},
+		StringColumnDefinition{Prop: properties.PerformanceMode},
+	},
+	cloud.Mounttarget: {
+		StringColumnDefinition{Prop: properties.ID},
+		StringColumnDefinition{Prop: properties.FileSystem},
+		StringColumnDefinition{Prop: properties.IP},
+		StringColumnDefinition{Prop: properties.State},
+		StringColumnDefinition{Prop: properties.Subnet},
+		StringColumnDefinition{Prop: properties.Owner},
+		StringColumnDefinition{Prop: properties.NetworkInterface},
+	},
 	//Notification
 	cloud.Subscription: {
 		StringColumnDefinition{Prop: properties.Arn},

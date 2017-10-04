@@ -49,6 +49,8 @@ const (
 	Snapshot         string = "snapshot"
 	NetworkInterface string = "networkinterface"
 	Certificate      string = "certificate"
+	Filesystem       string = "filesystem"
+	Mounttarget      string = "mounttarget"
 	//loadbalancer
 	LoadBalancer string = "loadbalancer"
 	TargetGroup  string = "targetgroup"

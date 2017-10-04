@@ -15,7 +15,9 @@ limitations under the License.
 */
 package aws
 
-import "strings"
+import (
+	"strings"
+)
 
 type mockDef struct {
 	Api, Name string
@@ -79,6 +81,13 @@ var mocksDefs = []*mockDef{
 		Api: "acm",
 		Funcs: []*mockFuncDef{
 			{FuncType: "list", AWSType: "acm.CertificateSummary", ApiMethod: "ListCertificatesPages", Input: "acm.ListCertificatesInput", Output: "acm.ListCertificatesOutput", OutputsExtractor: "CertificateSummaryList", Multipage: true, NextPageMarker: "NextToken"},
+		},
+	},
+	{
+		Api: "efs",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "efs.FileSystemDescription", ApiMethod: "DescribeFileSystems", Input: "efs.DescribeFileSystemsInput", Output: "efs.DescribeFileSystemsOutput", OutputsExtractor: "FileSystems", Multipage: true, NextPageMarker: "NextMarker"},
+			{FuncType: "list", AWSType: "efs.MountTargetDescription", ApiMethod: "DescribeMountTargets", Input: "efs.DescribeMountTargetsInput", Output: "efs.DescribeMountTargetsOutput", OutputsExtractor: "MountTargets", Multipage: true, NextPageMarker: "NextMarker"},
 		},
 	},
 	{
