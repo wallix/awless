@@ -209,6 +209,7 @@ const (
 	TLSVersionRequired                = "cloud:tlsVersionRequired"
 	Topic                             = "cloud:topic"
 	TrafficPolicyInstance             = "cloud:trafficPolicyInstance"
+	TrustPolicy                       = "cloud:trustPolicy"
 	TTL                               = "cloud:ttl"
 	Type                              = "cloud:type"
 	UnhealthyThresholdCount           = "cloud:unhealthyThresholdCount"
@@ -417,6 +418,7 @@ var Labels = map[string]string{
 	properties.TLSVersionRequired:                TLSVersionRequired,
 	properties.Topic:                             Topic,
 	properties.TrafficPolicyInstance:             TrafficPolicyInstance,
+	properties.TrustPolicy:                       TrustPolicy,
 	properties.TTL:                               TTL,
 	properties.Type:                              Type,
 	properties.UnhealthyThresholdCount:           UnhealthyThresholdCount,
@@ -625,8 +627,9 @@ var Properties = RDFProperties{
 	TLSVersionRequired:        {ID: TLSVersionRequired, RdfType: "rdf:Property", RdfsLabel: "TLSVersionRequired", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Topic:                     {ID: Topic, RdfType: "rdf:Property", RdfsLabel: "Topic", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	TrafficPolicyInstance: {ID: TrafficPolicyInstance, RdfType: "rdf:Property", RdfsLabel: "TrafficPolicyInstance", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	TTL:  {ID: TTL, RdfType: "rdf:Property", RdfsLabel: "TTL", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Type: {ID: Type, RdfType: "rdf:Property", RdfsLabel: "Type", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	TrustPolicy:           {ID: TrustPolicy, RdfType: "rdf:Property", RdfsLabel: "TrustPolicy", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	TTL:                   {ID: TTL, RdfType: "rdf:Property", RdfsLabel: "TTL", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Type:                  {ID: Type, RdfType: "rdf:Property", RdfsLabel: "Type", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	UnhealthyThresholdCount: {ID: UnhealthyThresholdCount, RdfType: "rdf:Property", RdfsLabel: "UnhealthyThresholdCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Updated:                 {ID: Updated, RdfType: "rdf:Property", RdfsLabel: "Updated", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	URI:                     {ID: URI, RdfType: "rdf:Property", RdfsLabel: "URI", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

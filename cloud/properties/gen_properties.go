@@ -207,6 +207,7 @@ const (
 	TLSVersionRequired                = "TLSVersionRequired"
 	Topic                             = "Topic"
 	TrafficPolicyInstance             = "TrafficPolicyInstance"
+	TrustPolicy                       = "TrustPolicy"
 	TTL                               = "TTL"
 	Type                              = "Type"
 	UnhealthyThresholdCount           = "UnhealthyThresholdCount"

@@ -644,6 +644,19 @@ func extractDocumentDefaultVersion(i interface{}) (interface{}, error) {
 	return "", nil
 }
 
+func extractURLEncodedJson(i interface{}) (interface{}, error) {
+	if _, ok := i.(*string); !ok {
+		return nil, fmt.Errorf("extract URL-encoded JSON, not a *string but a %T", i)
+	}
+	docStr := awssdk.StringValue(i.(*string))
+	if str, err := url.QueryUnescape(docStr); err == nil {
+		var buff bytes.Buffer
+		err = json.Compact(&buff, []byte(str))
+		return buff.String(), err
+	}
+	return docStr, nil
+}
+
 func notEmpty(str *string) bool {
 	return awssdk.StringValue(str) != ""
 }

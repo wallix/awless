@@ -204,6 +204,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "TLSVersionRequired", RDFLabel: fmt.Sprintf("%s:tlsVersionRequired", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Topic", RDFLabel: fmt.Sprintf("%s:topic", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsClass, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "TrafficPolicyInstance", RDFLabel: fmt.Sprintf("%s:trafficPolicyInstance", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "TrustPolicy", RDFLabel: fmt.Sprintf("%s:trustPolicy", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "TTL", RDFLabel: fmt.Sprintf("%s:ttl", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Type", RDFLabel: fmt.Sprintf("%s:type", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "UnhealthyThresholdCount", RDFLabel: fmt.Sprintf("%s:unhealthyThresholdCount", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},

@@ -14,6 +14,7 @@
 - Add conditions in policies and support multiple resources `awless create policy ... conditions=\"aws:MultiFactorAuthPresent==true\" resource=arn:aws:iam::0123456789:mfa/test,arn:aws:iam::0123456789:user/test`
 - Add conditions in role creation `awless create role name=awless-mfa-role principal-account=0123456789 conditions=\"aws:MultiFactorAuthPresent==true\"`
 - List the access keys of all users with `awless list accesskeys` (previously, only current user)
+- Fetch role trust policy document: `awless show my-role`
 
 ## v0.1.4 [2017-09-21]
 

@@ -370,6 +370,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Created:        {name: "CreateDate", transform: extractTimeFn},
 		properties.Path:           {name: "Path", transform: extractValueFn},
 		properties.InlinePolicies: {name: "RolePolicyList", transform: extractStringSliceValues("PolicyName")},
+		properties.TrustPolicy:    {name: "AssumeRolePolicyDocument", transform: extractURLEncodedJson},
 	},
 	cloud.Group: {
 		properties.Name:           {name: "GroupName", transform: extractValueFn},
