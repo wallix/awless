@@ -1,3 +1,11 @@
+## v0.1.6 [unreleased]
+
+### Features
+
+### AWS Services
+
+### Fixes
+
 ## v0.1.5 [2017-10-05]
 
 ### Features
