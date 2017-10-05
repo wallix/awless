@@ -29,14 +29,14 @@ import (
 )
 
 var (
-	showIdsOnlyFlag, showIdOnlyFlag bool
+	showIdsOnlyFlag, showIdOnlyFlag, showLatestIdOnly bool
 )
 
 func init() {
 	RootCmd.AddCommand(searchCmd)
 
-	awsImagesCmd.Flags().BoolVar(&showIdsOnlyFlag, "ids-only", false, "Returns only the id of all AMIs matching your query")
-	awsImagesCmd.Flags().BoolVar(&showIdOnlyFlag, "id-only", false, "Returns only one (the latest) AMI id matching your query")
+	awsImagesCmd.Flags().BoolVar(&showLatestIdOnly, "latest-id", false, "Returns the id only of the latest AMI matching your query")
+	awsImagesCmd.Flags().BoolVar(&showIdOnlyFlag, "id-only", false, "(DEPRECATED, use latest-id) Returns only one (the latest) AMI id matching the query")
 
 	searchCmd.AddCommand(awsImagesCmd)
 }
@@ -50,9 +50,9 @@ var awsImagesCmd = &cobra.Command{
 	Use:               "images",
 	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(networkMonitorHook),
-	Short:             fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first. Supported owners: %s", strings.Join(awsservices.SupportedAMIOwners, ", ")),
-	Long:              fmt.Sprintf("Find corresponding images according to an image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsservices.ImageQuerySpec, strings.Join(awsservices.SupportedAMIOwners, ", ")),
-	Example:           "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --id-only\n  awless search images amazonlinux:::::instance-store --ids-only",
+	Short:             fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first. Supported owners: %s", strings.Join(awsservices.SupportedAMIOwners, ", ")),
+	Long:              fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsservices.ImageQuerySpec, strings.Join(awsservices.SupportedAMIOwners, ", ")),
+	Example:           "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --latest-id\n  awless search images amazonlinux:::::instance-store",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
@@ -80,7 +80,7 @@ var awsImagesCmd = &cobra.Command{
 			return
 		}
 
-		if showIdOnlyFlag {
+		if showLatestIdOnly || showIdOnlyFlag {
 			for i, id := range ids {
 				fmt.Println(id)
 				if i == 0 {
