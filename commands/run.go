@@ -228,7 +228,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 	awsDriver.SetLogger(logger.DefaultLogger)
 	env.Driver = awsDriver
 
-	logger.Info("Dry running template...")
+	logger.Info("Dry running template ...")
 	if err = tplExec.Template.DryRun(env); err != nil {
 		switch t := err.(type) {
 		case *template.Errors:
@@ -458,7 +458,7 @@ func runSyncFor(tplExec *template.TemplateExecution) {
 	)...)
 
 	if !noSyncGlobalFlag {
-		logger.Infof("Resyncing %s data... (disable with --no-sync global flag)", strings.Join(cloud.Services(services).Names(), ", "))
+		logger.Infof("Resyncing %s ... (disable with --no-sync global flag)", joinSentence(cloud.Services(services).Names()))
 	}
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
 		logger.ExtraVerbosef(err.Error())
@@ -710,4 +710,12 @@ func isSchedulingMode() bool {
 		return true
 	}
 	return false
+}
+
+func joinSentence(arr []string) string {
+	sep := ", "
+	if ln := len(arr); ln > 1 {
+		return fmt.Sprintf("%s and %s", strings.Join(arr[:ln-1], sep), arr[ln-1])
+	}
+	return strings.Join(arr, sep)
 }

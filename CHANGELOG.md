@@ -16,6 +16,10 @@
 - List the access keys of all users with `awless list accesskeys` (previously, only current user)
 - Fetch role trust policy document: `awless show my-role`
 
+### Fixes
+
+- Exit code is now non zero on template run with KO states
+
 ## v0.1.4 [2017-09-21]
 
 ### Features

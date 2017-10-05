@@ -25,3 +25,20 @@ func TestIsCSV(t *testing.T) {
 		}
 	}
 }
+
+func TestJoinSentence(t *testing.T) {
+	tcases := []struct {
+		in  []string
+		exp string
+	}{
+		{in: []string{""}, exp: ""},
+		{in: []string{"", ""}, exp: " and "},
+		{in: []string{"one", "two"}, exp: "one and two"},
+		{in: []string{"one", "two", "three"}, exp: "one, two and three"},
+	}
+	for i, tcase := range tcases {
+		if got, want := joinSentence(tcase.in), tcase.exp; got != want {
+			t.Errorf("%d. got %q, want %q", i+1, got, want)
+		}
+	}
+}
