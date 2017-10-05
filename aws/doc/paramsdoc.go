@@ -329,6 +329,9 @@ var manualParamsDoc = map[string]map[string]string{
 	"deletelaunchconfiguration": {
 		"name": "The name of the launch configuration to be deleted",
 	},
+	"deletepolicy": {
+		"all-versions": "Set to 'true' to delete all existing versions of the policy to be deleted",
+	},
 	"deleterecord": {
 		"zone":  "The ID of the hosted zone that contains the resource record sets that you want to delete",
 		"name":  "The name of the domain you want to perform the action on. Enter a fully qualified domain name, for example, www.example.com. You can optionally include a trailing dot",

@@ -112,6 +112,7 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("arn=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				case "policy":
 					params = append(params, fmt.Sprintf("arn=%s", quoteParamIfNeeded(cmd.CmdResult)))
+					params = append(params, "all-versions=true")
 				case "queue":
 					params = append(params, fmt.Sprintf("url=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				case "s3object":

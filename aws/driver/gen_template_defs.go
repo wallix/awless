@@ -969,7 +969,7 @@ var AWSTemplatesDefinitions = map[string]template.Definition{
 		Entity:         "policy",
 		Api:            "iam",
 		RequiredParams: []string{"arn"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"all-versions"},
 	},
 	"attachpolicy": {
 		Action:         "attach",

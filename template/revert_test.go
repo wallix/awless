@@ -367,6 +367,20 @@ stop containertask cluster=cl deployment-name=dpname type=service`
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}
 	})
+
+	t.Run("Revert create policy", func(t *testing.T) {
+		tpl := MustParse("create policy name=mypolicy")
+		tpl.CommandNodesIterator()[0].CmdResult = "my-policy-arn"
+		reverted, err := tpl.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		exp := `delete policy all-versions=true arn=my-policy-arn`
+		if got, want := reverted.String(), exp; got != want {
+			t.Fatalf("got: %s\nwant: %s\n", got, want)
+		}
+	})
 }
 
 func TestCmdNodeIsRevertible(t *testing.T) {

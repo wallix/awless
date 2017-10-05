@@ -4702,39 +4702,6 @@ func (d *IamDriver) Delete_Instanceprofile(ctx driver.Context, params map[string
 }
 
 // This function was auto generated
-func (d *IamDriver) Delete_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	if _, ok := params["arn"]; !ok {
-		return nil, errors.New("delete policy: missing required params 'arn'")
-	}
-
-	d.logger.Verbose("params dry run: delete policy ok")
-	return fakeDryRunId("policy"), nil
-}
-
-// This function was auto generated
-func (d *IamDriver) Delete_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
-	input := &iam.DeletePolicyInput{}
-	var err error
-
-	// Required params
-	err = setFieldWithType(params["arn"], input, "PolicyArn", awsstr, ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	start := time.Now()
-	var output *iam.DeletePolicyOutput
-	output, err = d.DeletePolicy(input)
-	output = output
-	if err != nil {
-		return nil, fmt.Errorf("delete policy: %s", err)
-	}
-	d.logger.ExtraVerbosef("iam.DeletePolicy call took %s", time.Since(start))
-	d.logger.Info("delete policy done")
-	return output, nil
-}
-
-// This function was auto generated
 func (d *IamDriver) Delete_Mfadevice_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["id"]; !ok {
 		return nil, errors.New("delete mfadevice: missing required params 'id'")

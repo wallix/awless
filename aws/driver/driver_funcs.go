@@ -1206,6 +1206,52 @@ func (d *IamDriver) getPolicyLastVersionDocument(ctx driver.Context, arn interfa
 	}
 	return document, nil
 }
+func (d *IamDriver) Delete_Policy_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	if _, ok := params["arn"]; !ok {
+		return nil, errors.New("delete policy: missing required params 'arn'")
+	}
+
+	d.logger.Verbose("params dry run: delete policy ok")
+	return fakeDryRunId("policy"), nil
+}
+
+func (d *IamDriver) Delete_Policy(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
+	arn := fmt.Sprint(params["arn"])
+	if allVersions, ok := params["all-versions"]; ok && fmt.Sprint(allVersions) == "true" {
+		list, err := d.ListPolicyVersions(&iam.ListPolicyVersionsInput{PolicyArn: aws.String(arn)})
+		if err != nil {
+			return nil, fmt.Errorf("list all policy versions: %s", err)
+		}
+		for _, v := range list.Versions {
+			if !aws.BoolValue(v.IsDefaultVersion) {
+				d.logger.Verbosef("deleting version '%s' of policy '%s'", aws.StringValue(v.VersionId), arn)
+				_, err := d.DeletePolicyVersion(&iam.DeletePolicyVersionInput{PolicyArn: aws.String(arn), VersionId: v.VersionId})
+				if err != nil {
+					return nil, fmt.Errorf("delete version %s: %s", aws.StringValue(v.VersionId), err)
+				}
+			}
+		}
+	}
+
+	input := &iam.DeletePolicyInput{}
+
+	// Required params
+	err := setFieldWithType(arn, input, "PolicyArn", awsstr, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	var output *iam.DeletePolicyOutput
+	output, err = d.DeletePolicy(input)
+	output = output
+	if err != nil {
+		return nil, fmt.Errorf("delete policy: %s", err)
+	}
+	d.logger.ExtraVerbosef("iam.DeletePolicy call took %s", time.Since(start))
+	d.logger.Info("delete policy done")
+	return output, nil
+}
 
 func (d *IamDriver) Delete_Role_DryRun(ctx driver.Context, params map[string]interface{}) (interface{}, error) {
 	if _, ok := params["name"]; !ok {
