@@ -68,7 +68,7 @@ create group name=$GROUP_NAME
 attach policy service=lambda access=readonly group=$GROUP_NAME
 EOF
 
-RESOLVED_AMI=$($BIN search images debian::jessie --id-only)
+RESOLVED_AMI=$($BIN search images debian::jessie --latest-id)
 $BIN run ./$TMP_FILE vpc-cidr=10.0.0.0/24 sub-cidr=10.0.0.0/25 date=$DATE -e -f resolved-image=$RESOLVED_AMI
 
 ALIAS="\@$INSTANCE_NAME"

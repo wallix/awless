@@ -125,7 +125,7 @@ var cliExamplesDoc = map[string][]string{
 	},
 	"createinstance": {
 		"awless create instance keypair=jsmith type=t2.micro subnet=@my-subnet",
-		"awless create instance image=$(awless search images debian --id-only) keypair=jsmith",
+		"awless create instance image=$(awless search images debian --latest-id) keypair=jsmith",
 		"awless create instance name=redis type=t2.nano keypair=jsmith userdata=/home/jsmith/data.sh role=MyInfraReadOnlyRole",
 	},
 	"createinstanceprofile":     {},

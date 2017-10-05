@@ -45,7 +45,7 @@ Choose one of the following options:
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
 - Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
-- Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --id-only`
+- Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --latest-id`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
