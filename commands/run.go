@@ -303,6 +303,10 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 		runSyncFor(tplExec)
 	}
 
+	if tplExec.Stats().KOCount > 0 {
+		os.Exit(1)
+	}
+
 	return nil
 }
 
@@ -443,7 +447,7 @@ func runSyncFor(tplExec *template.TemplateExecution) {
 		return
 	}
 
-	if stats := tplExec.Stats(); stats.KOCount == stats.CmdCount {
+	if tplExec.Stats().AllKO() {
 		return
 	}
 

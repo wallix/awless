@@ -137,6 +137,10 @@ type TemplateExecutionStats struct {
 	Oneliner                   string
 }
 
+func (te *TemplateExecutionStats) AllKO() bool {
+	return te.KOCount == te.CmdCount
+}
+
 func (t *TemplateExecution) Stats() *TemplateExecutionStats {
 	stats := &TemplateExecutionStats{ActionEntityCount: make(map[string]int)}
 
