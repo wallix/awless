@@ -300,7 +300,7 @@ func runTemplate(tplExec *template.TemplateExecution, fillers ...map[string]inte
 			logger.Infof("Revert this template with `awless revert %s -r %s -p %s`", tplExec.Template.ID, config.GetAWSRegion(), config.GetAWSProfile())
 		}
 
-		runSyncFor(tplExec.Template)
+		runSyncFor(tplExec)
 	}
 
 	return nil
@@ -438,21 +438,26 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 	return actionCmd
 }
 
-func runSyncFor(tpl *template.Template) {
+func runSyncFor(tplExec *template.TemplateExecution) {
 	if !config.GetAutosync() {
 		return
 	}
 
-	defs := tpl.UniqueDefinitions(awsdriver.AWSLookupDefinitions)
+	if stats := tplExec.Stats(); stats.KOCount == stats.CmdCount {
+		return
+	}
+
+	defs := tplExec.Template.UniqueDefinitions(awsdriver.AWSLookupDefinitions)
 
 	services := awsservices.GetCloudServicesForAPIs(defs.Map(
 		func(d template.Definition) string { return d.Api },
 	)...)
 
+	if !noSyncGlobalFlag {
+		logger.Infof("Resyncing %s data... (disable with --no-sync global flag)", strings.Join(cloud.Services(services).Names(), ", "))
+	}
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
 		logger.ExtraVerbosef(err.Error())
-	} else {
-		logger.Verbosef("performed sync for %s", strings.Join(cloud.Services(services).Names(), ", "))
 	}
 }
 
