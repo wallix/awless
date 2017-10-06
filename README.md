@@ -9,7 +9,7 @@
 
 `awless` stands out by providing the following features:
 
-- small and hierarchichal set of commands
+- small and hierarchical set of commands
 - create and revert fully-fledged infrastructures through a new simple and powerful templating language (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
 - local log of all your cloud modifications done through `awless`
 - exploration of your cloud infrastructure and resources relations, **even offline** using a local graph storage
