@@ -199,7 +199,14 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 
 	ctx.fetchConnectionInfo()
 
-	instanceResolvers := []graph.Resolver{&graph.ByProperty{Key: "Name", Value: ctx.instanceName}, &graph.ByType{Typ: cloud.Instance}}
+	instanceResolvers := []graph.Resolver{
+		&graph.Or{Resolvers: []graph.Resolver{
+			&graph.ByProperty{Key: properties.Name, Value: ctx.instanceName},
+			&graph.ByProperty{Key: properties.PublicIP, Value: ctx.instanceName},
+			&graph.ByProperty{Key: properties.PrivateIP, Value: ctx.instanceName},
+		}},
+		&graph.ByType{Typ: cloud.Instance},
+	}
 	resources, err := ctx.resourcesGraph.ResolveResources(&graph.And{Resolvers: instanceResolvers})
 	exitOn(err)
 	switch len(resources) {

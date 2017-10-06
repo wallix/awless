@@ -44,6 +44,24 @@ func TestResolvers(t *testing.T) {
 		}
 	})
 
+	t.Run("or", func(t *testing.T) {
+		resources, err := g.ResolveResources(&graph.Or{[]graph.Resolver{
+			&graph.ByProperty{Key: "Name", Value: "unexisting"},
+			&graph.ByProperty{Key: "ID", Value: "sub_1"},
+			&graph.ByProperty{Key: "Name", Value: "unexisting"},
+		},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := len(resources), 1; got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+		if got, want := resources[0].Id(), "sub_1"; got != want {
+			t.Fatalf("got %s want %s", got, want)
+		}
+	})
+
 	t.Run("by type and property", func(t *testing.T) {
 		resources, err := g.ResolveResources(&graph.ByTypeAndProperty{
 			Type: "instance", Key: "Name", Value: "redis",

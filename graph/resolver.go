@@ -112,8 +112,7 @@ func (r *And) Resolve(snap tstore.RDFGraph) (result []*Resource, err error) {
 		return
 	}
 	gg := NewGraph()
-	err = gg.AddResource(result...)
-	if err != nil {
+	if err = gg.AddResource(result...); err != nil {
 		return
 	}
 	for _, resolv := range r.Resolvers {
@@ -122,8 +121,24 @@ func (r *And) Resolve(snap tstore.RDFGraph) (result []*Resource, err error) {
 			return
 		}
 		gg = NewGraph()
-		err = gg.AddResource(result...)
+		if err = gg.AddResource(result...); err != nil {
+			return
+		}
+	}
+	return
+}
+
+type Or struct {
+	Resolvers []Resolver
+}
+
+func (r *Or) Resolve(snap tstore.RDFGraph) (result []*Resource, err error) {
+	for _, resolv := range r.Resolvers {
+		result, err = resolv.Resolve(snap)
 		if err != nil {
+			return
+		}
+		if len(result) > 0 {
 			return
 		}
 	}

@@ -6,6 +6,8 @@
 
 ### Fixes
 
+- [#151](https://github.com/wallix/awless/issues/151): `awless ssh` using ip addresses. Ex: `awless ssh 172.31.68.49 --through 172.31.11.249`
+
 ## v0.1.5 [2017-10-05]
 
 ### Features
