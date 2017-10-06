@@ -19,15 +19,26 @@ func LookupAWSPolicy(service, access string) (*policy, error) {
 	if access != "readonly" && access != "full" {
 		return nil, errors.New("looking up AWS policies: access value can only be 'readonly' or 'full'")
 	}
+
+	var suggestions []string
 	for _, p := range awsPolicies {
 		name := strings.ToLower(p.Name)
 		match := fmt.Sprintf("%s%s", strings.ToLower(service), strings.ToLower(access))
 		if strings.Contains(name, match) {
 			return p, nil
 		}
+		if strings.Contains(name, strings.ToLower(service)) {
+			suggestions = append(suggestions, fmt.Sprintf("\t\tarn=%s", p.Arn))
+		}
 	}
 
-	return nil, fmt.Errorf("no existing AWS policy with service '%s' and access '%s'", service, access)
+	errBuff := bytes.NewBufferString(fmt.Sprintf("No AWS policy matching service '%s' and access '%s'", service, access))
+	if len(suggestions) > 0 {
+		errBuff.WriteString(". Try using the full ARN of those potential matches:\n")
+		errBuff.WriteString(strings.Join(suggestions, "\n"))
+	}
+
+	return nil, errors.New(errBuff.String())
 }
 
 type policy struct {
