@@ -26,8 +26,6 @@ import (
 	"sync"
 	"text/template"
 	"unicode"
-
-	"github.com/wallix/awless/gen/aws"
 )
 
 func generateParamsDocLookup() {
@@ -38,25 +36,19 @@ func generateParamsDocLookup() {
 
 	paramsDoc := loadAllRefs()
 
+	cmdsData := loadCommandStructs()
+
 	doc := make(map[string]map[string]string)
-	for _, def := range aws.DriversDefs {
-		for _, driv := range def.Drivers {
-			key := fmt.Sprintf("%s%s", driv.Action, driv.Entity)
-			if doc[key] == nil {
-				doc[key] = make(map[string]string)
-			}
+	for _, cmd := range cmdsData {
+		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
+		if doc[key] == nil {
+			doc[key] = make(map[string]string)
+		}
 
-			params := doc[key]
-			for _, p := range driv.RequiredParams {
-				if s, ok := searchParamInDoc(paramsDoc, driv.Input, p.AwsField); ok {
-					params[p.TemplateName] = fmt.Sprint(s)
-				}
-			}
-
-			for _, p := range driv.ExtraParams {
-				if s, ok := searchParamInDoc(paramsDoc, driv.Input, p.AwsField); ok {
-					params[p.TemplateName] = fmt.Sprint(s)
-				}
+		params := doc[key]
+		for _, p := range cmd.Params {
+			if s, ok := searchParamInDoc(paramsDoc, trimBeforeFirstDot(cmd.Input), p.AwsField); ok {
+				params[p.Name] = fmt.Sprint(s)
 			}
 		}
 	}
@@ -104,6 +96,17 @@ func trimVal(v interface{}) (out string) {
 	out = bracketTextRegex.ReplaceAllString(out, "")
 	out = strings.TrimSpace(out)
 	return
+}
+
+func trimBeforeFirstDot(s string) string {
+	splits := strings.Split(s, ".")
+	switch len(splits) {
+	case 0, 1:
+		return s
+	default:
+		return strings.Join(splits[1:], ".")
+
+	}
 }
 
 func inputToRequestKey(s string) string {

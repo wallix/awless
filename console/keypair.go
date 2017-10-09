@@ -51,7 +51,7 @@ var askPasswordFunc func() ([]byte, error) = func() ([]byte, error) {
 	}
 }
 
-func GenerateSSHKeyPair(size int, encryptKey bool) ([]byte, []byte, error) {
+var GenerateSSHKeyPair = func(size int, encryptKey bool) ([]byte, []byte, error) {
 	key, err := rsa.GenerateKey(rand.Reader, size)
 	if err != nil {
 		return nil, nil, err

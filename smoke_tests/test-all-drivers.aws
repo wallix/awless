@@ -33,7 +33,7 @@ create role name=my-full-test-role principal-service="ec2.amazonaws.com" sleep-a
 create role name=my-full-test-role-2 principal-account=$account
 create role name=my-full-test-role-3 principal-user=$userArn
 create user name=my-full-test-user
-create accesskey user=my-full-test-user
+create accesskey user=my-full-test-user no-prompt=true
 create loginprofile password=my-full-test-password username=my-full-test-user password-reset=false
 create group name=my-full-test-group
 attach user group=my-full-test-group name=my-full-test-user
@@ -55,11 +55,6 @@ instance = create instance count=1 image=ami-f1949e95 name=my-full-test-inst sub
 update instance id=$instance lock=false
 secgroup2 = create securitygroup description="my second security group description" name=my-full-test-securitygroup2 vpc=$vpc
 attach securitygroup id=$secgroup2 instance=$instance
-check instance id=$instance state=running timeout=180
-stop instance id=$instance
-check instance id=$instance state=stopped timeout=180
-update instance id=$instance type=t2.nano
-start instance id=$instance
 copy image name=my-full-test-image-import source-id=ami-699fbf09 source-region=us-west-1 description="my import image full test" encrypted=false
 cloudformationRole = arn:aws:iam::{principal.account}:role/my-full-test-role-cloudformation
 create stack name=my-full-test-cf-template template-file={cloudformation.templatefile} capabilities=CAPABILITY_IAM,CAPABILITY_NAMED_IAM disable-rollback=true parameters=KeyName:my-full-test-keypair,DBPassword:testdbpasswd,DBUser:testdbuser,DBRootPassword:testdbroot1234 policy-file={cloudformation.policy-file} role=$cloudformationRole timeout=180
@@ -72,6 +67,11 @@ ovafile = create s3object bucket=$bucket file={void.ova-file} acl=bucket-owner-r
 update s3object acl=private bucket=$bucket name=$ovafile
 import image architecture=x86_64 bucket=$bucket description="my non-working import task" license=BYOL platform=Linux role=vmimport s3object=$ovafile
 import image url=s3://my-full-test-bucket/mytestfile.ova
+check instance id=$instance state=running timeout=180
+stop instance id=$instance
+check instance id=$instance state=stopped timeout=180
+update instance id=$instance type=t2.nano
+start instance id=$instance
 vol = create volume availabilityzone=$azone size=2
 check instance id=$instance state=running timeout=180
 attach volume id=$vol device=/dev/sdh instance=$instance

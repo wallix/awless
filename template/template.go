@@ -18,13 +18,11 @@ package template
 
 import (
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/oklog/ulid"
-	"github.com/wallix/awless/template/driver"
 	"github.com/wallix/awless/template/internal/ast"
 )
 
@@ -42,26 +40,39 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	for _, sts := range s.Statements {
 		clone := sts.Clone()
 		current.Statements = append(current.Statements, clone)
+		ctx := map[string]interface{}{
+			"Variables":  env.ResolvedVariables,
+			"References": env.ResolvedVariables, // retro-compatibility with v0.1.2
+		}
 		switch n := clone.Node.(type) {
 		case *ast.CommandNode:
-			if err := runCmd(n, env, vars); err != nil {
-				if err == driverFunctionFailedErr {
+			n.ProcessRefs(vars)
+			if env.IsDryRun {
+				n.CmdResult, n.CmdErr = n.Command.DryRun(ctx, n.ToDriverParams())
+				n.CmdErr = prefixError(n.CmdErr, "dry run")
+			} else {
+
+				n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
+				if n.CmdErr != nil {
 					return current, nil
 				}
-				return current, err
 			}
 		case *ast.DeclarationNode:
 			ident := n.Ident
 			expr := n.Expr
-			switch cmd := expr.(type) {
+			switch n := expr.(type) {
 			case *ast.CommandNode:
-				if err := runCmd(cmd, env, vars); err != nil {
-					if err == driverFunctionFailedErr {
+				n.ProcessRefs(vars)
+				if env.IsDryRun {
+					n.CmdResult, n.CmdErr = n.Command.DryRun(ctx, n.ToDriverParams())
+					n.CmdErr = prefixError(n.CmdErr, "dry run")
+				} else {
+					n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
+					if n.CmdErr != nil {
 						return current, nil
 					}
-					return current, err
 				}
-				vars[ident] = cmd.Result()
+				vars[ident] = n.Result()
 			default:
 				return current, fmt.Errorf("unknown type of node: %T", expr)
 			}
@@ -73,27 +84,11 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	return current, nil
 }
 
-func (s *Template) DryRun(env *Env) error {
-	defer env.Driver.SetDryRun(false)
-	env.Driver.SetDryRun(true)
-
-	res, err := s.Run(env)
-	if err != nil {
+func prefixError(err error, prefix string) error {
+	if err == nil {
 		return err
 	}
-
-	errs := &Errors{}
-	for _, cmd := range res.CommandNodesIterator() {
-		if cmderr := cmd.Err(); cmderr != nil {
-			errs.add(cmderr)
-		}
-	}
-
-	if _, any := errs.Errors(); any {
-		return errs
-	}
-
-	return nil
+	return fmt.Errorf("%s: %s", prefix, err.Error())
 }
 
 func (s *Template) Validate(rules ...Validator) (all []error) {
@@ -114,36 +109,20 @@ func (t *Template) HasErrors() bool {
 	return false
 }
 
-func (t *Template) UniqueDefinitions(fn DefinitionLookupFunc) (definitions Definitions) {
-	unique := make(map[string]Definition)
+func (t *Template) UniqueDefinitions(apis map[string]string) (res []string) {
+	unique := make(map[string]struct{})
 	for _, cmd := range t.CommandNodesIterator() {
 		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
-		if def, ok := fn(key); ok {
-			if _, done := unique[key]; !done {
-				unique[key] = def
-				definitions = append(definitions, def)
-			}
+		if api, found := apis[key]; found {
+			unique[api] = struct{}{}
 		}
 	}
 
+	for api := range unique {
+		res = append(res, api)
+	}
+
 	return
-}
-
-var driverFunctionFailedErr = errors.New("Driver function call failed")
-
-func runCmd(n *ast.CommandNode, env *Env, vars map[string]interface{}) error {
-	fn, err := env.Driver.Lookup(n.Action, n.Entity)
-	if err != nil {
-		return err
-	}
-	n.ProcessRefs(vars)
-
-	ctx := driver.NewContext(env.ResolvedVariables)
-	n.CmdResult, n.CmdErr = fn(ctx, n.ToDriverParams())
-	if n.CmdErr != nil {
-		return driverFunctionFailedErr
-	}
-	return nil
 }
 
 func (s *Template) visitHoles(fn func(n ast.WithHoles)) {

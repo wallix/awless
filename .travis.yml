@@ -3,7 +3,7 @@ language: go
 install: true
 
 go:
-  - 1.8
+  - 1.9
 
 script:
   - go test $(go list ./... | grep -v /vendor/)

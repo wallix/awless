@@ -2,32 +2,33 @@ package parameters
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/wallix/awless/aws/driver"
+	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/template"
 )
 
 func Fuzz(data []byte) int {
 	var ok bool
-	for _, def := range awsdriver.AWSTemplatesDefinitions {
+	for _, def := range awsspec.AWSTemplatesDefinitions {
 		env := template.NewEnv()
 		fillers := make(map[string]interface{})
-		for _, param := range def.Required() {
+		for _, param := range def.RequiredParams {
 			fillers[param] = "default"
 		}
 		env.AddFillers(fillers)
 
 		env.AliasFunc = func(e, k, v string) string { return "" }
-		env.DefLookupFunc = func(in string) (template.Definition, bool) {
-			return def, true
+		env.Lookuper = func(tokens ...string) interface{} {
+			return awsspec.NoSessionFactory.Build(strings.Join(tokens, ""))()
 		}
-		for _, param := range def.Required() {
+		for _, param := range def.RequiredParams {
 			inTpl, err := template.Parse(fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, param, string(data)))
 			if err != nil {
 				continue
 			}
 
-			_, _, err = template.Compile(inTpl, env, template.LenientCompileMode)
+			_, _, err = template.Compile(inTpl, env, template.TestCompileMode)
 			if err != nil {
 				continue
 			}

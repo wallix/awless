@@ -24,6 +24,8 @@ import (
 func TestCloneAST(t *testing.T) {
 	tree := &AST{}
 
+	cmd := new(fakeCmd)
+
 	tree.Statements = append(tree.Statements, &Statement{Node: &DeclarationNode{
 		Ident: "myvar",
 		Expr: &CommandNode{
@@ -32,7 +34,8 @@ func TestCloneAST(t *testing.T) {
 		}}}, &Statement{Node: &DeclarationNode{
 		Ident: "myothervar",
 		Expr: &CommandNode{
-			Action: "create", Entity: "subnet",
+			Command: cmd,
+			Action:  "create", Entity: "subnet",
 			Params: map[string]CompositeValue{"vpc": &holeValue{hole: "myvar"}},
 		}}}, &Statement{Node: &CommandNode{
 		Action: "create", Entity: "instance",
@@ -75,4 +78,13 @@ func TestIsQuoted(t *testing.T) {
 			t.Fatalf("%d: got %t, want %t", i+1, got, want)
 		}
 	}
+}
+
+type fakeCmd struct{}
+
+func (*fakeCmd) Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error) {
+	return nil, nil
+}
+func (*fakeCmd) DryRun(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error) {
+	return nil, nil
 }

@@ -89,7 +89,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"source-id":     "The ID of the EBS snapshot to copy",
 		"source-region": "The ID of the region that contains the snapshot to be copied",
 	},
-	"createaccesskey": {},
+	"createaccesskey": {
+		"user": "The name of the IAM user that the new key will belong to",
+	},
 	"createalarm": {
 		"alarm-actions":            "The actions to execute when this alarm transitions to the ALARM state from any other state",
 		"description":              "The description for the alarm",
@@ -172,7 +174,6 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name": "The name of the group to create",
 	},
 	"createinstance": {
-		"count":         "The minimum number of instances to launch",
 		"image":         "The ID of the AMI, which you can get by calling DescribeImages",
 		"ip":            "The primary IPv4 address",
 		"keypair":       "The name of the key pair",
@@ -186,7 +187,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name": "The name of the instance profile to create",
 	},
 	"createinternetgateway": {},
-	"createkeypair":         {},
+	"createkeypair": {
+		"name": "A unique name for the key pair",
+	},
 	"createlaunchconfiguration": {
 		"image":          "The ID of the Amazon Machine Image (AMI) to use to launch your EC2 instances",
 		"keypair":        "The name of the key pair",
@@ -229,7 +232,10 @@ var generatedParamsDoc = map[string]map[string]string{
 		"securitygroups": "The IDs of one or more security groups",
 		"subnet":         "The ID of the subnet to associate with the network interface",
 	},
-	"createpolicy": {},
+	"createpolicy": {
+		"description": "A friendly description of the policy",
+		"name":        "The friendly name of the policy",
+	},
 	"createqueue": {
 		"name": "The name of the new queue",
 	},
@@ -378,7 +384,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"deleteimage": {},
 	"deleteinstance": {
-		"id": "One or more instance IDs",
+		"ids": "One or more instance IDs",
 	},
 	"deleteinstanceprofile": {
 		"name": "The name of the instance profile to delete",
@@ -549,7 +555,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
 		"username":       "The name of the user whose password you want to update",
 	},
-	"updatepolicy": {},
+	"updatepolicy": {
+		"arn": "The Amazon Resource Name (ARN) of the IAM policy to which you want to add a new version",
+	},
 	"updaterecord": {},
 	"updates3object": {
 		"acl":     "The canned ACL to apply to the object",

@@ -49,8 +49,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"instance": "The ID of the Instance",
 	},
 	"authenticateregistry": {
-		"accounts":   "A list of AWS account IDs that are associated with the registries for which to authenticate",
-		"no-confirm": "Do not ask confirmation before effectively running `docker login` command",
+		"accounts":        "A list of AWS account IDs that are associated with the registries for which to authenticate",
+		"no-confirm":      "Do not ask confirmation before effectively running `docker login` command",
+		"no-docker-login": "Set to 'true' to disable the prompt and automatic execution of `docker login` command",
 	},
 	"checkcertificate": {
 		"arn":     "The Amazon Resource Name (ARN) of the certificate to check",
@@ -318,7 +319,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"delete-snapshots": "Set to 'true' to also delete the snapshots created from this image",
 	},
 	"deleteinstance": {
-		"id": "The ID(s) of the instance(s) to be deleted",
+		"ids": "The ID(s) of the instance(s) to be deleted",
 	},
 	"deleteinternetgateway": {
 		"id": "The ID of the Internet gateway to be deleted",

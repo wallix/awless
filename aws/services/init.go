@@ -18,12 +18,10 @@ package awsservices
 
 import (
 	"errors"
-	"fmt"
 
-	"github.com/wallix/awless/aws/config"
+	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/driver"
 )
 
 var (
@@ -65,40 +63,10 @@ func Init(conf map[string]interface{}, log *logger.Logger, profileSetterCallback
 	cloud.ServiceRegistry[CdnService.Name()] = CdnService
 	cloud.ServiceRegistry[CloudformationService.Name()] = CloudformationService
 
+	awsspec.CommandFactory = &awsspec.AWSFactory{
+		Log:  log,
+		Sess: sess,
+	}
+
 	return nil
-}
-
-func NewDriver(region, profile string, log ...*logger.Logger) (driver.Driver, error) {
-	if !awsconfig.IsValidRegion(region) {
-		return nil, fmt.Errorf("invalid region '%s' provided", region)
-	}
-
-	drivLog := logger.DiscardLogger
-	if len(log) > 0 {
-		drivLog = log[0]
-	}
-
-	sb := newSessionResolver().withRegion(region).withProfile(profile).withLogger(drivLog).withCredentialResolvers()
-
-	sess, err := sb.resolve()
-	if err != nil {
-		return nil, err
-	}
-
-	awsconf := config(
-		map[string]interface{}{"aws.region": region, "aws.profile": profile},
-	)
-
-	var drivers []driver.Driver
-	drivers = append(drivers, NewAccess(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewInfra(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewStorage(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewMessaging(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewDns(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewLambda(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewMonitoring(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewCdn(sess, awsconf, drivLog).Drivers()...)
-	drivers = append(drivers, NewCloudformation(sess, awsconf, drivLog).Drivers()...)
-
-	return driver.NewMultiDriver(drivers...), nil
 }

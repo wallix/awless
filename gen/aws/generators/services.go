@@ -88,8 +88,6 @@ import (
 	"github.com/wallix/awless/config"
     "github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/driver"
-	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/fetch"
 	"github.com/wallix/awless/aws/fetch"
 	tstore "github.com/wallix/triplestore"
@@ -191,14 +189,6 @@ func (s *{{ Title $service.Name }}) Name() string {
 
 func (s *{{ Title $service.Name }}) Region() string {
   return s.region
-}
-
-func (s *{{ Title $service.Name }}) Drivers() []driver.Driver {
-  return []driver.Driver{ 
-		{{- range $, $api := $service.Api }}
-		awsdriver.New{{ Title $api }}Driver(s.{{ ApiToInterface $api }}),
-		{{- end }}
-	}
 }
 
 func (s *{{ Title $service.Name }}) ResourceTypes() []string {

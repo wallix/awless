@@ -55,9 +55,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/template/driver"
 )
 
 // DO NOT EDIT - This file was automatically generated with go generate
@@ -95,12 +93,6 @@ func (m *mockEc2) Provider() string {
 
 func (m *mockEc2) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockEc2) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewEc2Driver(s.EC2API),
-	}
 }
 
 func (m *mockEc2) ResourceTypes() []string {
@@ -225,12 +217,6 @@ func (m *mockElbv2) ProviderAPI() string {
 	return ""
 }
 
-func (s *mockElbv2) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewElbv2Driver(s.ELBV2API),
-	}
-}
-
 func (m *mockElbv2) ResourceTypes() []string {
 	return []string{}
 }
@@ -288,12 +274,6 @@ func (m *mockRds) Provider() string {
 
 func (m *mockRds) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockRds) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewRdsDriver(s.RDSAPI),
-	}
 }
 
 func (m *mockRds) ResourceTypes() []string {
@@ -367,12 +347,6 @@ func (m *mockAutoscaling) Provider() string {
 
 func (m *mockAutoscaling) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockAutoscaling) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewAutoscalingDriver(s.AutoScalingAPI),
-	}
 }
 
 func (m *mockAutoscaling) ResourceTypes() []string {
@@ -463,12 +437,6 @@ func (m *mockAcm) ProviderAPI() string {
 	return ""
 }
 
-func (s *mockAcm) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewAcmDriver(s.ACMAPI),
-	}
-}
-
 func (m *mockAcm) ResourceTypes() []string {
 	return []string{}
 }
@@ -529,12 +497,6 @@ func (m *mockIam) Provider() string {
 
 func (m *mockIam) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockIam) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewIamDriver(s.IAMAPI),
-	}
 }
 
 func (m *mockIam) ResourceTypes() []string {
@@ -627,12 +589,6 @@ func (m *mockS3) ProviderAPI() string {
 	return ""
 }
 
-func (s *mockS3) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewS3Driver(s.S3API),
-	}
-}
-
 func (m *mockS3) ResourceTypes() []string {
 	return []string{}
 }
@@ -669,12 +625,6 @@ func (m *mockSns) Provider() string {
 
 func (m *mockSns) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockSns) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewSnsDriver(s.SNSAPI),
-	}
 }
 
 func (m *mockSns) ResourceTypes() []string {
@@ -749,12 +699,6 @@ func (m *mockSqs) ProviderAPI() string {
 	return ""
 }
 
-func (s *mockSqs) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewSqsDriver(s.SQSAPI),
-	}
-}
-
 func (m *mockSqs) ResourceTypes() []string {
 	return []string{}
 }
@@ -795,12 +739,6 @@ func (m *mockRoute53) Provider() string {
 
 func (m *mockRoute53) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockRoute53) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewRoute53Driver(s.Route53API),
-	}
 }
 
 func (m *mockRoute53) ResourceTypes() []string {
@@ -857,12 +795,6 @@ func (m *mockLambda) ProviderAPI() string {
 	return ""
 }
 
-func (s *mockLambda) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewLambdaDriver(s.LambdaAPI),
-	}
-}
-
 func (m *mockLambda) ResourceTypes() []string {
 	return []string{}
 }
@@ -916,12 +848,6 @@ func (m *mockCloudwatch) Provider() string {
 
 func (m *mockCloudwatch) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockCloudwatch) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewCloudwatchDriver(s.CloudWatchAPI),
-	}
 }
 
 func (m *mockCloudwatch) ResourceTypes() []string {
@@ -995,12 +921,6 @@ func (m *mockCloudfront) ProviderAPI() string {
 	return ""
 }
 
-func (s *mockCloudfront) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewCloudfrontDriver(s.CloudFrontAPI),
-	}
-}
-
 func (m *mockCloudfront) ResourceTypes() []string {
 	return []string{}
 }
@@ -1036,12 +956,6 @@ func (m *mockCloudformation) Provider() string {
 
 func (m *mockCloudformation) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockCloudformation) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewCloudformationDriver(s.CloudFormationAPI),
-	}
 }
 
 func (m *mockCloudformation) ResourceTypes() []string {
@@ -1096,12 +1010,6 @@ func (m *mockEcr) Provider() string {
 
 func (m *mockEcr) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockEcr) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewEcrDriver(s.ECRAPI),
-	}
 }
 
 func (m *mockEcr) ResourceTypes() []string {
@@ -1163,12 +1071,6 @@ func (m *mockEcs) Provider() string {
 
 func (m *mockEcs) ProviderAPI() string {
 	return ""
-}
-
-func (s *mockEcs) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewEcsDriver(s.ECSAPI),
-	}
 }
 
 func (m *mockEcs) ResourceTypes() []string {

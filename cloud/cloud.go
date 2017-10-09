@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/graph"
-	"github.com/wallix/awless/template/driver"
 )
 
 var ErrFetchAccessDenied = errors.New("access denied to cloud resource")
@@ -105,7 +104,6 @@ const (
 type Service interface {
 	Region() string
 	Name() string
-	Drivers() []driver.Driver
 	ResourceTypes() []string
 	IsSyncDisabled() bool
 	Fetch(context.Context) (*graph.Graph, error)

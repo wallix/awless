@@ -69,11 +69,6 @@ limitations under the License.
 
 package awsservices
 
-import (
-	"github.com/wallix/awless/template/driver"
-	"github.com/wallix/awless/aws/driver"
-)
-
 // DO NOT EDIT - This file was automatically generated with go generate
 
 {{ range $, $mock := . }}
@@ -105,12 +100,6 @@ func (m * {{ $mock.Name }}) Provider() string {
 
 func (m * {{ $mock.Name }}) ProviderAPI() string {
 	return ""
-}
-
-func (s *{{ $mock.Name }}) Drivers() []driver.Driver {
-  return []driver.Driver{
-		awsdriver.New{{ Title $mock.Api }}Driver(s.{{ ApiToInterface $mock.Api }}),
-	}
 }
 
 func (m * {{ $mock.Name }}) ResourceTypes() []string {

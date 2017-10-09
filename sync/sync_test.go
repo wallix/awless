@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/template/driver"
 
 	"io/ioutil"
 
@@ -71,7 +70,6 @@ type mockService struct {
 
 func (s *mockService) Region() string                                            { return s.region }
 func (s *mockService) Name() string                                              { return s.name }
-func (s *mockService) Drivers() []driver.Driver                                  { return nil }
 func (s *mockService) ResourceTypes() []string                                   { return []string{} }
 func (s *mockService) Fetch(context.Context) (*graph.Graph, error)               { return s.g, nil }
 func (s *mockService) IsSyncDisabled() bool                                      { return false }

@@ -64,13 +64,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-	"github.com/wallix/awless/aws/driver"
 	"github.com/wallix/awless/aws/fetch"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/fetch"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/template/driver"
 	tstore "github.com/wallix/triplestore"
 )
 
@@ -329,19 +327,6 @@ func (s *Infra) Name() string {
 
 func (s *Infra) Region() string {
 	return s.region
-}
-
-func (s *Infra) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewEc2Driver(s.EC2API),
-		awsdriver.NewElbv2Driver(s.ELBV2API),
-		awsdriver.NewRdsDriver(s.RDSAPI),
-		awsdriver.NewAutoscalingDriver(s.AutoScalingAPI),
-		awsdriver.NewEcrDriver(s.ECRAPI),
-		awsdriver.NewEcsDriver(s.ECSAPI),
-		awsdriver.NewApplicationautoscalingDriver(s.ApplicationAutoScalingAPI),
-		awsdriver.NewAcmDriver(s.ACMAPI),
-	}
 }
 
 func (s *Infra) ResourceTypes() []string {
@@ -1117,13 +1102,6 @@ func (s *Access) Region() string {
 	return s.region
 }
 
-func (s *Access) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewIamDriver(s.IAMAPI),
-		awsdriver.NewStsDriver(s.STSAPI),
-	}
-}
-
 func (s *Access) ResourceTypes() []string {
 	return []string{
 		"user",
@@ -1387,12 +1365,6 @@ func (s *Storage) Region() string {
 	return s.region
 }
 
-func (s *Storage) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewS3Driver(s.S3API),
-	}
-}
-
 func (s *Storage) ResourceTypes() []string {
 	return []string{
 		"bucket",
@@ -1543,13 +1515,6 @@ func (s *Messaging) Name() string {
 
 func (s *Messaging) Region() string {
 	return s.region
-}
-
-func (s *Messaging) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewSnsDriver(s.SNSAPI),
-		awsdriver.NewSqsDriver(s.SQSAPI),
-	}
 }
 
 func (s *Messaging) ResourceTypes() []string {
@@ -1723,12 +1688,6 @@ func (s *Dns) Region() string {
 	return s.region
 }
 
-func (s *Dns) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewRoute53Driver(s.Route53API),
-	}
-}
-
 func (s *Dns) ResourceTypes() []string {
 	return []string{
 		"zone",
@@ -1877,12 +1836,6 @@ func (s *Lambda) Region() string {
 	return s.region
 }
 
-func (s *Lambda) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewLambdaDriver(s.LambdaAPI),
-	}
-}
-
 func (s *Lambda) ResourceTypes() []string {
 	return []string{
 		"function",
@@ -2006,12 +1959,6 @@ func (s *Monitoring) Name() string {
 
 func (s *Monitoring) Region() string {
 	return s.region
-}
-
-func (s *Monitoring) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewCloudwatchDriver(s.CloudWatchAPI),
-	}
 }
 
 func (s *Monitoring) ResourceTypes() []string {
@@ -2162,12 +2109,6 @@ func (s *Cdn) Region() string {
 	return s.region
 }
 
-func (s *Cdn) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewCloudfrontDriver(s.CloudFrontAPI),
-	}
-}
-
 func (s *Cdn) ResourceTypes() []string {
 	return []string{
 		"distribution",
@@ -2291,12 +2232,6 @@ func (s *Cloudformation) Name() string {
 
 func (s *Cloudformation) Region() string {
 	return s.region
-}
-
-func (s *Cloudformation) Drivers() []driver.Driver {
-	return []driver.Driver{
-		awsdriver.NewCloudformationDriver(s.CloudFormationAPI),
-	}
 }
 
 func (s *Cloudformation) ResourceTypes() []string {
