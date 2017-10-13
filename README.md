@@ -60,6 +60,7 @@ Or read the [introductory blog post about awless](https://medium.com/@hbbio/awle
 More articles:
 
    - [Simplified user management for AWS](https://medium.com/@awlessCLI/simplified-user-management-for-aws-6f828ccab387)
+   - [InfoWorld: Production-grade deployment of WordPress](https://www.infoworld.com/article/3230547/cloud-computing/awless-tutorial-try-a-smarter-cli-for-aws.html)
 
 # About
 
