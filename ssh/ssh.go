@@ -100,14 +100,14 @@ func (c *Client) DialWithUsers(usernames ...string) error {
 	return fmt.Errorf("unable to authenticate to %s for users %q. Last error: %s", hostport, usernames, err)
 }
 
-func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string) (*Client, error) {
-	hostport := fmt.Sprintf("%s:22", destinationHost)
+func (c *Client) NewClientWithProxy(destinationHost string, destinationPort int, usernames ...string) (*Client, error) {
+	hostport := fmt.Sprintf("%s:%d", destinationHost, destinationPort)
 	for _, user := range usernames {
 		netConn, err := c.Dial("tcp", hostport)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("cannot dial from %s:%d to %s:%d - %s", c.IP, c.Port, destinationHost, destinationPort, err)
 		}
-		c.logger.ExtraVerbosef("valid new tcp connection from %s to %s", c.IP, destinationHost)
+		c.logger.ExtraVerbosef("successful tcp connection from %s:%d to %s:%d", c.IP, c.Port, destinationHost, destinationPort)
 		newConfig := *c.Config
 		newConfig.User = user
 		if !c.StrictHostKeyChecking {
@@ -127,14 +127,14 @@ func (c *Client) NewClientWithProxy(destinationHost string, usernames ...string)
 			IP:      destinationHost,
 			User:    user,
 			Keypath: c.Keypath,
-			Port:    c.Port,
+			Port:    destinationPort,
 			InteractiveTerminalFunc: func(*gossh.Client) error { return nil },
 			StrictHostKeyChecking:   c.StrictHostKeyChecking,
 			logger:                  logger.DiscardLogger,
 		}, nil
 	}
 
-	return nil, fmt.Errorf("cannot proxy from %s to %s with users %q", c.IP, destinationHost, usernames)
+	return nil, fmt.Errorf("cannot proxy from %s:%d to %s:%d with users %q", c.IP, c.Port, destinationHost, destinationPort, usernames)
 }
 
 func (c *Client) CloseAll() error {
@@ -185,7 +185,7 @@ func (c *Client) SSHConfigString(hostname string) string {
 		if k := c.Proxy.Keypath; len(k) > 0 {
 			keyArg = fmt.Sprintf("-i %s", k)
 		}
-		extraOpts["ProxyCommand"] = fmt.Sprintf("ssh %s %s@%s -W %%h:%%p", keyArg, c.Proxy.User, c.Proxy.IP)
+		extraOpts["ProxyCommand"] = fmt.Sprintf("ssh %s %s@%s -p %d -W %%h:%%p", keyArg, c.Proxy.User, c.Proxy.IP, c.Proxy.Port)
 	}
 
 	params := struct {
@@ -232,7 +232,7 @@ func (c *Client) localExec() ([]string, bool) {
 		if k := c.Proxy.Keypath; len(k) > 0 {
 			keyArg = fmt.Sprintf("-i %s", k)
 		}
-		args = append(args, "-o", fmt.Sprintf("ProxyCommand='ssh %s %s@%s -W %%h:%%p'", keyArg, c.Proxy.User, c.Proxy.IP))
+		args = append(args, "-o", fmt.Sprintf("ProxyCommand='ssh %s %s@%s -p %d -W %%h:%%p'", keyArg, c.Proxy.User, c.Proxy.IP, c.Proxy.Port))
 	}
 
 	return args, exists

@@ -40,7 +40,7 @@ import (
 )
 
 var keyPathFlag, proxyInstanceThroughFlag string
-var sshPortFlag int
+var sshPortFlag, sshTroughPortFlag int
 var printSSHConfigFlag bool
 var printSSHCLIFlag bool
 var privateIPFlag bool
@@ -49,7 +49,8 @@ var disableStrictHostKeyCheckingFlag bool
 func init() {
 	RootCmd.AddCommand(sshCmd)
 	sshCmd.Flags().StringVarP(&keyPathFlag, "identity", "i", "", "Set path or name toward the identity (key file) to use to connect through SSH")
-	sshCmd.Flags().IntVar(&sshPortFlag, "port", 22, "Set SSH port")
+	sshCmd.Flags().IntVar(&sshPortFlag, "port", 22, "Set SSH target port")
+	sshCmd.Flags().IntVar(&sshTroughPortFlag, "through-port", 22, "Set SSH proxy port")
 	sshCmd.Flags().StringVar(&proxyInstanceThroughFlag, "through", "", "Name of instance to proxy through to connect to a destination host")
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
@@ -64,15 +65,21 @@ var sshCmd = &cobra.Command{
 	Example: `  awless ssh i-8d43b21b                       # using the instance id
   awless ssh redis-prod                       # using name only (other infos are derived)
   awless ssh ec2-user@redis-prod              # forcing the user
+  awless ssh 34.215.29.221                    # using the IP
+  awless ssh root@34.215.29.221 --port 23     # specifying a port
 
-  awless ssh redis-prod -i keyname            # using a key stored in ~/.ssh/keyname.pem
-  awless ssh redis-prod -i ./path/toward/key  # with a keyfile
+  awless ssh redis-prod -i keyname            # using AWS keyname (look into ~/.ssh/keyname.pem & ~/.awless/keys/keyname.pem)
+  awless ssh redis-prod -i ~/path/toward/key  # specifying a full key path
 
   awless ssh db-private --through my-bastion  # connect to a private inst through a public one
   awless ssh db-private --private             # connect using the private IP (when you have a VPN, tunnel, etc ...)
 
-  awless ssh redis-prod --print-cli           # Print out the full terminal command to connect to instance
-  awless ssh redis-prod --print-config        # Print out the full SSH config (i.e: ~/.ssh/config) to connect to instance`,
+  awless ssh redis-prod --print-cli           # print out the full terminal command to connect to instance
+  awless ssh redis-prod --print-config        # print out the full SSH config (i.e: ~/.ssh/config) to connect to instance
+  
+  awless ssh private-redis --through my-proxy                                # connect to private through proxy instance
+  awless ssh private-redis --through my-proxy --through-port 23              # specifying proxy port
+  awless ssh 172.31.77.151 --port 2222 --through my-proxy --through-port 23  # specifying target & proxy port`,
 
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
@@ -103,7 +110,11 @@ var sshCmd = &cobra.Command{
 		firsHopClient.SetLogger(logger.DefaultLogger)
 		firsHopClient.SetStrictHostKeyChecking(!disableStrictHostKeyCheckingFlag)
 		firsHopClient.InteractiveTerminalFunc = console.InteractiveTerminal
-		firsHopClient.Port = sshPortFlag
+		if proxyInstanceThroughFlag != "" {
+			firsHopClient.Port = sshTroughPortFlag
+		} else {
+			firsHopClient.Port = sshPortFlag
+		}
 
 		if privateIPFlag {
 			if priv := connectionCtx.privip; priv != "" {
@@ -148,9 +159,9 @@ var sshCmd = &cobra.Command{
 			destInstanceCtx, err := initInstanceConnectionContext(args[0], keyPathFlag)
 			exitOn(err)
 			if destInstanceCtx.user != "" {
-				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, destInstanceCtx.user)
+				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, sshPortFlag, destInstanceCtx.user)
 			} else {
-				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, awsconfig.DefaultAMIUsers...)
+				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, sshPortFlag, awsconfig.DefaultAMIUsers...)
 			}
 			exitOn(err)
 		}
