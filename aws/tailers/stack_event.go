@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"text/tabwriter"
 	"time"
 
-	"text/tabwriter"
-
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
@@ -386,7 +384,7 @@ func (s *stackEvent) isFailed() bool {
 }
 
 func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) error {
-	inp := &cloudformation.CancelUpdateStackInput{StackName: aws.String(s.stackName)}
+	inp := &cloudformation.CancelUpdateStackInput{StackName: &s.stackName}
 	_, err := cfn.CancelUpdateStack(inp)
 	return err
 }
