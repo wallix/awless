@@ -9,6 +9,7 @@ import (
 
 	"text/tabwriter"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
@@ -32,13 +33,15 @@ const (
 type filters []string
 
 type stackEventTailer struct {
-	stackName        string
-	follow           bool
-	pollingFrequency time.Duration
-	lastEventID      *string
-	nbEvents         int
-	filters          filters
-	deploymentStatus deploymentStatus
+	stackName          string
+	follow             bool
+	pollingFrequency   time.Duration
+	lastEventID        *string
+	nbEvents           int
+	filters            filters
+	deploymentStatus   deploymentStatus
+	timeout            time.Duration
+	cancelAfterTimeout bool
 }
 
 type stackEvent struct {
@@ -47,13 +50,15 @@ type stackEvent struct {
 
 type stackEvents []stackEvent
 
-func NewCloudformationEventsTailer(stackName string, nbEvents int, enableFollow bool, frequency time.Duration, f filters) *stackEventTailer {
+func NewCloudformationEventsTailer(stackName string, nbEvents int, enableFollow bool, frequency time.Duration, f filters, timeout time.Duration, cancelAfterTimeout bool) *stackEventTailer {
 	return &stackEventTailer{
-		stackName:        stackName,
-		follow:           enableFollow,
-		pollingFrequency: frequency,
-		nbEvents:         nbEvents,
-		filters:          f,
+		stackName:          stackName,
+		follow:             enableFollow,
+		pollingFrequency:   frequency,
+		nbEvents:           nbEvents,
+		filters:            f,
+		timeout:            timeout,
+		cancelAfterTimeout: cancelAfterTimeout,
 	}
 }
 
@@ -62,6 +67,8 @@ func (t *stackEventTailer) Name() string {
 }
 
 func (t *stackEventTailer) Tail(w io.Writer) error {
+	startTime := time.Now()
+
 	cfn, ok := awsservices.CloudformationService.(*awsservices.Cloudformation)
 	if !ok {
 		return fmt.Errorf("invalid cloud service, expected awsservices.Cloudformation, got %T", awsservices.CloudformationService)
@@ -94,6 +101,8 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 	}
 
 	ticker := time.NewTicker(t.pollingFrequency)
+	isTimeoutReached := false
+
 	defer ticker.Stop()
 	for range ticker.C {
 		if err := t.displayRelevantEvents(cfn, tab); err != nil {
@@ -107,15 +116,42 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 				var errBuf bytes.Buffer
 				var f filters = []string{StackEventLogicalID, StackEventType, StackEventStatus, StackEventStatusReason}
 
-				errBuf.WriteString("Deployment failed.\nFailed events summary:\n")
-				errBuf.Write(f.header())
+				if isTimeoutReached {
+					errBuf.WriteString("Update was cancelled because timeout has been reached and option 'Cancel On Timeout' enabled\n")
+				} else {
+					errBuf.WriteString("Update failed\n")
+				}
 
-				t.deploymentStatus.failedEvents.printReverse(&errBuf, f)
+				errBuf.WriteString("Failed events summary:\n")
+
+				// printing error events as a nice table
+				errTab := tabwriter.NewWriter(&errBuf, 25, 8, 0, '\t', 0)
+				errTab.Write(f.header())
+				t.deploymentStatus.failedEvents.printReverse(errTab, f)
+				errTab.Flush()
 
 				return fmt.Errorf(errBuf.String())
 			}
 
 			return nil
+		}
+
+		switch {
+		case isTimeoutReached:
+			// if timeout already was triggered,
+			// do nothing
+		case time.Since(startTime) > t.timeout:
+			isTimeoutReached = true
+			if t.cancelAfterTimeout {
+				color.Red("Timeout (%s) reached.", t.timeout.String())
+				color.Red("Canceling update of stack %q", t.stackName)
+				err := t.cancelStackUpdate(cfn)
+				if err != nil {
+					return fmt.Errorf("Couldn't cancel stack update.\nError: %s\nStack update could be running, please check manually", err)
+				}
+			} else {
+				return fmt.Errorf("Timeout (%s) reached. Exiting...", t.timeout.String())
+			}
 		}
 	}
 
@@ -347,4 +383,10 @@ func (s *stackEvent) isDeploymentFinished() bool {
 
 func (s *stackEvent) isFailed() bool {
 	return (s.ResourceStatus != nil && strings.HasSuffix(*s.ResourceStatus, StackEventFailed))
+}
+
+func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) error {
+	inp := &cloudformation.CancelUpdateStackInput{StackName: aws.String(s.stackName)}
+	_, err := cfn.CancelUpdateStack(inp)
+	return err
 }
