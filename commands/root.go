@@ -51,6 +51,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&awsRegionGlobalFlag, "aws-region", "r", "", "Override AWS region temporarily for the current command")
 	RootCmd.PersistentFlags().SetAnnotation("aws-region", cobra.BashCompCustom, []string{"__awless_region_list"})
 	RootCmd.PersistentFlags().StringVarP(&awsProfileGlobalFlag, "aws-profile", "p", "", "Override AWS profile temporarily for the current command")
+	RootCmd.PersistentFlags().SetAnnotation("aws-profile", cobra.BashCompCustom, []string{"__awless_profile_list"})
 	RootCmd.PersistentFlags().StringVar(&awsColorGlobalFlag, "color", "auto", "Force enabling/disabling colors in display (auto, never, always)")
 	RootCmd.PersistentFlags().BoolVar(&networkMonitorFlag, "network-monitor", false, "Debug requests with network monitor")
 	RootCmd.PersistentFlags().MarkHidden("network-monitor")
@@ -179,6 +180,13 @@ __awless_region_list()
     cur="${COMP_WORDS[COMP_CWORD]#*=}"
     regions="us-east-1 us-east-2 us-west-1 us-west-2 ca-central-1 eu-west-1 eu-central-1 eu-west-2 ap-northeast-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 ap-south-1 sa-east-1"
     COMPREPLY=( $(compgen -W "${regions}" -- ${cur}) )
+}
+
+__awless_profile_list()
+{
+    cur="${COMP_WORDS[COMP_CWORD]#*=}"
+    profiles="$((egrep '^\[ *[a-zA-Z0-9_-]+ *\]$' ~/.aws/credentials; grep '\[profile' ~/.aws/config | sed 's|\[profile ||g') | tr -d '[]' | sort | uniq)"
+    COMPREPLY=( $(compgen -W "${profiles}" -- ${cur}) )
 }
 
 `
