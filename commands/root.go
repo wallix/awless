@@ -49,6 +49,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&forceGlobalFlag, "force", "f", false, "Force the command and bypass confirmation prompts")
 	RootCmd.PersistentFlags().BoolVar(&noSyncGlobalFlag, "no-sync", false, "Do not run any sync on command")
 	RootCmd.PersistentFlags().StringVarP(&awsRegionGlobalFlag, "aws-region", "r", "", "Override AWS region temporarily for the current command")
+	RootCmd.PersistentFlags().SetAnnotation("aws-region", cobra.BashCompCustom, []string{"__awless_region_list"})
 	RootCmd.PersistentFlags().StringVarP(&awsProfileGlobalFlag, "aws-profile", "p", "", "Override AWS profile temporarily for the current command")
 	RootCmd.PersistentFlags().StringVar(&awsColorGlobalFlag, "color", "auto", "Force enabling/disabling colors in display (auto, never, always)")
 	RootCmd.PersistentFlags().BoolVar(&networkMonitorFlag, "network-monitor", false, "Debug requests with network monitor")
@@ -171,5 +172,14 @@ __custom_func() {
         *)
             ;;
     esac
-}`
+}
+
+__awless_region_list()
+{
+    cur="${COMP_WORDS[COMP_CWORD]#*=}"
+    regions="us-east-1 us-east-2 us-west-1 us-west-2 ca-central-1 eu-west-1 eu-central-1 eu-west-2 ap-northeast-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 ap-south-1 sa-east-1"
+    COMPREPLY=( $(compgen -W "${regions}" -- ${cur}) )
+}
+
+`
 )
