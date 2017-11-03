@@ -185,7 +185,7 @@ __awless_region_list()
 __awless_profile_list()
 {
     cur="${COMP_WORDS[COMP_CWORD]#*=}"
-    profiles="$((egrep '^\[ *[a-zA-Z0-9_-]+ *\]$' ~/.aws/credentials; grep '\[profile' ~/.aws/config | sed 's|\[profile ||g') | tr -d '[]' | sort | uniq)"
+    profiles="$((egrep '^\[ *[a-zA-Z0-9_-]+ *\]$' ~/.aws/credentials 2>/dev/null; grep '\[profile' ~/.aws/config 2>/dev/null | sed 's|\[profile ||g') | tr -d '[]' | sort | uniq)"
     COMPREPLY=( $(compgen -W "${profiles}" -- ${cur}) )
 }
 
