@@ -129,45 +129,64 @@ const (
 __awless_get_all_ids()
 {
 		local all_ids_output
-		if all_ids_output=$(awless list infra --local --ids 2>/dev/null; awless list access --local --ids 2>/dev/null); then
+		local profile_args
+		if [[ "$1" != "" ]]; then
+			profile_args="-p $1"
+		else
+			profile_args="--local"
+	    fi
+		if all_ids_output=$(awless $profile_args list infra --ids 2>/dev/null; awless $profile_args list access --ids 2>/dev/null); then
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }
 __awless_get_instances_ids()
 {
 		local all_ids_output
-		if all_ids_output=$(awless list instances --local --ids 2>/dev/null); then
+		local profile_args
+		if [[ "$1" != "" ]]; then
+			profile_args="-p $1"
+		else
+			profile_args="--local"
+	    fi
+		if all_ids_output=$(awless $profile_args list instances --ids 2>/dev/null); then
 		COMPREPLY=( $( compgen -W "${all_ids_output[*]}" -- "$cur" ) )
 		fi
 }
 __awless_get_conf_keys()
 {
-		local all_keys_output
-		if all_keys_output=$(awless config list --keys 2>/dev/null); then
+		local all_ids_output
+		local profile_args
+		if [[ "$1" != "" ]]; then
+			profile_args="-p $1"
+		else
+			profile_args="--local"
+	    fi
+		if all_keys_output=$(awless $profile_args config list --keys 2>/dev/null); then
 		COMPREPLY=( $( compgen -W "${all_keys_output[*]}" -- "$cur" ) )
 		fi
 }
 
 __custom_func() {
+	local profile=$(echo ${words[@]} | sed "s|  *-p  *| --aws-profile=|g" | sed -n "s|.*  *--aws-profile=\([^ ]*\).*$|\1|p")
     case ${last_command} in
 				awless_ssh )
-            __awless_get_instances_ids
+            __awless_get_instances_ids $profile
             return
             ;;
 				awless_show )
-            __awless_get_all_ids
+            __awless_get_all_ids $profile
             return
             ;;
 				awless_config_set )
-						__awless_get_conf_keys
+						__awless_get_conf_keys $profile
 						return
 						;;
 				awless_config_get )
-						__awless_get_conf_keys
+						__awless_get_conf_keys $profile
 						return
 						;;
 				awless_config_unset )
-						__awless_get_conf_keys
+						__awless_get_conf_keys $profile
 						return
 						;;
         *)
