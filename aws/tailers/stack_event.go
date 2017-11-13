@@ -65,8 +65,6 @@ func (t *stackEventTailer) Name() string {
 }
 
 func (t *stackEventTailer) Tail(w io.Writer) error {
-	startTime := time.Now()
-
 	cfn, ok := awsservices.CloudformationService.(*awsservices.Cloudformation)
 	if !ok {
 		return fmt.Errorf("invalid cloud service, expected awsservices.Cloudformation, got %T", awsservices.CloudformationService)
@@ -98,47 +96,13 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("Stack %s not being deployed at the moment", t.stackName)
 	}
 
-	ticker := time.NewTicker(t.pollingFrequency)
+	ticker := time.NewTicker(t.pollingFrequency).C
+	timer := time.NewTimer(t.timeout).C
+
 	isTimeoutReached := false
-
-	defer ticker.Stop()
-	for range ticker.C {
-		if err := t.displayRelevantEvents(cfn, tab); err != nil {
-			return err
-		}
-
-		tab.Flush()
-
-		if t.deploymentStatus.isFinished {
-			if len(t.deploymentStatus.failedEvents) > 0 {
-				var errBuf bytes.Buffer
-				var f filters = []string{StackEventLogicalID, StackEventType, StackEventStatus, StackEventStatusReason}
-
-				if isTimeoutReached {
-					errBuf.WriteString("Update was cancelled because timeout has been reached and option 'Cancel On Timeout' enabled\n")
-				} else {
-					errBuf.WriteString("Update failed\n")
-				}
-
-				errBuf.WriteString("Failed events summary:\n")
-
-				// printing error events as a nice table
-				errTab := tabwriter.NewWriter(&errBuf, 25, 8, 0, '\t', 0)
-				errTab.Write(f.header())
-				t.deploymentStatus.failedEvents.printReverse(errTab, f)
-				errTab.Flush()
-
-				return fmt.Errorf(errBuf.String())
-			}
-
-			return nil
-		}
-
-		switch {
-		case isTimeoutReached:
-			// if timeout already was triggered,
-			// do nothing
-		case time.Since(startTime) > t.timeout:
+	for {
+		select {
+		case <-timer:
 			isTimeoutReached = true
 			if t.cancelAfterTimeout {
 				color.Red("Timeout (%s) reached.", t.timeout.String())
@@ -149,6 +113,37 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 				}
 			} else {
 				return fmt.Errorf("Timeout (%s) reached. Exiting...", t.timeout.String())
+			}
+		case <-ticker:
+			if err := t.displayRelevantEvents(cfn, tab); err != nil {
+				return err
+			}
+
+			tab.Flush()
+
+			if t.deploymentStatus.isFinished {
+				if len(t.deploymentStatus.failedEvents) > 0 {
+					var errBuf bytes.Buffer
+					var f filters = []string{StackEventLogicalID, StackEventType, StackEventStatus, StackEventStatusReason}
+
+					if isTimeoutReached {
+						errBuf.WriteString("Update was cancelled because timeout has been reached and option 'Cancel On Timeout' enabled\n")
+					} else {
+						errBuf.WriteString("Update failed\n")
+					}
+
+					errBuf.WriteString("Failed events summary:\n")
+
+					// printing error events as a nice table
+					errTab := tabwriter.NewWriter(&errBuf, 25, 8, 0, '\t', 0)
+					errTab.Write(f.header())
+					t.deploymentStatus.failedEvents.printReverse(errTab, f)
+					errTab.Flush()
+
+					return fmt.Errorf(errBuf.String())
+				}
+
+				return nil
 			}
 		}
 	}
