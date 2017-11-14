@@ -39,11 +39,7 @@ func TestTargetgroup(t *testing.T) {
 					Attributes: []*elbv2.TargetGroupAttribute{},
 				}, nil
 			},
-			ModifyTargetGroupFunc: func(input *elbv2.ModifyTargetGroupInput) (*elbv2.ModifyTargetGroupOutput, error) {
-				return &elbv2.ModifyTargetGroupOutput{
-					TargetGroups: []*elbv2.TargetGroup{{TargetGroupArn: String("any-tg")}},
-				}, nil
-			}}).ExpectInput("ModifyTargetGroupAttributes", &elbv2.ModifyTargetGroupAttributesInput{
+			ModifyTargetGroupFunc: func(input *elbv2.ModifyTargetGroupInput) (*elbv2.ModifyTargetGroupOutput, error) { return nil, nil }}).ExpectInput("ModifyTargetGroupAttributes", &elbv2.ModifyTargetGroupAttributesInput{
 			TargetGroupArn: String("any-tg"),
 			Attributes: []*elbv2.TargetGroupAttribute{
 				{Key: String("stickiness.enabled"), Value: String("ouech")},
@@ -61,7 +57,7 @@ func TestTargetgroup(t *testing.T) {
 			Matcher: &elbv2.Matcher{
 				HttpCode: String("OK"),
 			},
-		}).ExpectCommandResult("any-tg").ExpectCalls("ModifyTargetGroupAttributes", "ModifyTargetGroup").Run(t)
+		}).ExpectCalls("ModifyTargetGroupAttributes", "ModifyTargetGroup").Run(t)
 	})
 
 	t.Run("delete", func(t *testing.T) {
