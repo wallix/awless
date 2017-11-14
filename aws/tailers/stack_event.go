@@ -96,13 +96,16 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("Stack %s not being deployed at the moment", t.stackName)
 	}
 
-	ticker := time.NewTicker(t.pollingFrequency).C
-	timer := time.NewTimer(t.timeout).C
+	ticker := time.NewTicker(t.pollingFrequency)
+	timer := time.NewTimer(t.timeout)
+
+	defer ticker.Stop()
+	defer timer.Stop()
 
 	isTimeoutReached := false
 	for {
 		select {
-		case <-timer:
+		case <-timer.C:
 			isTimeoutReached = true
 			if t.cancelAfterTimeout {
 				color.Red("Timeout (%s) reached.", t.timeout.String())
@@ -114,7 +117,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 			} else {
 				return fmt.Errorf("Timeout (%s) reached. Exiting...", t.timeout.String())
 			}
-		case <-ticker:
+		case <-ticker.C:
 			if err := t.displayRelevantEvents(cfn, tab); err != nil {
 				return err
 			}
