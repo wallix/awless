@@ -2,6 +2,8 @@
 
 ### Features
 
+- `awless attach mfadevice` now propose to automatically add the MFA device configuration to `~/.aws/config`
+
 ### AWS Services
 
 ### Fixes

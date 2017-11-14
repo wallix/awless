@@ -16,15 +16,19 @@ limitations under the License.
 package awsspec
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
+	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/wallix/awless/logger"
 )
@@ -88,6 +92,10 @@ func (cmd *DeleteMfadevice) ValidateParams(params []string) ([]string, error) {
 	return validateParams(cmd, params)
 }
 
+var (
+	awsConfigFilepath = filepath.Join(awsHomeDir(), "config")
+)
+
 type AttachMfadevice struct {
 	_        string `action:"attach" entity:"mfadevice" awsAPI:"iam" awsCall:"EnableMFADevice" awsInput:"iam.EnableMFADeviceInput" awsOutput:"iam.EnableMFADeviceOutput"`
 	logger   *logger.Logger
@@ -96,10 +104,51 @@ type AttachMfadevice struct {
 	User     *string `awsName:"UserName" awsType:"awsstr" templateName:"user" required:""`
 	MfaCode1 *string `awsName:"AuthenticationCode1" awsType:"aws6digitsstring" templateName:"mfa-code-1" required:""`
 	MfaCode2 *string `awsName:"AuthenticationCode2" awsType:"aws6digitsstring" templateName:"mfa-code-2" required:""`
+	NoPrompt *bool   `templateName:"no-prompt"`
 }
 
 func (cmd *AttachMfadevice) ValidateParams(params []string) ([]string, error) {
 	return validateParams(cmd, params)
+}
+
+func (cmd *AttachMfadevice) AfterRun(ctx map[string]interface{}, output interface{}) error {
+	if !BoolValue(cmd.NoPrompt) {
+		if promptConfirm("\nDo you want to create a profile for this MFA device in %s?", awsConfigFilepath) {
+			roleArn, err := promptRole(cmd.api)
+			for err != nil {
+				if !promptConfirm("\nDo you want to create a profile for this MFA device in %s?", awsConfigFilepath) {
+					return nil
+				}
+				roleArn, err = promptRole(cmd.api)
+			}
+			fmt.Fprintln(os.Stderr)
+			srcProfile := promptStringWithDefault("Enter source profile used to assume role: (default) ", "default")
+
+			mfaProfile := promptStringWithDefault("Enter new MFA profile name: (mfa) ", "mfa")
+
+			config := fmt.Sprintf("\n[%s]\n"+
+				"source_profile = %s\n"+
+				"mfa_serial = %s\n"+
+				"role_arn = %s", mfaProfile, srcProfile, StringValue(cmd.Id), roleArn)
+			if promptConfirm("\n%s\n\nAppend this to '%s'?", config, awsConfigFilepath) {
+				created, err := appendToAwsFile(config, awsConfigFilepath)
+				if err != nil {
+					cmd.logger.Error(err)
+				} else {
+					if created {
+						fmt.Fprintf(os.Stderr, "\n\u2713 %s created", awsConfigFilepath)
+					}
+					fmt.Fprintf(os.Stderr, "\n\u2713 New profile '%s' for MFA device stored successfully in '%s'\n\n", mfaProfile, awsConfigFilepath)
+					return nil
+				}
+			}
+			fmt.Fprintf(os.Stderr, "Canceled modification of '%s'.\n\n", awsConfigFilepath)
+			return nil
+		}
+		fmt.Fprintf(os.Stderr, "Canceled adding profile for MFA device to '%s'.\n\n", awsConfigFilepath)
+		return nil
+	}
+	return nil
 }
 
 type DetachMfadevice struct {
@@ -129,4 +178,60 @@ func displayQRCode(w io.Writer, qrCode barcode.Barcode) {
 		}
 		fmt.Fprintln(w)
 	}
+}
+
+func promptStringWithDefault(msg, def string) (res string) {
+	fmt.Fprintf(os.Stderr, msg)
+	fmt.Scanln(&res)
+	res = strings.TrimSpace(res)
+	if res == "" {
+		res = def
+	}
+	return
+}
+
+func promptRole(api iamiface.IAMAPI) (string, error) {
+	rolesNameToArn := make(map[string]string)
+
+	err := api.ListRolesPages(&iam.ListRolesInput{}, func(out *iam.ListRolesOutput, lastPage bool) bool {
+		for _, role := range out.Roles {
+			rolesNameToArn[StringValue(role.RoleName)] = StringValue(role.Arn)
+		}
+		return out.Marker != nil
+	})
+
+	if err == nil && len(rolesNameToArn) > 0 {
+		var roles []readline.PrefixCompleterInterface
+		for name, arn := range rolesNameToArn {
+			roles = append(roles, readline.PcItem(name))
+			roles = append(roles, readline.PcItem(arn))
+		}
+		var roleCompleter = readline.NewPrefixCompleter(roles...)
+		fmt.Fprint(os.Stderr, "Please specify the role (name or ARN) to assume with this MFA device: (Tab for completion) \n")
+		rl, err := readline.NewEx(&readline.Config{
+			Prompt:       "> ",
+			AutoComplete: roleCompleter,
+		})
+		if err != nil {
+			return "", fmt.Errorf("error while selecting role: %s", err)
+		}
+		defer rl.Close()
+		role, err := rl.Readline()
+		if err != nil {
+			return "", fmt.Errorf("error while selecting role: %s", err)
+		}
+		if arn, isName := rolesNameToArn[strings.TrimSpace(role)]; isName {
+			return arn, nil
+		}
+		return role, nil
+	}
+	//No permission to list roles:
+	var roleArn string
+	fmt.Fprint(os.Stderr, "Please specify the role ARN to assume with this MFA device:")
+	fmt.Scanln(&roleArn)
+	roleArn = strings.TrimSpace(roleArn)
+	if roleArn == "" {
+		return roleArn, errors.New("Role cannot be empty")
+	}
+	return roleArn, nil
 }

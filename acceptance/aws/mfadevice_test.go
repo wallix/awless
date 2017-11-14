@@ -31,7 +31,7 @@ func TestMFADevice(t *testing.T) {
 	})
 
 	t.Run("attach", func(t *testing.T) {
-		Template("attach mfadevice id=arn:mfadevice:to:attach user=my-username mfa-code-1=012345 mfa-code-2=123456").
+		Template("attach mfadevice id=arn:mfadevice:to:attach user=my-username mfa-code-1=012345 mfa-code-2=123456 no-prompt=true").
 			Mock(&iamMock{
 				EnableMFADeviceFunc: func(param0 *iam.EnableMFADeviceInput) (*iam.EnableMFADeviceOutput, error) { return nil, nil },
 			}).ExpectInput("EnableMFADevice", &iam.EnableMFADeviceInput{

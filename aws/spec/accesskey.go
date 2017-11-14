@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -55,10 +56,7 @@ func (cmd *CreateAccesskey) AfterRun(ctx map[string]interface{}, output interfac
 	cmd.logger.Warning("You will not have access to the secret keys again after this step.\n")
 
 	if !BoolValue(cmd.NoPrompt) {
-		var yesorno string
-		fmt.Fprintf(os.Stderr, "Do you want to save these access keys in %s? (y/n) ", AWSCredFilepath)
-		fmt.Scanln(&yesorno)
-		if y := strings.TrimSpace(strings.ToLower(yesorno)); y == "y" || y == "yes" {
+		if promptConfirm("Do you want to save these access keys in %s?", AWSCredFilepath) {
 			var profile string
 			fmt.Print("Entry profile name (will default to AWS 'default') ? ")
 			fmt.Scanln(&profile)
@@ -101,9 +99,18 @@ func (cmd *DeleteAccesskey) ValidateParams(params []string) ([]string, error) {
 }
 
 var (
-	AWSCredDir      = filepath.Join(os.Getenv("HOME"), ".aws")
-	AWSCredFilepath = filepath.Join(AWSCredDir, "credentials")
+	AWSCredFilepath = filepath.Join(awsHomeDir(), "credentials")
 )
+
+func awsHomeDir() string {
+	var home string
+	if runtime.GOOS == "windows" { // Windows
+		home = os.Getenv("USERPROFILE")
+	} else {
+		home = os.Getenv("HOME")
+	}
+	return filepath.Join(home, ".aws")
+}
 
 type credentialsPrompter struct {
 	Profile               string
@@ -147,24 +154,41 @@ func (c *credentialsPrompter) Store() (bool, error) {
 	if c.Val.AccessKeyID == "" {
 		return created, errors.New("given empty access key")
 	}
+	return appendToAwsFile(
+		fmt.Sprintf("\n[%s]\naws_access_key_id = %s\naws_secret_access_key = %s\n", c.Profile, c.Val.AccessKeyID, c.Val.SecretAccessKey),
+		AWSCredFilepath,
+	)
+}
 
-	if credentialsDirMissing() {
-		if err := os.MkdirAll(AWSCredDir, 0700); err != nil {
-			return created, fmt.Errorf("creating '%s' : %s", AWSCredDir, err)
+func appendToAwsFile(content string, awsFilePath string) (bool, error) {
+	var created bool
+	if awsHomeDirMissing() {
+		if err := os.MkdirAll(awsHomeDir(), 0700); err != nil {
+			return created, fmt.Errorf("creating '%s' : %s", awsHomeDir(), err)
 		}
 		created = true
 	}
 
-	f, err := os.OpenFile(AWSCredFilepath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(awsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
-		return created, fmt.Errorf("appending to '%s': %s", AWSCredFilepath, err)
+		return created, fmt.Errorf("appending to '%s': %s", awsFilePath, err)
 	}
 
-	if _, err := fmt.Fprintf(f, "\n[%s]\naws_access_key_id = %s\naws_secret_access_key = %s\n", c.Profile, c.Val.AccessKeyID, c.Val.SecretAccessKey); err != nil {
+	if _, err := fmt.Fprintf(f, content); err != nil {
 		return created, err
 	}
 
 	return created, nil
+}
+
+func promptConfirm(msg string, a ...interface{}) bool {
+	var yesorno string
+	fmt.Fprintf(os.Stderr, "%s [y/N] ", fmt.Sprintf(msg, a...))
+	fmt.Scanln(&yesorno)
+	if y := strings.TrimSpace(strings.ToLower(yesorno)); y == "y" || y == "yes" {
+		return true
+	}
+	return false
 }
 
 func (c *credentialsPrompter) HasProfile() bool {
@@ -198,7 +222,7 @@ func promptUntilNonEmpty(question string, v *string) {
 	return
 }
 
-func credentialsDirMissing() bool {
-	_, err := os.Stat(AWSCredDir)
+func awsHomeDirMissing() bool {
+	_, err := os.Stat(awsHomeDir())
 	return os.IsNotExist(err)
 }
