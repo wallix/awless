@@ -29,6 +29,8 @@ var tailFollowFrequencyFlag time.Duration
 var tailEnableFollowFlag bool
 var tailNumberEventsFlag int
 var stackEventsFilters []string
+var stackEventsTailTimeout time.Duration
+var cancelStackUpdateAfterTimeout bool
 
 func init() {
 	RootCmd.AddCommand(tailCmd)
@@ -47,6 +49,9 @@ func init() {
 			awstailers.StackEventStatusReason,
 			awstailers.StackEventTimestamp,
 			awstailers.StackEventType))
+
+	stackEventsCmd.PersistentFlags().BoolVar(&cancelStackUpdateAfterTimeout, "cancel-on-timeout", false, "Cancel stack update when timeout is reached, use with 'timeout' flag")
+	stackEventsCmd.PersistentFlags().DurationVar(&stackEventsTailTimeout, "timeout", time.Duration(1*time.Hour), "Time to wait for stack update to complete, use with 'follow' flag")
 
 	tailCmd.AddCommand(stackEventsCmd)
 }
@@ -77,6 +82,6 @@ var stackEventsCmd = &cobra.Command{
 			exitOn(fmt.Errorf("expecting stack-name string"))
 		}
 
-		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag, stackEventsFilters).Tail(os.Stdout))
+		exitOn(awstailers.NewCloudformationEventsTailer(args[0], tailNumberEventsFlag, tailEnableFollowFlag, tailFollowFrequencyFlag, stackEventsFilters, stackEventsTailTimeout, cancelStackUpdateAfterTimeout).Tail(os.Stdout))
 	},
 }
