@@ -1,4 +1,4 @@
-## v0.1.6 [unreleased]
+## v0.1.6 [2017-11-16]
 
 **Overall re-design of AWS commands with full acceptance testing allowing for easier external contribution, greater flexibility and scalability moving forward**
 
