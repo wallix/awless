@@ -1,17 +1,13 @@
 ## v0.1.6 [unreleased]
 
+**Overall re-design of AWS commands with full acceptance testing allowing for easier external contribution, greater flexibility and scalability moving forward**
+
 ### Features
 
 - [#154](https://github.com/wallix/awless/issues/154): `awless ssh` allow specifying both `--port` and `--through-port`
 - [#151](https://github.com/wallix/awless/issues/151): `awless ssh` using ip addresses. Ex: `awless ssh 172.31.68.49 --through 172.31.11.249`
 - `awless attach mfadevice` now propose to automatically add the MFA device configuration to `~/.aws/config`
 - [#158](https://github.com/wallix/awless/pull/158), [#159](https://github.com/wallix/awless/pull/159): Added bash/zsh completion to regions and profiles. Thanks to @padilo.
-
-### AWS Services
-
-### Fixes
-
-- Overall re-design and full acceptance testing of cloud commands
 
 ## v0.1.5 [2017-10-05]
 

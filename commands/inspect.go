@@ -23,6 +23,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/inspect"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
@@ -64,11 +65,10 @@ var inspectCmd = &cobra.Command{
 			}
 		}
 
-		g, err := sync.LoadAllLocalGraphs()
+		g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
 		exitOn(err)
 
-		err = inspector.Inspect(g)
-		exitOn(err)
+		exitOn(inspector.Inspect(g))
 
 		inspector.Print(os.Stdout)
 
