@@ -89,7 +89,7 @@ func generateAcceptanceMocks() {
 					paramBuff.WriteRune(' ')
 					t := p.Type().String()
 					if found := strings.LastIndexByte(t, '/'); found != -1 {
-						t = t[found+1 : len(t)]
+						t = t[found+1:]
 					}
 					if isPointer(p.Type().String()) {
 						t = "*" + t
@@ -112,7 +112,7 @@ func generateAcceptanceMocks() {
 					p := sig.Results().At(j)
 					t := p.Type().String()
 					if found := strings.LastIndexByte(t, '/'); found != -1 {
-						t = t[found+1 : len(t)]
+						t = t[found+1:]
 					}
 					if isPointer(p.Type().String()) {
 						t = "*" + t

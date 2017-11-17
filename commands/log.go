@@ -39,7 +39,7 @@ func init() {
 	logCmd.Flags().BoolVar(&deleteAllLogsFlag, "delete-all", false, "Delete all logs from local db")
 	logCmd.Flags().StringVar(&deleteFromIdLogsFlag, "delete", "", "Delete a specifc log entry given its id")
 	logCmd.Flags().IntVarP(&limitLogCountFlag, "number", "n", 0, "Limit log output to the last n logs")
-	logCmd.Flags().BoolVar(&rawJSONLogFlag, "raw", false, "Display logs as raw json with template context info, ususally for debug")
+	logCmd.Flags().BoolVar(&rawJSONLogFlag, "raw", false, "Display logs as raw json with template context info, usually for debug")
 	logCmd.Flags().BoolVar(&shortLogFlag, "short", false, "Display one or more template log with less info")
 	logCmd.Flags().BoolVar(&fullLogFlag, "full", false, "Display template logs with full info")
 	logCmd.Flags().BoolVar(&idOnlyLogFlag, "id-only", false, "Show only log template IDs (i.e. revert IDs)")

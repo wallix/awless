@@ -145,13 +145,10 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 
 					return fmt.Errorf(errBuf.String())
 				}
-
 				return nil
 			}
 		}
 	}
-
-	return nil
 }
 
 // get N latest events

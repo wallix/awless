@@ -90,7 +90,7 @@ func TestResolvePolicyErrorMessageWithSuggestion(t *testing.T) {
 
 	for _, e := range shouldContains {
 		if msg := err.Error(); !strings.Contains(msg, e) {
-			t.Errorf("expect\n%s\nto contain\n%s\n", msg, e)
+			t.Errorf("expect '%s' to contain '%s'", msg, e)
 		}
 	}
 }

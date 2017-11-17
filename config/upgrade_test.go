@@ -174,10 +174,10 @@ func TestCompareSemver(t *testing.T) {
 		latest := "v" + tc.latest
 
 		if got, want := MustCompareSemver(current, latest), tc.exp; got != want {
-			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+			t.Fatalf("%s -> %s, got %d, want %d", current, latest, got, want)
 		}
 		if got, want := MustCompareSemver(latest, current), tc.revert; got != want {
-			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+			t.Fatalf("(revert) %s -> %s, got %d, want %d", latest, current, got, want)
 		}
 
 		// with current 'v' prefix
@@ -185,10 +185,10 @@ func TestCompareSemver(t *testing.T) {
 		latest = tc.latest
 
 		if got, want := MustCompareSemver(current, latest), tc.exp; got != want {
-			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+			t.Fatalf("%s -> %s, got %d, want %d", current, latest, got, want)
 		}
 		if got, want := MustCompareSemver(latest, current), tc.revert; got != want {
-			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+			t.Fatalf("(revert) %s -> %s, got %d, want %d", latest, current, got, want)
 		}
 
 		// with latest 'v' prefix
@@ -196,10 +196,10 @@ func TestCompareSemver(t *testing.T) {
 		latest = "v" + tc.latest
 
 		if got, want := MustCompareSemver(current, latest), tc.exp; got != want {
-			t.Fatalf("%s -> %s, got %t, want %t", current, latest, got, want)
+			t.Fatalf("%s -> %s, got %d, want %d", current, latest, got, want)
 		}
 		if got, want := MustCompareSemver(latest, current), tc.revert; got != want {
-			t.Fatalf("(revert) %s -> %s, got %t, want %t", latest, current, got, want)
+			t.Fatalf("(revert) %s -> %s, got %d, want %d", latest, current, got, want)
 		}
 	}
 }
