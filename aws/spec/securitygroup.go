@@ -265,13 +265,13 @@ func (cmd *AttachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface
 
 	groups = append(groups, StringValue(cmd.Id))
 	call := &awsCall{
+		fnName: "ec2.ModifyInstanceAttribute",
 		fn:     cmd.api.ModifyInstanceAttribute,
 		logger: cmd.logger,
 		setters: []setter{
 			{val: cmd.Instance, fieldPath: "InstanceID", fieldType: awsstr},
 			{val: groups, fieldPath: "Groups", fieldType: awsstringslice},
 		},
-		desc: "attach securitygroup",
 	}
 	return call.execute(&ec2.ModifyInstanceAttributeInput{})
 }
@@ -299,13 +299,13 @@ func (cmd *DetachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface
 		cmd.logger.Errorf("AWS instances must have at least one securitygroup")
 	}
 	call := &awsCall{
+		fnName: "ec2.ModifyInstanceAttribute",
 		fn:     cmd.api.ModifyInstanceAttribute,
 		logger: cmd.logger,
 		setters: []setter{
 			{val: cmd.Instance, fieldPath: "InstanceID", fieldType: awsstr},
 			{val: cleaned, fieldPath: "Groups", fieldType: awsstringslice},
 		},
-		desc: "attach securitygroup",
 	}
 	return call.execute(&ec2.ModifyInstanceAttributeInput{})
 }

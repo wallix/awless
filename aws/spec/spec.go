@@ -321,9 +321,9 @@ func node(key string) ruleNode {
 }
 
 type awsCall struct {
+	fnName  string
 	fn      interface{}
 	logger  *logger.Logger
-	desc    string
 	setters []setter
 }
 
@@ -348,10 +348,10 @@ func (dc *awsCall) execute(input interface{}) (output interface{}, err error) {
 	results := fnVal.Call(values)
 
 	if err, ok := results[1].Interface().(error); ok && err != nil {
-		return nil, fmt.Errorf("%s: %s", dc.desc, err)
+		return nil, fmt.Errorf("%s", err)
 	}
 
-	dc.logger.ExtraVerbosef("%s call took %s", dc.desc, time.Since(start))
+	dc.logger.ExtraVerbosef("%s call took %s", dc.fnName, time.Since(start))
 
 	output = results[0].Interface()
 

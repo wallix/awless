@@ -58,7 +58,7 @@ func (cmd *CreateDistribution) ManualRun(ctx map[string]interface{}) (interface{
 	input := &cloudfront.CreateDistributionInput{
 		DistributionConfig: &cloudfront.DistributionConfig{
 			CallerReference: aws.String(CallerReferenceFunc()),
-			Comment:         aws.String(" "),
+			Comment:         cmd.OriginDomain,
 			DefaultCacheBehavior: &cloudfront.DefaultCacheBehavior{
 				MinTTL: aws.Int64(0),
 				ForwardedValues: &cloudfront.ForwardedValues{
@@ -82,80 +82,57 @@ func (cmd *CreateDistribution) ManualRun(ctx map[string]interface{}) (interface{
 		},
 	}
 
-	if err := setFieldWithType(cmd.OriginDomain, input, "DistributionConfig.Origins.Items[0].DomainName", awsstr); err != nil {
-		return nil, err
-	}
-	if domain := aws.StringValue(input.DistributionConfig.Origins.Items[0].DomainName); strings.HasSuffix(domain, ".s3.amazonaws.com") || (strings.HasSuffix(domain, ".amazonaws.com") && strings.Contains(domain, ".s3-website-")) {
+	if domain := StringValue(cmd.OriginDomain); strings.HasSuffix(domain, ".s3.amazonaws.com") || (strings.HasSuffix(domain, ".amazonaws.com") && strings.Contains(domain, ".s3-website-")) {
 		input.DistributionConfig.Origins.Items[0].S3OriginConfig = &cloudfront.S3OriginConfig{OriginAccessIdentity: aws.String("")}
 	}
 
-	if cmd.Certificate != nil {
-		if err := setFieldWithType(cmd.Certificate, input, "DistributionConfig.ViewerCertificate.ACMCertificateArn", awsstr); err != nil {
-			return nil, err
-		}
-		if err := setFieldWithType("sni-only", input, "DistributionConfig.ViewerCertificate.SSLSupportMethod", awsstr); err != nil {
-			return nil, err
-		}
+	call := &awsCall{
+		fnName: "cloudfront.CreateDistribution",
+		fn:     cmd.api.CreateDistribution,
+		logger: cmd.logger,
+		setters: []setter{
+			{val: cmd.OriginDomain, fieldPath: "DistributionConfig.Origins.Items[0].DomainName", fieldType: awsstr},
+		},
 	}
+
+	if cmd.Certificate != nil {
+		call.setters = append(call.setters, setter{val: cmd.Certificate, fieldPath: "DistributionConfig.ViewerCertificate.ACMCertificateArn", fieldType: awsstr})
+		call.setters = append(call.setters, setter{val: "sni-only", fieldPath: "DistributionConfig.ViewerCertificate.SSLSupportMethod", fieldType: awsstr})
+	}
+
 	if cmd.Comment != nil {
-		if err := setFieldWithType(cmd.Comment, input, "DistributionConfig.Comment", awsstr); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.Comment, fieldPath: "DistributionConfig.Comment", fieldType: awsstr})
 	}
 	if cmd.DefaultFile != nil {
-		if err := setFieldWithType(cmd.DefaultFile, input, "DistributionConfig.DefaultRootObject", awsstr); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.DefaultFile, fieldPath: "DistributionConfig.DefaultRootObject", fieldType: awsstr})
 	}
 	if cmd.DomainAliases != nil {
-		if err := setFieldWithType(cmd.DomainAliases, input, "DistributionConfig.Aliases.Items", awsstringslice); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.DomainAliases, fieldPath: "DistributionConfig.Aliases.Items", fieldType: awsstringslice})
+		call.setters = append(call.setters, setter{val: len(cmd.DomainAliases), fieldPath: "DistributionConfig.Aliases.Quantity", fieldType: awsint64})
 	}
 	if cmd.Enable != nil {
-		if err := setFieldWithType(cmd.Enable, input, "DistributionConfig.Enabled", awsbool); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.Enable, fieldPath: "DistributionConfig.Enabled", fieldType: awsbool})
 	}
 	if cmd.ForwardCookies != nil {
-		if err := setFieldWithType(cmd.ForwardCookies, input, "DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward", awsstr); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.ForwardCookies, fieldPath: "DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward", fieldType: awsstr})
 	}
 	if cmd.ForwardQueries != nil {
-		if err := setFieldWithType(cmd.ForwardQueries, input, "DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString", awsbool); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.ForwardQueries, fieldPath: "DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString", fieldType: awsbool})
 	}
 	if cmd.HttpsBehaviour != nil {
-		if err := setFieldWithType(cmd.HttpsBehaviour, input, "DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy", awsstr); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.HttpsBehaviour, fieldPath: "DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy", fieldType: awsstr})
 	}
 	if cmd.MinTtl != nil {
-		if err := setFieldWithType(cmd.MinTtl, input, "DistributionConfig.DefaultCacheBehavior.MinTTL", awsint64); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.MinTtl, fieldPath: "DistributionConfig.DefaultCacheBehavior.MinTTL", fieldType: awsint64})
 	}
 	if cmd.OriginPath != nil {
-		if err := setFieldWithType(cmd.OriginPath, input, "DistributionConfig.Origins.Items[0].OriginPath", awsstr); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.OriginPath, fieldPath: "DistributionConfig.Origins.Items[0].OriginPath", fieldType: awsstr})
 	}
 	if cmd.PriceClass != nil {
-		if err := setFieldWithType(cmd.PriceClass, input, "DistributionConfig.PriceClass", awsstr); err != nil {
-			return nil, err
-		}
+		call.setters = append(call.setters, setter{val: cmd.PriceClass, fieldPath: "DistributionConfig.PriceClass", fieldType: awsstr})
 	}
 
-	if aliases := input.DistributionConfig.Aliases; aliases != nil {
-		aliases.Quantity = aws.Int64(int64(len(aliases.Items)))
-	}
-
-	start := time.Now()
-	output, err := cmd.api.CreateDistribution(input)
-	cmd.logger.ExtraVerbosef("cloudfront.CreateDistribution call took %s", time.Since(start))
-	return output, err
+	return call.execute(input)
 }
 
 func (cmd *CreateDistribution) ExtractResult(i interface{}) string {
@@ -210,11 +187,22 @@ func (cmd *CheckDistribution) ManualRun(ctx map[string]interface{}) (interface{}
 }
 
 type UpdateDistribution struct {
-	_      string `action:"update" entity:"distribution" awsAPI:"cloudfront"`
-	logger *logger.Logger
-	api    cloudfrontiface.CloudFrontAPI
-	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id" required:""`
-	Enable *bool   `awsName:"DistributionConfig.Enabled" awsType:"awsbool" templateName:"enable" required:""`
+	_              string `action:"update" entity:"distribution" awsAPI:"cloudfront"`
+	logger         *logger.Logger
+	api            cloudfrontiface.CloudFrontAPI
+	Id             *string   `awsName:"Id" awsType:"awsstr" templateName:"id" required:""`
+	OriginDomain   *string   `templateName:"origin-domain"`
+	Certificate    *string   `templateName:"certificate"`
+	Comment        *string   `templateName:"comment"`
+	DefaultFile    *string   `templateName:"default-file"`
+	DomainAliases  []*string `templateName:"domain-aliases"`
+	Enable         *bool     `templateName:"enable"`
+	ForwardCookies *string   `templateName:"forward-cookies"`
+	ForwardQueries *bool     `templateName:"forward-queries"`
+	HttpsBehaviour *string   `templateName:"https-behaviour"`
+	OriginPath     *string   `templateName:"origin-path"`
+	PriceClass     *string   `templateName:"price-class"`
+	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
 func (cmd *UpdateDistribution) ValidateParams(params []string) ([]string, error) {
@@ -229,19 +217,109 @@ func (cmd *UpdateDistribution) ManualRun(ctx map[string]interface{}) (interface{
 		return nil, err
 	}
 	distriToUpdate := distribOutput.Distribution
+	configToUpdate := distriToUpdate.DistributionConfig
 	etag := distribOutput.ETag
-	if enabled := aws.BoolValue(distriToUpdate.DistributionConfig.Enabled); BoolValue(cmd.Enable) == enabled {
-		cmd.logger.Infof("distribution '%s' is already enable=%t", StringValue(cmd.Id), enabled)
-		return distribOutput, nil
-	}
+	beforeUpdate := distribOutput.Distribution.DistributionConfig.String()
 
-	input := &cloudfront.UpdateDistributionInput{IfMatch: etag, DistributionConfig: distriToUpdate.DistributionConfig}
+	input := &cloudfront.UpdateDistributionInput{
+		IfMatch:            etag,
+		DistributionConfig: distriToUpdate.DistributionConfig,
+	}
 
 	if err = setFieldWithType(cmd.Id, input, "Id", awsstr); err != nil {
 		return nil, err
 	}
-	if err = setFieldWithType(cmd.Enable, input, "DistributionConfig.Enabled", awsbool); err != nil {
-		return nil, err
+	if cmd.Enable != nil && BoolValue(cmd.Enable) != BoolValue(distriToUpdate.DistributionConfig.Enabled) {
+		if err = setFieldWithType(cmd.Enable, input, "DistributionConfig.Enabled", awsbool); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.OriginDomain != nil || cmd.OriginPath != nil {
+		if configToUpdate.Origins == nil || len(configToUpdate.Origins.Items) == 0 {
+			configToUpdate.Origins = &cloudfront.Origins{
+				Quantity: aws.Int64(1),
+				Items: []*cloudfront.Origin{
+					{Id: aws.String("orig_1")},
+				},
+			}
+		}
+		if cmd.OriginDomain != nil {
+			if err = setFieldWithType(cmd.OriginDomain, input, "DistributionConfig.Origins.Items[0].DomainName", awsstr); err != nil {
+				return nil, err
+			}
+			if domain := aws.StringValue(input.DistributionConfig.Origins.Items[0].DomainName); strings.HasSuffix(domain, ".s3.amazonaws.com") || (strings.HasSuffix(domain, ".amazonaws.com") && strings.Contains(domain, ".s3-website-")) {
+				input.DistributionConfig.Origins.Items[0].S3OriginConfig = &cloudfront.S3OriginConfig{OriginAccessIdentity: aws.String("")}
+			}
+		}
+
+		if cmd.OriginPath != nil {
+			if err = setFieldWithType(cmd.OriginPath, input, "DistributionConfig.Origins.Items[0].OriginPath", awsstr); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if cmd.Certificate != nil {
+		if err = setFieldWithType(cmd.Certificate, input, "DistributionConfig.ViewerCertificate.ACMCertificateArn", awsstr); err != nil {
+			return nil, err
+		}
+		if err = setFieldWithType("sni-only", input, "DistributionConfig.ViewerCertificate.SSLSupportMethod", awsstr); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.Comment != nil {
+		if err = setFieldWithType(cmd.Comment, input, "DistributionConfig.Comment", awsstr); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.DefaultFile != nil {
+		if err = setFieldWithType(cmd.DefaultFile, input, "DistributionConfig.DefaultRootObject", awsstr); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.DomainAliases != nil {
+		if err = setFieldWithType(cmd.DomainAliases, input, "DistributionConfig.Aliases.Items", awsstringslice); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.Enable != nil {
+		if err = setFieldWithType(cmd.Enable, input, "DistributionConfig.Enabled", awsbool); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.ForwardCookies != nil {
+		if err = setFieldWithType(cmd.ForwardCookies, input, "DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward", awsstr); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.ForwardQueries != nil {
+		if err = setFieldWithType(cmd.ForwardQueries, input, "DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString", awsbool); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.HttpsBehaviour != nil {
+		if err = setFieldWithType(cmd.HttpsBehaviour, input, "DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy", awsstr); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.MinTtl != nil {
+		if err = setFieldWithType(cmd.MinTtl, input, "DistributionConfig.DefaultCacheBehavior.MinTTL", awsint64); err != nil {
+			return nil, err
+		}
+	}
+	if cmd.PriceClass != nil {
+		if err = setFieldWithType(cmd.PriceClass, input, "DistributionConfig.PriceClass", awsstr); err != nil {
+			return nil, err
+		}
+	}
+
+	if aliases := input.DistributionConfig.Aliases; aliases != nil {
+		aliases.Quantity = aws.Int64(int64(len(aliases.Items)))
+	}
+
+	if beforeUpdate == input.DistributionConfig.String() {
+		cmd.logger.Infof("no property has been changed to distribution '%s'", StringValue(cmd.Id))
+		return distribOutput, nil
 	}
 
 	start := time.Now()

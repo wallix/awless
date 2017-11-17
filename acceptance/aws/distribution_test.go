@@ -13,56 +13,95 @@ func TestDistribution(t *testing.T) {
 		awsspec.CallerReferenceFunc = func() string {
 			return "callerReference"
 		}
-		Template("create distribution origin-domain=my.test.domain.com certificate=arn:of:the:certificate comment='useless comment' default-file=index.go "+
-			"domain-aliases=any.domain.com,other.domain.com enable=true forward-cookies=whitelist forward-queries=true https-behaviour=redirect-to-https "+
-			"origin-path=/my/custom/path price-class=PriceClass_All min-ttl=42").
-			Mock(&cloudfrontMock{
-				CreateDistributionFunc: func(param0 *cloudfront.CreateDistributionInput) (*cloudfront.CreateDistributionOutput, error) {
-					return &cloudfront.CreateDistributionOutput{Distribution: &cloudfront.Distribution{Id: String("new-distribution-id")}}, nil
-				},
-			}).ExpectInput("CreateDistribution", &cloudfront.CreateDistributionInput{
-			DistributionConfig: &cloudfront.DistributionConfig{
-				CallerReference: String("callerReference"),
-				Origins: &cloudfront.Origins{
-					Items: []*cloudfront.Origin{
-						{
-							DomainName: String("my.test.domain.com"),
-							Id:         String("orig_1"),
-							OriginPath: String("/my/custom/path"),
+		t.Run("all parameters", func(t *testing.T) {
+			Template("create distribution origin-domain=my.test.domain.com certificate=arn:of:the:certificate comment='useless comment' default-file=index.go "+
+				"domain-aliases=any.domain.com,other.domain.com enable=true forward-cookies=whitelist forward-queries=true https-behaviour=redirect-to-https "+
+				"origin-path=/my/custom/path price-class=PriceClass_All min-ttl=42").
+				Mock(&cloudfrontMock{
+					CreateDistributionFunc: func(param0 *cloudfront.CreateDistributionInput) (*cloudfront.CreateDistributionOutput, error) {
+						return &cloudfront.CreateDistributionOutput{Distribution: &cloudfront.Distribution{Id: String("new-distribution-id")}}, nil
+					},
+				}).ExpectInput("CreateDistribution", &cloudfront.CreateDistributionInput{
+				DistributionConfig: &cloudfront.DistributionConfig{
+					CallerReference: String("callerReference"),
+					Origins: &cloudfront.Origins{
+						Items: []*cloudfront.Origin{
+							{
+								DomainName: String("my.test.domain.com"),
+								Id:         String("orig_1"),
+								OriginPath: String("/my/custom/path"),
+							},
+						},
+						Quantity: Int64(1),
+					},
+					ViewerCertificate: &cloudfront.ViewerCertificate{
+						ACMCertificateArn: String("arn:of:the:certificate"),
+						SSLSupportMethod:  String("sni-only"),
+					},
+					Comment:           String("useless comment"),
+					DefaultRootObject: String("index.go"),
+					Aliases: &cloudfront.Aliases{
+						Items:    []*string{String("any.domain.com"), String("other.domain.com")},
+						Quantity: Int64(2),
+					},
+					Enabled: Bool(true),
+					DefaultCacheBehavior: &cloudfront.DefaultCacheBehavior{
+						ForwardedValues: &cloudfront.ForwardedValues{
+							Cookies: &cloudfront.CookiePreference{
+								Forward: String("whitelist"),
+							},
+							QueryString: Bool(true),
+						},
+						ViewerProtocolPolicy: String("redirect-to-https"),
+						MinTTL:               Int64(42),
+						TargetOriginId:       aws.String("orig_1"),
+						TrustedSigners: &cloudfront.TrustedSigners{
+							Enabled:  aws.Bool(false),
+							Quantity: aws.Int64(0),
 						},
 					},
-					Quantity: Int64(1),
+					PriceClass: String("PriceClass_All"),
 				},
-				ViewerCertificate: &cloudfront.ViewerCertificate{
-					ACMCertificateArn: String("arn:of:the:certificate"),
-					SSLSupportMethod:  String("sni-only"),
-				},
-				Comment:           String("useless comment"),
-				DefaultRootObject: String("index.go"),
-				Aliases: &cloudfront.Aliases{
-					Items:    []*string{String("any.domain.com"), String("other.domain.com")},
-					Quantity: Int64(2),
-				},
-				Enabled: Bool(true),
-				DefaultCacheBehavior: &cloudfront.DefaultCacheBehavior{
-					ForwardedValues: &cloudfront.ForwardedValues{
-						Cookies: &cloudfront.CookiePreference{
-							Forward: String("whitelist"),
+			}).
+				ExpectCommandResult("new-distribution-id").ExpectCalls("CreateDistribution").Run(t)
+		})
+		t.Run("one parameter", func(t *testing.T) {
+			Template("create distribution origin-domain=my.test.domain.com").
+				Mock(&cloudfrontMock{
+					CreateDistributionFunc: func(param0 *cloudfront.CreateDistributionInput) (*cloudfront.CreateDistributionOutput, error) {
+						return &cloudfront.CreateDistributionOutput{Distribution: &cloudfront.Distribution{Id: String("new-distribution-id")}}, nil
+					},
+				}).ExpectInput("CreateDistribution", &cloudfront.CreateDistributionInput{
+				DistributionConfig: &cloudfront.DistributionConfig{
+					Comment: aws.String("my.test.domain.com"),
+					DefaultCacheBehavior: &cloudfront.DefaultCacheBehavior{
+						MinTTL: aws.Int64(0),
+						ForwardedValues: &cloudfront.ForwardedValues{
+							Cookies:     &cloudfront.CookiePreference{Forward: aws.String("all")},
+							QueryString: aws.Bool(true),
 						},
-						QueryString: Bool(true),
+						TrustedSigners: &cloudfront.TrustedSigners{
+							Enabled:  aws.Bool(false),
+							Quantity: aws.Int64(0),
+						},
+						TargetOriginId:       aws.String("orig_1"),
+						ViewerProtocolPolicy: aws.String("allow-all"),
 					},
-					ViewerProtocolPolicy: String("redirect-to-https"),
-					MinTTL:               Int64(42),
-					TargetOriginId:       aws.String("orig_1"),
-					TrustedSigners: &cloudfront.TrustedSigners{
-						Enabled:  aws.Bool(false),
-						Quantity: aws.Int64(0),
+					Enabled:         aws.Bool(true),
+					CallerReference: String("callerReference"),
+					Origins: &cloudfront.Origins{
+						Items: []*cloudfront.Origin{
+							{
+								DomainName: String("my.test.domain.com"),
+								Id:         String("orig_1"),
+							},
+						},
+						Quantity: Int64(1),
 					},
 				},
-				PriceClass: String("PriceClass_All"),
-			},
-		}).
-			ExpectCommandResult("new-distribution-id").ExpectCalls("CreateDistribution").Run(t)
+			}).
+				ExpectCommandResult("new-distribution-id").ExpectCalls("CreateDistribution").Run(t)
+		})
 	})
 
 	t.Run("update", func(t *testing.T) {
@@ -92,21 +131,84 @@ func TestDistribution(t *testing.T) {
 								Enabled: Bool(false),
 							},
 						},
+						ETag: String("etag-id"),
 					}, nil
 				},
 				UpdateDistributionFunc: func(input *cloudfront.UpdateDistributionInput) (*cloudfront.UpdateDistributionOutput, error) {
 					return &cloudfront.UpdateDistributionOutput{
-						ETag: String("etag-id"),
+						ETag: String("etag-after-update"),
 					}, nil
 				},
 			}).ExpectInput("GetDistribution", &cloudfront.GetDistributionInput{
 				Id: String("my-distribution-to-update"),
 			}).ExpectInput("UpdateDistribution", &cloudfront.UpdateDistributionInput{
-				Id: String("my-distribution-to-update"),
+				IfMatch: String("etag-id"),
+				Id:      String("my-distribution-to-update"),
 				DistributionConfig: &cloudfront.DistributionConfig{
 					Enabled: Bool(true),
 				},
-			}).ExpectCommandResult("etag-id").ExpectCalls("GetDistribution", "UpdateDistribution").Run(t)
+			}).ExpectCommandResult("etag-after-update").ExpectCalls("GetDistribution", "UpdateDistribution").Run(t)
+		})
+
+		t.Run("already enabled and change other params", func(t *testing.T) {
+			Template("update distribution id=my-distribution-to-update origin-domain=my.test.domain.com certificate=arn:of:the:certificate comment='useless comment' default-file=index.go "+
+				"domain-aliases=any.domain.com,other.domain.com enable=true forward-cookies=whitelist forward-queries=true https-behaviour=redirect-to-https "+
+				"origin-path=/my/custom/path price-class=PriceClass_All min-ttl=42").Mock(&cloudfrontMock{
+				GetDistributionFunc: func(input *cloudfront.GetDistributionInput) (*cloudfront.GetDistributionOutput, error) {
+					return &cloudfront.GetDistributionOutput{
+						ETag: String("etag-already-enabled"),
+						Distribution: &cloudfront.Distribution{
+							DistributionConfig: &cloudfront.DistributionConfig{
+								Enabled: Bool(true),
+							},
+						},
+					}, nil
+				},
+				UpdateDistributionFunc: func(input *cloudfront.UpdateDistributionInput) (*cloudfront.UpdateDistributionOutput, error) {
+					return &cloudfront.UpdateDistributionOutput{
+						ETag: String("etag-updated-distribution"),
+					}, nil
+				},
+			}).ExpectInput("GetDistribution", &cloudfront.GetDistributionInput{
+				Id: String("my-distribution-to-update"),
+			}).ExpectInput("UpdateDistribution", &cloudfront.UpdateDistributionInput{
+				Id:      String("my-distribution-to-update"),
+				IfMatch: String("etag-already-enabled"),
+				DistributionConfig: &cloudfront.DistributionConfig{
+					Origins: &cloudfront.Origins{
+						Items: []*cloudfront.Origin{
+							{
+								DomainName: String("my.test.domain.com"),
+								Id:         String("orig_1"),
+								OriginPath: String("/my/custom/path"),
+							},
+						},
+						Quantity: Int64(1),
+					},
+					ViewerCertificate: &cloudfront.ViewerCertificate{
+						ACMCertificateArn: String("arn:of:the:certificate"),
+						SSLSupportMethod:  String("sni-only"),
+					},
+					Comment:           String("useless comment"),
+					DefaultRootObject: String("index.go"),
+					Aliases: &cloudfront.Aliases{
+						Items:    []*string{String("any.domain.com"), String("other.domain.com")},
+						Quantity: Int64(2),
+					},
+					Enabled: Bool(true),
+					DefaultCacheBehavior: &cloudfront.DefaultCacheBehavior{
+						ForwardedValues: &cloudfront.ForwardedValues{
+							Cookies: &cloudfront.CookiePreference{
+								Forward: String("whitelist"),
+							},
+							QueryString: Bool(true),
+						},
+						ViewerProtocolPolicy: String("redirect-to-https"),
+						MinTTL:               Int64(42),
+					},
+					PriceClass: String("PriceClass_All"),
+				},
+			}).ExpectCommandResult("etag-updated-distribution").ExpectCalls("GetDistribution", "UpdateDistribution").Run(t)
 		})
 	})
 

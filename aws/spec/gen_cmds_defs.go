@@ -223,7 +223,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "mfadevice",
 		Api:            "iam",
 		RequiredParams: []string{"id", "mfa-code-1", "mfa-code-2", "user"},
-		ExtraParams:    []string{},
+		ExtraParams:    []string{"no-prompt"},
 	},
 	"attachnetworkinterface": {
 		Action:         "attach",
@@ -1188,8 +1188,8 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Action:         "update",
 		Entity:         "distribution",
 		Api:            "cloudfront",
-		RequiredParams: []string{"enable", "id"},
-		ExtraParams:    []string{},
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{"certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-domain", "origin-path", "price-class"},
 	},
 	"updateinstance": {
 		Action:         "update",

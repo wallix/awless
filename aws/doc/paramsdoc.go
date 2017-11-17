@@ -36,6 +36,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":     "The name of the InstanceProfile to associate to the Instance",
 		"replace":  "If 'true' will replace existing instance profile with provided one",
 	},
+	"attachmfadevice": {
+		"no-prompt": "Use 'true' to disable the prompt that asks to append the mfadevice to ~/.aws/config file",
+	},
 	"attachpolicy": {
 		"access":  "Type of access to retrieve an AWS policy. Either 'readonly' or 'full'",
 		"service": "Service string to retrieve an AWS policy. Ex: 'ec2', 'cloudfront', 'rds'",
@@ -422,8 +425,19 @@ var manualParamsDoc = map[string]map[string]string{
 		"enforce-https":     "Use HTTPS rather than HTTP when redirecting requests",
 	},
 	"updatedistribution": {
-		"id":     "The ID of the distribution to update",
-		"enable": "Enable/Disable the distribution (True | False)",
+		"id":              "The ID of the distribution to update",
+		"origin-domain":   "The DNS name of the Amazon S3 bucket from which you want CloudFront to get objects for this origin, for example, myawsbucket.s3.amazonaws.com",
+		"certificate":     "The Amazon Resource Name (ARN) of the AWS Certificate Manager (ACM) certificate you want to use for TSL connection",
+		"comment":         "Any comments you want to include about the distribution",
+		"default-file":    "The object that you want CloudFront to request from your origin (for example, index.html) when a viewer requests the root URL for your distribution (http://www.example.com)",
+		"domain-aliases":  "A list of CNAMEs (alternate domain names), if any, for this distribution",
+		"forward-cookies": "Specifies which cookies to forward to the origin for this cache behavior (all | none | whitelist)",
+		"forward-queries": "Indicates whether you want CloudFront to forward query strings to the origin that is associated with this cache behavior and cache based on the query string parameters (true | false)",
+		"https-behaviour": "The protocol (HTTP or HTTPS) that viewers can use to access the files (allow-all | redirect-to-https | https-only)",
+		"origin-path":     "An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. When you include this element, specify the directory name, beginning with a /",
+		"price-class":     "The price class that corresponds with the maximum price that you want to pay for CloudFront service. If you specify PriceClass_All, CloudFront responds to requests for your objects from all CloudFront edge locations",
+		"min-ttl":         "The minimum amount of time that you want objects to stay in CloudFront caches before CloudFront forwards another request to your origin to determine whether the object has been updated",
+		"enable":          "Enable/Disable the distribution (True | False)",
 	},
 	"updateinstance": {
 		"type": "Changes the instance type to the specified value",

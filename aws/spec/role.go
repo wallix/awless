@@ -71,7 +71,7 @@ func (cmd *CreateRole) ManualRun(ctx map[string]interface{}) (interface{}, error
 	cmd.logger.ExtraVerbosef("role trust policy document json:\n%s\n", string(b))
 
 	call := &awsCall{
-		desc:   "create role",
+		fnName: "iam.CreateRole",
 		fn:     cmd.api.CreateRole,
 		logger: cmd.logger,
 		setters: []setter{

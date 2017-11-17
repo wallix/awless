@@ -80,7 +80,7 @@ func (cmd *StartContainertask) ManualRun(ctx map[string]interface{}) (interface{
 		}
 
 		call := &awsCall{
-			desc:    "start containertask",
+			fnName:  "ecs.CreateService",
 			fn:      cmd.api.CreateService,
 			logger:  cmd.logger,
 			setters: setters,
@@ -89,7 +89,7 @@ func (cmd *StartContainertask) ManualRun(ctx map[string]interface{}) (interface{
 		return call.execute(&ecs.CreateServiceInput{})
 	case "task":
 		call := &awsCall{
-			desc:   "start containertask",
+			fnName: "ecs.RunTask",
 			fn:     cmd.api.RunTask,
 			logger: cmd.logger,
 			setters: []setter{
@@ -156,7 +156,7 @@ func (cmd *StopContainertask) ManualRun(ctx map[string]interface{}) (interface{}
 	switch StringValue(cmd.Type) {
 	case "service":
 		call := &awsCall{
-			desc:   "stop containertask",
+			fnName: "ecs.DeleteService",
 			fn:     cmd.api.DeleteService,
 			logger: cmd.logger,
 			setters: []setter{
@@ -167,7 +167,7 @@ func (cmd *StopContainertask) ManualRun(ctx map[string]interface{}) (interface{}
 		return call.execute(&ecs.DeleteServiceInput{})
 	case "task":
 		call := &awsCall{
-			desc:   "stop containertask",
+			fnName: "ecs.StopTask",
 			fn:     cmd.api.StopTask,
 			logger: cmd.logger,
 			setters: []setter{
