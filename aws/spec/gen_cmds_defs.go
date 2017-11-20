@@ -461,7 +461,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "instance",
 		Api:            "ec2",
 		RequiredParams: []string{"count", "image", "name", "subnet", "type"},
-		ExtraParams:    []string{"ip", "keypair", "lock", "role", "securitygroup", "userdata"},
+		ExtraParams:    []string{"distro", "ip", "keypair", "lock", "role", "securitygroup", "userdata"},
 	},
 	"createinstanceprofile": {
 		Action:         "create",

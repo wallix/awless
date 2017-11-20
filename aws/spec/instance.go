@@ -42,10 +42,35 @@ type CreateInstance struct {
 	SecurityGroups []*string `awsName:"SecurityGroupIds" awsType:"awsstringslice" templateName:"securitygroup"`
 	Lock           *bool     `awsName:"DisableApiTermination" awsType:"awsbool" templateName:"lock"`
 	Role           *string   `awsName:"IamInstanceProfile.Name" awsType:"awsstr" templateName:"role"`
+	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
 func (cmd *CreateInstance) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+	return paramRule{
+		tree:   allOf(oneOf(node("distro"), node("image")), node("count"), node("type"), node("name"), node("subnet")),
+		extras: []string{"keypair", "ip", "userdata", "securitygroup", "lock", "role"},
+	}.verify(params)
+}
+
+func (cmd *CreateInstance) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
+	return []string{"distro"},
+		func(values map[string]interface{}) (map[string]interface{}, error) {
+			if distro, ok := values["distro"].(string); ok {
+				query, err := ParseImageQuery(distro)
+				if err != nil {
+					return nil, fmt.Errorf("distro: %s", err)
+				}
+				resolver := ImageResolver(cmd.api.DescribeImages)
+				cmd.logger.Infof("Launching search for bare distro image. Query: '%s'", query)
+				images, err := resolver.Resolve(query)
+				if len(images) > 0 {
+					return map[string]interface{}{"image": images[0].Id}, nil
+				} else {
+					return nil, fmt.Errorf("distro: no image id found for query: '%s'", query)
+				}
+			}
+			return nil, nil
+		}
 }
 
 func (cmd *CreateInstance) ExtractResult(i interface{}) string {

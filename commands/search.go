@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws/services"
+	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/logger"
 )
@@ -50,18 +50,18 @@ var awsImagesCmd = &cobra.Command{
 	Use:               "images",
 	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(networkMonitorHook),
-	Short:             fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first. Supported owners: %s", strings.Join(awsservices.SupportedAMIOwners, ", ")),
-	Long:              fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsservices.ImageQuerySpec, strings.Join(awsservices.SupportedAMIOwners, ", ")),
+	Short:             fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first. Supported owners: %s", strings.Join(awsspec.SupportedAMIOwners, ", ")),
+	Long:              fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsspec.ImageQuerySpec, strings.Join(awsspec.SupportedAMIOwners, ", ")),
 	Example:           "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --latest-id\n  awless search images amazonlinux:::::instance-store",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
-			exitOn(fmt.Errorf("expecting image query string. Expecting: %s (with everything optional expect for the owner)", awsservices.ImageQuerySpec))
+			exitOn(fmt.Errorf("expecting image query string. Expecting: %s (with everything optional expect for the owner)", awsspec.ImageQuerySpec))
 		}
 
-		resolver := &awsservices.ImageResolver{InfraService: awsservices.InfraService.(*awsservices.Infra)}
+		resolver := awsspec.EC2ImageResolver()
 
-		query, err := awsservices.ParseImageQuery(args[0])
+		query, err := awsspec.ParseImageQuery(args[0])
 		exitOn(err)
 
 		logger.Infof("launching search for image in '%s' region. Query: '%s'", config.GetAWSRegion(), query)

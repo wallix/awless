@@ -1,4 +1,4 @@
-package awsservices
+package awsspec
 
 import (
 	"fmt"
@@ -35,8 +35,11 @@ import (
 // - redhat::::instance-store
 //
 // The default values are: Arch="x86_64", Virt="hvm", Store="ebs"
-type ImageResolver struct {
-	InfraService *Infra
+type ImageResolver func(*ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error)
+
+func EC2ImageResolver() ImageResolver {
+	factory := CommandFactory.Build("createinstance")
+	return ImageResolver(factory().(*CreateInstance).api.DescribeImages)
 }
 
 const ImageQuerySpec = "owner:distro:variant:arch:virtualization:store"
@@ -88,7 +91,7 @@ type Platform struct {
 	MatchFunc     func(s string, d Distro) bool
 }
 
-func (r *ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
+func (resolv ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
 	results := make([]*AwsImage, 0) // json empty array friendly
 
 	filters := []*ec2.Filter{}
@@ -137,7 +140,7 @@ func (r *ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
 		Filters:         filters,
 	}
 
-	amis, err := r.InfraService.EC2API.DescribeImages(params)
+	amis, err := resolv(params)
 	if err != nil {
 		return results, err
 	}
@@ -256,7 +259,7 @@ func ParseImageQuery(s string) (ImageQuery, error) {
 
 	plat, ok := Platforms[splits[0]]
 	if !ok {
-		return q, fmt.Errorf("unsupported owner %s. Expecting: %s", splits[0], supported)
+		return q, fmt.Errorf("unsupported owner '%s'. Expecting: %s", splits[0], supported)
 	}
 
 	q.Platform = plat
@@ -301,13 +304,4 @@ func ParseImageQuery(s string) (ImageQuery, error) {
 	}
 
 	return q, nil
-}
-
-func contains(arr []string, s string) bool {
-	for _, e := range arr {
-		if e == s {
-			return true
-		}
-	}
-	return false
 }

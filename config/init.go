@@ -73,15 +73,11 @@ func InitAwlessEnv() error {
 }
 
 func resolveRequiredConfigFromEnv() map[string]string {
-	region, ami := awsservices.ResolveRegionAndAmiFromEnv()
+	region := awsservices.ResolveRegionFromEnv()
 
 	resolved := make(map[string]string)
 	if region != "" {
 		resolved[RegionConfigKey] = region
-	}
-
-	if ami != "" {
-		resolved[instanceImageDefaultsKey] = ami
 	}
 
 	return resolved

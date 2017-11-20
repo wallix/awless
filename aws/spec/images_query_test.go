@@ -1,4 +1,4 @@
-package awsservices
+package awsspec
 
 import (
 	"strings"

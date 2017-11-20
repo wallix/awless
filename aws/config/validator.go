@@ -6,7 +6,6 @@ import (
 	"os"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -19,12 +18,6 @@ func ParseRegion(i string) (interface{}, error) {
 		return i, fmt.Errorf("'%s' is not a valid region", i)
 	}
 	return i, nil
-}
-
-func WarningChangeRegion(i interface{}) {
-	if firstInstall, err := strconv.ParseBool(os.Getenv("__AWLESS_FIRST_INSTALL")); !firstInstall || err != nil {
-		fmt.Fprint(os.Stderr, "You might want to update your default AMI with `awless config set instance.image $(awless search images amazonlinux --latest-id --silent)`\n")
-	}
 }
 
 func ParseInstanceType(i string) (interface{}, error) {

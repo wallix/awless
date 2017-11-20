@@ -32,7 +32,7 @@ import (
 	"github.com/wallix/awless/logger"
 )
 
-func ResolveRegionAndAmiFromEnv() (region string, ami string) {
+func ResolveRegionFromEnv() (region string) {
 	var sess *session.Session
 	var err error
 
@@ -52,11 +52,6 @@ func ResolveRegionAndAmiFromEnv() (region string, ami string) {
 	if !awsconfig.IsValidRegion(region) {
 		region = awsconfig.StdinRegionSelector()
 		fmt.Println()
-	}
-
-	var hasAMI bool
-	if ami, hasAMI = awsconfig.AmiPerRegion[region]; !hasAMI {
-		fmt.Fprintf(os.Stderr, "Could not find a default ami for your region %s\n. Set it later manually with `awless config set instance.image ...`", region)
 	}
 
 	return

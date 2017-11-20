@@ -266,8 +266,8 @@ func convertParamsPass(tpl *Template, env *Env) (*Template, *Env, error) {
 		}
 		return nil
 	}
-	tpl.visitCommandNodesE(convert)
-	return tpl, env, nil
+	err := tpl.visitCommandNodesE(convert)
+	return tpl, env, err
 }
 
 func validateCommandsPass(tpl *Template, env *Env) (*Template, *Env, error) {
@@ -295,7 +295,9 @@ func validateCommandsPass(tpl *Template, env *Env) (*Template, *Env, error) {
 		}
 		return nil
 	}
-	tpl.visitCommandNodesE(collectValidationErrs)
+	if err := tpl.visitCommandNodesE(collectValidationErrs); err != nil {
+		return tpl, env, err
+	}
 	switch len(errs) {
 	case 0:
 		return tpl, env, nil

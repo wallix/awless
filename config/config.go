@@ -30,14 +30,11 @@ const (
 
 	//Config prefix
 	awsCloudPrefix = "aws."
-
-	//Defaults
-	instanceImageDefaultsKey = "instance.image"
 )
 
 var configDefinitions = map[string]*Definition{
 	autosyncConfigKey:              {help: "Automatically synchronize your cloud locally", defaultValue: "true", parseParamFn: parseBool},
-	RegionConfigKey:                {help: "AWS region", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{awsconfig.WarningChangeRegion, runSyncWithUpdatedRegion}},
+	RegionConfigKey:                {help: "AWS region", parseParamFn: awsconfig.ParseRegion, stdinParamProviderFn: awsconfig.StdinRegionSelector, onUpdateFns: []onUpdateFunc{runSyncWithUpdatedRegion}},
 	ProfileConfigKey:               {help: "AWS profile", defaultValue: "default"},
 	"aws.infra.sync":               {help: "Enable/disable sync of infra services (EC2, RDS, etc.) (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
 	"aws.access.sync":              {help: "Enable/disable sync of IAM service (when empty: true)", defaultValue: "true", parseParamFn: parseBool},
@@ -57,7 +54,7 @@ var configDefinitions = map[string]*Definition{
 
 var defaultsDefinitions = map[string]*Definition{
 	"instance.type":          {defaultValue: "t2.micro", help: "AWS EC2 instance type", stdinParamProviderFn: awsconfig.StdinInstanceTypeSelector, parseParamFn: awsconfig.ParseInstanceType},
-	instanceImageDefaultsKey: {help: "AWS EC2 AMI"},
+	"instance.distro":        {defaultValue: "amazonlinux", help: "Query to fetch latest official bare distro image id (see awless search images -h)"},
 	"instance.count":         {defaultValue: "1", help: "Number of instances to create on AWS EC2", parseParamFn: parseInt},
 	"instance.timeout":       {defaultValue: "180", help: "Time to wait when checking instance states on AWS EC2", parseParamFn: parseInt},
 	"securitygroup.protocol": {defaultValue: "tcp", help: "The IP protocol to authorize on the security group"},
