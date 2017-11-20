@@ -527,10 +527,13 @@ func isQuoted(s string) bool {
 }
 
 func isCSV(s string) bool {
-	if !strings.Contains(s, ",") || !strings.HasPrefix(s, "[") || !strings.HasSuffix(s, "]") {
-		return false
+	if strings.HasPrefix(s, "[") {
+		if !strings.HasSuffix(s, "]") {
+			return false
+		}
+		s = s[1 : len(s)-1]
 	}
-	for _, split := range strings.Split(s[1:len(s)-1], ",") {
+	for _, split := range strings.Split(s, ",") {
 		if !template.MatchStringParamValue(split) {
 			return false
 		}

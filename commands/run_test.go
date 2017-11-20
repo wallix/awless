@@ -7,10 +7,11 @@ func TestIsCSV(t *testing.T) {
 		input string
 		exp   bool
 	}{
-		{input: "aa", exp: false},
-		{input: "[aa]", exp: false},
+		{input: "aa", exp: true},
+		{input: "[aa]", exp: true},
 		{input: "[aa,bb", exp: false},
 		{input: "aa,bb]", exp: false},
+		{input: "aa,bb", exp: true},
 		{input: "[aa,bb]", exp: true},
 		{input: "[a1vZ,0k,123,abcd]", exp: true},
 		{input: "", exp: false},

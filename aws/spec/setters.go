@@ -366,7 +366,11 @@ func castString(v interface{}) string {
 func castFloat(v interface{}) (float64, error) {
 	switch vv := v.(type) {
 	case string:
-		return strconv.ParseFloat(vv, 64)
+		f, err := strconv.ParseFloat(vv, 64)
+		if err != nil {
+			return f, fmt.Errorf("invalid float value '%s'", vv)
+		}
+		return f, nil
 	case float32:
 		return float64(vv), nil
 	case float64:
@@ -385,9 +389,17 @@ func castFloat(v interface{}) (float64, error) {
 func castInt(v interface{}) (int, error) {
 	switch vv := v.(type) {
 	case *string:
-		return strconv.Atoi(aws.StringValue(vv))
+		i, err := strconv.Atoi(aws.StringValue(vv))
+		if err != nil {
+			return i, fmt.Errorf("invalid integer value '%s'", aws.StringValue(vv))
+		}
+		return i, nil
 	case string:
-		return strconv.Atoi(vv)
+		i, err := strconv.Atoi(vv)
+		if err != nil {
+			return i, fmt.Errorf("invalid integer value '%s'", vv)
+		}
+		return i, nil
 	case *int:
 		return aws.IntValue(vv), nil
 	case int:
@@ -404,7 +416,11 @@ func castInt(v interface{}) (int, error) {
 func castBool(v interface{}) (bool, error) {
 	switch vv := v.(type) {
 	case string:
-		return strconv.ParseBool(vv)
+		b, err := strconv.ParseBool(vv)
+		if err != nil {
+			return b, fmt.Errorf("invalid integer value '%s'", vv)
+		}
+		return b, nil
 	case bool:
 		return vv, nil
 	case *bool:
@@ -417,8 +433,11 @@ func castBool(v interface{}) (bool, error) {
 func castInt64(v interface{}) (int64, error) {
 	switch vv := v.(type) {
 	case string:
-		in, err := strconv.Atoi(vv)
-		return int64(in), err
+		i, err := strconv.Atoi(vv)
+		if err != nil {
+			return int64(i), fmt.Errorf("invalid integer value '%s'", vv)
+		}
+		return int64(i), nil
 	case int:
 		return int64(vv), nil
 	case *int:
