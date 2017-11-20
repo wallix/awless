@@ -125,11 +125,24 @@ var runCmd = &cobra.Command{
 	},
 }
 
-func missingHolesStdinFunc() func(string) interface{} {
+func missingHolesStdinFunc() func(string, []string) interface{} {
 	var count int
-	return func(hole string) (response interface{}) {
+	return func(hole string, paramPaths []string) (response interface{}) {
 		if count < 1 {
 			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion):")
+		}
+		var docStrings []string
+		for _, param := range paramPaths {
+			splits := strings.Split(param, ".")
+			if len(splits) != 3 {
+				continue
+			}
+			if doc, hasDoc := awsdoc.TemplateParamsDoc(splits[0]+splits[1], splits[2]); hasDoc {
+				docStrings = append(docStrings, doc)
+			}
+		}
+		if len(docStrings) > 0 {
+			fmt.Fprintln(os.Stderr, strings.Join(docStrings, "; ")+":")
 		}
 
 		var err error
@@ -143,7 +156,7 @@ func missingHolesStdinFunc() func(string) interface{} {
 
 func askHole(hole string) (interface{}, error) {
 	l, err := readline.NewEx(&readline.Config{
-		Prompt:          fmt.Sprintf("%s? ", hole),
+		Prompt:          renderCyanBoldFn(hole + "? "),
 		AutoComplete:    holeAutoCompletion(allGraphsOnce.mustLoad(), hole),
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",

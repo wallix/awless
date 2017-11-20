@@ -482,7 +482,7 @@ func TestTemplateParsing(t *testing.T) {
 			{
 				input: `delete vpc id={my-vpc-id}`,
 				verifyFn: func(n ast.Node) error {
-					return assertHoles(n, map[string][]string{"id": {"my-vpc-id"}})
+					return assertHoleKeys(n, map[string][]string{"id": {"my-vpc-id"}})
 				},
 			},
 			{
@@ -536,7 +536,7 @@ func TestTemplateParsing(t *testing.T) {
 					if err := assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/25"}); err != nil {
 						return err
 					}
-					if err := assertHoles(n, map[string][]string{"type": {"instance.type"}}); err != nil {
+					if err := assertHoleKeys(n, map[string][]string{"type": {"instance.type"}}); err != nil {
 						return err
 					}
 					if err := assertRefs(n, map[string][]string{"vpc": {"myvpc"}}); err != nil {
@@ -559,7 +559,7 @@ func TestTemplateParsing(t *testing.T) {
 						"conditions": []interface{}{"aws:MultiFactorAuthPresent==true", "aws:TokenIssueTime!=Null"}}); err != nil {
 						return err
 					}
-					if err := assertHoles(n, map[string][]string{}); err != nil {
+					if err := assertHoleKeys(n, map[string][]string{}); err != nil {
 						return err
 					}
 					return nil
@@ -848,7 +848,7 @@ func assertRefs(n ast.Node, expected map[string][]string) error {
 	return compare(refs, expected)
 }
 
-func assertHoles(n ast.Node, expected map[string][]string) error {
+func assertHoleKeys(n ast.Node, expected map[string][]string) error {
 	compare := func(got, want map[string][]string) error {
 		if !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("holes: got %#v, want %#v", got, want)
@@ -861,7 +861,9 @@ func assertHoles(n ast.Node, expected map[string][]string) error {
 	for k, p := range cmd.Params {
 		if withHole, ok := p.(ast.WithHoles); ok {
 			if len(withHole.GetHoles()) > 0 {
-				holes[k] = withHole.GetHoles()
+				for holeKey := range withHole.GetHoles() {
+					holes[k] = append(holes[k], holeKey)
+				}
 			}
 		}
 	}
@@ -889,7 +891,11 @@ func assertVariableDeclarationNode(n ast.Node, expIdent string, value interface{
 		if !ok {
 			return fmt.Errorf("hole value: expect '%#v': got no hole (%#v)", hole, val.Value)
 		}
-		if got, want := withHole.GetHoles(), hole; !reflect.DeepEqual(got, want) {
+		var holesKeys []string
+		for k := range withHole.GetHoles() {
+			holesKeys = append(holesKeys, k)
+		}
+		if got, want := holesKeys, hole; !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("hole value: got '%#v' want '%#v'", got, want)
 		}
 	}
@@ -940,7 +946,7 @@ func verifyCommandNode(n ast.Node, expAction, expEntity string, refs map[string]
 		return err
 	}
 
-	if err := assertHoles(n, holes); err != nil {
+	if err := assertHoleKeys(n, holes); err != nil {
 		return err
 	}
 

@@ -28,13 +28,16 @@ type listValue struct {
 	vals []CompositeValue
 }
 
-func (l *listValue) GetHoles() (res []string) {
+func (l *listValue) GetHoles() map[string][]string {
+	res := make(map[string][]string)
 	for _, val := range l.vals {
 		if withHoles, ok := val.(WithHoles); ok {
-			res = append(res, withHoles.GetHoles()...)
+			for k, v := range withHoles.GetHoles() {
+				res[k] = v
+			}
 		}
 	}
-	return
+	return res
 }
 
 func (l *listValue) GetRefs() (res []string) {
@@ -164,11 +167,11 @@ func NewHoleValue(hole string) CompositeValue {
 	return &holeValue{hole: hole}
 }
 
-func (h *holeValue) GetHoles() (res []string) {
+func (h *holeValue) GetHoles() map[string][]string {
 	if h.val == nil && h.alias == nil {
-		res = append(res, h.hole)
+		return map[string][]string{h.hole: nil}
 	}
-	return
+	return make(map[string][]string)
 }
 
 func (h *holeValue) Value() interface{} {
@@ -234,13 +237,16 @@ type concatenationValue struct {
 	vals []CompositeValue
 }
 
-func (c *concatenationValue) GetHoles() (res []string) {
+func (c *concatenationValue) GetHoles() map[string][]string {
+	res := make(map[string][]string)
 	for _, val := range c.vals {
 		if withHoles, ok := val.(WithHoles); ok {
-			res = append(res, withHoles.GetHoles()...)
+			for k, v := range withHoles.GetHoles() {
+				res[k] = v
+			}
 		}
 	}
-	return
+	return res
 }
 
 func (c *concatenationValue) GetRefs() (res []string) {

@@ -57,7 +57,7 @@ type ExpressionNode interface {
 
 type WithHoles interface {
 	ProcessHoles(fills map[string]interface{}) (processed map[string]interface{})
-	GetHoles() []string
+	GetHoles() map[string][]string
 }
 
 type Command interface {
@@ -131,13 +131,17 @@ func (c *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]inte
 	return processed
 }
 
-func (c *CommandNode) GetHoles() (holes []string) {
-	for _, param := range c.Params {
+func (c *CommandNode) GetHoles() map[string][]string {
+	holes := make(map[string][]string)
+	for paramKey, param := range c.Params {
 		if withHoles, ok := param.(WithHoles); ok {
-			holes = append(holes, withHoles.GetHoles()...)
+			for k := range withHoles.GetHoles() {
+				holes[k] = append(holes[k], strings.Join([]string{c.Action, c.Entity, paramKey}, "."))
+			}
+
 		}
 	}
-	return
+	return holes
 }
 
 func (c *CommandNode) ProcessRefs(refs map[string]interface{}) {
@@ -253,11 +257,11 @@ func (n *ValueNode) IsRef(key string) bool {
 	return false
 }
 
-func (n *ValueNode) GetHoles() []string {
+func (n *ValueNode) GetHoles() map[string][]string {
 	if withHoles, ok := n.Value.(WithHoles); ok {
 		return withHoles.GetHoles()
 	}
-	return []string{}
+	return make(map[string][]string)
 }
 
 func (s *Statement) Clone() *Statement {

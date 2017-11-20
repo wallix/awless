@@ -10,7 +10,7 @@ func TestCompositeValues(t *testing.T) {
 		val          CompositeValue
 		holesFillers map[string]interface{}
 		refsFillers  map[string]interface{}
-		expHoles     []string
+		expHoles     map[string][]string
 		expRefs      []string
 		expAliases   []string
 		expValue     interface{}
@@ -18,7 +18,7 @@ func TestCompositeValues(t *testing.T) {
 		{val: &interfaceValue{val: "test"}, expValue: "test"},
 		{val: &interfaceValue{val: "test with spe${cial ch'ars"}, expValue: "test with spe${cial ch'ars"},
 		{val: &interfaceValue{val: 10}, expValue: 10},
-		{val: &holeValue{hole: "myhole"}, expHoles: []string{"myhole"}},
+		{val: &holeValue{hole: "myhole"}, expHoles: map[string][]string{"myhole": nil}},
 		{val: &referenceValue{ref: "myref"}, expRefs: []string{"myref"}},
 		{val: &aliasValue{alias: "myalias"}, expAliases: []string{"myalias"}},
 		{
@@ -30,7 +30,7 @@ func TestCompositeValues(t *testing.T) {
 				&aliasValue{alias: "myalias"},
 			),
 			expRefs:    []string{"myref"},
-			expHoles:   []string{"myhole"},
+			expHoles:   map[string][]string{"myhole": nil},
 			expValue:   []interface{}{"test", 10},
 			expAliases: []string{"myalias"},
 		},
@@ -52,7 +52,7 @@ func TestCompositeValues(t *testing.T) {
 			val: &concatenationValue{
 				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
 			},
-			expHoles: []string{"hole1", "hole2", "hole3"},
+			expHoles: map[string][]string{"hole1": nil, "hole2": nil, "hole3": nil},
 			expValue: "prefix-middle1--middle2-suffix",
 		},
 		{
@@ -66,7 +66,7 @@ func TestCompositeValues(t *testing.T) {
 			val: &concatenationValue{
 				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
 			},
-			expHoles: []string{"instance.name", "version"},
+			expHoles: map[string][]string{"instance.name": nil, "version": nil},
 			expValue: "ins$\\ta{nce}-",
 		},
 		{

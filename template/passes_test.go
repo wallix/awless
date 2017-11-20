@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -107,7 +108,11 @@ func TestCommandsPasses(t *testing.T) {
 			if got, want := len(cmd.GetHoles()), 1; got != want {
 				t.Fatalf("%d. got %d, want %d", i+1, got, want)
 			}
-			if got, want := cmd.GetHoles()[0], fmt.Sprintf("%s.%d", cmd.Entity, i+1); got != want {
+			var first string
+			for h := range cmd.GetHoles() {
+				first = h
+			}
+			if got, want := first, fmt.Sprintf("%s.%d", cmd.Entity, i+1); got != want {
 				t.Fatalf("%d. got %s, want %s", i+1, got, want)
 			}
 		}
@@ -271,16 +276,29 @@ func TestResolveMissingHolesPass(t *testing.T) {
 
 	var count int
 	env := NewEnv()
-	env.MissingHolesFunc = func(in string) interface{} {
+	env.MissingHolesFunc = func(in string, paramPaths []string) interface{} {
 		count++
 		switch in {
 		case "instance.subnet":
+			if got, want := paramPaths, []string{"create.instance.subnet"}; !reflect.DeepEqual(got, want) {
+				t.Fatalf("%s: got %v, want %v", in, got, want)
+			}
 			return "sub-98765"
 		case "redis.prod":
+			sort.Strings(paramPaths)
+			if got, want := paramPaths, []string{"create.instance.id", "create.instance.name"}; !reflect.DeepEqual(got, want) {
+				t.Fatalf("%s: got %v, want %v", in, got, want)
+			}
 			return "redis-124.32.34.54"
 		case "vpc.cidr":
+			if got, want := paramPaths, []string{"create.vpc.cidr"}; !reflect.DeepEqual(got, want) {
+				t.Fatalf("%s: got %v, want %v", in, got, want)
+			}
 			return "10.0.0.0/24"
 		case "instance.elasticip":
+			if got, want := len(paramPaths), 0; got != want {
+				t.Fatalf("%s: got %#v, want no element", in, paramPaths)
+			}
 			return "1.2.3.4"
 		default:
 			return ""
@@ -418,7 +436,7 @@ func TestCmdErr(t *testing.T) {
 }
 
 type params map[string]interface{}
-type holes map[string][]string
+type holesKeys map[string][]string
 type refs map[string][]string
 type aliases map[string][]string
 
@@ -441,16 +459,18 @@ func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
 	}
 }
 
-func assertCmdHoles(t *testing.T, tpl *Template, exp ...holes) {
+func assertCmdHoles(t *testing.T, tpl *Template, exp ...holesKeys) {
 	for i, cmd := range tpl.CommandNodesIterator() {
 		h := make(map[string][]string)
 		for k, p := range cmd.Params {
 			if withHoles, ok := p.(ast.WithHoles); ok && len(withHoles.GetHoles()) > 0 {
-				h[k] = withHoles.GetHoles()
+				for key := range withHoles.GetHoles() {
+					h[k] = append(h[k], key)
+				}
 			}
 		}
-		if got, want := holes(h), exp[i]; !reflect.DeepEqual(got, want) {
-			t.Fatalf("holes: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
+		if got, want := holesKeys(h), exp[i]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("holes keys: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}
 }
