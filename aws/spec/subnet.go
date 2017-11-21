@@ -31,6 +31,7 @@ type CreateSubnet struct {
 	CIDR             *string `awsName:"CidrBlock" awsType:"awsstr" templateName:"cidr" required:""`
 	VPC              *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
 	AvailabilityZone *string `awsName:"AvailabilityZone" awsType:"awsstr" templateName:"availabilityzone"`
+	Public           *bool   `awsType:"awsboolattribute" templateName:"public"`
 	Name             *string `templateName:"name"`
 }
 
@@ -48,7 +49,21 @@ func (cmd *CreateSubnet) ExtractResult(i interface{}) string {
 }
 
 func (cmd *CreateSubnet) AfterRun(ctx map[string]interface{}, output interface{}) error {
-	return createNameTag(awssdk.String(cmd.ExtractResult(output)), cmd.Name, ctx)
+	subnetId := awssdk.String(cmd.ExtractResult(output))
+	if err := createNameTag(subnetId, cmd.Name, ctx); err != nil {
+		return err
+	}
+
+	if BoolValue(cmd.Public) {
+		updateSubnet := CommandFactory.Build("updatesubnet")().(*UpdateSubnet)
+		updateSubnet.Id = subnetId
+		updateSubnet.Public = Bool(true)
+		if _, err := updateSubnet.Run(ctx, nil); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type UpdateSubnet struct {

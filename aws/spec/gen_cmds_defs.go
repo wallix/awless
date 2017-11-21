@@ -629,7 +629,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "subnet",
 		Api:            "ec2",
 		RequiredParams: []string{"cidr", "vpc"},
-		ExtraParams:    []string{"availabilityzone", "name"},
+		ExtraParams:    []string{"availabilityzone", "name", "public"},
 	},
 	"createsubscription": {
 		Action:         "create",

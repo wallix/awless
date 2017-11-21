@@ -267,7 +267,8 @@ var manualParamsDoc = map[string]map[string]string{
 		"template-file": "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
 	},
 	"createsubnet": {
-		"name": "The 'Name' Tag for the subnet to create",
+		"name":   "The 'Name' Tag for the subnet to create",
+		"public": "A value (true) to indicate that network interfaces created in this subnet should be assigned a public IPv4 address (instances, etc.)",
 	},
 	"createsubscription": {
 		"endpoint": "The endpoint that you want to receive notifications. Endpoints vary by protocol: For the http or https protocol, the endpoint is a URL beginning with 'http://' or 'https://', for the email or email-json protocol, the endpoint is an email address, for the sms protocol, the endpoint is a phone number of an SMS-enabled, for the sqs protocol, the endpoint is the ARN of an Amazon SQS queue, for the application protocol, the endpoint is the EndpointArn of a mobile app and device, for the lambda protocol, the endpoint is the ARN of an AWS Lambda function.",
