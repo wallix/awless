@@ -149,6 +149,7 @@ func onVersionUpgrade(cmd *cobra.Command, args []string) error {
 			fmt.Printf("cannot store upgraded version in db: %s\n", err)
 		}
 		logger.Infof("You have just upgraded awless from %s to %s", lastVersion, config.Version)
+		migrationActionsAndExtraMessages(config.Version)
 	}
 
 	return nil
@@ -177,4 +178,32 @@ func firstInstallDoneHook(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(os.Stderr, "Now running: `%s`\n", cmd.CommandPath())
 	}
 	return nil
+}
+
+func migrationActionsAndExtraMessages(current string) {
+	switch current {
+	case "v0.1.7":
+		config.Set("instance.distro", "amazonlinux")
+		logger.Info("In v0.1.7, the default template config value 'instance.image' has been deprecated in favor of 'instance.distro'")
+
+		ami, _ := config.Get("instance.image")
+		if isNotAwlessFormerDefaultAMI(fmt.Sprint(ami)) {
+			logger.Warningf("\tYou had a customized value of '%s' for the now deprecated 'instance.image'", fmt.Sprint(ami))
+			logger.Warning("\tThis value will not be taken into account anymore as default when running templates")
+		} else {
+			logger.Info("\tMigrated correctly the deprecated 'instance.image' to 'instance.distro'")
+		}
+		config.Unset("instance.image")
+		logger.Info("\tYou can check your config values with 'awless config'")
+	}
+}
+
+func isNotAwlessFormerDefaultAMI(s string) bool {
+	amis := []string{"ami-c58c1dd3", "ami-4191b524", "ami-7a85a01a", "ami-4836a428", "ami-0bd66a6f", "ami-d3c0c4b5", "ami-b6daced2", "ami-b968bad6", "ami-fc5ae39f", "ami-762a2315", "ami-923d12f5", "ami-9d15c7f3", "ami-52c7b43d", "ami-2bccae47"}
+	for _, e := range amis {
+		if e == s {
+			return false
+		}
+	}
+	return true
 }

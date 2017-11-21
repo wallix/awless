@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
@@ -57,6 +56,8 @@ func init() {
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
 	sshCmd.Flags().BoolVar(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
 }
+
+var defaultAMIUsers = []string{"ec2-user", "ubuntu", "centos", "bitnami", "admin", "root"}
 
 var sshCmd = &cobra.Command{
 	Use:   "ssh [USER@]INSTANCE",
@@ -137,7 +138,7 @@ var sshCmd = &cobra.Command{
 		if connectionCtx.user != "" {
 			err = firsHopClient.DialWithUsers(connectionCtx.user)
 		} else {
-			err = firsHopClient.DialWithUsers(awsconfig.DefaultAMIUsers...)
+			err = firsHopClient.DialWithUsers(defaultAMIUsers...)
 		}
 
 		if isConnectionRefusedErr(err) {
@@ -161,7 +162,7 @@ var sshCmd = &cobra.Command{
 			if destInstanceCtx.user != "" {
 				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, sshPortFlag, destInstanceCtx.user)
 			} else {
-				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, sshPortFlag, awsconfig.DefaultAMIUsers...)
+				targetClient, err = firsHopClient.NewClientWithProxy(destInstanceCtx.privip, sshPortFlag, defaultAMIUsers...)
 			}
 			exitOn(err)
 		}
