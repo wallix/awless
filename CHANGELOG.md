@@ -1,3 +1,9 @@
+## v0.1.7 [unreleased]
+
+### Features
+
+- Quick way to switch to profiles and regions. Ex: `awless switch eu-west-1`, `awless switch mfa us-west-1`
+
 ## v0.1.6 [2017-11-16]
 
 **Overall re-design of AWS commands with full acceptance testing allowing for easier external contribution, greater flexibility and scalability moving forward**

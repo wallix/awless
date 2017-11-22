@@ -91,7 +91,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 			services = append(services, s)
 		}
 		if !noSyncGlobalFlag {
-			logger.Infof("Syncing new region '%s'", awsConf[config.RegionConfigKey])
+			logger.Infof("Syncing new region '%s'... (disable with --no-sync global flag)", awsConf[config.RegionConfigKey])
 			sync.NewSyncer(logger.DefaultLogger).Sync(services...)
 		}
 	}

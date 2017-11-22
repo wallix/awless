@@ -30,6 +30,7 @@ import (
 	"github.com/boombuler/barcode/qr"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
+	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/logger"
 )
 
@@ -93,7 +94,7 @@ func (cmd *DeleteMfadevice) ValidateParams(params []string) ([]string, error) {
 }
 
 var (
-	awsConfigFilepath = filepath.Join(awsHomeDir(), "config")
+	awsConfigFilepath = filepath.Join(awsconfig.AWSHomeDir(), "config")
 )
 
 type AttachMfadevice struct {

@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/logger"
 )
 
@@ -99,18 +99,8 @@ func (cmd *DeleteAccesskey) ValidateParams(params []string) ([]string, error) {
 }
 
 var (
-	AWSCredFilepath = filepath.Join(awsHomeDir(), "credentials")
+	AWSCredFilepath = filepath.Join(awsconfig.AWSHomeDir(), "credentials")
 )
-
-func awsHomeDir() string {
-	var home string
-	if runtime.GOOS == "windows" { // Windows
-		home = os.Getenv("USERPROFILE")
-	} else {
-		home = os.Getenv("HOME")
-	}
-	return filepath.Join(home, ".aws")
-}
 
 type credentialsPrompter struct {
 	Profile               string
@@ -163,8 +153,8 @@ func (c *credentialsPrompter) Store() (bool, error) {
 func appendToAwsFile(content string, awsFilePath string) (bool, error) {
 	var created bool
 	if awsHomeDirMissing() {
-		if err := os.MkdirAll(awsHomeDir(), 0700); err != nil {
-			return created, fmt.Errorf("creating '%s' : %s", awsHomeDir(), err)
+		if err := os.MkdirAll(awsconfig.AWSHomeDir(), 0700); err != nil {
+			return created, fmt.Errorf("creating '%s' : %s", awsconfig.AWSHomeDir(), err)
 		}
 		created = true
 	}
@@ -223,6 +213,6 @@ func promptUntilNonEmpty(question string, v *string) {
 }
 
 func awsHomeDirMissing() bool {
-	_, err := os.Stat(awsHomeDir())
+	_, err := os.Stat(awsconfig.AWSHomeDir())
 	return os.IsNotExist(err)
 }

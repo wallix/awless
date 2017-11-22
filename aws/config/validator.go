@@ -3,8 +3,11 @@ package awsconfig
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -12,6 +15,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/chzyer/readline"
 )
+
+func AWSHomeDir() string {
+	var home string
+	if runtime.GOOS == "windows" { // Windows
+		home = os.Getenv("USERPROFILE")
+	} else {
+		home = os.Getenv("HOME")
+	}
+	return filepath.Join(home, ".aws")
+}
 
 func ParseRegion(i string) (interface{}, error) {
 	if !IsValidRegion(i) {
@@ -119,4 +132,46 @@ func allRegions() []string {
 	}
 	sort.Sort(regions)
 	return regions
+}
+
+func IsValidProfile(given string) bool {
+	return stringInSlice(given, AllProfiles())
+}
+
+var awsHomeFunc func() string = AWSHomeDir
+
+var profileNameRegex = regexp.MustCompile(`\[(.*)\]`)
+
+func AllProfiles() (profiles []string) {
+	awsHome := awsHomeFunc()
+	files := []string{filepath.Join(awsHome, "config"), filepath.Join(awsHome, "credentials")}
+	for _, f := range files {
+		if _, err := os.Stat(f); err != nil {
+			continue
+		}
+		out, err := ioutil.ReadFile(f)
+		if err != nil {
+			continue
+		}
+		matches := profileNameRegex.FindAllSubmatch(out, -1)
+		for _, match := range matches {
+			profile := string(match[1])
+			profile = strings.TrimSpace(profile)
+			profile = strings.TrimPrefix(profile, "profile ")
+			profile = strings.TrimSpace(profile)
+			if profile != "" {
+				profiles = append(profiles, profile)
+			}
+		}
+	}
+	return profiles
+}
+
+func stringInSlice(s string, slice []string) bool {
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
