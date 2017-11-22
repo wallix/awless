@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -40,6 +42,32 @@ type ImageResolver func(*ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, er
 func EC2ImageResolver() ImageResolver {
 	factory := CommandFactory.Build("createinstance")
 	return ImageResolver(factory().(*CreateInstance).api.DescribeImages)
+}
+
+var DefaultImageResolverCache = new(ImageResolverCache)
+
+type ImageResolverCache struct {
+	mu    sync.Mutex
+	cache map[string][]*AwsImage
+}
+
+func (r *ImageResolverCache) Store(key string, images []*AwsImage) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.cache == nil {
+		r.cache = make(map[string][]*AwsImage)
+	}
+	r.cache[key] = images
+}
+
+func (r *ImageResolverCache) Get(key string) ([]*AwsImage, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.cache == nil {
+		r.cache = make(map[string][]*AwsImage)
+	}
+	images, ok := r.cache[key]
+	return images, ok
 }
 
 const ImageQuerySpec = "owner:distro:variant:arch:virtualization:store"
@@ -91,11 +119,15 @@ type Platform struct {
 	MatchFunc     func(s string, d Distro) bool
 }
 
-func (resolv ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
+func (resolv ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, bool, error) {
+	images, found := DefaultImageResolverCache.Get(q.String())
+	if found {
+		return images, true, nil
+	}
+
 	results := make([]*AwsImage, 0) // json empty array friendly
 
-	filters := []*ec2.Filter{}
-
+	var filters []*ec2.Filter
 	filters = append(filters,
 		&ec2.Filter{
 			Name:   awssdk.String("state"),
@@ -142,7 +174,7 @@ func (resolv ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
 
 	amis, err := resolv(params)
 	if err != nil {
-		return results, err
+		return results, false, err
 	}
 
 	for _, ami := range amis.Images {
@@ -169,7 +201,9 @@ func (resolv ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, error) {
 
 	sort.Slice(results, func(i, j int) bool { return results[i].Created.After(results[j].Created) })
 
-	return results, nil
+	DefaultImageResolverCache.Store(q.String(), results)
+
+	return results, false, nil
 }
 
 var (

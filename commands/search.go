@@ -65,7 +65,7 @@ var awsImagesCmd = &cobra.Command{
 		exitOn(err)
 
 		logger.Infof("launching search for image in '%s' region. Query: '%s'", config.GetAWSRegion(), query)
-		imgs, err := resolver.Resolve(query)
+		imgs, _, err := resolver.Resolve(query)
 		exitOn(err)
 
 		var ids []string
