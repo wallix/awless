@@ -389,14 +389,21 @@ limitations under the License.
 // This file was automatically generated with go generate
 package awsspec
 
+import (
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/awstesting/mock"
+	"github.com/wallix/awless/logger"
+)
+
 type Factory interface {
 	Build(key string) func() interface{}
 }
 
 var CommandFactory Factory
 
-var NoSessionFactory = &AWSFactory {
-	Log: logger.DiscardLogger,
+var MockAWSSessionFactory = &AWSFactory{
+	Log:  logger.DiscardLogger,
+	Sess: mock.Session,
 }
 
 type AWSFactory struct {

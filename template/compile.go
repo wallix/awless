@@ -486,12 +486,17 @@ func resolveAliasPass(tpl *Template, env *Env) (*Template, *Env, error) {
 }
 
 func failOnUnresolvedHolesPass(tpl *Template, env *Env) (*Template, *Env, error) {
-	var unresolved []string
+	uniqueUnresolved := make(map[string]struct{})
 	tpl.visitHoles(func(withHole ast.WithHoles) {
 		for hole := range withHole.GetHoles() {
-			unresolved = append(unresolved, hole)
+			uniqueUnresolved[hole] = struct{}{}
 		}
 	})
+
+	var unresolved []string
+	for k := range uniqueUnresolved {
+		unresolved = append(unresolved, k)
+	}
 
 	if len(unresolved) > 0 {
 		return tpl, env, fmt.Errorf("template contains unresolved holes: %v", unresolved)

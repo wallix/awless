@@ -20,7 +20,7 @@ func Fuzz(data []byte) int {
 
 		env.AliasFunc = func(e, k, v string) string { return "" }
 		env.Lookuper = func(tokens ...string) interface{} {
-			return awsspec.NoSessionFactory.Build(strings.Join(tokens, ""))()
+			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 		}
 		for _, param := range def.RequiredParams {
 			inTpl, err := template.Parse(fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, param, string(data)))

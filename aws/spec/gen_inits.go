@@ -19,6 +19,7 @@ package awsspec
 
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/awstesting/mock"
 	"github.com/wallix/awless/logger"
 )
 
@@ -28,8 +29,9 @@ type Factory interface {
 
 var CommandFactory Factory
 
-var NoSessionFactory = &AWSFactory{
-	Log: logger.DiscardLogger,
+var MockAWSSessionFactory = &AWSFactory{
+	Log:  logger.DiscardLogger,
+	Sess: mock.Session,
 }
 
 type AWSFactory struct {

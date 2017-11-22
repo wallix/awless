@@ -142,7 +142,7 @@ create loadbalancer name=mylb subnets=subnet-1, subnet-2
 		}
 
 		env.Lookuper = func(tokens ...string) interface{} {
-			return awsspec.NoSessionFactory.Build(strings.Join(tokens, ""))()
+			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 		}
 
 		inTpl := template.MustParse(tcase.tpl)
@@ -201,7 +201,7 @@ func TestExternallyProvidedParams(t *testing.T) {
 	for i, tcase := range tcases {
 		env := template.NewEnv()
 		env.Lookuper = func(tokens ...string) interface{} {
-			return awsspec.NoSessionFactory.Build(strings.Join(tokens, ""))()
+			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 		}
 		env.AliasFunc = func(e, k, v string) string {
 			vals := map[string]string{
