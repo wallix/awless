@@ -33,6 +33,8 @@ import (
 	stdsync "sync"
 	"text/tabwriter"
 
+	"time"
+
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless-scheduler/client"
@@ -341,7 +343,10 @@ func runSyncFor(tplExec *template.TemplateExecution) {
 	services := awsservices.GetCloudServicesForAPIs(apis...)
 
 	if !noSyncGlobalFlag {
-		logger.Infof("Resyncing %s ... (disable with --no-sync global flag)", joinSentence(cloud.Services(services).Names()))
+		go func() { // allow to only display this verbose line only if taking more than 1 second before exiting CLI
+			time.Sleep(2 * time.Second)
+			logger.Infof("Resyncing %s ... (disable with --no-sync global flag)", joinSentence(cloud.Services(services).Names()))
+		}()
 	}
 	if _, err := sync.DefaultSyncer.Sync(services...); err != nil {
 		logger.ExtraVerbosef(err.Error())

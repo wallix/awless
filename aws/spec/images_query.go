@@ -208,12 +208,12 @@ func (resolv ImageResolver) Resolve(q ImageQuery) ([]*AwsImage, bool, error) {
 
 var (
 	Platforms = map[string]Platform{
-		"canonical":       Canonical,
-		"redhat":          RedHat,
-		"debian":          Debian,
-		"amazonlinux":     AmazonLinux,
-		"suselinux":       SuseLinux,
-		"microsoftserver": MicrosoftServer,
+		"canonical":   Canonical,
+		"redhat":      RedHat,
+		"debian":      Debian,
+		"amazonlinux": AmazonLinux,
+		"suselinux":   SuseLinux,
+		"windows":     Windows,
 	}
 
 	Canonical = Platform{
@@ -251,10 +251,10 @@ var (
 		},
 	}
 
-	MicrosoftServer = Platform{
-		Name: "microsoftserver", Id: "801119661308", LatestVariant: "Windows_Server-2016",
+	Windows = Platform{
+		Name: "windows", Id: "801119661308", DistroName: "server", LatestVariant: "2016",
 		MatchFunc: func(s string, d Distro) bool {
-			return strings.HasPrefix(s, fmt.Sprintf("%s", d.Variant))
+			return strings.HasPrefix(s, strings.ToLower(fmt.Sprintf("windows_%s-%s-english", d.Name, d.Variant)))
 		},
 	}
 

@@ -55,7 +55,12 @@ func (ru *Runner) Run() error {
 		fmt.Fprintln(os.Stderr)
 	}
 
-	logger.Info("Dry running template ...")
+	if tplExec.IsOneLiner() {
+		logger.Verbose("Dry running template ...")
+	} else {
+		logger.Info("Dry running template ...")
+	}
+
 	env.IsDryRun = true
 	if _, err = tplExec.Template.Run(env); err != nil {
 		switch t := err.(type) {
