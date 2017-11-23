@@ -125,8 +125,15 @@ var cliExamplesDoc = map[string][]string{
 	},
 	"createinstance": {
 		"awless create instance keypair=jsmith type=t2.micro subnet=@my-subnet",
-		"awless create instance image=$(awless search images debian --latest-id) keypair=jsmith",
-		"awless create instance name=redis type=t2.nano keypair=jsmith userdata=/home/jsmith/data.sh role=MyInfraReadOnlyRole",
+		"awless create instance image=ami-123456 keypair=jsmith",
+		"awless create instance name=redis type=t2.nano keypair=jsmith userdata=/home/jsmith/data.sh",
+		"", // create empty line for clarity
+		"awless create instance distro=redhat type=t2.micro",
+		"awless create instance distro=redhat::7.2 type=t2.micro",
+		"awless create instance distro=canonical:ubuntu role=MyInfraReadOnlyRole",
+		"awless create instance distro=debian:debian:jessie lock=true",
+		"awless create instance distro=amazonlinux securitygroup=@my-ssh-secgroup",
+		"awless create instance distro=amazonlinux:::::instance-store",
 	},
 	"createinstanceprofile":     {},
 	"createinternetgateway":     {},

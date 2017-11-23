@@ -50,8 +50,8 @@ var awsImagesCmd = &cobra.Command{
 	Use:               "images",
 	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook, initCloudServicesHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(networkMonitorHook),
-	Short:             fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first. Supported owners: %s", strings.Join(awsspec.SupportedAMIOwners, ", ")),
-	Long:              fmt.Sprintf("Find corresponding bare images according to a bare image query, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsspec.ImageQuerySpec, strings.Join(awsspec.SupportedAMIOwners, ", ")),
+	Short:             fmt.Sprintf("Resolve official community AMIs according to an awless specific bare distro query format, ordering by latest first. Supported owners: %s", strings.Join(awsspec.SupportedAMIOwners, ", ")),
+	Long:              fmt.Sprintf("Resolve official community AMIs according to an awless specific bare distro query format, ordering by latest first.\n\nQuery string specification is the following column separated format:\n\n\t\t%s\n\nEverything optional expect for the 'owner'. Supported owners: %s", awsspec.ImageQuerySpec, strings.Join(awsspec.SupportedAMIOwners, ", ")),
 	Example:           "  awless search images redhat:rhel:7.2\n  awless search images debian::jessie\n  awless search images canonical --latest-id\n  awless search images amazonlinux:::::instance-store",
 
 	Run: func(cmd *cobra.Command, args []string) {

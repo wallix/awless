@@ -150,6 +150,7 @@ func onVersionUpgrade(cmd *cobra.Command, args []string) error {
 		}
 		logger.Infof("You have just upgraded awless from %s to %s", lastVersion, config.Version)
 		migrationActionsAndExtraMessages(config.Version)
+		logger.Infof("Check out %s latest features at https://github.com/wallix/awless/releases", config.Version)
 	}
 
 	return nil
@@ -194,7 +195,7 @@ func migrationActionsAndExtraMessages(current string) {
 			logger.Info("\tMigrated correctly the deprecated 'instance.image' to 'instance.distro'")
 		}
 		config.Unset("instance.image")
-		logger.Info("\tYou can check your config values with 'awless config'")
+		logger.Info("\tYou can always check your config values with 'awless config'")
 	}
 }
 

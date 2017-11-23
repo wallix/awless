@@ -194,8 +194,8 @@ var manualParamsDoc = map[string]map[string]string{
 		"count":  "The number of instances to launch",
 		"name":   "The name of the instance to launch",
 		"role":   "The name of the instance profile (role) to launch the instance with",
-		"image":  "The ID of the AMI of the instance to launch, which you can get by using `awless search images`",
-		"distro": "The query (see awless search images -h) to fetch official bare distro AMI. Query examples: amazonlinux, canonical:ubuntu, redhat:rhel:7.2, debian::jessie",
+		"image":  "The ID of an AMI for the instance to be launched",
+		"distro": "The distro query to resolve official community bare distro AMI. See `awless search images -h`",
 	},
 	"createkeypair": {
 		"name":      "The name of the keypair to create (it will also be the name of the file stored in ~/.awless/keys)",
