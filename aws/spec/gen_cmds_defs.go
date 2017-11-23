@@ -370,7 +370,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "accesskey",
 		Api:            "iam",
 		RequiredParams: []string{"user"},
-		ExtraParams:    []string{"no-prompt"},
+		ExtraParams:    []string{"save"},
 	},
 	"createalarm": {
 		Action:         "create",

@@ -31,52 +31,69 @@ import (
 )
 
 type CreateAccesskey struct {
-	_        string `action:"create" entity:"accesskey" awsAPI:"iam" awsCall:"CreateAccessKey" awsInput:"iam.CreateAccessKeyInput" awsOutput:"iam.CreateAccessKeyOutput"`
-	logger   *logger.Logger
-	api      iamiface.IAMAPI
-	User     *string `awsName:"UserName" awsType:"awsstr" templateName:"user" required:""`
-	NoPrompt *bool   `templateName:"no-prompt"`
+	_      string `action:"create" entity:"accesskey" awsAPI:"iam" awsCall:"CreateAccessKey" awsInput:"iam.CreateAccessKeyInput" awsOutput:"iam.CreateAccessKeyOutput"`
+	logger *logger.Logger
+	api    iamiface.IAMAPI
+	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user" required:""`
+	Save   *bool   `templateName:"save"`
 }
 
 func (cmd *CreateAccesskey) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+	return paramRule{tree: allOf(node("user")), extras: []string{"save", "no-prompt"}}.verify(params)
+}
+
+func (cmd *CreateAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
+	return []string{"no-prompt"},
+		func(values map[string]interface{}) (map[string]interface{}, error) {
+			if noPrompt, hasNoPrompt := values["no-prompt"]; hasNoPrompt {
+				b, err := castBool(noPrompt)
+				if err != nil {
+					return nil, fmt.Errorf("no-prompt: %s", err)
+				}
+				return map[string]interface{}{"save": !b}, nil
+			} else {
+				return nil, nil
+			}
+		}
 }
 
 func (cmd *CreateAccesskey) AfterRun(ctx map[string]interface{}, output interface{}) error {
 	accessKey := output.(*iam.CreateAccessKeyOutput).AccessKey
-	cmd.logger.Infof("Access key created. Here are the crendentials for user %s:", aws.StringValue(accessKey.UserName))
-	fmt.Fprintln(os.Stderr)
-	fmt.Fprintln(os.Stderr, strings.Repeat("*", 64))
-	fmt.Fprintf(os.Stderr, "aws_access_key_id = %s\n", aws.StringValue(accessKey.AccessKeyId))
-	fmt.Fprintf(os.Stderr, "aws_secret_access_key = %s\n", aws.StringValue(accessKey.SecretAccessKey))
-	fmt.Fprintln(os.Stderr, strings.Repeat("*", 64))
-	fmt.Fprintln(os.Stderr)
-	cmd.logger.Warning("This is your only opportunity to view the secret access keys.")
-	cmd.logger.Warning("Save the user's new access key ID and secret access key in a safe and secure place.")
-	cmd.logger.Warning("You will not have access to the secret keys again after this step.\n")
+	if !BoolValue(cmd.Save) {
+		cmd.logger.Infof("Access key created. Here are the crendentials for user %s:", aws.StringValue(accessKey.UserName))
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, strings.Repeat("*", 64))
+		fmt.Fprintf(os.Stderr, "aws_access_key_id = %s\n", aws.StringValue(accessKey.AccessKeyId))
+		fmt.Fprintf(os.Stderr, "aws_secret_access_key = %s\n", aws.StringValue(accessKey.SecretAccessKey))
+		fmt.Fprintln(os.Stderr, strings.Repeat("*", 64))
+		fmt.Fprintln(os.Stderr)
+		cmd.logger.Warning("This is your only opportunity to view the secret access keys.")
+		cmd.logger.Warning("Save the user's new access key ID and secret access key in a safe and secure place.")
+		cmd.logger.Warning("You will not have access to the secret keys again after this step.\n")
+	}
 
-	if !BoolValue(cmd.NoPrompt) {
-		if promptConfirm("Do you want to save these access keys in %s?", AWSCredFilepath) {
-			var profile string
-			fmt.Print("Entry profile name (will default to AWS 'default') ? ")
-			fmt.Scanln(&profile)
-			profile = strings.TrimSpace(profile)
-			if profile == "" {
-				profile = "default"
-			}
-			creds := NewCredsPrompter(profile)
-			creds.Val.AccessKeyID = aws.StringValue(accessKey.AccessKeyId)
-			creds.Val.SecretAccessKey = aws.StringValue(accessKey.SecretAccessKey)
-			created, err := creds.Store()
-			if err != nil {
-				logger.Errorf("cannot store access keys: %s", err)
-			} else {
-				if created {
-					fmt.Fprintf(os.Stderr, "\n\u2713 %s created", AWSCredFilepath)
-				}
-				fmt.Fprintf(os.Stderr, "\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, AWSCredFilepath)
-			}
+	if cmd.Save != nil && !BoolValue(cmd.Save) {
+		return nil
+	}
+	profile := StringValue(cmd.User)
+	if !BoolValue(cmd.Save) {
+		if !promptConfirm("Do you want to save these access keys in %s?", AWSCredFilepath) {
+			return nil
 		}
+		profile = promptStringWithDefault("Entry profile name: ("+StringValue(cmd.User)+") ", profile)
+	}
+
+	creds := NewCredsPrompter(profile)
+	creds.Val.AccessKeyID = aws.StringValue(accessKey.AccessKeyId)
+	creds.Val.SecretAccessKey = aws.StringValue(accessKey.SecretAccessKey)
+	created, err := creds.Store()
+	if err != nil {
+		logger.Errorf("cannot store access keys: %s", err)
+	} else {
+		if created {
+			fmt.Fprintf(os.Stderr, "\n\u2713 %s created", AWSCredFilepath)
+		}
+		fmt.Fprintf(os.Stderr, "\n\u2713 Credentials for profile '%s' stored successfully in %s\n\n", creds.Profile, AWSCredFilepath)
 	}
 
 	return nil

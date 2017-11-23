@@ -16,7 +16,7 @@ import (
 	"github.com/chzyer/readline"
 )
 
-func AWSHomeDir() string {
+var AWSHomeDir = func() string {
 	var home string
 	if runtime.GOOS == "windows" { // Windows
 		home = os.Getenv("USERPROFILE")
