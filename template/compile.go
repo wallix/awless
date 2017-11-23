@@ -499,6 +499,7 @@ func failOnUnresolvedHolesPass(tpl *Template, env *Env) (*Template, *Env, error)
 	}
 
 	if len(unresolved) > 0 {
+		sort.Strings(unresolved)
 		return tpl, env, fmt.Errorf("template contains unresolved holes: %v", unresolved)
 	}
 
