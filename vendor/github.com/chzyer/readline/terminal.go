@@ -65,6 +65,12 @@ func (t *Terminal) Write(b []byte) (int, error) {
 	return t.cfg.Stdout.Write(b)
 }
 
+// WriteStdin prefill the next Stdin fetch
+// Next time you call ReadLine() this value will be writen before the user input
+func (t *Terminal) WriteStdin(b []byte) (int, error) {
+	return t.cfg.StdinWriter.Write(b)
+}
+
 type termSize struct {
 	left int
 	top  int

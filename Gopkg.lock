@@ -3,7 +3,7 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/acm","service/acm/acmiface","service/applicationautoscaling","service/applicationautoscaling/applicationautoscalingiface","service/autoscaling","service/autoscaling/autoscalingiface","service/cloudformation","service/cloudformation/cloudformationiface","service/cloudfront","service/cloudfront/cloudfrontiface","service/cloudwatch","service/cloudwatch/cloudwatchiface","service/ec2","service/ec2/ec2iface","service/ecr","service/ecr/ecriface","service/ecs","service/ecs/ecsiface","service/elbv2","service/elbv2/elbv2iface","service/iam","service/iam/iamiface","service/lambda","service/lambda/lambdaiface","service/rds","service/rds/rdsiface","service/route53","service/route53/route53iface","service/s3","service/s3/s3iface","service/sns","service/sns/snsiface","service/sqs","service/sqs/sqsiface","service/sts","service/sts/stsiface"]
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","awstesting/mock","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/acm","service/acm/acmiface","service/applicationautoscaling","service/applicationautoscaling/applicationautoscalingiface","service/autoscaling","service/autoscaling/autoscalingiface","service/cloudformation","service/cloudformation/cloudformationiface","service/cloudfront","service/cloudfront/cloudfrontiface","service/cloudwatch","service/cloudwatch/cloudwatchiface","service/configservice","service/ec2","service/ec2/ec2iface","service/ecr","service/ecr/ecriface","service/ecs","service/ecs/ecsiface","service/elbv2","service/elbv2/elbv2iface","service/iam","service/iam/iamiface","service/lambda","service/lambda/lambdaiface","service/rds","service/rds/rdsiface","service/route53","service/route53/route53iface","service/s3","service/s3/s3iface","service/sns","service/sns/snsiface","service/sqs","service/sqs/sqsiface","service/sts","service/sts/stsiface"]
   revision = "5615d2ed566a09d326f681c789310a2e5ba5de5d"
   version = "v1.10.50"
 
@@ -23,7 +23,7 @@
   branch = "master"
   name = "github.com/chzyer/readline"
   packages = ["."]
-  revision = "41eea22f717c616615e1e59aa06cf831f9901f35"
+  revision = "a4d5111b617813c5d09df1ba6d76394ed71b1644"
 
 [[projects]]
   name = "github.com/fatih/color"
@@ -184,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4348f052451e39cc57230c72266968af36edcc897fe460d83ff3eb4db2c4ea48"
+  inputs-digest = "da102582084eea74554836c51bee22da86aef80d5fbd975700a686a59fab0a34"
   solver-name = "gps-cdcl"
   solver-version = 1

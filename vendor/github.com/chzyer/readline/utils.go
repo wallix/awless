@@ -38,6 +38,7 @@ const (
 	CharTranspose = 20
 	CharCtrlU     = 21
 	CharCtrlW     = 23
+	CharCtrlY     = 25
 	CharCtrlZ     = 26
 	CharEsc       = 27
 	CharEscapeEx  = 91
