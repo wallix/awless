@@ -43,6 +43,9 @@ func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 							switch prop := v.(type) {
 							case string, float64, int, bool:
 								suggest = appendIfContains(suggest, fmt.Sprint(prop), s)
+								if validPropName == "ID" {
+									suggest = appendWithNameAliases(suggest, res, s)
+								}
 							case []string:
 								for _, str := range prop {
 									suggest = appendIfContains(suggest, str, s)
@@ -66,15 +69,7 @@ func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 			s = strings.TrimLeft(s, "'@\"")
 			for _, res := range resources {
 				suggest = appendIfContains(suggest, res.Id(), s)
-				if val, ok := res.Properties["Name"]; ok {
-					switch val.(type) {
-					case string:
-						name := val.(string)
-						if name != "" {
-							suggest = appendIfContains(suggest, fmt.Sprintf("@%s", name), s)
-						}
-					}
-				}
+				suggest = appendWithNameAliases(suggest, res, s)
 			}
 			suggest = quotedSortedSet(suggest)
 			return
@@ -216,6 +211,19 @@ func appendIfContains(slice []string, value, subst string) []string {
 
 	if strings.Contains(value, subst) && value != "" {
 		return append(slice, value)
+	}
+	return slice
+}
+
+func appendWithNameAliases(slice []string, res *graph.Resource, s string) []string {
+	if val, ok := res.Properties["Name"]; ok {
+		switch val.(type) {
+		case string:
+			name := val.(string)
+			if name != "" {
+				slice = appendIfContains(slice, fmt.Sprintf("@%s", name), s)
+			}
+		}
 	}
 	return slice
 }

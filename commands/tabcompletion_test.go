@@ -15,6 +15,7 @@ func TestAutoCompletion(t *testing.T) {
 	g.AddResource(resourcetest.Instance("2").Prop(p.Name, "broker_2").Prop(p.Type, "t3.medium").Prop(p.Subnet, "2").Prop(p.ActiveServicesCount, 24).Build())
 	g.AddResource(resourcetest.Instance("3").Prop(p.Name, "kafka").Prop(p.Type, "t3.medium").Prop(p.Subnet, "2").Prop(p.ActiveServicesCount, 44).Build())
 	g.AddResource(resourcetest.Instance("4").Prop(p.Name, "redis").Build())
+	g.AddResource(resourcetest.SecurityGroup("sg-1").Prop(p.Name, "ssh").Build())
 	g.AddResource(resourcetest.Subnet("s-5").Prop(p.Name, "subnet 1").Prop(p.Public, true).Prop(p.CIDR, "10.0.0.0/0").Build())
 	g.AddResource(resourcetest.Subnet("s-6").Prop(p.Name, "subnet 2").Prop(p.Public, false).Prop(p.CIDR, "192.168.0.0/0").Build())
 	g.AddResource(resourcetest.Alarm("1").Prop(p.Dimensions, []*graph.KeyValue{{"abc", "val1"}, {"abd", "val2"}}).Build())
@@ -53,6 +54,13 @@ func TestAutoCompletion(t *testing.T) {
 		var empty [][]rune
 		list, _ = holeAutoCompletion(g, "instance").Do([]rune{'@', 'r', 'e', 'd', 'i', 's'}, 6)
 		if got, want := list, empty; !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+	})
+
+	t.Run("match on entity regular property. Entity has a Name property", func(t *testing.T) {
+		list, _ := holeAutoCompletion(g, "securitygroup.id").Do([]rune{}, 0)
+		if got, want := list, toRune("@ssh", "sg-1"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
@@ -159,6 +167,7 @@ func TestGuessEntityType(t *testing.T) {
 		{hole: "gateway.", types: []string{"internetgateway", "natgateway"}},
 		{hole: "instance", types: []string{"instance"}},
 		{hole: "instance.ip", types: []string{"instance"}, prop: "ip"},
+		{hole: "securitygroup.id", types: []string{"securitygroup"}, prop: "id"},
 		{hole: "subnets", types: []string{"subnet"}},
 		{hole: "subnet", types: []string{"subnet"}},
 		{hole: "subnets.cidr", types: []string{"subnet"}, prop: "cidr"},
