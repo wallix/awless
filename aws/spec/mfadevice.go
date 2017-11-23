@@ -28,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"github.com/chzyer/readline"
+	"github.com/fxaguessy/readline"
 	"github.com/fatih/color"
 	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/logger"

@@ -13,7 +13,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/chzyer/readline"
+	"github.com/fxaguessy/readline"
 )
 
 var AWSHomeDir = func() string {

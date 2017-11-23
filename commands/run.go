@@ -35,7 +35,7 @@ import (
 
 	"time"
 
-	"github.com/chzyer/readline"
+	"github.com/fxaguessy/readline"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless-scheduler/client"
 	"github.com/wallix/awless/aws/doc"

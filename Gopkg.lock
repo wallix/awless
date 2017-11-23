@@ -20,16 +20,16 @@
   revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/chzyer/readline"
-  packages = ["."]
-  revision = "a4d5111b617813c5d09df1ba6d76394ed71b1644"
-
-[[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
   revision = "570b54cabe6b8eb0bc2dfce68d964677d63b5260"
   version = "v1.5.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/fxaguessy/readline"
+  packages = ["."]
+  revision = "8739f12d03287e5bde02841d10ee9f77c65c495e"
 
 [[projects]]
   name = "github.com/go-ini/ini"
@@ -184,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "da102582084eea74554836c51bee22da86aef80d5fbd975700a686a59fab0a34"
+  inputs-digest = "1f44454aa0ca0196c1bbd6476bece5c166c12fda7d3e3bc0788dfec68afe0f7c"
   solver-name = "gps-cdcl"
   solver-version = 1

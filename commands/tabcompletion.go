@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chzyer/readline"
+	"github.com/fxaguessy/readline"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"

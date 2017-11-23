@@ -31,7 +31,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/chzyer/readline"
+  name = "github.com/fxaguessy/readline"
  
 [[constraint]]
   name = "github.com/fatih/color"

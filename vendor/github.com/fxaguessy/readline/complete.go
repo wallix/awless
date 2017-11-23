@@ -203,7 +203,9 @@ func (o *opCompleter) CompleteRefresh() {
 	// -1 to avoid reach the end of line
 	width := o.width - 1
 	colNum := width / colWidth
-	colWidth += (width - (colWidth * colNum)) / colNum
+	if colNum != 0 {
+		colWidth += (width - (colWidth * colNum)) / colNum
+	}
 
 	o.candidateColNum = colNum
 	buf := bufio.NewWriter(o.w)
