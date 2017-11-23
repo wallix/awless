@@ -153,7 +153,10 @@ var cliExamplesDoc = map[string][]string{
 	"creates3object":            {},
 	"createscalinggroup":        {},
 	"createscalingpolicy":       {},
-	"createsecuritygroup":       {},
+	"createsecuritygroup": {
+		"awless create securitygroup vpc=@myvpc name=ssh-only description=ssh-access",
+		"(... see more params at `awless update securitygroup -h`)",
+	},
 	"createsnapshot":            {},
 	"createstack":               {},
 	"createsubnet":              {},
@@ -238,8 +241,11 @@ var cliExamplesDoc = map[string][]string{
 	"updaterecord":              {},
 	"updates3object":            {},
 	"updatescalinggroup":        {},
-	"updatesecuritygroup":       {},
-	"updatestack":               {},
-	"updatesubnet":              {},
-	"updatetargetgroup":         {},
+	"updatesecuritygroup": {
+		"awless update securitygroup id=@ssh-only inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=26257",
+		"awless update securitygroup id=@ssh-only inbound=authorize protocol=tcp securitygroup=sg-123457 portrange=8080",
+	},
+	"updatestack":       {},
+	"updatesubnet":      {},
+	"updatetargetgroup": {},
 }
