@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/logger"
 )
 
 func init() {
@@ -49,16 +48,14 @@ var switchCmd = &cobra.Command{
 		}
 		for _, arg := range args {
 			if awsconfig.IsValidRegion(arg) {
-				logger.Infof("Switching to region '%s'", arg)
 				exitOn(config.Set(config.RegionConfigKey, arg))
 				continue
 			}
 			if awsconfig.IsValidProfile(arg) {
-				logger.Infof("Switching to profile '%s'", arg)
 				exitOn(config.Set(config.ProfileConfigKey, arg))
 				continue
 			}
-			return fmt.Errorf("invalid region or profile: '%s'", arg)
+			exitOn(fmt.Errorf("could not find profile: '%s' in $HOME/.aws/{credentials,config}", arg))
 		}
 		return nil
 	},

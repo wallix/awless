@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -76,8 +75,8 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 			}
 			return true, nil
 		}
-
-		return false, errors.New("Did not confirm template execution")
+		os.Exit(-1)
+		return false, nil
 	}
 
 	runner.AfterRun = func(tplExec *template.TemplateExecution) error {
@@ -104,7 +103,7 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 
 		if template.IsRevertible(tplExec.Template) {
 			fmt.Println()
-			logger.Infof("Revert this template with `awless revert %s -r %s -p %s`", tplExec.Template.ID, config.GetAWSRegion(), config.GetAWSProfile())
+			logger.Infof("Revert this template with `awless revert %s`", tplExec.Template.ID)
 		}
 
 		runSyncFor(tplExec)
