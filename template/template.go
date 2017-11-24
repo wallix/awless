@@ -47,41 +47,16 @@ func (s *Template) Run(env *Env) (*Template, error) {
 		}
 		switch n := clone.Node.(type) {
 		case *ast.CommandNode:
-			n.ProcessRefs(vars)
-			if env.IsDryRun {
-				n.CmdResult, n.CmdErr = n.Command.DryRun(ctx, n.ToDriverParams())
-				n.CmdErr = prefixError(n.CmdErr, "dry run")
-			} else {
-
-				n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
-				var res, status string
-				if n.CmdResult != nil {
-					res = " (" + color.New(color.FgCyan).Sprint(n.CmdResult) + ") "
-				}
-				if n.CmdErr != nil {
-					status = color.New(color.FgRed).Sprint("KO")
-				} else {
-					status = color.New(color.FgGreen).Sprint("OK")
-				}
-				env.Log.Infof("%s %s %s%s", status, n.Action, n.Entity, res)
-				if n.CmdErr != nil {
-					return current, nil
-				}
+			if stop := processCmdNode(env, n, vars, ctx); stop {
+				return current, nil
 			}
 		case *ast.DeclarationNode:
 			ident := n.Ident
 			expr := n.Expr
 			switch n := expr.(type) {
 			case *ast.CommandNode:
-				n.ProcessRefs(vars)
-				if env.IsDryRun {
-					n.CmdResult, n.CmdErr = n.Command.DryRun(ctx, n.ToDriverParams())
-					n.CmdErr = prefixError(n.CmdErr, "dry run")
-				} else {
-					n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
-					if n.CmdErr != nil {
-						return current, nil
-					}
+				if stop := processCmdNode(env, n, vars, ctx); stop {
+					return current, nil
 				}
 				vars[ident] = n.Result()
 			default:
@@ -93,6 +68,30 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	}
 
 	return current, nil
+}
+
+func processCmdNode(env *Env, n *ast.CommandNode, vars map[string]interface{}, ctx map[string]interface{}) bool {
+	n.ProcessRefs(vars)
+	if env.IsDryRun {
+		n.CmdResult, n.CmdErr = n.Command.DryRun(ctx, n.ToDriverParams())
+		n.CmdErr = prefixError(n.CmdErr, "dry run")
+	} else {
+		n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
+		var res, status string
+		if n.CmdResult != nil {
+			res = " (" + color.New(color.FgCyan).Sprint(n.CmdResult) + ") "
+		}
+		if n.CmdErr != nil {
+			status = color.New(color.FgRed).Sprint("KO")
+		} else {
+			status = color.New(color.FgGreen).Sprint("OK")
+		}
+		env.Log.Infof("%s %s %s%s", status, n.Action, n.Entity, res)
+		if n.CmdErr != nil {
+			env.Log.MultiLineError(n.CmdErr)
+		}
+	}
+	return n.CmdErr != nil
 }
 
 func prefixError(err error, prefix string) error {

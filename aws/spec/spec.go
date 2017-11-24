@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/wallix/awless/aws/doc"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
@@ -369,11 +370,13 @@ type checker struct {
 }
 
 func (c *checker) check() error {
+	now := time.Now().UTC()
 	timer := time.NewTimer(c.timeout)
 	if c.checkName == "" {
 		c.checkName = "status"
 	}
 	defer timer.Stop()
+	defer c.logger.Println()
 	for {
 		select {
 		case <-timer.C:
@@ -385,10 +388,11 @@ func (c *checker) check() error {
 			return fmt.Errorf("check %s: %s", c.description, err)
 		}
 		if strings.ToLower(got) == strings.ToLower(c.expect) {
-			c.logger.Infof("check %s %s '%s' done", c.description, c.checkName, c.expect)
+			c.logger.InteractiveInfof("check %s %s '%s' done", c.description, c.checkName, c.expect)
 			return nil
 		}
-		c.logger.Infof("%s %s '%s', expect '%s', retry in %s (timeout %s).", c.description, c.checkName, got, c.expect, c.frequency, c.timeout)
+		elapsed := time.Since(now)
+		c.logger.InteractiveInfof("%s %s '%s', expect '%s', timeout in %s (retry in %s)", c.description, c.checkName, got, c.expect, color.New(color.FgGreen).Sprint(c.timeout-elapsed.Round(time.Second)), c.frequency)
 		time.Sleep(c.frequency)
 	}
 }

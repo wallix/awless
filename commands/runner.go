@@ -78,7 +78,6 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 	}
 
 	runner.AfterRun = func(tplExec *template.TemplateExecution) error {
-
 		if tplExec.Message == "" {
 			if tplExec.IsOneLiner() {
 				tplExec.SetMessage(fmt.Sprintf("Run %s", tplExec.Template))

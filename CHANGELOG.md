@@ -3,9 +3,9 @@
 ### Features
 
 - Create instance from community distro names (`awless create instance distro=debian`). In default config value, deprecation of `instance.image` in favor of `instance.distro` (migration should be seamless).
-        - `awless create instance distro=redhat:rhel:7.2`
-        - `awless create instance distro=canonical:ubuntu`
-        - `awless create instance distro=debian`
+    * `awless create instance distro=redhat:rhel:7.2`
+    * `awless create instance distro=canonical:ubuntu`
+    * `awless create instance distro=debian`
 - Quick way to switch to profiles and regions. Ex: `awless switch eu-west-1`, `awless switch mfa us-west-1`
 - Create a public subnet in only one command with: `awless create subnet public=true...`
 - Save your newly created access key in `~/.aws/credentials` with : `awless create accesskey save=true`
