@@ -134,6 +134,7 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion):")
 		}
 		var docs, enums []string
+		var typedParam *awsdoc.ParamType
 		for _, param := range paramPaths {
 			splits := strings.Split(param, ".")
 			if len(splits) != 3 {
@@ -145,12 +146,19 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 			if enum, hasEnum := awsdoc.EnumDoc[param]; hasEnum {
 				enums = append(enums, enum...)
 			}
+			if tparam, has := awsdoc.ParamTypeDoc[param]; has {
+				typedParam = tparam
+			}
 		}
 		if len(docs) > 0 {
 			fmt.Fprintln(os.Stderr, strings.Join(docs, "; ")+":")
 		}
 
 		autocomplete := holeAutoCompletion(allGraphsOnce.mustLoad(), hole)
+		if typedParam != nil {
+			autocomplete = typedParamCompletionFunc(allGraphsOnce.mustLoad(), typedParam.ResourceType, typedParam.PropertyName)
+		}
+
 		if len(enums) > 0 {
 			autocomplete = enumCompletionFunc(enums)
 		}

@@ -2,6 +2,7 @@
 
 ### Features
 
+- Better prompt completion for template parameters
 - Create instance/launchconfiguration from community distro names (`awless create instance distro=debian`). In default config value, deprecation of `instance.image` in favor of `instance.distro` (migration should be seamless).
     * `awless create instance distro=redhat:rhel:7.2`
     * `awless create launchconfiguration distro=canonical:ubuntu`
@@ -9,7 +10,6 @@
 - Quick way to switch to profiles and regions. Ex: `awless switch eu-west-1`, `awless switch mfa us-west-1`
 - Create a public subnet in only one command with: `awless create subnet public=true...`
 - Save directly your newly created access key in `~/.aws/credentials` with : `awless create accesskey save=true`
-- Better prompt completion for enum value
 - Overall better logging output of template execution
 
 ### AWS Services

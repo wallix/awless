@@ -1,5 +1,10 @@
 package awsdoc
 
+import (
+	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/properties"
+)
+
 var EnumDoc = map[string][]string{
 	"update.securitygroup.inbound":  {"revoke", "authorize"},
 	"update.securitygroup.outbound": {"revoke", "authorize"},
@@ -17,4 +22,17 @@ var EnumDoc = map[string][]string{
 
 	"create.launchconfiguration.distro": {"amazonlinux", "canonical", "redhat", "debian", "suselinux", "windows"},
 	"create.launchconfiguration.type":   {"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"},
+
+	"create.policy.action":   {""},
+	"create.policy.effect":   {"Allow", "Deny"},
+	"create.policy.resource": {"*"},
+}
+
+type ParamType struct {
+	ResourceType, PropertyName string
+}
+
+var ParamTypeDoc = map[string]*ParamType{
+	"create.accesskey.user":     {ResourceType: cloud.User, PropertyName: properties.Name},
+	"update.securitygroup.cidr": {ResourceType: cloud.Subnet, PropertyName: properties.CIDR},
 }

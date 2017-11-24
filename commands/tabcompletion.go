@@ -21,6 +21,17 @@ func enumCompletionFunc(enum []string) readline.AutoCompleter {
 	return readline.NewPrefixCompleter(items...)
 }
 
+func typedParamCompletionFunc(g *graph.Graph, resourceType, propName string) readline.AutoCompleter {
+	var items []readline.PrefixCompleterInterface
+	resources, _ := g.GetAllResources(resourceType)
+	for _, res := range resources {
+		if val, ok := res.Properties[propName]; ok {
+			items = append(items, readline.PcItem(fmt.Sprint(val)))
+		}
+	}
+
+	return readline.NewPrefixCompleter(items...)
+}
 func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 	completeFunc := func(string) []string { return []string{} }
 

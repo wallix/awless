@@ -16,6 +16,18 @@ func TestEnumCompletionFunc(t *testing.T) {
 	}
 }
 
+func TestTypedParamCompletionFunc(t *testing.T) {
+	g := graph.NewGraph()
+	g.AddResource(resourcetest.Instance("1").Prop(p.Name, "broker_1").Build())
+	g.AddResource(resourcetest.Instance("2").Prop(p.Name, "broker_2").Build())
+	g.AddResource(resourcetest.Instance("3").Prop(p.Name, "redis").Build())
+
+	list, _ := typedParamCompletionFunc(g, "instance", p.Name).Do([]rune{'b'}, 1)
+	if got, want := list, toRune("roker_1 ", "roker_2 "); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %q, want %q", got, want)
+	}
+}
+
 func TestAutoCompletion(t *testing.T) {
 	g := graph.NewGraph()
 	g.AddResource(resourcetest.Instance("1").Prop(p.Name, "broker_1").Prop(p.Type, "t2.micro").Prop(p.Subnet, "1").Prop(p.ActiveServicesCount, 42).Build())
