@@ -73,7 +73,7 @@ func (cmd *CreateInstance) convertDistroToAMI(values map[string]interface{}) (ma
 			if fromCache {
 				caching = " from cache"
 			}
-			cmd.logger.Infof("Image %s resolved%s from distro '%s' (expanded to '%s')", images[0].Id, caching, distro, query)
+			cmd.logger.Infof("Image %s resolved%s for distro '%s' (expanded to '%s')", images[0].Id, caching, distro, query)
 			return map[string]interface{}{"image": images[0].Id}, nil
 		} else {
 			return nil, fmt.Errorf("distro: no image id found for query '%s'", query)
