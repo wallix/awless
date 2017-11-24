@@ -133,22 +133,30 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 		if count < 1 {
 			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion):")
 		}
-		var docStrings []string
+		var docs, enums []string
 		for _, param := range paramPaths {
 			splits := strings.Split(param, ".")
 			if len(splits) != 3 {
 				continue
 			}
 			if doc, hasDoc := awsdoc.TemplateParamsDoc(splits[0]+splits[1], splits[2]); hasDoc {
-				docStrings = append(docStrings, doc)
+				docs = append(docs, doc)
+			}
+			if enum, hasEnum := awsdoc.EnumDoc[param]; hasEnum {
+				enums = append(enums, enum...)
 			}
 		}
-		if len(docStrings) > 0 {
-			fmt.Fprintln(os.Stderr, strings.Join(docStrings, "; ")+":")
+		if len(docs) > 0 {
+			fmt.Fprintln(os.Stderr, strings.Join(docs, "; ")+":")
+		}
+
+		autocomplete := holeAutoCompletion(allGraphsOnce.mustLoad(), hole)
+		if len(enums) > 0 {
+			autocomplete = enumCompletionFunc(enums)
 		}
 
 		var err error
-		for response, err = askHole(hole); err != nil; response, err = askHole(hole) {
+		for response, err = askHole(hole, autocomplete); err != nil; response, err = askHole(hole, autocomplete) {
 			logger.Errorf("invalid value: %s", err)
 		}
 		count++
@@ -156,10 +164,10 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 	}
 }
 
-func askHole(hole string) (interface{}, error) {
+func askHole(hole string, autocomplete readline.AutoCompleter) (interface{}, error) {
 	l, err := readline.NewEx(&readline.Config{
 		Prompt:          renderCyanBoldFn(hole + "? "),
-		AutoComplete:    holeAutoCompletion(allGraphsOnce.mustLoad(), hole),
+		AutoComplete:    autocomplete,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})

@@ -9,6 +9,13 @@ import (
 	"github.com/wallix/awless/graph/resourcetest"
 )
 
+func TestEnumCompletionFunc(t *testing.T) {
+	list, _ := enumCompletionFunc([]string{"am", "amstram", "gram"}).Do([]rune{'a'}, 1)
+	if got, want := list, toRune("m ", "mstram "); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %q, want %q", got, want)
+	}
+}
+
 func TestAutoCompletion(t *testing.T) {
 	g := graph.NewGraph()
 	g.AddResource(resourcetest.Instance("1").Prop(p.Name, "broker_1").Prop(p.Type, "t2.micro").Prop(p.Subnet, "1").Prop(p.ActiveServicesCount, 42).Build())

@@ -13,6 +13,14 @@ import (
 	"github.com/wallix/awless/template"
 )
 
+func enumCompletionFunc(enum []string) readline.AutoCompleter {
+	var items []readline.PrefixCompleterInterface
+	for _, e := range enum {
+		items = append(items, readline.PcItem(e))
+	}
+	return readline.NewPrefixCompleter(items...)
+}
+
 func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
 	completeFunc := func(string) []string { return []string{} }
 
