@@ -46,23 +46,22 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 
 	runner.BeforeRun = func(tplExec *template.TemplateExecution) (bool, error) {
 		fmt.Printf("%s\n", renderGreenFn(tplExec.Template))
-
 		var yesorno string
 		if forceGlobalFlag {
 			yesorno = "y"
 		} else {
 			fmt.Println()
 			if isSchedulingMode() {
-				fmt.Print("Confirm scheduling? (y/n): ")
+				fmt.Print("Confirm scheduling? [y/N] ")
 			} else {
-				fmt.Print("Confirm? (y/n): ")
+				fmt.Print("Confirm? [y/N] ")
 			}
-			if _, err := fmt.Scanln(&yesorno); err != nil {
+			if _, err := fmt.Scanln(&yesorno); err != nil && err.Error() != "unexpected newline" {
 				return false, err
 			}
 		}
 
-		if strings.TrimSpace(yesorno) == "y" {
+		if strings.TrimSpace(strings.ToLower(yesorno)) == "y" {
 			me, err := awsservices.AccessService.(*awsservices.Access).GetIdentity()
 			if err != nil {
 				logger.Warningf("cannot resolve template author identity: %s", err)
