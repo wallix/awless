@@ -9,7 +9,7 @@
 - Quick way to switch to profiles and regions. Ex: `awless switch eu-west-1`, `awless switch mfa us-west-1`
 - Create a public subnet in only one command with: `awless create subnet public=true...`
 - Save your newly created access key in `~/.aws/credentials` with : `awless create accesskey save=true`
-- Overall clean up of CLI output info stuttering
+- Overall better logging output of template execution
 
 ### AWS Services
 

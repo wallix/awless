@@ -56,7 +56,7 @@ var revertCmd = &cobra.Command{
 		if loc := loaded.Locale; loc != "" && loc != config.GetAWSRegion() {
 			logger.Errorf("This template was originally run in region %s", loc)
 			logger.Infof("Revert with `awless revert %s -r %s -p %s`", revertID, loc, loaded.Profile)
-			os.Exit(-1)
+			os.Exit(1)
 		}
 
 		if prof := loaded.Profile; prof != config.GetAWSProfile() {

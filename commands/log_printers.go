@@ -73,36 +73,6 @@ func (p *shortLogPrinter) print(t *template.TemplateExecution) error {
 	return nil
 }
 
-func newDefaultTemplatePrinter(w io.Writer) logPrinter {
-	return &defaultPrinter{w}
-}
-
-type defaultPrinter struct {
-	w io.Writer
-}
-
-func (p *defaultPrinter) print(t *template.TemplateExecution) error {
-	for _, cmd := range t.CommandNodesIterator() {
-		var status string
-		if cmd.Err() != nil {
-			status = renderRedFn("KO")
-		} else {
-			status = renderGreenFn("OK")
-		}
-
-		var line string
-		if v, ok := cmd.Result().(string); ok && v != "" {
-			line = fmt.Sprintf("    %s\t%s = %s\t", status, cmd.Entity, v)
-		} else {
-			line = fmt.Sprintf("    %s\t%s %s\t", status, cmd.Action, cmd.Entity)
-		}
-
-		fmt.Fprintln(p.w, line)
-		writeError(cmd.Err(), p.w)
-	}
-	return nil
-}
-
 type rawJSONPrinter struct {
 	w io.Writer
 }

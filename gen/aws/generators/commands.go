@@ -302,9 +302,9 @@ func (cmd *{{ $cmdName }}) Run(ctx, params map[string]interface{}) (interface{},
 	}
 	
 	if extracted != nil {
-		cmd.logger.Infof("{{ $tag.Action }} {{ $tag.Entity }} '%s' done", extracted)
+		cmd.logger.Verbosef("{{ $tag.Action }} {{ $tag.Entity }} '%s' done", extracted)
 	} else {
-		cmd.logger.Info("{{ $tag.Action }} {{ $tag.Entity }} done")
+		cmd.logger.Verbose("{{ $tag.Action }} {{ $tag.Entity }} done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {

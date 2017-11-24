@@ -104,9 +104,9 @@ func (cmd *AttachAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach alarm '%s' done", extracted)
+		cmd.logger.Verbosef("attach alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach alarm done")
+		cmd.logger.Verbose("attach alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -184,9 +184,9 @@ func (cmd *AttachContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach containertask '%s' done", extracted)
+		cmd.logger.Verbosef("attach containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach containertask done")
+		cmd.logger.Verbose("attach containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -270,9 +270,9 @@ func (cmd *AttachElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach elasticip '%s' done", extracted)
+		cmd.logger.Verbosef("attach elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach elasticip done")
+		cmd.logger.Verbose("attach elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -377,9 +377,9 @@ func (cmd *AttachInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach instance '%s' done", extracted)
+		cmd.logger.Verbosef("attach instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach instance done")
+		cmd.logger.Verbose("attach instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -457,9 +457,9 @@ func (cmd *AttachInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach instanceprofile '%s' done", extracted)
+		cmd.logger.Verbosef("attach instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach instanceprofile done")
+		cmd.logger.Verbose("attach instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -539,9 +539,9 @@ func (cmd *AttachInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach internetgateway '%s' done", extracted)
+		cmd.logger.Verbosef("attach internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach internetgateway done")
+		cmd.logger.Verbose("attach internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -646,9 +646,9 @@ func (cmd *AttachMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach mfadevice '%s' done", extracted)
+		cmd.logger.Verbosef("attach mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach mfadevice done")
+		cmd.logger.Verbose("attach mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -732,9 +732,9 @@ func (cmd *AttachNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach networkinterface '%s' done", extracted)
+		cmd.logger.Verbosef("attach networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach networkinterface done")
+		cmd.logger.Verbose("attach networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -833,9 +833,9 @@ func (cmd *AttachPolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach policy '%s' done", extracted)
+		cmd.logger.Verbosef("attach policy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach policy done")
+		cmd.logger.Verbose("attach policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -919,9 +919,9 @@ func (cmd *AttachRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach role '%s' done", extracted)
+		cmd.logger.Verbosef("attach role '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach role done")
+		cmd.logger.Verbose("attach role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1005,9 +1005,9 @@ func (cmd *AttachRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach routetable '%s' done", extracted)
+		cmd.logger.Verbosef("attach routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach routetable done")
+		cmd.logger.Verbose("attach routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1106,9 +1106,9 @@ func (cmd *AttachSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach securitygroup '%s' done", extracted)
+		cmd.logger.Verbosef("attach securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach securitygroup done")
+		cmd.logger.Verbose("attach securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1192,9 +1192,9 @@ func (cmd *AttachUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach user '%s' done", extracted)
+		cmd.logger.Verbosef("attach user '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach user done")
+		cmd.logger.Verbose("attach user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1278,9 +1278,9 @@ func (cmd *AttachVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("attach volume '%s' done", extracted)
+		cmd.logger.Verbosef("attach volume '%s' done", extracted)
 	} else {
-		cmd.logger.Info("attach volume done")
+		cmd.logger.Verbose("attach volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1379,9 +1379,9 @@ func (cmd *AuthenticateRegistry) Run(ctx, params map[string]interface{}) (interf
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("authenticate registry '%s' done", extracted)
+		cmd.logger.Verbosef("authenticate registry '%s' done", extracted)
 	} else {
-		cmd.logger.Info("authenticate registry done")
+		cmd.logger.Verbose("authenticate registry done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1459,9 +1459,9 @@ func (cmd *CheckCertificate) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check certificate '%s' done", extracted)
+		cmd.logger.Verbosef("check certificate '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check certificate done")
+		cmd.logger.Verbose("check certificate done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1539,9 +1539,9 @@ func (cmd *CheckDatabase) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check database '%s' done", extracted)
+		cmd.logger.Verbosef("check database '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check database done")
+		cmd.logger.Verbose("check database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1619,9 +1619,9 @@ func (cmd *CheckDistribution) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check distribution '%s' done", extracted)
+		cmd.logger.Verbosef("check distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check distribution done")
+		cmd.logger.Verbose("check distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1699,9 +1699,9 @@ func (cmd *CheckInstance) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check instance '%s' done", extracted)
+		cmd.logger.Verbosef("check instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check instance done")
+		cmd.logger.Verbose("check instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1779,9 +1779,9 @@ func (cmd *CheckLoadbalancer) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check loadbalancer '%s' done", extracted)
+		cmd.logger.Verbosef("check loadbalancer '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check loadbalancer done")
+		cmd.logger.Verbose("check loadbalancer done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1859,9 +1859,9 @@ func (cmd *CheckNatgateway) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check natgateway '%s' done", extracted)
+		cmd.logger.Verbosef("check natgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check natgateway done")
+		cmd.logger.Verbose("check natgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1939,9 +1939,9 @@ func (cmd *CheckNetworkinterface) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check networkinterface '%s' done", extracted)
+		cmd.logger.Verbosef("check networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check networkinterface done")
+		cmd.logger.Verbose("check networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2019,9 +2019,9 @@ func (cmd *CheckScalinggroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check scalinggroup '%s' done", extracted)
+		cmd.logger.Verbosef("check scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check scalinggroup done")
+		cmd.logger.Verbose("check scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2099,9 +2099,9 @@ func (cmd *CheckSecuritygroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check securitygroup '%s' done", extracted)
+		cmd.logger.Verbosef("check securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check securitygroup done")
+		cmd.logger.Verbose("check securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2179,9 +2179,9 @@ func (cmd *CheckVolume) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("check volume '%s' done", extracted)
+		cmd.logger.Verbosef("check volume '%s' done", extracted)
 	} else {
-		cmd.logger.Info("check volume done")
+		cmd.logger.Verbose("check volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2265,9 +2265,9 @@ func (cmd *CopyImage) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("copy image '%s' done", extracted)
+		cmd.logger.Verbosef("copy image '%s' done", extracted)
 	} else {
-		cmd.logger.Info("copy image done")
+		cmd.logger.Verbose("copy image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2372,9 +2372,9 @@ func (cmd *CopySnapshot) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("copy snapshot '%s' done", extracted)
+		cmd.logger.Verbosef("copy snapshot '%s' done", extracted)
 	} else {
-		cmd.logger.Info("copy snapshot done")
+		cmd.logger.Verbose("copy snapshot done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2479,9 +2479,9 @@ func (cmd *CreateAccesskey) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create accesskey '%s' done", extracted)
+		cmd.logger.Verbosef("create accesskey '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create accesskey done")
+		cmd.logger.Verbose("create accesskey done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2565,9 +2565,9 @@ func (cmd *CreateAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create alarm '%s' done", extracted)
+		cmd.logger.Verbosef("create alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create alarm done")
+		cmd.logger.Verbose("create alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2651,9 +2651,9 @@ func (cmd *CreateAppscalingpolicy) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create appscalingpolicy '%s' done", extracted)
+		cmd.logger.Verbosef("create appscalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create appscalingpolicy done")
+		cmd.logger.Verbose("create appscalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2737,9 +2737,9 @@ func (cmd *CreateAppscalingtarget) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create appscalingtarget '%s' done", extracted)
+		cmd.logger.Verbosef("create appscalingtarget '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create appscalingtarget done")
+		cmd.logger.Verbose("create appscalingtarget done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2823,9 +2823,9 @@ func (cmd *CreateBucket) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create bucket '%s' done", extracted)
+		cmd.logger.Verbosef("create bucket '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create bucket done")
+		cmd.logger.Verbose("create bucket done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2903,9 +2903,9 @@ func (cmd *CreateCertificate) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create certificate '%s' done", extracted)
+		cmd.logger.Verbosef("create certificate '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create certificate done")
+		cmd.logger.Verbose("create certificate done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2989,9 +2989,9 @@ func (cmd *CreateContainercluster) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create containercluster '%s' done", extracted)
+		cmd.logger.Verbosef("create containercluster '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create containercluster done")
+		cmd.logger.Verbose("create containercluster done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3075,9 +3075,9 @@ func (cmd *CreateDatabase) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create database '%s' done", extracted)
+		cmd.logger.Verbosef("create database '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create database done")
+		cmd.logger.Verbose("create database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3161,9 +3161,9 @@ func (cmd *CreateDbsubnetgroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create dbsubnetgroup '%s' done", extracted)
+		cmd.logger.Verbosef("create dbsubnetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create dbsubnetgroup done")
+		cmd.logger.Verbose("create dbsubnetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3241,9 +3241,9 @@ func (cmd *CreateDistribution) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create distribution '%s' done", extracted)
+		cmd.logger.Verbosef("create distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create distribution done")
+		cmd.logger.Verbose("create distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3327,9 +3327,9 @@ func (cmd *CreateElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create elasticip '%s' done", extracted)
+		cmd.logger.Verbosef("create elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create elasticip done")
+		cmd.logger.Verbose("create elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3434,9 +3434,9 @@ func (cmd *CreateFunction) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create function '%s' done", extracted)
+		cmd.logger.Verbosef("create function '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create function done")
+		cmd.logger.Verbose("create function done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3520,9 +3520,9 @@ func (cmd *CreateGroup) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create group '%s' done", extracted)
+		cmd.logger.Verbosef("create group '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create group done")
+		cmd.logger.Verbose("create group done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3606,9 +3606,9 @@ func (cmd *CreateInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create instance '%s' done", extracted)
+		cmd.logger.Verbosef("create instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create instance done")
+		cmd.logger.Verbose("create instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3713,9 +3713,9 @@ func (cmd *CreateInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create instanceprofile '%s' done", extracted)
+		cmd.logger.Verbosef("create instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create instanceprofile done")
+		cmd.logger.Verbose("create instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3799,9 +3799,9 @@ func (cmd *CreateInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create internetgateway '%s' done", extracted)
+		cmd.logger.Verbosef("create internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create internetgateway done")
+		cmd.logger.Verbose("create internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3906,9 +3906,9 @@ func (cmd *CreateKeypair) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create keypair '%s' done", extracted)
+		cmd.logger.Verbosef("create keypair '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create keypair done")
+		cmd.logger.Verbose("create keypair done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3992,9 +3992,9 @@ func (cmd *CreateLaunchconfiguration) Run(ctx, params map[string]interface{}) (i
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create launchconfiguration '%s' done", extracted)
+		cmd.logger.Verbosef("create launchconfiguration '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create launchconfiguration done")
+		cmd.logger.Verbose("create launchconfiguration done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4078,9 +4078,9 @@ func (cmd *CreateListener) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create listener '%s' done", extracted)
+		cmd.logger.Verbosef("create listener '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create listener done")
+		cmd.logger.Verbose("create listener done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4164,9 +4164,9 @@ func (cmd *CreateLoadbalancer) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create loadbalancer '%s' done", extracted)
+		cmd.logger.Verbosef("create loadbalancer '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create loadbalancer done")
+		cmd.logger.Verbose("create loadbalancer done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4250,9 +4250,9 @@ func (cmd *CreateLoginprofile) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create loginprofile '%s' done", extracted)
+		cmd.logger.Verbosef("create loginprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create loginprofile done")
+		cmd.logger.Verbose("create loginprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4330,9 +4330,9 @@ func (cmd *CreateMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create mfadevice '%s' done", extracted)
+		cmd.logger.Verbosef("create mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create mfadevice done")
+		cmd.logger.Verbose("create mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4416,9 +4416,9 @@ func (cmd *CreateNatgateway) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create natgateway '%s' done", extracted)
+		cmd.logger.Verbosef("create natgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create natgateway done")
+		cmd.logger.Verbose("create natgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4502,9 +4502,9 @@ func (cmd *CreateNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create networkinterface '%s' done", extracted)
+		cmd.logger.Verbosef("create networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create networkinterface done")
+		cmd.logger.Verbose("create networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4609,9 +4609,9 @@ func (cmd *CreatePolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create policy '%s' done", extracted)
+		cmd.logger.Verbosef("create policy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create policy done")
+		cmd.logger.Verbose("create policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4695,9 +4695,9 @@ func (cmd *CreateQueue) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create queue '%s' done", extracted)
+		cmd.logger.Verbosef("create queue '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create queue done")
+		cmd.logger.Verbose("create queue done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4775,9 +4775,9 @@ func (cmd *CreateRecord) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create record '%s' done", extracted)
+		cmd.logger.Verbosef("create record '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create record done")
+		cmd.logger.Verbose("create record done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4861,9 +4861,9 @@ func (cmd *CreateRepository) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create repository '%s' done", extracted)
+		cmd.logger.Verbosef("create repository '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create repository done")
+		cmd.logger.Verbose("create repository done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4941,9 +4941,9 @@ func (cmd *CreateRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create role '%s' done", extracted)
+		cmd.logger.Verbosef("create role '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create role done")
+		cmd.logger.Verbose("create role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5027,9 +5027,9 @@ func (cmd *CreateRoute) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create route '%s' done", extracted)
+		cmd.logger.Verbosef("create route '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create route done")
+		cmd.logger.Verbose("create route done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5134,9 +5134,9 @@ func (cmd *CreateRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create routetable '%s' done", extracted)
+		cmd.logger.Verbosef("create routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create routetable done")
+		cmd.logger.Verbose("create routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5235,9 +5235,9 @@ func (cmd *CreateS3object) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create s3object '%s' done", extracted)
+		cmd.logger.Verbosef("create s3object '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create s3object done")
+		cmd.logger.Verbose("create s3object done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5321,9 +5321,9 @@ func (cmd *CreateScalinggroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create scalinggroup '%s' done", extracted)
+		cmd.logger.Verbosef("create scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create scalinggroup done")
+		cmd.logger.Verbose("create scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5407,9 +5407,9 @@ func (cmd *CreateScalingpolicy) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create scalingpolicy '%s' done", extracted)
+		cmd.logger.Verbosef("create scalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create scalingpolicy done")
+		cmd.logger.Verbose("create scalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5493,9 +5493,9 @@ func (cmd *CreateSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create securitygroup '%s' done", extracted)
+		cmd.logger.Verbosef("create securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create securitygroup done")
+		cmd.logger.Verbose("create securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5600,9 +5600,9 @@ func (cmd *CreateSnapshot) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create snapshot '%s' done", extracted)
+		cmd.logger.Verbosef("create snapshot '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create snapshot done")
+		cmd.logger.Verbose("create snapshot done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5707,9 +5707,9 @@ func (cmd *CreateStack) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create stack '%s' done", extracted)
+		cmd.logger.Verbosef("create stack '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create stack done")
+		cmd.logger.Verbose("create stack done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5793,9 +5793,9 @@ func (cmd *CreateSubnet) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create subnet '%s' done", extracted)
+		cmd.logger.Verbosef("create subnet '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create subnet done")
+		cmd.logger.Verbose("create subnet done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5900,9 +5900,9 @@ func (cmd *CreateSubscription) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create subscription '%s' done", extracted)
+		cmd.logger.Verbosef("create subscription '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create subscription done")
+		cmd.logger.Verbose("create subscription done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5980,9 +5980,9 @@ func (cmd *CreateTag) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create tag '%s' done", extracted)
+		cmd.logger.Verbosef("create tag '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create tag done")
+		cmd.logger.Verbose("create tag done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6062,9 +6062,9 @@ func (cmd *CreateTargetgroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create targetgroup '%s' done", extracted)
+		cmd.logger.Verbosef("create targetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create targetgroup done")
+		cmd.logger.Verbose("create targetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6148,9 +6148,9 @@ func (cmd *CreateTopic) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create topic '%s' done", extracted)
+		cmd.logger.Verbosef("create topic '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create topic done")
+		cmd.logger.Verbose("create topic done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6234,9 +6234,9 @@ func (cmd *CreateUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create user '%s' done", extracted)
+		cmd.logger.Verbosef("create user '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create user done")
+		cmd.logger.Verbose("create user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6320,9 +6320,9 @@ func (cmd *CreateVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create volume '%s' done", extracted)
+		cmd.logger.Verbosef("create volume '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create volume done")
+		cmd.logger.Verbose("create volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6427,9 +6427,9 @@ func (cmd *CreateVpc) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create vpc '%s' done", extracted)
+		cmd.logger.Verbosef("create vpc '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create vpc done")
+		cmd.logger.Verbose("create vpc done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6534,9 +6534,9 @@ func (cmd *CreateZone) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("create zone '%s' done", extracted)
+		cmd.logger.Verbosef("create zone '%s' done", extracted)
 	} else {
-		cmd.logger.Info("create zone done")
+		cmd.logger.Verbose("create zone done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6620,9 +6620,9 @@ func (cmd *DeleteAccesskey) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete accesskey '%s' done", extracted)
+		cmd.logger.Verbosef("delete accesskey '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete accesskey done")
+		cmd.logger.Verbose("delete accesskey done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6706,9 +6706,9 @@ func (cmd *DeleteAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete alarm '%s' done", extracted)
+		cmd.logger.Verbosef("delete alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete alarm done")
+		cmd.logger.Verbose("delete alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6792,9 +6792,9 @@ func (cmd *DeleteAppscalingpolicy) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete appscalingpolicy '%s' done", extracted)
+		cmd.logger.Verbosef("delete appscalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete appscalingpolicy done")
+		cmd.logger.Verbose("delete appscalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6878,9 +6878,9 @@ func (cmd *DeleteAppscalingtarget) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete appscalingtarget '%s' done", extracted)
+		cmd.logger.Verbosef("delete appscalingtarget '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete appscalingtarget done")
+		cmd.logger.Verbose("delete appscalingtarget done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6964,9 +6964,9 @@ func (cmd *DeleteBucket) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete bucket '%s' done", extracted)
+		cmd.logger.Verbosef("delete bucket '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete bucket done")
+		cmd.logger.Verbose("delete bucket done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7050,9 +7050,9 @@ func (cmd *DeleteCertificate) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete certificate '%s' done", extracted)
+		cmd.logger.Verbosef("delete certificate '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete certificate done")
+		cmd.logger.Verbose("delete certificate done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7136,9 +7136,9 @@ func (cmd *DeleteContainercluster) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete containercluster '%s' done", extracted)
+		cmd.logger.Verbosef("delete containercluster '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete containercluster done")
+		cmd.logger.Verbose("delete containercluster done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7216,9 +7216,9 @@ func (cmd *DeleteContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete containertask '%s' done", extracted)
+		cmd.logger.Verbosef("delete containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete containertask done")
+		cmd.logger.Verbose("delete containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7298,9 +7298,9 @@ func (cmd *DeleteDatabase) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete database '%s' done", extracted)
+		cmd.logger.Verbosef("delete database '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete database done")
+		cmd.logger.Verbose("delete database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7384,9 +7384,9 @@ func (cmd *DeleteDbsubnetgroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete dbsubnetgroup '%s' done", extracted)
+		cmd.logger.Verbosef("delete dbsubnetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete dbsubnetgroup done")
+		cmd.logger.Verbose("delete dbsubnetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7464,9 +7464,9 @@ func (cmd *DeleteDistribution) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete distribution '%s' done", extracted)
+		cmd.logger.Verbosef("delete distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete distribution done")
+		cmd.logger.Verbose("delete distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7550,9 +7550,9 @@ func (cmd *DeleteElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete elasticip '%s' done", extracted)
+		cmd.logger.Verbosef("delete elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete elasticip done")
+		cmd.logger.Verbose("delete elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7657,9 +7657,9 @@ func (cmd *DeleteFunction) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete function '%s' done", extracted)
+		cmd.logger.Verbosef("delete function '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete function done")
+		cmd.logger.Verbose("delete function done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7743,9 +7743,9 @@ func (cmd *DeleteGroup) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete group '%s' done", extracted)
+		cmd.logger.Verbosef("delete group '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete group done")
+		cmd.logger.Verbose("delete group done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7823,9 +7823,9 @@ func (cmd *DeleteImage) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete image '%s' done", extracted)
+		cmd.logger.Verbosef("delete image '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete image done")
+		cmd.logger.Verbose("delete image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7905,9 +7905,9 @@ func (cmd *DeleteInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete instance '%s' done", extracted)
+		cmd.logger.Verbosef("delete instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete instance done")
+		cmd.logger.Verbose("delete instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8012,9 +8012,9 @@ func (cmd *DeleteInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete instanceprofile '%s' done", extracted)
+		cmd.logger.Verbosef("delete instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete instanceprofile done")
+		cmd.logger.Verbose("delete instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8098,9 +8098,9 @@ func (cmd *DeleteInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete internetgateway '%s' done", extracted)
+		cmd.logger.Verbosef("delete internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete internetgateway done")
+		cmd.logger.Verbose("delete internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8205,9 +8205,9 @@ func (cmd *DeleteKeypair) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete keypair '%s' done", extracted)
+		cmd.logger.Verbosef("delete keypair '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete keypair done")
+		cmd.logger.Verbose("delete keypair done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8312,9 +8312,9 @@ func (cmd *DeleteLaunchconfiguration) Run(ctx, params map[string]interface{}) (i
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete launchconfiguration '%s' done", extracted)
+		cmd.logger.Verbosef("delete launchconfiguration '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete launchconfiguration done")
+		cmd.logger.Verbose("delete launchconfiguration done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8398,9 +8398,9 @@ func (cmd *DeleteListener) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete listener '%s' done", extracted)
+		cmd.logger.Verbosef("delete listener '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete listener done")
+		cmd.logger.Verbose("delete listener done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8484,9 +8484,9 @@ func (cmd *DeleteLoadbalancer) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete loadbalancer '%s' done", extracted)
+		cmd.logger.Verbosef("delete loadbalancer '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete loadbalancer done")
+		cmd.logger.Verbose("delete loadbalancer done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8570,9 +8570,9 @@ func (cmd *DeleteLoginprofile) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete loginprofile '%s' done", extracted)
+		cmd.logger.Verbosef("delete loginprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete loginprofile done")
+		cmd.logger.Verbose("delete loginprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8656,9 +8656,9 @@ func (cmd *DeleteMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete mfadevice '%s' done", extracted)
+		cmd.logger.Verbosef("delete mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete mfadevice done")
+		cmd.logger.Verbose("delete mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8742,9 +8742,9 @@ func (cmd *DeleteNatgateway) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete natgateway '%s' done", extracted)
+		cmd.logger.Verbosef("delete natgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete natgateway done")
+		cmd.logger.Verbose("delete natgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8828,9 +8828,9 @@ func (cmd *DeleteNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete networkinterface '%s' done", extracted)
+		cmd.logger.Verbosef("delete networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete networkinterface done")
+		cmd.logger.Verbose("delete networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8935,9 +8935,9 @@ func (cmd *DeletePolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete policy '%s' done", extracted)
+		cmd.logger.Verbosef("delete policy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete policy done")
+		cmd.logger.Verbose("delete policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9021,9 +9021,9 @@ func (cmd *DeleteQueue) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete queue '%s' done", extracted)
+		cmd.logger.Verbosef("delete queue '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete queue done")
+		cmd.logger.Verbose("delete queue done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9101,9 +9101,9 @@ func (cmd *DeleteRecord) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete record '%s' done", extracted)
+		cmd.logger.Verbosef("delete record '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete record done")
+		cmd.logger.Verbose("delete record done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9187,9 +9187,9 @@ func (cmd *DeleteRepository) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete repository '%s' done", extracted)
+		cmd.logger.Verbosef("delete repository '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete repository done")
+		cmd.logger.Verbose("delete repository done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9267,9 +9267,9 @@ func (cmd *DeleteRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete role '%s' done", extracted)
+		cmd.logger.Verbosef("delete role '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete role done")
+		cmd.logger.Verbose("delete role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9353,9 +9353,9 @@ func (cmd *DeleteRoute) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete route '%s' done", extracted)
+		cmd.logger.Verbosef("delete route '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete route done")
+		cmd.logger.Verbose("delete route done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9460,9 +9460,9 @@ func (cmd *DeleteRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete routetable '%s' done", extracted)
+		cmd.logger.Verbosef("delete routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete routetable done")
+		cmd.logger.Verbose("delete routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9567,9 +9567,9 @@ func (cmd *DeleteS3object) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete s3object '%s' done", extracted)
+		cmd.logger.Verbosef("delete s3object '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete s3object done")
+		cmd.logger.Verbose("delete s3object done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9653,9 +9653,9 @@ func (cmd *DeleteScalinggroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete scalinggroup '%s' done", extracted)
+		cmd.logger.Verbosef("delete scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete scalinggroup done")
+		cmd.logger.Verbose("delete scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9739,9 +9739,9 @@ func (cmd *DeleteScalingpolicy) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete scalingpolicy '%s' done", extracted)
+		cmd.logger.Verbosef("delete scalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete scalingpolicy done")
+		cmd.logger.Verbose("delete scalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9825,9 +9825,9 @@ func (cmd *DeleteSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete securitygroup '%s' done", extracted)
+		cmd.logger.Verbosef("delete securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete securitygroup done")
+		cmd.logger.Verbose("delete securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9932,9 +9932,9 @@ func (cmd *DeleteSnapshot) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete snapshot '%s' done", extracted)
+		cmd.logger.Verbosef("delete snapshot '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete snapshot done")
+		cmd.logger.Verbose("delete snapshot done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10039,9 +10039,9 @@ func (cmd *DeleteStack) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete stack '%s' done", extracted)
+		cmd.logger.Verbosef("delete stack '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete stack done")
+		cmd.logger.Verbose("delete stack done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10125,9 +10125,9 @@ func (cmd *DeleteSubnet) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete subnet '%s' done", extracted)
+		cmd.logger.Verbosef("delete subnet '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete subnet done")
+		cmd.logger.Verbose("delete subnet done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10232,9 +10232,9 @@ func (cmd *DeleteSubscription) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete subscription '%s' done", extracted)
+		cmd.logger.Verbosef("delete subscription '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete subscription done")
+		cmd.logger.Verbose("delete subscription done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10312,9 +10312,9 @@ func (cmd *DeleteTag) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete tag '%s' done", extracted)
+		cmd.logger.Verbosef("delete tag '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete tag done")
+		cmd.logger.Verbose("delete tag done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10394,9 +10394,9 @@ func (cmd *DeleteTargetgroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete targetgroup '%s' done", extracted)
+		cmd.logger.Verbosef("delete targetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete targetgroup done")
+		cmd.logger.Verbose("delete targetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10480,9 +10480,9 @@ func (cmd *DeleteTopic) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete topic '%s' done", extracted)
+		cmd.logger.Verbosef("delete topic '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete topic done")
+		cmd.logger.Verbose("delete topic done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10566,9 +10566,9 @@ func (cmd *DeleteUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete user '%s' done", extracted)
+		cmd.logger.Verbosef("delete user '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete user done")
+		cmd.logger.Verbose("delete user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10652,9 +10652,9 @@ func (cmd *DeleteVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete volume '%s' done", extracted)
+		cmd.logger.Verbosef("delete volume '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete volume done")
+		cmd.logger.Verbose("delete volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10759,9 +10759,9 @@ func (cmd *DeleteVpc) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete vpc '%s' done", extracted)
+		cmd.logger.Verbosef("delete vpc '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete vpc done")
+		cmd.logger.Verbose("delete vpc done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10866,9 +10866,9 @@ func (cmd *DeleteZone) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("delete zone '%s' done", extracted)
+		cmd.logger.Verbosef("delete zone '%s' done", extracted)
 	} else {
-		cmd.logger.Info("delete zone done")
+		cmd.logger.Verbose("delete zone done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10946,9 +10946,9 @@ func (cmd *DetachAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach alarm '%s' done", extracted)
+		cmd.logger.Verbosef("detach alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach alarm done")
+		cmd.logger.Verbose("detach alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11026,9 +11026,9 @@ func (cmd *DetachContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach containertask '%s' done", extracted)
+		cmd.logger.Verbosef("detach containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach containertask done")
+		cmd.logger.Verbose("detach containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11112,9 +11112,9 @@ func (cmd *DetachElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach elasticip '%s' done", extracted)
+		cmd.logger.Verbosef("detach elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach elasticip done")
+		cmd.logger.Verbose("detach elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11219,9 +11219,9 @@ func (cmd *DetachInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach instance '%s' done", extracted)
+		cmd.logger.Verbosef("detach instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach instance done")
+		cmd.logger.Verbose("detach instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11299,9 +11299,9 @@ func (cmd *DetachInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach instanceprofile '%s' done", extracted)
+		cmd.logger.Verbosef("detach instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach instanceprofile done")
+		cmd.logger.Verbose("detach instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11385,9 +11385,9 @@ func (cmd *DetachInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach internetgateway '%s' done", extracted)
+		cmd.logger.Verbosef("detach internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach internetgateway done")
+		cmd.logger.Verbose("detach internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11492,9 +11492,9 @@ func (cmd *DetachMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach mfadevice '%s' done", extracted)
+		cmd.logger.Verbosef("detach mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach mfadevice done")
+		cmd.logger.Verbose("detach mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11572,9 +11572,9 @@ func (cmd *DetachNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach networkinterface '%s' done", extracted)
+		cmd.logger.Verbosef("detach networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach networkinterface done")
+		cmd.logger.Verbose("detach networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11648,9 +11648,9 @@ func (cmd *DetachPolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach policy '%s' done", extracted)
+		cmd.logger.Verbosef("detach policy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach policy done")
+		cmd.logger.Verbose("detach policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11734,9 +11734,9 @@ func (cmd *DetachRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach role '%s' done", extracted)
+		cmd.logger.Verbosef("detach role '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach role done")
+		cmd.logger.Verbose("detach role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11820,9 +11820,9 @@ func (cmd *DetachRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach routetable '%s' done", extracted)
+		cmd.logger.Verbosef("detach routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach routetable done")
+		cmd.logger.Verbose("detach routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11921,9 +11921,9 @@ func (cmd *DetachSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach securitygroup '%s' done", extracted)
+		cmd.logger.Verbosef("detach securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach securitygroup done")
+		cmd.logger.Verbose("detach securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12007,9 +12007,9 @@ func (cmd *DetachUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach user '%s' done", extracted)
+		cmd.logger.Verbosef("detach user '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach user done")
+		cmd.logger.Verbose("detach user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12093,9 +12093,9 @@ func (cmd *DetachVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("detach volume '%s' done", extracted)
+		cmd.logger.Verbosef("detach volume '%s' done", extracted)
 	} else {
-		cmd.logger.Info("detach volume done")
+		cmd.logger.Verbose("detach volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12200,9 +12200,9 @@ func (cmd *ImportImage) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("import image '%s' done", extracted)
+		cmd.logger.Verbosef("import image '%s' done", extracted)
 	} else {
-		cmd.logger.Info("import image done")
+		cmd.logger.Verbose("import image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12307,9 +12307,9 @@ func (cmd *StartAlarm) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("start alarm '%s' done", extracted)
+		cmd.logger.Verbosef("start alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Info("start alarm done")
+		cmd.logger.Verbose("start alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12387,9 +12387,9 @@ func (cmd *StartContainertask) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("start containertask '%s' done", extracted)
+		cmd.logger.Verbosef("start containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Info("start containertask done")
+		cmd.logger.Verbose("start containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12473,9 +12473,9 @@ func (cmd *StartInstance) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("start instance '%s' done", extracted)
+		cmd.logger.Verbosef("start instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("start instance done")
+		cmd.logger.Verbose("start instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12580,9 +12580,9 @@ func (cmd *StopAlarm) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("stop alarm '%s' done", extracted)
+		cmd.logger.Verbosef("stop alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Info("stop alarm done")
+		cmd.logger.Verbose("stop alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12660,9 +12660,9 @@ func (cmd *StopContainertask) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("stop containertask '%s' done", extracted)
+		cmd.logger.Verbosef("stop containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Info("stop containertask done")
+		cmd.logger.Verbose("stop containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12746,9 +12746,9 @@ func (cmd *StopInstance) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("stop instance '%s' done", extracted)
+		cmd.logger.Verbosef("stop instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("stop instance done")
+		cmd.logger.Verbose("stop instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12847,9 +12847,9 @@ func (cmd *UpdateBucket) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update bucket '%s' done", extracted)
+		cmd.logger.Verbosef("update bucket '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update bucket done")
+		cmd.logger.Verbose("update bucket done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12933,9 +12933,9 @@ func (cmd *UpdateContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update containertask '%s' done", extracted)
+		cmd.logger.Verbosef("update containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update containertask done")
+		cmd.logger.Verbose("update containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13013,9 +13013,9 @@ func (cmd *UpdateDistribution) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update distribution '%s' done", extracted)
+		cmd.logger.Verbosef("update distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update distribution done")
+		cmd.logger.Verbose("update distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13099,9 +13099,9 @@ func (cmd *UpdateInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update instance '%s' done", extracted)
+		cmd.logger.Verbosef("update instance '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update instance done")
+		cmd.logger.Verbose("update instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13206,9 +13206,9 @@ func (cmd *UpdateLoginprofile) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update loginprofile '%s' done", extracted)
+		cmd.logger.Verbosef("update loginprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update loginprofile done")
+		cmd.logger.Verbose("update loginprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13292,9 +13292,9 @@ func (cmd *UpdatePolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update policy '%s' done", extracted)
+		cmd.logger.Verbosef("update policy '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update policy done")
+		cmd.logger.Verbose("update policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13372,9 +13372,9 @@ func (cmd *UpdateRecord) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update record '%s' done", extracted)
+		cmd.logger.Verbosef("update record '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update record done")
+		cmd.logger.Verbose("update record done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13458,9 +13458,9 @@ func (cmd *UpdateS3object) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update s3object '%s' done", extracted)
+		cmd.logger.Verbosef("update s3object '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update s3object done")
+		cmd.logger.Verbose("update s3object done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13544,9 +13544,9 @@ func (cmd *UpdateScalinggroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update scalinggroup '%s' done", extracted)
+		cmd.logger.Verbosef("update scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update scalinggroup done")
+		cmd.logger.Verbose("update scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13624,9 +13624,9 @@ func (cmd *UpdateSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update securitygroup '%s' done", extracted)
+		cmd.logger.Verbosef("update securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update securitygroup done")
+		cmd.logger.Verbose("update securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13706,9 +13706,9 @@ func (cmd *UpdateStack) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update stack '%s' done", extracted)
+		cmd.logger.Verbosef("update stack '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update stack done")
+		cmd.logger.Verbose("update stack done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13792,9 +13792,9 @@ func (cmd *UpdateSubnet) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update subnet '%s' done", extracted)
+		cmd.logger.Verbosef("update subnet '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update subnet done")
+		cmd.logger.Verbose("update subnet done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13872,9 +13872,9 @@ func (cmd *UpdateTargetgroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if extracted != nil {
-		cmd.logger.Infof("update targetgroup '%s' done", extracted)
+		cmd.logger.Verbosef("update targetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Info("update targetgroup done")
+		cmd.logger.Verbose("update targetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {

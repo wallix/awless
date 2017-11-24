@@ -69,7 +69,7 @@ var showCmd = &cobra.Command{
 		if _, err := awsconfig.ParseRegion(ref); err == nil && ref != config.GetAWSRegion() {
 			logger.Errorf("Cannot show region '%s' as you are in region '%s'", ref, config.GetAWSRegion())
 			logger.Infof("Use `awless show %s -r %s`", ref, ref)
-			os.Exit(-1)
+			os.Exit(1)
 		}
 
 		var resource *graph.Resource

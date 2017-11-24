@@ -45,12 +45,11 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 	}
 
 	runner.BeforeRun = func(tplExec *template.TemplateExecution) (bool, error) {
-		fmt.Printf("%s\n", renderGreenFn(tplExec.Template))
 		var yesorno string
 		if forceGlobalFlag {
 			yesorno = "y"
 		} else {
-			fmt.Println()
+			fmt.Printf("%s\n\n", renderGreenFn(tplExec.Template))
 			if isSchedulingMode() {
 				fmt.Print("Confirm scheduling? [y/N] ")
 			} else {
@@ -74,12 +73,11 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 			}
 			return true, nil
 		}
-		os.Exit(-1)
+		os.Exit(1)
 		return false, nil
 	}
 
 	runner.AfterRun = func(tplExec *template.TemplateExecution) error {
-		newDefaultTemplatePrinter(os.Stdout).print(tplExec)
 
 		if tplExec.Message == "" {
 			if tplExec.IsOneLiner() {

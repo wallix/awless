@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/oklog/ulid"
 	"github.com/wallix/awless/template/internal/ast"
 )
@@ -53,6 +54,16 @@ func (s *Template) Run(env *Env) (*Template, error) {
 			} else {
 
 				n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
+				var res, status string
+				if n.CmdResult != nil {
+					res = " (" + color.New(color.FgCyan).Sprint(n.CmdResult) + ") "
+				}
+				if n.CmdErr != nil {
+					status = color.New(color.FgRed).Sprint("KO")
+				} else {
+					status = color.New(color.FgGreen).Sprint("OK")
+				}
+				env.Log.Infof("%s %s %s%s", status, n.Action, n.Entity, res)
 				if n.CmdErr != nil {
 					return current, nil
 				}
