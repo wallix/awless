@@ -189,13 +189,15 @@ func (cmd *DeletePolicy) BeforeRun(ctx map[string]interface{}) error {
 }
 
 type AttachPolicy struct {
-	_      string `action:"attach" entity:"policy" awsAPI:"iam"`
-	logger *logger.Logger
-	api    iamiface.IAMAPI
-	Arn    *string `awsName:"PolicyArn" awsType:"awsstr" templateName:"arn"`
-	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
-	Group  *string `awsName:"GroupName" awsType:"awsstr" templateName:"group"`
-	Role   *string `awsName:"RoleName" awsType:"awsstr" templateName:"role"`
+	_       string `action:"attach" entity:"policy" awsAPI:"iam"`
+	logger  *logger.Logger
+	api     iamiface.IAMAPI
+	Arn     *string `awsName:"PolicyArn" awsType:"awsstr" templateName:"arn"`
+	User    *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
+	Group   *string `awsName:"GroupName" awsType:"awsstr" templateName:"group"`
+	Role    *string `awsName:"RoleName" awsType:"awsstr" templateName:"role"`
+	Service *string `templateName:"service"`
+	Access  *string `templateName:"access"`
 }
 
 func (cmd *AttachPolicy) ValidateParams(params []string) ([]string, error) {

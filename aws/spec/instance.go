@@ -53,29 +53,33 @@ func (cmd *CreateInstance) ValidateParams(params []string) ([]string, error) {
 }
 
 func (cmd *CreateInstance) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"distro"},
-		func(values map[string]interface{}) (map[string]interface{}, error) {
-			if distro, ok := values["distro"].(string); ok {
-				query, err := ParseImageQuery(distro)
-				if err != nil {
-					return nil, fmt.Errorf("distro: %s", err)
-				}
-				resolver := ImageResolver(cmd.api.DescribeImages)
-				cmd.logger.Verbosef("Searching for bare community distro: '%s' expanded to '%s'", distro, query)
-				images, fromCache, err := resolver.Resolve(query)
-				if len(images) > 0 {
-					var caching string
-					if fromCache {
-						caching = " from cache"
-					}
-					cmd.logger.Infof("AMI id %s resolved%s from distro '%s' (expanded to '%s')", images[0].Id, caching, distro, query)
-					return map[string]interface{}{"image": images[0].Id}, nil
-				} else {
-					return nil, fmt.Errorf("distro: no image id found for query '%s'", query)
-				}
-			}
-			return nil, nil
+	return []string{"distro"}, cmd.convertDistroToAMI
+}
+
+func (cmd *CreateInstance) convertDistroToAMI(values map[string]interface{}) (map[string]interface{}, error) {
+	if distro, ok := values["distro"].(string); ok {
+		query, err := ParseImageQuery(distro)
+		if err != nil {
+			return nil, fmt.Errorf("distro: %s", err)
 		}
+		resolver := ImageResolver(cmd.api.DescribeImages)
+		cmd.logger.Verbosef("Searching for bare community distro: '%s' expanded to '%s'", distro, query)
+		images, fromCache, err := resolver.Resolve(query)
+		if err != nil {
+			return nil, fmt.Errorf("distro: %s", err)
+		}
+		if len(images) > 0 {
+			var caching string
+			if fromCache {
+				caching = " from cache"
+			}
+			cmd.logger.Infof("Image %s resolved%s from distro '%s' (expanded to '%s')", images[0].Id, caching, distro, query)
+			return map[string]interface{}{"image": images[0].Id}, nil
+		} else {
+			return nil, fmt.Errorf("distro: no image id found for query '%s'", query)
+		}
+	}
+	return nil, nil
 }
 
 func (cmd *CreateInstance) ExtractResult(i interface{}) string {

@@ -195,12 +195,13 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":   "The name of the instance to launch",
 		"role":   "The name of the instance profile (role) to launch the instance with",
 		"image":  "The ID of an AMI for the instance to be launched",
-		"distro": "The distro query to resolve official community bare distro AMI. See `awless search images -h`",
+		"distro": "The distro query to resolve official community bare distro AMI from current region. See `awless search images -h`",
 	},
 	"createkeypair": {
 		"name":      "The name of the keypair to create (it will also be the name of the file stored in ~/.awless/keys)",
 		"encrypted": "Set to 'true' if you want to encrypt the keypair"},
 	"createlaunchconfiguration": {
+		"distro": "The distro query to resolve official community bare distro AMI from current region. See `awless search images -h`",
 		"public": "Used for groups that launch instances into a virtual private cloud (VPC). Specifies whether to assign a public IP address to each instance",
 	},
 	"createlistener": {

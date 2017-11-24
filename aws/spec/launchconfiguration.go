@@ -33,10 +33,19 @@ type CreateLaunchconfiguration struct {
 	Securitygroups []*string `awsName:"SecurityGroups" awsType:"awsstringslice" templateName:"securitygroups"`
 	Role           *string   `awsName:"IamInstanceProfile" awsType:"awsstr" templateName:"role"`
 	Spotprice      *string   `awsName:"SpotPrice" awsType:"awsstr" templateName:"spotprice"`
+	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
 func (cmd *CreateLaunchconfiguration) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+	return paramRule{
+		tree:   allOf(oneOf(node("distro"), node("image")), node("type"), node("name")),
+		extras: []string{"public", "keypair", "userdata", "securitygroups", "role", "spotprice"},
+	}.verify(params)
+}
+
+func (cmd *CreateLaunchconfiguration) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
+	createInstance := CommandFactory.Build("createinstance")().(*CreateInstance)
+	return []string{"distro"}, createInstance.convertDistroToAMI
 }
 
 func (cmd *CreateLaunchconfiguration) ExtractResult(i interface{}) string {

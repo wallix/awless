@@ -141,7 +141,7 @@ func TestSecuritygroup(t *testing.T) {
 	})
 
 	t.Run("check", func(t *testing.T) {
-		Template("check securitygroup id=my-secgroup-id state=unused timeout=0").Mock(&ec2Mock{
+		Template("check securitygroup id=my-secgroup-id state=unused timeout=2").Mock(&ec2Mock{
 			DescribeNetworkInterfacesFunc: func(input *ec2.DescribeNetworkInterfacesInput) (*ec2.DescribeNetworkInterfacesOutput, error) {
 				return &ec2.DescribeNetworkInterfacesOutput{
 					NetworkInterfaces: []*ec2.NetworkInterface{},

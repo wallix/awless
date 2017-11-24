@@ -237,7 +237,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "policy",
 		Api:            "iam",
 		RequiredParams: []string{},
-		ExtraParams:    []string{"arn", "group", "role", "user"},
+		ExtraParams:    []string{"access", "arn", "group", "role", "service", "user"},
 	},
 	"attachrole": {
 		Action:         "attach",
@@ -489,7 +489,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "launchconfiguration",
 		Api:            "autoscaling",
 		RequiredParams: []string{"image", "name", "type"},
-		ExtraParams:    []string{"keypair", "public", "role", "securitygroups", "spotprice", "userdata"},
+		ExtraParams:    []string{"distro", "keypair", "public", "role", "securitygroups", "spotprice", "userdata"},
 	},
 	"createlistener": {
 		Action:         "create",
