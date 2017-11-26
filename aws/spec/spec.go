@@ -392,7 +392,8 @@ func (c *checker) check() error {
 			return nil
 		}
 		elapsed := time.Since(now)
-		c.logger.InteractiveInfof("%s %s '%s', expect '%s', timeout in %s (retry in %s)", c.description, c.checkName, got, c.expect, color.New(color.FgGreen).Sprint(c.timeout-elapsed.Round(time.Second)), c.frequency)
+
+		c.logger.InteractiveInfof("%s %s '%s', expect '%s', timeout in %s (retry in %s)", c.description, c.checkName, got, c.expect, color.New(color.FgGreen).Sprint(c.timeout-elapsed), c.frequency)
 		time.Sleep(c.frequency)
 	}
 }

@@ -587,6 +587,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"policy-update-file":    "Structure containing the temporary overriding stack policy body",
 		"resource-types":        "The template resource types that you have permissions to work with for this update stack action, such as AWS::EC2::Instance, AWS::EC2::*, or Custom::MyCustomInstance",
 		"role":                  "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that AWS CloudFormation assumes to update the stack",
+		"tags":                  "Key-value pairs to associate with this stack",
 		"template-file":         "Structure containing the template body with a minimum length of 1 byte and a maximum length of 51,200 bytes",
 		"use-previous-template": "Reuse the existing template that is associated with the stack that you are updating",
 	},

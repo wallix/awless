@@ -16,8 +16,14 @@ limitations under the License.
 package awsspec
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
+
+	"gopkg.in/yaml.v2"
 
 	"strings"
 
@@ -72,6 +78,9 @@ type UpdateStack struct {
 	PolicyUpdateFile    *string   `awsName:"StackPolicyDuringUpdateBody" awsType:"awsfiletostring" templateName:"policy-update-file"`
 	TemplateFile        *string   `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file"`
 	UsePreviousTemplate *bool     `awsName:"UsePreviousTemplate" awsType:"awsbool" templateName:"use-previous-template"`
+	Tags                []*string `awsName:"Tags" awsType:"awstagslice" templateName:"tags"`
+	PolicyBody          *string   `awsName:"StackPolicyBody" awsType:"awsstr"`
+	StackFile           *string   `templateName:"stack-file"`
 }
 
 func (cmd *UpdateStack) ValidateParams(params []string) ([]string, error) {
@@ -80,6 +89,85 @@ func (cmd *UpdateStack) ValidateParams(params []string) ([]string, error) {
 
 func (cmd *UpdateStack) ExtractResult(i interface{}) string {
 	return StringValue(i.(*cloudformation.UpdateStackOutput).StackId)
+}
+
+func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
+	if cmd.StackFile == nil {
+		return nil
+	}
+
+	type stackFile struct {
+		Parameters  map[string]string
+		Tags        map[string]string
+		StackPolicy map[string]interface{}
+	}
+
+	data := &stackFile{}
+
+	file, err := ioutil.ReadFile(*cmd.StackFile)
+	if err != nil {
+		return err
+	}
+
+	switch path.Ext(*cmd.StackFile) {
+	case ".json":
+		err = json.Unmarshal(file, &data)
+		cmd.logger.Infof("Reading JSON file %s", *cmd.StackFile)
+	case ".yml", ".yaml":
+		err = yaml.Unmarshal(file, &data)
+		cmd.logger.Infof("Reading YML file %s", *cmd.StackFile)
+	default:
+		return fmt.Errorf("Unknown format %s", path.Ext(*cmd.StackFile))
+	}
+
+	if err != nil {
+		return err
+	}
+
+	cmd.Parameters = mergeCliAndFileValues(data.Parameters, cmd.Parameters)
+	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
+
+	// use PolicyBody only when PolicyFile isn't specified
+	if cmd.PolicyFile == nil {
+		policyBytes, err := json.Marshal(data.StackPolicy)
+		if err != nil {
+			return err
+		}
+
+		policyStr := string(policyBytes)
+		cmd.PolicyBody = &policyStr
+	}
+
+	return nil
+}
+
+// mergeCliAndFileValues is the helper func used to merge tags or parameters
+// supplied with CLI and StackFile with higher priority for values passed via CLI
+func mergeCliAndFileValues(valMap map[string]string, valSlice []*string) (resSlice []*string) {
+	val := make(map[string]string)
+
+	// building map of parameters passed from cli
+	for _, v := range valSlice {
+		splits := strings.SplitN(*v, ":", 2)
+		if len(splits) == 2 {
+			val[splits[0]] = splits[1]
+		}
+	}
+
+	// adding/overwritting values from cli
+	// to the files values map
+	for k, v := range val {
+		valMap[k] = v
+	}
+
+	// building final parameters list in the expected
+	// "awsparameterslice" format
+	for k, v := range valMap {
+		p := strings.Join([]string{k, v}, ":")
+		resSlice = append(resSlice, &p)
+	}
+
+	return resSlice
 }
 
 type DeleteStack struct {
