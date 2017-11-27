@@ -622,7 +622,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "stack",
 		Api:            "cloudformation",
 		RequiredParams: []string{"name", "template-file"},
-		ExtraParams:    []string{"capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "timeout"},
+		ExtraParams:    []string{"capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout"},
 	},
 	"createsubnet": {
 		Action:         "create",

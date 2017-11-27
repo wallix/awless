@@ -293,6 +293,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"policy-file":      "Structure containing the stack policy body",
 		"resource-types":   "The template resource types that you have permissions to work with for this create stack action, such as AWS::EC2::Instance, AWS::EC2::*, or Custom::MyCustomInstance",
 		"role":             "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that AWS CloudFormation assumes to create the stack",
+		"tags":             "Key-value pairs to associate with this stack",
 		"template-file":    "Structure containing the template body with a minimum length of 1 byte and a maximum length of 51,200 bytes",
 		"timeout":          "The amount of time that can pass before the stack status becomes CREATE_FAILED; if DisableRollback is not set or is set to false, the stack will be rolled back",
 	},

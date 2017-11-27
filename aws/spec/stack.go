@@ -47,6 +47,9 @@ type CreateStack struct {
 	Role            *string   `awsName:"RoleARN" awsType:"awsstr" templateName:"role"`
 	PolicyFile      *string   `awsName:"StackPolicyBody" awsType:"awsfiletostring" templateName:"policy-file"`
 	Timeout         *int64    `awsName:"TimeoutInMinutes" awsType:"awsint64" templateName:"timeout"`
+	Tags            []*string `awsName:"Tags" awsType:"awstagslice" templateName:"tags"`
+	PolicyBody      *string   `awsName:"StackPolicyBody" awsType:"awsstr"`
+	StackFile       *string   `templateName:"stack-file"`
 }
 
 func (cmd *CreateStack) ValidateParams(params []string) ([]string, error) {
@@ -62,6 +65,39 @@ func (cmd *CreateStack) Validate_TemplateFile() error {
 
 func (cmd *CreateStack) ExtractResult(i interface{}) string {
 	return StringValue(i.(*cloudformation.CreateStackOutput).StackId)
+}
+
+// Add StackFile support via BeforeRun hook
+// https://github.com/wallix/awless/issues/145
+// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
+func (cmd *CreateStack) BeforeRun(ctx map[string]interface{}) error {
+	if cmd.StackFile == nil {
+		return nil
+	}
+
+	data, err := readStackFile(*cmd.StackFile)
+	if err != nil {
+		return err
+	}
+
+	// read Parameters defined in the StackFile and merge them with
+	// the parameters passed via CLI
+	cmd.Parameters = mergeCliAndFileValues(data.Parameters, cmd.Parameters)
+	// do the same as above with Tags
+	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
+
+	// use PolicyBody only when PolicyFile isn't specified
+	if cmd.PolicyFile == nil {
+		policyBytes, err := json.Marshal(data.StackPolicy)
+		if err != nil {
+			return err
+		}
+
+		policyStr := string(policyBytes)
+		cmd.PolicyBody = &policyStr
+	}
+
+	return nil
 }
 
 type UpdateStack struct {
@@ -91,40 +127,23 @@ func (cmd *UpdateStack) ExtractResult(i interface{}) string {
 	return StringValue(i.(*cloudformation.UpdateStackOutput).StackId)
 }
 
+// Add StackFile support via BeforeRun hook
+// https://github.com/wallix/awless/issues/145
+// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
 func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
 	if cmd.StackFile == nil {
 		return nil
 	}
 
-	type stackFile struct {
-		Parameters  map[string]string
-		Tags        map[string]string
-		StackPolicy map[string]interface{}
-	}
-
-	data := &stackFile{}
-
-	file, err := ioutil.ReadFile(*cmd.StackFile)
+	data, err := readStackFile(*cmd.StackFile)
 	if err != nil {
 		return err
 	}
 
-	switch path.Ext(*cmd.StackFile) {
-	case ".json":
-		err = json.Unmarshal(file, &data)
-		cmd.logger.Infof("Reading JSON file %s", *cmd.StackFile)
-	case ".yml", ".yaml":
-		err = yaml.Unmarshal(file, &data)
-		cmd.logger.Infof("Reading YML file %s", *cmd.StackFile)
-	default:
-		return fmt.Errorf("Unknown format %s", path.Ext(*cmd.StackFile))
-	}
-
-	if err != nil {
-		return err
-	}
-
+	// read Parameters defined in the StackFile and merge them with
+	// the parameters passed via CLI
 	cmd.Parameters = mergeCliAndFileValues(data.Parameters, cmd.Parameters)
+	// do the same as above with Tags
 	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
 
 	// use PolicyBody only when PolicyFile isn't specified
@@ -139,6 +158,31 @@ func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+type stackFile struct {
+	Parameters  map[string]string
+	Tags        map[string]string
+	StackPolicy map[string]interface{}
+}
+
+func readStackFile(p string) (sf *stackFile, err error) {
+	var file []byte
+	file, err = ioutil.ReadFile(p)
+	if err != nil {
+		return nil, err
+	}
+
+	switch path.Ext(p) {
+	case ".json":
+		err = json.Unmarshal(file, &sf)
+	case ".yml", ".yaml":
+		err = yaml.Unmarshal(file, &sf)
+	default:
+		return nil, fmt.Errorf("Unknown StackFile format %s", path.Ext(p))
+	}
+
+	return sf, err
 }
 
 // mergeCliAndFileValues is the helper func used to merge tags or parameters
