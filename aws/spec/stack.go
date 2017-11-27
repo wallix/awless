@@ -189,6 +189,17 @@ func readStackFile(p string) (sf *stackFile, err error) {
 
 // mergeCliAndFileValues is the helper func used to merge tags or parameters
 // supplied with CLI and StackFile with higher priority for values passed via CLI
+// example:
+// via cli passed next parameters:
+//   Test1=a
+//   Test2=b
+// via StackFile passed next parameters:
+//   Test2=x
+//   Test3=y
+// after merge result will be:
+//   Test1=a
+//   Test2=b
+//   Test3=y
 func mergeCliAndFileValues(valMap map[string]string, valSlice []*string) (resSlice []*string) {
 	// if values map are absent in StackFile
 	// just return slice of CLI values
