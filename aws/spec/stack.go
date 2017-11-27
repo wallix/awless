@@ -71,6 +71,7 @@ func (cmd *CreateStack) ExtractResult(i interface{}) string {
 // https://github.com/wallix/awless/issues/145
 // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
 func (cmd *CreateStack) BeforeRun(ctx map[string]interface{}) error {
+	// don't do anything if StackFile not provided
 	if cmd.StackFile == nil {
 		return nil
 	}
@@ -87,7 +88,7 @@ func (cmd *CreateStack) BeforeRun(ctx map[string]interface{}) error {
 	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
 
 	// use PolicyBody only when PolicyFile isn't specified
-	if cmd.PolicyFile == nil {
+	if cmd.PolicyFile == nil && data.StackPolicy != nil {
 		policyBytes, err := json.Marshal(data.StackPolicy)
 		if err != nil {
 			return err
@@ -131,6 +132,7 @@ func (cmd *UpdateStack) ExtractResult(i interface{}) string {
 // https://github.com/wallix/awless/issues/145
 // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
 func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
+	// don't do anything if StackFile not provided
 	if cmd.StackFile == nil {
 		return nil
 	}
@@ -147,7 +149,7 @@ func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
 	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
 
 	// use PolicyBody only when PolicyFile isn't specified
-	if cmd.PolicyFile == nil {
+	if cmd.PolicyFile == nil && data.StackPolicy != nil {
 		policyBytes, err := json.Marshal(data.StackPolicy)
 		if err != nil {
 			return err
@@ -161,9 +163,9 @@ func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
 }
 
 type stackFile struct {
-	Parameters  map[string]string
-	Tags        map[string]string
-	StackPolicy map[string]interface{}
+	Parameters  map[string]string      `yaml:"Parameters"`
+	Tags        map[string]string      `yaml:"Tags"`
+	StackPolicy map[string]interface{} `yaml:"StackPolicy"`
 }
 
 func readStackFile(p string) (sf *stackFile, err error) {
@@ -188,6 +190,12 @@ func readStackFile(p string) (sf *stackFile, err error) {
 // mergeCliAndFileValues is the helper func used to merge tags or parameters
 // supplied with CLI and StackFile with higher priority for values passed via CLI
 func mergeCliAndFileValues(valMap map[string]string, valSlice []*string) (resSlice []*string) {
+	// if values map are absent in StackFile
+	// just return slice of CLI values
+	if valMap == nil {
+		return valSlice
+	}
+
 	val := make(map[string]string)
 
 	// building map of parameters passed from cli
