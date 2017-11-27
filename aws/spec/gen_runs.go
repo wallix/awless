@@ -3054,13 +3054,7 @@ func (cmd *CreateDatabase) Run(ctx, params map[string]interface{}) (interface{},
 		}
 	}
 
-	input := &rds.CreateDBInstanceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
-		return nil, fmt.Errorf("cannot inject in rds.CreateDBInstanceInput: %s", err)
-	}
-	start := time.Now()
-	output, err := cmd.api.CreateDBInstance(input)
-	cmd.logger.ExtraVerbosef("rds.CreateDBInstance call took %s", time.Since(start))
+	output, err := cmd.ManualRun(ctx)
 	if err != nil {
 		return nil, err
 	}

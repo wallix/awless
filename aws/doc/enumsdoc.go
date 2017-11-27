@@ -26,6 +26,9 @@ var EnumDoc = map[string][]string{
 	"create.policy.action":   {""},
 	"create.policy.effect":   {"Allow", "Deny"},
 	"create.policy.resource": {"*"},
+
+	"check.database.state":   {"available", "backing-up", "creating", "deleting", "failed", "maintenance", "modifying", "rebooting", "renaming", "resetting-master-credentials", "restore-error", "storage-full", "upgrading", "not-found"},
+	"check.database.timeout": {"10", "60", "180", "300", "600", "900"},
 }
 
 type ParamType struct {

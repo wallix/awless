@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"sort"
+
 	p "github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/graph/resourcetest"
@@ -23,6 +25,17 @@ func TestTypedParamCompletionFunc(t *testing.T) {
 	g.AddResource(resourcetest.Instance("3").Prop(p.Name, "redis").Build())
 
 	list, _ := typedParamCompletionFunc(g, "instance", p.Name).Do([]rune{'b'}, 1)
+	sort.Slice(list, func(i int, j int) bool {
+		for k := 0; k < len(list[i]); k++ {
+			if k > len(list[j]) {
+				return false
+			}
+			if list[i][k] != list[j][k] {
+				return list[i][k] < list[j][k]
+			}
+		}
+		return true
+	})
 	if got, want := list, toRune("roker_1 ", "roker_2 "); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %q, want %q", got, want)
 	}
@@ -229,5 +242,8 @@ func toRune(arr ...string) [][]rune {
 			out[i] = append(out[i], r)
 		}
 	}
+
+	sort.Slice(out, func(i, j int) bool { return string(out[i]) <= string(out[j]) })
+
 	return out
 }

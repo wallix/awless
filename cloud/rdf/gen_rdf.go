@@ -178,6 +178,7 @@ const (
 	Records                           = "cloud:recordCount"
 	Region                            = "cloud:region"
 	RegisteredContainerInstancesCount = "cloud:registeredContainerInstancesCount"
+	ReplicaOf                         = "cloud:replicaOf"
 	Role                              = "cloud:role"
 	Roles                             = "cloud:roles"
 	RootDevice                        = "cloud:rootDevice"
@@ -387,6 +388,7 @@ var Labels = map[string]string{
 	properties.Records:                           Records,
 	properties.Region:                            Region,
 	properties.RegisteredContainerInstancesCount: RegisteredContainerInstancesCount,
+	properties.ReplicaOf:                         ReplicaOf,
 	properties.Role:                              Role,
 	properties.Roles:                             Roles,
 	properties.RootDevice:                        RootDevice,
@@ -596,16 +598,17 @@ var Properties = RDFProperties{
 	Records:                  {ID: Records, RdfType: "rdf:Property", RdfsLabel: "Records", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Region:                   {ID: Region, RdfType: "rdf:Property", RdfsLabel: "Region", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	RegisteredContainerInstancesCount: {ID: RegisteredContainerInstancesCount, RdfType: "rdf:Property", RdfsLabel: "RegisteredContainerInstancesCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Role:              {ID: Role, RdfType: "rdf:Property", RdfsLabel: "Role", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
-	Roles:             {ID: Roles, RdfType: "rdf:Property", RdfsLabel: "Roles", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
-	RootDevice:        {ID: RootDevice, RdfType: "rdf:Property", RdfsLabel: "RootDevice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	RootDeviceType:    {ID: RootDeviceType, RdfType: "rdf:Property", RdfsLabel: "RootDeviceType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Routes:            {ID: Routes, RdfType: "rdf:Property", RdfsLabel: "Routes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:Route"},
-	RunningTasksCount: {ID: RunningTasksCount, RdfType: "rdf:Property", RdfsLabel: "RunningTasksCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	Runtime:           {ID: Runtime, RdfType: "rdf:Property", RdfsLabel: "Runtime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	ScalingAdjustment: {ID: ScalingAdjustment, RdfType: "rdf:Property", RdfsLabel: "ScalingAdjustment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
-	ScalingGroupName:  {ID: ScalingGroupName, RdfType: "rdf:Property", RdfsLabel: "ScalingGroupName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
-	Scheme:            {ID: Scheme, RdfType: "rdf:Property", RdfsLabel: "Scheme", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ReplicaOf:                         {ID: ReplicaOf, RdfType: "rdf:Property", RdfsLabel: "ReplicaOf", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Role:                              {ID: Role, RdfType: "rdf:Property", RdfsLabel: "Role", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
+	Roles:                             {ID: Roles, RdfType: "rdf:Property", RdfsLabel: "Roles", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
+	RootDevice:                        {ID: RootDevice, RdfType: "rdf:Property", RdfsLabel: "RootDevice", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	RootDeviceType:                    {ID: RootDeviceType, RdfType: "rdf:Property", RdfsLabel: "RootDeviceType", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Routes:                            {ID: Routes, RdfType: "rdf:Property", RdfsLabel: "Routes", RdfsDefinedBy: "rdfs:list", RdfsDataType: "net-owl:Route"},
+	RunningTasksCount:                 {ID: RunningTasksCount, RdfType: "rdf:Property", RdfsLabel: "RunningTasksCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	Runtime:                           {ID: Runtime, RdfType: "rdf:Property", RdfsLabel: "Runtime", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	ScalingAdjustment:                 {ID: ScalingAdjustment, RdfType: "rdf:Property", RdfsLabel: "ScalingAdjustment", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
+	ScalingGroupName:                  {ID: ScalingGroupName, RdfType: "rdf:Property", RdfsLabel: "ScalingGroupName", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
+	Scheme:                            {ID: Scheme, RdfType: "rdf:Property", RdfsLabel: "Scheme", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SecondaryAvailabilityZone: {ID: SecondaryAvailabilityZone, RdfType: "rdf:Property", RdfsLabel: "SecondaryAvailabilityZone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	SecurityGroups:            {ID: SecurityGroups, RdfType: "rdf:Property", RdfsLabel: "SecurityGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	Set:                       {ID: Set, RdfType: "rdf:Property", RdfsLabel: "Set", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

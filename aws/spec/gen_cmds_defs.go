@@ -418,8 +418,8 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Action:         "create",
 		Entity:         "database",
 		Api:            "rds",
-		RequiredParams: []string{"engine", "id", "password", "size", "type", "username"},
-		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecuritygroups", "domain", "encrypted", "iamrole", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "port", "public", "storagetype", "subnetgroup", "timezone", "version", "vpcsecuritygroups"},
+		RequiredParams: []string{},
+		ExtraParams:    []string{"autoupgrade", "availabilityzone", "backupretention", "backupwindow", "cluster", "dbname", "dbsecuritygroups", "domain", "encrypted", "engine", "iamrole", "id", "iops", "license", "maintenancewindow", "multiaz", "optiongroup", "parametergroup", "password", "port", "public", "replica", "replica-source", "size", "storagetype", "subnetgroup", "timezone", "type", "username", "version", "vpcsecuritygroups"},
 	},
 	"createdbsubnetgroup": {
 		Action:         "create",

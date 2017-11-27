@@ -27,15 +27,23 @@ import (
 )
 
 type CreateDatabase struct {
-	_                 string `action:"create" entity:"database" awsAPI:"rds" awsCall:"CreateDBInstance" awsInput:"rds.CreateDBInstanceInput" awsOutput:"rds.CreateDBInstanceOutput"`
-	logger            *logger.Logger
-	api               rdsiface.RDSAPI
-	Type              *string   `awsName:"DBInstanceClass" awsType:"awsstr" templateName:"type" required:""`
-	Id                *string   `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
-	Engine            *string   `awsName:"Engine" awsType:"awsstr" templateName:"engine" required:""`
-	Password          *string   `awsName:"MasterUserPassword" awsType:"awsstr" templateName:"password" required:""`
-	Username          *string   `awsName:"MasterUsername" awsType:"awsstr" templateName:"username" required:""`
-	Size              *int64    `awsName:"AllocatedStorage" awsType:"awsint64" templateName:"size" required:""`
+	_      string `action:"create" entity:"database" awsAPI:"rds"`
+	logger *logger.Logger
+	api    rdsiface.RDSAPI
+
+	// Required fro DB
+	Type     *string `awsName:"DBInstanceClass" awsType:"awsstr" templateName:"type"`
+	Id       *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
+	Engine   *string `awsName:"Engine" awsType:"awsstr" templateName:"engine"`
+	Password *string `awsName:"MasterUserPassword" awsType:"awsstr" templateName:"password"`
+	Username *string `awsName:"MasterUsername" awsType:"awsstr" templateName:"username"`
+	Size     *int64  `awsName:"AllocatedStorage" awsType:"awsint64" templateName:"size"`
+
+	// Required for read replica DB
+	ReadReplicaSourceDB   *string `awsName:"SourceDBInstanceIdentifier" awsType:"awsstr" templateName:"replica-source"`
+	ReadReplicaIdentifier *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"replica"`
+
+	// Extras
 	Autoupgrade       *bool     `awsName:"AutoMinorVersionUpgrade" awsType:"awsbool" templateName:"autoupgrade"`
 	Availabilityzone  *string   `awsName:"AvailabilityZone" awsType:"awsstr" templateName:"availabilityzone"`
 	Backupretention   *int64    `awsName:"BackupRetentionPeriod" awsType:"awsint64" templateName:"backupretention"`
@@ -62,11 +70,49 @@ type CreateDatabase struct {
 }
 
 func (cmd *CreateDatabase) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+	return paramRule{
+		tree: oneOf(allOf(node("type"), node("id"), node("engine"), node("password"), node("username"), node("size")), allOf(node("replica"), node("replica-source"))),
+		extras: []string{"autoupgrade", "availabilityzone", "backupretention", "cluster", "dbname", "parametergroup",
+			"dbsecuritygroups", "subnetgroup", "domain", "iamrole", "version", "iops", "license", "multiaz", "optiongroup",
+			"port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecuritygroups"},
+	}.verify(params)
+
+}
+
+func (cmd *CreateDatabase) ManualRun(ctx map[string]interface{}) (output interface{}, err error) {
+	if replica := cmd.ReadReplicaIdentifier; replica != nil {
+		input := &rds.CreateDBInstanceReadReplicaInput{}
+		if ierr := structInjector(cmd, input, ctx); ierr != nil {
+			return nil, fmt.Errorf("cannot inject in rds.CreateDBInstanceReadReplicaInput: %s", ierr)
+		}
+		start := time.Now()
+		output, err = cmd.api.CreateDBInstanceReadReplica(input)
+		cmd.logger.ExtraVerbosef("rds.CreateDBInstanceReadReplica call took %s", time.Since(start))
+	} else {
+		input := &rds.CreateDBInstanceInput{}
+		if ierr := structInjector(cmd, input, ctx); ierr != nil {
+			return nil, fmt.Errorf("cannot inject in rds.CreateDBInstanceInput: %s", ierr)
+		}
+		start := time.Now()
+		output, err = cmd.api.CreateDBInstance(input)
+		cmd.logger.ExtraVerbosef("rds.CreateDBInstance call took %s", time.Since(start))
+	}
+	if err != nil {
+		return output, err
+	}
+	return output, nil
 }
 
 func (cmd *CreateDatabase) ExtractResult(i interface{}) string {
-	return awssdk.StringValue(i.(*rds.CreateDBInstanceOutput).DBInstance.DBInstanceIdentifier)
+	switch i.(type) {
+	case *rds.CreateDBInstanceOutput:
+		return awssdk.StringValue(i.(*rds.CreateDBInstanceOutput).DBInstance.DBInstanceIdentifier)
+	case *rds.CreateDBInstanceReadReplicaOutput:
+		return awssdk.StringValue(i.(*rds.CreateDBInstanceReadReplicaOutput).DBInstance.DBInstanceIdentifier)
+	default:
+		logger.Errorf("unexpected interface type %T", i)
+		return ""
+	}
 }
 
 type DeleteDatabase struct {
