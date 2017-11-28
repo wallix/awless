@@ -20,6 +20,24 @@ func TestSecuritygroup(t *testing.T) {
 	})
 
 	t.Run("update", func(t *testing.T) {
+		t.Run("inbound authorize with another secgroup", func(t *testing.T) {
+			Template("update securitygroup id=my-secgroup-id inbound=authorize protocol=tcp securitygroup=any-secgroup-id portrange=8080").Mock(&ec2Mock{
+				AuthorizeSecurityGroupIngressFunc: func(input *ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
+					return nil, nil
+				}}).
+				ExpectInput("AuthorizeSecurityGroupIngress", &ec2.AuthorizeSecurityGroupIngressInput{
+					GroupId: String("my-secgroup-id"),
+					IpPermissions: []*ec2.IpPermission{
+						{
+							UserIdGroupPairs: []*ec2.UserIdGroupPair{{GroupId: String("any-secgroup-id")}},
+							IpProtocol:       String("tcp"),
+							FromPort:         Int64(8080),
+							ToPort:           Int64(8080),
+						},
+					},
+				}).ExpectCalls("AuthorizeSecurityGroupIngress").Run(t)
+		})
+
 		t.Run("inbound authorize", func(t *testing.T) {
 			Template("update securitygroup id=my-secgroup-id inbound=authorize protocol=tcp cidr=10.10.10.0/24 portrange=10-22").Mock(&ec2Mock{
 				AuthorizeSecurityGroupIngressFunc: func(input *ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
