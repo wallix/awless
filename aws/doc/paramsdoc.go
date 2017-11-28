@@ -266,7 +266,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"parameters":    "A list of Parameters that specify input parameters for the stack given using this format: [key1:val1,key2:val2,...]",
 		"policy-file":   "The path to the file containing the stack policy body",
 		"template-file": "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
-		"stack-file":    "The path to the file containing Parameters/Tags/StackPolices definition (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html). Values passed via CLI has higher priority than ones defined in StackFile",
+		"stack-file":    "The path to the file containing Parameters/Tags/StackPolices definition (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html#w2ab2c13c15c15). Values passed via CLI has higher priority than ones defined in StackFile",
 	},
 	"createsubnet": {
 		"name":   "The 'Name' Tag for the subnet to create",
@@ -474,7 +474,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"policy-file":        "The path to the file containing the stack policy body",
 		"policy-update-file": "The path to the file containing the temporary overriding stack policy",
 		"template-file":      "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
-		"stack-file":         "The path to the file containing Parameters/Tags/StackPolices definition (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html). Values passed via CLI has higher priority than ones defined in StackFile",
+		"stack-file":         "The path to the file containing Parameters/Tags/StackPolices definition (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html#w2ab2c13c15c15). Values passed via CLI has higher priority than ones defined in StackFile",
 	},
 	"updatetargetgroup": {
 		"id": "The Amazon Resource Name (ARN) of the target group",

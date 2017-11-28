@@ -22,14 +22,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-
-	"gopkg.in/yaml.v2"
-
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"github.com/wallix/awless/logger"
+	"gopkg.in/yaml.v2"
 )
 
 type CreateStack struct {
@@ -223,10 +222,18 @@ func mergeCliAndFileValues(valMap map[string]string, valSlice []*string) (resSli
 		valMap[k] = v
 	}
 
+	mapKeys := make([]string, 0, len(valMap))
+	for k := range valMap {
+		mapKeys = append(mapKeys, k)
+	}
+
+	// soring map keys, so we have predictable values order for tests
+	sort.Strings(mapKeys)
+
 	// building final parameters list in the expected
 	// "awsparameterslice" format
-	for k, v := range valMap {
-		p := strings.Join([]string{k, v}, ":")
+	for _, k := range mapKeys {
+		p := strings.Join([]string{k, valMap[k]}, ":")
 		resSlice = append(resSlice, &p)
 	}
 
