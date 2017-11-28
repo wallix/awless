@@ -1,4 +1,11 @@
+test:
+	@echo Running tests
+	@go test $$(go list ./... | grep -v /vendor/)
+
 generate:
-	go generate gen/aws/generators/main.go
+	@echo Generating boilerplate code
+	@go generate gen/aws/generators/main.go
+
 build: generate
-	go build
+	@echo Building application binary
+	@go build
