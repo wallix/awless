@@ -1,3 +1,14 @@
+## v0.1.8 [2017-11-29]
+
+### Features
+
+- Better prompting of template parameters
+- Overall better logging output of template execution
+
+### AWS Services
+
+- Create a database replica with: `awless create database replica=...`
+
 ## v0.1.7 [2017-11-24]
 
 ### Features
