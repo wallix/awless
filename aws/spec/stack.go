@@ -70,34 +70,9 @@ func (cmd *CreateStack) ExtractResult(i interface{}) string {
 // https://github.com/wallix/awless/issues/145
 // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
 func (cmd *CreateStack) BeforeRun(ctx map[string]interface{}) error {
-	// don't do anything if StackFile not provided
-	if cmd.StackFile == nil {
-		return nil
-	}
-
-	data, err := readStackFile(*cmd.StackFile)
-	if err != nil {
-		return err
-	}
-
-	// read Parameters defined in the StackFile and merge them with
-	// the parameters passed via CLI
-	cmd.Parameters = mergeCliAndFileValues(data.Parameters, cmd.Parameters)
-	// do the same as above with Tags
-	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
-
-	// use PolicyBody only when PolicyFile isn't specified
-	if cmd.PolicyFile == nil && data.StackPolicy != nil {
-		policyBytes, err := json.Marshal(data.StackPolicy)
-		if err != nil {
-			return err
-		}
-
-		policyStr := string(policyBytes)
-		cmd.PolicyBody = &policyStr
-	}
-
-	return nil
+	var err error
+	cmd.Parameters, cmd.Tags, cmd.PolicyBody, err = processStackFile(cmd.StackFile, cmd.PolicyFile, cmd.Parameters, cmd.Tags)
+	return err
 }
 
 type UpdateStack struct {
@@ -131,40 +106,40 @@ func (cmd *UpdateStack) ExtractResult(i interface{}) string {
 // https://github.com/wallix/awless/issues/145
 // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
 func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
-	// don't do anything if StackFile not provided
-	if cmd.StackFile == nil {
-		return nil
-	}
-
-	data, err := readStackFile(*cmd.StackFile)
-	if err != nil {
-		return err
-	}
-
-	// read Parameters defined in the StackFile and merge them with
-	// the parameters passed via CLI
-	cmd.Parameters = mergeCliAndFileValues(data.Parameters, cmd.Parameters)
-	// do the same as above with Tags
-	cmd.Tags = mergeCliAndFileValues(data.Tags, cmd.Tags)
-
-	// use PolicyBody only when PolicyFile isn't specified
-	if cmd.PolicyFile == nil && data.StackPolicy != nil {
-		policyBytes, err := json.Marshal(data.StackPolicy)
-		if err != nil {
-			return err
-		}
-
-		policyStr := string(policyBytes)
-		cmd.PolicyBody = &policyStr
-	}
-
-	return nil
+	var err error
+	cmd.Parameters, cmd.Tags, cmd.PolicyBody, err = processStackFile(cmd.StackFile, cmd.PolicyFile, cmd.Parameters, cmd.Tags)
+	return err
 }
 
 type stackFile struct {
 	Parameters  map[string]string      `yaml:"Parameters"`
 	Tags        map[string]string      `yaml:"Tags"`
 	StackPolicy map[string]interface{} `yaml:"StackPolicy"`
+}
+
+func processStackFile(stackFilePath, policyFile *string, parameters, tags []*string) (newParams, newTags []*string, policyData *string, err error) {
+	if stackFilePath == nil {
+		return parameters, tags, policyFile, nil
+	}
+
+	data, err := readStackFile(*stackFilePath)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	newParams = mergeCliAndFileValues(data.Parameters, parameters)
+	newTags = mergeCliAndFileValues(data.Tags, tags)
+
+	if policyFile == nil && data.StackPolicy != nil {
+		policyBytes, err := json.Marshal(data.StackPolicy)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+
+		policyData = String(string(policyBytes))
+	}
+
+	return newParams, newTags, policyData, nil
 }
 
 func readStackFile(p string) (sf *stackFile, err error) {
