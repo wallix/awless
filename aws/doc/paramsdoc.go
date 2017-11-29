@@ -150,7 +150,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"dbsecuritygroups":   "A list of DB security groups to associate with this DB instance",
 		"domain":             "Specify the Active Directory Domain to create the instance in.",
 		"encrypted":          "Specifies whether the DB instance is encrypted",
-		"engine":             "Provides the name of the database engine to be used for this DB instance (mysql | mariadb | oracle-se1 | oracle-se2 | oracle-se | oracle-ee | sqlserver-ee | sqlserver-se | sqlserver-ex | sqlserver-web | postgres | aurora)",
+		"engine":             "The name of the database engine to be used for this DB instance (not every engine is available for every region)",
 		"iamrole":            "Specify the name of the IAM role to be used when making API calls to the Directory Service",
 		"id":                 "Contains a user-supplied database identifier",
 		"iops":               "Specifies the Provisioned IOPS (I/O operations per second) value",

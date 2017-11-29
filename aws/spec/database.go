@@ -16,6 +16,7 @@ limitations under the License.
 package awsspec
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -81,6 +82,15 @@ func (cmd *CreateDatabase) ValidateParams(params []string) ([]string, error) {
 			"dbsecuritygroups", "subnetgroup", "domain", "iamrole", "version", "iops", "license", "multiaz", "optiongroup",
 			"port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecuritygroups"},
 	}.verify(params)
+}
+
+func (cmd *CreateDatabase) Validate_Password() (err error) {
+	if pass := cmd.Password; pass != nil {
+		if len(*pass) < 8 {
+			err = errors.New("should at least be 8 characters")
+		}
+	}
+	return
 }
 
 func (cmd *CreateDatabase) Validate_ReadReplicaIdentifier() error {
