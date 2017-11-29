@@ -3,7 +3,7 @@ package awsat
 import (
 	"io/ioutil"
 	"os"
-	"strings"
+	"path/filepath"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -67,7 +67,7 @@ func TestStack(t *testing.T) {
 		}).ExpectCalls("DeleteStack").Run(t)
 	})
 
-	_, stackFileYMLPath, stackFileYMLClean := generateTmpFileWithExt(`
+	_, stackFileYMLPath, stackFileYMLClean := generateTmpFileWithName(`
 Parameters:
   Test1: 1
   Test2: 2
@@ -80,7 +80,7 @@ StackPolicy:
   Statement:
   - Effect: Allow
     Resource: "*"
-`, "yml")
+`, "stackfile.yml")
 
 	defer stackFileYMLClean()
 
@@ -97,8 +97,7 @@ StackPolicy:
 		}).ExpectCalls("UpdateStack").Run(t)
 	})
 
-	_, stackFileJSONPath, stackFileJSONClean := generateTmpFileWithExt(`
-		{"Parameters":{"Test1":"1","Test2":"2","Test3":"3"},"Tags":{"Tag1":"1","Tag2":"2","Tag3":"3"},"StackPolicy":{"Statement":[{"Effect":"Allow","Resource":"*"}]}}`, "json")
+	_, stackFileJSONPath, stackFileJSONClean := generateTmpFileWithName(`{"Parameters":{"Test1":"1","Test2":"2","Test3":"3"},"Tags":{"Tag1":"1","Tag2":"2","Tag3":"3"},"StackPolicy":{"Statement":[{"Effect":"Allow","Resource":"*"}]}}`, "stackfile.json")
 
 	defer stackFileJSONClean()
 
@@ -117,30 +116,28 @@ StackPolicy:
 
 }
 
-func generateTmpFileWithExt(content, ext string) (*os.File, string, func()) {
-	file, err := ioutil.TempFile("", "awless-at-tmpfile")
+func generateTmpFileWithName(content, filename string) (*os.File, string, func()) {
+	dir, err := ioutil.TempDir("", "awless-at-tmpdir")
 	if err != nil {
 		panic(err)
 	}
 
-	newFilePath := strings.Join([]string{file.Name(), ext}, ".")
-	if err = os.Rename(file.Name(), newFilePath); err != nil {
+	tmpfn := filepath.Join(dir, filename)
+	if err := ioutil.WriteFile(tmpfn, []byte(content), 0666); err != nil {
 		panic(err)
 	}
 
-	if file, err = os.Open(newFilePath); err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile(file.Name(), []byte(content), 0644); err != nil {
+	file, err := os.Open(tmpfn)
+	if err != nil {
 		panic(err)
 	}
 
 	cleanup := func() {
 		file.Close()
-		if err := os.Remove(file.Name()); err != nil {
+		if err := os.RemoveAll(dir); err != nil {
 			panic(err)
 		}
 	}
+
 	return file, file.Name(), cleanup
 }

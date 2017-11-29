@@ -1,6 +1,6 @@
 test:
 	@echo Running tests
-	@go test $$(go list ./... | grep -v /vendor/)
+	@go test ./...
 
 generate:
 	@echo Generating boilerplate code
