@@ -288,7 +288,7 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 		}
 		v = &ec2.AttributeBooleanValue{Value: &b}
 	case awsstringattribute:
-		str := fmt.Sprint(v)
+		str := castString(v)
 		v = &ec2.AttributeValue{Value: &str}
 	case awsstringpointermap:
 		matches := mapAttributeRegex.FindStringSubmatch(fieldPath)

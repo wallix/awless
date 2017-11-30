@@ -461,6 +461,14 @@ var manualParamsDoc = map[string]map[string]string{
 		"min-ttl":         "The minimum amount of time that you want objects to stay in CloudFront caches before CloudFront forwards another request to your origin to determine whether the object has been updated",
 		"enable":          "Enable/Disable the distribution (True | False)",
 	},
+	"updateimage": {
+		"accounts":      "List (one or more) AWS account IDs",
+		"description":   "A new description for the AMI",
+		"id":            "The ID of the AMI",
+		"groups":        "List (one or more) user groups",
+		"operation":     "The operation type (add or remove) for launch permissions",
+		"product-codes": "One or more DevPay product codes. After adding a product code, it cannot be removed",
+	},
 	"updateinstance": {
 		"type": "Changes the instance type to the specified value",
 	},

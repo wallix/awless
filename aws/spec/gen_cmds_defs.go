@@ -164,6 +164,7 @@ var APIPerTemplateDefName = map[string]string{
 	"updatebucket":              "s3",
 	"updatecontainertask":       "ecs",
 	"updatedistribution":        "cloudfront",
+	"updateimage":               "ec2",
 	"updateinstance":            "ec2",
 	"updateloginprofile":        "iam",
 	"updatepolicy":              "iam",
@@ -1199,6 +1200,13 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		RequiredParams: []string{"id"},
 		ExtraParams:    []string{"certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-domain", "origin-path", "price-class"},
 	},
+	"updateimage": {
+		Action:         "update",
+		Entity:         "image",
+		Api:            "ec2",
+		RequiredParams: []string{"id"},
+		ExtraParams:    []string{"accounts", "description", "groups", "operation", "product-codes"},
+	},
 	"updateinstance": {
 		Action:         "update",
 		Entity:         "instance",
@@ -1282,5 +1290,5 @@ var DriverSupportedActions = map[string][]string{
 	"import":       {"image"},
 	"start":        {"alarm", "containertask", "instance"},
 	"stop":         {"alarm", "containertask", "instance"},
-	"update":       {"bucket", "containertask", "distribution", "instance", "loginprofile", "policy", "record", "s3object", "scalinggroup", "securitygroup", "stack", "subnet", "targetgroup"},
+	"update":       {"bucket", "containertask", "distribution", "image", "instance", "loginprofile", "policy", "record", "s3object", "scalinggroup", "securitygroup", "stack", "subnet", "targetgroup"},
 }

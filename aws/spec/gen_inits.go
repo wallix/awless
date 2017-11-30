@@ -333,6 +333,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewUpdateContainertask(f.Sess, f.Log) }
 	case "updatedistribution":
 		return func() interface{} { return NewUpdateDistribution(f.Sess, f.Log) }
+	case "updateimage":
+		return func() interface{} { return NewUpdateImage(f.Sess, f.Log) }
 	case "updateinstance":
 		return func() interface{} { return NewUpdateInstance(f.Sess, f.Log) }
 	case "updateloginprofile":
@@ -504,6 +506,7 @@ var (
 	_ command = &UpdateBucket{}
 	_ command = &UpdateContainertask{}
 	_ command = &UpdateDistribution{}
+	_ command = &UpdateImage{}
 	_ command = &UpdateInstance{}
 	_ command = &UpdateLoginprofile{}
 	_ command = &UpdatePolicy{}

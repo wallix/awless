@@ -64,6 +64,82 @@ func (cmd *CreateImage) ExtractResult(i interface{}) string {
 	return awssdk.StringValue(i.(*ec2.CreateImageOutput).ImageId)
 }
 
+type UpdateImage struct {
+	_            string `action:"update" entity:"image" awsAPI:"ec2" awsDryRun:"manual"`
+	logger       *logger.Logger
+	api          ec2iface.EC2API
+	Id           *string   `awsName:"ImageId" awsType:"awsstr" templateName:"id" required:""`
+	Groups       []*string `awsName:"UserGroups" awsType:"awsstringslice" templateName:"groups"`
+	Accounts     []*string `awsName:"UserIds" awsType:"awsstringslice" templateName:"accounts"`
+	Operation    *string   `awsName:"OperationType" awsType:"awsstr" templateName:"operation"`
+	ProductCodes []*string `awsName:"ProductCodes" awsType:"awsstringslice" templateName:"product-codes"`
+	Description  *string   `awsName:"Description" awsType:"awsstringattribute" templateName:"description"`
+}
+
+func (cmd *UpdateImage) ValidateParams(params []string) ([]string, error) {
+	return paramRule{
+		tree: allOf(node("id"), oneOf(allOf(node("operation"), oneOf(node("accounts"), node("groups"))), node("product-codes"), node("description"))),
+	}.verify(params)
+}
+
+func (cmd *UpdateImage) prepareImageAttributeInput(ctx map[string]interface{}) (*ec2.ModifyImageAttributeInput, error) {
+	input := &ec2.ModifyImageAttributeInput{}
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("cannot inject in ec2.ModifyImageAttributeInput: %s", err)
+	}
+	if cmd.Accounts != nil || cmd.Groups != nil {
+		input.SetAttribute("launchPermission")
+	}
+	if cmd.ProductCodes != nil {
+		input.SetAttribute("productCodes")
+	}
+	if cmd.Description != nil {
+		input.SetAttribute("description")
+	}
+	return input, nil
+}
+
+func (cmd *UpdateImage) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+	input, err := cmd.prepareImageAttributeInput(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("cannot inject in ec2.ModifyImageAttributeInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.ModifyImageAttribute(input)
+	cmd.logger.ExtraVerbosef("ec2.ModifyImageAttributeInput call took %s", time.Since(start))
+	return output, err
+}
+
+func (cmd *UpdateImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+	}
+	input, err := cmd.prepareImageAttributeInput(ctx)
+	if err != nil {
+		return nil, err
+	}
+	input.SetDryRun(true)
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("dry run: cannot inject in ec2.ModifyImageAttributeInput: %s", err)
+	}
+
+	start := time.Now()
+	_, err = cmd.api.ModifyImageAttribute(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			cmd.logger.ExtraVerbosef("dry run: ec2.ec2.ModifyImageAttribute call took %s", time.Since(start))
+			cmd.logger.Verbose("dry run: update image ok")
+			return fakeDryRunId("image"), nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: %s", err)
+}
+
 type CopyImage struct {
 	_            string `action:"copy" entity:"image" awsAPI:"ec2" awsCall:"CopyImage" awsInput:"ec2.CopyImageInput" awsOutput:"ec2.CopyImageOutput" awsDryRun:""`
 	logger       *logger.Logger

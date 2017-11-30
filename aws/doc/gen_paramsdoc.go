@@ -531,6 +531,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":            "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run in your service",
 	},
 	"updatedistribution": {},
+	"updateimage":        {},
 	"updateinstance": {
 		"id":   "The ID of the instance",
 		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",

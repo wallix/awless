@@ -930,6 +930,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(cloudfrontiface.CloudFrontAPI))
 			return cmd
 		}
+	case "updateimage":
+		return func() interface{} {
+			cmd := awsspec.NewUpdateImage(nil, f.Logger)
+			cmd.SetApi(f.Mock.(ec2iface.EC2API))
+			return cmd
+		}
 	case "updateinstance":
 		return func() interface{} {
 			cmd := awsspec.NewUpdateInstance(nil, f.Logger)

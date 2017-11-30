@@ -13151,6 +13151,82 @@ func (cmd *UpdateDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
+func NewUpdateImage(sess *session.Session, l ...*logger.Logger) *UpdateImage {
+	cmd := new(UpdateImage)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = ec2.New(sess)
+	}
+	return cmd
+}
+
+func (cmd *UpdateImage) SetApi(api ec2iface.EC2API) {
+	cmd.api = api
+}
+
+func (cmd *UpdateImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(ctx); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	output, err := cmd.ManualRun(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			cmd.logger.Warning("update image: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		cmd.logger.Verbosef("update image '%s' done", extracted)
+	} else {
+		cmd.logger.Verbose("update image done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(ctx, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *UpdateImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
+	if err := cmd.inject(params); err != nil {
+		return []error{err}
+	}
+	if err := validateStruct(cmd, refs); err != nil {
+		errs = append(errs, err)
+	}
+
+	return
+}
+
+func (cmd *UpdateImage) ParamsHelp() string {
+	return generateParamsHelp("updateimage", structListParamsKeys(cmd))
+}
+
+func (cmd *UpdateImage) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
 func NewUpdateInstance(sess *session.Session, l ...*logger.Logger) *UpdateInstance {
 	cmd := new(UpdateInstance)
 	if len(l) > 0 {
