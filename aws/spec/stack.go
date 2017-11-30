@@ -119,7 +119,7 @@ type stackFile struct {
 
 func processStackFile(stackFilePath, policyFile *string, parameters, tags []*string) (newParams, newTags []*string, policyData *string, err error) {
 	if stackFilePath == nil {
-		return parameters, tags, policyFile, nil
+		return parameters, tags, nil, nil
 	}
 
 	data, err := readStackFile(*stackFilePath)
