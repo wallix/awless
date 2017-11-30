@@ -16,6 +16,7 @@ limitations under the License.
 package awsspec
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -33,12 +34,30 @@ type CreateImage struct {
 	api         ec2iface.EC2API
 	Name        *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
 	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
-	NoReboot    *bool   `awsName:"NoReboot" awsType:"awsbool" templateName:"no-reboot"`
+	Reboot      *bool   `awsName:"NoReboot" awsType:"awsbool" templateName:"reboot"`
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
 func (cmd *CreateImage) ValidateParams(params []string) ([]string, error) {
 	return validateParams(cmd, params)
+}
+
+func (cmd *CreateImage) Validate_Name() (err error) {
+	if name := cmd.Name; name != nil {
+		if len(*name) < 3 {
+			err = errors.New("should at least be 3 characters")
+		}
+	}
+	return
+}
+
+func (cmd *CreateImage) BeforeRun(ctx map[string]interface{}) error {
+	if reboot := cmd.Reboot; reboot != nil && *reboot {
+		cmd.Reboot = nil
+	} else {
+		cmd.Reboot = Bool(true) // so that ec2.CreateImageInput.NoReboot = true and therefore by default no reboot from AWS
+	}
+	return nil
 }
 
 func (cmd *CreateImage) ExtractResult(i interface{}) string {

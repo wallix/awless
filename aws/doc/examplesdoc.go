@@ -125,7 +125,7 @@ var cliExamplesDoc = map[string][]string{
 	},
 	"createimage": {
 		"awless create image instance=@my-instance-name name=redis-image description='redis prod image'",
-		"awless create image instance=i-0ee436a45561c04df name=redis-image no-reboot=true",
+		"awless create image instance=i-0ee436a45561c04df name=redis-image reboot=true",
 		"awless create image instance=@redis-prod name=redis-prod-image",
 	},
 	"createinstance": {

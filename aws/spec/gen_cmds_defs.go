@@ -462,7 +462,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "image",
 		Api:            "ec2",
 		RequiredParams: []string{"instance", "name"},
-		ExtraParams:    []string{"description", "no-reboot"},
+		ExtraParams:    []string{"description", "reboot"},
 	},
 	"createinstance": {
 		Action:         "create",

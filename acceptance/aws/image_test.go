@@ -8,17 +8,32 @@ import (
 
 func TestImage(t *testing.T) {
 	t.Run("create", func(t *testing.T) {
-		Template("create image name=my-image-name instance=my-instance-id no-reboot=true description='an new image'").
-			Mock(&ec2Mock{
-				CreateImageFunc: func(param0 *ec2.CreateImageInput) (*ec2.CreateImageOutput, error) {
-					return &ec2.CreateImageOutput{ImageId: String("new-image-id")}, nil
-				},
-			}).ExpectInput("CreateImage", &ec2.CreateImageInput{
-			Name:        String("my-image-name"),
-			InstanceId:  String("my-instance-id"),
-			Description: String("an new image"),
-			NoReboot:    Bool(true),
-		}).ExpectCommandResult("new-image-id").ExpectCalls("CreateImage").Run(t)
+		t.Run("with reboot", func(t *testing.T) {
+			Template("create image name=my-image-name instance=my-instance-id reboot=true description='an new image'").
+				Mock(&ec2Mock{
+					CreateImageFunc: func(param0 *ec2.CreateImageInput) (*ec2.CreateImageOutput, error) {
+						return &ec2.CreateImageOutput{ImageId: String("new-image-id")}, nil
+					},
+				}).ExpectInput("CreateImage", &ec2.CreateImageInput{
+				Name:        String("my-image-name"),
+				InstanceId:  String("my-instance-id"),
+				Description: String("an new image"),
+			}).ExpectCommandResult("new-image-id").ExpectCalls("CreateImage").Run(t)
+		})
+
+		t.Run("with no reboot", func(t *testing.T) {
+			Template("create image name=my-image-name instance=my-instance-id description='an new image'").
+				Mock(&ec2Mock{
+					CreateImageFunc: func(param0 *ec2.CreateImageInput) (*ec2.CreateImageOutput, error) {
+						return &ec2.CreateImageOutput{ImageId: String("new-image-id")}, nil
+					},
+				}).ExpectInput("CreateImage", &ec2.CreateImageInput{
+				Name:        String("my-image-name"),
+				InstanceId:  String("my-instance-id"),
+				Description: String("an new image"),
+				NoReboot:    Bool(true),
+			}).ExpectCommandResult("new-image-id").ExpectCalls("CreateImage").Run(t)
+		})
 	})
 
 	t.Run("copy", func(t *testing.T) {

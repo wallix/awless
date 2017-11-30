@@ -212,6 +212,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"image":  "The ID of an AMI for the instance to be launched",
 		"distro": "The distro query to resolve official community bare distro AMI from current region. See `awless search images -h`",
 	},
+	"createimage": {
+		"reboot": "True to shut down and reboot the instance before creating the image, otherwise no reboot and file system integrity on the created image cannot be guaranteed",
+	},
 	"createkeypair": {
 		"name":      "The name of the keypair to create (it will also be the name of the file stored in ~/.awless/keys)",
 		"encrypted": "Set to 'true' if you want to encrypt the keypair"},

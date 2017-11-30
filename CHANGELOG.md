@@ -4,7 +4,7 @@
 
 - Create an image from an existing instance. See `awless create image -h`
     * `awless create image instance=@my-instance-name name=redis-image  description='redis prod image'`
-    * `awless create image instance=i-0ee436a45561c04df name=redis-image no-reboot=true`
+    * `awless create image instance=i-0ee436a45561c04df name=redis-image reboot=true`
     * List your images with `awless ls images --sort created`
     * Delete images with an `awless revert ...` or with `awless delete image id=@redis-image`
 
