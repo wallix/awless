@@ -27,6 +27,24 @@ import (
 	"github.com/wallix/awless/logger"
 )
 
+type CreateImage struct {
+	_           string `action:"create" entity:"image" awsAPI:"ec2" awsCall:"CreateImage" awsInput:"ec2.CreateImageInput" awsOutput:"ec2.CreateImageOutput" awsDryRun:"true"`
+	logger      *logger.Logger
+	api         ec2iface.EC2API
+	Name        *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
+	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
+	NoReboot    *bool   `awsName:"NoReboot" awsType:"awsbool" templateName:"no-reboot"`
+	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
+}
+
+func (cmd *CreateImage) ValidateParams(params []string) ([]string, error) {
+	return validateParams(cmd, params)
+}
+
+func (cmd *CreateImage) ExtractResult(i interface{}) string {
+	return awssdk.StringValue(i.(*ec2.CreateImageOutput).ImageId)
+}
+
 type CopyImage struct {
 	_            string `action:"copy" entity:"image" awsAPI:"ec2" awsCall:"CopyImage" awsInput:"ec2.CopyImageInput" awsOutput:"ec2.CopyImageOutput" awsDryRun:""`
 	logger       *logger.Logger

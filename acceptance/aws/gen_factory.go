@@ -294,6 +294,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(iamiface.IAMAPI))
 			return cmd
 		}
+	case "createimage":
+		return func() interface{} {
+			cmd := awsspec.NewCreateImage(nil, f.Logger)
+			cmd.SetApi(f.Mock.(ec2iface.EC2API))
+			return cmd
+		}
 	case "createinstance":
 		return func() interface{} {
 			cmd := awsspec.NewCreateInstance(nil, f.Logger)

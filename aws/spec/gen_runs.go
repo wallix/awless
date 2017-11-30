@@ -3551,6 +3551,113 @@ func (cmd *CreateGroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
+func NewCreateImage(sess *session.Session, l ...*logger.Logger) *CreateImage {
+	cmd := new(CreateImage)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = ec2.New(sess)
+	}
+	return cmd
+}
+
+func (cmd *CreateImage) SetApi(api ec2iface.EC2API) {
+	cmd.api = api
+}
+
+func (cmd *CreateImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(ctx); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	input := &ec2.CreateImageInput{}
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("cannot inject in ec2.CreateImageInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.CreateImage(input)
+	cmd.logger.ExtraVerbosef("ec2.CreateImage call took %s", time.Since(start))
+	if err != nil {
+		return nil, err
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			cmd.logger.Warning("create image: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		cmd.logger.Verbosef("create image '%s' done", extracted)
+	} else {
+		cmd.logger.Verbose("create image done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(ctx, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *CreateImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
+	if err := cmd.inject(params); err != nil {
+		return []error{err}
+	}
+	if err := validateStruct(cmd, refs); err != nil {
+		errs = append(errs, err)
+	}
+
+	return
+}
+
+func (cmd *CreateImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+	}
+
+	input := &ec2.CreateImageInput{}
+	input.SetDryRun(true)
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateImageInput: %s", err)
+	}
+
+	start := time.Now()
+	_, err := cmd.api.CreateImage(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			cmd.logger.ExtraVerbosef("dry run: ec2.CreateImage call took %s", time.Since(start))
+			cmd.logger.Verbose("dry run: create image ok")
+			return fakeDryRunId("image"), nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: %s", err)
+}
+
+func (cmd *CreateImage) ParamsHelp() string {
+	return generateParamsHelp("createimage", structListParamsKeys(cmd))
+}
+
+func (cmd *CreateImage) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
 func NewCreateInstance(sess *session.Session, l ...*logger.Logger) *CreateInstance {
 	cmd := new(CreateInstance)
 	if len(l) > 0 {

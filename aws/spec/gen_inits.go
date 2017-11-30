@@ -121,6 +121,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewCreateFunction(f.Sess, f.Log) }
 	case "creategroup":
 		return func() interface{} { return NewCreateGroup(f.Sess, f.Log) }
+	case "createimage":
+		return func() interface{} { return NewCreateImage(f.Sess, f.Log) }
 	case "createinstance":
 		return func() interface{} { return NewCreateInstance(f.Sess, f.Log) }
 	case "createinstanceprofile":
@@ -396,6 +398,7 @@ var (
 	_ command = &CreateElasticip{}
 	_ command = &CreateFunction{}
 	_ command = &CreateGroup{}
+	_ command = &CreateImage{}
 	_ command = &CreateInstance{}
 	_ command = &CreateInstanceprofile{}
 	_ command = &CreateInternetgateway{}

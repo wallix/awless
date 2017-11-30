@@ -151,6 +151,12 @@ var generatedParamsDoc = map[string]map[string]string{
 	"creategroup": {
 		"name": "The name of the group to create",
 	},
+	"createimage": {
+		"description": "A description for the new image",
+		"instance":    "The ID of the instance",
+		"name":        "A name for the new image",
+		"no-reboot":   "By default, Amazon EC2 attempts to shut down and reboot the instance before creating the image",
+	},
 	"createinstance": {
 		"image":         "The ID of the AMI, which you can get by calling DescribeImages",
 		"ip":            "The primary IPv4 address",

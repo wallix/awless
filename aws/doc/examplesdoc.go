@@ -123,6 +123,11 @@ var cliExamplesDoc = map[string][]string{
 	"creategroup": {
 		"awless create name=admins",
 	},
+	"createimage": {
+		"awless create image instance=@my-instance-name name=redis-image description='redis prod image'",
+		"awless create image instance=i-0ee436a45561c04df name=redis-image no-reboot=true",
+		"awless create image instance=@redis-prod name=redis-prod-image",
+	},
 	"createinstance": {
 		"awless create instance keypair=jsmith type=t2.micro subnet=@my-subnet",
 		"awless create instance image=ami-123456 keypair=jsmith",
