@@ -41,7 +41,7 @@ var ColumnsInListing = map[string][]string{
 	cloud.LoadBalancer:        {properties.Name, properties.Vpc, properties.State, properties.PublicDNS, properties.Created, properties.Scheme},
 	cloud.TargetGroup:         {properties.Name, properties.Vpc, properties.CheckHTTPCode, properties.Port, properties.Protocol, properties.CheckInterval, properties.CheckPath, properties.CheckPort, properties.CheckProtocol},
 	cloud.Listener:            {properties.ID, properties.AlarmActions, properties.LoadBalancer, properties.Port, properties.Protocol, properties.CipherSuite},
-	cloud.Database:            {properties.ID, properties.Name, properties.AvailabilityZone, properties.Class, properties.State, properties.Storage, properties.Port, properties.Username, properties.Public, properties.Engine, properties.EngineVersion, properties.Created},
+	cloud.Database:            {properties.ID, properties.Name, properties.AvailabilityZone, properties.Class, properties.State, properties.Storage, properties.Port, properties.Username, properties.Public, properties.ReplicaOf, properties.Engine, properties.EngineVersion, properties.Created},
 	cloud.DbSubnetGroup:       {properties.ID, properties.State, properties.Vpc, properties.Subnets, properties.Description},
 	cloud.LaunchConfiguration: {properties.Name, properties.Type, properties.Created, properties.KeyPair},
 	cloud.ScalingGroup:        {properties.Name, properties.LaunchConfigurationName, properties.DesiredCapacity, properties.State, properties.Created, properties.NewInstancesProtected},
@@ -254,6 +254,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: properties.Public},
 			ColoredValues:          map[string]color.Attribute{"true": color.FgYellow}},
+		StringColumnDefinition{Prop: properties.ReplicaOf, Friendly: "Replica Of"},
 		StringColumnDefinition{Prop: properties.Engine},
 		StringColumnDefinition{Prop: properties.EngineVersion, Friendly: "Version"},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},

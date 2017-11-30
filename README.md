@@ -1,7 +1,9 @@
+
+
 [![Build Status](https://api.travis-ci.org/wallix/awless.svg?branch=master)](https://travis-ci.org/wallix/awless)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wallix/awless)](https://goreportcard.com/report/github.com/wallix/awless)
 
-`awless` is a powerful, innovative and small surface command line interface (CLI) to manage Amazon Web Services.
+<img src="https://user-images.githubusercontent.com/808274/33351381-5b9a0d00-d458-11e7-91ed-cf7ada7237c1.png" alt="terminal icon" width="48"> `awless` is a powerful, innovative and small surface command line interface (CLI) to manage Amazon Web Services.
 
 [Twitter](http://twitter.com/awlessCLI) | [Wiki](https://github.com/wallix/awless/wiki) | [Changelog](https://github.com/wallix/awless/blob/master/CHANGELOG.md#readme)
 
@@ -44,6 +46,7 @@ Choose one of the following options:
 - Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=http://...` 
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
+- Create instances with a specific community bare distribution independently of the AWS region: `awless create instance distro=debian ...`
 - Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
 - Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --latest-id`
 - Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember

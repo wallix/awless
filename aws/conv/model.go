@@ -258,6 +258,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.StorageType:               {name: "StorageType", transform: extractValueFn},
 		properties.Timezone:                  {name: "Timezone", transform: extractValueFn},
 		properties.SecurityGroups:            {name: "VpcSecurityGroups", transform: extractStringSliceValues("VpcSecurityGroupId")},
+		properties.ReplicaOf:                 {name: "ReadReplicaSourceDBInstanceIdentifier", transform: extractValueFn},
 	},
 	cloud.DbSubnetGroup: {
 		properties.Name:        {name: "DBSubnetGroupName", transform: extractValueFn},

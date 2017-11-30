@@ -16,6 +16,7 @@ limitations under the License.
 package awsspec
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -26,6 +27,42 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/logger"
 )
+
+type CreateImage struct {
+	_           string `action:"create" entity:"image" awsAPI:"ec2" awsCall:"CreateImage" awsInput:"ec2.CreateImageInput" awsOutput:"ec2.CreateImageOutput" awsDryRun:"true"`
+	logger      *logger.Logger
+	api         ec2iface.EC2API
+	Name        *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
+	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
+	Reboot      *bool   `awsName:"NoReboot" awsType:"awsbool" templateName:"reboot"`
+	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
+}
+
+func (cmd *CreateImage) ValidateParams(params []string) ([]string, error) {
+	return validateParams(cmd, params)
+}
+
+func (cmd *CreateImage) Validate_Name() (err error) {
+	if name := cmd.Name; name != nil {
+		if len(*name) < 3 {
+			err = errors.New("should at least be 3 characters")
+		}
+	}
+	return
+}
+
+func (cmd *CreateImage) BeforeRun(ctx map[string]interface{}) error {
+	if reboot := cmd.Reboot; reboot != nil && *reboot {
+		cmd.Reboot = nil
+	} else {
+		cmd.Reboot = Bool(true) // so that ec2.CreateImageInput.NoReboot = true and therefore by default no reboot from AWS
+	}
+	return nil
+}
+
+func (cmd *CreateImage) ExtractResult(i interface{}) string {
+	return awssdk.StringValue(i.(*ec2.CreateImageOutput).ImageId)
+}
 
 type CopyImage struct {
 	_            string `action:"copy" entity:"image" awsAPI:"ec2" awsCall:"CopyImage" awsInput:"ec2.CopyImageInput" awsOutput:"ec2.CopyImageOutput" awsDryRun:""`

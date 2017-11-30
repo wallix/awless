@@ -176,6 +176,7 @@ const (
 	Records                           = "Records"
 	Region                            = "Region"
 	RegisteredContainerInstancesCount = "RegisteredContainerInstancesCount"
+	ReplicaOf                         = "ReplicaOf"
 	Role                              = "Role"
 	Roles                             = "Roles"
 	RootDevice                        = "RootDevice"

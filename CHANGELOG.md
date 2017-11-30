@@ -1,3 +1,24 @@
+## v0.1.9 [unreleased]
+
+### Features
+
+- Create an image from an existing instance. See `awless create image -h`
+    * `awless create image instance=@my-instance-name name=redis-image  description='redis prod image'`
+    * `awless create image instance=i-0ee436a45561c04df name=redis-image reboot=true`
+    * List your images with `awless ls images --sort created`
+    * Delete images with an `awless revert ...` or with `awless delete image id=@redis-image`
+
+## v0.1.8 [2017-11-29]
+
+### Features
+
+- Better prompting of template parameters
+- Overall better logging output of template execution
+
+### AWS Services
+
+- Create a database replica with: `awless create database replica=...`
+
 ## v0.1.7 [2017-11-24]
 
 ### Features

@@ -72,6 +72,18 @@ func (cmd *UpdateSecuritygroup) Validate_CIDR() error {
 	return err
 }
 
+// Fail fast when protocol is TCP/UDP and port range is missing, instead of waiting
+// for AWS server validation error:
+//     InvalidParameterValue: Invalid value 'Must specify both from and to ports with TCP/UDP.' for portRange.
+func (cmd *UpdateSecuritygroup) Validate_Protocol() error {
+	if p := cmd.Protocol; p != nil {
+		if isTCPorUDP(*p) && cmd.Portrange == nil {
+			return errors.New("missing 'portrange' when protocol is TCP/UDP")
+		}
+	}
+	return nil
+}
+
 func (cmd *UpdateSecuritygroup) Validate_Inbound() error {
 	return NewEnumValidator("authorize", "revoke").Validate(cmd.Inbound)
 }
@@ -311,7 +323,6 @@ func (cmd *DetachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface
 }
 
 func (cmd *UpdateSecuritygroup) buildIpPermissions() ([]*ec2.IpPermission, error) {
-
 	ipPerm := &ec2.IpPermission{}
 	if cidr := cmd.CIDR; cidr != nil {
 		ipPerm.IpRanges = []*ec2.IpRange{{CidrIp: cidr}}
@@ -329,37 +340,44 @@ func (cmd *UpdateSecuritygroup) buildIpPermissions() ([]*ec2.IpPermission, error
 		return []*ec2.IpPermission{ipPerm}, nil
 	}
 	ipPerm.IpProtocol = String(p)
-	ports := StringValue(cmd.Portrange)
-	switch {
-	case strings.Contains(ports, "any"):
-		if strings.ToLower(p) == "tcp" || strings.ToLower(p) == "udp" {
-			ipPerm.FromPort = Int64(int64(0))
-			ipPerm.ToPort = Int64(int64(65535))
-		} else {
-			ipPerm.FromPort = Int64(int64(-1))
-			ipPerm.ToPort = Int64(int64(-1))
+
+	if pRange := cmd.Portrange; pRange != nil {
+		ports := *pRange
+		switch {
+		case strings.Contains(ports, "any"):
+			if isTCPorUDP(p) {
+				ipPerm.FromPort = Int64(int64(0))
+				ipPerm.ToPort = Int64(int64(65535))
+			} else {
+				ipPerm.FromPort = Int64(int64(-1))
+				ipPerm.ToPort = Int64(int64(-1))
+			}
+		case strings.Contains(ports, "-"):
+			from, err := strconv.ParseInt(strings.SplitN(ports, "-", 2)[0], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			to, err := strconv.ParseInt(strings.SplitN(ports, "-", 2)[1], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			ipPerm.FromPort = Int64(from)
+			ipPerm.ToPort = Int64(to)
+		default:
+			port, err := strconv.ParseInt(ports, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			ipPerm.FromPort = Int64(port)
+			ipPerm.ToPort = Int64(port)
 		}
-	case strings.Contains(ports, "-"):
-		from, err := strconv.ParseInt(strings.SplitN(ports, "-", 2)[0], 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		to, err := strconv.ParseInt(strings.SplitN(ports, "-", 2)[1], 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		ipPerm.FromPort = Int64(from)
-		ipPerm.ToPort = Int64(to)
-	default:
-		port, err := strconv.ParseInt(ports, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		ipPerm.FromPort = Int64(port)
-		ipPerm.ToPort = Int64(port)
 	}
 
 	return []*ec2.IpPermission{ipPerm}, nil
+}
+
+func isTCPorUDP(p string) bool {
+	return strings.ToLower(p) == "tcp" || strings.ToLower(p) == "udp"
 }
 
 func fetchInstanceSecurityGroups(api ec2iface.EC2API, id string) ([]string, error) {
