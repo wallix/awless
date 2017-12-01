@@ -127,6 +127,10 @@ func processStackFile(stackFilePath, policyFile *string, parameters, tags []*str
 		return nil, nil, nil, err
 	}
 
+	if data == nil {
+		return parameters, tags, nil, nil
+	}
+
 	newParams = mergeCliAndFileValues(data.Parameters, parameters)
 	newTags = mergeCliAndFileValues(data.Tags, tags)
 
@@ -152,12 +156,27 @@ func readStackFile(p string) (sf *stackFile, err error) {
 	switch path.Ext(p) {
 	case ".json":
 		err = json.Unmarshal(file, &sf)
+		if err != nil {
+			// Result error message:
+			// [info]    KO update stack
+			// before run:
+			// json: unmarshal errors:
+			//   invalid character '}' looking for beginning of object key string
+			return nil, fmt.Errorf("\njson: unmarshal errors:\n  %s", err)
+		}
 	case ".yml", ".yaml":
 		err = yaml.Unmarshal(file, &sf)
+		if err != nil {
+			// Result error message:
+			// [info]    KO update stack
+			// before run:
+			// yaml: unmarshal errors:
+			//   line 1: cannot unmarshal !!str `lalla` into awsspec.stackFile
+			return nil, fmt.Errorf("\n%s", err)
+		}
 	default:
-		return nil, fmt.Errorf("Unknown StackFile format %s", path.Ext(p))
+		return nil, fmt.Errorf("Unknown StackFile format %q. Should be \".json\", \".yml\" or \".yaml\"", path.Ext(p))
 	}
-
 	return sf, err
 }
 
