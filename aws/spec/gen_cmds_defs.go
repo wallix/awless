@@ -630,7 +630,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "stack",
 		Api:            "cloudformation",
 		RequiredParams: []string{"name", "template-file"},
-		ExtraParams:    []string{"capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "timeout"},
+		ExtraParams:    []string{"capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout"},
 	},
 	"createsubnet": {
 		Action:         "create",
@@ -1253,7 +1253,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity:         "stack",
 		Api:            "cloudformation",
 		RequiredParams: []string{"name"},
-		ExtraParams:    []string{"capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "template-file", "use-previous-template"},
+		ExtraParams:    []string{"capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "stack-file", "tags", "template-file", "use-previous-template"},
 	},
 	"updatesubnet": {
 		Action:         "update",

@@ -1,6 +1,9 @@
 package awsat
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -63,4 +66,78 @@ func TestStack(t *testing.T) {
 			RetainResources: []*string{String("1"), String("2")},
 		}).ExpectCalls("DeleteStack").Run(t)
 	})
+
+	_, stackFileYMLPath, stackFileYMLClean := generateTmpFileWithName(`
+Parameters:
+  Test1: 1
+  Test2: 2
+  Test3: 3
+Tags:
+  Tag1: 1
+  Tag2: 2
+  Tag3: 3
+StackPolicy:
+  Statement:
+  - Effect: Allow
+    Resource: "*"
+`, "stackfile.yml")
+
+	defer stackFileYMLClean()
+
+	t.Run("update", func(t *testing.T) {
+		Template("update stack name=some-stack template-file="+tplFilePath+" stack-file="+stackFileYMLPath+" parameters=Test1:a,Test2:b tags=Tag1:a,Tag2:b policy-file="+polFilePath).Mock(&cloudformationMock{
+			UpdateStackFunc: func(input *cloudformation.UpdateStackInput) (*cloudformation.UpdateStackOutput, error) {
+				return &cloudformation.UpdateStackOutput{StackId: String("any-stack-id")}, nil
+			}}).ExpectInput("UpdateStack", &cloudformation.UpdateStackInput{
+			StackName:       String("some-stack"),
+			TemplateBody:    String("tpl body content"),
+			Parameters:      []*cloudformation.Parameter{{ParameterKey: String("Test1"), ParameterValue: String("a")}, {ParameterKey: String("Test2"), ParameterValue: String("b")}, {ParameterKey: String("Test3"), ParameterValue: String("3")}},
+			Tags:            []*cloudformation.Tag{{Key: String("Tag1"), Value: String("a")}, {Key: String("Tag2"), Value: String("b")}, {Key: String("Tag3"), Value: String("3")}},
+			StackPolicyBody: String("policy content"),
+		}).ExpectCalls("UpdateStack").Run(t)
+	})
+
+	_, stackFileJSONPath, stackFileJSONClean := generateTmpFileWithName(`{"Parameters":{"Test1":"1","Test2":"2","Test3":"3"},"Tags":{"Tag1":"1","Tag2":"2","Tag3":"3"},"StackPolicy":{"Statement":[{"Effect":"Allow","Resource":"*"}]}}`, "stackfile.json")
+
+	defer stackFileJSONClean()
+
+	t.Run("update", func(t *testing.T) {
+		Template("update stack name=some-stack template-file="+tplFilePath+" stack-file="+stackFileJSONPath+" parameters=Test1:a,Test2:b tags=Tag1:a,Tag2:b").Mock(&cloudformationMock{
+			UpdateStackFunc: func(input *cloudformation.UpdateStackInput) (*cloudformation.UpdateStackOutput, error) {
+				return &cloudformation.UpdateStackOutput{StackId: String("any-stack-id")}, nil
+			}}).ExpectInput("UpdateStack", &cloudformation.UpdateStackInput{
+			StackName:       String("some-stack"),
+			TemplateBody:    String("tpl body content"),
+			Parameters:      []*cloudformation.Parameter{{ParameterKey: String("Test1"), ParameterValue: String("a")}, {ParameterKey: String("Test2"), ParameterValue: String("b")}, {ParameterKey: String("Test3"), ParameterValue: String("3")}},
+			Tags:            []*cloudformation.Tag{{Key: String("Tag1"), Value: String("a")}, {Key: String("Tag2"), Value: String("b")}, {Key: String("Tag3"), Value: String("3")}},
+			StackPolicyBody: String(`{"Statement":[{"Effect":"Allow","Resource":"*"}]}`),
+		}).ExpectCalls("UpdateStack").Run(t)
+	})
+
+}
+
+func generateTmpFileWithName(content, filename string) (*os.File, string, func()) {
+	dir, err := ioutil.TempDir("", "awless-at-tmpdir")
+	if err != nil {
+		panic(err)
+	}
+
+	tmpfn := filepath.Join(dir, filename)
+	if err := ioutil.WriteFile(tmpfn, []byte(content), 0666); err != nil {
+		panic(err)
+	}
+
+	file, err := os.Open(tmpfn)
+	if err != nil {
+		panic(err)
+	}
+
+	cleanup := func() {
+		file.Close()
+		if err := os.RemoveAll(dir); err != nil {
+			panic(err)
+		}
+	}
+
+	return file, file.Name(), cleanup
 }

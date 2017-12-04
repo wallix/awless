@@ -68,6 +68,7 @@ const (
 	awscsvstr           = "awscsvstr"
 	aws6digitsstring    = "aws6digitsstring"
 	awsbyteslice        = "awsbyteslice"
+	awstagslice         = "awstagslice"
 )
 
 var (
@@ -347,6 +348,18 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 		awsutil.SetValueAtPath(elemToSet.Interface(), matches[2], v)
 
 		return nil
+	case awstagslice:
+		sl := castStringSlice(v)
+		var tags []*cloudformation.Tag
+		for _, s := range sl {
+			splits := strings.SplitN(s, ":", 2)
+			if len(splits) != 2 {
+				return fmt.Errorf("invalid tag '%s', expected 'key:value'", s)
+			}
+			tags = append(tags, &cloudformation.Tag{Key: aws.String(splits[0]), Value: aws.String(splits[1])})
+		}
+
+		v = tags
 	}
 	awsutil.SetValueAtPath(i, fieldPath, v)
 	return nil

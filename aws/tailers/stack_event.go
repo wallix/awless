@@ -74,7 +74,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid polling frequency: %s, must be greater than 5s", t.pollingFrequency)
 	}
 
-	tab := tabwriter.NewWriter(w, 25, 8, 0, '\t', 0)
+	tab := tabwriter.NewWriter(w, 8, 8, 8, '\t', 0)
 	tab.Write(t.filters.header())
 
 	if !t.follow {
@@ -284,12 +284,14 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 
 func coloredResourceStatus(str string) string {
 	switch {
+	case strings.HasSuffix(str, StackEventFailed),
+		str == cloudformation.StackStatusUpdateRollbackInProgress,
+		str == cloudformation.StackStatusRollbackInProgress:
+		return color.New(color.FgRed).SprintFunc()(str)
 	case strings.HasSuffix(str, StackEventInProgress):
 		return color.New(color.FgYellow).SprintFunc()(str)
 	case strings.HasSuffix(str, StackEventComplete):
 		return color.New(color.FgGreen).SprintFunc()(str)
-	case strings.HasSuffix(str, StackEventFailed):
-		return color.New(color.FgRed).SprintFunc()(str)
 	default:
 		return str
 	}
@@ -375,7 +377,7 @@ func (s *stackEvent) isDeploymentFinished() bool {
 }
 
 func (s *stackEvent) isFailed() bool {
-	return (s.ResourceStatus != nil && strings.HasSuffix(*s.ResourceStatus, StackEventFailed))
+	return (s.ResourceStatus != nil && (strings.HasSuffix(*s.ResourceStatus, StackEventFailed) || *s.ResourceStatus == cloudformation.StackStatusUpdateRollbackInProgress))
 }
 
 func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) error {
