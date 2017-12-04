@@ -150,7 +150,7 @@ func onVersionUpgrade(cmd *cobra.Command, args []string) error {
 		}
 		logger.Infof("You have just upgraded awless from %s to %s", lastVersion, config.Version)
 		migrationActionsAndExtraMessages(config.Version)
-		logger.Infof("Check out %s features at https://github.com/wallix/awless/releases", config.Version)
+		logger.Infof("Check out %s features at https://github.com/wallix/awless/blob/master/CHANGELOG.md", config.Version)
 	}
 
 	return nil
