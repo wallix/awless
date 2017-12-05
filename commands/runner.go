@@ -7,6 +7,7 @@ import (
 
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/aws/spec"
+	"github.com/wallix/awless/aws/spec/meta"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
@@ -56,6 +57,8 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 		}
 		return newCommandFunc()
 	}
+
+	runner.MetaLookuper = awsspecmeta.Lookuper
 
 	runner.BeforeRun = func(tplExec *template.TemplateExecution) (bool, error) {
 		var yesorno string

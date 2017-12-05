@@ -283,3 +283,35 @@ func TestExternallyProvidedParams(t *testing.T) {
 		}
 	}
 }
+
+func TestReplaceNodeByTemplate(t *testing.T) {
+	tpl1 := template.MustParse("create vpc\ncreate internetgateway vpc=@myvpc\ninst = create instance")
+	tpl2 := template.MustParse("create vpc\ninst = create instance\ncreate internetgateway vpc=@myvpc")
+	tcases := []struct {
+		inTpl         *template.Template
+		nodeToReplace ast.Node
+		replaceWith   *template.Template
+		expected      *template.Template
+	}{
+		{
+			inTpl:         tpl1,
+			nodeToReplace: tpl1.CommandNodesIterator()[1],
+			replaceWith:   template.MustParse("igw = create internetgateway\nattach internetgateway id=$igw vpc=@myvpc"),
+			expected:      template.MustParse("create vpc\nigw = create internetgateway\nattach internetgateway id=$igw vpc=@myvpc\ninst = create instance"),
+		},
+		{
+			inTpl:         tpl2,
+			nodeToReplace: tpl2.CommandNodesIterator()[2],
+			replaceWith:   template.MustParse("igw = create internetgateway\nattach internetgateway id=$igw vpc=@myvpc"),
+			expected:      template.MustParse("create vpc\ninst = create instance\nigw = create internetgateway\nattach internetgateway id=$igw vpc=@myvpc"),
+		},
+	}
+	for i, tcase := range tcases {
+		if err := tcase.inTpl.ReplaceNodeByTemplate(tcase.nodeToReplace, tcase.replaceWith); err != nil {
+			t.Fatalf("%d: %s", i+1, err)
+		}
+		if got, want := tcase.inTpl, tcase.expected; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d: got \n%s\nwant\n%s\n", i+1, got, want)
+		}
+	}
+}

@@ -243,6 +243,8 @@ func TestDistribution(t *testing.T) {
 			},
 		}).ExpectInput("GetDistribution", &cloudfront.GetDistributionInput{
 			Id: String("my-distribution-to-delete"),
+		}).ExpectInput("GetDistribution", &cloudfront.GetDistributionInput{
+			Id: String("my-distribution-to-delete"),
 		}).ExpectInput("DeleteDistribution", &cloudfront.DeleteDistributionInput{
 			Id:      String("my-distribution-to-delete"),
 			IfMatch: String("etag-distrib-to-delete"),

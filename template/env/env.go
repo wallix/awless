@@ -35,4 +35,5 @@ type Compiling interface {
 	ParamsMode() int
 	Push(int, ...map[string]interface{})
 	Get(int) map[string]interface{}
+	LookupMetaCommandFunc() func(string, string, []string) interface{}
 }

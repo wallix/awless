@@ -29,7 +29,7 @@ func TestVolume(t *testing.T) {
 	})
 
 	t.Run("check", func(t *testing.T) {
-		Template("check volume id=my-volume-id state=available timeout=0").Mock(&ec2Mock{
+		Template("check volume id=my-volume-id state=available timeout=2").Mock(&ec2Mock{
 			DescribeVolumesFunc: func(input *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
 				return &ec2.DescribeVolumesOutput{Volumes: []*ec2.Volume{
 					{VolumeId: String("my-volume-id"), State: String("available")},

@@ -217,6 +217,36 @@ func TestPolicy(t *testing.T) {
 		}).ExpectCalls("AttachRolePolicy").Run(t)
 	})
 
+	t.Run("attach services meta", func(t *testing.T) {
+		Template(
+			"attach policy group=administrators access=readonly services=ec2,rds").
+			Mock(&iamMock{
+				AttachGroupPolicyFunc: func(input *iam.AttachGroupPolicyInput) (*iam.AttachGroupPolicyOutput, error) {
+					return nil, nil
+				},
+			}).ExpectInput("AttachGroupPolicy", &iam.AttachGroupPolicyInput{
+			GroupName: String("administrators"),
+			PolicyArn: String("arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"),
+		}).ExpectInput("AttachGroupPolicy", &iam.AttachGroupPolicyInput{
+			GroupName: String("administrators"),
+			PolicyArn: String("arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess"),
+		}).ExpectCalls("AttachGroupPolicy", "AttachGroupPolicy").Run(t)
+
+		Template(
+			"attach policy user=fx access=full services=s3,autoscaling").
+			Mock(&iamMock{
+				AttachUserPolicyFunc: func(input *iam.AttachUserPolicyInput) (*iam.AttachUserPolicyOutput, error) {
+					return nil, nil
+				},
+			}).ExpectInput("AttachUserPolicy", &iam.AttachUserPolicyInput{
+			UserName:  String("fx"),
+			PolicyArn: String("arn:aws:iam::aws:policy/AmazonS3FullAccess"),
+		}).ExpectInput("AttachUserPolicy", &iam.AttachUserPolicyInput{
+			UserName:  String("fx"),
+			PolicyArn: String("arn:aws:iam::aws:policy/AutoScalingFullAccess"),
+		}).ExpectCalls("AttachUserPolicy", "AttachUserPolicy").Run(t)
+	})
+
 	t.Run("detach", func(t *testing.T) {
 		Template(
 			"detach policy group=administrators access=readonly service=ec2").

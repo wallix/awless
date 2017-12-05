@@ -17,6 +17,7 @@ type Runner struct {
 	AliasFunc                              func(paramPath, alias string) string
 	MissingHolesFunc                       func(string, []string, bool) string
 	CmdLookuper                            func(tokens ...string) interface{}
+	MetaLookuper                           func(string, string, []string) interface{}
 	Validators                             []Validator
 	ParamsSuggested                        int
 

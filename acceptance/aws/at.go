@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/aws/spec"
+	"github.com/wallix/awless/aws/spec/meta"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template"
@@ -16,7 +17,7 @@ type ATBuilder struct {
 	template     string
 	cmdResult    *string
 	expectCalls  map[string]int
-	expectInput  map[string]interface{}
+	expectInput  map[string][]interface{}
 	ignoredInput map[string]struct{}
 	expectRevert string
 	mock         mock
@@ -26,7 +27,7 @@ type ATBuilder struct {
 func Template(template string) *ATBuilder {
 	return &ATBuilder{template: template,
 		expectCalls:  make(map[string]int),
-		expectInput:  make(map[string]interface{}),
+		expectInput:  make(map[string][]interface{}),
 		ignoredInput: make(map[string]struct{}),
 	}
 }
@@ -44,7 +45,7 @@ func (b *ATBuilder) ExpectCalls(expects ...string) *ATBuilder {
 }
 
 func (b *ATBuilder) ExpectInput(call string, input interface{}) *ATBuilder {
-	b.expectInput[call] = input
+	b.expectInput[call] = append(b.expectInput[call], input)
 	return b
 }
 
@@ -87,7 +88,7 @@ func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 
 	cenv := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 		return awsspec.CommandFactory.Build(strings.Join(tokens, ""))()
-	}).Build()
+	}).WithLookupMetaCommandFunc(awsspecmeta.Lookuper).Build()
 	compiled, cenv, err := template.Compile(tpl, cenv, template.NewRunnerCompileMode)
 	if err != nil {
 		t.Fatal(err)

@@ -55,11 +55,17 @@ func (e *runEnv) Log() *logger.Logger {
 
 type compileEnv struct {
 	*dataMap
-	lookupCommandFunc func(...string) interface{}
-	aliasFunc         func(paramPath, alias string) string
-	missingHolesFunc  func(string, []string, bool) string
-	log               *logger.Logger
-	paramsSuggested   int
+	lookupCommandFunc                            func(...string) interface{}
+	aliasFunc                                    func(paramPath, alias string) string
+	missingHolesFunc                             func(string, []string, bool) string
+	log                                          *logger.Logger
+	paramsSuggested                              int
+	fillers, processedFillers, resolvedVariables map[string]interface{}
+	lookupMetaCommandFunc                        func(string, string, []string) interface{}
+}
+
+func (e *compileEnv) Log() *logger.Logger {
+	return e.log
 }
 
 func (e *compileEnv) LookupCommandFunc() func(...string) interface{} {
@@ -78,16 +84,16 @@ func (e *compileEnv) ParamsMode() int {
 	return e.paramsSuggested
 }
 
-func (e *compileEnv) Log() *logger.Logger {
-	return e.log
-}
-
 func NewEnv() *envBuilder {
 	b := &envBuilder{new(compileEnv)}
 	b.E.lookupCommandFunc = func(...string) interface{} { return nil }
 	b.E.log = logger.DiscardLogger
 	b.E.dataMap = new(dataMap)
 	return b
+}
+
+func (e *compileEnv) LookupMetaCommandFunc() func(string, string, []string) interface{} {
+	return e.lookupMetaCommandFunc
 }
 
 type dataMap struct {
@@ -145,6 +151,21 @@ func (b *envBuilder) WithLookupCommandFunc(fn func(...string) interface{}) *envB
 
 func (b *envBuilder) WithLog(l *logger.Logger) *envBuilder {
 	b.E.log = l
+	return b
+}
+
+func (b *envBuilder) WithLookupMetaCommandFunc(fn func(string, string, []string) interface{}) *envBuilder {
+	b.E.lookupMetaCommandFunc = fn
+	return b
+}
+
+func (b *envBuilder) WithFillers(maps ...map[string]interface{}) *envBuilder {
+	b.E.fillers = make(map[string]interface{})
+	for _, m := range maps {
+		for k, v := range m {
+			b.E.fillers[k] = v
+		}
+	}
 	return b
 }
 
