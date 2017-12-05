@@ -513,6 +513,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"names": "The names of the alarms",
 	},
 	"startcontainertask": {},
+	"startdatabase": {
+		"id": "Contains a user-supplied database identifier",
+	},
 	"startinstance": {
 		"id": "One or more instance IDs",
 	},
@@ -520,6 +523,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"names": "The names of the alarms",
 	},
 	"stopcontainertask": {},
+	"stopdatabase": {
+		"id": "Contains a user-supplied database identifier",
+	},
 	"stopinstance": {
 		"id": "One or more instance IDs",
 	},

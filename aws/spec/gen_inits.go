@@ -319,12 +319,16 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewStartAlarm(f.Sess, f.Log) }
 	case "startcontainertask":
 		return func() interface{} { return NewStartContainertask(f.Sess, f.Log) }
+	case "startdatabase":
+		return func() interface{} { return NewStartDatabase(f.Sess, f.Log) }
 	case "startinstance":
 		return func() interface{} { return NewStartInstance(f.Sess, f.Log) }
 	case "stopalarm":
 		return func() interface{} { return NewStopAlarm(f.Sess, f.Log) }
 	case "stopcontainertask":
 		return func() interface{} { return NewStopContainertask(f.Sess, f.Log) }
+	case "stopdatabase":
+		return func() interface{} { return NewStopDatabase(f.Sess, f.Log) }
 	case "stopinstance":
 		return func() interface{} { return NewStopInstance(f.Sess, f.Log) }
 	case "updatebucket":
@@ -499,9 +503,11 @@ var (
 	_ command = &ImportImage{}
 	_ command = &StartAlarm{}
 	_ command = &StartContainertask{}
+	_ command = &StartDatabase{}
 	_ command = &StartInstance{}
 	_ command = &StopAlarm{}
 	_ command = &StopContainertask{}
+	_ command = &StopDatabase{}
 	_ command = &StopInstance{}
 	_ command = &UpdateBucket{}
 	_ command = &UpdateContainertask{}

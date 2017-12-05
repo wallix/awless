@@ -888,6 +888,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(ecsiface.ECSAPI))
 			return cmd
 		}
+	case "startdatabase":
+		return func() interface{} {
+			cmd := awsspec.NewStartDatabase(nil, f.Logger)
+			cmd.SetApi(f.Mock.(rdsiface.RDSAPI))
+			return cmd
+		}
 	case "startinstance":
 		return func() interface{} {
 			cmd := awsspec.NewStartInstance(nil, f.Logger)
@@ -904,6 +910,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 		return func() interface{} {
 			cmd := awsspec.NewStopContainertask(nil, f.Logger)
 			cmd.SetApi(f.Mock.(ecsiface.ECSAPI))
+			return cmd
+		}
+	case "stopdatabase":
+		return func() interface{} {
+			cmd := awsspec.NewStopDatabase(nil, f.Logger)
+			cmd.SetApi(f.Mock.(rdsiface.RDSAPI))
 			return cmd
 		}
 	case "stopinstance":

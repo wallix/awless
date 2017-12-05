@@ -21,6 +21,8 @@ func TestRevertOneliner(t *testing.T) {
 		{in: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=revoke portrange=443 protocol=tcp", exp: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=authorize portrange=443 protocol=tcp"},
 		{in: "attach mfadevice id=my-mfa-device-id user=toto mfa-code-1=1234 mfa-code-2=2345", exp: "detach mfadevice id=my-mfa-device-id user=toto"},
 		{in: "detach mfadevice id=my-mfa-device-id user=toto", exp: "attach mfadevice id=my-mfa-device-id user=toto"},
+		{in: "stop database id=my-db-id", exp: "start database id=my-db-id"},
+		{in: "start database id=my-db-id", exp: "stop database id=my-db-id"},
 	}
 
 	for _, tcase := range tcases {

@@ -261,6 +261,10 @@ func isRevertible(cmd *ast.CommandNode) bool {
 		return true
 	}
 
+	if cmd.Entity == "database" && (cmd.Action == "start" || cmd.Action == "stop") {
+		return true
+	}
+
 	if cmd.Entity == "containertask" && cmd.Action == "start" {
 		t, ok := cmd.ToDriverParams()["type"].(string)
 		return ok && (t == "service" || t == "task")

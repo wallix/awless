@@ -260,3 +260,25 @@ func (cmd *CheckDatabase) ManualRun(ctx map[string]interface{}) (interface{}, er
 	}
 	return nil, c.check()
 }
+
+type StartDatabase struct {
+	_      string `action:"start" entity:"database" awsAPI:"rds" awsCall:"StartDBInstance" awsInput:"rds.StartDBInstanceInput" awsOutput:"rds.StartDBInstanceOutput"`
+	logger *logger.Logger
+	api    rdsiface.RDSAPI
+	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
+}
+
+func (cmd *StartDatabase) ValidateParams(params []string) ([]string, error) {
+	return validateParams(cmd, params)
+}
+
+type StopDatabase struct {
+	_      string `action:"stop" entity:"database" awsAPI:"rds" awsCall:"StopDBInstance" awsInput:"rds.StopDBInstanceInput" awsOutput:"rds.StopDBInstanceOutput"`
+	logger *logger.Logger
+	api    rdsiface.RDSAPI
+	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
+}
+
+func (cmd *StopDatabase) ValidateParams(params []string) ([]string, error) {
+	return validateParams(cmd, params)
+}

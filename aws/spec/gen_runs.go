@@ -12525,6 +12525,92 @@ func (cmd *StartContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
+func NewStartDatabase(sess *session.Session, l ...*logger.Logger) *StartDatabase {
+	cmd := new(StartDatabase)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = rds.New(sess)
+	}
+	return cmd
+}
+
+func (cmd *StartDatabase) SetApi(api rdsiface.RDSAPI) {
+	cmd.api = api
+}
+
+func (cmd *StartDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(ctx); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	input := &rds.StartDBInstanceInput{}
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("cannot inject in rds.StartDBInstanceInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.StartDBInstance(input)
+	cmd.logger.ExtraVerbosef("rds.StartDBInstance call took %s", time.Since(start))
+	if err != nil {
+		return nil, err
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			cmd.logger.Warning("start database: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		cmd.logger.Verbosef("start database '%s' done", extracted)
+	} else {
+		cmd.logger.Verbose("start database done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(ctx, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *StartDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
+	if err := cmd.inject(params); err != nil {
+		return []error{err}
+	}
+	if err := validateStruct(cmd, refs); err != nil {
+		errs = append(errs, err)
+	}
+
+	return
+}
+
+func (cmd *StartDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+	return fakeDryRunId("database"), nil
+}
+
+func (cmd *StartDatabase) ParamsHelp() string {
+	return generateParamsHelp("startdatabase", structListParamsKeys(cmd))
+}
+
+func (cmd *StartDatabase) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
 func NewStartInstance(sess *session.Session, l ...*logger.Logger) *StartInstance {
 	cmd := new(StartInstance)
 	if len(l) > 0 {
@@ -12795,6 +12881,92 @@ func (cmd *StopContainertask) ParamsHelp() string {
 }
 
 func (cmd *StopContainertask) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
+func NewStopDatabase(sess *session.Session, l ...*logger.Logger) *StopDatabase {
+	cmd := new(StopDatabase)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = rds.New(sess)
+	}
+	return cmd
+}
+
+func (cmd *StopDatabase) SetApi(api rdsiface.RDSAPI) {
+	cmd.api = api
+}
+
+func (cmd *StopDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(ctx); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	input := &rds.StopDBInstanceInput{}
+	if err := structInjector(cmd, input, ctx); err != nil {
+		return nil, fmt.Errorf("cannot inject in rds.StopDBInstanceInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.StopDBInstance(input)
+	cmd.logger.ExtraVerbosef("rds.StopDBInstance call took %s", time.Since(start))
+	if err != nil {
+		return nil, err
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			cmd.logger.Warning("stop database: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		cmd.logger.Verbosef("stop database '%s' done", extracted)
+	} else {
+		cmd.logger.Verbose("stop database done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(ctx, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *StopDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
+	if err := cmd.inject(params); err != nil {
+		return []error{err}
+	}
+	if err := validateStruct(cmd, refs); err != nil {
+		errs = append(errs, err)
+	}
+
+	return
+}
+
+func (cmd *StopDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+	return fakeDryRunId("database"), nil
+}
+
+func (cmd *StopDatabase) ParamsHelp() string {
+	return generateParamsHelp("stopdatabase", structListParamsKeys(cmd))
+}
+
+func (cmd *StopDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
