@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/logger"
@@ -96,7 +97,11 @@ var whoamiCmd = &cobra.Command{
 
 		policies, err := awsservices.AccessService.(*awsservices.Access).GetUserPolicies(me.Resource)
 		if err != nil {
-			logger.Error(err)
+			if aerr, ok := err.(awserr.RequestFailure); ok && aerr.Code() == "AccessDenied" {
+				logger.Warningf("user '%s' is not authorized to list its policies", me.Resource)
+			} else {
+				logger.Error(err)
+			}
 			return
 		}
 
