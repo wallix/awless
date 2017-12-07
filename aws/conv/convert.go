@@ -399,7 +399,6 @@ var extractRouteTableAssociationsFn = func(i interface{}) (interface{}, error) {
 	var keyVals []*graph.KeyValue
 	for _, assoc := range i.([]*ec2.RouteTableAssociation) {
 		keyval := &graph.KeyValue{KeyName: awssdk.StringValue(assoc.RouteTableAssociationId), Value: awssdk.StringValue(assoc.SubnetId)}
-
 		keyVals = append(keyVals, keyval)
 	}
 	return keyVals, nil

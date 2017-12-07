@@ -143,7 +143,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Name:         {name: "Tags", transform: extractTagFn("Name")},
 		properties.Vpc:          {name: "VpcId", transform: extractValueFn},
 		properties.Routes:       {name: "Routes", transform: extractRoutesSliceFn},
-		properties.Main:         {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
+		properties.Default:      {name: "Associations", transform: extractHasATrueBoolInStructSliceFn("Main")},
 		properties.Associations: {name: "Associations", transform: extractRouteTableAssociationsFn},
 		properties.Tags:         {name: "Tags", transform: extractTagsFn},
 	},

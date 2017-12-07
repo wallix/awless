@@ -645,7 +645,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 		"my_key":           resourcetest.KeyPair("my_key").Build(),
 		"igw_1":            resourcetest.InternetGw("igw_1").Prop(p.Vpcs, []string{"vpc_2"}).Build(),
 		"natgw_1":          resourcetest.NatGw("natgw_1").Prop(p.Vpc, "vpc_1").Prop(p.Subnet, "sub_1").Build(),
-		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Main, true).Prop(p.Associations, []*graph.KeyValue{{KeyName: "assoc_1", Value: "sub_1"}, {KeyName: "assoc_2", Value: "sub_2"}}).Build(),
+		"rt_1":             resourcetest.RouteTable("rt_1").Prop(p.Vpc, "vpc_1").Prop(p.Default, true).Prop(p.Associations, []*graph.KeyValue{{KeyName: "assoc_1", Value: "sub_1"}, {KeyName: "assoc_2", Value: "sub_2"}}).Build(),
 		"lb_1":             resourcetest.LoadBalancer("lb_1").Prop(p.Arn, "lb_1").Prop(p.Name, "my_loadbalancer").Prop(p.Vpc, "vpc_1").Build(),
 		"lb_2":             resourcetest.LoadBalancer("lb_2").Prop(p.Arn, "lb_2").Prop(p.Vpc, "vpc_2").Build(),
 		"lb_3":             resourcetest.LoadBalancer("lb_3").Prop(p.Arn, "lb_3").Prop(p.Vpc, "vpc_1").Build(),
@@ -1375,6 +1375,7 @@ func mustGetAppliedOnId(g *graph.Graph, res *graph.Resource) []string {
 }
 
 func compareResources(t *testing.T, g *graph.Graph, resources []*graph.Resource, expected map[string]*graph.Resource, expectedChildren, expectedAppliedOn map[string][]string) {
+	t.Helper()
 	if got, want := len(resources), len(expected); got != want {
 		t.Errorf("got %d, want %d", got, want)
 		t.Fatalf("got %#v\nwant %#v\n", resources, expected)
