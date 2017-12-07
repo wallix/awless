@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"time"
 
@@ -34,11 +35,11 @@ type CreateInstanceprofile struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateInstanceprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateInstanceprofile) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 type DeleteInstanceprofile struct {
@@ -46,11 +47,11 @@ type DeleteInstanceprofile struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteInstanceprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteInstanceprofile) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 type AttachInstanceprofile struct {
@@ -58,13 +59,15 @@ type AttachInstanceprofile struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
-	Name     *string `awsName:"IamInstanceProfile.Name" awsType:"awsstr" templateName:"name" required:""`
+	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
+	Name     *string `awsName:"IamInstanceProfile.Name" awsType:"awsstr" templateName:"name"`
 	Replace  *bool   `templateName:"replace"`
 }
 
-func (cmd *AttachInstanceprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachInstanceprofile) Params() params.Rule {
+	return params.AllOf(params.Key("instance"), params.Key("name"),
+		params.Opt("replace"),
+	)
 }
 
 func (cmd *AttachInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
@@ -152,12 +155,12 @@ type DetachInstanceprofile struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Instance *string `templateName:"instance" required:""`
-	Name     *string `templateName:"name" required:""`
+	Instance *string `templateName:"instance"`
+	Name     *string `templateName:"name"`
 }
 
-func (cmd *DetachInstanceprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachInstanceprofile) Params() params.Rule {
+	return params.AllOf(params.Key("instance"), params.Key("name"))
 }
 
 func (cmd *DetachInstanceprofile) ManualRun(ctx map[string]interface{}) (interface{}, error) {

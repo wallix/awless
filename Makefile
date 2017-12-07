@@ -3,7 +3,7 @@ test:
 	@go test ./...
 
 generate:
-	@echo Generating boilerplate code
+	@echo Generating commands code
 	@go generate gen/aws/generators/main.go
 
 build: generate test

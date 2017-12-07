@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -33,12 +34,12 @@ type CreateNatgateway struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
-	ElasticipId *string `awsName:"AllocationId" awsType:"awsstr" templateName:"elasticip-id" required:""`
-	Subnet      *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet" required:""`
+	ElasticipId *string `awsName:"AllocationId" awsType:"awsstr" templateName:"elasticip-id"`
+	Subnet      *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 }
 
-func (cmd *CreateNatgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateNatgateway) Params() params.Rule {
+	return params.AllOf(params.Key("elasticip-id"), params.Key("subnet"))
 }
 
 func (cmd *CreateNatgateway) ExtractResult(i interface{}) string {
@@ -50,11 +51,11 @@ type DeleteNatgateway struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"NatGatewayId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"NatGatewayId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteNatgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteNatgateway) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type CheckNatgateway struct {
@@ -62,13 +63,13 @@ type CheckNatgateway struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     ec2iface.EC2API
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckNatgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckNatgateway) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckNatgateway) Validate_State() error {

@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
@@ -38,8 +39,8 @@ type CreateStack struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             cloudformationiface.CloudFormationAPI
-	Name            *string   `awsName:"StackName" awsType:"awsstr" templateName:"name" required:""`
-	TemplateFile    *string   `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file" required:""`
+	Name            *string   `awsName:"StackName" awsType:"awsstr" templateName:"name"`
+	TemplateFile    *string   `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file"`
 	Capabilities    []*string `awsName:"Capabilities" awsType:"awsstringslice" templateName:"capabilities"`
 	DisableRollback *bool     `awsName:"DisableRollback" awsType:"awsbool" templateName:"disable-rollback"`
 	Notifications   []*string `awsName:"NotificationARNs" awsType:"awsstringslice" templateName:"notifications"`
@@ -54,8 +55,10 @@ type CreateStack struct {
 	StackFile       *string   `templateName:"stack-file"`
 }
 
-func (cmd *CreateStack) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateStack) Params() params.Rule {
+	return params.AllOf(params.Key("name"), params.Key("template-file"),
+		params.Opt("capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout"),
+	)
 }
 
 func (cmd *CreateStack) Validate_TemplateFile() error {
@@ -83,7 +86,7 @@ type UpdateStack struct {
 	logger              *logger.Logger
 	graph               cloudgraph.GraphAPI
 	api                 cloudformationiface.CloudFormationAPI
-	Name                *string   `awsName:"StackName" awsType:"awsstr" templateName:"name" required:""`
+	Name                *string   `awsName:"StackName" awsType:"awsstr" templateName:"name"`
 	Capabilities        []*string `awsName:"Capabilities" awsType:"awsstringslice" templateName:"capabilities"`
 	Notifications       []*string `awsName:"NotificationARNs" awsType:"awsstringslice" templateName:"notifications"`
 	Parameters          []*string `awsName:"Parameters" awsType:"awsparameterslice" templateName:"parameters"`
@@ -98,8 +101,10 @@ type UpdateStack struct {
 	StackFile           *string   `templateName:"stack-file"`
 }
 
-func (cmd *UpdateStack) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateStack) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "stack-file", "tags", "template-file", "use-previous-template"),
+	)
 }
 
 func (cmd *UpdateStack) ExtractResult(i interface{}) string {
@@ -243,10 +248,12 @@ type DeleteStack struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             cloudformationiface.CloudFormationAPI
-	Name            *string   `awsName:"StackName" awsType:"awsstr" templateName:"name" required:""`
+	Name            *string   `awsName:"StackName" awsType:"awsstr" templateName:"name"`
 	RetainResources []*string `awsName:"RetainResources" awsType:"awsstringslice" templateName:"retain-resources"`
 }
 
-func (cmd *DeleteStack) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteStack) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("retain-resources"),
+	)
 }

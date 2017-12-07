@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateElasticip struct {
@@ -28,11 +29,11 @@ type CreateElasticip struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Domain *string `awsName:"Domain" awsType:"awsstr" templateName:"domain" required:""`
+	Domain *string `awsName:"Domain" awsType:"awsstr" templateName:"domain"`
 }
 
-func (cmd *CreateElasticip) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateElasticip) Params() params.Rule {
+	return params.AllOf(params.Key("domain"))
 }
 
 func (cmd *CreateElasticip) ExtractResult(i interface{}) string {
@@ -48,8 +49,8 @@ type DeleteElasticip struct {
 	Ip     *string `awsName:"PublicIp" awsType:"awsstr" templateName:"ip"`
 }
 
-func (cmd *DeleteElasticip) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteElasticip) Params() params.Rule {
+	return params.OnlyOneOf(params.Key("id"), params.Key("ip"))
 }
 
 type AttachElasticip struct {
@@ -57,15 +58,17 @@ type AttachElasticip struct {
 	logger             *logger.Logger
 	graph              cloudgraph.GraphAPI
 	api                ec2iface.EC2API
-	Id                 *string `awsName:"AllocationId" awsType:"awsstr" templateName:"id" required:""`
+	Id                 *string `awsName:"AllocationId" awsType:"awsstr" templateName:"id"`
 	Instance           *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
 	Networkinterface   *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"networkinterface"`
 	Privateip          *string `awsName:"PrivateIpAddress" awsType:"awsstr" templateName:"privateip"`
 	AllowReassociation *bool   `awsName:"AllowReassociation" awsType:"awsbool" templateName:"allow-reassociation"`
 }
 
-func (cmd *AttachElasticip) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachElasticip) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("allow-reassociation", "instance", "networkinterface", "privateip"),
+	)
 }
 
 func (cmd *AttachElasticip) ExtractResult(i interface{}) string {
@@ -77,9 +80,9 @@ type DetachElasticip struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
-	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association" required:""`
+	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association"`
 }
 
-func (cmd *DetachElasticip) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachElasticip) Params() params.Rule {
+	return params.AllOf(params.Key("association"))
 }

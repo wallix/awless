@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateSnapshot struct {
@@ -28,12 +29,14 @@ type CreateSnapshot struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
-	Volume      *string `awsName:"VolumeId" awsType:"awsstr" templateName:"volume" required:""`
+	Volume      *string `awsName:"VolumeId" awsType:"awsstr" templateName:"volume"`
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateSnapshot) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateSnapshot) Params() params.Rule {
+	return params.AllOf(params.Key("volume"),
+		params.Opt("description"),
+	)
 }
 
 func (cmd *CreateSnapshot) ExtractResult(i interface{}) string {
@@ -45,11 +48,11 @@ type DeleteSnapshot struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"SnapshotId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"SnapshotId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSnapshot) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteSnapshot) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type CopySnapshot struct {
@@ -57,14 +60,16 @@ type CopySnapshot struct {
 	logger       *logger.Logger
 	graph        cloudgraph.GraphAPI
 	api          ec2iface.EC2API
-	SourceId     *string `awsName:"SourceSnapshotId" awsType:"awsstr" templateName:"source-id" required:""`
-	SourceRegion *string `awsName:"SourceRegion" awsType:"awsstr" templateName:"source-region" required:""`
+	SourceId     *string `awsName:"SourceSnapshotId" awsType:"awsstr" templateName:"source-id"`
+	SourceRegion *string `awsName:"SourceRegion" awsType:"awsstr" templateName:"source-region"`
 	Encrypted    *bool   `awsName:"Encrypted" awsType:"awsbool" templateName:"encrypted"`
 	Description  *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CopySnapshot) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CopySnapshot) Params() params.Rule {
+	return params.AllOf(params.Key("source-id"), params.Key("source-region"),
+		params.Opt("description", "encrypted"),
+	)
 }
 
 func (cmd *CopySnapshot) ExtractResult(i interface{}) string {

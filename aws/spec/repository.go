@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateRepository struct {
@@ -28,11 +29,11 @@ type CreateRepository struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ecriface.ECRAPI
-	Name   *string `awsName:"RepositoryName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"RepositoryName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateRepository) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateRepository) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 func (cmd *CreateRepository) ExtractResult(i interface{}) string {
@@ -44,11 +45,13 @@ type DeleteRepository struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     ecriface.ECRAPI
-	Name    *string `awsName:"RepositoryName" awsType:"awsstr" templateName:"name" required:""`
+	Name    *string `awsName:"RepositoryName" awsType:"awsstr" templateName:"name"`
 	Force   *bool   `awsName:"Force" awsType:"awsbool" templateName:"force"`
 	Account *string `awsName:"RegistryId" awsType:"awsstr" templateName:"account"`
 }
 
-func (cmd *DeleteRepository) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteRepository) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("account", "force"),
+	)
 }

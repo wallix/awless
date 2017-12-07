@@ -10,6 +10,32 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
+func TestParamsProcessing(t *testing.T) {
+	env := template.NewEnv()
+	env.Lookuper = func(tokens ...string) interface{} {
+		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
+	}
+
+	t.Run("validation", func(t *testing.T) {
+		tpl := template.MustParse("create instance invalid=any")
+		_, _, err := template.Compile(tpl, env, template.NewRunnerCompileMode)
+		if err == nil {
+			t.Fatal("expected err got none")
+		}
+		if got, want := err.Error(), "create instance: unexpected param(s): invalid"; !strings.Contains(got, want) {
+			t.Fatalf("%s should contain %s", got, want)
+		}
+	})
+
+	t.Run("normalizing missing required params as holes", func(t *testing.T) {
+		tpl := template.MustParse("create instance image=ami-123456")
+		compiled, _, _ := template.Compile(tpl, env, template.NewRunnerCompileMode)
+		if got, want := compiled.String(), "create instance count={instance.count} image=ami-123456 name={instance.name} subnet={instance.subnet} type={instance.type}"; got != want {
+			t.Fatalf("%s should contain %s", got, want)
+		}
+	})
+}
+
 func TestWholeCompilation(t *testing.T) {
 	tcases := []struct {
 		tpl                  string

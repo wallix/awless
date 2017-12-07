@@ -9,24 +9,8 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/template/internal/ast"
+	"github.com/wallix/awless/template/params"
 )
-
-type mockCommand struct{ id string }
-
-func (c *mockCommand) ValidateCommand(map[string]interface{}, []string) []error {
-	return []error{errors.New(c.id)}
-}
-func (c *mockCommand) Run(ctx, params map[string]interface{}) (interface{}, error)    { return nil, nil }
-func (c *mockCommand) DryRun(ctx, params map[string]interface{}) (interface{}, error) { return nil, nil }
-func (c *mockCommand) ValidateParams(p []string) ([]string, error) {
-	switch c.id {
-	case "1", "2":
-		return []string{c.id}, nil
-	case "3":
-		return []string{c.id}, errors.New("unexpected")
-	}
-	panic("wooot")
-}
 
 func (c *mockCommand) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
 	return []string{"param1", "param2"},
@@ -81,40 +65,6 @@ func TestCommandsPasses(t *testing.T) {
 		exp = map[string]interface{}{"param1": "anything"}
 		if got, want := compiled.CommandNodesIterator()[2].ToDriverParams(), exp; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %#v, want %#v", got, want)
-		}
-	})
-
-	t.Run("validate commands params", func(t *testing.T) {
-		tpl := MustParse("create instance\nsub = create subnet\ncreate instance")
-		count = 0
-		_, _, err := validateCommandsParamsPass(tpl, env)
-		if err == nil {
-			t.Fatal("expected err got none")
-		}
-		if got, want := err.Error(), "unexpected"; !strings.Contains(got, want) {
-			t.Fatalf("%s should contain %s", got, want)
-		}
-	})
-
-	t.Run("normalize missing required params as hole", func(t *testing.T) {
-		tpl := MustParse("create instance\nsub = create subnet")
-		count = 0
-		compiled, _, err := normalizeMissingRequiredParamsAsHolePass(tpl, env)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		for i, cmd := range compiled.CommandNodesIterator() {
-			if got, want := len(cmd.GetHoles()), 1; got != want {
-				t.Fatalf("%d. got %d, want %d", i+1, got, want)
-			}
-			var first string
-			for h := range cmd.GetHoles() {
-				first = h
-			}
-			if got, want := first, fmt.Sprintf("%s.%d", cmd.Entity, i+1); got != want {
-				t.Fatalf("%d. got %s, want %s", i+1, got, want)
-			}
 		}
 	})
 
@@ -231,8 +181,7 @@ func (c *mockCommandWithResult) Run(ctx, params map[string]interface{}) (interfa
 func (c *mockCommandWithResult) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return nil, nil
 }
-func (c *mockCommandWithResult) ValidateParams(p []string) ([]string, error) { return nil, nil }
-func (c *mockCommandWithResult) ExtractResult(i interface{}) string          { return "" }
+func (c *mockCommandWithResult) ExtractResult(i interface{}) string { return "" }
 
 func TestFailOnDeclarationWithNoResultPass(t *testing.T) {
 	env := NewEnv()
@@ -435,7 +384,16 @@ func TestCmdErr(t *testing.T) {
 	}
 }
 
-type params map[string]interface{}
+type mockCommand struct{ id string }
+
+func (c *mockCommand) ValidateCommand(map[string]interface{}, []string) []error {
+	return []error{errors.New(c.id)}
+}
+func (c *mockCommand) Run(ctx, params map[string]interface{}) (interface{}, error)    { return nil, nil }
+func (c *mockCommand) DryRun(ctx, params map[string]interface{}) (interface{}, error) { return nil, nil }
+func (c *mockCommand) Params() params.Rule                                            { return nil }
+
+type parameters map[string]interface{}
 type holesKeys map[string][]string
 type refs map[string][]string
 type aliases map[string][]string
@@ -451,9 +409,9 @@ func assertVariableValues(t *testing.T, tpl *Template, exp ...interface{}) {
 	}
 }
 
-func assertCmdParams(t *testing.T, tpl *Template, exp ...params) {
+func assertCmdParams(t *testing.T, tpl *Template, exp ...parameters) {
 	for i, cmd := range tpl.CommandNodesIterator() {
-		if got, want := params(cmd.ToDriverParams()), exp[i]; !reflect.DeepEqual(got, want) {
+		if got, want := parameters(cmd.ToDriverParams()), exp[i]; !reflect.DeepEqual(got, want) {
 			t.Fatalf("params: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}

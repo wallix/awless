@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -41,11 +42,11 @@ type CreateMfadevice struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Name   *string `templateName:"name" required:""`
+	Name   *string `templateName:"name"`
 }
 
-func (cmd *CreateMfadevice) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateMfadevice) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 func (cmd *CreateMfadevice) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -90,11 +91,11 @@ type DeleteMfadevice struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteMfadevice) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteMfadevice) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 var (
@@ -106,15 +107,17 @@ type AttachMfadevice struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      iamiface.IAMAPI
-	Id       *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id" required:""`
-	User     *string `awsName:"UserName" awsType:"awsstr" templateName:"user" required:""`
-	MfaCode1 *string `awsName:"AuthenticationCode1" awsType:"aws6digitsstring" templateName:"mfa-code-1" required:""`
-	MfaCode2 *string `awsName:"AuthenticationCode2" awsType:"aws6digitsstring" templateName:"mfa-code-2" required:""`
+	Id       *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
+	User     *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
+	MfaCode1 *string `awsName:"AuthenticationCode1" awsType:"aws6digitsstring" templateName:"mfa-code-1"`
+	MfaCode2 *string `awsName:"AuthenticationCode2" awsType:"aws6digitsstring" templateName:"mfa-code-2"`
 	NoPrompt *bool   `templateName:"no-prompt"`
 }
 
-func (cmd *AttachMfadevice) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachMfadevice) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("mfa-code-1"), params.Key("mfa-code-2"), params.Key("user"),
+		params.Opt("no-prompt"),
+	)
 }
 
 func (cmd *AttachMfadevice) AfterRun(ctx map[string]interface{}, output interface{}) error {
@@ -162,12 +165,12 @@ type DetachMfadevice struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id" required:""`
-	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user" required:""`
+	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
+	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 }
 
-func (cmd *DetachMfadevice) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachMfadevice) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("user"))
 }
 
 func displayQRCode(w io.Writer, qrCode barcode.Barcode) {

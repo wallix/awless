@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -35,14 +36,16 @@ type CreateS3object struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    s3iface.S3API
-	Bucket *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket" required:""`
-	File   *string `awsName:"Body" awsType:"awsstr" templateName:"file" required:""`
+	Bucket *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket"`
+	File   *string `awsName:"Body" awsType:"awsstr" templateName:"file"`
 	Name   *string `awsName:"Key" awsType:"awsstr" templateName:"name"`
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 }
 
-func (cmd *CreateS3object) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateS3object) Params() params.Rule {
+	return params.AllOf(params.Key("bucket"), params.Key("file"),
+		params.Opt("acl", "name"),
+	)
 }
 
 func (cmd *CreateS3object) Validate_File() error {
@@ -117,14 +120,16 @@ type UpdateS3object struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     s3iface.S3API
-	Bucket  *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket" required:""`
-	Name    *string `awsName:"Key" awsType:"awsstr" templateName:"name" required:""`
-	Acl     *string `awsName:"ACL" awsType:"awsstr" templateName:"acl" required:""`
+	Bucket  *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket"`
+	Name    *string `awsName:"Key" awsType:"awsstr" templateName:"name"`
+	Acl     *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 	Version *string `awsName:"VersionId" awsType:"awsstr" templateName:"version"`
 }
 
-func (cmd *UpdateS3object) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateS3object) Params() params.Rule {
+	return params.AllOf(params.Key("acl"), params.Key("bucket"), params.Key("name"),
+		params.Opt("version"),
+	)
 }
 
 type DeleteS3object struct {
@@ -132,12 +137,12 @@ type DeleteS3object struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    s3iface.S3API
-	Bucket *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket" required:""`
-	Name   *string `awsName:"Key" awsType:"awsstr" templateName:"name" required:""`
+	Bucket *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket"`
+	Name   *string `awsName:"Key" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteS3object) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteS3object) Params() params.Rule {
+	return params.AllOf(params.Key("bucket"), params.Key("name"))
 }
 
 type ProgressReadSeeker struct {

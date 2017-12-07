@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateScalingpolicy struct {
@@ -28,16 +29,18 @@ type CreateScalingpolicy struct {
 	logger              *logger.Logger
 	graph               cloudgraph.GraphAPI
 	api                 autoscalingiface.AutoScalingAPI
-	AdjustmentType      *string `awsName:"AdjustmentType" awsType:"awsstr" templateName:"adjustment-type" required:""`
-	Scalinggroup        *string `awsName:"AutoScalingGroupName" awsType:"awsstr" templateName:"scalinggroup" required:""`
-	Name                *string `awsName:"PolicyName" awsType:"awsstr" templateName:"name" required:""`
-	AdjustmentScaling   *int64  `awsName:"ScalingAdjustment" awsType:"awsint64" templateName:"adjustment-scaling" required:""`
+	AdjustmentType      *string `awsName:"AdjustmentType" awsType:"awsstr" templateName:"adjustment-type"`
+	Scalinggroup        *string `awsName:"AutoScalingGroupName" awsType:"awsstr" templateName:"scalinggroup"`
+	Name                *string `awsName:"PolicyName" awsType:"awsstr" templateName:"name"`
+	AdjustmentScaling   *int64  `awsName:"ScalingAdjustment" awsType:"awsint64" templateName:"adjustment-scaling"`
 	Cooldown            *int64  `awsName:"Cooldown" awsType:"awsint64" templateName:"cooldown"`
 	AdjustmentMagnitude *int64  `awsName:"MinAdjustmentMagnitude" awsType:"awsint64" templateName:"adjustment-magnitude"`
 }
 
-func (cmd *CreateScalingpolicy) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateScalingpolicy) Params() params.Rule {
+	return params.AllOf(params.Key("adjustment-scaling"), params.Key("adjustment-type"), params.Key("name"), params.Key("scalinggroup"),
+		params.Opt("adjustment-magnitude", "cooldown"),
+	)
 }
 
 func (cmd *CreateScalingpolicy) ExtractResult(i interface{}) string {
@@ -49,9 +52,9 @@ type DeleteScalingpolicy struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    autoscalingiface.AutoScalingAPI
-	Id     *string `awsName:"PolicyName" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"PolicyName" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteScalingpolicy) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteScalingpolicy) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

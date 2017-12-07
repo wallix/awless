@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateContainercluster struct {
@@ -28,11 +29,11 @@ type CreateContainercluster struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ecsiface.ECSAPI
-	Name   *string `awsName:"ClusterName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"ClusterName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateContainercluster) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateContainercluster) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 func (cmd *CreateContainercluster) ExtractResult(i interface{}) string {
@@ -44,9 +45,9 @@ type DeleteContainercluster struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ecsiface.ECSAPI
-	Id     *string `awsName:"Cluster" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"Cluster" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteContainercluster) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteContainercluster) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

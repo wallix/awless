@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateZone struct {
@@ -27,8 +28,8 @@ type CreateZone struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             route53iface.Route53API
-	Callerreference *string `awsName:"CallerReference" awsType:"awsstr" templateName:"callerreference" required:""`
-	Name            *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
+	Callerreference *string `awsName:"CallerReference" awsType:"awsstr" templateName:"callerreference"`
+	Name            *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
 	Delegationsetid *string `awsName:"DelegationSetId" awsType:"awsstr" templateName:"delegationsetid"`
 	Comment         *string `awsName:"HostedZoneConfig.Comment" awsType:"awsstr" templateName:"comment"`
 	Isprivate       *bool   `awsName:"HostedZoneConfig.PrivateZone" awsType:"awsbool" templateName:"isprivate"`
@@ -36,8 +37,10 @@ type CreateZone struct {
 	Vpcregion       *string `awsName:"VPC.VPCRegion" awsType:"awsstr" templateName:"vpcregion"`
 }
 
-func (cmd *CreateZone) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateZone) Params() params.Rule {
+	return params.AllOf(params.Key("callerreference"), params.Key("name"),
+		params.Opt("comment", "delegationsetid", "isprivate", "vpcid", "vpcregion"),
+	)
 }
 
 func (cmd *CreateZone) ExtractResult(i interface{}) string {
@@ -49,9 +52,9 @@ type DeleteZone struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    route53iface.Route53API
-	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteZone) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteZone) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

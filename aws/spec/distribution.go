@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -29,12 +30,16 @@ import (
 	"github.com/wallix/awless/logger"
 )
 
+var CallerReferenceFunc = func() string {
+	return fmt.Sprint(time.Now().UTC().Unix())
+}
+
 type CreateDistribution struct {
 	_              string `action:"create" entity:"distribution" awsAPI:"cloudfront"`
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            cloudfrontiface.CloudFrontAPI
-	OriginDomain   *string   `templateName:"origin-domain" required:""`
+	OriginDomain   *string   `templateName:"origin-domain"`
 	Certificate    *string   `templateName:"certificate"`
 	Comment        *string   `templateName:"comment"`
 	DefaultFile    *string   `templateName:"default-file"`
@@ -48,12 +53,10 @@ type CreateDistribution struct {
 	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
-func (cmd *CreateDistribution) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
-}
-
-var CallerReferenceFunc = func() string {
-	return fmt.Sprint(time.Now().UTC().Unix())
+func (cmd *CreateDistribution) Params() params.Rule {
+	return params.AllOf(params.Key("origin-domain"),
+		params.Opt("certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-path", "price-class"),
+	)
 }
 
 func (cmd *CreateDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -147,13 +150,13 @@ type CheckDistribution struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     cloudfrontiface.CloudFrontAPI
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckDistribution) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckDistribution) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckDistribution) Validate_State() error {
@@ -195,7 +198,7 @@ type UpdateDistribution struct {
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            cloudfrontiface.CloudFrontAPI
-	Id             *string   `awsName:"Id" awsType:"awsstr" templateName:"id" required:""`
+	Id             *string   `awsName:"Id" awsType:"awsstr" templateName:"id"`
 	OriginDomain   *string   `templateName:"origin-domain"`
 	Certificate    *string   `templateName:"certificate"`
 	Comment        *string   `templateName:"comment"`
@@ -210,8 +213,10 @@ type UpdateDistribution struct {
 	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
-func (cmd *UpdateDistribution) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateDistribution) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-domain", "origin-path", "price-class"),
+	)
 }
 
 func (cmd *UpdateDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -350,11 +355,11 @@ type DeleteDistribution struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    cloudfrontiface.CloudFrontAPI
-	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteDistribution) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteDistribution) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 func (cmd *DeleteDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {

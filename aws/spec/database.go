@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -78,13 +79,14 @@ type CreateDatabase struct {
 	CopyTagsToSnapshot *string `awsName:"CopyTagsToSnapshot" awsType:"awsbool" templateName:"copytagstosnapshot"`
 }
 
-func (cmd *CreateDatabase) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree: oneOf(allOf(node("type"), node("id"), node("engine"), node("password"), node("username"), node("size")), allOf(node("replica"), node("replica-source"))),
-		extras: []string{"autoupgrade", "availabilityzone", "backupretention", "cluster", "dbname", "parametergroup",
+func (cmd *CreateDatabase) Params() params.Rule {
+	return params.OnlyOneOf(
+		params.AllOf(params.Key("type"), params.Key("id"), params.Key("engine"), params.Key("password"), params.Key("username"), params.Key("size")),
+		params.AllOf(params.Key("replica"), params.Key("replica-source")),
+		params.Opt("autoupgrade", "availabilityzone", "backupretention", "cluster", "dbname", "parametergroup",
 			"dbsecuritygroups", "subnetgroup", "domain", "iamrole", "version", "iops", "license", "multiaz", "optiongroup",
-			"port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecuritygroups"},
-	}.verify(params)
+			"port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecuritygroups"),
+	)
 }
 
 func (cmd *CreateDatabase) Validate_Password() (err error) {
@@ -189,13 +191,15 @@ type DeleteDatabase struct {
 	logger       *logger.Logger
 	graph        cloudgraph.GraphAPI
 	api          rdsiface.RDSAPI
-	Id           *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
+	Id           *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 	SkipSnapshot *bool   `awsName:"SkipFinalSnapshot" awsType:"awsbool" templateName:"skip-snapshot"`
 	Snapshot     *string `awsName:"FinalDBSnapshotIdentifier" awsType:"awsstr" templateName:"snapshot"`
 }
 
-func (cmd *DeleteDatabase) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteDatabase) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("skip-snapshot", "snapshot"),
+	)
 }
 
 type CheckDatabase struct {
@@ -203,13 +207,13 @@ type CheckDatabase struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     rdsiface.RDSAPI
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckDatabase) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckDatabase) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckDatabase) Validate_State() error {
@@ -271,11 +275,11 @@ type StartDatabase struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    rdsiface.RDSAPI
-	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *StartDatabase) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *StartDatabase) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type StopDatabase struct {
@@ -283,9 +287,9 @@ type StopDatabase struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    rdsiface.RDSAPI
-	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *StopDatabase) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *StopDatabase) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateAppscalingtarget struct {
@@ -26,16 +27,16 @@ type CreateAppscalingtarget struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              applicationautoscalingiface.ApplicationAutoScalingAPI
-	MaxCapacity      *int64  `awsName:"MaxCapacity" awsType:"awsint64" templateName:"max-capacity" required:""`
-	MinCapacity      *int64  `awsName:"MinCapacity" awsType:"awsint64" templateName:"min-capacity" required:""`
-	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource" required:""`
-	Role             *string `awsName:"RoleARN" awsType:"awsstr" templateName:"role" required:""`
-	Dimension        *string `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension" required:""`
-	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace" required:""`
+	MaxCapacity      *int64  `awsName:"MaxCapacity" awsType:"awsint64" templateName:"max-capacity"`
+	MinCapacity      *int64  `awsName:"MinCapacity" awsType:"awsint64" templateName:"min-capacity"`
+	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource"`
+	Role             *string `awsName:"RoleARN" awsType:"awsstr" templateName:"role"`
+	Dimension        *string `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension"`
+	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
 }
 
-func (cmd *CreateAppscalingtarget) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateAppscalingtarget) Params() params.Rule {
+	return params.AllOf(params.Key("dimension"), params.Key("max-capacity"), params.Key("min-capacity"), params.Key("resource"), params.Key("role"), params.Key("service-namespace"))
 }
 
 type DeleteAppscalingtarget struct {
@@ -43,11 +44,11 @@ type DeleteAppscalingtarget struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              applicationautoscalingiface.ApplicationAutoScalingAPI
-	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource" required:""`
-	Dimension        *string `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension" required:""`
-	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace" required:""`
+	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource"`
+	Dimension        *string `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension"`
+	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
 }
 
-func (cmd *DeleteAppscalingtarget) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteAppscalingtarget) Params() params.Rule {
+	return params.AllOf(params.Key("dimension"), params.Key("resource"), params.Key("service-namespace"))
 }

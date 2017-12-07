@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateLoadbalancer struct {
@@ -33,8 +34,8 @@ type CreateLoadbalancer struct {
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            elbv2iface.ELBV2API
-	Name           *string   `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
-	Subnets        []*string `awsName:"Subnets" awsType:"awsstringslice" templateName:"subnets" required:""`
+	Name           *string   `awsName:"Name" awsType:"awsstr" templateName:"name"`
+	Subnets        []*string `awsName:"Subnets" awsType:"awsstringslice" templateName:"subnets"`
 	SubnetMappings []*string `awsName:"SubnetMappings" awsType:"awssubnetmappings" templateName:"subnet-mappings"`
 	Iptype         *string   `awsName:"IpAddressType" awsType:"awsstr" templateName:"iptype"`
 	Scheme         *string   `awsName:"Scheme" awsType:"awsstr" templateName:"scheme"`
@@ -42,8 +43,11 @@ type CreateLoadbalancer struct {
 	Type           *string   `awsName:"Type" awsType:"awsstr" templateName:"type"`
 }
 
-func (cmd *CreateLoadbalancer) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateLoadbalancer) Params() params.Rule {
+	return params.AllOf(
+		params.Key("name"), params.Key("subnets"),
+		params.Opt("subnet-mappings", "iptype", "scheme", "securitygroups", "type"),
+	)
 }
 
 func (cmd *CreateLoadbalancer) ExtractResult(i interface{}) string {
@@ -55,11 +59,11 @@ type DeleteLoadbalancer struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    elbv2iface.ELBV2API
-	Id     *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteLoadbalancer) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteLoadbalancer) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type CheckLoadbalancer struct {
@@ -67,13 +71,13 @@ type CheckLoadbalancer struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     elbv2iface.ELBV2API
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckLoadbalancer) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckLoadbalancer) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckLoadbalancer) Validate_State() error {

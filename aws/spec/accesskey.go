@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -39,12 +40,14 @@ type CreateAccesskey struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user" required:""`
+	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 	Save   *bool   `templateName:"save"`
 }
 
-func (cmd *CreateAccesskey) ValidateParams(params []string) ([]string, error) {
-	return paramRule{tree: allOf(node("user")), extras: []string{"save", "no-prompt"}}.verify(params)
+func (cmd *CreateAccesskey) Params() params.Rule {
+	return params.AllOf(params.Key("user"),
+		params.Opt("save", "no-prompt"),
+	)
 }
 
 func (cmd *CreateAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -113,8 +116,14 @@ type DeleteAccesskey struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Id     *string `awsName:"AccessKeyId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"AccessKeyId" awsType:"awsstr" templateName:"id"`
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
+}
+
+func (cmd *DeleteAccesskey) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("user"),
+	)
 }
 
 func (cmd *DeleteAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -133,10 +142,6 @@ func (cmd *DeleteAccesskey) ConvertParams() ([]string, func(values map[string]in
 			}
 			return values, nil
 		}
-}
-
-func (cmd *DeleteAccesskey) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
 }
 
 var (

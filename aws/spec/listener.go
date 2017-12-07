@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateListener struct {
@@ -28,17 +29,19 @@ type CreateListener struct {
 	logger       *logger.Logger
 	graph        cloudgraph.GraphAPI
 	api          elbv2iface.ELBV2API
-	Actiontype   *string `awsName:"DefaultActions[0]Type" awsType:"awsslicestruct" templateName:"actiontype" required:""`
-	Targetgroup  *string `awsName:"DefaultActions[0]TargetGroupArn" awsType:"awsslicestruct" templateName:"targetgroup" required:""`
-	Loadbalancer *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"loadbalancer" required:""`
-	Port         *int64  `awsName:"Port" awsType:"awsint64" templateName:"port" required:""`
-	Protocol     *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol" required:""`
+	Actiontype   *string `awsName:"DefaultActions[0]Type" awsType:"awsslicestruct" templateName:"actiontype"`
+	Targetgroup  *string `awsName:"DefaultActions[0]TargetGroupArn" awsType:"awsslicestruct" templateName:"targetgroup"`
+	Loadbalancer *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"loadbalancer"`
+	Port         *int64  `awsName:"Port" awsType:"awsint64" templateName:"port"`
+	Protocol     *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol"`
 	Certificate  *string `awsName:"Certificates[0]CertificateArn" awsType:"awsslicestruct" templateName:"certificate"`
 	Sslpolicy    *string `awsName:"SslPolicy" awsType:"awsstr" templateName:"sslpolicy"`
 }
 
-func (cmd *CreateListener) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateListener) Params() params.Rule {
+	return params.AllOf(params.Key("actiontype"), params.Key("loadbalancer"), params.Key("port"), params.Key("protocol"), params.Key("targetgroup"),
+		params.Opt("certificate", "sslpolicy"),
+	)
 }
 
 func (cmd *CreateListener) ExtractResult(i interface{}) string {
@@ -50,9 +53,9 @@ type DeleteListener struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    elbv2iface.ELBV2API
-	Id     *string `awsName:"ListenerArn" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"ListenerArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteListener) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteListener) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

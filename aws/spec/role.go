@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -31,7 +32,7 @@ type CreateRole struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              iamiface.IAMAPI
-	Name             *string   `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
+	Name             *string   `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 	PrincipalAccount *string   `templateName:"principal-account"`
 	PrincipalUser    *string   `templateName:"principal-user"`
 	PrincipalService *string   `templateName:"principal-service"`
@@ -39,11 +40,10 @@ type CreateRole struct {
 	SleepAfter       *int64    `templateName:"sleep-after"`
 }
 
-func (cmd *CreateRole) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree:   allOf(oneOfE(node("principal-account"), node("principal-user"), node("principal-service")), node("name")),
-		extras: []string{"conditions", "sleep-after"},
-	}.verify(params)
+func (cmd *CreateRole) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("conditions", "principal-account", "principal-service", "principal-user", "sleep-after"),
+	)
 }
 
 func (cmd *CreateRole) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -116,11 +116,11 @@ type DeleteRole struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Name   *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
 
-func (cmd *DeleteRole) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteRole) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 func (cmd *DeleteRole) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -149,12 +149,12 @@ type AttachRole struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             iamiface.IAMAPI
-	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" required:""`
-	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
+	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" `
+	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
 
-func (cmd *AttachRole) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachRole) Params() params.Rule {
+	return params.AllOf(params.Key("instanceprofile"), params.Key("name"))
 }
 
 type DetachRole struct {
@@ -162,10 +162,10 @@ type DetachRole struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             iamiface.IAMAPI
-	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" required:""`
-	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
+	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" `
+	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
 
-func (cmd *DetachRole) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachRole) Params() params.Rule {
+	return params.AllOf(params.Key("instanceprofile"), params.Key("name"))
 }

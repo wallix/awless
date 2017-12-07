@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -34,12 +35,14 @@ type CreateCertificate struct {
 	logger            *logger.Logger
 	graph             cloudgraph.GraphAPI
 	api               acmiface.ACMAPI
-	Domains           []*string `templateName:"domains" required:""`
+	Domains           []*string `templateName:"domains"`
 	ValidationDomains []*string `templateName:"validation-domains"`
 }
 
-func (cmd *CreateCertificate) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateCertificate) Params() params.Rule {
+	return params.AllOf(params.Key("domains"),
+		params.Opt("validation-domains"),
+	)
 }
 
 func (cmd *CreateCertificate) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -107,11 +110,11 @@ type DeleteCertificate struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    acmiface.ACMAPI
-	Arn    *string `awsName:"CertificateArn" awsType:"awsstr" templateName:"arn" required:""`
+	Arn    *string `awsName:"CertificateArn" awsType:"awsstr" templateName:"arn"`
 }
 
-func (cmd *DeleteCertificate) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteCertificate) Params() params.Rule {
+	return params.AllOf(params.Key("arn"))
 }
 
 type CheckCertificate struct {
@@ -119,13 +122,13 @@ type CheckCertificate struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     acmiface.ACMAPI
-	Arn     *string `templateName:"arn" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Arn     *string `templateName:"arn"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckCertificate) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckCertificate) Params() params.Rule {
+	return params.AllOf(params.Key("arn"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckCertificate) Validate_State() error {

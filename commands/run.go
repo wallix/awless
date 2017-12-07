@@ -47,6 +47,7 @@ import (
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
+	"github.com/wallix/awless/template/params"
 )
 
 var (
@@ -299,33 +300,23 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			apiStr = fmt.Sprint(strings.ToUpper(api) + " ")
 		}
 
-		var requiredStr bytes.Buffer
-		if len(templDef.RequiredParams) > 0 {
-			requiredStr.WriteString("\n\tRequired params:")
-			for _, req := range templDef.RequiredParams {
-				requiredStr.WriteString(fmt.Sprintf("\n\t\t- %s", req))
-				if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, req); ok {
-					requiredStr.WriteString(fmt.Sprintf(": %s", d))
+		var allParamsStr bytes.Buffer
+		allParams := params.Iter(templDef.Params)
+		if len(allParams) > 0 {
+			for p, opt := range allParams {
+				if opt {
+					allParamsStr.WriteString(fmt.Sprintf("\n  - [%s]", p))
+				} else {
+					allParamsStr.WriteString(fmt.Sprintf("\n  - %s", p))
 				}
-			}
-		}
-
-		var extraStr bytes.Buffer
-		if len(templDef.ExtraParams) > 0 {
-			extraStr.WriteString("\n\tExtra params:")
-			for _, ext := range templDef.ExtraParams {
-				extraStr.WriteString(fmt.Sprintf("\n\t\t- %s", ext))
-				if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, ext); ok {
-					extraStr.WriteString(fmt.Sprintf(": %s", d))
+				if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
+					allParamsStr.WriteString(fmt.Sprintf(": %s", d))
 				}
 			}
 		}
 
 		var validArgs []string
-		for _, param := range templDef.RequiredParams {
-			validArgs = append(validArgs, param+"=")
-		}
-		for _, param := range templDef.ExtraParams {
+		for param, _ := range allParams {
 			validArgs = append(validArgs, param+"=")
 		}
 		actionCmd.AddCommand(
@@ -334,7 +325,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 				PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
-				Long:              fmt.Sprintf("%s a %s%s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, requiredStr.String(), extraStr.String()),
+				Long:              fmt.Sprintf("%s a %s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, allParamsStr.String()),
 				Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
 				RunE:              run(templDef),
 				ValidArgs:         validArgs,
@@ -584,11 +575,11 @@ func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
 }
 
 func suggestFixParsingError(def awsspec.Definition, args []string, defaultErr error) (*template.Template, error) {
-	if len(def.RequiredParams) != 1 || len(args) != 1 {
+	if len(def.Params.Required()) != 1 || len(args) != 1 {
 		return nil, defaultErr
 	}
 
-	suggestText := fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, def.RequiredParams[0], args[0])
+	suggestText := fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, def.Params.Required()[0], args[0])
 
 	fmt.Printf("Did you mean `awless %s` (y/n)? ", suggestText)
 	var yesorno string

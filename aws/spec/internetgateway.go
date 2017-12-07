@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateInternetgateway struct {
@@ -30,8 +31,8 @@ type CreateInternetgateway struct {
 	api    ec2iface.EC2API
 }
 
-func (cmd *CreateInternetgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateInternetgateway) Params() params.Rule {
+	return params.None()
 }
 
 func (cmd *CreateInternetgateway) ExtractResult(i interface{}) string {
@@ -43,11 +44,11 @@ type DeleteInternetgateway struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteInternetgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteInternetgateway) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type AttachInternetgateway struct {
@@ -55,12 +56,12 @@ type AttachInternetgateway struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id" required:""`
-	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
+	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id"`
+	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 }
 
-func (cmd *AttachInternetgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachInternetgateway) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("vpc"))
 }
 
 type DetachInternetgateway struct {
@@ -68,10 +69,10 @@ type DetachInternetgateway struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id" required:""`
-	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
+	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id"`
+	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 }
 
-func (cmd *DetachInternetgateway) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachInternetgateway) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("vpc"))
 }

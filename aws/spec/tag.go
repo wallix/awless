@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -37,13 +38,13 @@ type CreateTag struct {
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
 	sess     *session.Session
-	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource" required:""`
-	Key      *string `templateName:"key" required:""`
-	Value    *string `templateName:"value" required:""`
+	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource"`
+	Key      *string `templateName:"key"`
+	Value    *string `templateName:"value"`
 }
 
-func (cmd *CreateTag) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateTag) Params() params.Rule {
+	return params.AllOf(params.Key("key"), params.Key("resource"), params.Key("value"))
 }
 
 func (cmd *CreateTag) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
@@ -94,13 +95,15 @@ type DeleteTag struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource" required:""`
-	Key      *string `templateName:"key" required:""`
+	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource"`
+	Key      *string `templateName:"key"`
 	Value    *string `templateName:"value"`
 }
 
-func (cmd *DeleteTag) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteTag) Params() params.Rule {
+	return params.AllOf(params.Key("key"), params.Key("resource"),
+		params.Opt("value"),
+	)
 }
 
 func (cmd *DeleteTag) DryRun(ctx, params map[string]interface{}) (interface{}, error) {

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/fatih/color"
 	"github.com/wallix/awless/aws/doc"
@@ -36,7 +37,7 @@ type ResultExtractor interface {
 
 type command interface {
 	ParamsHelp() string
-	ValidateParams([]string) ([]string, error)
+	Params() params.Rule
 	ValidateCommand(map[string]interface{}, []string) []error
 	inject(params map[string]interface{}) error
 	Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error)

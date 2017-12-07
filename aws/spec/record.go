@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
@@ -30,16 +31,18 @@ type CreateRecord struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     route53iface.Route53API
-	Zone    *string `templateName:"zone" required:""`
-	Name    *string `templateName:"name" required:""`
-	Type    *string `templateName:"type" required:""`
-	Value   *string `templateName:"value" required:""`
-	Ttl     *int64  `templateName:"ttl" required:""`
+	Zone    *string `templateName:"zone"`
+	Name    *string `templateName:"name"`
+	Type    *string `templateName:"type"`
+	Value   *string `templateName:"value"`
+	Ttl     *int64  `templateName:"ttl"`
 	Comment *string `templateName:"comment"`
 }
 
-func (cmd *CreateRecord) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateRecord) Params() params.Rule {
+	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"),
+		params.Opt("comment"),
+	)
 }
 
 func (cmd *CreateRecord) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -58,15 +61,15 @@ type UpdateRecord struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    route53iface.Route53API
-	Zone   *string `templateName:"zone" required:""`
-	Name   *string `templateName:"name" required:""`
-	Type   *string `templateName:"type" required:""`
-	Value  *string `templateName:"value" required:""`
-	Ttl    *int64  `templateName:"ttl" required:""`
+	Zone   *string `templateName:"zone"`
+	Name   *string `templateName:"name"`
+	Type   *string `templateName:"type"`
+	Value  *string `templateName:"value"`
+	Ttl    *int64  `templateName:"ttl"`
 }
 
-func (cmd *UpdateRecord) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateRecord) Params() params.Rule {
+	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"))
 }
 
 func (cmd *UpdateRecord) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -85,15 +88,15 @@ type DeleteRecord struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    route53iface.Route53API
-	Zone   *string `templateName:"zone" required:""`
-	Name   *string `templateName:"name" required:""`
-	Type   *string `templateName:"type" required:""`
-	Value  *string `templateName:"value" required:""`
-	Ttl    *int64  `templateName:"ttl" required:""`
+	Zone   *string `templateName:"zone"`
+	Name   *string `templateName:"name"`
+	Type   *string `templateName:"type"`
+	Value  *string `templateName:"value"`
+	Ttl    *int64  `templateName:"ttl"`
 }
 
-func (cmd *DeleteRecord) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteRecord) Params() params.Rule {
+	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"))
 }
 
 func (cmd *DeleteRecord) ManualRun(ctx map[string]interface{}) (interface{}, error) {

@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -37,13 +38,15 @@ type CreateKeypair struct {
 	logger            *logger.Logger
 	graph             cloudgraph.GraphAPI
 	api               ec2iface.EC2API
-	Name              *string `awsName:"KeyName" awsType:"awsstr" templateName:"name" required:""`
+	Name              *string `awsName:"KeyName" awsType:"awsstr" templateName:"name"`
 	Encrypted         *bool   `templateName:"encrypted"`
 	PublicKeyMaterial []byte  `awsName:"PublicKeyMaterial" awsType:"awsbyteslice"`
 }
 
-func (cmd *CreateKeypair) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateKeypair) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("encrypted"),
+	)
 }
 
 func (cmd *CreateKeypair) Validate_Name() error {
@@ -96,9 +99,9 @@ type DeleteKeypair struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Name   *string `awsName:"KeyName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"KeyName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteKeypair) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteKeypair) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }

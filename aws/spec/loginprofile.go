@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateLoginprofile struct {
@@ -28,13 +29,15 @@ type CreateLoginprofile struct {
 	logger        *logger.Logger
 	graph         cloudgraph.GraphAPI
 	api           iamiface.IAMAPI
-	Username      *string `awsName:"UserName" awsType:"awsstr" templateName:"username" required:""`
-	Password      *string `awsName:"Password" awsType:"awsstr" templateName:"password" required:""`
+	Username      *string `awsName:"UserName" awsType:"awsstr" templateName:"username"`
+	Password      *string `awsName:"Password" awsType:"awsstr" templateName:"password"`
 	PasswordReset *bool   `awsName:"PasswordResetRequired" awsType:"awsbool" templateName:"password-reset"`
 }
 
-func (cmd *CreateLoginprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateLoginprofile) Params() params.Rule {
+	return params.AllOf(params.Key("password"), params.Key("username"),
+		params.Opt("password-reset"),
+	)
 }
 
 func (cmd *CreateLoginprofile) ExtractResult(i interface{}) string {
@@ -46,13 +49,15 @@ type UpdateLoginprofile struct {
 	logger        *logger.Logger
 	graph         cloudgraph.GraphAPI
 	api           iamiface.IAMAPI
-	Username      *string `awsName:"UserName" awsType:"awsstr" templateName:"username" required:""`
-	Password      *string `awsName:"Password" awsType:"awsstr" templateName:"password" required:""`
+	Username      *string `awsName:"UserName" awsType:"awsstr" templateName:"username"`
+	Password      *string `awsName:"Password" awsType:"awsstr" templateName:"password"`
 	PasswordReset *bool   `awsName:"PasswordResetRequired" awsType:"awsbool" templateName:"password-reset"`
 }
 
-func (cmd *UpdateLoginprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateLoginprofile) Params() params.Rule {
+	return params.AllOf(params.Key("password"), params.Key("username"),
+		params.Opt("password-reset"),
+	)
 }
 
 type DeleteLoginprofile struct {
@@ -60,9 +65,9 @@ type DeleteLoginprofile struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      iamiface.IAMAPI
-	Username *string `awsName:"UserName" awsType:"awsstr" templateName:"username" required:""`
+	Username *string `awsName:"UserName" awsType:"awsstr" templateName:"username"`
 }
 
-func (cmd *DeleteLoginprofile) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteLoginprofile) Params() params.Rule {
+	return params.AllOf(params.Key("username"))
 }

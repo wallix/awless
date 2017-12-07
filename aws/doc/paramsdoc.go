@@ -107,8 +107,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"timeout": "The time (in seconds) after which the check is failed",
 	},
 	"createaccesskey": {
-		"user": "The name of the user for which the access key will be generated",
-		"save": "Use 'true' to save the access key in ~/.aws/credentials under 'user' profile; use 'false' to disable the prompt (true | false)",
+		"user":      "The name of the user for which the access key will be generated",
+		"save":      "Use 'true' to save the access key in ~/.aws/credentials under 'user' profile; use 'false' to disable the prompt (true | false)",
+		"no-prompt": "Deprecated - use the save param",
 	},
 	"createalarm": {
 		"operator":           "The arithmetic operation to use when comparing the specified statistic and threshold (GreaterThanThreshold | LessThanThreshold | LessThanOrEqualToThreshold | GreaterThanOrEqualToThreshold)",
@@ -345,6 +346,7 @@ var manualParamsDoc = map[string]map[string]string{
 	},
 	"deleteinstance": {
 		"ids": "The ID(s) of the instance(s) to be deleted",
+		"id":  "The ID of the instance(s) to be deleted",
 	},
 	"deleteinternetgateway": {
 		"id": "The ID of the Internet gateway to be deleted",

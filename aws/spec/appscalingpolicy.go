@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateAppscalingpolicy struct {
@@ -28,20 +29,22 @@ type CreateAppscalingpolicy struct {
 	logger                            *logger.Logger
 	graph                             cloudgraph.GraphAPI
 	api                               applicationautoscalingiface.ApplicationAutoScalingAPI
-	Name                              *string   `awsName:"PolicyName" awsType:"awsstr" templateName:"name" required:""`
-	Type                              *string   `awsName:"PolicyType" awsType:"awsstr" templateName:"type" required:""`
-	Resource                          *string   `awsName:"ResourceId" awsType:"awsstr" templateName:"resource" required:""`
-	Dimension                         *string   `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension" required:""`
-	ServiceNamespace                  *string   `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace" required:""`
-	StepscalingAdjustmentType         *string   `awsName:"StepScalingPolicyConfiguration.AdjustmentType" awsType:"awsstr" templateName:"stepscaling-adjustment-type" required:""`
-	StepscalingAdjustments            []*string `awsName:"StepScalingPolicyConfiguration.StepAdjustments" awsType:"awsstepadjustments" templateName:"stepscaling-adjustments" required:""`
+	Name                              *string   `awsName:"PolicyName" awsType:"awsstr" templateName:"name"`
+	Type                              *string   `awsName:"PolicyType" awsType:"awsstr" templateName:"type"`
+	Resource                          *string   `awsName:"ResourceId" awsType:"awsstr" templateName:"resource"`
+	Dimension                         *string   `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension"`
+	ServiceNamespace                  *string   `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
+	StepscalingAdjustmentType         *string   `awsName:"StepScalingPolicyConfiguration.AdjustmentType" awsType:"awsstr" templateName:"stepscaling-adjustment-type"`
+	StepscalingAdjustments            []*string `awsName:"StepScalingPolicyConfiguration.StepAdjustments" awsType:"awsstepadjustments" templateName:"stepscaling-adjustments"`
 	StepscalingCooldown               *int64    `awsName:"StepScalingPolicyConfiguration.Cooldown" awsType:"awsint64" templateName:"stepscaling-cooldown"`
 	StepscalingAggregationType        *string   `awsName:"StepScalingPolicyConfiguration.MetricAggregationType" awsType:"awsstr" templateName:"stepscaling-aggregation-type"`
 	StepscalingMinAdjustmentMagnitude *int64    `awsName:"StepScalingPolicyConfiguration.MinAdjustmentMagnitude" awsType:"awsint64" templateName:"stepscaling-min-adjustment-magnitude"`
 }
 
-func (cmd *CreateAppscalingpolicy) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateAppscalingpolicy) Params() params.Rule {
+	return params.AllOf(params.Key("dimension"), params.Key("name"), params.Key("resource"), params.Key("service-namespace"), params.Key("stepscaling-adjustment-type"), params.Key("stepscaling-adjustments"), params.Key("type"),
+		params.Opt("stepscaling-aggregation-type", "stepscaling-cooldown", "stepscaling-min-adjustment-magnitude"),
+	)
 }
 
 func (cmd *CreateAppscalingpolicy) ExtractResult(i interface{}) string {
@@ -53,12 +56,12 @@ type DeleteAppscalingpolicy struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              applicationautoscalingiface.ApplicationAutoScalingAPI
-	Name             *string `awsName:"PolicyName" awsType:"awsstr" templateName:"name" required:""`
-	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource" required:""`
-	Dimension        *string `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension" required:""`
-	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace" required:""`
+	Name             *string `awsName:"PolicyName" awsType:"awsstr" templateName:"name"`
+	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource"`
+	Dimension        *string `awsName:"ScalableDimension" awsType:"awsstr" templateName:"dimension"`
+	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
 }
 
-func (cmd *DeleteAppscalingpolicy) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteAppscalingpolicy) Params() params.Rule {
+	return params.AllOf(params.Key("dimension"), params.Key("name"), params.Key("resource"), params.Key("service-namespace"))
 }

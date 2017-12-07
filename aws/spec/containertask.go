@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -35,10 +36,10 @@ type StartContainertask struct {
 	logger                    *logger.Logger
 	graph                     cloudgraph.GraphAPI
 	api                       ecsiface.ECSAPI
-	Cluster                   *string `templateName:"cluster" required:""`
-	DesiredCount              *int64  `templateName:"desired-count" required:""`
-	Name                      *string `templateName:"name" required:""`
-	Type                      *string `templateName:"type" required:""`
+	Cluster                   *string `templateName:"cluster"`
+	DesiredCount              *int64  `templateName:"desired-count"`
+	Name                      *string `templateName:"name"`
+	Type                      *string `templateName:"type"`
 	Role                      *string `templateName:"role"`
 	DeploymentName            *string `templateName:"deployment-name"`
 	LoadBalancerContainerName *string `templateName:"loadbalancer.container-name"`
@@ -46,8 +47,10 @@ type StartContainertask struct {
 	LoadBalancerTargetgroup   *string `templateName:"loadbalancer.targetgroup"`
 }
 
-func (cmd *StartContainertask) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *StartContainertask) Params() params.Rule {
+	return params.AllOf(params.Key("cluster"), params.Key("desired-count"), params.Key("name"), params.Key("type"),
+		params.Opt("deployment-name", "loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role"),
+	)
 }
 
 func (cmd *StartContainertask) Validate_Type() error {
@@ -133,14 +136,16 @@ type StopContainertask struct {
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            ecsiface.ECSAPI
-	Cluster        *string `templateName:"cluster" required:""`
-	Type           *string `templateName:"type" required:""`
+	Cluster        *string `templateName:"cluster"`
+	Type           *string `templateName:"type"`
 	DeploymentName *string `templateName:"deployment-name"`
 	RunArn         *string `templateName:"run-arn"`
 }
 
-func (cmd *StopContainertask) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *StopContainertask) Params() params.Rule {
+	return params.AllOf(params.Key("cluster"), params.Key("type"),
+		params.Opt("deployment-name", "run-arn"),
+	)
 }
 
 func (cmd *StopContainertask) Validate_Type() error {
@@ -190,14 +195,16 @@ type UpdateContainertask struct {
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            ecsiface.ECSAPI
-	Cluster        *string `awsName:"Cluster" awsType:"awsstr" templateName:"cluster" required:""`
-	DeploymentName *string `awsName:"Service" awsType:"awsstr" templateName:"deployment-name" required:""`
+	Cluster        *string `awsName:"Cluster" awsType:"awsstr" templateName:"cluster"`
+	DeploymentName *string `awsName:"Service" awsType:"awsstr" templateName:"deployment-name"`
 	DesiredCount   *int64  `awsName:"DesiredCount" awsType:"awsint64" templateName:"desired-count"`
 	Name           *string `awsName:"TaskDefinition" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *UpdateContainertask) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateContainertask) Params() params.Rule {
+	return params.AllOf(params.Key("cluster"), params.Key("deployment-name"),
+		params.Opt("desired-count", "name"),
+	)
 }
 
 type AttachContainertask struct {
@@ -205,10 +212,10 @@ type AttachContainertask struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             ecsiface.ECSAPI
-	Name            *string   `templateName:"name" required:""`
-	ContainerName   *string   `templateName:"container-name" required:""`
-	Image           *string   `templateName:"image" required:""`
-	MemoryHardLimit *int64    `templateName:"memory-hard-limit" required:""`
+	Name            *string   `templateName:"name"`
+	ContainerName   *string   `templateName:"container-name"`
+	Image           *string   `templateName:"image"`
+	MemoryHardLimit *int64    `templateName:"memory-hard-limit"`
 	Commands        []*string `templateName:"command"`
 	Env             []*string `templateName:"env"`
 	Privileged      *bool     `templateName:"privileged"`
@@ -216,8 +223,10 @@ type AttachContainertask struct {
 	Ports           []*string `templateName:"ports"`
 }
 
-func (cmd *AttachContainertask) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachContainertask) Params() params.Rule {
+	return params.AllOf(params.Key("container-name"), params.Key("image"), params.Key("memory-hard-limit"), params.Key("name"),
+		params.Opt("command", "env", "ports", "privileged", "workdir"),
+	)
 }
 
 func (cmd *AttachContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -313,12 +322,12 @@ type DetachContainertask struct {
 	logger        *logger.Logger
 	graph         cloudgraph.GraphAPI
 	api           ecsiface.ECSAPI
-	Name          *string `templateName:"name" required:""`
-	ContainerName *string `templateName:"container-name" required:""`
+	Name          *string `templateName:"name"`
+	ContainerName *string `templateName:"container-name"`
 }
 
-func (cmd *DetachContainertask) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachContainertask) Params() params.Rule {
+	return params.AllOf(params.Key("container-name"), params.Key("name"))
 }
 
 func (cmd *DetachContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -382,12 +391,14 @@ type DeleteContainertask struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ecsiface.ECSAPI
-	Name        *string `templateName:"name" required:""`
+	Name        *string `templateName:"name"`
 	AllVersions *bool   `templateName:"all-versions"`
 }
 
-func (cmd *DeleteContainertask) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteContainertask) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("all-versions"),
+	)
 }
 
 func (cmd *DeleteContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {

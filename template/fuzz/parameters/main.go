@@ -13,7 +13,7 @@ func Fuzz(data []byte) int {
 	for _, def := range awsspec.AWSTemplatesDefinitions {
 		env := template.NewEnv()
 		fillers := make(map[string]interface{})
-		for _, param := range def.RequiredParams {
+		for _, param := range def.Params.Required() {
 			fillers[param] = "default"
 		}
 		env.AddFillers(fillers)
@@ -22,7 +22,7 @@ func Fuzz(data []byte) int {
 		env.Lookuper = func(tokens ...string) interface{} {
 			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 		}
-		for _, param := range def.RequiredParams {
+		for _, param := range def.Params.Required() {
 			inTpl, err := template.Parse(fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, param, string(data)))
 			if err != nil {
 				continue

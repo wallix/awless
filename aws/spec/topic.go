@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateTopic struct {
@@ -28,11 +29,11 @@ type CreateTopic struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    snsiface.SNSAPI
-	Name   *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateTopic) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateTopic) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 func (cmd *CreateTopic) ExtractResult(i interface{}) string {
@@ -44,9 +45,9 @@ type DeleteTopic struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    snsiface.SNSAPI
-	Id     *string `awsName:"TopicArn" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"TopicArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteTopic) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteTopic) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

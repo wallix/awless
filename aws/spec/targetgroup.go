@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -30,10 +31,10 @@ type CreateTargetgroup struct {
 	logger              *logger.Logger
 	graph               cloudgraph.GraphAPI
 	api                 elbv2iface.ELBV2API
-	Name                *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
-	Port                *int64  `awsName:"Port" awsType:"awsint64" templateName:"port" required:""`
-	Protocol            *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol" required:""`
-	Vpc                 *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
+	Name                *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
+	Port                *int64  `awsName:"Port" awsType:"awsint64" templateName:"port"`
+	Protocol            *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol"`
+	Vpc                 *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 	Healthcheckinterval *int64  `awsName:"HealthCheckIntervalSeconds" awsType:"awsint64" templateName:"healthcheckinterval"`
 	Healthcheckpath     *string `awsName:"HealthCheckPath" awsType:"awsstr" templateName:"healthcheckpath"`
 	Healthcheckport     *string `awsName:"HealthCheckPort" awsType:"awsstr" templateName:"healthcheckport"`
@@ -44,8 +45,10 @@ type CreateTargetgroup struct {
 	Matcher             *string `awsName:"Matcher.HttpCode" awsType:"awsstr" templateName:"matcher"`
 }
 
-func (cmd *CreateTargetgroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateTargetgroup) Params() params.Rule {
+	return params.AllOf(params.Key("name"), params.Key("port"), params.Key("protocol"), params.Key("vpc"),
+		params.Opt("healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "unhealthythreshold"),
+	)
 }
 
 func (cmd *CreateTargetgroup) ExtractResult(i interface{}) string {
@@ -57,7 +60,7 @@ type UpdateTargetgroup struct {
 	logger              *logger.Logger
 	graph               cloudgraph.GraphAPI
 	api                 elbv2iface.ELBV2API
-	Id                  *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"id" required:""`
+	Id                  *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"id"`
 	Deregistrationdelay *string `awsType:"awsstr" templateName:"deregistrationdelay"`
 	Stickiness          *string `awsType:"awsstr" templateName:"stickiness"`
 	Stickinessduration  *string `awsType:"awsstr" templateName:"stickinessduration"`
@@ -71,8 +74,10 @@ type UpdateTargetgroup struct {
 	Matcher             *string `awsName:"Matcher.HttpCode" awsType:"awsstr" templateName:"matcher"`
 }
 
-func (cmd *UpdateTargetgroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateTargetgroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("deregistrationdelay", "healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"),
+	)
 }
 
 func (tg *UpdateTargetgroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -184,9 +189,9 @@ type DeleteTargetgroup struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    elbv2iface.ELBV2API
-	Id     *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteTargetgroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteTargetgroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

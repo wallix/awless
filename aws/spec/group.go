@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateGroup struct {
@@ -28,11 +29,11 @@ type CreateGroup struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Name   *string `awsName:"GroupName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"GroupName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateGroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateGroup) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }
 
 func (cmd *CreateGroup) ExtractResult(i interface{}) string {
@@ -44,9 +45,9 @@ type DeleteGroup struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
-	Name   *string `awsName:"GroupName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"GroupName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteGroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteGroup) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }

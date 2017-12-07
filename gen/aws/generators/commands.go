@@ -107,6 +107,9 @@ func generateCommands() {
 type cmdData struct {
 	Action, Entity, API, Call, Input, Output string
 	Params                                   []templateParam
+	RequiredParamsKey                        []string
+	ExtrasParamsKey                          []string
+	HasRequiredParams                        bool
 	HasDryRun                                bool
 	GenDryRun                                bool
 }
@@ -145,6 +148,14 @@ func (v *findStructs) Visit(node ast.Node) (w ast.Visitor) {
 						return params[i].Name < params[j].Name
 					})
 					cmd.Params = params
+				}
+				for _, p := range cmd.Params {
+					if p.IsRequired {
+						cmd.HasRequiredParams = true
+						cmd.RequiredParamsKey = append(cmd.RequiredParamsKey, p.Name)
+					} else {
+						cmd.ExtrasParamsKey = append(cmd.ExtrasParamsKey, p.Name)
+					}
 				}
 				v.result[typ.Name.Name] = *cmd
 			}
@@ -464,13 +475,12 @@ var APIPerTemplateDefName = map[string]string {
 }
 
 var AWSTemplatesDefinitions = map[string]Definition{
-{{- range $, $cmd := . }}
+{{- range $cmdName, $cmd := . }}
 	"{{ $cmd.Action }}{{ $cmd.Entity }}": Definition{
 			Action: "{{ $cmd.Action }}",
 			Entity: "{{ $cmd.Entity }}",
 			Api: "{{ $cmd.API }}",
-			RequiredParams: []string{ {{- range $param := $cmd.Params }}{{ if $param.IsRequired }}"{{ $param.Name }}", {{- end}}{{- end}} },
-			ExtraParams: []string{ {{- range $param := $cmd.Params }}{{ if not $param.IsRequired }}"{{ $param.Name }}", {{- end}}{{- end}} },
+			Params: new({{ $cmdName }}).Params(),
 		},
 {{- end }}
 }

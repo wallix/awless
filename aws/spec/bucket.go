@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -31,12 +32,14 @@ type CreateBucket struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    s3iface.S3API
-	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name"`
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 }
 
-func (cmd *CreateBucket) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateBucket) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("acl"),
+	)
 }
 
 func (cmd *CreateBucket) ExtractResult(i interface{}) string {
@@ -48,7 +51,7 @@ type UpdateBucket struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              s3iface.S3API
-	Name             *string `templateName:"name" required:""`
+	Name             *string `templateName:"name"`
 	Acl              *string `templateName:"acl"`
 	PublicWebsite    *bool   `templateName:"public-website"`
 	RedirectHostname *string `templateName:"redirect-hostname"`
@@ -56,11 +59,10 @@ type UpdateBucket struct {
 	EnforceHttps     *bool   `templateName:"enforce-https"`
 }
 
-func (cmd *UpdateBucket) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree:   allOf(node("name"), oneOfE(node("public-website"), node("acl"))),
-		extras: []string{"redirect-hostname", "index-suffix", "enforce-https"},
-	}.verify(params)
+func (cmd *UpdateBucket) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("acl", "enforce-https", "index-suffix", "public-website", "redirect-hostname"),
+	)
 }
 
 func (cmd *UpdateBucket) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -118,9 +120,9 @@ type DeleteBucket struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    s3iface.S3API
-	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteBucket) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteBucket) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }

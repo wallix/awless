@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateSubnet struct {
@@ -31,15 +32,18 @@ type CreateSubnet struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              ec2iface.EC2API
-	CIDR             *string `awsName:"CidrBlock" awsType:"awsstr" templateName:"cidr" required:""`
-	VPC              *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
+	CIDR             *string `awsName:"CidrBlock" awsType:"awsstr" templateName:"cidr"`
+	VPC              *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 	AvailabilityZone *string `awsName:"AvailabilityZone" awsType:"awsstr" templateName:"availabilityzone"`
 	Public           *bool   `awsType:"awsboolattribute" templateName:"public"`
 	Name             *string `templateName:"name"`
 }
 
-func (cmd *CreateSubnet) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateSubnet) Params() params.Rule {
+	return params.AllOf(
+		params.Key("cidr"), params.Key("vpc"),
+		params.Opt("availabilityzone", "public", "name"),
+	)
 }
 
 func (cmd *CreateSubnet) Validate_CIDR() error {
@@ -74,12 +78,12 @@ type UpdateSubnet struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id"`
 	Public *bool   `awsName:"MapPublicIpOnLaunch" awsType:"awsboolattribute" templateName:"public"`
 }
 
-func (cmd *UpdateSubnet) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *UpdateSubnet) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Opt("public"))
 }
 
 type DeleteSubnet struct {
@@ -87,9 +91,9 @@ type DeleteSubnet struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSubnet) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteSubnet) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

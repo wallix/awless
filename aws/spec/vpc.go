@@ -19,6 +19,7 @@ import (
 	"net"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -31,12 +32,14 @@ type CreateVpc struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	CIDR   *string `awsName:"CidrBlock" awsType:"awsstr" templateName:"cidr" required:""`
+	CIDR   *string `awsName:"CidrBlock" awsType:"awsstr" templateName:"cidr"`
 	Name   *string `awsName:"Name" templateName:"name"`
 }
 
-func (cmd *CreateVpc) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateVpc) Params() params.Rule {
+	return params.AllOf(params.Key("cidr"),
+		params.Opt("name"),
+	)
 }
 
 func (cmd *CreateVpc) Validate_CIDR() error {
@@ -57,9 +60,9 @@ type DeleteVpc struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"VpcId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"VpcId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteVpc) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteVpc) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

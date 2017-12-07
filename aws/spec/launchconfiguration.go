@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateLaunchconfiguration struct {
@@ -26,9 +27,9 @@ type CreateLaunchconfiguration struct {
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            autoscalingiface.AutoScalingAPI
-	Image          *string   `awsName:"ImageId" awsType:"awsstr" templateName:"image" required:""`
-	Type           *string   `awsName:"InstanceType" awsType:"awsstr" templateName:"type" required:""`
-	Name           *string   `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name" required:""`
+	Image          *string   `awsName:"ImageId" awsType:"awsstr" templateName:"image"`
+	Type           *string   `awsName:"InstanceType" awsType:"awsstr" templateName:"type"`
+	Name           *string   `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name"`
 	Public         *bool     `awsName:"AssociatePublicIpAddress" awsType:"awsbool" templateName:"public"`
 	Keypair        *string   `awsName:"KeyName" awsType:"awsstr" templateName:"keypair"`
 	Userdata       *string   `awsName:"UserData" awsType:"awsfiletobase64" templateName:"userdata"`
@@ -38,11 +39,10 @@ type CreateLaunchconfiguration struct {
 	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
-func (cmd *CreateLaunchconfiguration) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree:   allOf(oneOf(node("distro"), node("image")), node("type"), node("name")),
-		extras: []string{"public", "keypair", "userdata", "securitygroups", "role", "spotprice"},
-	}.verify(params)
+func (cmd *CreateLaunchconfiguration) Params() params.Rule {
+	return params.AllOf(params.Key("image"), params.Key("name"), params.Key("type"),
+		params.Opt("distro", "keypair", "public", "role", "securitygroups", "spotprice", "userdata"),
+	)
 }
 
 func (cmd *CreateLaunchconfiguration) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -59,9 +59,9 @@ type DeleteLaunchconfiguration struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    autoscalingiface.AutoScalingAPI
-	Name   *string `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteLaunchconfiguration) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteLaunchconfiguration) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }

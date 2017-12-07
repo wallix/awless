@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -35,14 +36,16 @@ type CreateNetworkinterface struct {
 	logger         *logger.Logger
 	graph          cloudgraph.GraphAPI
 	api            ec2iface.EC2API
-	Subnet         *string   `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet" required:""`
+	Subnet         *string   `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 	Description    *string   `awsName:"Description" awsType:"awsstr" templateName:"description"`
 	Securitygroups []*string `awsName:"Groups" awsType:"awsstringslice" templateName:"securitygroups"`
 	Privateip      *string   `awsName:"PrivateIpAddress" awsType:"awsstr" templateName:"privateip"`
 }
 
-func (cmd *CreateNetworkinterface) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateNetworkinterface) Params() params.Rule {
+	return params.AllOf(params.Key("subnet"),
+		params.Opt("description", "privateip", "securitygroups"),
+	)
 }
 
 func (cmd *CreateNetworkinterface) ExtractResult(i interface{}) string {
@@ -54,11 +57,11 @@ type DeleteNetworkinterface struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteNetworkinterface) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteNetworkinterface) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type AttachNetworkinterface struct {
@@ -66,13 +69,13 @@ type AttachNetworkinterface struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
-	Id          *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id" required:""`
-	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
-	DeviceIndex *int64  `awsName:"DeviceIndex" awsType:"awsint64" templateName:"device-index" required:""`
+	Id          *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id"`
+	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
+	DeviceIndex *int64  `awsName:"DeviceIndex" awsType:"awsint64" templateName:"device-index"`
 }
 
-func (cmd *AttachNetworkinterface) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachNetworkinterface) Params() params.Rule {
+	return params.AllOf(params.Key("device-index"), params.Key("id"), params.Key("instance"))
 }
 
 func (cmd *AttachNetworkinterface) ExtractResult(i interface{}) string {
@@ -90,11 +93,12 @@ type DetachNetworkinterface struct {
 	Force      *bool   `awsName:"Force" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DetachNetworkinterface) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree:   oneOf(allOf(node("instance"), node("id")), node("attachment")),
-		extras: []string{"force"},
-	}.verify(params)
+func (cmd *DetachNetworkinterface) Params() params.Rule {
+	return params.OnlyOneOf(
+		params.AllOf(params.Key("instance"), params.Key("id")),
+		params.Key("attachment"),
+		params.Opt("force"),
+	)
 }
 
 func (cmd *DetachNetworkinterface) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
@@ -174,13 +178,13 @@ type CheckNetworkinterface struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     ec2iface.EC2API
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckNetworkinterface) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckNetworkinterface) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckNetworkinterface) Validate_State() error {

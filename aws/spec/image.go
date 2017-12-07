@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -35,14 +36,16 @@ type CreateImage struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
-	Name        *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
-	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
+	Name        *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
+	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
 	Reboot      *bool   `awsName:"NoReboot" awsType:"awsbool" templateName:"reboot"`
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateImage) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateImage) Params() params.Rule {
+	return params.AllOf(params.Key("instance"), params.Key("name"),
+		params.Opt("description", "reboot"),
+	)
 }
 
 func (cmd *CreateImage) Validate_Name() (err error) {
@@ -72,7 +75,7 @@ type UpdateImage struct {
 	logger       *logger.Logger
 	graph        cloudgraph.GraphAPI
 	api          ec2iface.EC2API
-	Id           *string   `awsName:"ImageId" awsType:"awsstr" templateName:"id" required:""`
+	Id           *string   `awsName:"ImageId" awsType:"awsstr" templateName:"id"`
 	Groups       []*string `awsName:"UserGroups" awsType:"awsstringslice" templateName:"groups"`
 	Accounts     []*string `awsName:"UserIds" awsType:"awsstringslice" templateName:"accounts"`
 	Operation    *string   `awsName:"OperationType" awsType:"awsstr" templateName:"operation"`
@@ -80,10 +83,10 @@ type UpdateImage struct {
 	Description  *string   `awsName:"Description" awsType:"awsstringattribute" templateName:"description"`
 }
 
-func (cmd *UpdateImage) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree: allOf(node("id"), oneOf(allOf(node("operation"), oneOf(node("accounts"), node("groups"))), node("product-codes"), node("description"))),
-	}.verify(params)
+func (cmd *UpdateImage) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("accounts", "description", "groups", "operation", "product-codes"),
+	)
 }
 
 func (cmd *UpdateImage) prepareImageAttributeInput(ctx map[string]interface{}) (*ec2.ModifyImageAttributeInput, error) {
@@ -149,15 +152,17 @@ type CopyImage struct {
 	logger       *logger.Logger
 	graph        cloudgraph.GraphAPI
 	api          ec2iface.EC2API
-	Name         *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
-	SourceId     *string `awsName:"SourceImageId" awsType:"awsstr" templateName:"source-id" required:""`
-	SourceRegion *string `awsName:"SourceRegion" awsType:"awsstr" templateName:"source-region" required:""`
+	Name         *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
+	SourceId     *string `awsName:"SourceImageId" awsType:"awsstr" templateName:"source-id"`
+	SourceRegion *string `awsName:"SourceRegion" awsType:"awsstr" templateName:"source-region"`
 	Encrypted    *bool   `awsName:"Encrypted" awsType:"awsbool" templateName:"encrypted"`
 	Description  *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CopyImage) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CopyImage) Params() params.Rule {
+	return params.AllOf(params.Key("name"), params.Key("source-id"), params.Key("source-region"),
+		params.Opt("description", "encrypted"),
+	)
 }
 
 func (cmd *CopyImage) ExtractResult(i interface{}) string {
@@ -180,11 +185,12 @@ type ImportImage struct {
 	S3object     *string `awsName:"DiskContainers[0]UserBucket.S3Key" awsType:"awsslicestruct" templateName:"s3object"`
 }
 
-func (cmd *ImportImage) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree:   oneOfE(node("snapshot"), node("url"), allOf(node("bucket"), node("s3object"))),
-		extras: []string{"architecture", "description", "license", "platform", "role"},
-	}.verify(params)
+func (cmd *ImportImage) Params() params.Rule {
+	return params.OnlyOneOf(
+		params.Key("snapshot"), params.Key("url"),
+		params.AllOf(params.Key("bucket"), params.Key("s3object")),
+		params.Opt("architecture", "description", "license", "platform", "role"),
+	)
 }
 
 func (cmd *ImportImage) ExtractResult(i interface{}) string {
@@ -196,12 +202,14 @@ type DeleteImage struct {
 	logger          *logger.Logger
 	graph           cloudgraph.GraphAPI
 	api             ec2iface.EC2API
-	Id              *string `templateName:"id" required:""`
+	Id              *string `templateName:"id"`
 	DeleteSnapshots *bool   `templateName:"delete-snapshots"`
 }
 
-func (cmd *DeleteImage) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteImage) Params() params.Rule {
+	return params.AllOf(params.Key("id"),
+		params.Opt("delete-snapshots"),
+	)
 }
 
 func (cmd *DeleteImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {

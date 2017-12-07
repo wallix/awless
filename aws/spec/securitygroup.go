@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -37,13 +38,13 @@ type CreateSecuritygroup struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
-	Name        *string `awsName:"GroupName" awsType:"awsstr" templateName:"name" required:""`
-	Vpc         *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
-	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description" required:""`
+	Name        *string `awsName:"GroupName" awsType:"awsstr" templateName:"name"`
+	Vpc         *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
+	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateSecuritygroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateSecuritygroup) Params() params.Rule {
+	return params.AllOf(params.Key("description"), params.Key("name"), params.Key("vpc"))
 }
 
 func (cmd *CreateSecuritygroup) ExtractResult(i interface{}) string {
@@ -55,8 +56,8 @@ type UpdateSecuritygroup struct {
 	logger        *logger.Logger
 	graph         cloudgraph.GraphAPI
 	api           ec2iface.EC2API
-	Id            *string `templateName:"id" required:""`
-	Protocol      *string `templateName:"protocol" required:""`
+	Id            *string `templateName:"id"`
+	Protocol      *string `templateName:"protocol"`
 	CIDR          *string `templateName:"cidr"`
 	Securitygroup *string `templateName:"securitygroup"`
 	Inbound       *string `templateName:"inbound"`
@@ -64,11 +65,10 @@ type UpdateSecuritygroup struct {
 	Portrange     *string `templateName:"portrange"`
 }
 
-func (cmd *UpdateSecuritygroup) ValidateParams(params []string) ([]string, error) {
-	return paramRule{
-		tree:   allOf(node("id"), node("protocol"), oneOfE(node("inbound"), node("outbound")), oneOf(node("cidr"), node("securitygroup"))),
-		extras: []string{"portrange"},
-	}.verify(params)
+func (cmd *UpdateSecuritygroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("protocol"),
+		params.Opt("cidr", "inbound", "outbound", "portrange", "securitygroup"),
+	)
 }
 
 func (cmd *UpdateSecuritygroup) Validate_CIDR() error {
@@ -207,11 +207,11 @@ type DeleteSecuritygroup struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"GroupId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"GroupId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSecuritygroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteSecuritygroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type CheckSecuritygroup struct {
@@ -219,13 +219,13 @@ type CheckSecuritygroup struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     ec2iface.EC2API
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckSecuritygroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckSecuritygroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckSecuritygroup) Validate_State() error {
@@ -268,12 +268,12 @@ type AttachSecuritygroup struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Id       *string `templateName:"id" required:""`
-	Instance *string `templateName:"instance" required:""`
+	Id       *string `templateName:"id"`
+	Instance *string `templateName:"instance"`
 }
 
-func (cmd *AttachSecuritygroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachSecuritygroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("instance"))
 }
 
 func (cmd *AttachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
@@ -300,12 +300,12 @@ type DetachSecuritygroup struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Id       *string `templateName:"id" required:""`
-	Instance *string `templateName:"instance" required:""`
+	Id       *string `templateName:"id"`
+	Instance *string `templateName:"instance"`
 }
 
-func (cmd *DetachSecuritygroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachSecuritygroup) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("instance"))
 }
 
 func (cmd *DetachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {

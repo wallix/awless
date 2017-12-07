@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/aws/doc"
+	"github.com/wallix/awless/template/params"
 )
 
 func TestDocForEachCommand(t *testing.T) {
@@ -16,17 +17,10 @@ func TestDocForEachCommand(t *testing.T) {
 }
 func TestDocForEachParam(t *testing.T) {
 	for name, def := range AWSTemplatesDefinitions {
-		for _, param := range def.RequiredParams {
+		for param, _ := range params.Iter(def.Params) {
 			if doc, ok := awsdoc.TemplateParamsDoc(name, param); !ok || doc == "" {
 				t.Fatalf("missing documentation for param '%s' for '%s'", param, name)
 			}
 		}
-
-		for _, param := range def.ExtraParams {
-			if doc, ok := awsdoc.TemplateParamsDoc(name, param); !ok || doc == "" {
-				t.Fatalf("missing documentation for param '%s' for '%s'", param, name)
-			}
-		}
-
 	}
 }

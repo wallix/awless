@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateQueue struct {
@@ -28,7 +29,7 @@ type CreateQueue struct {
 	logger            *logger.Logger
 	graph             cloudgraph.GraphAPI
 	api               sqsiface.SQSAPI
-	Name              *string `awsName:"QueueName" awsType:"awsstr" templateName:"name" required:""`
+	Name              *string `awsName:"QueueName" awsType:"awsstr" templateName:"name"`
 	Delay             *string `awsName:"Attributes[DelaySeconds]" awsType:"awsstringpointermap" templateName:"delay"`
 	MaxMsgSize        *string `awsName:"Attributes[MaximumMessageSize]" awsType:"awsstringpointermap" templateName:"max-msg-size"`
 	RetentionPeriod   *string `awsName:"Attributes[MessageRetentionPeriod]" awsType:"awsstringpointermap" templateName:"retention-period"`
@@ -38,8 +39,10 @@ type CreateQueue struct {
 	VisibilityTimeout *string `awsName:"Attributes[VisibilityTimeout]" awsType:"awsstringpointermap" templateName:"visibility-timeout"`
 }
 
-func (cmd *CreateQueue) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateQueue) Params() params.Rule {
+	return params.AllOf(params.Key("name"),
+		params.Opt("delay", "max-msg-size", "msg-wait", "policy", "redrive-policy", "retention-period", "visibility-timeout"),
+	)
 }
 
 func (cmd *CreateQueue) ExtractResult(i interface{}) string {
@@ -51,9 +54,9 @@ type DeleteQueue struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    sqsiface.SQSAPI
-	Url    *string `awsName:"QueueUrl" awsType:"awsstr" templateName:"url" required:""`
+	Url    *string `awsName:"QueueUrl" awsType:"awsstr" templateName:"url"`
 }
 
-func (cmd *DeleteQueue) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteQueue) Params() params.Rule {
+	return params.AllOf(params.Key("url"))
 }

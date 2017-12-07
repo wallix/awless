@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/wallix/awless/template/params"
 )
 
 func checkErrs(t *testing.T, errs []error, length int, expected ...string) {
@@ -73,7 +75,7 @@ type validParamTestStruct struct {
 }
 
 func (*validParamTestStruct) ParamsHelp() string                                       { return "" }
-func (*validParamTestStruct) ValidateParams([]string) ([]string, error)                { return nil, nil }
+func (*validParamTestStruct) Params() params.Rule                                      { return nil }
 func (*validParamTestStruct) ValidateCommand(map[string]interface{}, []string) []error { return nil }
 func (*validParamTestStruct) inject(params map[string]interface{}) error               { return nil }
 func (*validParamTestStruct) Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error) {

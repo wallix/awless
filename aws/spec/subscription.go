@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateSubscription struct {
@@ -28,13 +29,13 @@ type CreateSubscription struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      snsiface.SNSAPI
-	Topic    *string `awsName:"TopicArn" awsType:"awsstr" templateName:"topic" required:""`
-	Endpoint *string `awsName:"Endpoint" awsType:"awsstr" templateName:"endpoint" required:""`
-	Protocol *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol" required:""`
+	Topic    *string `awsName:"TopicArn" awsType:"awsstr" templateName:"topic"`
+	Endpoint *string `awsName:"Endpoint" awsType:"awsstr" templateName:"endpoint"`
+	Protocol *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol"`
 }
 
-func (cmd *CreateSubscription) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateSubscription) Params() params.Rule {
+	return params.AllOf(params.Key("endpoint"), params.Key("protocol"), params.Key("topic"))
 }
 
 func (cmd *CreateSubscription) ExtractResult(i interface{}) string {
@@ -46,9 +47,9 @@ type DeleteSubscription struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    snsiface.SNSAPI
-	Id     *string `awsName:"SubscriptionArn" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"SubscriptionArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSubscription) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteSubscription) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }

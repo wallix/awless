@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -32,12 +33,12 @@ type CreateVolume struct {
 	logger           *logger.Logger
 	graph            cloudgraph.GraphAPI
 	api              ec2iface.EC2API
-	Availabilityzone *string `awsName:"AvailabilityZone" awsType:"awsstr" templateName:"availabilityzone" required:""`
-	Size             *int64  `awsName:"Size" awsType:"awsint64" templateName:"size" required:""`
+	Availabilityzone *string `awsName:"AvailabilityZone" awsType:"awsstr" templateName:"availabilityzone"`
+	Size             *int64  `awsName:"Size" awsType:"awsint64" templateName:"size"`
 }
 
-func (cmd *CreateVolume) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateVolume) Params() params.Rule {
+	return params.AllOf(params.Key("availabilityzone"), params.Key("size"))
 }
 
 func (cmd *CreateVolume) ExtractResult(i interface{}) string {
@@ -49,13 +50,13 @@ type CheckVolume struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     ec2iface.EC2API
-	Id      *string `templateName:"id" required:""`
-	State   *string `templateName:"state" required:""`
-	Timeout *int64  `templateName:"timeout" required:""`
+	Id      *string `templateName:"id"`
+	State   *string `templateName:"state"`
+	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckVolume) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CheckVolume) Params() params.Rule {
+	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
 }
 
 func (cmd *CheckVolume) Validate_State() error {
@@ -99,11 +100,11 @@ type DeleteVolume struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Id     *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id" required:""`
+	Id     *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteVolume) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteVolume) Params() params.Rule {
+	return params.AllOf(params.Key("id"))
 }
 
 type AttachVolume struct {
@@ -111,15 +112,14 @@ type AttachVolume struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Device   *string `awsName:"Device" awsType:"awsstr" templateName:"device" required:""`
-	Id       *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id" required:""`
-	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
+	Device   *string `awsName:"Device" awsType:"awsstr" templateName:"device"`
+	Id       *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`
+	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
 }
 
-func (cmd *AttachVolume) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *AttachVolume) Params() params.Rule {
+	return params.AllOf(params.Key("device"), params.Key("id"), params.Key("instance"))
 }
-
 func (cmd *AttachVolume) ExtractResult(i interface{}) string {
 	return awssdk.StringValue(i.(*ec2.VolumeAttachment).VolumeId)
 }
@@ -129,14 +129,16 @@ type DetachVolume struct {
 	logger   *logger.Logger
 	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
-	Device   *string `awsName:"Device" awsType:"awsstr" templateName:"device" required:""`
-	Id       *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id" required:""`
-	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance" required:""`
+	Device   *string `awsName:"Device" awsType:"awsstr" templateName:"device"`
+	Id       *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`
+	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
 	Force    *bool   `awsName:"Force" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DetachVolume) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DetachVolume) Params() params.Rule {
+	return params.AllOf(params.Key("device"), params.Key("id"), params.Key("instance"),
+		params.Opt("force"),
+	)
 }
 
 func (cmd *DetachVolume) ExtractResult(i interface{}) string {

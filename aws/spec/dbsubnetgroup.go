@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/params"
 )
 
 type CreateDbsubnetgroup struct {
@@ -28,13 +29,13 @@ type CreateDbsubnetgroup struct {
 	logger      *logger.Logger
 	graph       cloudgraph.GraphAPI
 	api         rdsiface.RDSAPI
-	Name        *string   `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name" required:""`
-	Description *string   `awsName:"DBSubnetGroupDescription" awsType:"awsstr" templateName:"description" required:""`
-	Subnets     []*string `awsName:"SubnetIds" awsType:"awsstringslice" templateName:"subnets" required:""`
+	Name        *string   `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name"`
+	Description *string   `awsName:"DBSubnetGroupDescription" awsType:"awsstr" templateName:"description"`
+	Subnets     []*string `awsName:"SubnetIds" awsType:"awsstringslice" templateName:"subnets"`
 }
 
-func (cmd *CreateDbsubnetgroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateDbsubnetgroup) Params() params.Rule {
+	return params.AllOf(params.Key("description"), params.Key("name"), params.Key("subnets"))
 }
 
 func (cmd *CreateDbsubnetgroup) ExtractResult(i interface{}) string {
@@ -46,9 +47,9 @@ type DeleteDbsubnetgroup struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    rdsiface.RDSAPI
-	Name   *string `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name" required:""`
+	Name   *string `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteDbsubnetgroup) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteDbsubnetgroup) Params() params.Rule {
+	return params.AllOf(params.Key("name"))
 }

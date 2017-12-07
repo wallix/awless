@@ -19,6 +19,7 @@ import (
 	"net"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/logger"
@@ -29,13 +30,13 @@ type CreateRoute struct {
 	logger  *logger.Logger
 	graph   cloudgraph.GraphAPI
 	api     ec2iface.EC2API
-	Table   *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"table" required:""`
-	CIDR    *string `awsName:"DestinationCidrBlock" awsType:"awsstr" templateName:"cidr" required:""`
-	Gateway *string `awsName:"GatewayId" awsType:"awsstr" templateName:"gateway" required:""`
+	Table   *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"table"`
+	CIDR    *string `awsName:"DestinationCidrBlock" awsType:"awsstr" templateName:"cidr"`
+	Gateway *string `awsName:"GatewayId" awsType:"awsstr" templateName:"gateway"`
 }
 
-func (cmd *CreateRoute) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *CreateRoute) Params() params.Rule {
+	return params.AllOf(params.Key("cidr"), params.Key("gateway"), params.Key("table"))
 }
 
 func (cmd *CreateRoute) Validate_CIDR() error {
@@ -48,12 +49,12 @@ type DeleteRoute struct {
 	logger *logger.Logger
 	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
-	Table  *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"table" required:""`
-	CIDR   *string `awsName:"DestinationCidrBlock" awsType:"awsstr" templateName:"cidr" required:""`
+	Table  *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"table"`
+	CIDR   *string `awsName:"DestinationCidrBlock" awsType:"awsstr" templateName:"cidr"`
 }
 
-func (cmd *DeleteRoute) ValidateParams(params []string) ([]string, error) {
-	return validateParams(cmd, params)
+func (cmd *DeleteRoute) Params() params.Rule {
+	return params.AllOf(params.Key("cidr"), params.Key("table"))
 }
 
 func (cmd *DeleteRoute) Validate_CIDR() error {
