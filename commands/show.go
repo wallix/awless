@@ -131,7 +131,7 @@ func showResourceValuesOnlyFor(resource *graph.Resource, propKeys []string) {
 		}
 		return false, ""
 	}
-	for k, v := range resource.Properties {
+	for k, v := range resource.Properties() {
 		if ok, p := isIncluded(k); ok {
 			valuesForKeys[p] = fmt.Sprint(v)
 		}
@@ -248,7 +248,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 		for _, res := range resources {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("\t`awless show %s` to show the %s", res.Id(), res.Type()))
-			if state, ok := res.Properties["State"].(string); ok {
+			if state, ok := res.Properties()["State"].(string); ok {
 				buf.WriteString(fmt.Sprintf(" (state: '%s')", state))
 			}
 			logger.Infof(buf.String())

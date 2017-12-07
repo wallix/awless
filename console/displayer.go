@@ -410,7 +410,7 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 			values[i] = make([]interface{}, len(d.columnDefinitions))
 		}
 		for j, h := range d.columnDefinitions {
-			values[i][j] = res.Properties[h.propKey()]
+			values[i][j] = res.Properties()[h.propKey()]
 		}
 	}
 
@@ -461,7 +461,7 @@ func (d *tsvDisplayer) Print(w io.Writer) error {
 			values[i] = make([]interface{}, len(d.columnDefinitions))
 		}
 		for j, h := range d.columnDefinitions {
-			values[i][j] = res.Properties[h.propKey()]
+			values[i][j] = res.Properties()[h.propKey()]
 		}
 	}
 
@@ -501,7 +501,7 @@ func (d *jsonDisplayer) Print(w io.Writer) error {
 
 	var props []map[string]interface{}
 	for _, res := range resources {
-		props = append(props, res.Properties)
+		props = append(props, res.Properties())
 	}
 
 	enc := json.NewEncoder(w)
@@ -534,7 +534,7 @@ func (d *tableDisplayer) Print(w io.Writer) error {
 			values[i] = make([]interface{}, len(d.columnDefinitions))
 		}
 		for j, h := range d.columnDefinitions {
-			values[i][j] = res.Properties[h.propKey()]
+			values[i][j] = res.Properties()[h.propKey()]
 		}
 	}
 
@@ -641,7 +641,7 @@ func (d *porcelainDisplayer) Print(w io.Writer) error {
 		for _, res := range resources {
 			var row = make([]interface{}, len(d.columnDefinitions))
 			for j, h := range d.columnDefinitions {
-				row[j] = res.Properties[h.propKey()]
+				row[j] = res.Properties()[h.propKey()]
 			}
 			values = append(values, row)
 		}
@@ -681,7 +681,7 @@ func (d *multiResourcesTableDisplayer) Print(w io.Writer) error {
 			return err
 		}
 		for _, res := range resources {
-			for prop, val := range res.Properties {
+			for prop, val := range res.Properties() {
 				var header ColumnDefinition
 				for _, h := range propDefs {
 					if h.propKey() == prop {
@@ -743,7 +743,7 @@ func (d *multiResourcesJSONDisplayer) Print(w io.Writer) error {
 		}
 		var props []map[string]interface{}
 		for _, res := range resources {
-			props = append(props, res.Properties)
+			props = append(props, res.Properties())
 		}
 		if len(resources) > 0 {
 			all[cloud.PluralizeResource(t)] = props
@@ -811,14 +811,14 @@ func (d *diffTableDisplayer) Print(w io.Writer) error {
 		naming := nameOrID(common)
 
 		if rem, ok := toCommons[common.Id()]; ok {
-			added := graph.Subtract(rem.Properties, common.Properties)
+			added := graph.Subtract(rem.Properties(), common.Properties())
 			for k, v := range added {
 				values = append(values, []interface{}{
 					resType, naming, k, color.New(color.FgGreen).SprintFunc()("+ " + fmt.Sprint(v)),
 				})
 			}
 
-			deleted := graph.Subtract(common.Properties, rem.Properties)
+			deleted := graph.Subtract(common.Properties(), rem.Properties())
 			for k, v := range deleted {
 				values = append(values, []interface{}{
 					resType, naming, k, color.New(color.FgRed).SprintFunc()("- " + fmt.Sprint(v)),
@@ -1056,10 +1056,10 @@ func colWidthNoWraping(j int, t table, h ColumnDefinition, sortSymbol string) in
 }
 
 func nameOrID(res *graph.Resource) string {
-	if name, ok := res.Properties["Name"]; ok && name != "" {
+	if name, ok := res.Properties()["Name"]; ok && name != "" {
 		return fmt.Sprint(name)
 	}
-	if id, ok := res.Properties["Id"]; ok && id != "" {
+	if id, ok := res.Properties()["Id"]; ok && id != "" {
 		return fmt.Sprint(id)
 	}
 	return res.Id()

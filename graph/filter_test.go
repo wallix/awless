@@ -31,7 +31,7 @@ func TestFilterGraph(t *testing.T) {
 	}
 
 	filterFn := func(r *graph.Resource) bool {
-		if r.Properties[properties.ID] == "inst_1" {
+		if r.Properties()[properties.ID] == "inst_1" {
 			return true
 		}
 		return false
@@ -41,7 +41,7 @@ func TestFilterGraph(t *testing.T) {
 	if got, want := len(instances), 1; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := instances[0].Properties[properties.ID], "inst_1"; got != want {
+	if got, want := instances[0].Properties()[properties.ID], "inst_1"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	subnets, _ = filtered.GetAllResources("subnet")
@@ -50,13 +50,13 @@ func TestFilterGraph(t *testing.T) {
 	}
 
 	filterOne := func(r *graph.Resource) bool {
-		if r.Properties[properties.ID] == "inst_2" {
+		if r.Properties()[properties.ID] == "inst_2" {
 			return true
 		}
 		return false
 	}
 	filterTwo := func(r *graph.Resource) bool {
-		if r.Properties[properties.Name] == "redis" {
+		if r.Properties()[properties.Name] == "redis" {
 			return true
 		}
 		return false
@@ -69,7 +69,7 @@ func TestFilterGraph(t *testing.T) {
 	if got, want := instances[0].Id(), "inst_2"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := instances[0].Properties["Name"], "redis"; got != want {
+	if got, want := instances[0].Properties()["Name"], "redis"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	subnets, _ = filtered.GetAllResources("subnet")
@@ -88,7 +88,7 @@ func TestFilterGraph(t *testing.T) {
 	if got, want := instances[0].Id(), "inst_2"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
-	if got, want := instances[0].Properties["Name"], "redis"; got != want {
+	if got, want := instances[0].Properties()["Name"], "redis"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
 	}
 	subnets, _ = filtered.GetAllResources("subnet")

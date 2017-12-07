@@ -260,12 +260,6 @@ var APIPerResourceType = map[string]string{
 	"stack":               "cloudformation",
 }
 
-var GlobalServices = []string{
-	"access",
-	"dns",
-	"cdn",
-}
-
 type Infra struct {
 	fetcher fetch.Fetcher
 	region  string

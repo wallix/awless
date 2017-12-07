@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -32,6 +34,7 @@ import (
 type CreateTag struct {
 	_        string `action:"create" entity:"tag" awsAPI:"ec2" awsDryRun:"manual"` //  awsCall:"CreateTags" awsInput:"ec2.CreateTagsInput" awsOutput:"ec2.CreateTagsOutput"
 	logger   *logger.Logger
+	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
 	sess     *session.Session
 	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource" required:""`
@@ -89,6 +92,7 @@ func (cmd *CreateTag) ManualRun(ctx map[string]interface{}) (interface{}, error)
 type DeleteTag struct {
 	_        string `action:"delete" entity:"tag" awsAPI:"ec2" awsDryRun:"manual"`
 	logger   *logger.Logger
+	graph    cloudgraph.GraphAPI
 	api      ec2iface.EC2API
 	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource" required:""`
 	Key      *string `templateName:"key" required:""`

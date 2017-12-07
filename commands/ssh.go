@@ -230,7 +230,7 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 		ctx.instance = resources[0]
 	default:
 		idStatus := graph.Resources(resources).Map(func(r *graph.Resource) string {
-			return fmt.Sprintf("%s (%s)", r.Id(), r.Properties[properties.State])
+			return fmt.Sprintf("%s (%s)", r.Id(), r.Properties()[properties.State])
 		})
 		logger.Infof("Found %d resources with name '%s': %s", len(resources), ctx.instanceName, strings.Join(idStatus, ", "))
 
@@ -249,7 +249,7 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 			logger.Warning("Connect through the running ones using their id:")
 			for _, res := range running {
 				var up string
-				if uptime, ok := res.Properties[properties.Launched].(time.Time); ok {
+				if uptime, ok := res.Properties()[properties.Launched].(time.Time); ok {
 					up = fmt.Sprintf("\t\t(uptime: %s)", console.HumanizeTime(uptime))
 				}
 				logger.Warningf("\t`awless ssh %s`%s", res.Id(), up)
@@ -258,14 +258,14 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 		}
 	}
 
-	ctx.privip, _ = ctx.instance.Properties[properties.PrivateIP].(string)
-	ctx.ip, _ = ctx.instance.Properties[properties.PublicIP].(string)
-	ctx.state, _ = ctx.instance.Properties[properties.State].(string)
+	ctx.privip, _ = ctx.instance.Properties()[properties.PrivateIP].(string)
+	ctx.ip, _ = ctx.instance.Properties()[properties.PublicIP].(string)
+	ctx.state, _ = ctx.instance.Properties()[properties.State].(string)
 
 	if keypath != "" {
 		ctx.keypath = keypath
 	} else {
-		keypair, ok := ctx.instance.Properties[properties.KeyPair].(string)
+		keypair, ok := ctx.instance.Properties()[properties.KeyPair].(string)
 		if ok {
 			ctx.keypath = fmt.Sprint(keypair)
 		}
@@ -330,7 +330,7 @@ func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
 		return errors.New("instance not accessible")
 	}
 
-	sgroups, ok := ctx.instance.Properties[properties.SecurityGroups].([]string)
+	sgroups, ok := ctx.instance.Properties()[properties.SecurityGroups].([]string)
 	if ok {
 		var sshPortOpen, myIPAllowed bool
 		for _, id := range sgroups {
@@ -341,7 +341,7 @@ func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
 				break
 			}
 
-			rules, ok := sgroup.Properties[properties.InboundRules].([]*graph.FirewallRule)
+			rules, ok := sgroup.Properties()[properties.InboundRules].([]*graph.FirewallRule)
 			if ok {
 				for _, r := range rules {
 					if r.PortRange.Contains(22) {

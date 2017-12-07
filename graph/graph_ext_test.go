@@ -43,7 +43,7 @@ func TestGetResource(t *testing.T) {
 		properties.Name:  "redis",
 	}
 
-	if got, want := res.Properties, expected; !reflect.DeepEqual(got, want) {
+	if got, want := res.Properties(), expected; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got \n%#v\n\nwant \n%#v\n", got, want)
 	}
 }
@@ -64,7 +64,7 @@ func TestFindResources(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got, want := res.Properties["Name"], "redis"; got != want {
+		if got, want := res.Properties()["Name"], "redis"; got != want {
 			t.Fatalf("got %s want %s", got, want)
 		}
 
@@ -153,7 +153,7 @@ func TestGetAllResources(t *testing.T) {
 	for _, r := range expected {
 		found := false
 		for _, r2 := range res {
-			if r2.Type() == r.Type() && r2.Id() == r.Id() && reflect.DeepEqual(r2.Properties, r.Properties) {
+			if r2.Type() == r.Type() && r2.Id() == r.Id() && reflect.DeepEqual(r2.Properties(), r.Properties()) {
 				found = true
 			}
 		}

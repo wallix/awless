@@ -62,10 +62,10 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 					if res, badResErr = awsconv.NewResource(inst); badResErr != nil {
 						return false
 					}
-					res.Properties[properties.Cluster] = awssdk.StringValue(cluster)
+					res.Properties()[properties.Cluster] = awssdk.StringValue(cluster)
 					resources = append(resources, res)
 					parent := graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(cluster))
-					res.Relations[rdf.ChildrenOfRel] = append(res.Relations[rdf.ChildrenOfRel], parent)
+					res.AddRelation(rdf.ChildrenOfRel, parent)
 				}
 				return out.NextToken != nil
 			})
@@ -106,39 +106,30 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 					return nil, nil, err
 				}
 				if task.ClusterArn != nil {
-					res.Properties[properties.Cluster] = awssdk.StringValue(task.ClusterArn)
+					res.Properties()[properties.Cluster] = awssdk.StringValue(task.ClusterArn)
 				}
 				if task.ContainerInstanceArn != nil {
-					res.Properties[properties.ContainerInstance] = awssdk.StringValue(task.ContainerInstanceArn)
+					res.Properties()[properties.ContainerInstance] = awssdk.StringValue(task.ContainerInstanceArn)
 				}
 				if task.CreatedAt != nil {
-					res.Properties[properties.Created] = awssdk.TimeValue(task.CreatedAt)
+					res.Properties()[properties.Created] = awssdk.TimeValue(task.CreatedAt)
 				}
 				if task.StartedAt != nil {
-					res.Properties[properties.Launched] = awssdk.TimeValue(task.StartedAt)
+					res.Properties()[properties.Launched] = awssdk.TimeValue(task.StartedAt)
 				}
 				if task.StoppedAt != nil {
-					res.Properties[properties.Stopped] = awssdk.TimeValue(task.StoppedAt)
+					res.Properties()[properties.Stopped] = awssdk.TimeValue(task.StoppedAt)
 				}
 				if task.TaskDefinitionArn != nil {
-					res.Properties[properties.ContainerTask] = awssdk.StringValue(task.TaskDefinitionArn)
+					res.Properties()[properties.ContainerTask] = awssdk.StringValue(task.TaskDefinitionArn)
 				}
 				if task.Group != nil {
-					res.Properties[properties.DeploymentName] = awssdk.StringValue(task.Group)
+					res.Properties()[properties.DeploymentName] = awssdk.StringValue(task.Group)
 				}
 
-				res.Relations[rdf.ChildrenOfRel] = append(
-					res.Relations[rdf.ChildrenOfRel],
-					graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(task.ClusterArn)),
-				)
-				res.Relations[rdf.DependingOnRel] = append(
-					res.Relations[rdf.DependingOnRel],
-					graph.InitResource(cloud.ContainerTask, awssdk.StringValue(task.TaskDefinitionArn)),
-				)
-				res.Relations[rdf.DependingOnRel] = append(
-					res.Relations[rdf.DependingOnRel],
-					graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(task.ContainerInstanceArn)),
-				)
+				res.AddRelation(rdf.ChildrenOfRel, graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(task.ClusterArn)))
+				res.AddRelation(rdf.DependingOnRel, graph.InitResource(cloud.ContainerTask, awssdk.StringValue(task.TaskDefinitionArn)))
+				res.AddRelation(rdf.DependingOnRel, graph.InitResource(cloud.ContainerInstance, awssdk.StringValue(task.ContainerInstanceArn)))
 
 				resources = append(resources, res)
 			}
@@ -241,14 +232,14 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 				}
 			}
 			if len(deployments) > 0 {
-				graphres.Properties[properties.Deployments] = deployments
+				graphres.Properties()[properties.Deployments] = deployments
 			}
 			switch {
 			case runningServicesCount+stoppedServicesCount+runningTasksCount+stoppedTasksCount == 0:
 				if state := strings.ToLower(awssdk.StringValue(res.res.Status)); state == "active" {
-					graphres.Properties[properties.State] = "ready"
+					graphres.Properties()[properties.State] = "ready"
 				} else {
-					graphres.Properties[properties.State] = state
+					graphres.Properties()[properties.State] = state
 				}
 			default:
 				var stateSl []string
@@ -265,7 +256,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 					stateSl = append(stateSl, fmt.Sprintf("%d %s stopped", stoppedTasksCount, pluralizeIfNeeded("task", runningServicesCount)))
 				}
 				if len(stateSl) > 0 {
-					graphres.Properties[properties.State] = strings.Join(stateSl, " ")
+					graphres.Properties()[properties.State] = strings.Join(stateSl, " ")
 				}
 			}
 
@@ -495,11 +486,11 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 							return false
 						}
 						if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
-							res.Properties[properties.Type] = "AWS Managed"
+							res.Properties()[properties.Type] = "AWS Managed"
 						} else {
-							res.Properties[properties.Type] = "Customer Managed"
+							res.Properties()[properties.Type] = "Customer Managed"
 						}
-						res.Properties[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
+						res.Properties()[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
 						resourcesC <- res
 					}
 					return out.Marker != nil
@@ -574,7 +565,7 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 									hasError = true
 									return false
 								}
-								res.Relations[rdf.ChildrenOfRel] = append(res.Relations[rdf.ChildrenOfRel], userRes)
+								res.AddRelation(rdf.ChildrenOfRel, userRes)
 								resourcesC <- res
 							}
 							return out.Marker != nil
@@ -644,7 +635,7 @@ func addManualStorageFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			if err != nil {
 				return fmt.Errorf("fetching grants for bucket %s: %s", awssdk.StringValue(b.Name), err)
 			}
-			res.Properties[properties.Grants] = grants
+			res.Properties()[properties.Grants] = grants
 			bucketM.Lock()
 			resources = append(resources, res)
 			bucketM.Unlock()
@@ -710,7 +701,7 @@ func addManualMessagingFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 				defer wg.Done()
 				objectsC <- url
 				res := graph.InitResource(cloud.Queue, awssdk.StringValue(url))
-				res.Properties[properties.ID] = awssdk.StringValue(url)
+				res.Properties()[properties.ID] = awssdk.StringValue(url)
 				attrs, err := conf.APIs.Sqs.GetQueueAttributes(&sqs.GetQueueAttributesInput{AttributeNames: []*string{awssdk.String("All")}, QueueUrl: url})
 				if e, ok := err.(awserr.RequestFailure); ok && (e.Code() == sqs.ErrCodeQueueDoesNotExist || e.Code() == sqs.ErrCodeQueueDeletedRecently) {
 					return
@@ -726,14 +717,14 @@ func addManualMessagingFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 						if err != nil {
 							errC <- err
 						}
-						res.Properties[properties.ApproximateMessageCount] = count
+						res.Properties()[properties.ApproximateMessageCount] = count
 					case "CreatedTimestamp":
 						if vv := awssdk.StringValue(v); vv != "" {
 							timestamp, err := strconv.ParseInt(vv, 10, 64)
 							if err != nil {
 								errC <- err
 							}
-							res.Properties[properties.Created] = time.Unix(int64(timestamp), 0)
+							res.Properties()[properties.Created] = time.Unix(int64(timestamp), 0)
 						}
 					case "LastModifiedTimestamp":
 						if vv := awssdk.StringValue(v); vv != "" {
@@ -741,16 +732,16 @@ func addManualMessagingFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 							if err != nil {
 								errC <- err
 							}
-							res.Properties[properties.Modified] = time.Unix(int64(timestamp), 0)
+							res.Properties()[properties.Modified] = time.Unix(int64(timestamp), 0)
 						}
 					case "QueueArn":
-						res.Properties[properties.Arn] = awssdk.StringValue(v)
+						res.Properties()[properties.Arn] = awssdk.StringValue(v)
 					case "DelaySeconds":
 						delay, err := strconv.Atoi(awssdk.StringValue(v))
 						if err != nil {
 							errC <- err
 						}
-						res.Properties[properties.Delay] = delay
+						res.Properties()[properties.Delay] = delay
 					}
 
 				}
@@ -835,7 +826,7 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 								if err != nil {
 									errC <- err
 								}
-								res.Relations[rdf.ChildrenOfRel] = append(res.Relations[rdf.ChildrenOfRel], parent)
+								res.AddRelation(rdf.ChildrenOfRel, parent)
 								resourcesC <- res
 							}
 							return out.NextRecordName != nil

@@ -22,6 +22,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/console"
@@ -33,6 +35,7 @@ const keyDirEnv = "__AWLESS_KEYS_DIR"
 type CreateKeypair struct {
 	_                 string `action:"create" entity:"keypair" awsAPI:"ec2" awsCall:"ImportKeyPair" awsInput:"ec2.ImportKeyPairInput" awsOutput:"ec2.ImportKeyPairOutput"`
 	logger            *logger.Logger
+	graph             cloudgraph.GraphAPI
 	api               ec2iface.EC2API
 	Name              *string `awsName:"KeyName" awsType:"awsstr" templateName:"name" required:""`
 	Encrypted         *bool   `templateName:"encrypted"`
@@ -91,6 +94,7 @@ func (cmd *CreateKeypair) ExtractResult(i interface{}) string {
 type DeleteKeypair struct {
 	_      string `action:"delete" entity:"keypair" awsAPI:"ec2" awsCall:"DeleteKeyPair" awsInput:"ec2.DeleteKeyPairInput" awsOutput:"ec2.DeleteKeyPairOutput" awsDryRun:""`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
 	Name   *string `awsName:"KeyName" awsType:"awsstr" templateName:"name" required:""`
 }

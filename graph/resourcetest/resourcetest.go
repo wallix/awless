@@ -174,6 +174,10 @@ func Certificate(id string) *rBuilder {
 	return new("certificate", id)
 }
 
+func AccessKey(id string) *rBuilder {
+	return new("accesskey", id)
+}
+
 func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 	b.props[key] = value
 	return b
@@ -181,7 +185,10 @@ func (b *rBuilder) Prop(key string, value interface{}) *rBuilder {
 
 func (b *rBuilder) Build() *graph.Resource {
 	res := graph.InitResource(b.typ, b.id)
-	res.Properties = b.props
+	for k, v := range b.props {
+		res.Properties()[k] = v
+	}
+
 	return res
 }
 

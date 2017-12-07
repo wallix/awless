@@ -17,8 +17,11 @@ limitations under the License.
 package graph
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 
+	"github.com/wallix/awless/cloud/graph"
 	tstore "github.com/wallix/triplestore"
 )
 
@@ -100,4 +103,57 @@ func TestAddGraphRelation(t *testing.T) {
 			t.Fatalf("got\n%q\nwant\n%q\n", got, want)
 		}
 	})
+}
+
+func TestFindOne(t *testing.T) {
+	g := NewGraph()
+	i1 := instResource("i1").prop("Name", "redis").prop("Subnet", "s1").build()
+	i2 := instResource("i2").prop("Subnet", "s1").build()
+	s1 := subResource("s1").build()
+	v1 := vpcResource("s1").build()
+	g.AddResource(i1, i2, s1, v1)
+	tcases := []struct {
+		query             cloudgraph.Query
+		expectRes         cloudgraph.Resource
+		expectErrContains string
+	}{
+		{
+			query:     cloudgraph.NewQuery("instance").Property("Name", "redis"),
+			expectRes: i1,
+		},
+		{
+			query:             cloudgraph.NewQuery("instance").Property("Subnet", "s1"),
+			expectErrContains: "multiple",
+		},
+		{
+			query:     cloudgraph.NewQuery("subnet"),
+			expectRes: s1,
+		},
+		{
+			query:     cloudgraph.NewQuery("subnet").Property("ID", "s1"),
+			expectRes: s1,
+		},
+		{
+			query:             cloudgraph.NewQuery("instance").Property("Name", "nothing"),
+			expectErrContains: "not found",
+		},
+	}
+	for i, tcase := range tcases {
+		res, err := g.FindOne(tcase.query)
+		if tcase.expectErrContains != "" {
+			if err == nil {
+				t.Fatalf("%d: expect error contains '%s', got nil", i+1, tcase.expectErrContains)
+			}
+			if !strings.Contains(err.Error(), tcase.expectErrContains) {
+				t.Fatalf("%d: expect error contains '%s', got %s", i+1, tcase.expectErrContains, err.Error())
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("%d: %s", i+1, err)
+		}
+		if got, want := res, tcase.expectRes; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d: got %v, want %v", i+1, got, want)
+		}
+	}
 }

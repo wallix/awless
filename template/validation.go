@@ -34,7 +34,7 @@ func (v *UniqueNameValidator) Execute(t *Template) (errs []error) {
 				for _, r := range resources {
 					var buf bytes.Buffer
 					buf.WriteString(fmt.Sprintf("'%s' name already used for %s %s", name, r.Type(), r.Id()))
-					if state, ok := r.Properties["State"].(string); ok {
+					if state, ok := r.Properties()["State"].(string); ok {
 						buf.WriteString(fmt.Sprintf(" (state: '%s')", state))
 					}
 					errs = append(errs, errors.New(buf.String()))

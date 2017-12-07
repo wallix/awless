@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/wallix/awless/logger"
@@ -27,6 +29,7 @@ import (
 type CreateScalinggroup struct {
 	_                      string `action:"create" entity:"scalinggroup" awsAPI:"autoscaling" awsCall:"CreateAutoScalingGroup" awsInput:"autoscaling.CreateAutoScalingGroupInput" awsOutput:"autoscaling.CreateAutoScalingGroupOutput"`
 	logger                 *logger.Logger
+	graph                  cloudgraph.GraphAPI
 	api                    autoscalingiface.AutoScalingAPI
 	Name                   *string   `awsName:"AutoScalingGroupName" awsType:"awsstr" templateName:"name" required:""`
 	Launchconfiguration    *string   `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"launchconfiguration" required:""`
@@ -52,6 +55,7 @@ func (cmd *CreateScalinggroup) ExtractResult(i interface{}) string {
 type UpdateScalinggroup struct {
 	_                      string `action:"update" entity:"scalinggroup" awsAPI:"autoscaling" awsCall:"UpdateAutoScalingGroup" awsInput:"autoscaling.UpdateAutoScalingGroupInput" awsOutput:"autoscaling.UpdateAutoScalingGroupOutput"`
 	logger                 *logger.Logger
+	graph                  cloudgraph.GraphAPI
 	api                    autoscalingiface.AutoScalingAPI
 	Name                   *string   `awsName:"AutoScalingGroupName" awsType:"awsstr" templateName:"name" required:""`
 	Cooldown               *int64    `awsName:"DefaultCooldown" awsType:"awsint64" templateName:"cooldown"`
@@ -72,6 +76,7 @@ func (cmd *UpdateScalinggroup) ValidateParams(params []string) ([]string, error)
 type DeleteScalinggroup struct {
 	_      string `action:"delete" entity:"scalinggroup" awsAPI:"autoscaling" awsCall:"DeleteAutoScalingGroup" awsInput:"autoscaling.DeleteAutoScalingGroupInput" awsOutput:"autoscaling.DeleteAutoScalingGroupOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    autoscalingiface.AutoScalingAPI
 	Name   *string `awsName:"AutoScalingGroupName" awsType:"awsstr" templateName:"name" required:""`
 	Force  *bool   `awsName:"ForceDelete" awsType:"awsbool" templateName:"force"`
@@ -84,6 +89,7 @@ func (cmd *DeleteScalinggroup) ValidateParams(params []string) ([]string, error)
 type CheckScalinggroup struct {
 	_       string `action:"check" entity:"scalinggroup" awsAPI:"autoscaling"`
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	api     autoscalingiface.AutoScalingAPI
 	Name    *string `templateName:"name" required:""`
 	Count   *int64  `templateName:"count" required:""`

@@ -56,15 +56,6 @@ func GetCloudServicesForTypes(types ...string) (services []cloud.Service) {
 	return
 }
 
-func IsGlobalService(name string) bool {
-	for _, s := range GlobalServices {
-		if name == s {
-			return true
-		}
-	}
-	return false
-}
-
 func ResourceTypesPerServiceName() map[string][]string {
 	out := make(map[string][]string)
 	for rT, s := range ServicePerResourceType {

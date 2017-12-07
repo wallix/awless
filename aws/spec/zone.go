@@ -18,12 +18,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateZone struct {
 	_               string `action:"create" entity:"zone" awsAPI:"route53" awsCall:"CreateHostedZone" awsInput:"route53.CreateHostedZoneInput" awsOutput:"route53.CreateHostedZoneOutput"`
 	logger          *logger.Logger
+	graph           cloudgraph.GraphAPI
 	api             route53iface.Route53API
 	Callerreference *string `awsName:"CallerReference" awsType:"awsstr" templateName:"callerreference" required:""`
 	Name            *string `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
@@ -45,6 +47,7 @@ func (cmd *CreateZone) ExtractResult(i interface{}) string {
 type DeleteZone struct {
 	_      string `action:"delete" entity:"zone" awsAPI:"route53" awsCall:"DeleteHostedZone" awsInput:"route53.DeleteHostedZoneInput" awsOutput:"route53.DeleteHostedZoneOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    route53iface.Route53API
 	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id" required:""`
 }

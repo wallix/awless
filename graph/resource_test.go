@@ -70,10 +70,10 @@ func TestPrintResource(t *testing.T) {
 		exp string
 	}{
 		{res: &Resource{id: "inst_1", kind: "instance"}, exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"ID": "notthis"}}, exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"ID": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Name": ""}}, exp: "inst_1[instance]"},
-		{res: &Resource{kind: "instance", Properties: map[string]interface{}{"ID": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", properties: map[string]interface{}{"ID": "notthis"}}, exp: "inst_1[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", properties: map[string]interface{}{"ID": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", properties: map[string]interface{}{"Name": ""}}, exp: "inst_1[instance]"},
+		{res: &Resource{kind: "instance", properties: map[string]interface{}{"ID": "notthis", "Name": "to-display"}}, exp: "@to-display[instance]"},
 		{res: &Resource{}, exp: "[<none>]"},
 		{res: nil, exp: "[<none>]"},
 	}
@@ -90,10 +90,10 @@ func TestFormatResource(t *testing.T) {
 		layout, exp string
 	}{
 		{res: &Resource{id: "inst_1", kind: "instance"}, layout: "%i[%t]", exp: "inst_1[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Name": "to-display"}}, layout: "%n[%t]", exp: "@to-display[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Name": "to-display"}}, layout: "@%[Name]p[%t]", exp: "@to-display[instance]"},
-		{res: &Resource{id: "inst_1", kind: "instance", Properties: map[string]interface{}{"Test": "my-test-prop"}}, layout: "%i:%t:%[Test]p:%[Missing]p:", exp: "inst_1:instance:my-test-prop::"},
-		{res: &Resource{id: "prop%n", kind: "instance", Properties: map[string]interface{}{"Name": "to-display"}}, layout: "%i", exp: "prop%n"},
+		{res: &Resource{id: "inst_1", kind: "instance", properties: map[string]interface{}{"Name": "to-display"}}, layout: "%n[%t]", exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", properties: map[string]interface{}{"Name": "to-display"}}, layout: "@%[Name]p[%t]", exp: "@to-display[instance]"},
+		{res: &Resource{id: "inst_1", kind: "instance", properties: map[string]interface{}{"Test": "my-test-prop"}}, layout: "%i:%t:%[Test]p:%[Missing]p:", exp: "inst_1:instance:my-test-prop::"},
+		{res: &Resource{id: "prop%n", kind: "instance", properties: map[string]interface{}{"Name": "to-display"}}, layout: "%i", exp: "prop%n"},
 		{res: &Resource{id: "inst_1", kind: "instance"}, layout: "", exp: ""},
 		{res: &Resource{id: "inst_1", kind: ""}, layout: "%i:%t", exp: "inst_1:<none>"},
 		{res: &Resource{}, layout: "%i:%t", exp: "<none>:<none>"},
@@ -164,7 +164,7 @@ func TestMarshalUnmarshalFullRdf(t *testing.T) {
 
 func TestResourceMarshalWithoutProps(t *testing.T) {
 	res := InitResource("mytype", "myid")
-	if got, want := res.Properties, map[string]interface{}{properties.ID: "myid"}; !reflect.DeepEqual(got, want) {
+	if got, want := res.Properties(), map[string]interface{}{properties.ID: "myid"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
 	}
 }
@@ -203,11 +203,11 @@ func TestMarshalUnmarshalList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sort.Strings(r.Properties["SecurityGroups"].([]string))
-	sort.Strings(rawRes.Properties["SecurityGroups"].([]string))
+	sort.Strings(r.Properties()["SecurityGroups"].([]string))
+	sort.Strings(rawRes.Properties()["SecurityGroups"].([]string))
 
-	sort.Strings(r.Properties["Actions"].([]string))
-	sort.Strings(rawRes.Properties["Actions"].([]string))
+	sort.Strings(r.Properties()["Actions"].([]string))
+	sort.Strings(rawRes.Properties()["Actions"].([]string))
 
 	if got, want := rawRes, r; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
@@ -236,10 +236,10 @@ func TestMarshalUnmarshalFirewallRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	FirewallRules(rawRes.Properties["InboundRules"].([]*FirewallRule)).Sort()
-	FirewallRules(rawRes.Properties["OutboundRules"].([]*FirewallRule)).Sort()
-	FirewallRules(r.Properties["InboundRules"].([]*FirewallRule)).Sort()
-	FirewallRules(r.Properties["OutboundRules"].([]*FirewallRule)).Sort()
+	FirewallRules(rawRes.Properties()["InboundRules"].([]*FirewallRule)).Sort()
+	FirewallRules(rawRes.Properties()["OutboundRules"].([]*FirewallRule)).Sort()
+	FirewallRules(r.Properties()["InboundRules"].([]*FirewallRule)).Sort()
+	FirewallRules(r.Properties()["OutboundRules"].([]*FirewallRule)).Sort()
 
 	if got, want := rawRes, r; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
@@ -267,8 +267,8 @@ func TestMarshalUnmarshalRouteTables(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	Routes(r.Properties["Routes"].([]*Route)).Sort()
-	Routes(rawRes.Properties["Routes"].([]*Route)).Sort()
+	Routes(r.Properties()["Routes"].([]*Route)).Sort()
+	Routes(rawRes.Properties()["Routes"].([]*Route)).Sort()
 
 	if got, want := rawRes, r; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
@@ -294,8 +294,8 @@ func TestMarshalUnmarshalGrants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	Grants(r.Properties["Grants"].([]*Grant)).Sort()
-	Grants(rawRes.Properties["Grants"].([]*Grant)).Sort()
+	Grants(r.Properties()["Grants"].([]*Grant)).Sort()
+	Grants(rawRes.Properties()["Grants"].([]*Grant)).Sort()
 
 	if got, want := rawRes, r; !reflect.DeepEqual(got, want) {
 		t.Fatalf("got\n%#v\nwant\n%#v\n", got, want)
@@ -346,11 +346,11 @@ func TestMarshalUnmarshalIPPermissions(t *testing.T) {
 	if got, want := res[0].Type(), expected[0].Type(); got != want {
 		t.Fatalf("got %s want %s", got, want)
 	}
-	if got, want := len(res[0].Properties), len(expected[0].Properties); got != want {
+	if got, want := len(res[0].Properties()), len(expected[0].Properties()); got != want {
 		t.Fatalf("got %d want %d", got, want)
 	}
-	for k := range expected[0].Properties {
-		if got, want := fmt.Sprintf("%T", res[0].Properties[k]), fmt.Sprintf("%T", expected[0].Properties[k]); got != want {
+	for k := range expected[0].Properties() {
+		if got, want := fmt.Sprintf("%T", res[0].Properties()[k]), fmt.Sprintf("%T", expected[0].Properties()[k]); got != want {
 			t.Fatalf("got %s want %s", got, want)
 		}
 	}

@@ -182,7 +182,7 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 	if err != nil {
 		return res, err
 	}
-	res.Properties[properties.ID] = res.Id()
+	res.Properties()[properties.ID] = res.Id()
 
 	value := reflect.ValueOf(source)
 	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {
@@ -242,7 +242,7 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 			if !ok {
 				return res, nil
 			}
-			res.Properties[keyVal.key] = keyVal.val
+			res.Properties()[keyVal.key] = keyVal.val
 		}
 	}
 

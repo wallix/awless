@@ -19,12 +19,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling/applicationautoscalingiface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateAppscalingpolicy struct {
 	_                                 string `action:"create" entity:"appscalingpolicy" awsAPI:"applicationautoscaling" awsCall:"PutScalingPolicy" awsInput:"applicationautoscaling.PutScalingPolicyInput" awsOutput:"applicationautoscaling.PutScalingPolicyOutput"`
 	logger                            *logger.Logger
+	graph                             cloudgraph.GraphAPI
 	api                               applicationautoscalingiface.ApplicationAutoScalingAPI
 	Name                              *string   `awsName:"PolicyName" awsType:"awsstr" templateName:"name" required:""`
 	Type                              *string   `awsName:"PolicyType" awsType:"awsstr" templateName:"type" required:""`
@@ -49,6 +51,7 @@ func (cmd *CreateAppscalingpolicy) ExtractResult(i interface{}) string {
 type DeleteAppscalingpolicy struct {
 	_                string `action:"delete" entity:"appscalingpolicy" awsAPI:"applicationautoscaling" awsCall:"DeleteScalingPolicy" awsInput:"applicationautoscaling.DeleteScalingPolicyInput" awsOutput:"applicationautoscaling.DeleteScalingPolicyOutput"`
 	logger           *logger.Logger
+	graph            cloudgraph.GraphAPI
 	api              applicationautoscalingiface.ApplicationAutoScalingAPI
 	Name             *string `awsName:"PolicyName" awsType:"awsstr" templateName:"name" required:""`
 	Resource         *string `awsName:"ResourceId" awsType:"awsstr" templateName:"resource" required:""`

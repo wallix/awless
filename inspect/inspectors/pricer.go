@@ -57,7 +57,7 @@ func (p *Pricer) Inspect(g *graph.Graph) error {
 	pricePerType := make(map[string]float64)
 
 	for _, inst := range instances {
-		typ := inst.Properties["Type"].(string)
+		typ := inst.Properties()["Type"].(string)
 		pricePerType[typ] = 0.0
 		p.count[typ] = p.count[typ] + 1
 	}

@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -29,6 +31,7 @@ import (
 type CreateNatgateway struct {
 	_           string `action:"create" entity:"natgateway" awsAPI:"ec2" awsCall:"CreateNatGateway" awsInput:"ec2.CreateNatGatewayInput" awsOutput:"ec2.CreateNatGatewayOutput"`
 	logger      *logger.Logger
+	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
 	ElasticipId *string `awsName:"AllocationId" awsType:"awsstr" templateName:"elasticip-id" required:""`
 	Subnet      *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet" required:""`
@@ -45,6 +48,7 @@ func (cmd *CreateNatgateway) ExtractResult(i interface{}) string {
 type DeleteNatgateway struct {
 	_      string `action:"delete" entity:"natgateway" awsAPI:"ec2" awsCall:"DeleteNatGateway" awsInput:"ec2.DeleteNatGatewayInput" awsOutput:"ec2.DeleteNatGatewayOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"NatGatewayId" awsType:"awsstr" templateName:"id" required:""`
 }
@@ -56,6 +60,7 @@ func (cmd *DeleteNatgateway) ValidateParams(params []string) ([]string, error) {
 type CheckNatgateway struct {
 	_       string `action:"check" entity:"natgateway" awsAPI:"ec2"`
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	api     ec2iface.EC2API
 	Id      *string `templateName:"id" required:""`
 	State   *string `templateName:"state" required:""`

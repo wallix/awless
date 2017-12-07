@@ -61,13 +61,13 @@ func fetchObjectsForBucket(ctx context.Context, api s3iface.S3API, bucket *s3.Bu
 		if err != nil {
 			return err
 		}
-		res.Properties["Bucket"] = awssdk.StringValue(bucket.Name)
+		res.SetProperty("Bucket", awssdk.StringValue(bucket.Name))
 		resourcesC <- res
 		parent, err := awsconv.InitResource(bucket)
 		if err != nil {
 			return err
 		}
-		res.Relations[rdf.ChildrenOfRel] = append(res.Relations[rdf.ChildrenOfRel], parent)
+		res.AddRelation(rdf.ChildrenOfRel, parent)
 		resourcesC <- parent
 	}
 

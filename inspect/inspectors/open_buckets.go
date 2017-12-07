@@ -44,14 +44,14 @@ func (a *OpenBuckets) Inspect(g *graph.Graph) error {
 	openToUsers := make(map[string]bool)
 
 	for _, buck := range buckets {
-		grants, ok := buck.Properties["Grants"].([]*graph.Grant)
+		grants, ok := buck.Properties()["Grants"].([]*graph.Grant)
 		if ok {
 			for _, g := range grants {
 				if strings.Contains(g.Grantee.GranteeID, "AllUsers") {
-					openToUsers[fmt.Sprint(buck.Properties["ID"])] = true
+					openToUsers[fmt.Sprint(buck.Properties()["ID"])] = true
 				}
 				if strings.Contains(g.Grantee.GranteeID, "AuthenticatedUsers") {
-					openToAuthUsers[fmt.Sprint(buck.Properties["ID"])] = true
+					openToAuthUsers[fmt.Sprint(buck.Properties()["ID"])] = true
 				}
 			}
 		}

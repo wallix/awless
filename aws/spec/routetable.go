@@ -19,12 +19,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateRoutetable struct {
 	_      string `action:"create" entity:"routetable" awsAPI:"ec2" awsCall:"CreateRouteTable" awsInput:"ec2.CreateRouteTableInput" awsOutput:"ec2.CreateRouteTableOutput" awsDryRun:""`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
 	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc" required:""`
 }
@@ -40,6 +42,7 @@ func (cmd *CreateRoutetable) ExtractResult(i interface{}) string {
 type DeleteRoutetable struct {
 	_      string `action:"delete" entity:"routetable" awsAPI:"ec2" awsCall:"DeleteRouteTable" awsInput:"ec2.DeleteRouteTableInput" awsOutput:"ec2.DeleteRouteTableOutput" awsDryRun:""`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"id" required:""`
 }
@@ -51,6 +54,7 @@ func (cmd *DeleteRoutetable) ValidateParams(params []string) ([]string, error) {
 type AttachRoutetable struct {
 	_      string `action:"attach" entity:"routetable" awsAPI:"ec2" awsCall:"AssociateRouteTable" awsInput:"ec2.AssociateRouteTableInput" awsOutput:"ec2.AssociateRouteTableOutput" awsDryRun:""`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"id" required:""`
 	Subnet *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet" required:""`
@@ -67,6 +71,7 @@ func (cmd *AttachRoutetable) ExtractResult(i interface{}) string {
 type DetachRoutetable struct {
 	_           string `action:"detach" entity:"routetable" awsAPI:"ec2" awsCall:"DisassociateRouteTable" awsInput:"ec2.DisassociateRouteTableInput" awsOutput:"ec2.DisassociateRouteTableOutput" awsDryRun:""`
 	logger      *logger.Logger
+	graph       cloudgraph.GraphAPI
 	api         ec2iface.EC2API
 	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association" required:""`
 }

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	"github.com/fatih/color"
 	"github.com/wallix/awless/aws/doc"
 	"github.com/wallix/awless/cloud"
@@ -325,6 +327,7 @@ type awsCall struct {
 	fnName  string
 	fn      interface{}
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	setters []setter
 }
 
@@ -366,6 +369,7 @@ type checker struct {
 	fetchFunc   func() (string, error)
 	expect      string
 	logger      *logger.Logger
+	graph       cloudgraph.GraphAPI
 	checkName   string
 }
 

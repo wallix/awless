@@ -31,5 +31,5 @@ func (b *rBuilder) prop(key string, value interface{}) *rBuilder {
 }
 
 func (b *rBuilder) build() *Resource {
-	return &Resource{id: b.id, kind: b.typ, Properties: b.props, Meta: make(map[string]interface{}), Relations: make(map[string][]*Resource)}
+	return &Resource{id: b.id, kind: b.typ, properties: b.props, Meta: make(map[string]interface{}), relations: make(map[string][]*Resource)}
 }

@@ -19,6 +19,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/wallix/awless/logger"
@@ -27,6 +29,7 @@ import (
 type CreateRole struct {
 	_                string `action:"create" entity:"role" awsAPI:"iam"`
 	logger           *logger.Logger
+	graph            cloudgraph.GraphAPI
 	api              iamiface.IAMAPI
 	Name             *string   `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
 	PrincipalAccount *string   `templateName:"principal-account"`
@@ -111,6 +114,7 @@ func (cmd *CreateRole) ExtractResult(i interface{}) string {
 type DeleteRole struct {
 	_      string `action:"delete" entity:"role" awsAPI:"iam"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
 }
@@ -143,6 +147,7 @@ func (cmd *DeleteRole) ManualRun(ctx map[string]interface{}) (interface{}, error
 type AttachRole struct {
 	_               string `action:"attach" entity:"role" awsAPI:"iam" awsCall:"AddRoleToInstanceProfile" awsInput:"iam.AddRoleToInstanceProfileInput" awsOutput:"iam.AddRoleToInstanceProfileOutput"`
 	logger          *logger.Logger
+	graph           cloudgraph.GraphAPI
 	api             iamiface.IAMAPI
 	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" required:""`
 	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`
@@ -155,6 +160,7 @@ func (cmd *AttachRole) ValidateParams(params []string) ([]string, error) {
 type DetachRole struct {
 	_               string `action:"detach" entity:"role" awsAPI:"iam" awsCall:"RemoveRoleFromInstanceProfile" awsInput:"iam.RemoveRoleFromInstanceProfileInput" awsOutput:"iam.RemoveRoleFromInstanceProfileOutput"`
 	logger          *logger.Logger
+	graph           cloudgraph.GraphAPI
 	api             iamiface.IAMAPI
 	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" required:""`
 	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" required:""`

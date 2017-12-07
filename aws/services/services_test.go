@@ -194,7 +194,7 @@ func TestBuildAccessRdfGraph(t *testing.T) {
 
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.InlinePolicies].([]string); ok {
+		if p, ok := res.Properties()[p.InlinePolicies].([]string); ok {
 			sort.Strings(p)
 		}
 	}
@@ -576,16 +576,16 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.SecurityGroups].([]string); ok {
+		if p, ok := res.Properties()[p.SecurityGroups].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.Vpcs].([]string); ok {
+		if p, ok := res.Properties()[p.Vpcs].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.Messages].([]string); ok {
+		if p, ok := res.Properties()[p.Messages].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.ContainersImages].([]*graph.KeyValue); ok {
+		if p, ok := res.Properties()[p.ContainersImages].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
 				if p[i].KeyName == p[j].KeyName {
 					return p[i].Value < p[j].Value
@@ -593,7 +593,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 				return p[i].KeyName < p[j].KeyName
 			})
 		}
-		if p, ok := res.Properties[p.Attributes].([]*graph.KeyValue); ok {
+		if p, ok := res.Properties()[p.Attributes].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
 				if p[i].KeyName == p[j].KeyName {
 					return p[i].Value < p[j].Value
@@ -601,7 +601,7 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 				return p[i].KeyName < p[j].KeyName
 			})
 		}
-		if p, ok := res.Properties[p.Associations].([]*graph.KeyValue); ok {
+		if p, ok := res.Properties()[p.Associations].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
 				if p[i].KeyName == p[j].KeyName {
 					return p[i].Value < p[j].Value
@@ -609,12 +609,12 @@ func TestBuildInfraRdfGraph(t *testing.T) {
 				return p[i].KeyName < p[j].KeyName
 			})
 		}
-		if p, ok := res.Properties[p.InboundRules].([]*graph.FirewallRule); ok {
+		if p, ok := res.Properties()[p.InboundRules].([]*graph.FirewallRule); ok {
 			for _, r := range p {
 				sort.Strings(r.Sources)
 			}
 		}
-		if p, ok := res.Properties[p.IPv6Addresses].([]string); ok {
+		if p, ok := res.Properties()[p.IPv6Addresses].([]string); ok {
 			sort.Strings(p)
 		}
 	}
@@ -844,7 +844,7 @@ func TestBuildDnsRdfGraph(t *testing.T) {
 	}
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.Records].([]string); ok {
+		if p, ok := res.Properties()[p.Records].([]string); ok {
 			sort.Strings(p)
 		}
 	}
@@ -1043,16 +1043,16 @@ func TestBuildMonitoringGraph(t *testing.T) {
 	}
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.OKActions].([]string); ok {
+		if p, ok := res.Properties()[p.OKActions].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.AlarmActions].([]string); ok {
+		if p, ok := res.Properties()[p.AlarmActions].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.InsufficientDataActions].([]string); ok {
+		if p, ok := res.Properties()[p.InsufficientDataActions].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.Dimensions].([]*graph.KeyValue); ok {
+		if p, ok := res.Properties()[p.Dimensions].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
 				if p[i].KeyName != p[j].KeyName {
 					return p[i].KeyName < p[j].KeyName
@@ -1153,10 +1153,10 @@ func TestBuildCdnGraph(t *testing.T) {
 
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.Aliases].([]string); ok {
+		if p, ok := res.Properties()[p.Aliases].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.Origins].([]*graph.DistributionOrigin); ok {
+		if p, ok := res.Properties()[p.Origins].([]*graph.DistributionOrigin); ok {
 			sort.Slice(p, func(i, j int) bool {
 				return p[i].ID <= p[j].ID
 			})
@@ -1241,13 +1241,13 @@ func TestBuildCloudFormationGraph(t *testing.T) {
 	}
 	// Sort slice properties in resources
 	for _, res := range resources {
-		if p, ok := res.Properties[p.Capabilities].([]string); ok {
+		if p, ok := res.Properties()[p.Capabilities].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.Notifications].([]string); ok {
+		if p, ok := res.Properties()[p.Notifications].([]string); ok {
 			sort.Strings(p)
 		}
-		if p, ok := res.Properties[p.Parameters].([]*graph.KeyValue); ok {
+		if p, ok := res.Properties()[p.Parameters].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
 				if p[i].KeyName != p[j].KeyName {
 					return p[i].KeyName < p[j].KeyName
@@ -1255,7 +1255,7 @@ func TestBuildCloudFormationGraph(t *testing.T) {
 				return p[i].Value <= p[j].Value
 			})
 		}
-		if p, ok := res.Properties[p.Outputs].([]*graph.KeyValue); ok {
+		if p, ok := res.Properties()[p.Outputs].([]*graph.KeyValue); ok {
 			sort.Slice(p, func(i, j int) bool {
 				if p[i].KeyName != p[j].KeyName {
 					return p[i].KeyName < p[j].KeyName

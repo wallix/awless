@@ -21,7 +21,10 @@ import (
 
 	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/sync"
 )
 
 var (
@@ -66,6 +69,13 @@ func Init(conf map[string]interface{}, log *logger.Logger, profileSetterCallback
 	awsspec.CommandFactory = &awsspec.AWSFactory{
 		Log:  log,
 		Sess: sess,
+		Graph: &cloudgraph.LazyGraph{LoadingFunc: func() cloudgraph.GraphAPI {
+			g, err := sync.LoadLocalGraphs(region)
+			if err != nil || g == nil {
+				g = graph.NewGraph()
+			}
+			return g
+		}},
 	}
 
 	return nil

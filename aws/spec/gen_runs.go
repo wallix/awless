@@ -58,10 +58,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
-func NewAttachAlarm(sess *session.Session, l ...*logger.Logger) *AttachAlarm {
+func NewAttachAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachAlarm {
 	cmd := new(AttachAlarm)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -71,6 +72,7 @@ func NewAttachAlarm(sess *session.Session, l ...*logger.Logger) *AttachAlarm {
 	if sess != nil {
 		cmd.api = cloudwatch.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -141,7 +143,7 @@ func (cmd *AttachAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachContainertask(sess *session.Session, l ...*logger.Logger) *AttachContainertask {
+func NewAttachContainertask(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachContainertask {
 	cmd := new(AttachContainertask)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -151,6 +153,7 @@ func NewAttachContainertask(sess *session.Session, l ...*logger.Logger) *AttachC
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -221,7 +224,7 @@ func (cmd *AttachContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachElasticip(sess *session.Session, l ...*logger.Logger) *AttachElasticip {
+func NewAttachElasticip(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachElasticip {
 	cmd := new(AttachElasticip)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -231,6 +234,7 @@ func NewAttachElasticip(sess *session.Session, l ...*logger.Logger) *AttachElast
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -328,7 +332,7 @@ func (cmd *AttachElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachInstance(sess *session.Session, l ...*logger.Logger) *AttachInstance {
+func NewAttachInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachInstance {
 	cmd := new(AttachInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -338,6 +342,7 @@ func NewAttachInstance(sess *session.Session, l ...*logger.Logger) *AttachInstan
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -414,7 +419,7 @@ func (cmd *AttachInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachInstanceprofile(sess *session.Session, l ...*logger.Logger) *AttachInstanceprofile {
+func NewAttachInstanceprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachInstanceprofile {
 	cmd := new(AttachInstanceprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -424,6 +429,7 @@ func NewAttachInstanceprofile(sess *session.Session, l ...*logger.Logger) *Attac
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -490,7 +496,7 @@ func (cmd *AttachInstanceprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachInternetgateway(sess *session.Session, l ...*logger.Logger) *AttachInternetgateway {
+func NewAttachInternetgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachInternetgateway {
 	cmd := new(AttachInternetgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -500,6 +506,7 @@ func NewAttachInternetgateway(sess *session.Session, l ...*logger.Logger) *Attac
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -597,7 +604,7 @@ func (cmd *AttachInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachMfadevice(sess *session.Session, l ...*logger.Logger) *AttachMfadevice {
+func NewAttachMfadevice(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachMfadevice {
 	cmd := new(AttachMfadevice)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -607,6 +614,7 @@ func NewAttachMfadevice(sess *session.Session, l ...*logger.Logger) *AttachMfade
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -683,7 +691,7 @@ func (cmd *AttachMfadevice) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachNetworkinterface(sess *session.Session, l ...*logger.Logger) *AttachNetworkinterface {
+func NewAttachNetworkinterface(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachNetworkinterface {
 	cmd := new(AttachNetworkinterface)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -693,6 +701,7 @@ func NewAttachNetworkinterface(sess *session.Session, l ...*logger.Logger) *Atta
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -790,7 +799,7 @@ func (cmd *AttachNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachPolicy(sess *session.Session, l ...*logger.Logger) *AttachPolicy {
+func NewAttachPolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachPolicy {
 	cmd := new(AttachPolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -800,6 +809,7 @@ func NewAttachPolicy(sess *session.Session, l ...*logger.Logger) *AttachPolicy {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -870,7 +880,7 @@ func (cmd *AttachPolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachRole(sess *session.Session, l ...*logger.Logger) *AttachRole {
+func NewAttachRole(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachRole {
 	cmd := new(AttachRole)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -880,6 +890,7 @@ func NewAttachRole(sess *session.Session, l ...*logger.Logger) *AttachRole {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -956,7 +967,7 @@ func (cmd *AttachRole) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachRoutetable(sess *session.Session, l ...*logger.Logger) *AttachRoutetable {
+func NewAttachRoutetable(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachRoutetable {
 	cmd := new(AttachRoutetable)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -966,6 +977,7 @@ func NewAttachRoutetable(sess *session.Session, l ...*logger.Logger) *AttachRout
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1063,7 +1075,7 @@ func (cmd *AttachRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachSecuritygroup(sess *session.Session, l ...*logger.Logger) *AttachSecuritygroup {
+func NewAttachSecuritygroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachSecuritygroup {
 	cmd := new(AttachSecuritygroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1073,6 +1085,7 @@ func NewAttachSecuritygroup(sess *session.Session, l ...*logger.Logger) *AttachS
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1143,7 +1156,7 @@ func (cmd *AttachSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachUser(sess *session.Session, l ...*logger.Logger) *AttachUser {
+func NewAttachUser(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachUser {
 	cmd := new(AttachUser)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1153,6 +1166,7 @@ func NewAttachUser(sess *session.Session, l ...*logger.Logger) *AttachUser {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1229,7 +1243,7 @@ func (cmd *AttachUser) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAttachVolume(sess *session.Session, l ...*logger.Logger) *AttachVolume {
+func NewAttachVolume(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachVolume {
 	cmd := new(AttachVolume)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1239,6 +1253,7 @@ func NewAttachVolume(sess *session.Session, l ...*logger.Logger) *AttachVolume {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1336,7 +1351,7 @@ func (cmd *AttachVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewAuthenticateRegistry(sess *session.Session, l ...*logger.Logger) *AuthenticateRegistry {
+func NewAuthenticateRegistry(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AuthenticateRegistry {
 	cmd := new(AuthenticateRegistry)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1346,6 +1361,7 @@ func NewAuthenticateRegistry(sess *session.Session, l ...*logger.Logger) *Authen
 	if sess != nil {
 		cmd.api = ecr.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1416,7 +1432,7 @@ func (cmd *AuthenticateRegistry) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckCertificate(sess *session.Session, l ...*logger.Logger) *CheckCertificate {
+func NewCheckCertificate(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckCertificate {
 	cmd := new(CheckCertificate)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1426,6 +1442,7 @@ func NewCheckCertificate(sess *session.Session, l ...*logger.Logger) *CheckCerti
 	if sess != nil {
 		cmd.api = acm.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1496,7 +1513,7 @@ func (cmd *CheckCertificate) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckDatabase(sess *session.Session, l ...*logger.Logger) *CheckDatabase {
+func NewCheckDatabase(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckDatabase {
 	cmd := new(CheckDatabase)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1506,6 +1523,7 @@ func NewCheckDatabase(sess *session.Session, l ...*logger.Logger) *CheckDatabase
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1576,7 +1594,7 @@ func (cmd *CheckDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckDistribution(sess *session.Session, l ...*logger.Logger) *CheckDistribution {
+func NewCheckDistribution(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckDistribution {
 	cmd := new(CheckDistribution)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1586,6 +1604,7 @@ func NewCheckDistribution(sess *session.Session, l ...*logger.Logger) *CheckDist
 	if sess != nil {
 		cmd.api = cloudfront.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1656,7 +1675,7 @@ func (cmd *CheckDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckInstance(sess *session.Session, l ...*logger.Logger) *CheckInstance {
+func NewCheckInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckInstance {
 	cmd := new(CheckInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1666,6 +1685,7 @@ func NewCheckInstance(sess *session.Session, l ...*logger.Logger) *CheckInstance
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1736,7 +1756,7 @@ func (cmd *CheckInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckLoadbalancer(sess *session.Session, l ...*logger.Logger) *CheckLoadbalancer {
+func NewCheckLoadbalancer(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckLoadbalancer {
 	cmd := new(CheckLoadbalancer)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1746,6 +1766,7 @@ func NewCheckLoadbalancer(sess *session.Session, l ...*logger.Logger) *CheckLoad
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1816,7 +1837,7 @@ func (cmd *CheckLoadbalancer) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckNatgateway(sess *session.Session, l ...*logger.Logger) *CheckNatgateway {
+func NewCheckNatgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckNatgateway {
 	cmd := new(CheckNatgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1826,6 +1847,7 @@ func NewCheckNatgateway(sess *session.Session, l ...*logger.Logger) *CheckNatgat
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1896,7 +1918,7 @@ func (cmd *CheckNatgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckNetworkinterface(sess *session.Session, l ...*logger.Logger) *CheckNetworkinterface {
+func NewCheckNetworkinterface(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckNetworkinterface {
 	cmd := new(CheckNetworkinterface)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1906,6 +1928,7 @@ func NewCheckNetworkinterface(sess *session.Session, l ...*logger.Logger) *Check
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -1976,7 +1999,7 @@ func (cmd *CheckNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckScalinggroup(sess *session.Session, l ...*logger.Logger) *CheckScalinggroup {
+func NewCheckScalinggroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckScalinggroup {
 	cmd := new(CheckScalinggroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -1986,6 +2009,7 @@ func NewCheckScalinggroup(sess *session.Session, l ...*logger.Logger) *CheckScal
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2056,7 +2080,7 @@ func (cmd *CheckScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckSecuritygroup(sess *session.Session, l ...*logger.Logger) *CheckSecuritygroup {
+func NewCheckSecuritygroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckSecuritygroup {
 	cmd := new(CheckSecuritygroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2066,6 +2090,7 @@ func NewCheckSecuritygroup(sess *session.Session, l ...*logger.Logger) *CheckSec
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2136,7 +2161,7 @@ func (cmd *CheckSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCheckVolume(sess *session.Session, l ...*logger.Logger) *CheckVolume {
+func NewCheckVolume(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CheckVolume {
 	cmd := new(CheckVolume)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2146,6 +2171,7 @@ func NewCheckVolume(sess *session.Session, l ...*logger.Logger) *CheckVolume {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2216,7 +2242,7 @@ func (cmd *CheckVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCopyImage(sess *session.Session, l ...*logger.Logger) *CopyImage {
+func NewCopyImage(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CopyImage {
 	cmd := new(CopyImage)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2226,6 +2252,7 @@ func NewCopyImage(sess *session.Session, l ...*logger.Logger) *CopyImage {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2323,7 +2350,7 @@ func (cmd *CopyImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCopySnapshot(sess *session.Session, l ...*logger.Logger) *CopySnapshot {
+func NewCopySnapshot(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CopySnapshot {
 	cmd := new(CopySnapshot)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2333,6 +2360,7 @@ func NewCopySnapshot(sess *session.Session, l ...*logger.Logger) *CopySnapshot {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2430,7 +2458,7 @@ func (cmd *CopySnapshot) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateAccesskey(sess *session.Session, l ...*logger.Logger) *CreateAccesskey {
+func NewCreateAccesskey(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateAccesskey {
 	cmd := new(CreateAccesskey)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2440,6 +2468,7 @@ func NewCreateAccesskey(sess *session.Session, l ...*logger.Logger) *CreateAcces
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2516,7 +2545,7 @@ func (cmd *CreateAccesskey) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateAlarm(sess *session.Session, l ...*logger.Logger) *CreateAlarm {
+func NewCreateAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateAlarm {
 	cmd := new(CreateAlarm)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2526,6 +2555,7 @@ func NewCreateAlarm(sess *session.Session, l ...*logger.Logger) *CreateAlarm {
 	if sess != nil {
 		cmd.api = cloudwatch.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2602,7 +2632,7 @@ func (cmd *CreateAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateAppscalingpolicy(sess *session.Session, l ...*logger.Logger) *CreateAppscalingpolicy {
+func NewCreateAppscalingpolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateAppscalingpolicy {
 	cmd := new(CreateAppscalingpolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2612,6 +2642,7 @@ func NewCreateAppscalingpolicy(sess *session.Session, l ...*logger.Logger) *Crea
 	if sess != nil {
 		cmd.api = applicationautoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2688,7 +2719,7 @@ func (cmd *CreateAppscalingpolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateAppscalingtarget(sess *session.Session, l ...*logger.Logger) *CreateAppscalingtarget {
+func NewCreateAppscalingtarget(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateAppscalingtarget {
 	cmd := new(CreateAppscalingtarget)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2698,6 +2729,7 @@ func NewCreateAppscalingtarget(sess *session.Session, l ...*logger.Logger) *Crea
 	if sess != nil {
 		cmd.api = applicationautoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2774,7 +2806,7 @@ func (cmd *CreateAppscalingtarget) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateBucket(sess *session.Session, l ...*logger.Logger) *CreateBucket {
+func NewCreateBucket(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateBucket {
 	cmd := new(CreateBucket)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2784,6 +2816,7 @@ func NewCreateBucket(sess *session.Session, l ...*logger.Logger) *CreateBucket {
 	if sess != nil {
 		cmd.api = s3.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2860,7 +2893,7 @@ func (cmd *CreateBucket) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateCertificate(sess *session.Session, l ...*logger.Logger) *CreateCertificate {
+func NewCreateCertificate(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateCertificate {
 	cmd := new(CreateCertificate)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2870,6 +2903,7 @@ func NewCreateCertificate(sess *session.Session, l ...*logger.Logger) *CreateCer
 	if sess != nil {
 		cmd.api = acm.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -2940,7 +2974,7 @@ func (cmd *CreateCertificate) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateContainercluster(sess *session.Session, l ...*logger.Logger) *CreateContainercluster {
+func NewCreateContainercluster(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateContainercluster {
 	cmd := new(CreateContainercluster)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -2950,6 +2984,7 @@ func NewCreateContainercluster(sess *session.Session, l ...*logger.Logger) *Crea
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3026,7 +3061,7 @@ func (cmd *CreateContainercluster) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateDatabase(sess *session.Session, l ...*logger.Logger) *CreateDatabase {
+func NewCreateDatabase(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateDatabase {
 	cmd := new(CreateDatabase)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3036,6 +3071,7 @@ func NewCreateDatabase(sess *session.Session, l ...*logger.Logger) *CreateDataba
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3106,7 +3142,7 @@ func (cmd *CreateDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateDbsubnetgroup(sess *session.Session, l ...*logger.Logger) *CreateDbsubnetgroup {
+func NewCreateDbsubnetgroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateDbsubnetgroup {
 	cmd := new(CreateDbsubnetgroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3116,6 +3152,7 @@ func NewCreateDbsubnetgroup(sess *session.Session, l ...*logger.Logger) *CreateD
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3192,7 +3229,7 @@ func (cmd *CreateDbsubnetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateDistribution(sess *session.Session, l ...*logger.Logger) *CreateDistribution {
+func NewCreateDistribution(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateDistribution {
 	cmd := new(CreateDistribution)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3202,6 +3239,7 @@ func NewCreateDistribution(sess *session.Session, l ...*logger.Logger) *CreateDi
 	if sess != nil {
 		cmd.api = cloudfront.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3272,7 +3310,7 @@ func (cmd *CreateDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateElasticip(sess *session.Session, l ...*logger.Logger) *CreateElasticip {
+func NewCreateElasticip(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateElasticip {
 	cmd := new(CreateElasticip)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3282,6 +3320,7 @@ func NewCreateElasticip(sess *session.Session, l ...*logger.Logger) *CreateElast
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3379,7 +3418,7 @@ func (cmd *CreateElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateFunction(sess *session.Session, l ...*logger.Logger) *CreateFunction {
+func NewCreateFunction(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateFunction {
 	cmd := new(CreateFunction)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3389,6 +3428,7 @@ func NewCreateFunction(sess *session.Session, l ...*logger.Logger) *CreateFuncti
 	if sess != nil {
 		cmd.api = lambda.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3465,7 +3505,7 @@ func (cmd *CreateFunction) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateGroup(sess *session.Session, l ...*logger.Logger) *CreateGroup {
+func NewCreateGroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateGroup {
 	cmd := new(CreateGroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3475,6 +3515,7 @@ func NewCreateGroup(sess *session.Session, l ...*logger.Logger) *CreateGroup {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3551,7 +3592,7 @@ func (cmd *CreateGroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateImage(sess *session.Session, l ...*logger.Logger) *CreateImage {
+func NewCreateImage(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateImage {
 	cmd := new(CreateImage)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3561,6 +3602,7 @@ func NewCreateImage(sess *session.Session, l ...*logger.Logger) *CreateImage {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3658,7 +3700,7 @@ func (cmd *CreateImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateInstance(sess *session.Session, l ...*logger.Logger) *CreateInstance {
+func NewCreateInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateInstance {
 	cmd := new(CreateInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3668,6 +3710,7 @@ func NewCreateInstance(sess *session.Session, l ...*logger.Logger) *CreateInstan
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3765,7 +3808,7 @@ func (cmd *CreateInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateInstanceprofile(sess *session.Session, l ...*logger.Logger) *CreateInstanceprofile {
+func NewCreateInstanceprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateInstanceprofile {
 	cmd := new(CreateInstanceprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3775,6 +3818,7 @@ func NewCreateInstanceprofile(sess *session.Session, l ...*logger.Logger) *Creat
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3851,7 +3895,7 @@ func (cmd *CreateInstanceprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateInternetgateway(sess *session.Session, l ...*logger.Logger) *CreateInternetgateway {
+func NewCreateInternetgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateInternetgateway {
 	cmd := new(CreateInternetgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3861,6 +3905,7 @@ func NewCreateInternetgateway(sess *session.Session, l ...*logger.Logger) *Creat
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -3958,7 +4003,7 @@ func (cmd *CreateInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateKeypair(sess *session.Session, l ...*logger.Logger) *CreateKeypair {
+func NewCreateKeypair(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateKeypair {
 	cmd := new(CreateKeypair)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -3968,6 +4013,7 @@ func NewCreateKeypair(sess *session.Session, l ...*logger.Logger) *CreateKeypair
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4044,7 +4090,7 @@ func (cmd *CreateKeypair) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateLaunchconfiguration(sess *session.Session, l ...*logger.Logger) *CreateLaunchconfiguration {
+func NewCreateLaunchconfiguration(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateLaunchconfiguration {
 	cmd := new(CreateLaunchconfiguration)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4054,6 +4100,7 @@ func NewCreateLaunchconfiguration(sess *session.Session, l ...*logger.Logger) *C
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4130,7 +4177,7 @@ func (cmd *CreateLaunchconfiguration) inject(params map[string]interface{}) erro
 	return structSetter(cmd, params)
 }
 
-func NewCreateListener(sess *session.Session, l ...*logger.Logger) *CreateListener {
+func NewCreateListener(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateListener {
 	cmd := new(CreateListener)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4140,6 +4187,7 @@ func NewCreateListener(sess *session.Session, l ...*logger.Logger) *CreateListen
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4216,7 +4264,7 @@ func (cmd *CreateListener) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateLoadbalancer(sess *session.Session, l ...*logger.Logger) *CreateLoadbalancer {
+func NewCreateLoadbalancer(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateLoadbalancer {
 	cmd := new(CreateLoadbalancer)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4226,6 +4274,7 @@ func NewCreateLoadbalancer(sess *session.Session, l ...*logger.Logger) *CreateLo
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4302,7 +4351,7 @@ func (cmd *CreateLoadbalancer) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateLoginprofile(sess *session.Session, l ...*logger.Logger) *CreateLoginprofile {
+func NewCreateLoginprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateLoginprofile {
 	cmd := new(CreateLoginprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4312,6 +4361,7 @@ func NewCreateLoginprofile(sess *session.Session, l ...*logger.Logger) *CreateLo
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4388,7 +4438,7 @@ func (cmd *CreateLoginprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateMfadevice(sess *session.Session, l ...*logger.Logger) *CreateMfadevice {
+func NewCreateMfadevice(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateMfadevice {
 	cmd := new(CreateMfadevice)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4398,6 +4448,7 @@ func NewCreateMfadevice(sess *session.Session, l ...*logger.Logger) *CreateMfade
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4468,7 +4519,7 @@ func (cmd *CreateMfadevice) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateNatgateway(sess *session.Session, l ...*logger.Logger) *CreateNatgateway {
+func NewCreateNatgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateNatgateway {
 	cmd := new(CreateNatgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4478,6 +4529,7 @@ func NewCreateNatgateway(sess *session.Session, l ...*logger.Logger) *CreateNatg
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4554,7 +4606,7 @@ func (cmd *CreateNatgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateNetworkinterface(sess *session.Session, l ...*logger.Logger) *CreateNetworkinterface {
+func NewCreateNetworkinterface(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateNetworkinterface {
 	cmd := new(CreateNetworkinterface)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4564,6 +4616,7 @@ func NewCreateNetworkinterface(sess *session.Session, l ...*logger.Logger) *Crea
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4661,7 +4714,7 @@ func (cmd *CreateNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreatePolicy(sess *session.Session, l ...*logger.Logger) *CreatePolicy {
+func NewCreatePolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreatePolicy {
 	cmd := new(CreatePolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4671,6 +4724,7 @@ func NewCreatePolicy(sess *session.Session, l ...*logger.Logger) *CreatePolicy {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4747,7 +4801,7 @@ func (cmd *CreatePolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateQueue(sess *session.Session, l ...*logger.Logger) *CreateQueue {
+func NewCreateQueue(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateQueue {
 	cmd := new(CreateQueue)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4757,6 +4811,7 @@ func NewCreateQueue(sess *session.Session, l ...*logger.Logger) *CreateQueue {
 	if sess != nil {
 		cmd.api = sqs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4833,7 +4888,7 @@ func (cmd *CreateQueue) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateRecord(sess *session.Session, l ...*logger.Logger) *CreateRecord {
+func NewCreateRecord(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateRecord {
 	cmd := new(CreateRecord)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4843,6 +4898,7 @@ func NewCreateRecord(sess *session.Session, l ...*logger.Logger) *CreateRecord {
 	if sess != nil {
 		cmd.api = route53.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4913,7 +4969,7 @@ func (cmd *CreateRecord) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateRepository(sess *session.Session, l ...*logger.Logger) *CreateRepository {
+func NewCreateRepository(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateRepository {
 	cmd := new(CreateRepository)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -4923,6 +4979,7 @@ func NewCreateRepository(sess *session.Session, l ...*logger.Logger) *CreateRepo
 	if sess != nil {
 		cmd.api = ecr.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -4999,7 +5056,7 @@ func (cmd *CreateRepository) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateRole(sess *session.Session, l ...*logger.Logger) *CreateRole {
+func NewCreateRole(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateRole {
 	cmd := new(CreateRole)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5009,6 +5066,7 @@ func NewCreateRole(sess *session.Session, l ...*logger.Logger) *CreateRole {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5079,7 +5137,7 @@ func (cmd *CreateRole) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateRoute(sess *session.Session, l ...*logger.Logger) *CreateRoute {
+func NewCreateRoute(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateRoute {
 	cmd := new(CreateRoute)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5089,6 +5147,7 @@ func NewCreateRoute(sess *session.Session, l ...*logger.Logger) *CreateRoute {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5186,7 +5245,7 @@ func (cmd *CreateRoute) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateRoutetable(sess *session.Session, l ...*logger.Logger) *CreateRoutetable {
+func NewCreateRoutetable(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateRoutetable {
 	cmd := new(CreateRoutetable)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5196,6 +5255,7 @@ func NewCreateRoutetable(sess *session.Session, l ...*logger.Logger) *CreateRout
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5293,7 +5353,7 @@ func (cmd *CreateRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateS3object(sess *session.Session, l ...*logger.Logger) *CreateS3object {
+func NewCreateS3object(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateS3object {
 	cmd := new(CreateS3object)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5303,6 +5363,7 @@ func NewCreateS3object(sess *session.Session, l ...*logger.Logger) *CreateS3obje
 	if sess != nil {
 		cmd.api = s3.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5373,7 +5434,7 @@ func (cmd *CreateS3object) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateScalinggroup(sess *session.Session, l ...*logger.Logger) *CreateScalinggroup {
+func NewCreateScalinggroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateScalinggroup {
 	cmd := new(CreateScalinggroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5383,6 +5444,7 @@ func NewCreateScalinggroup(sess *session.Session, l ...*logger.Logger) *CreateSc
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5459,7 +5521,7 @@ func (cmd *CreateScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateScalingpolicy(sess *session.Session, l ...*logger.Logger) *CreateScalingpolicy {
+func NewCreateScalingpolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateScalingpolicy {
 	cmd := new(CreateScalingpolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5469,6 +5531,7 @@ func NewCreateScalingpolicy(sess *session.Session, l ...*logger.Logger) *CreateS
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5545,7 +5608,7 @@ func (cmd *CreateScalingpolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateSecuritygroup(sess *session.Session, l ...*logger.Logger) *CreateSecuritygroup {
+func NewCreateSecuritygroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateSecuritygroup {
 	cmd := new(CreateSecuritygroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5555,6 +5618,7 @@ func NewCreateSecuritygroup(sess *session.Session, l ...*logger.Logger) *CreateS
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5652,7 +5716,7 @@ func (cmd *CreateSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateSnapshot(sess *session.Session, l ...*logger.Logger) *CreateSnapshot {
+func NewCreateSnapshot(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateSnapshot {
 	cmd := new(CreateSnapshot)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5662,6 +5726,7 @@ func NewCreateSnapshot(sess *session.Session, l ...*logger.Logger) *CreateSnapsh
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5759,7 +5824,7 @@ func (cmd *CreateSnapshot) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateStack(sess *session.Session, l ...*logger.Logger) *CreateStack {
+func NewCreateStack(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateStack {
 	cmd := new(CreateStack)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5769,6 +5834,7 @@ func NewCreateStack(sess *session.Session, l ...*logger.Logger) *CreateStack {
 	if sess != nil {
 		cmd.api = cloudformation.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5845,7 +5911,7 @@ func (cmd *CreateStack) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateSubnet(sess *session.Session, l ...*logger.Logger) *CreateSubnet {
+func NewCreateSubnet(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateSubnet {
 	cmd := new(CreateSubnet)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5855,6 +5921,7 @@ func NewCreateSubnet(sess *session.Session, l ...*logger.Logger) *CreateSubnet {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -5952,7 +6019,7 @@ func (cmd *CreateSubnet) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateSubscription(sess *session.Session, l ...*logger.Logger) *CreateSubscription {
+func NewCreateSubscription(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateSubscription {
 	cmd := new(CreateSubscription)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -5962,6 +6029,7 @@ func NewCreateSubscription(sess *session.Session, l ...*logger.Logger) *CreateSu
 	if sess != nil {
 		cmd.api = sns.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6038,7 +6106,7 @@ func (cmd *CreateSubscription) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateTag(sess *session.Session, l ...*logger.Logger) *CreateTag {
+func NewCreateTag(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateTag {
 	cmd := new(CreateTag)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6048,6 +6116,7 @@ func NewCreateTag(sess *session.Session, l ...*logger.Logger) *CreateTag {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6114,7 +6183,7 @@ func (cmd *CreateTag) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateTargetgroup(sess *session.Session, l ...*logger.Logger) *CreateTargetgroup {
+func NewCreateTargetgroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateTargetgroup {
 	cmd := new(CreateTargetgroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6124,6 +6193,7 @@ func NewCreateTargetgroup(sess *session.Session, l ...*logger.Logger) *CreateTar
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6200,7 +6270,7 @@ func (cmd *CreateTargetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateTopic(sess *session.Session, l ...*logger.Logger) *CreateTopic {
+func NewCreateTopic(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateTopic {
 	cmd := new(CreateTopic)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6210,6 +6280,7 @@ func NewCreateTopic(sess *session.Session, l ...*logger.Logger) *CreateTopic {
 	if sess != nil {
 		cmd.api = sns.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6286,7 +6357,7 @@ func (cmd *CreateTopic) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateUser(sess *session.Session, l ...*logger.Logger) *CreateUser {
+func NewCreateUser(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateUser {
 	cmd := new(CreateUser)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6296,6 +6367,7 @@ func NewCreateUser(sess *session.Session, l ...*logger.Logger) *CreateUser {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6372,7 +6444,7 @@ func (cmd *CreateUser) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateVolume(sess *session.Session, l ...*logger.Logger) *CreateVolume {
+func NewCreateVolume(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateVolume {
 	cmd := new(CreateVolume)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6382,6 +6454,7 @@ func NewCreateVolume(sess *session.Session, l ...*logger.Logger) *CreateVolume {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6479,7 +6552,7 @@ func (cmd *CreateVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateVpc(sess *session.Session, l ...*logger.Logger) *CreateVpc {
+func NewCreateVpc(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateVpc {
 	cmd := new(CreateVpc)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6489,6 +6562,7 @@ func NewCreateVpc(sess *session.Session, l ...*logger.Logger) *CreateVpc {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6586,7 +6660,7 @@ func (cmd *CreateVpc) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewCreateZone(sess *session.Session, l ...*logger.Logger) *CreateZone {
+func NewCreateZone(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *CreateZone {
 	cmd := new(CreateZone)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6596,6 +6670,7 @@ func NewCreateZone(sess *session.Session, l ...*logger.Logger) *CreateZone {
 	if sess != nil {
 		cmd.api = route53.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6672,7 +6747,7 @@ func (cmd *CreateZone) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteAccesskey(sess *session.Session, l ...*logger.Logger) *DeleteAccesskey {
+func NewDeleteAccesskey(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteAccesskey {
 	cmd := new(DeleteAccesskey)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6682,6 +6757,7 @@ func NewDeleteAccesskey(sess *session.Session, l ...*logger.Logger) *DeleteAcces
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6758,7 +6834,7 @@ func (cmd *DeleteAccesskey) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteAlarm(sess *session.Session, l ...*logger.Logger) *DeleteAlarm {
+func NewDeleteAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteAlarm {
 	cmd := new(DeleteAlarm)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6768,6 +6844,7 @@ func NewDeleteAlarm(sess *session.Session, l ...*logger.Logger) *DeleteAlarm {
 	if sess != nil {
 		cmd.api = cloudwatch.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6844,7 +6921,7 @@ func (cmd *DeleteAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteAppscalingpolicy(sess *session.Session, l ...*logger.Logger) *DeleteAppscalingpolicy {
+func NewDeleteAppscalingpolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteAppscalingpolicy {
 	cmd := new(DeleteAppscalingpolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6854,6 +6931,7 @@ func NewDeleteAppscalingpolicy(sess *session.Session, l ...*logger.Logger) *Dele
 	if sess != nil {
 		cmd.api = applicationautoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -6930,7 +7008,7 @@ func (cmd *DeleteAppscalingpolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteAppscalingtarget(sess *session.Session, l ...*logger.Logger) *DeleteAppscalingtarget {
+func NewDeleteAppscalingtarget(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteAppscalingtarget {
 	cmd := new(DeleteAppscalingtarget)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -6940,6 +7018,7 @@ func NewDeleteAppscalingtarget(sess *session.Session, l ...*logger.Logger) *Dele
 	if sess != nil {
 		cmd.api = applicationautoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7016,7 +7095,7 @@ func (cmd *DeleteAppscalingtarget) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteBucket(sess *session.Session, l ...*logger.Logger) *DeleteBucket {
+func NewDeleteBucket(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteBucket {
 	cmd := new(DeleteBucket)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7026,6 +7105,7 @@ func NewDeleteBucket(sess *session.Session, l ...*logger.Logger) *DeleteBucket {
 	if sess != nil {
 		cmd.api = s3.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7102,7 +7182,7 @@ func (cmd *DeleteBucket) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteCertificate(sess *session.Session, l ...*logger.Logger) *DeleteCertificate {
+func NewDeleteCertificate(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteCertificate {
 	cmd := new(DeleteCertificate)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7112,6 +7192,7 @@ func NewDeleteCertificate(sess *session.Session, l ...*logger.Logger) *DeleteCer
 	if sess != nil {
 		cmd.api = acm.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7188,7 +7269,7 @@ func (cmd *DeleteCertificate) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteContainercluster(sess *session.Session, l ...*logger.Logger) *DeleteContainercluster {
+func NewDeleteContainercluster(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteContainercluster {
 	cmd := new(DeleteContainercluster)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7198,6 +7279,7 @@ func NewDeleteContainercluster(sess *session.Session, l ...*logger.Logger) *Dele
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7274,7 +7356,7 @@ func (cmd *DeleteContainercluster) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteContainertask(sess *session.Session, l ...*logger.Logger) *DeleteContainertask {
+func NewDeleteContainertask(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteContainertask {
 	cmd := new(DeleteContainertask)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7284,6 +7366,7 @@ func NewDeleteContainertask(sess *session.Session, l ...*logger.Logger) *DeleteC
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7350,7 +7433,7 @@ func (cmd *DeleteContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteDatabase(sess *session.Session, l ...*logger.Logger) *DeleteDatabase {
+func NewDeleteDatabase(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteDatabase {
 	cmd := new(DeleteDatabase)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7360,6 +7443,7 @@ func NewDeleteDatabase(sess *session.Session, l ...*logger.Logger) *DeleteDataba
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7436,7 +7520,7 @@ func (cmd *DeleteDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteDbsubnetgroup(sess *session.Session, l ...*logger.Logger) *DeleteDbsubnetgroup {
+func NewDeleteDbsubnetgroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteDbsubnetgroup {
 	cmd := new(DeleteDbsubnetgroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7446,6 +7530,7 @@ func NewDeleteDbsubnetgroup(sess *session.Session, l ...*logger.Logger) *DeleteD
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7522,7 +7607,7 @@ func (cmd *DeleteDbsubnetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteDistribution(sess *session.Session, l ...*logger.Logger) *DeleteDistribution {
+func NewDeleteDistribution(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteDistribution {
 	cmd := new(DeleteDistribution)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7532,6 +7617,7 @@ func NewDeleteDistribution(sess *session.Session, l ...*logger.Logger) *DeleteDi
 	if sess != nil {
 		cmd.api = cloudfront.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7602,7 +7688,7 @@ func (cmd *DeleteDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteElasticip(sess *session.Session, l ...*logger.Logger) *DeleteElasticip {
+func NewDeleteElasticip(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteElasticip {
 	cmd := new(DeleteElasticip)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7612,6 +7698,7 @@ func NewDeleteElasticip(sess *session.Session, l ...*logger.Logger) *DeleteElast
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7709,7 +7796,7 @@ func (cmd *DeleteElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteFunction(sess *session.Session, l ...*logger.Logger) *DeleteFunction {
+func NewDeleteFunction(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteFunction {
 	cmd := new(DeleteFunction)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7719,6 +7806,7 @@ func NewDeleteFunction(sess *session.Session, l ...*logger.Logger) *DeleteFuncti
 	if sess != nil {
 		cmd.api = lambda.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7795,7 +7883,7 @@ func (cmd *DeleteFunction) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteGroup(sess *session.Session, l ...*logger.Logger) *DeleteGroup {
+func NewDeleteGroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteGroup {
 	cmd := new(DeleteGroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7805,6 +7893,7 @@ func NewDeleteGroup(sess *session.Session, l ...*logger.Logger) *DeleteGroup {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7881,7 +7970,7 @@ func (cmd *DeleteGroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteImage(sess *session.Session, l ...*logger.Logger) *DeleteImage {
+func NewDeleteImage(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteImage {
 	cmd := new(DeleteImage)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7891,6 +7980,7 @@ func NewDeleteImage(sess *session.Session, l ...*logger.Logger) *DeleteImage {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -7957,7 +8047,7 @@ func (cmd *DeleteImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteInstance(sess *session.Session, l ...*logger.Logger) *DeleteInstance {
+func NewDeleteInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteInstance {
 	cmd := new(DeleteInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -7967,6 +8057,7 @@ func NewDeleteInstance(sess *session.Session, l ...*logger.Logger) *DeleteInstan
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8064,7 +8155,7 @@ func (cmd *DeleteInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteInstanceprofile(sess *session.Session, l ...*logger.Logger) *DeleteInstanceprofile {
+func NewDeleteInstanceprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteInstanceprofile {
 	cmd := new(DeleteInstanceprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8074,6 +8165,7 @@ func NewDeleteInstanceprofile(sess *session.Session, l ...*logger.Logger) *Delet
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8150,7 +8242,7 @@ func (cmd *DeleteInstanceprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteInternetgateway(sess *session.Session, l ...*logger.Logger) *DeleteInternetgateway {
+func NewDeleteInternetgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteInternetgateway {
 	cmd := new(DeleteInternetgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8160,6 +8252,7 @@ func NewDeleteInternetgateway(sess *session.Session, l ...*logger.Logger) *Delet
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8257,7 +8350,7 @@ func (cmd *DeleteInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteKeypair(sess *session.Session, l ...*logger.Logger) *DeleteKeypair {
+func NewDeleteKeypair(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteKeypair {
 	cmd := new(DeleteKeypair)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8267,6 +8360,7 @@ func NewDeleteKeypair(sess *session.Session, l ...*logger.Logger) *DeleteKeypair
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8364,7 +8458,7 @@ func (cmd *DeleteKeypair) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteLaunchconfiguration(sess *session.Session, l ...*logger.Logger) *DeleteLaunchconfiguration {
+func NewDeleteLaunchconfiguration(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteLaunchconfiguration {
 	cmd := new(DeleteLaunchconfiguration)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8374,6 +8468,7 @@ func NewDeleteLaunchconfiguration(sess *session.Session, l ...*logger.Logger) *D
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8450,7 +8545,7 @@ func (cmd *DeleteLaunchconfiguration) inject(params map[string]interface{}) erro
 	return structSetter(cmd, params)
 }
 
-func NewDeleteListener(sess *session.Session, l ...*logger.Logger) *DeleteListener {
+func NewDeleteListener(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteListener {
 	cmd := new(DeleteListener)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8460,6 +8555,7 @@ func NewDeleteListener(sess *session.Session, l ...*logger.Logger) *DeleteListen
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8536,7 +8632,7 @@ func (cmd *DeleteListener) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteLoadbalancer(sess *session.Session, l ...*logger.Logger) *DeleteLoadbalancer {
+func NewDeleteLoadbalancer(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteLoadbalancer {
 	cmd := new(DeleteLoadbalancer)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8546,6 +8642,7 @@ func NewDeleteLoadbalancer(sess *session.Session, l ...*logger.Logger) *DeleteLo
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8622,7 +8719,7 @@ func (cmd *DeleteLoadbalancer) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteLoginprofile(sess *session.Session, l ...*logger.Logger) *DeleteLoginprofile {
+func NewDeleteLoginprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteLoginprofile {
 	cmd := new(DeleteLoginprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8632,6 +8729,7 @@ func NewDeleteLoginprofile(sess *session.Session, l ...*logger.Logger) *DeleteLo
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8708,7 +8806,7 @@ func (cmd *DeleteLoginprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteMfadevice(sess *session.Session, l ...*logger.Logger) *DeleteMfadevice {
+func NewDeleteMfadevice(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteMfadevice {
 	cmd := new(DeleteMfadevice)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8718,6 +8816,7 @@ func NewDeleteMfadevice(sess *session.Session, l ...*logger.Logger) *DeleteMfade
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8794,7 +8893,7 @@ func (cmd *DeleteMfadevice) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteNatgateway(sess *session.Session, l ...*logger.Logger) *DeleteNatgateway {
+func NewDeleteNatgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteNatgateway {
 	cmd := new(DeleteNatgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8804,6 +8903,7 @@ func NewDeleteNatgateway(sess *session.Session, l ...*logger.Logger) *DeleteNatg
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8880,7 +8980,7 @@ func (cmd *DeleteNatgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteNetworkinterface(sess *session.Session, l ...*logger.Logger) *DeleteNetworkinterface {
+func NewDeleteNetworkinterface(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteNetworkinterface {
 	cmd := new(DeleteNetworkinterface)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8890,6 +8990,7 @@ func NewDeleteNetworkinterface(sess *session.Session, l ...*logger.Logger) *Dele
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -8987,7 +9088,7 @@ func (cmd *DeleteNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeletePolicy(sess *session.Session, l ...*logger.Logger) *DeletePolicy {
+func NewDeletePolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeletePolicy {
 	cmd := new(DeletePolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -8997,6 +9098,7 @@ func NewDeletePolicy(sess *session.Session, l ...*logger.Logger) *DeletePolicy {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9073,7 +9175,7 @@ func (cmd *DeletePolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteQueue(sess *session.Session, l ...*logger.Logger) *DeleteQueue {
+func NewDeleteQueue(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteQueue {
 	cmd := new(DeleteQueue)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9083,6 +9185,7 @@ func NewDeleteQueue(sess *session.Session, l ...*logger.Logger) *DeleteQueue {
 	if sess != nil {
 		cmd.api = sqs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9159,7 +9262,7 @@ func (cmd *DeleteQueue) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteRecord(sess *session.Session, l ...*logger.Logger) *DeleteRecord {
+func NewDeleteRecord(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteRecord {
 	cmd := new(DeleteRecord)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9169,6 +9272,7 @@ func NewDeleteRecord(sess *session.Session, l ...*logger.Logger) *DeleteRecord {
 	if sess != nil {
 		cmd.api = route53.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9239,7 +9343,7 @@ func (cmd *DeleteRecord) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteRepository(sess *session.Session, l ...*logger.Logger) *DeleteRepository {
+func NewDeleteRepository(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteRepository {
 	cmd := new(DeleteRepository)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9249,6 +9353,7 @@ func NewDeleteRepository(sess *session.Session, l ...*logger.Logger) *DeleteRepo
 	if sess != nil {
 		cmd.api = ecr.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9325,7 +9430,7 @@ func (cmd *DeleteRepository) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteRole(sess *session.Session, l ...*logger.Logger) *DeleteRole {
+func NewDeleteRole(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteRole {
 	cmd := new(DeleteRole)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9335,6 +9440,7 @@ func NewDeleteRole(sess *session.Session, l ...*logger.Logger) *DeleteRole {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9405,7 +9511,7 @@ func (cmd *DeleteRole) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteRoute(sess *session.Session, l ...*logger.Logger) *DeleteRoute {
+func NewDeleteRoute(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteRoute {
 	cmd := new(DeleteRoute)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9415,6 +9521,7 @@ func NewDeleteRoute(sess *session.Session, l ...*logger.Logger) *DeleteRoute {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9512,7 +9619,7 @@ func (cmd *DeleteRoute) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteRoutetable(sess *session.Session, l ...*logger.Logger) *DeleteRoutetable {
+func NewDeleteRoutetable(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteRoutetable {
 	cmd := new(DeleteRoutetable)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9522,6 +9629,7 @@ func NewDeleteRoutetable(sess *session.Session, l ...*logger.Logger) *DeleteRout
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9619,7 +9727,7 @@ func (cmd *DeleteRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteS3object(sess *session.Session, l ...*logger.Logger) *DeleteS3object {
+func NewDeleteS3object(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteS3object {
 	cmd := new(DeleteS3object)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9629,6 +9737,7 @@ func NewDeleteS3object(sess *session.Session, l ...*logger.Logger) *DeleteS3obje
 	if sess != nil {
 		cmd.api = s3.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9705,7 +9814,7 @@ func (cmd *DeleteS3object) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteScalinggroup(sess *session.Session, l ...*logger.Logger) *DeleteScalinggroup {
+func NewDeleteScalinggroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteScalinggroup {
 	cmd := new(DeleteScalinggroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9715,6 +9824,7 @@ func NewDeleteScalinggroup(sess *session.Session, l ...*logger.Logger) *DeleteSc
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9791,7 +9901,7 @@ func (cmd *DeleteScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteScalingpolicy(sess *session.Session, l ...*logger.Logger) *DeleteScalingpolicy {
+func NewDeleteScalingpolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteScalingpolicy {
 	cmd := new(DeleteScalingpolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9801,6 +9911,7 @@ func NewDeleteScalingpolicy(sess *session.Session, l ...*logger.Logger) *DeleteS
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9877,7 +9988,7 @@ func (cmd *DeleteScalingpolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteSecuritygroup(sess *session.Session, l ...*logger.Logger) *DeleteSecuritygroup {
+func NewDeleteSecuritygroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteSecuritygroup {
 	cmd := new(DeleteSecuritygroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9887,6 +9998,7 @@ func NewDeleteSecuritygroup(sess *session.Session, l ...*logger.Logger) *DeleteS
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -9984,7 +10096,7 @@ func (cmd *DeleteSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteSnapshot(sess *session.Session, l ...*logger.Logger) *DeleteSnapshot {
+func NewDeleteSnapshot(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteSnapshot {
 	cmd := new(DeleteSnapshot)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -9994,6 +10106,7 @@ func NewDeleteSnapshot(sess *session.Session, l ...*logger.Logger) *DeleteSnapsh
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10091,7 +10204,7 @@ func (cmd *DeleteSnapshot) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteStack(sess *session.Session, l ...*logger.Logger) *DeleteStack {
+func NewDeleteStack(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteStack {
 	cmd := new(DeleteStack)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10101,6 +10214,7 @@ func NewDeleteStack(sess *session.Session, l ...*logger.Logger) *DeleteStack {
 	if sess != nil {
 		cmd.api = cloudformation.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10177,7 +10291,7 @@ func (cmd *DeleteStack) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteSubnet(sess *session.Session, l ...*logger.Logger) *DeleteSubnet {
+func NewDeleteSubnet(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteSubnet {
 	cmd := new(DeleteSubnet)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10187,6 +10301,7 @@ func NewDeleteSubnet(sess *session.Session, l ...*logger.Logger) *DeleteSubnet {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10284,7 +10399,7 @@ func (cmd *DeleteSubnet) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteSubscription(sess *session.Session, l ...*logger.Logger) *DeleteSubscription {
+func NewDeleteSubscription(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteSubscription {
 	cmd := new(DeleteSubscription)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10294,6 +10409,7 @@ func NewDeleteSubscription(sess *session.Session, l ...*logger.Logger) *DeleteSu
 	if sess != nil {
 		cmd.api = sns.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10370,7 +10486,7 @@ func (cmd *DeleteSubscription) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteTag(sess *session.Session, l ...*logger.Logger) *DeleteTag {
+func NewDeleteTag(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteTag {
 	cmd := new(DeleteTag)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10380,6 +10496,7 @@ func NewDeleteTag(sess *session.Session, l ...*logger.Logger) *DeleteTag {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10446,7 +10563,7 @@ func (cmd *DeleteTag) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteTargetgroup(sess *session.Session, l ...*logger.Logger) *DeleteTargetgroup {
+func NewDeleteTargetgroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteTargetgroup {
 	cmd := new(DeleteTargetgroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10456,6 +10573,7 @@ func NewDeleteTargetgroup(sess *session.Session, l ...*logger.Logger) *DeleteTar
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10532,7 +10650,7 @@ func (cmd *DeleteTargetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteTopic(sess *session.Session, l ...*logger.Logger) *DeleteTopic {
+func NewDeleteTopic(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteTopic {
 	cmd := new(DeleteTopic)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10542,6 +10660,7 @@ func NewDeleteTopic(sess *session.Session, l ...*logger.Logger) *DeleteTopic {
 	if sess != nil {
 		cmd.api = sns.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10618,7 +10737,7 @@ func (cmd *DeleteTopic) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteUser(sess *session.Session, l ...*logger.Logger) *DeleteUser {
+func NewDeleteUser(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteUser {
 	cmd := new(DeleteUser)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10628,6 +10747,7 @@ func NewDeleteUser(sess *session.Session, l ...*logger.Logger) *DeleteUser {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10704,7 +10824,7 @@ func (cmd *DeleteUser) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteVolume(sess *session.Session, l ...*logger.Logger) *DeleteVolume {
+func NewDeleteVolume(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteVolume {
 	cmd := new(DeleteVolume)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10714,6 +10834,7 @@ func NewDeleteVolume(sess *session.Session, l ...*logger.Logger) *DeleteVolume {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10811,7 +10932,7 @@ func (cmd *DeleteVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteVpc(sess *session.Session, l ...*logger.Logger) *DeleteVpc {
+func NewDeleteVpc(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteVpc {
 	cmd := new(DeleteVpc)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10821,6 +10942,7 @@ func NewDeleteVpc(sess *session.Session, l ...*logger.Logger) *DeleteVpc {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -10918,7 +11040,7 @@ func (cmd *DeleteVpc) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDeleteZone(sess *session.Session, l ...*logger.Logger) *DeleteZone {
+func NewDeleteZone(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DeleteZone {
 	cmd := new(DeleteZone)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -10928,6 +11050,7 @@ func NewDeleteZone(sess *session.Session, l ...*logger.Logger) *DeleteZone {
 	if sess != nil {
 		cmd.api = route53.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11004,7 +11127,7 @@ func (cmd *DeleteZone) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachAlarm(sess *session.Session, l ...*logger.Logger) *DetachAlarm {
+func NewDetachAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachAlarm {
 	cmd := new(DetachAlarm)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11014,6 +11137,7 @@ func NewDetachAlarm(sess *session.Session, l ...*logger.Logger) *DetachAlarm {
 	if sess != nil {
 		cmd.api = cloudwatch.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11084,7 +11208,7 @@ func (cmd *DetachAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachContainertask(sess *session.Session, l ...*logger.Logger) *DetachContainertask {
+func NewDetachContainertask(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachContainertask {
 	cmd := new(DetachContainertask)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11094,6 +11218,7 @@ func NewDetachContainertask(sess *session.Session, l ...*logger.Logger) *DetachC
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11164,7 +11289,7 @@ func (cmd *DetachContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachElasticip(sess *session.Session, l ...*logger.Logger) *DetachElasticip {
+func NewDetachElasticip(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachElasticip {
 	cmd := new(DetachElasticip)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11174,6 +11299,7 @@ func NewDetachElasticip(sess *session.Session, l ...*logger.Logger) *DetachElast
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11271,7 +11397,7 @@ func (cmd *DetachElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachInstance(sess *session.Session, l ...*logger.Logger) *DetachInstance {
+func NewDetachInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachInstance {
 	cmd := new(DetachInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11281,6 +11407,7 @@ func NewDetachInstance(sess *session.Session, l ...*logger.Logger) *DetachInstan
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11357,7 +11484,7 @@ func (cmd *DetachInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachInstanceprofile(sess *session.Session, l ...*logger.Logger) *DetachInstanceprofile {
+func NewDetachInstanceprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachInstanceprofile {
 	cmd := new(DetachInstanceprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11367,6 +11494,7 @@ func NewDetachInstanceprofile(sess *session.Session, l ...*logger.Logger) *Detac
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11437,7 +11565,7 @@ func (cmd *DetachInstanceprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachInternetgateway(sess *session.Session, l ...*logger.Logger) *DetachInternetgateway {
+func NewDetachInternetgateway(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachInternetgateway {
 	cmd := new(DetachInternetgateway)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11447,6 +11575,7 @@ func NewDetachInternetgateway(sess *session.Session, l ...*logger.Logger) *Detac
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11544,7 +11673,7 @@ func (cmd *DetachInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachMfadevice(sess *session.Session, l ...*logger.Logger) *DetachMfadevice {
+func NewDetachMfadevice(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachMfadevice {
 	cmd := new(DetachMfadevice)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11554,6 +11683,7 @@ func NewDetachMfadevice(sess *session.Session, l ...*logger.Logger) *DetachMfade
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11630,7 +11760,7 @@ func (cmd *DetachMfadevice) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachNetworkinterface(sess *session.Session, l ...*logger.Logger) *DetachNetworkinterface {
+func NewDetachNetworkinterface(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachNetworkinterface {
 	cmd := new(DetachNetworkinterface)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11640,6 +11770,7 @@ func NewDetachNetworkinterface(sess *session.Session, l ...*logger.Logger) *Deta
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11706,7 +11837,7 @@ func (cmd *DetachNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachPolicy(sess *session.Session, l ...*logger.Logger) *DetachPolicy {
+func NewDetachPolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachPolicy {
 	cmd := new(DetachPolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11716,6 +11847,7 @@ func NewDetachPolicy(sess *session.Session, l ...*logger.Logger) *DetachPolicy {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11786,7 +11918,7 @@ func (cmd *DetachPolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachRole(sess *session.Session, l ...*logger.Logger) *DetachRole {
+func NewDetachRole(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachRole {
 	cmd := new(DetachRole)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11796,6 +11928,7 @@ func NewDetachRole(sess *session.Session, l ...*logger.Logger) *DetachRole {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11872,7 +12005,7 @@ func (cmd *DetachRole) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachRoutetable(sess *session.Session, l ...*logger.Logger) *DetachRoutetable {
+func NewDetachRoutetable(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachRoutetable {
 	cmd := new(DetachRoutetable)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11882,6 +12015,7 @@ func NewDetachRoutetable(sess *session.Session, l ...*logger.Logger) *DetachRout
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -11979,7 +12113,7 @@ func (cmd *DetachRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachSecuritygroup(sess *session.Session, l ...*logger.Logger) *DetachSecuritygroup {
+func NewDetachSecuritygroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachSecuritygroup {
 	cmd := new(DetachSecuritygroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -11989,6 +12123,7 @@ func NewDetachSecuritygroup(sess *session.Session, l ...*logger.Logger) *DetachS
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12059,7 +12194,7 @@ func (cmd *DetachSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachUser(sess *session.Session, l ...*logger.Logger) *DetachUser {
+func NewDetachUser(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachUser {
 	cmd := new(DetachUser)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12069,6 +12204,7 @@ func NewDetachUser(sess *session.Session, l ...*logger.Logger) *DetachUser {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12145,7 +12281,7 @@ func (cmd *DetachUser) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewDetachVolume(sess *session.Session, l ...*logger.Logger) *DetachVolume {
+func NewDetachVolume(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *DetachVolume {
 	cmd := new(DetachVolume)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12155,6 +12291,7 @@ func NewDetachVolume(sess *session.Session, l ...*logger.Logger) *DetachVolume {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12252,7 +12389,7 @@ func (cmd *DetachVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewImportImage(sess *session.Session, l ...*logger.Logger) *ImportImage {
+func NewImportImage(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *ImportImage {
 	cmd := new(ImportImage)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12262,6 +12399,7 @@ func NewImportImage(sess *session.Session, l ...*logger.Logger) *ImportImage {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12359,7 +12497,7 @@ func (cmd *ImportImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStartAlarm(sess *session.Session, l ...*logger.Logger) *StartAlarm {
+func NewStartAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StartAlarm {
 	cmd := new(StartAlarm)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12369,6 +12507,7 @@ func NewStartAlarm(sess *session.Session, l ...*logger.Logger) *StartAlarm {
 	if sess != nil {
 		cmd.api = cloudwatch.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12445,7 +12584,7 @@ func (cmd *StartAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStartContainertask(sess *session.Session, l ...*logger.Logger) *StartContainertask {
+func NewStartContainertask(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StartContainertask {
 	cmd := new(StartContainertask)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12455,6 +12594,7 @@ func NewStartContainertask(sess *session.Session, l ...*logger.Logger) *StartCon
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12525,7 +12665,7 @@ func (cmd *StartContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStartDatabase(sess *session.Session, l ...*logger.Logger) *StartDatabase {
+func NewStartDatabase(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StartDatabase {
 	cmd := new(StartDatabase)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12535,6 +12675,7 @@ func NewStartDatabase(sess *session.Session, l ...*logger.Logger) *StartDatabase
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12611,7 +12752,7 @@ func (cmd *StartDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStartInstance(sess *session.Session, l ...*logger.Logger) *StartInstance {
+func NewStartInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StartInstance {
 	cmd := new(StartInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12621,6 +12762,7 @@ func NewStartInstance(sess *session.Session, l ...*logger.Logger) *StartInstance
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12718,7 +12860,7 @@ func (cmd *StartInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStopAlarm(sess *session.Session, l ...*logger.Logger) *StopAlarm {
+func NewStopAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StopAlarm {
 	cmd := new(StopAlarm)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12728,6 +12870,7 @@ func NewStopAlarm(sess *session.Session, l ...*logger.Logger) *StopAlarm {
 	if sess != nil {
 		cmd.api = cloudwatch.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12804,7 +12947,7 @@ func (cmd *StopAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStopContainertask(sess *session.Session, l ...*logger.Logger) *StopContainertask {
+func NewStopContainertask(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StopContainertask {
 	cmd := new(StopContainertask)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12814,6 +12957,7 @@ func NewStopContainertask(sess *session.Session, l ...*logger.Logger) *StopConta
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12884,7 +13028,7 @@ func (cmd *StopContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStopDatabase(sess *session.Session, l ...*logger.Logger) *StopDatabase {
+func NewStopDatabase(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StopDatabase {
 	cmd := new(StopDatabase)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12894,6 +13038,7 @@ func NewStopDatabase(sess *session.Session, l ...*logger.Logger) *StopDatabase {
 	if sess != nil {
 		cmd.api = rds.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -12970,7 +13115,7 @@ func (cmd *StopDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewStopInstance(sess *session.Session, l ...*logger.Logger) *StopInstance {
+func NewStopInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *StopInstance {
 	cmd := new(StopInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -12980,6 +13125,7 @@ func NewStopInstance(sess *session.Session, l ...*logger.Logger) *StopInstance {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13077,7 +13223,7 @@ func (cmd *StopInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateBucket(sess *session.Session, l ...*logger.Logger) *UpdateBucket {
+func NewUpdateBucket(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateBucket {
 	cmd := new(UpdateBucket)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13087,6 +13233,7 @@ func NewUpdateBucket(sess *session.Session, l ...*logger.Logger) *UpdateBucket {
 	if sess != nil {
 		cmd.api = s3.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13157,7 +13304,7 @@ func (cmd *UpdateBucket) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateContainertask(sess *session.Session, l ...*logger.Logger) *UpdateContainertask {
+func NewUpdateContainertask(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateContainertask {
 	cmd := new(UpdateContainertask)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13167,6 +13314,7 @@ func NewUpdateContainertask(sess *session.Session, l ...*logger.Logger) *UpdateC
 	if sess != nil {
 		cmd.api = ecs.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13243,7 +13391,7 @@ func (cmd *UpdateContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateDistribution(sess *session.Session, l ...*logger.Logger) *UpdateDistribution {
+func NewUpdateDistribution(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateDistribution {
 	cmd := new(UpdateDistribution)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13253,6 +13401,7 @@ func NewUpdateDistribution(sess *session.Session, l ...*logger.Logger) *UpdateDi
 	if sess != nil {
 		cmd.api = cloudfront.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13323,7 +13472,7 @@ func (cmd *UpdateDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateImage(sess *session.Session, l ...*logger.Logger) *UpdateImage {
+func NewUpdateImage(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateImage {
 	cmd := new(UpdateImage)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13333,6 +13482,7 @@ func NewUpdateImage(sess *session.Session, l ...*logger.Logger) *UpdateImage {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13399,7 +13549,7 @@ func (cmd *UpdateImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateInstance(sess *session.Session, l ...*logger.Logger) *UpdateInstance {
+func NewUpdateInstance(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateInstance {
 	cmd := new(UpdateInstance)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13409,6 +13559,7 @@ func NewUpdateInstance(sess *session.Session, l ...*logger.Logger) *UpdateInstan
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13506,7 +13657,7 @@ func (cmd *UpdateInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateLoginprofile(sess *session.Session, l ...*logger.Logger) *UpdateLoginprofile {
+func NewUpdateLoginprofile(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateLoginprofile {
 	cmd := new(UpdateLoginprofile)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13516,6 +13667,7 @@ func NewUpdateLoginprofile(sess *session.Session, l ...*logger.Logger) *UpdateLo
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13592,7 +13744,7 @@ func (cmd *UpdateLoginprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdatePolicy(sess *session.Session, l ...*logger.Logger) *UpdatePolicy {
+func NewUpdatePolicy(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdatePolicy {
 	cmd := new(UpdatePolicy)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13602,6 +13754,7 @@ func NewUpdatePolicy(sess *session.Session, l ...*logger.Logger) *UpdatePolicy {
 	if sess != nil {
 		cmd.api = iam.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13678,7 +13831,7 @@ func (cmd *UpdatePolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateRecord(sess *session.Session, l ...*logger.Logger) *UpdateRecord {
+func NewUpdateRecord(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateRecord {
 	cmd := new(UpdateRecord)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13688,6 +13841,7 @@ func NewUpdateRecord(sess *session.Session, l ...*logger.Logger) *UpdateRecord {
 	if sess != nil {
 		cmd.api = route53.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13758,7 +13912,7 @@ func (cmd *UpdateRecord) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateS3object(sess *session.Session, l ...*logger.Logger) *UpdateS3object {
+func NewUpdateS3object(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateS3object {
 	cmd := new(UpdateS3object)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13768,6 +13922,7 @@ func NewUpdateS3object(sess *session.Session, l ...*logger.Logger) *UpdateS3obje
 	if sess != nil {
 		cmd.api = s3.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13844,7 +13999,7 @@ func (cmd *UpdateS3object) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateScalinggroup(sess *session.Session, l ...*logger.Logger) *UpdateScalinggroup {
+func NewUpdateScalinggroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateScalinggroup {
 	cmd := new(UpdateScalinggroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13854,6 +14009,7 @@ func NewUpdateScalinggroup(sess *session.Session, l ...*logger.Logger) *UpdateSc
 	if sess != nil {
 		cmd.api = autoscaling.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -13930,7 +14086,7 @@ func (cmd *UpdateScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateSecuritygroup(sess *session.Session, l ...*logger.Logger) *UpdateSecuritygroup {
+func NewUpdateSecuritygroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateSecuritygroup {
 	cmd := new(UpdateSecuritygroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -13940,6 +14096,7 @@ func NewUpdateSecuritygroup(sess *session.Session, l ...*logger.Logger) *UpdateS
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -14006,7 +14163,7 @@ func (cmd *UpdateSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateStack(sess *session.Session, l ...*logger.Logger) *UpdateStack {
+func NewUpdateStack(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateStack {
 	cmd := new(UpdateStack)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -14016,6 +14173,7 @@ func NewUpdateStack(sess *session.Session, l ...*logger.Logger) *UpdateStack {
 	if sess != nil {
 		cmd.api = cloudformation.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -14092,7 +14250,7 @@ func (cmd *UpdateStack) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateSubnet(sess *session.Session, l ...*logger.Logger) *UpdateSubnet {
+func NewUpdateSubnet(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateSubnet {
 	cmd := new(UpdateSubnet)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -14102,6 +14260,7 @@ func NewUpdateSubnet(sess *session.Session, l ...*logger.Logger) *UpdateSubnet {
 	if sess != nil {
 		cmd.api = ec2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 
@@ -14178,7 +14337,7 @@ func (cmd *UpdateSubnet) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
-func NewUpdateTargetgroup(sess *session.Session, l ...*logger.Logger) *UpdateTargetgroup {
+func NewUpdateTargetgroup(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *UpdateTargetgroup {
 	cmd := new(UpdateTargetgroup)
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -14188,6 +14347,7 @@ func NewUpdateTargetgroup(sess *session.Session, l ...*logger.Logger) *UpdateTar
 	if sess != nil {
 		cmd.api = elbv2.New(sess)
 	}
+	cmd.graph = g
 	return cmd
 }
 

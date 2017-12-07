@@ -223,19 +223,23 @@ limitations under the License.
 // This file was automatically generated with go generate
 package awsat
 
-import "github.com/wallix/awless/aws/spec"
+import (
+  "github.com/wallix/awless/aws/spec"
+  "github.com/wallix/awless/cloud/graph"
+)
 
 type AcceptanceFactory struct {
 	Mock   interface{}
 	Logger *logger.Logger
+	Graph cloudgraph.GraphAPI
 }
 
-func NewAcceptanceFactory(mock interface{}, l ...*logger.Logger) *AcceptanceFactory {
+func NewAcceptanceFactory(mock interface{}, g cloudgraph.GraphAPI, l ...*logger.Logger) *AcceptanceFactory {
 	logger := logger.DiscardLogger
 	if len(l) > 0 {
 		logger = l[0]
 	}
-	return &AcceptanceFactory{Mock: mock, Logger: logger}
+	return &AcceptanceFactory{Mock: mock, Graph:g, Logger: logger}
 }
 
 func (f *AcceptanceFactory) Build(key string) func() interface{} {
@@ -243,7 +247,7 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 		{{- range $cmdName, $cmd := . }}
 		case "{{ $cmd.Action }}{{ $cmd.Entity }}":
 			return func() interface{} {
-				cmd := awsspec.New{{ $cmdName }}(nil, f.Logger)
+				cmd := awsspec.New{{ $cmdName }}(nil, f.Graph, f.Logger)
 				cmd.SetApi(f.Mock.({{$cmd.API}}iface.{{ ApiToInterface $cmd.API }}))
 				return cmd
 			}

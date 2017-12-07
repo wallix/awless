@@ -196,7 +196,7 @@ func (r *Resource) AddChildren(gr ...*graph.Resource) {
 }
 
 func newResource(r *graph.Resource) *Resource {
-	return &Resource{Id: r.Id(), Type: r.Type(), Properties: r.Properties}
+	return &Resource{Id: r.Id(), Type: r.Type(), Properties: r.Properties()}
 }
 
 func loadLocalTriples() ([]tstore.Triple, error) {

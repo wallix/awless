@@ -9,6 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/aws/spec"
+	"github.com/wallix/awless/cloud/properties"
+	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 )
 
 func TestAccesskey(t *testing.T) {
@@ -59,15 +62,41 @@ aws_secret_access_key = MYSECRETKEY
 	})
 
 	t.Run("delete", func(t *testing.T) {
-		Template("delete accesskey id=ACCESSKEYID user=jdoe").
-			Mock(&iamMock{
-				DeleteAccessKeyFunc: func(param0 *iam.DeleteAccessKeyInput) (*iam.DeleteAccessKeyOutput, error) {
-					return nil, nil
-				},
-			}).ExpectInput("DeleteAccessKey", &iam.DeleteAccessKeyInput{
-			UserName:    String("jdoe"),
-			AccessKeyId: String("ACCESSKEYID"),
-		}).ExpectCalls("DeleteAccessKey").Run(t)
+		t.Run("with user", func(t *testing.T) {
+			Template("delete accesskey id=ACCESSKEYID user=jdoe").
+				Mock(&iamMock{
+					DeleteAccessKeyFunc: func(param0 *iam.DeleteAccessKeyInput) (*iam.DeleteAccessKeyOutput, error) {
+						return nil, nil
+					},
+				}).ExpectInput("DeleteAccessKey", &iam.DeleteAccessKeyInput{
+				UserName:    String("jdoe"),
+				AccessKeyId: String("ACCESSKEYID"),
+			}).ExpectCalls("DeleteAccessKey").Run(t)
+		})
+		t.Run("without user and id in local graph", func(t *testing.T) {
+			g := graph.NewGraph()
+			g.AddResource(resourcetest.AccessKey("ACCESSKEYID").Prop(properties.Username, "myusername").Build())
+			g.AddResource(resourcetest.AccessKey("OTHERACCESSKEYID").Prop(properties.Username, "notthis").Build())
+			Template("delete accesskey id=ACCESSKEYID").
+				Mock(&iamMock{
+					DeleteAccessKeyFunc: func(param0 *iam.DeleteAccessKeyInput) (*iam.DeleteAccessKeyOutput, error) {
+						return nil, nil
+					},
+				}).Graph(g).ExpectInput("DeleteAccessKey", &iam.DeleteAccessKeyInput{
+				UserName:    String("myusername"),
+				AccessKeyId: String("ACCESSKEYID"),
+			}).ExpectCalls("DeleteAccessKey").Run(t)
+		})
+		t.Run("without user and id not in local graph", func(t *testing.T) {
+			Template("delete accesskey id=ACCESSKEYID").
+				Mock(&iamMock{
+					DeleteAccessKeyFunc: func(param0 *iam.DeleteAccessKeyInput) (*iam.DeleteAccessKeyOutput, error) {
+						return nil, nil
+					},
+				}).ExpectInput("DeleteAccessKey", &iam.DeleteAccessKeyInput{
+				AccessKeyId: String("ACCESSKEYID"),
+			}).ExpectCalls("DeleteAccessKey").Run(t)
+		})
 	})
 }
 

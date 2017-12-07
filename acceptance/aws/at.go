@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/aws/spec"
+	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template"
 )
@@ -17,6 +18,7 @@ type ATBuilder struct {
 	expectCalls map[string]int
 	expectInput map[string]interface{}
 	mock        mock
+	graph       *graph.Graph
 }
 
 func Template(template string) *ATBuilder {
@@ -40,6 +42,11 @@ func (b *ATBuilder) ExpectInput(call string, input interface{}) *ATBuilder {
 	return b
 }
 
+func (b *ATBuilder) Graph(g *graph.Graph) *ATBuilder {
+	b.graph = g
+	return b
+}
+
 func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 	t.Helper()
 	b.mock.SetInputs(b.expectInput)
@@ -49,7 +56,10 @@ func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	awsspec.CommandFactory = NewAcceptanceFactory(b.mock, l...)
+	if b.graph == nil {
+		b.graph = graph.NewGraph()
+	}
+	awsspec.CommandFactory = NewAcceptanceFactory(b.mock, b.graph, l...)
 
 	env := template.NewEnv()
 	env.Lookuper = func(tokens ...string) interface{} {

@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -29,6 +31,7 @@ import (
 type CreateLoadbalancer struct {
 	_              string `action:"create" entity:"loadbalancer" awsAPI:"elbv2" awsCall:"CreateLoadBalancer" awsInput:"elbv2.CreateLoadBalancerInput" awsOutput:"elbv2.CreateLoadBalancerOutput"`
 	logger         *logger.Logger
+	graph          cloudgraph.GraphAPI
 	api            elbv2iface.ELBV2API
 	Name           *string   `awsName:"Name" awsType:"awsstr" templateName:"name" required:""`
 	Subnets        []*string `awsName:"Subnets" awsType:"awsstringslice" templateName:"subnets" required:""`
@@ -50,6 +53,7 @@ func (cmd *CreateLoadbalancer) ExtractResult(i interface{}) string {
 type DeleteLoadbalancer struct {
 	_      string `action:"delete" entity:"loadbalancer" awsAPI:"elbv2" awsCall:"DeleteLoadBalancer" awsInput:"elbv2.DeleteLoadBalancerInput" awsOutput:"elbv2.DeleteLoadBalancerOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    elbv2iface.ELBV2API
 	Id     *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"id" required:""`
 }
@@ -61,6 +65,7 @@ func (cmd *DeleteLoadbalancer) ValidateParams(params []string) ([]string, error)
 type CheckLoadbalancer struct {
 	_       string `action:"check" entity:"loadbalancer" awsAPI:"elbv2"`
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	api     elbv2iface.ELBV2API
 	Id      *string `templateName:"id" required:""`
 	State   *string `templateName:"state" required:""`

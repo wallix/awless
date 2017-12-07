@@ -19,12 +19,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateSubscription struct {
 	_        string `action:"create" entity:"subscription" awsAPI:"sns" awsCall:"Subscribe" awsInput:"sns.SubscribeInput" awsOutput:"sns.SubscribeOutput"`
 	logger   *logger.Logger
+	graph    cloudgraph.GraphAPI
 	api      snsiface.SNSAPI
 	Topic    *string `awsName:"TopicArn" awsType:"awsstr" templateName:"topic" required:""`
 	Endpoint *string `awsName:"Endpoint" awsType:"awsstr" templateName:"endpoint" required:""`
@@ -42,6 +44,7 @@ func (cmd *CreateSubscription) ExtractResult(i interface{}) string {
 type DeleteSubscription struct {
 	_      string `action:"delete" entity:"subscription" awsAPI:"sns" awsCall:"Unsubscribe" awsInput:"sns.UnsubscribeInput" awsOutput:"sns.UnsubscribeOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    snsiface.SNSAPI
 	Id     *string `awsName:"SubscriptionArn" awsType:"awsstr" templateName:"id" required:""`
 }

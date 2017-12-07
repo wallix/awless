@@ -44,7 +44,7 @@ func (p *PortScanner) Inspect(g *graph.Graph) error {
 	p.inbounds = make(map[string][]*graph.FirewallRule)
 	p.applyingOn = make(map[string][]string)
 	for _, sg := range sgroups {
-		rules := sg.Properties["InboundRules"]
+		rules := sg.Properties()["InboundRules"]
 		switch rules.(type) {
 		case []*graph.FirewallRule:
 			p.inbounds[sg.Id()] = rules.([]*graph.FirewallRule)

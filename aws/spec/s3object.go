@@ -21,6 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -31,6 +33,7 @@ import (
 type CreateS3object struct {
 	_      string `action:"create" entity:"s3object" awsAPI:"s3"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    s3iface.S3API
 	Bucket *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket" required:""`
 	File   *string `awsName:"Body" awsType:"awsstr" templateName:"file" required:""`
@@ -112,6 +115,7 @@ func (cmd *CreateS3object) ExtractResult(i interface{}) string {
 type UpdateS3object struct {
 	_       string `action:"update" entity:"s3object" awsAPI:"s3" awsCall:"PutObjectAcl" awsInput:"s3.PutObjectAclInput" awsOutput:"s3.PutObjectAclOutput"`
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	api     s3iface.S3API
 	Bucket  *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket" required:""`
 	Name    *string `awsName:"Key" awsType:"awsstr" templateName:"name" required:""`
@@ -126,6 +130,7 @@ func (cmd *UpdateS3object) ValidateParams(params []string) ([]string, error) {
 type DeleteS3object struct {
 	_      string `action:"delete" entity:"s3object" awsAPI:"s3" awsCall:"DeleteObject" awsInput:"s3.DeleteObjectInput" awsOutput:"s3.DeleteObjectOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    s3iface.S3API
 	Bucket *string `awsName:"Bucket" awsType:"awsstr" templateName:"bucket" required:""`
 	Name   *string `awsName:"Key" awsType:"awsstr" templateName:"name" required:""`

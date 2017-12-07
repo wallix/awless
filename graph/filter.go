@@ -34,13 +34,13 @@ func (g *Graph) filter(apply func(filters ...FilterFn) FilterFn, entity string, 
 
 func BuildPropertyFilterFunc(key, val string) FilterFn {
 	return func(r *Resource) bool {
-		return strings.Contains(strings.ToLower(fmt.Sprint(r.Properties[key])), strings.ToLower(val))
+		return strings.Contains(strings.ToLower(fmt.Sprint(r.properties[key])), strings.ToLower(val))
 	}
 }
 
 func BuildTagFilterFunc(key, val string) FilterFn {
 	return func(r *Resource) bool {
-		tags, ok := r.Properties["Tags"].([]string)
+		tags, ok := r.properties["Tags"].([]string)
 		if !ok {
 			return false
 		}
@@ -55,7 +55,7 @@ func BuildTagFilterFunc(key, val string) FilterFn {
 
 func BuildTagKeyFilterFunc(key string) FilterFn {
 	return func(r *Resource) bool {
-		tags, ok := r.Properties["Tags"].([]string)
+		tags, ok := r.properties["Tags"].([]string)
 		if !ok {
 			return false
 		}
@@ -73,7 +73,7 @@ func BuildTagKeyFilterFunc(key string) FilterFn {
 
 func BuildTagValueFilterFunc(value string) FilterFn {
 	return func(r *Resource) bool {
-		tags, ok := r.Properties["Tags"].([]string)
+		tags, ok := r.properties["Tags"].([]string)
 		if !ok {
 			return false
 		}

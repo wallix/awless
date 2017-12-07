@@ -133,14 +133,6 @@ var APIPerResourceType = map[string]string {
 {{- end }}
 }
 
-var GlobalServices = []string{
-{{- range $index, $service := . }}
-    {{- if $service.Global }}
-      "{{ $service.Name }}",
-    {{- end }}
-{{- end }}
-}
-
 {{ range $index, $service := . }}
 type {{ Title $service.Name }} struct {
 	fetcher fetch.Fetcher

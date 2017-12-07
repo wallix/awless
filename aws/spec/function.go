@@ -19,12 +19,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateFunction struct {
 	_             string `action:"create" entity:"function" awsAPI:"lambda" awsCall:"CreateFunction" awsInput:"lambda.CreateFunctionInput" awsOutput:"lambda.FunctionConfiguration"`
 	logger        *logger.Logger
+	graph         cloudgraph.GraphAPI
 	api           lambdaiface.LambdaAPI
 	Name          *string `awsName:"FunctionName" awsType:"awsstr" templateName:"name" required:""`
 	Handler       *string `awsName:"Handler" awsType:"awsstr" templateName:"handler" required:""`
@@ -51,6 +53,7 @@ func (cmd *CreateFunction) ExtractResult(i interface{}) string {
 type DeleteFunction struct {
 	_       string `action:"delete" entity:"function" awsAPI:"lambda" awsCall:"DeleteFunction" awsInput:"lambda.DeleteFunctionInput" awsOutput:"lambda.DeleteFunctionOutput"`
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	api     lambdaiface.LambdaAPI
 	Id      *string `awsName:"FunctionName" awsType:"awsstr" templateName:"id" required:""`
 	Version *string `awsName:"Qualifier" awsType:"awsstr" templateName:"version"`

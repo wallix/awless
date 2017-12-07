@@ -2,6 +2,9 @@
 
 ### Features
 
+- Automatically complete the username when deleting an access key by its ID, if it is contained in the local graph model:
+    * `awless delete accesskey id=ACCESSKEYID`
+
 ### AWS Services
 
 - Create an image from an existing instance. See `awless create image -h`

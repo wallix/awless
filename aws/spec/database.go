@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/wallix/awless/cloud/graph"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -30,6 +32,7 @@ import (
 type CreateDatabase struct {
 	_      string `action:"create" entity:"database" awsAPI:"rds"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    rdsiface.RDSAPI
 
 	// Required for DB
@@ -184,6 +187,7 @@ func (cmd *CreateDatabase) ExtractResult(i interface{}) string {
 type DeleteDatabase struct {
 	_            string `action:"delete" entity:"database" awsAPI:"rds" awsCall:"DeleteDBInstance" awsInput:"rds.DeleteDBInstanceInput" awsOutput:"rds.DeleteDBInstanceOutput"`
 	logger       *logger.Logger
+	graph        cloudgraph.GraphAPI
 	api          rdsiface.RDSAPI
 	Id           *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
 	SkipSnapshot *bool   `awsName:"SkipFinalSnapshot" awsType:"awsbool" templateName:"skip-snapshot"`
@@ -197,6 +201,7 @@ func (cmd *DeleteDatabase) ValidateParams(params []string) ([]string, error) {
 type CheckDatabase struct {
 	_       string `action:"check" entity:"database" awsAPI:"rds"`
 	logger  *logger.Logger
+	graph   cloudgraph.GraphAPI
 	api     rdsiface.RDSAPI
 	Id      *string `templateName:"id" required:""`
 	State   *string `templateName:"state" required:""`
@@ -264,6 +269,7 @@ func (cmd *CheckDatabase) ManualRun(ctx map[string]interface{}) (interface{}, er
 type StartDatabase struct {
 	_      string `action:"start" entity:"database" awsAPI:"rds" awsCall:"StartDBInstance" awsInput:"rds.StartDBInstanceInput" awsOutput:"rds.StartDBInstanceOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    rdsiface.RDSAPI
 	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
 }
@@ -275,6 +281,7 @@ func (cmd *StartDatabase) ValidateParams(params []string) ([]string, error) {
 type StopDatabase struct {
 	_      string `action:"stop" entity:"database" awsAPI:"rds" awsCall:"StopDBInstance" awsInput:"rds.StopDBInstanceInput" awsOutput:"rds.StopDBInstanceOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    rdsiface.RDSAPI
 	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id" required:""`
 }

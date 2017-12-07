@@ -19,12 +19,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateQueue struct {
 	_                 string `action:"create" entity:"queue" awsAPI:"sqs" awsCall:"CreateQueue" awsInput:"sqs.CreateQueueInput" awsOutput:"sqs.CreateQueueOutput"`
 	logger            *logger.Logger
+	graph             cloudgraph.GraphAPI
 	api               sqsiface.SQSAPI
 	Name              *string `awsName:"QueueName" awsType:"awsstr" templateName:"name" required:""`
 	Delay             *string `awsName:"Attributes[DelaySeconds]" awsType:"awsstringpointermap" templateName:"delay"`
@@ -47,6 +49,7 @@ func (cmd *CreateQueue) ExtractResult(i interface{}) string {
 type DeleteQueue struct {
 	_      string `action:"delete" entity:"queue" awsAPI:"sqs" awsCall:"DeleteQueue" awsInput:"sqs.DeleteQueueInput" awsOutput:"sqs.DeleteQueueOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    sqsiface.SQSAPI
 	Url    *string `awsName:"QueueUrl" awsType:"awsstr" templateName:"url" required:""`
 }

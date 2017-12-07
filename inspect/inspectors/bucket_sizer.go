@@ -47,9 +47,9 @@ func (i *BucketSizer) Inspect(g *graph.Graph) error {
 	}
 
 	for _, obj := range objects {
-		size := obj.Properties["Size"].(int)
+		size := obj.Properties()["Size"].(int)
 		i.total = i.total + size
-		name := obj.Properties["Bucket"].(string)
+		name := obj.Properties()["Bucket"].(string)
 		b := i.buckets[name]
 		if b == nil {
 			b = new(bucket)

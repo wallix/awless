@@ -19,12 +19,14 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
 )
 
 type CreateScalingpolicy struct {
 	_                   string `action:"create" entity:"scalingpolicy" awsAPI:"autoscaling" awsCall:"PutScalingPolicy" awsInput:"autoscaling.PutScalingPolicyInput" awsOutput:"autoscaling.PutScalingPolicyOutput"`
 	logger              *logger.Logger
+	graph               cloudgraph.GraphAPI
 	api                 autoscalingiface.AutoScalingAPI
 	AdjustmentType      *string `awsName:"AdjustmentType" awsType:"awsstr" templateName:"adjustment-type" required:""`
 	Scalinggroup        *string `awsName:"AutoScalingGroupName" awsType:"awsstr" templateName:"scalinggroup" required:""`
@@ -45,6 +47,7 @@ func (cmd *CreateScalingpolicy) ExtractResult(i interface{}) string {
 type DeleteScalingpolicy struct {
 	_      string `action:"delete" entity:"scalingpolicy" awsAPI:"autoscaling" awsCall:"DeletePolicy" awsInput:"autoscaling.DeletePolicyInput" awsOutput:"autoscaling.DeletePolicyOutput"`
 	logger *logger.Logger
+	graph  cloudgraph.GraphAPI
 	api    autoscalingiface.AutoScalingAPI
 	Id     *string `awsName:"PolicyName" awsType:"awsstr" templateName:"id" required:""`
 }

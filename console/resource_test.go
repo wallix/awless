@@ -21,17 +21,14 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/graph/resourcetest"
 )
 
 func TestResourceDisplay(t *testing.T) {
 	g := graph.NewGraph()
 
-	res1 := graph.InitResource("instance", "inst_1")
-	res1.Properties = map[string]interface{}{
-		"ID":   "inst_1",
-		"Name": "instance 1",
-	}
-	res2 := graph.InitResource("instance", "inst_2")
+	res1 := resourcetest.Instance("inst_1").Prop("ID", "inst_1").Prop("Name", "instance 1").Build()
+	res2 := resourcetest.Instance("inst_2").Prop("ID", "inst_2").Build()
 
 	if err := g.AddResource(res1, res2); err != nil {
 		t.Fatal(err)
