@@ -19,7 +19,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/params"
 )
@@ -27,7 +27,7 @@ import (
 type CreateUser struct {
 	_      string `action:"create" entity:"user" awsAPI:"iam" awsCall:"CreateUser" awsInput:"iam.CreateUserInput" awsOutput:"iam.CreateUserOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
 }
@@ -43,7 +43,7 @@ func (cmd *CreateUser) ExtractResult(i interface{}) string {
 type DeleteUser struct {
 	_      string `action:"delete" entity:"user" awsAPI:"iam" awsCall:"DeleteUser" awsInput:"iam.DeleteUserInput" awsOutput:"iam.DeleteUserOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
 }
@@ -55,7 +55,7 @@ func (cmd *DeleteUser) Params() params.Rule {
 type AttachUser struct {
 	_      string `action:"attach" entity:"user" awsAPI:"iam" awsCall:"AddUserToGroup" awsInput:"iam.AddUserToGroupInput" awsOutput:"iam.AddUserToGroupOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Group  *string `awsName:"GroupName" awsType:"awsstr" templateName:"group"`
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
@@ -68,7 +68,7 @@ func (cmd *AttachUser) Params() params.Rule {
 type DetachUser struct {
 	_      string `action:"detach" entity:"user" awsAPI:"iam" awsCall:"RemoveUserFromGroup" awsInput:"iam.RemoveUserFromGroupInput" awsOutput:"iam.RemoveUserFromGroupOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Group  *string `awsName:"GroupName" awsType:"awsstr" templateName:"group"`
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`

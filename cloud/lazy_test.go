@@ -13,9 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cloudgraph
+package cloud
 
-import "testing"
+import (
+	"io"
+	"testing"
+)
 
 func TestLazyLoadingGraph(t *testing.T) {
 	var nbCalls int
@@ -38,6 +41,38 @@ func TestLazyLoadingGraph(t *testing.T) {
 type StubGraph struct {
 }
 
-func (g *StubGraph) FindOne(q Query) (Resource, error) {
+func (g *StubGraph) Find(Query) ([]Resource, error) {
 	return nil, nil
+}
+
+func (g *StubGraph) FindWithProperties(props map[string]interface{}) ([]Resource, error) {
+	return nil, nil
+}
+
+func (g *StubGraph) FilterGraph(Query) (GraphAPI, error) {
+	return nil, nil
+}
+
+func (g *StubGraph) FindOne(Query) (Resource, error) {
+	return nil, nil
+}
+
+func (g *StubGraph) MarshalTo(io.Writer) error {
+	return nil
+}
+
+func (g *StubGraph) ResourceRelations(Resource, string, bool) ([]Resource, error) {
+	return nil, nil
+}
+
+func (g *StubGraph) VisitRelations(Resource, string, bool, func(Resource, int) error) error {
+	return nil
+}
+
+func (g *StubGraph) ResourceSiblings(Resource) ([]Resource, error) {
+	return nil, nil
+}
+
+func (g *StubGraph) Merge(GraphAPI) error {
+	return nil
 }

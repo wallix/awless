@@ -12,6 +12,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/wallix/awless/aws/services"
+	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/properties"
+	"github.com/wallix/awless/cloud/rdf"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/sync/repo"
@@ -20,7 +23,7 @@ import (
 
 type server struct {
 	port string
-	gph  *graph.Graph
+	gph  cloud.GraphAPI
 }
 
 func New(port string) *server {
@@ -111,24 +114,22 @@ func (s *server) showResourceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resId := mux.Vars(r)["id"]
-	res, err := s.gph.FindResource(resId)
-	if err != nil {
+	res, err := s.gph.FindWithProperties(map[string]interface{}{properties.ID: resId})
+	if err != nil && len(res) != 1 {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	resource := newResource(res)
-	deps, _ := s.gph.ListResourcesDependingOn(res)
+	resource := newResource(res[0])
+	deps, _ := s.gph.ResourceRelations(res[0], rdf.DependingOnRel, false)
 	resource.AddDependsOn(deps...)
-	applies, _ := s.gph.ListResourcesAppliedOn(res)
+	applies, _ := s.gph.ResourceRelations(res[0], rdf.ApplyOn, false)
 	resource.AddAppliesOn(applies...)
 
-	var parents []*graph.Resource
-	s.gph.Accept(&graph.ParentsVisitor{From: res, Each: graph.VisitorCollectFunc(&parents)})
-	resource.AddParents(parents...)
+	parents, _ := s.gph.ResourceRelations(res[0], rdf.ParentOf, true)
+	resource.AddDependsOn(parents...)
 
-	var children []*graph.Resource
-	s.gph.Accept(&graph.ChildrenVisitor{From: res, Each: graph.VisitorCollectFunc(&children)})
-	resource.AddChildren(children...)
+	children, _ := s.gph.ResourceRelations(res[0], rdf.ChildrenOfRel, true)
+	resource.AddDependsOn(children...)
 
 	if err := t.Execute(w, resource); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -145,7 +146,7 @@ func (s *server) listResourcesHandler(w http.ResponseWriter, r *http.Request) {
 	resourcesByTypes := make(map[string][]*Resource)
 
 	for _, typ := range append(awsservices.ResourceTypes, "region") {
-		gRes, err := s.gph.GetAllResources(typ)
+		gRes, err := s.gph.Find(cloud.NewQuery(typ))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -171,19 +172,19 @@ type Resource struct {
 	AppliesOn  []*Resource
 }
 
-func (r *Resource) AddDependsOn(gr ...*graph.Resource) {
+func (r *Resource) AddDependsOn(gr ...cloud.Resource) {
 	for _, res := range gr {
 		r.DependsOn = append(r.DependsOn, newResource(res))
 	}
 }
 
-func (r *Resource) AddAppliesOn(gr ...*graph.Resource) {
+func (r *Resource) AddAppliesOn(gr ...cloud.Resource) {
 	for _, res := range gr {
 		r.AppliesOn = append(r.AppliesOn, newResource(res))
 	}
 }
 
-func (r *Resource) AddParents(gr ...*graph.Resource) {
+func (r *Resource) AddParents(gr ...cloud.Resource) {
 	for _, res := range gr {
 		r.Parents = append(r.Parents, newResource(res))
 	}
@@ -195,7 +196,7 @@ func (r *Resource) AddChildren(gr ...*graph.Resource) {
 	}
 }
 
-func newResource(r *graph.Resource) *Resource {
+func newResource(r cloud.Resource) *Resource {
 	return &Resource{Id: r.Id(), Type: r.Type(), Properties: r.Properties()}
 }
 

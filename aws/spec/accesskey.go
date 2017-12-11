@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud/match"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -39,7 +39,7 @@ import (
 type CreateAccesskey struct {
 	_      string `action:"create" entity:"accesskey" awsAPI:"iam" awsCall:"CreateAccessKey" awsInput:"iam.CreateAccessKeyInput" awsOutput:"iam.CreateAccessKeyOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 	Save   *bool   `templateName:"save"`
@@ -115,7 +115,7 @@ func (cmd *CreateAccesskey) ExtractResult(i interface{}) string {
 type DeleteAccesskey struct {
 	_      string `action:"delete" entity:"accesskey" awsAPI:"iam" awsCall:"DeleteAccessKey" awsInput:"iam.DeleteAccessKeyInput" awsOutput:"iam.DeleteAccessKeyOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Id     *string `awsName:"AccessKeyId" awsType:"awsstr" templateName:"id"`
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
@@ -133,7 +133,7 @@ func (cmd *DeleteAccesskey) ConvertParams() ([]string, func(values map[string]in
 			_, hasUser := values["user"].(string)
 			id, hasId := values["id"].(string)
 			if !hasUser && hasId {
-				r, err := cmd.graph.FindOne(cloudgraph.NewQuery(cloud.AccessKey).Property(properties.ID, id))
+				r, err := cmd.graph.FindOne(cloud.NewQuery(cloud.AccessKey).Match(match.Property(properties.ID, id)))
 				if err != nil || r == nil {
 					return values, nil
 				}

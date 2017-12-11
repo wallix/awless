@@ -19,7 +19,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/params"
 )
@@ -27,7 +27,7 @@ import (
 type CreateContainercluster struct {
 	_      string `action:"create" entity:"containercluster" awsAPI:"ecs" awsCall:"CreateCluster" awsInput:"ecs.CreateClusterInput" awsOutput:"ecs.CreateClusterOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ecsiface.ECSAPI
 	Name   *string `awsName:"ClusterName" awsType:"awsstr" templateName:"name"`
 }
@@ -43,7 +43,7 @@ func (cmd *CreateContainercluster) ExtractResult(i interface{}) string {
 type DeleteContainercluster struct {
 	_      string `action:"delete" entity:"containercluster" awsAPI:"ecs" awsCall:"DeleteCluster" awsInput:"ecs.DeleteClusterInput" awsOutput:"ecs.DeleteClusterOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ecsiface.ECSAPI
 	Id     *string `awsName:"Cluster" awsType:"awsstr" templateName:"id"`
 }

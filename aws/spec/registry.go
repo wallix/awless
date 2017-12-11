@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -36,7 +36,7 @@ import (
 type AuthenticateRegistry struct {
 	_                string `action:"authenticate" entity:"registry" awsAPI:"ecr"`
 	logger           *logger.Logger
-	graph            cloudgraph.GraphAPI
+	graph            cloud.GraphAPI
 	api              ecriface.ECRAPI
 	Accounts         []*string `templateName:"accounts"`
 	NoConfirm        *bool     `templateName:"no-confirm"`

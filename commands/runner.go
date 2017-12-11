@@ -7,9 +7,9 @@ import (
 
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/aws/spec"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/database"
-	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
@@ -29,7 +29,7 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 	runner.MissingHolesFunc = missingHolesStdinFunc()
 
 	runner.Validators = []template.Validator{
-		&template.UniqueNameValidator{LookupGraph: func(key string) (*graph.Graph, bool) {
+		&template.UniqueNameValidator{LookupGraph: func(key string) (cloud.GraphAPI, bool) {
 			g := sync.LoadLocalGraphForService(awsservices.ServicePerResourceType[key], config.GetAWSRegion())
 			return g, true
 		}},

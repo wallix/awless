@@ -19,7 +19,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/params"
 )
@@ -27,7 +27,7 @@ import (
 type CreateListener struct {
 	_            string `action:"create" entity:"listener" awsAPI:"elbv2" awsCall:"CreateListener" awsInput:"elbv2.CreateListenerInput" awsOutput:"elbv2.CreateListenerOutput"`
 	logger       *logger.Logger
-	graph        cloudgraph.GraphAPI
+	graph        cloud.GraphAPI
 	api          elbv2iface.ELBV2API
 	Actiontype   *string `awsName:"DefaultActions[0]Type" awsType:"awsslicestruct" templateName:"actiontype"`
 	Targetgroup  *string `awsName:"DefaultActions[0]TargetGroupArn" awsType:"awsslicestruct" templateName:"targetgroup"`
@@ -51,7 +51,7 @@ func (cmd *CreateListener) ExtractResult(i interface{}) string {
 type DeleteListener struct {
 	_      string `action:"delete" entity:"listener" awsAPI:"elbv2" awsCall:"DeleteListener" awsInput:"elbv2.DeleteListenerInput" awsOutput:"elbv2.DeleteListenerOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    elbv2iface.ELBV2API
 	Id     *string `awsName:"ListenerArn" awsType:"awsstr" templateName:"id"`
 }

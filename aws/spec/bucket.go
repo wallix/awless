@@ -18,7 +18,7 @@ package awsspec
 import (
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -31,7 +31,7 @@ import (
 type CreateBucket struct {
 	_      string `action:"create" entity:"bucket" awsAPI:"s3" awsCall:"CreateBucket" awsInput:"s3.CreateBucketInput" awsOutput:"s3.CreateBucketOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    s3iface.S3API
 	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name"`
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
@@ -50,7 +50,7 @@ func (cmd *CreateBucket) ExtractResult(i interface{}) string {
 type UpdateBucket struct {
 	_                string `action:"update" entity:"bucket" awsAPI:"s3"`
 	logger           *logger.Logger
-	graph            cloudgraph.GraphAPI
+	graph            cloud.GraphAPI
 	api              s3iface.S3API
 	Name             *string `templateName:"name"`
 	Acl              *string `templateName:"acl"`
@@ -119,7 +119,7 @@ func (cmd *UpdateBucket) ManualRun(renv env.Running) (interface{}, error) {
 type DeleteBucket struct {
 	_      string `action:"delete" entity:"bucket" awsAPI:"s3" awsCall:"DeleteBucket" awsInput:"s3.DeleteBucketInput" awsOutput:"s3.DeleteBucketOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    s3iface.S3API
 	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name"`
 }

@@ -26,6 +26,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
 )
 
@@ -38,7 +39,7 @@ func TestEqualResources(t *testing.T) {
 	s3 := &Resource{id: "toto", kind: "subnet"}
 	empty := &Resource{}
 	tcases := []struct {
-		from, to *Resource
+		from, to cloud.Resource
 		exp      bool
 	}{
 		{from: i1, to: i1, exp: true},
@@ -51,8 +52,6 @@ func TestEqualResources(t *testing.T) {
 		{from: i3, to: s3, exp: false},
 		{from: empty, to: empty, exp: true},
 		{from: empty, to: nil, exp: false},
-		{from: nil, to: empty, exp: false},
-		{from: nil, to: nil, exp: true},
 		{from: empty, to: i1, exp: false},
 		{from: i1, to: empty, exp: false},
 	}

@@ -19,7 +19,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -31,7 +31,7 @@ import (
 type CreateRole struct {
 	_                string `action:"create" entity:"role" awsAPI:"iam"`
 	logger           *logger.Logger
-	graph            cloudgraph.GraphAPI
+	graph            cloud.GraphAPI
 	api              iamiface.IAMAPI
 	Name             *string   `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 	PrincipalAccount *string   `templateName:"principal-account"`
@@ -115,7 +115,7 @@ func (cmd *CreateRole) ExtractResult(i interface{}) string {
 type DeleteRole struct {
 	_      string `action:"delete" entity:"role" awsAPI:"iam"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
@@ -148,7 +148,7 @@ func (cmd *DeleteRole) ManualRun(renv env.Running) (interface{}, error) {
 type AttachRole struct {
 	_               string `action:"attach" entity:"role" awsAPI:"iam" awsCall:"AddRoleToInstanceProfile" awsInput:"iam.AddRoleToInstanceProfileInput" awsOutput:"iam.AddRoleToInstanceProfileOutput"`
 	logger          *logger.Logger
-	graph           cloudgraph.GraphAPI
+	graph           cloud.GraphAPI
 	api             iamiface.IAMAPI
 	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" `
 	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
@@ -161,7 +161,7 @@ func (cmd *AttachRole) Params() params.Rule {
 type DetachRole struct {
 	_               string `action:"detach" entity:"role" awsAPI:"iam" awsCall:"RemoveRoleFromInstanceProfile" awsInput:"iam.RemoveRoleFromInstanceProfileInput" awsOutput:"iam.RemoveRoleFromInstanceProfileOutput"`
 	logger          *logger.Logger
-	graph           cloudgraph.GraphAPI
+	graph           cloud.GraphAPI
 	api             iamiface.IAMAPI
 	Instanceprofile *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"instanceprofile" `
 	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `

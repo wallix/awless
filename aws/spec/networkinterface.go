@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -35,7 +35,7 @@ import (
 type CreateNetworkinterface struct {
 	_              string `action:"create" entity:"networkinterface" awsAPI:"ec2" awsCall:"CreateNetworkInterface" awsInput:"ec2.CreateNetworkInterfaceInput" awsOutput:"ec2.CreateNetworkInterfaceOutput" awsDryRun:""`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            ec2iface.EC2API
 	Subnet         *string   `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 	Description    *string   `awsName:"Description" awsType:"awsstr" templateName:"description"`
@@ -56,7 +56,7 @@ func (cmd *CreateNetworkinterface) ExtractResult(i interface{}) string {
 type DeleteNetworkinterface struct {
 	_      string `action:"delete" entity:"networkinterface" awsAPI:"ec2" awsCall:"DeleteNetworkInterface" awsInput:"ec2.DeleteNetworkInterfaceInput" awsOutput:"ec2.DeleteNetworkInterfaceOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id"`
 }
@@ -68,7 +68,7 @@ func (cmd *DeleteNetworkinterface) Params() params.Rule {
 type AttachNetworkinterface struct {
 	_           string `action:"attach" entity:"networkinterface" awsAPI:"ec2" awsCall:"AttachNetworkInterface" awsInput:"ec2.AttachNetworkInterfaceInput" awsOutput:"ec2.AttachNetworkInterfaceOutput" awsDryRun:""`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         ec2iface.EC2API
 	Id          *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id"`
 	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
@@ -86,7 +86,7 @@ func (cmd *AttachNetworkinterface) ExtractResult(i interface{}) string {
 type DetachNetworkinterface struct {
 	_          string `action:"detach" entity:"networkinterface" awsAPI:"ec2" awsDryRun:"manual"`
 	logger     *logger.Logger
-	graph      cloudgraph.GraphAPI
+	graph      cloud.GraphAPI
 	api        ec2iface.EC2API
 	Attachment *string `awsName:"AttachmentId" awsType:"awsstr" templateName:"attachment"`
 	Instance   *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
@@ -177,7 +177,7 @@ func (cmd *DetachNetworkinterface) ManualRun(renv env.Running) (interface{}, err
 type CheckNetworkinterface struct {
 	_       string `action:"check" entity:"networkinterface" awsAPI:"ec2"`
 	logger  *logger.Logger
-	graph   cloudgraph.GraphAPI
+	graph   cloud.GraphAPI
 	api     ec2iface.EC2API
 	Id      *string `templateName:"id"`
 	State   *string `templateName:"state"`

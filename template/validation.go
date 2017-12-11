@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/cloud"
 )
 
 type Validator interface {
 	Execute(t *Template) []error
 }
 
-type LookupGraphFunc func(key string) (*graph.Graph, bool)
+type LookupGraphFunc func(key string) (cloud.GraphAPI, bool)
 
 type UniqueNameValidator struct {
 	LookupGraph LookupGraphFunc
@@ -26,7 +26,7 @@ func (v *UniqueNameValidator) Execute(t *Template) (errs []error) {
 			if !ok {
 				continue
 			}
-			resources, err := g.FindResourcesByProperty("Name", name)
+			resources, err := g.FindWithProperties(map[string]interface{}{"Name": name})
 			if err != nil {
 				errs = append(errs, err)
 			}

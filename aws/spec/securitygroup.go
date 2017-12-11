@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -37,7 +37,7 @@ import (
 type CreateSecuritygroup struct {
 	_           string `action:"create" entity:"securitygroup" awsAPI:"ec2" awsCall:"CreateSecurityGroup" awsInput:"ec2.CreateSecurityGroupInput" awsOutput:"ec2.CreateSecurityGroupOutput" awsDryRun:""`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         ec2iface.EC2API
 	Name        *string `awsName:"GroupName" awsType:"awsstr" templateName:"name"`
 	Vpc         *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
@@ -55,7 +55,7 @@ func (cmd *CreateSecuritygroup) ExtractResult(i interface{}) string {
 type UpdateSecuritygroup struct {
 	_             string `action:"update" entity:"securitygroup" awsAPI:"ec2" awsDryRun:"manual"`
 	logger        *logger.Logger
-	graph         cloudgraph.GraphAPI
+	graph         cloud.GraphAPI
 	api           ec2iface.EC2API
 	Id            *string `templateName:"id"`
 	Protocol      *string `templateName:"protocol"`
@@ -206,7 +206,7 @@ func (cmd *UpdateSecuritygroup) ManualRun(renv env.Running) (interface{}, error)
 type DeleteSecuritygroup struct {
 	_      string `action:"delete" entity:"securitygroup" awsAPI:"ec2" awsCall:"DeleteSecurityGroup" awsInput:"ec2.DeleteSecurityGroupInput" awsOutput:"ec2.DeleteSecurityGroupOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"GroupId" awsType:"awsstr" templateName:"id"`
 }
@@ -218,7 +218,7 @@ func (cmd *DeleteSecuritygroup) Params() params.Rule {
 type CheckSecuritygroup struct {
 	_       string `action:"check" entity:"securitygroup" awsAPI:"ec2"`
 	logger  *logger.Logger
-	graph   cloudgraph.GraphAPI
+	graph   cloud.GraphAPI
 	api     ec2iface.EC2API
 	Id      *string `templateName:"id"`
 	State   *string `templateName:"state"`
@@ -267,7 +267,7 @@ func (cmd *CheckSecuritygroup) ManualRun(renv env.Running) (interface{}, error) 
 type AttachSecuritygroup struct {
 	_        string `action:"attach" entity:"securitygroup" awsAPI:"ec2"`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Id       *string `templateName:"id"`
 	Instance *string `templateName:"instance"`
@@ -299,7 +299,7 @@ func (cmd *AttachSecuritygroup) ManualRun(renv env.Running) (interface{}, error)
 type DetachSecuritygroup struct {
 	_        string `action:"detach" entity:"securitygroup" awsAPI:"ec2"`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Id       *string `templateName:"id"`
 	Instance *string `templateName:"instance"`

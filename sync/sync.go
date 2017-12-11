@@ -1,12 +1,9 @@
 /*
 Copyright 2017 WALLIX
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,7 +38,7 @@ var DefaultSyncer Syncer
 
 type Syncer interface {
 	repo.Repo
-	Sync(...cloud.Service) (map[string]*graph.Graph, error)
+	Sync(...cloud.Service) (map[string]cloud.GraphAPI, error)
 }
 
 type noopsyncer struct {
@@ -50,8 +47,8 @@ type noopsyncer struct {
 
 func NoOpSyncer() Syncer { return new(noopsyncer) }
 
-func (s *noopsyncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
-	return map[string]*graph.Graph{}, nil
+func (s *noopsyncer) Sync(services ...cloud.Service) (map[string]cloud.GraphAPI, error) {
+	return map[string]cloud.GraphAPI{}, nil
 }
 
 type syncer struct {
@@ -76,12 +73,12 @@ func NewSyncer(l ...*logger.Logger) Syncer {
 	return s
 }
 
-func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error) {
+func (s *syncer) Sync(services ...cloud.Service) (map[string]cloud.GraphAPI, error) {
 	var workers gosync.WaitGroup
 
 	type result struct {
 		service cloud.Service
-		gph     *graph.Graph
+		gph     cloud.GraphAPI
 		start   time.Time
 		err     error
 	}
@@ -108,7 +105,7 @@ func (s *syncer) Sync(services ...cloud.Service) (map[string]*graph.Graph, error
 	}()
 
 	var allErrors []error
-	graphs := make(map[string]*graph.Graph)
+	graphs := make(map[string]cloud.GraphAPI)
 	servicesByName := make(map[string]cloud.Service)
 Loop:
 	for {
@@ -177,7 +174,7 @@ func concatErrors(errs []error) error {
 	return errors.New(strings.Join(lines, "\n"))
 }
 
-func LoadLocalGraphForService(serviceName, region string) *graph.Graph {
+func LoadLocalGraphForService(serviceName, region string) cloud.GraphAPI {
 	regionDir := region
 	if serviceName == "access" || serviceName == "dns" || serviceName == "cdn" {
 		regionDir = "global"
@@ -190,7 +187,7 @@ func LoadLocalGraphForService(serviceName, region string) *graph.Graph {
 	return g
 }
 
-func LoadLocalGraphs(region string) (*graph.Graph, error) {
+func LoadLocalGraphs(region string) (cloud.GraphAPI, error) {
 	var files []string
 	globalFiles, _ := filepath.Glob(filepath.Join(repo.BaseDir(), "global", fmt.Sprintf("*%s", fileExt)))
 	regionFiles, _ := filepath.Glob(filepath.Join(repo.BaseDir(), region, fmt.Sprintf("*%s", fileExt)))
@@ -213,7 +210,7 @@ func LoadLocalGraphs(region string) (*graph.Graph, error) {
 	return g, err
 }
 
-func LoadAllLocalGraphs() (*graph.Graph, error) {
+func LoadAllLocalGraphs() (cloud.GraphAPI, error) {
 	path := filepath.Join(repo.BaseDir(), "*", fmt.Sprintf("*%s", fileExt))
 	files, _ := filepath.Glob(path)
 

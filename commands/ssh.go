@@ -30,6 +30,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/match"
 	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
@@ -195,8 +196,8 @@ type instanceConnectionContext struct {
 	myip                net.IP
 	user, keypath       string
 	state, instanceName string
-	instance            *graph.Resource
-	resourcesGraph      *graph.Graph
+	instance            cloud.Resource
+	resourcesGraph      cloud.GraphAPI
 }
 
 func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectionContext, error) {
@@ -211,15 +212,8 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 
 	ctx.fetchConnectionInfo()
 
-	instanceResolvers := []graph.Resolver{
-		&graph.Or{Resolvers: []graph.Resolver{
-			&graph.ByProperty{Key: properties.Name, Value: ctx.instanceName},
-			&graph.ByProperty{Key: properties.PublicIP, Value: ctx.instanceName},
-			&graph.ByProperty{Key: properties.PrivateIP, Value: ctx.instanceName},
-		}},
-		&graph.ByType{Typ: cloud.Instance},
-	}
-	resources, err := ctx.resourcesGraph.ResolveResources(&graph.And{Resolvers: instanceResolvers})
+	instanceMatchers := match.Or(match.Property(properties.Name, ctx.instanceName), match.Property(properties.PublicIP, ctx.instanceName), match.Property(properties.PrivateIP, ctx.instanceName))
+	resources, err := ctx.resourcesGraph.Find(cloud.NewQuery(cloud.Instance).Match(instanceMatchers))
 	exitOn(err)
 	switch len(resources) {
 	case 0:
@@ -229,13 +223,13 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 	case 1:
 		ctx.instance = resources[0]
 	default:
-		idStatus := graph.Resources(resources).Map(func(r *graph.Resource) string {
+		idStatus := cloud.Resources(resources).Map(func(r cloud.Resource) string {
 			return fmt.Sprintf("%s (%s)", r.Id(), r.Properties()[properties.State])
 		})
 		logger.Infof("Found %d resources with name '%s': %s", len(resources), ctx.instanceName, strings.Join(idStatus, ", "))
 
-		var running []*graph.Resource
-		running, err = ctx.resourcesGraph.ResolveResources(&graph.And{Resolvers: append(instanceResolvers, &graph.ByProperty{Key: properties.State, Value: "running"})})
+		var running []cloud.Resource
+		running, err = ctx.resourcesGraph.Find(cloud.NewQuery(cloud.Instance).Match(match.And(instanceMatchers, match.Property(properties.State, "running"))))
 		exitOn(err)
 
 		switch len(running) {
@@ -275,7 +269,7 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 }
 
 func (ctx *instanceConnectionContext) fetchConnectionInfo() {
-	var resourcesGraph, sgroupsGraph *graph.Graph
+	var resourcesGraph, sgroupsGraph cloud.GraphAPI
 	var myip net.IP
 	var wg sync.WaitGroup
 	var errc = make(chan error)
@@ -314,7 +308,7 @@ func (ctx *instanceConnectionContext) fetchConnectionInfo() {
 			exitOn(err)
 		}
 	}
-	resourcesGraph.AddGraph(sgroupsGraph)
+	resourcesGraph.Merge(sgroupsGraph)
 
 	ctx.resourcesGraph = resourcesGraph
 	ctx.myip = myip
@@ -334,7 +328,7 @@ func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
 	if ok {
 		var sshPortOpen, myIPAllowed bool
 		for _, id := range sgroups {
-			var sgroup *graph.Resource
+			var sgroup cloud.Resource
 			sgroup, err = findResource(ctx.resourcesGraph, id, cloud.SecurityGroup)
 			if err != nil {
 				logger.Errorf("cannot get securitygroup '%s' for instance '%s': %s", id, ctx.instance.Id(), err)
@@ -373,10 +367,11 @@ func (ctx *instanceConnectionContext) checkInstanceAccessible() (err error) {
 	return nil
 }
 
-func findResource(g *graph.Graph, id, typ string) (*graph.Resource, error) {
-	if found, err := g.FindResource(id); found == nil || err != nil {
-		return nil, fmt.Errorf("instance '%s' not found", id)
+func findResource(g cloud.GraphAPI, id, typ string) (cloud.Resource, error) {
+	found, err := g.FindOne(cloud.NewQuery(typ).Match(match.Property(properties.ID, id)))
+	if found == nil || err != nil {
+		return nil, fmt.Errorf("%s '%s' not found", typ, id)
 	}
 
-	return g.GetResource(typ, id)
+	return found, nil
 }

@@ -20,7 +20,7 @@ package awsspec
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/awstesting/mock"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 )
 
@@ -38,7 +38,7 @@ var MockAWSSessionFactory = &AWSFactory{
 type AWSFactory struct {
 	Log   *logger.Logger
 	Sess  *session.Session
-	Graph cloudgraph.GraphAPI
+	Graph cloud.GraphAPI
 }
 
 func (f *AWSFactory) Build(key string) func() interface{} {

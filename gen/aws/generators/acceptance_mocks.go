@@ -225,16 +225,15 @@ package awsat
 
 import (
   "github.com/wallix/awless/aws/spec"
-  "github.com/wallix/awless/cloud/graph"
 )
 
 type AcceptanceFactory struct {
 	Mock   interface{}
 	Logger *logger.Logger
-	Graph cloudgraph.GraphAPI
+	Graph cloud.GraphAPI
 }
 
-func NewAcceptanceFactory(mock interface{}, g cloudgraph.GraphAPI, l ...*logger.Logger) *AcceptanceFactory {
+func NewAcceptanceFactory(mock interface{}, g cloud.GraphAPI, l ...*logger.Logger) *AcceptanceFactory {
 	logger := logger.DiscardLogger
 	if len(l) > 0 {
 		logger = l[0]

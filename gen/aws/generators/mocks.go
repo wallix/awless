@@ -106,7 +106,7 @@ func (m * {{ $mock.Name }}) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m * {{ $mock.Name }}) Fetch(context.Context) (*graph.Graph, error) {
+func (m * {{ $mock.Name }}) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -114,7 +114,7 @@ func (m * {{ $mock.Name }}) IsSyncDisabled() bool {
 	return false
 }
 
-func (m * {{ $mock.Name }}) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m * {{ $mock.Name }}) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 

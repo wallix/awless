@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -38,7 +38,7 @@ var CallerReferenceFunc = func() string {
 type CreateDistribution struct {
 	_              string `action:"create" entity:"distribution" awsAPI:"cloudfront"`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            cloudfrontiface.CloudFrontAPI
 	OriginDomain   *string   `templateName:"origin-domain"`
 	Certificate    *string   `templateName:"certificate"`
@@ -149,7 +149,7 @@ func (cmd *CreateDistribution) ExtractResult(i interface{}) string {
 type CheckDistribution struct {
 	_       string `action:"check" entity:"distribution" awsAPI:"cloudfront"`
 	logger  *logger.Logger
-	graph   cloudgraph.GraphAPI
+	graph   cloud.GraphAPI
 	api     cloudfrontiface.CloudFrontAPI
 	Id      *string `templateName:"id"`
 	State   *string `templateName:"state"`
@@ -197,7 +197,7 @@ func (cmd *CheckDistribution) ManualRun(renv env.Running) (interface{}, error) {
 type UpdateDistribution struct {
 	_              string `action:"update" entity:"distribution" awsAPI:"cloudfront"`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            cloudfrontiface.CloudFrontAPI
 	Id             *string   `awsName:"Id" awsType:"awsstr" templateName:"id"`
 	OriginDomain   *string   `templateName:"origin-domain"`
@@ -354,7 +354,7 @@ func (cmd *UpdateDistribution) ExtractResult(i interface{}) string {
 type DeleteDistribution struct {
 	_      string `action:"delete" entity:"distribution" awsAPI:"cloudfront"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    cloudfrontiface.CloudFrontAPI
 	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id"`
 }

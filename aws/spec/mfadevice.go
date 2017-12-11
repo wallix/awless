@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -41,7 +41,7 @@ import (
 type CreateMfadevice struct {
 	_      string `action:"create" entity:"mfadevice" awsAPI:"iam"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `templateName:"name"`
 }
@@ -90,7 +90,7 @@ func (cmd *CreateMfadevice) ExtractResult(i interface{}) string {
 type DeleteMfadevice struct {
 	_      string `action:"delete" entity:"mfadevice" awsAPI:"iam" awsCall:"DeleteVirtualMFADevice" awsInput:"iam.DeleteVirtualMFADeviceInput" awsOutput:"iam.DeleteVirtualMFADeviceOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
 }
@@ -106,7 +106,7 @@ var (
 type AttachMfadevice struct {
 	_        string `action:"attach" entity:"mfadevice" awsAPI:"iam" awsCall:"EnableMFADevice" awsInput:"iam.EnableMFADeviceInput" awsOutput:"iam.EnableMFADeviceOutput"`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      iamiface.IAMAPI
 	Id       *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
 	User     *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
@@ -164,7 +164,7 @@ func (cmd *AttachMfadevice) AfterRun(renv env.Running, output interface{}) error
 type DetachMfadevice struct {
 	_      string `action:"detach" entity:"mfadevice" awsAPI:"iam" awsCall:"DeactivateMFADevice" awsInput:"iam.DeactivateMFADeviceInput" awsOutput:"iam.DeactivateMFADeviceOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`

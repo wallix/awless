@@ -255,10 +255,8 @@ limitations under the License.
 // This file was automatically generated with go generate
 package awsspec
 
-import "github.com/wallix/awless/cloud/graph"
-
 {{ range $cmdName, $tag := . }}
-func New{{ $cmdName }}(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *{{ $cmdName }}{
+func New{{ $cmdName }}(sess *session.Session, g cloud.GraphAPI, l ...*logger.Logger) *{{ $cmdName }}{
 	cmd := new({{ $cmdName }})
 	if len(l) > 0 {
 		cmd.logger = l[0]
@@ -410,7 +408,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/awstesting/mock"
 	"github.com/wallix/awless/logger"
-	"github.com/wallix/awless/cloud/graph"
 )
 
 type Factory interface {
@@ -427,7 +424,7 @@ var MockAWSSessionFactory = &AWSFactory{
 type AWSFactory struct {
 	Log   *logger.Logger
 	Sess *session.Session
-	Graph cloudgraph.GraphAPI
+	Graph cloud.GraphAPI
 }
 
 func (f *AWSFactory) Build(key string) func() interface{} {

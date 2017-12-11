@@ -28,7 +28,6 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
-	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 )
 
@@ -92,7 +91,7 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 		Short: fmt.Sprintf("[%s] List %s %s", awsservices.ServicePerResourceType[resType], strings.ToUpper(awsservices.APIPerResourceType[resType]), cloud.PluralizeResource(resType)),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			var g *graph.Graph
+			var g cloud.GraphAPI
 
 			if localGlobalFlag {
 				if srvName, ok := awsservices.ServicePerResourceType[resType]; ok {
@@ -131,7 +130,7 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 	}
 }
 
-func printResources(g *graph.Graph, resType string) {
+func printResources(g cloud.GraphAPI, resType string) {
 	displayer, err := console.BuildOptions(
 		console.WithRdfType(resType),
 		console.WithColumns(listingColumnsFlag),

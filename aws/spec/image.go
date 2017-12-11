@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -35,7 +35,7 @@ import (
 type CreateImage struct {
 	_           string `action:"create" entity:"image" awsAPI:"ec2" awsCall:"CreateImage" awsInput:"ec2.CreateImageInput" awsOutput:"ec2.CreateImageOutput" awsDryRun:"true"`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         ec2iface.EC2API
 	Name        *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
 	Instance    *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
@@ -74,7 +74,7 @@ func (cmd *CreateImage) ExtractResult(i interface{}) string {
 type UpdateImage struct {
 	_            string `action:"update" entity:"image" awsAPI:"ec2" awsDryRun:"manual"`
 	logger       *logger.Logger
-	graph        cloudgraph.GraphAPI
+	graph        cloud.GraphAPI
 	api          ec2iface.EC2API
 	Id           *string   `awsName:"ImageId" awsType:"awsstr" templateName:"id"`
 	Groups       []*string `awsName:"UserGroups" awsType:"awsstringslice" templateName:"groups"`
@@ -151,7 +151,7 @@ func (cmd *UpdateImage) dryRun(renv env.Running, params map[string]interface{}) 
 type CopyImage struct {
 	_            string `action:"copy" entity:"image" awsAPI:"ec2" awsCall:"CopyImage" awsInput:"ec2.CopyImageInput" awsOutput:"ec2.CopyImageOutput" awsDryRun:""`
 	logger       *logger.Logger
-	graph        cloudgraph.GraphAPI
+	graph        cloud.GraphAPI
 	api          ec2iface.EC2API
 	Name         *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
 	SourceId     *string `awsName:"SourceImageId" awsType:"awsstr" templateName:"source-id"`
@@ -173,7 +173,7 @@ func (cmd *CopyImage) ExtractResult(i interface{}) string {
 type ImportImage struct {
 	_            string `action:"import" entity:"image" awsAPI:"ec2" awsCall:"ImportImage" awsInput:"ec2.ImportImageInput" awsOutput:"ec2.ImportImageOutput" awsDryRun:""`
 	logger       *logger.Logger
-	graph        cloudgraph.GraphAPI
+	graph        cloud.GraphAPI
 	api          ec2iface.EC2API
 	Architecture *string `awsName:"Architecture" awsType:"awsstr" templateName:"architecture"`
 	Description  *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
@@ -201,7 +201,7 @@ func (cmd *ImportImage) ExtractResult(i interface{}) string {
 type DeleteImage struct {
 	_               string `action:"delete" entity:"image" awsAPI:"ec2" awsDryRun:"manual"`
 	logger          *logger.Logger
-	graph           cloudgraph.GraphAPI
+	graph           cloud.GraphAPI
 	api             ec2iface.EC2API
 	Id              *string `templateName:"id"`
 	DeleteSnapshots *bool   `templateName:"delete-snapshots"`

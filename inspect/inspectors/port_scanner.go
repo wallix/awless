@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/rdf"
 	"github.com/wallix/awless/graph"
 )
 
@@ -35,8 +36,8 @@ func (p *PortScanner) Name() string {
 	return "port_scanner"
 }
 
-func (p *PortScanner) Inspect(g *graph.Graph) error {
-	sgroups, err := g.GetAllResources(cloud.SecurityGroup)
+func (p *PortScanner) Inspect(g cloud.GraphAPI) error {
+	sgroups, err := g.Find(cloud.NewQuery(cloud.SecurityGroup))
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (p *PortScanner) Inspect(g *graph.Graph) error {
 		switch rules.(type) {
 		case []*graph.FirewallRule:
 			p.inbounds[sg.Id()] = rules.([]*graph.FirewallRule)
-			res, err := g.ListResourcesAppliedOn(sg)
+			res, err := g.ResourceRelations(sg, rdf.ApplyOn, false)
 			if err != nil {
 				return err
 			}

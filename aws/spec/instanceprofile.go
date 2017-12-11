@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -34,7 +34,7 @@ import (
 type CreateInstanceprofile struct {
 	_      string `action:"create" entity:"instanceprofile" awsAPI:"iam" awsCall:"CreateInstanceProfile" awsInput:"iam.CreateInstanceProfileInput" awsOutput:"iam.CreateInstanceProfileOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
@@ -46,7 +46,7 @@ func (cmd *CreateInstanceprofile) Params() params.Rule {
 type DeleteInstanceprofile struct {
 	_      string `action:"delete" entity:"instanceprofile" awsAPI:"iam" awsCall:"DeleteInstanceProfile" awsInput:"iam.DeleteInstanceProfileInput" awsOutput:"iam.DeleteInstanceProfileOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    iamiface.IAMAPI
 	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
@@ -58,7 +58,7 @@ func (cmd *DeleteInstanceprofile) Params() params.Rule {
 type AttachInstanceprofile struct {
 	_        string `action:"attach" entity:"instanceprofile" awsAPI:"ec2" awsDryRun:"manual"`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
 	Name     *string `awsName:"IamInstanceProfile.Name" awsType:"awsstr" templateName:"name"`
@@ -154,7 +154,7 @@ func (cmd *AttachInstanceprofile) ManualRun(renv env.Running) (interface{}, erro
 type DetachInstanceprofile struct {
 	_        string `action:"detach" entity:"instanceprofile" awsAPI:"ec2"`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Instance *string `templateName:"instance"`
 	Name     *string `templateName:"name"`

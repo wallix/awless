@@ -14,34 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudgraph
-
-type GraphAPI interface {
-	FindOne(Query) (Resource, error)
-}
-
-type Resource interface {
-	Type() string
-	Id() string
-	Property(string) (interface{}, bool)
-	Relations(string) []Resource
-}
+package cloud
 
 type Query struct {
-	ResourceType   string
-	PropertyValues []propertyValue
+	ResourceType []string
+	Matcher      Matcher
 }
 
-type propertyValue struct {
-	Name  string
-	Value interface{}
+type Matcher interface {
+	Match(r Resource) bool
 }
 
-func NewQuery(resourceType string) Query {
+func NewQuery(resourceType ...string) Query {
 	return Query{ResourceType: resourceType}
 }
 
-func (q Query) Property(name string, value interface{}) Query {
-	q.PropertyValues = append(q.PropertyValues, propertyValue{Name: name, Value: value})
+func (q Query) Match(m Matcher) Query {
+	q.Matcher = m
 	return q
 }

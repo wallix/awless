@@ -18,7 +18,7 @@ package awsspec
 import (
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -30,7 +30,7 @@ import (
 type CreateRecord struct {
 	_       string `action:"create" entity:"record" awsAPI:"route53"`
 	logger  *logger.Logger
-	graph   cloudgraph.GraphAPI
+	graph   cloud.GraphAPI
 	api     route53iface.Route53API
 	Zone    *string `templateName:"zone"`
 	Name    *string `templateName:"name"`
@@ -60,7 +60,7 @@ func (cmd *CreateRecord) ExtractResult(i interface{}) string {
 type UpdateRecord struct {
 	_      string `action:"update" entity:"record" awsAPI:"route53"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    route53iface.Route53API
 	Zone   *string `templateName:"zone"`
 	Name   *string `templateName:"name"`
@@ -87,7 +87,7 @@ func (cmd *UpdateRecord) ExtractResult(i interface{}) string {
 type DeleteRecord struct {
 	_      string `action:"delete" entity:"record" awsAPI:"route53"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    route53iface.Route53API
 	Zone   *string `templateName:"zone"`
 	Name   *string `templateName:"name"`

@@ -28,9 +28,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/config"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/properties"
+	"github.com/wallix/awless/cloud/rdf"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
-	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
@@ -72,8 +73,8 @@ var showCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var resource *graph.Resource
-		var gph *graph.Graph
+		var resource cloud.Resource
+		var gph cloud.GraphAPI
 
 		resource, gph = findResourceInLocalGraphs(ref)
 
@@ -116,7 +117,7 @@ var showCmd = &cobra.Command{
 	},
 }
 
-func showResourceValuesOnlyFor(resource *graph.Resource, propKeys []string) {
+func showResourceValuesOnlyFor(resource cloud.Resource, propKeys []string) {
 	var normalized []string
 	for _, p := range propKeys {
 		normalized = append(normalized, strings.ToLower(strings.Replace(p, " ", "", -1)))
@@ -151,7 +152,7 @@ func showResourceValuesOnlyFor(resource *graph.Resource, propKeys []string) {
 	}
 }
 
-func showResource(resource *graph.Resource, gph *graph.Graph) {
+func showResource(resource cloud.Resource, gph cloud.GraphAPI) {
 	displayer, err := console.BuildOptions(
 		console.WithColumnDefinitions(console.DefaultsColumnDefinitions[resource.Type()]),
 		console.WithFormat(listingFormat),
@@ -161,8 +162,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 
 	exitOn(displayer.Print(os.Stdout))
 
-	var parents []*graph.Resource
-	err = gph.Accept(&graph.ParentsVisitor{From: resource, Each: graph.VisitorCollectFunc(&parents)})
+	parents, err := gph.ResourceRelations(resource, rdf.ParentOf, true)
 	exitOn(err)
 
 	var parentsW bytes.Buffer
@@ -178,7 +178,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 
 	var childrenW bytes.Buffer
 	var hasChildren bool
-	printWithTabs := func(r *graph.Resource, distance int) error {
+	printWithTabs := func(r cloud.Resource, distance int) error {
 		var tabs bytes.Buffer
 		tabs.WriteString(strings.Repeat("\t", count))
 		for i := 0; i < distance; i++ {
@@ -194,7 +194,7 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 		fmt.Fprintf(&childrenW, "%s↳ %s\n", tabs.String(), display)
 		return nil
 	}
-	err = gph.Accept(&graph.ChildrenVisitor{From: resource, Each: printWithTabs, IncludeFrom: true})
+	err = gph.VisitRelations(resource, rdf.ChildrenOfRel, true, printWithTabs)
 	exitOn(err)
 
 	if len(parents) > 0 || hasChildren {
@@ -203,16 +203,15 @@ func showResource(resource *graph.Resource, gph *graph.Graph) {
 		fmt.Printf(childrenW.String())
 	}
 
-	appliedOn, err := gph.ListResourcesAppliedOn(resource)
+	appliedOn, err := gph.ResourceRelations(resource, rdf.ApplyOn, false)
 	exitOn(err)
 	printResourceList(renderCyanBoldFn("Applied on"), appliedOn)
 
-	dependingOn, err := gph.ListResourcesDependingOn(resource)
+	dependingOn, err := gph.ResourceRelations(resource, rdf.DependingOnRel, false)
 	exitOn(err)
 	printResourceList(renderCyanBoldFn("Depending on"), dependingOn)
 
-	var siblings []*graph.Resource
-	err = gph.Accept(&graph.SiblingsVisitor{From: resource, Each: graph.VisitorCollectFunc(&siblings)})
+	siblings, err := gph.ResourceSiblings(resource)
 	exitOn(err)
 	printResourceList(renderCyanBoldFn("Siblings"), siblings, "display all with flag --siblings")
 }
@@ -236,7 +235,7 @@ func runFullSync() {
 	}
 }
 
-func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
+func findResourceInLocalGraphs(ref string) (cloud.Resource, cloud.GraphAPI) {
 	g, resources := resolveResourceFromRefInCurrentRegion(ref)
 	switch len(resources) {
 	case 0:
@@ -248,7 +247,7 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 		for _, res := range resources {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("\t`awless show %s` to show the %s", res.Id(), res.Type()))
-			if state, ok := res.Properties()["State"].(string); ok {
+			if state, ok := res.Properties()[properties.State].(string); ok {
 				buf.WriteString(fmt.Sprintf(" (state: '%s')", state))
 			}
 			logger.Infof(buf.String())
@@ -260,39 +259,42 @@ func findResourceInLocalGraphs(ref string) (*graph.Resource, *graph.Graph) {
 	return nil, nil
 }
 
-func resolveResourceFromRefInCurrentRegion(ref string) (*graph.Graph, []*graph.Resource) {
+func resolveResourceFromRefInCurrentRegion(ref string) (cloud.GraphAPI, []cloud.Resource) {
 	g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
 	exitOn(err)
 	return resolveResourceFromRef(g, ref)
 }
 
-func resolveResourceFromRefInAllLocalRegion(ref string) (*graph.Graph, []*graph.Resource) {
+func resolveResourceFromRefInAllLocalRegion(ref string) (cloud.GraphAPI, []cloud.Resource) {
 	g, err := sync.LoadAllLocalGraphs()
 	exitOn(err)
 	return resolveResourceFromRef(g, ref)
 }
 
-func resolveResourceFromRef(g *graph.Graph, ref string) (*graph.Graph, []*graph.Resource) {
+func resolveResourceFromRef(g cloud.GraphAPI, ref string) (cloud.GraphAPI, []cloud.Resource) {
 	name := deprefix(ref)
-	byName := &graph.ByProperty{Key: "Name", Value: name}
 
 	if strings.HasPrefix(ref, "@") {
 		logger.Verbosef("prefixed with @: forcing research by name '%s'", name)
-		rs, err := g.ResolveResources(byName)
+		rs, err := g.FindWithProperties(map[string]interface{}{properties.Name: name})
 		exitOn(err)
 		return g, rs
 	}
-	rs, err := g.ResolveResources(&graph.ById{Id: name})
+	rs, err := g.FindWithProperties(map[string]interface{}{properties.ID: name})
 	exitOn(err)
 
 	if len(rs) > 0 {
 		return g, rs
 	}
 
-	rs, err = g.ResolveResources(
-		byName,
-		&graph.ByProperty{Key: "Arn", Value: name},
-	)
+	rs, err = g.FindWithProperties(map[string]interface{}{properties.Arn: name})
+	exitOn(err)
+
+	if len(rs) > 0 {
+		return g, rs
+	}
+
+	rs, err = g.FindWithProperties(map[string]interface{}{properties.Name: name})
 	exitOn(err)
 
 	return g, rs
@@ -306,16 +308,23 @@ func decorateWithSuggestion(err error, ref string) error {
 	buf := bytes.NewBufferString(fmt.Sprintf("%s in region %s", err.Error(), config.GetAWSRegion()))
 	g, resources := resolveResourceFromRefInAllLocalRegion(ref)
 	for _, res := range resources {
-		if found := g.FindAncestor(res, cloud.Region); found != nil {
-			buf.WriteString(fmt.Sprintf("\n\tfound previously synced under region %s as %s. Show it with `awless show %s -r %s --local`", found.Id(), res, res.Id(), found.Id()))
+		parents, err := g.ResourceRelations(res, rdf.ParentOf, true)
+		if err != nil {
+			return err
 		}
+		for _, parent := range parents {
+			if parent.Type() == cloud.Region {
+				buf.WriteString(fmt.Sprintf("\n\tfound previously synced under region %s as %s. Show it with `awless show %s -r %s --local`", parent.Id(), res, res.Id(), parent.Id()))
+			}
+		}
+
 	}
 	return errors.New(buf.String())
 }
 
-func printResourceList(title string, list []*graph.Resource, shortenListMsg ...string) {
+func printResourceList(title string, list []cloud.Resource, shortenListMsg ...string) {
 	sort.Sort(byTypeAndString{list})
-	all := graph.Resources(list).Map(func(r *graph.Resource) string { return printResourceRef(r) })
+	all := cloud.Resources(list).Map(func(r cloud.Resource) string { return printResourceRef(r) })
 	count := len(all)
 	max := 3
 	if count > 0 {
@@ -327,7 +336,7 @@ func printResourceList(title string, list []*graph.Resource, shortenListMsg ...s
 	}
 }
 
-func printResourceRef(r *graph.Resource, idRenderFunc ...func(a ...interface{}) string) string {
+func printResourceRef(r cloud.Resource, idRenderFunc ...func(a ...interface{}) string) string {
 	render := fmt.Sprint
 	if len(idRenderFunc) > 0 {
 		render = idRenderFunc[0]
@@ -339,7 +348,7 @@ func printResourceRef(r *graph.Resource, idRenderFunc ...func(a ...interface{}) 
 }
 
 type byTypeAndString struct {
-	res []*graph.Resource
+	res []cloud.Resource
 }
 
 func (b byTypeAndString) Len() int { return len(b.res) }

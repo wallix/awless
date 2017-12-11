@@ -18,11 +18,10 @@ package awsspec
 import (
 	"net"
 
-	"github.com/wallix/awless/cloud/graph"
-
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
@@ -31,7 +30,7 @@ import (
 type CreateSubnet struct {
 	_                string `action:"create" entity:"subnet" awsAPI:"ec2" awsCall:"CreateSubnet" awsInput:"ec2.CreateSubnetInput" awsOutput:"ec2.CreateSubnetOutput" awsDryRun:""`
 	logger           *logger.Logger
-	graph            cloudgraph.GraphAPI
+	graph            cloud.GraphAPI
 	api              ec2iface.EC2API
 	CIDR             *string `awsName:"CidrBlock" awsType:"awsstr" templateName:"cidr"`
 	VPC              *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
@@ -77,7 +76,7 @@ func (cmd *CreateSubnet) AfterRun(renv env.Running, output interface{}) error {
 type UpdateSubnet struct {
 	_      string `action:"update" entity:"subnet" awsAPI:"ec2" awsCall:"ModifySubnetAttribute" awsInput:"ec2.ModifySubnetAttributeInput" awsOutput:"ec2.ModifySubnetAttributeOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id"`
 	Public *bool   `awsName:"MapPublicIpOnLaunch" awsType:"awsboolattribute" templateName:"public"`
@@ -90,7 +89,7 @@ func (cmd *UpdateSubnet) Params() params.Rule {
 type DeleteSubnet struct {
 	_      string `action:"delete" entity:"subnet" awsAPI:"ec2" awsCall:"DeleteSubnet" awsInput:"ec2.DeleteSubnetInput" awsOutput:"ec2.DeleteSubnetOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id"`
 }

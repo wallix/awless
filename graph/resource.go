@@ -24,7 +24,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/cloud/rdf"
 	tstore "github.com/wallix/triplestore"
@@ -35,7 +35,7 @@ type Resource struct {
 
 	properties map[string]interface{}
 	relations  map[string][]*Resource
-	Meta       map[string]interface{}
+	meta       map[string]interface{}
 }
 
 const notFoundResourceType = "notfound"
@@ -45,7 +45,7 @@ func NotFoundResource(id string) *Resource {
 		id:         id,
 		kind:       notFoundResourceType,
 		properties: make(map[string]interface{}),
-		Meta:       make(map[string]interface{}),
+		meta:       make(map[string]interface{}),
 		relations:  make(map[string][]*Resource),
 	}
 }
@@ -55,7 +55,7 @@ func InitResource(kind, id string) *Resource {
 		id:         id,
 		kind:       kind,
 		properties: map[string]interface{}{properties.ID: id},
-		Meta:       make(map[string]interface{}),
+		meta:       make(map[string]interface{}),
 		relations:  make(map[string][]*Resource),
 	}
 }
@@ -128,19 +128,13 @@ func (res *Resource) Property(k string) (interface{}, bool) {
 	return v, ok
 }
 
-func (res *Resource) SetProperty(k string, v interface{}) {
-	res.properties[k] = v
+func (res *Resource) Meta(k string) (interface{}, bool) {
+	v, ok := res.meta[k]
+	return v, ok
 }
 
-func (res *Resource) Relations(typ string) (resources []cloudgraph.Resource) {
-	relations, ok := res.relations[typ]
-	if !ok {
-		return
-	}
-	for _, r := range relations {
-		resources = append(resources, r)
-	}
-	return
+func (res *Resource) SetProperty(k string, v interface{}) {
+	res.properties[k] = v
 }
 
 func (res *Resource) AddRelation(typ string, rel *Resource) {
@@ -148,7 +142,7 @@ func (res *Resource) AddRelation(typ string, rel *Resource) {
 }
 
 // Compare only the id and type of the resources (no properties nor meta)
-func (res *Resource) Same(other *Resource) bool {
+func (res *Resource) Same(other cloud.Resource) bool {
 	if res == nil && other == nil {
 		return true
 	}
@@ -164,7 +158,7 @@ func (res *Resource) marshalFullRDF() ([]tstore.Triple, error) {
 	cloudType := namespacedResourceType(res.Type())
 	triples = append(triples, tstore.SubjPred(res.id, rdf.RdfType).Resource(cloudType))
 
-	for key, value := range res.Meta {
+	for key, value := range res.meta {
 		if key == "diff" {
 			triples = append(triples, tstore.SubjPred(res.id, MetaPredicate).StringLiteral(fmt.Sprint(value)))
 		}
@@ -370,7 +364,7 @@ func (r *Resource) unmarshalMeta(gph tstore.RDFGraph) error {
 		if err != nil {
 			return err
 		}
-		r.Meta["diff"] = text
+		r.meta["diff"] = text
 	}
 	return nil
 }

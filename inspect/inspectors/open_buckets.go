@@ -34,8 +34,8 @@ func (*OpenBuckets) Name() string {
 	return "open_buckets"
 }
 
-func (a *OpenBuckets) Inspect(g *graph.Graph) error {
-	buckets, err := g.GetAllResources(cloud.Bucket)
+func (a *OpenBuckets) Inspect(g cloud.GraphAPI) error {
+	buckets, err := g.Find(cloud.NewQuery(cloud.Bucket))
 	if err != nil {
 		return err
 	}

@@ -55,7 +55,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/cloud"
 )
 
 // DO NOT EDIT - This file was automatically generated with go generate
@@ -99,7 +99,7 @@ func (m *mockEc2) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockEc2) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockEc2) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -107,7 +107,7 @@ func (m *mockEc2) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockEc2) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockEc2) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -221,7 +221,7 @@ func (m *mockElbv2) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockElbv2) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockElbv2) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -229,7 +229,7 @@ func (m *mockElbv2) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockElbv2) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockElbv2) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -280,7 +280,7 @@ func (m *mockRds) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockRds) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockRds) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -288,7 +288,7 @@ func (m *mockRds) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockRds) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockRds) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -353,7 +353,7 @@ func (m *mockAutoscaling) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockAutoscaling) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockAutoscaling) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -361,7 +361,7 @@ func (m *mockAutoscaling) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockAutoscaling) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockAutoscaling) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -441,7 +441,7 @@ func (m *mockAcm) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockAcm) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockAcm) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -449,7 +449,7 @@ func (m *mockAcm) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockAcm) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockAcm) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -503,7 +503,7 @@ func (m *mockIam) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockIam) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockIam) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -511,7 +511,7 @@ func (m *mockIam) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockIam) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockIam) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -593,7 +593,7 @@ func (m *mockS3) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockS3) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockS3) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -601,7 +601,7 @@ func (m *mockS3) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockS3) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockS3) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -631,7 +631,7 @@ func (m *mockSns) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockSns) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockSns) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -639,7 +639,7 @@ func (m *mockSns) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockSns) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockSns) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -703,7 +703,7 @@ func (m *mockSqs) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockSqs) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockSqs) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -711,7 +711,7 @@ func (m *mockSqs) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockSqs) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockSqs) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -745,7 +745,7 @@ func (m *mockRoute53) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockRoute53) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockRoute53) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -753,7 +753,7 @@ func (m *mockRoute53) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockRoute53) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockRoute53) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -799,7 +799,7 @@ func (m *mockLambda) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockLambda) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockLambda) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -807,7 +807,7 @@ func (m *mockLambda) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockLambda) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockLambda) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -854,7 +854,7 @@ func (m *mockCloudwatch) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockCloudwatch) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockCloudwatch) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -862,7 +862,7 @@ func (m *mockCloudwatch) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockCloudwatch) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockCloudwatch) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -925,7 +925,7 @@ func (m *mockCloudfront) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockCloudfront) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockCloudfront) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -933,7 +933,7 @@ func (m *mockCloudfront) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockCloudfront) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockCloudfront) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -962,7 +962,7 @@ func (m *mockCloudformation) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockCloudformation) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockCloudformation) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -970,7 +970,7 @@ func (m *mockCloudformation) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockCloudformation) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockCloudformation) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -1016,7 +1016,7 @@ func (m *mockEcr) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockEcr) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockEcr) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -1024,7 +1024,7 @@ func (m *mockEcr) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockEcr) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockEcr) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -1077,7 +1077,7 @@ func (m *mockEcs) ResourceTypes() []string {
 	return []string{}
 }
 
-func (m *mockEcs) Fetch(context.Context) (*graph.Graph, error) {
+func (m *mockEcs) Fetch(context.Context) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 
@@ -1085,7 +1085,7 @@ func (m *mockEcs) IsSyncDisabled() bool {
 	return false
 }
 
-func (m *mockEcs) FetchByType(context.Context, string) (*graph.Graph, error) {
+func (m *mockEcs) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
 	return nil, nil
 }
 

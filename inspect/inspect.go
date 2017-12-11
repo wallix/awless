@@ -19,7 +19,7 @@ package inspect
 import (
 	"io"
 
-	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/inspect/inspectors"
 )
 
@@ -40,6 +40,6 @@ func init() {
 
 type Inspector interface {
 	Name() string
-	Inspect(*graph.Graph) error
+	Inspect(cloud.GraphAPI) error
 	Print(io.Writer)
 }

@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -35,7 +35,7 @@ import (
 type StartContainertask struct {
 	_                         string `action:"start" entity:"containertask" awsAPI:"ecs"`
 	logger                    *logger.Logger
-	graph                     cloudgraph.GraphAPI
+	graph                     cloud.GraphAPI
 	api                       ecsiface.ECSAPI
 	Cluster                   *string `templateName:"cluster"`
 	DesiredCount              *int64  `templateName:"desired-count"`
@@ -135,7 +135,7 @@ func (cmd *StartContainertask) ExtractResult(i interface{}) string {
 type StopContainertask struct {
 	_              string `action:"stop" entity:"containertask" awsAPI:"ecs"`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            ecsiface.ECSAPI
 	Cluster        *string `templateName:"cluster"`
 	Type           *string `templateName:"type"`
@@ -194,7 +194,7 @@ func (cmd *StopContainertask) ManualRun(renv env.Running) (interface{}, error) {
 type UpdateContainertask struct {
 	_              string `action:"update" entity:"containertask" awsAPI:"ecs" awsCall:"UpdateService" awsInput:"ecs.UpdateServiceInput" awsOutput:"ecs.UpdateServiceOutput"`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            ecsiface.ECSAPI
 	Cluster        *string `awsName:"Cluster" awsType:"awsstr" templateName:"cluster"`
 	DeploymentName *string `awsName:"Service" awsType:"awsstr" templateName:"deployment-name"`
@@ -211,7 +211,7 @@ func (cmd *UpdateContainertask) Params() params.Rule {
 type AttachContainertask struct {
 	_               string `action:"attach" entity:"containertask" awsAPI:"ecs"`
 	logger          *logger.Logger
-	graph           cloudgraph.GraphAPI
+	graph           cloud.GraphAPI
 	api             ecsiface.ECSAPI
 	Name            *string   `templateName:"name"`
 	ContainerName   *string   `templateName:"container-name"`
@@ -321,7 +321,7 @@ func (cmd *AttachContainertask) ExtractResult(i interface{}) string {
 type DetachContainertask struct {
 	_             string `action:"detach" entity:"containertask" awsAPI:"ecs"`
 	logger        *logger.Logger
-	graph         cloudgraph.GraphAPI
+	graph         cloud.GraphAPI
 	api           ecsiface.ECSAPI
 	Name          *string `templateName:"name"`
 	ContainerName *string `templateName:"container-name"`
@@ -390,7 +390,7 @@ func (cmd *DetachContainertask) ManualRun(renv env.Running) (interface{}, error)
 type DeleteContainertask struct {
 	_           string `action:"delete" entity:"containertask" awsAPI:"ecs" awsDryRun:"manual"`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         ecsiface.ECSAPI
 	Name        *string `templateName:"name"`
 	AllVersions *bool   `templateName:"all-versions"`

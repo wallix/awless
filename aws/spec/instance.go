@@ -19,13 +19,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
-
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
@@ -34,7 +33,7 @@ import (
 type CreateInstance struct {
 	_              string `action:"create" entity:"instance" awsAPI:"ec2" awsCall:"RunInstances" awsInput:"ec2.RunInstancesInput" awsOutput:"ec2.Reservation" awsDryRun:""`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            ec2iface.EC2API
 	Image          *string   `awsName:"ImageId" awsType:"awsstr" templateName:"image"`
 	Count          *int64    `awsName:"MaxCount,MinCount" awsType:"awsin64" templateName:"count"`
@@ -99,7 +98,7 @@ func (cmd *CreateInstance) AfterRun(renv env.Running, output interface{}) error 
 type UpdateInstance struct {
 	_      string `action:"update" entity:"instance" awsAPI:"ec2" awsCall:"ModifyInstanceAttribute" awsInput:"ec2.ModifyInstanceAttributeInput" awsOutput:"ec2.ModifyInstanceAttributeOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"InstanceId" awsType:"awsstr" templateName:"id"`
 	Type   *string `awsName:"InstanceType.Value" awsType:"awsstr" templateName:"type"`
@@ -115,7 +114,7 @@ func (cmd *UpdateInstance) Params() params.Rule {
 type DeleteInstance struct {
 	_      string `action:"delete" entity:"instance" awsAPI:"ec2" awsCall:"TerminateInstances" awsInput:"ec2.TerminateInstancesInput" awsOutput:"ec2.TerminateInstancesOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	IDs    []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"ids"`
 }
@@ -138,7 +137,7 @@ func (cmd *DeleteInstance) Params() params.Rule {
 type StartInstance struct {
 	_      string `action:"start" entity:"instance" awsAPI:"ec2" awsCall:"StartInstances" awsInput:"ec2.StartInstancesInput" awsOutput:"ec2.StartInstancesOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
 }
@@ -154,7 +153,7 @@ func (cmd *StartInstance) ExtractResult(i interface{}) string {
 type StopInstance struct {
 	_      string `action:"stop" entity:"instance" awsAPI:"ec2" awsCall:"StopInstances" awsInput:"ec2.StopInstancesInput" awsOutput:"ec2.StopInstancesOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
 }
@@ -174,7 +173,7 @@ const (
 type CheckInstance struct {
 	_       string `action:"check" entity:"instance" awsAPI:"ec2"`
 	logger  *logger.Logger
-	graph   cloudgraph.GraphAPI
+	graph   cloud.GraphAPI
 	api     ec2iface.EC2API
 	Id      *string `templateName:"id"`
 	State   *string `templateName:"state"`
@@ -230,7 +229,7 @@ func (cmd *CheckInstance) ManualRun(renv env.Running) (interface{}, error) {
 type AttachInstance struct {
 	_           string `action:"attach" entity:"instance" awsAPI:"elbv2" awsCall:"RegisterTargets" awsInput:"elbv2.RegisterTargetsInput" awsOutput:"elbv2.RegisterTargetsOutput"`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         elbv2iface.ELBV2API
 	Targetgroup *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"targetgroup"`
 	Id          *string `awsName:"Targets[0]Id" awsType:"awsslicestruct" templateName:"id"`
@@ -246,7 +245,7 @@ func (cmd *AttachInstance) Params() params.Rule {
 type DetachInstance struct {
 	_           string `action:"detach" entity:"instance" awsAPI:"elbv2" awsCall:"DeregisterTargets" awsInput:"elbv2.DeregisterTargetsInput" awsOutput:"elbv2.DeregisterTargetsOutput"`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         elbv2iface.ELBV2API
 	Targetgroup *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"targetgroup"`
 	Id          *string `awsName:"Targets[0]Id" awsType:"awsslicestruct" templateName:"id"`

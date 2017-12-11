@@ -19,7 +19,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/params"
 )
@@ -27,7 +27,7 @@ import (
 type CreateDbsubnetgroup struct {
 	_           string `action:"create" entity:"dbsubnetgroup" awsAPI:"rds" awsCall:"CreateDBSubnetGroup" awsInput:"rds.CreateDBSubnetGroupInput" awsOutput:"rds.CreateDBSubnetGroupOutput"`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         rdsiface.RDSAPI
 	Name        *string   `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name"`
 	Description *string   `awsName:"DBSubnetGroupDescription" awsType:"awsstr" templateName:"description"`
@@ -45,7 +45,7 @@ func (cmd *CreateDbsubnetgroup) ExtractResult(i interface{}) string {
 type DeleteDbsubnetgroup struct {
 	_      string `action:"delete" entity:"dbsubnetgroup" awsAPI:"rds" awsCall:"DeleteDBSubnetGroup" awsInput:"rds.DeleteDBSubnetGroupInput" awsOutput:"rds.DeleteDBSubnetGroupOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    rdsiface.RDSAPI
 	Name   *string `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name"`
 }

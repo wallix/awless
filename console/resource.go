@@ -21,12 +21,12 @@ import (
 	"io"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/wallix/awless/graph"
+	"github.com/wallix/awless/cloud"
 )
 
 type tableResourceDisplayer struct {
 	maxwidth          int
-	r                 *graph.Resource
+	r                 cloud.Resource
 	columnDefinitions []ColumnDefinition
 }
 
@@ -85,6 +85,6 @@ func (d *tableResourceDisplayer) Print(w io.Writer) error {
 	return nil
 }
 
-func (d *tableResourceDisplayer) SetResource(r *graph.Resource) {
+func (d *tableResourceDisplayer) SetResource(r cloud.Resource) {
 	d.r = r
 }

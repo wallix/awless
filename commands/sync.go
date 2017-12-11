@@ -29,7 +29,6 @@ import (
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
@@ -69,14 +68,14 @@ var syncCmd = &cobra.Command{
 				services = append(services, srv)
 			}
 		}
-		localGraphs := make(map[string]*graph.Graph)
+		localGraphs := make(map[string]cloud.GraphAPI)
 		for _, service := range services {
 			localGraphs[service.Name()] = sync.LoadLocalGraphForService(service.Name(), config.GetAWSRegion())
 		}
 		logger.Infof("running sync for region '%s'", config.GetAWSRegion())
 
 		var syncErr error
-		var graphs map[string]*graph.Graph
+		var graphs map[string]cloud.GraphAPI
 		syncFn := func() {
 			graphs, syncErr = sync.DefaultSyncer.Sync(services...)
 		}
@@ -127,11 +126,11 @@ func withProfiling(fn func()) {
 	logger.Infof("Generated profiling files %s and %s", cpu.Name(), mem.Name())
 }
 
-func displaySyncStats(serviceName string, g *graph.Graph) {
+func displaySyncStats(serviceName string, g cloud.GraphAPI) {
 	var strs []string
 	for rt, service := range awsservices.ServicePerResourceType {
 		if service == serviceName {
-			res, err := g.GetAllResources(rt)
+			res, err := g.Find(cloud.NewQuery(rt))
 			if err != nil {
 				continue
 			}

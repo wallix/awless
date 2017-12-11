@@ -86,7 +86,6 @@ import (
   {{- end }}
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
-    "github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/fetch"
 	"github.com/wallix/awless/aws/fetch"
@@ -191,7 +190,7 @@ func (s *{{ Title $service.Name }}) ResourceTypes() []string {
 	}
 }
 
-func (s *{{ Title $service.Name }}) Fetch(ctx context.Context) (*graph.Graph, error) {
+func (s *{{ Title $service.Name }}) Fetch(ctx context.Context) (cloud.GraphAPI, error) {
 	if s.IsSyncDisabled() {
 		return graph.NewGraph(), nil
 	}
@@ -269,7 +268,7 @@ func (s *{{ Title $service.Name }}) Fetch(ctx context.Context) (*graph.Graph, er
 	return gph, nil
 }
 
-func (s *{{ Title $service.Name }}) FetchByType(ctx context.Context, t string) (*graph.Graph, error) {
+func (s *{{ Title $service.Name }}) FetchByType(ctx context.Context, t string) (cloud.GraphAPI, error) {
 	defer s.fetcher.Reset()
   return s.fetcher.FetchByType(context.WithValue(ctx, "region", s.region), t)
 }

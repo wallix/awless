@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -32,7 +32,7 @@ import (
 type CreateVolume struct {
 	_                string `action:"create" entity:"volume" awsAPI:"ec2" awsCall:"CreateVolume" awsInput:"ec2.CreateVolumeInput" awsOutput:"ec2.Volume" awsDryRun:""`
 	logger           *logger.Logger
-	graph            cloudgraph.GraphAPI
+	graph            cloud.GraphAPI
 	api              ec2iface.EC2API
 	Availabilityzone *string `awsName:"AvailabilityZone" awsType:"awsstr" templateName:"availabilityzone"`
 	Size             *int64  `awsName:"Size" awsType:"awsint64" templateName:"size"`
@@ -49,7 +49,7 @@ func (cmd *CreateVolume) ExtractResult(i interface{}) string {
 type CheckVolume struct {
 	_       string `action:"check" entity:"volume" awsAPI:"ec2"`
 	logger  *logger.Logger
-	graph   cloudgraph.GraphAPI
+	graph   cloud.GraphAPI
 	api     ec2iface.EC2API
 	Id      *string `templateName:"id"`
 	State   *string `templateName:"state"`
@@ -99,7 +99,7 @@ func (cmd *CheckVolume) ManualRun(renv env.Running) (interface{}, error) {
 type DeleteVolume struct {
 	_      string `action:"delete" entity:"volume" awsAPI:"ec2" awsCall:"DeleteVolume" awsInput:"ec2.DeleteVolumeInput" awsOutput:"ec2.DeleteVolumeOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`
 }
@@ -111,7 +111,7 @@ func (cmd *DeleteVolume) Params() params.Rule {
 type AttachVolume struct {
 	_        string `action:"attach" entity:"volume" awsAPI:"ec2" awsCall:"AttachVolume" awsInput:"ec2.AttachVolumeInput" awsOutput:"ec2.VolumeAttachment" awsDryRun:""`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Device   *string `awsName:"Device" awsType:"awsstr" templateName:"device"`
 	Id       *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`
@@ -128,7 +128,7 @@ func (cmd *AttachVolume) ExtractResult(i interface{}) string {
 type DetachVolume struct {
 	_        string `action:"detach" entity:"volume" awsAPI:"ec2" awsCall:"DetachVolume" awsInput:"ec2.DetachVolumeInput" awsOutput:"ec2.VolumeAttachment" awsDryRun:""`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Device   *string `awsName:"Device" awsType:"awsstr" templateName:"device"`
 	Id       *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`

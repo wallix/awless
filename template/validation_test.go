@@ -3,6 +3,7 @@ package template_test
 import (
 	"testing"
 
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/graph/resourcetest"
 	"github.com/wallix/awless/template"
@@ -20,7 +21,7 @@ func TestValidation(t *testing.T) {
 
 		tpl := template.MustParse(text)
 
-		lookup := func(key string) (*graph.Graph, bool) { return g, true }
+		lookup := func(key string) (cloud.GraphAPI, bool) { return g, true }
 		rule := &template.UniqueNameValidator{lookup}
 
 		errs := tpl.Validate(rule)

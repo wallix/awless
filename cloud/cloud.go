@@ -21,8 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/wallix/awless/graph"
 )
 
 var ErrFetchAccessDenied = errors.New("access denied to cloud resource")
@@ -106,8 +104,8 @@ type Service interface {
 	Name() string
 	ResourceTypes() []string
 	IsSyncDisabled() bool
-	Fetch(context.Context) (*graph.Graph, error)
-	FetchByType(context.Context, string) (*graph.Graph, error)
+	Fetch(context.Context) (GraphAPI, error)
+	FetchByType(context.Context, string) (GraphAPI, error)
 }
 
 type Services []Service

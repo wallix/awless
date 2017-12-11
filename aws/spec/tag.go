@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -36,7 +36,7 @@ import (
 type CreateTag struct {
 	_        string `action:"create" entity:"tag" awsAPI:"ec2" awsDryRun:"manual"` //  awsCall:"CreateTags" awsInput:"ec2.CreateTagsInput" awsOutput:"ec2.CreateTagsOutput"
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	sess     *session.Session
 	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource"`
@@ -94,7 +94,7 @@ func (cmd *CreateTag) ManualRun(renv env.Running) (interface{}, error) {
 type DeleteTag struct {
 	_        string `action:"delete" entity:"tag" awsAPI:"ec2" awsDryRun:"manual"`
 	logger   *logger.Logger
-	graph    cloudgraph.GraphAPI
+	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
 	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource"`
 	Key      *string `templateName:"key"`

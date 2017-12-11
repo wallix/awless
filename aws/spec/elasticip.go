@@ -19,7 +19,7 @@ import (
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/params"
 )
@@ -27,7 +27,7 @@ import (
 type CreateElasticip struct {
 	_      string `action:"create" entity:"elasticip" awsAPI:"ec2" awsCall:"AllocateAddress" awsInput:"ec2.AllocateAddressInput" awsOutput:"ec2.AllocateAddressOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Domain *string `awsName:"Domain" awsType:"awsstr" templateName:"domain"`
 }
@@ -43,7 +43,7 @@ func (cmd *CreateElasticip) ExtractResult(i interface{}) string {
 type DeleteElasticip struct {
 	_      string `action:"delete" entity:"elasticip" awsAPI:"ec2" awsCall:"ReleaseAddress" awsInput:"ec2.ReleaseAddressInput" awsOutput:"ec2.ReleaseAddressOutput" awsDryRun:""`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
 	Id     *string `awsName:"AllocationId" awsType:"awsstr" templateName:"id"`
 	Ip     *string `awsName:"PublicIp" awsType:"awsstr" templateName:"ip"`
@@ -56,7 +56,7 @@ func (cmd *DeleteElasticip) Params() params.Rule {
 type AttachElasticip struct {
 	_                  string `action:"attach" entity:"elasticip" awsAPI:"ec2" awsCall:"AssociateAddress" awsInput:"ec2.AssociateAddressInput" awsOutput:"ec2.AssociateAddressOutput" awsDryRun:""`
 	logger             *logger.Logger
-	graph              cloudgraph.GraphAPI
+	graph              cloud.GraphAPI
 	api                ec2iface.EC2API
 	Id                 *string `awsName:"AllocationId" awsType:"awsstr" templateName:"id"`
 	Instance           *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
@@ -78,7 +78,7 @@ func (cmd *AttachElasticip) ExtractResult(i interface{}) string {
 type DetachElasticip struct {
 	_           string `action:"detach" entity:"elasticip" awsAPI:"ec2" awsCall:"DisassociateAddress" awsInput:"ec2.DisassociateAddressInput" awsOutput:"ec2.DisassociateAddressOutput" awsDryRun:""`
 	logger      *logger.Logger
-	graph       cloudgraph.GraphAPI
+	graph       cloud.GraphAPI
 	api         ec2iface.EC2API
 	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association"`
 }

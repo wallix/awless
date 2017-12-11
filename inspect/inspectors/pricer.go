@@ -28,7 +28,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/wallix/awless/cloud"
-	"github.com/wallix/awless/graph"
 )
 
 var pricesURL = "http://ec2-price.com"
@@ -42,13 +41,13 @@ func (p *Pricer) Name() string {
 	return "pricer"
 }
 
-func (p *Pricer) Inspect(g *graph.Graph) error {
+func (p *Pricer) Inspect(g cloud.GraphAPI) error {
 	region, err := getRegion(g)
 	if err != nil {
 		return err
 	}
 
-	instances, err := g.GetAllResources(cloud.Instance)
+	instances, err := g.Find(cloud.NewQuery(cloud.Instance))
 	if err != nil {
 		return err
 	}
@@ -128,6 +127,9 @@ func fetchPrice(instType, region string) (float64, error) {
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0.0, err
+	}
 	price, err := strconv.ParseFloat(string(body), 64)
 	if err != nil {
 		return 0.0, err
@@ -136,8 +138,8 @@ func fetchPrice(instType, region string) (float64, error) {
 	return price, nil
 }
 
-func getRegion(g *graph.Graph) (string, error) {
-	all, err := g.GetAllResources("region")
+func getRegion(g cloud.GraphAPI) (string, error) {
+	all, err := g.Find(cloud.NewQuery("region"))
 	if err != nil {
 		return "", err
 	}

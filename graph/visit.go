@@ -38,6 +38,7 @@ type ParentsVisitor struct {
 	From        *Resource
 	Each        visitEachFunc
 	IncludeFrom bool
+	Relation    string
 }
 
 func (v *ParentsVisitor) Visit(g *Graph) error {
@@ -45,14 +46,17 @@ func (v *ParentsVisitor) Visit(g *Graph) error {
 	if err != nil {
 		return err
 	}
-
-	return tstore.NewTree(g.store.Snapshot(), rdf.ParentOf).TraverseAncestors(startNode, foreach)
+	if v.Relation == "" {
+		v.Relation = rdf.ParentOf
+	}
+	return tstore.NewTree(g.store.Snapshot(), v.Relation).TraverseAncestors(startNode, foreach)
 }
 
 type ChildrenVisitor struct {
 	From        *Resource
 	Each        visitEachFunc
 	IncludeFrom bool
+	Relation    string
 }
 
 func (v *ChildrenVisitor) Visit(g *Graph) error {
@@ -60,7 +64,10 @@ func (v *ChildrenVisitor) Visit(g *Graph) error {
 	if err != nil {
 		return err
 	}
-	return tstore.NewTree(g.store.Snapshot(), rdf.ParentOf).TraverseDFS(startNode, foreach)
+	if v.Relation == "" {
+		v.Relation = rdf.ParentOf
+	}
+	return tstore.NewTree(g.store.Snapshot(), v.Relation).TraverseDFS(startNode, foreach)
 }
 
 type SiblingsVisitor struct {

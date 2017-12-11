@@ -21,9 +21,9 @@ func enumCompletionFunc(enum []string) readline.AutoCompleter {
 	return readline.NewPrefixCompleter(items...)
 }
 
-func typedParamCompletionFunc(g *graph.Graph, resourceType, propName string) readline.AutoCompleter {
+func typedParamCompletionFunc(g cloud.GraphAPI, resourceType, propName string) readline.AutoCompleter {
 	var items []readline.PrefixCompleterInterface
-	resources, _ := g.GetAllResources(resourceType)
+	resources, _ := g.Find(cloud.NewQuery(resourceType))
 	for _, res := range resources {
 		if val, ok := res.Properties()[propName]; ok {
 			items = append(items, readline.PcItem(fmt.Sprint(val)))
@@ -32,12 +32,12 @@ func typedParamCompletionFunc(g *graph.Graph, resourceType, propName string) rea
 
 	return readline.NewPrefixCompleter(items...)
 }
-func holeAutoCompletion(g *graph.Graph, hole string) readline.AutoCompleter {
+func holeAutoCompletion(g cloud.GraphAPI, hole string) readline.AutoCompleter {
 	completeFunc := func(string) []string { return []string{} }
 
 	if entityTypes, entityProp := guessEntityTypeFromHoleQuestion(hole); len(entityTypes) > 0 {
-		var resources []*graph.Resource
-		res, err := g.GetAllResources(entityTypes...)
+		var resources []cloud.Resource
+		res, err := g.Find(cloud.NewQuery(entityTypes...))
 		resources = append(resources, res...)
 		exitOn(err)
 
@@ -234,7 +234,7 @@ func appendIfContains(slice []string, value, subst string) []string {
 	return slice
 }
 
-func appendWithNameAliases(slice []string, res *graph.Resource, s string) []string {
+func appendWithNameAliases(slice []string, res cloud.Resource, s string) []string {
 	if val, ok := res.Properties()["Name"]; ok {
 		switch val.(type) {
 		case string:

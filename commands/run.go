@@ -42,8 +42,8 @@ import (
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/cloud"
+	"github.com/wallix/awless/cloud/match"
 	"github.com/wallix/awless/config"
-	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
@@ -215,12 +215,12 @@ func askHole(hole string, autocomplete readline.AutoCompleter) (interface{}, err
 }
 
 type onceLoader struct {
-	g    *graph.Graph
+	g    cloud.GraphAPI
 	err  error
 	once stdsync.Once
 }
 
-func (l *onceLoader) mustLoad() *graph.Graph {
+func (l *onceLoader) mustLoad() cloud.GraphAPI {
 	l.once.Do(func() {
 		l.g, l.err = sync.LoadLocalGraphs(config.GetAWSRegion())
 	})
@@ -373,7 +373,7 @@ func resolveAliasFunc(entity, key, alias string) string {
 		resType = entity
 	}
 
-	resources, err := gph.ResolveResources(&graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: alias}, &graph.ByType{Typ: resType}}})
+	resources, err := gph.Find(cloud.NewQuery(resType).Match(match.And(match.Property("Name", alias))))
 	if err != nil {
 		return ""
 	}
@@ -381,7 +381,7 @@ func resolveAliasFunc(entity, key, alias string) string {
 	case 1:
 		return resources[0].Id()
 	default:
-		resources, err := gph.ResolveResources(&graph.And{Resolvers: []graph.Resolver{&graph.ByProperty{Key: "Name", Value: alias}}})
+		resources, err := gph.FindWithProperties(map[string]interface{}{"Name": alias})
 		if err != nil {
 			return ""
 		}

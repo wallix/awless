@@ -17,7 +17,7 @@ package awsspec
 
 import (
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
-	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/params"
 )
@@ -25,7 +25,7 @@ import (
 type CreateLaunchconfiguration struct {
 	_              string `action:"create" entity:"launchconfiguration" awsAPI:"autoscaling" awsCall:"CreateLaunchConfiguration" awsInput:"autoscaling.CreateLaunchConfigurationInput" awsOutput:"autoscaling.CreateLaunchConfigurationOutput"`
 	logger         *logger.Logger
-	graph          cloudgraph.GraphAPI
+	graph          cloud.GraphAPI
 	api            autoscalingiface.AutoScalingAPI
 	Image          *string   `awsName:"ImageId" awsType:"awsstr" templateName:"image"`
 	Type           *string   `awsName:"InstanceType" awsType:"awsstr" templateName:"type"`
@@ -57,7 +57,7 @@ func (cmd *CreateLaunchconfiguration) ExtractResult(i interface{}) string {
 type DeleteLaunchconfiguration struct {
 	_      string `action:"delete" entity:"launchconfiguration" awsAPI:"autoscaling" awsCall:"DeleteLaunchConfiguration" awsInput:"autoscaling.DeleteLaunchConfigurationInput" awsOutput:"autoscaling.DeleteLaunchConfigurationOutput"`
 	logger *logger.Logger
-	graph  cloudgraph.GraphAPI
+	graph  cloud.GraphAPI
 	api    autoscalingiface.AutoScalingAPI
 	Name   *string `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name"`
 }
