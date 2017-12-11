@@ -108,7 +108,7 @@ var cliExamplesDoc = map[string][]string{
 		"awless create containercluster name=mycluster",
 	},
 	"createdatabase": {
-		"awless create database engine=postgres id=mystartup-prod-db subnetgroup=@my-dbsubnetgroup  password=notsafe dbname=mydb size=5 type=db.t2.small username=admin vpcsecuritygroups=@postgres_sg",
+		"awless create database engine=postgres id=mystartup-prod-db subnetgroup=@my-dbsubnetgroup password=notsafe dbname=mydb size=5 type=db.t2.small username=admin vpcsecuritygroups=@postgres_sg",
 	},
 	"createdbsubnetgroup": {
 		"awless create dbsubnetgroup name=mydbsubnetgroup description=\"subnets for peps db\" subnets=[@my-firstsubnet, @my-secondsubnet]",
