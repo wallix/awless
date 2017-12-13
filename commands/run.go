@@ -301,22 +301,22 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		}
 
 		var allParamsStr bytes.Buffer
-		allParams := params.Iter(templDef.Params)
-		if len(allParams) > 0 {
-			for p, opt := range allParams {
-				if opt {
-					allParamsStr.WriteString(fmt.Sprintf("\n  - [%s]", p))
-				} else {
-					allParamsStr.WriteString(fmt.Sprintf("\n  - %s", p))
-				}
-				if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
-					allParamsStr.WriteString(fmt.Sprintf(": %s", d))
-				}
+		allParams, optParams := params.List(templDef.Params)
+		for _, p := range allParams {
+			allParamsStr.WriteString(fmt.Sprintf("\n  - %s", p))
+			if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
+				allParamsStr.WriteString(fmt.Sprintf(": %s", d))
+			}
+		}
+		for _, p := range optParams {
+			allParamsStr.WriteString(fmt.Sprintf("\n  - [%s]", p))
+			if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
+				allParamsStr.WriteString(fmt.Sprintf(": %s", d))
 			}
 		}
 
 		var validArgs []string
-		for param, _ := range allParams {
+		for _, param := range append(allParams, optParams...) {
 			validArgs = append(validArgs, param+"=")
 		}
 		actionCmd.AddCommand(

@@ -8,22 +8,28 @@ import (
 	"github.com/wallix/awless/template/params"
 )
 
-func TestRuleIter(t *testing.T) {
+func TestListParams(t *testing.T) {
 	tcases := []struct {
-		rules params.Rule
-		exp   map[string]bool
+		rules  params.Rule
+		exp    []string
+		expOpt []string
 	}{
-		{rules: params.Opt("b", "c", "a"), exp: map[string]bool{"a": true, "b": true, "c": true}},
-		{rules: params.AllOf(params.Key("f"), params.Opt("a", "b")), exp: map[string]bool{"a": true, "b": true, "f": false}},
-		{rules: params.OnlyOneOf(params.Key("b"), params.Key("c"), params.Opt("a")), exp: map[string]bool{"a": true, "b": false, "c": false}},
-		{rules: params.AtLeastOneOf(params.Key("b"), params.Key("c"), params.Opt("a", "f")), exp: map[string]bool{"a": true, "b": false, "c": false, "f": true}},
+		{rules: params.Opt("b", "c", "a"), expOpt: []string{"a", "b", "c"}},
+		{rules: params.AllOf(params.Key("f"), params.Opt("a", "b")), exp: []string{"f"}, expOpt: []string{"a", "b"}},
+		{rules: params.OnlyOneOf(params.Key("b"), params.Key("c"), params.Opt("a")), exp: []string{"b", "c"}, expOpt: []string{"a"}},
+		{rules: params.AtLeastOneOf(params.Key("b"), params.Key("c"), params.Opt("a", "f")), exp: []string{"b", "c"}, expOpt: []string{"a", "f"}},
 	}
 
-	for _, tcase := range tcases {
-		if got, want := params.Iter(tcase.rules), tcase.exp; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %v, want %v", got, want)
+	for i, tcase := range tcases {
+		actual, actualOpt := params.List(tcase.rules)
+		if got, want := actual, tcase.exp; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d. actual: got %v, want %v", i+1, got, want)
+		}
+		if got, want := actualOpt, tcase.expOpt; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d. actual opt: got %v, want %v", i+1, got, want)
 		}
 	}
+
 }
 
 func TestPrintRules(t *testing.T) {

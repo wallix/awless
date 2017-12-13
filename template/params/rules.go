@@ -7,18 +7,16 @@ import (
 	"strings"
 )
 
-func Iter(r Rule) map[string]bool {
-	out := make(map[string]bool)
-	opts := r.Optionals()
-	all := collect(r)
-	for _, v := range all {
-		if contains(opts, v) {
-			out[v] = true
-		} else {
-			out[v] = false
+func List(r Rule) (out []string, opts []string) {
+	opts = r.Optionals()
+	for _, v := range collect(r) {
+		if !contains(opts, v) {
+			out = append(out, v)
 		}
 	}
-	return out
+	sort.Strings(out)
+	sort.Strings(opts)
+	return
 }
 
 func Validate(r Rule, input []string) error {
