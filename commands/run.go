@@ -300,18 +300,18 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			apiStr = fmt.Sprint(strings.ToUpper(api) + " ")
 		}
 
-		var allParamsStr bytes.Buffer
+		var paramsStr bytes.Buffer
 		allParams, optParams := params.List(templDef.Params)
 		for _, p := range allParams {
-			allParamsStr.WriteString(fmt.Sprintf("\n  - %s", p))
+			paramsStr.WriteString(fmt.Sprintf("\n  %s", p))
 			if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
-				allParamsStr.WriteString(fmt.Sprintf(": %s", d))
+				paramsStr.WriteString(fmt.Sprintf(": %s", d))
 			}
 		}
 		for _, p := range optParams {
-			allParamsStr.WriteString(fmt.Sprintf("\n  - [%s]", p))
+			paramsStr.WriteString(fmt.Sprintf("\n  [%s]", p))
 			if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
-				allParamsStr.WriteString(fmt.Sprintf(": %s", d))
+				paramsStr.WriteString(fmt.Sprintf(": %s", d))
 			}
 		}
 
@@ -319,18 +319,20 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		for _, param := range append(allParams, optParams...) {
 			validArgs = append(validArgs, param+"=")
 		}
-		actionCmd.AddCommand(
-			&cobra.Command{
-				Use:               templDef.Entity,
-				PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
-				PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
-				Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
-				Long:              fmt.Sprintf("%s a %s%s%s", strings.Title(templDef.Action), apiStr, templDef.Entity, allParamsStr.String()),
-				Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
-				RunE:              run(templDef),
-				ValidArgs:         validArgs,
-			},
-		)
+		currentCmd := &cobra.Command{
+			Use:               fmt.Sprintf("%s [param=value ...]", templDef.Entity),
+			PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
+			PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
+			Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
+			Long:              fmt.Sprintf("Params: %s\n\nParams patterns:\n  %s", paramsStr.String(), templDef.Params),
+			Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
+			RunE:              run(templDef),
+			ValidArgs:         validArgs,
+		}
+		currentCmd.SetUsageTemplate(customCommandUsageTemplate)
+		currentCmd.SetHelpTemplate(`{{with .Short}}{{. | trimTrailingWhitespaces}}
+{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
+		actionCmd.AddCommand(currentCmd)
 	}
 
 	return actionCmd
@@ -617,3 +619,31 @@ func joinSentence(arr []string) string {
 	}
 	return strings.Join(arr, sep)
 }
+
+const customCommandUsageTemplate = `
+Usage:{{if .Runnable}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+Aliases:
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+
+Examples:
+{{.Example}}{{end}}
+
+{{.Long}}{{if .HasAvailableSubCommands}}
+
+Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+Flags:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+Global Flags:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+
+Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`
