@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -63,7 +64,7 @@ func (cmd *CheckVolume) Validate_State() error {
 	return NewEnumValidator("available", "in-use", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckVolume) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckVolume) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DescribeVolumesInput{VolumeIds: []*string{cmd.Id}}
 
 	c := &checker{

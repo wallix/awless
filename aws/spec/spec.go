@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/fatih/color"
@@ -22,11 +23,11 @@ const (
 )
 
 type BeforeRunner interface {
-	BeforeRun(ctx map[string]interface{}) error
+	BeforeRun(env.Running) error
 }
 
 type AfterRunner interface {
-	AfterRun(ctx map[string]interface{}, output interface{}) error
+	AfterRun(env.Running, interface{}) error
 }
 
 type ResultExtractor interface {
@@ -36,9 +37,8 @@ type ResultExtractor interface {
 type command interface {
 	Params() params.Rule
 	ValidateCommand(map[string]interface{}, []string) []error
-	inject(params map[string]interface{}) error
-	Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error)
-	DryRun(ctx, params map[string]interface{}) (interface{}, error)
+	inject(map[string]interface{}) error
+	Run(env.Running, map[string]interface{}) (interface{}, error)
 }
 
 func implementsBeforeRun(i interface{}) (BeforeRunner, bool) {

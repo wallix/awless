@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -59,7 +60,7 @@ func (cmd *CreateDistribution) Params() params.Rule {
 	)
 }
 
-func (cmd *CreateDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDistribution) ManualRun(renv env.Running) (interface{}, error) {
 	originId := "orig_1"
 	input := &cloudfront.CreateDistributionInput{
 		DistributionConfig: &cloudfront.DistributionConfig{
@@ -163,7 +164,7 @@ func (cmd *CheckDistribution) Validate_State() error {
 	return NewEnumValidator("deployed", "inprogress", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckDistribution) ManualRun(renv env.Running) (interface{}, error) {
 	input := &cloudfront.GetDistributionInput{
 		Id: cmd.Id,
 	}
@@ -219,7 +220,7 @@ func (cmd *UpdateDistribution) Params() params.Rule {
 	)
 }
 
-func (cmd *UpdateDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateDistribution) ManualRun(renv env.Running) (interface{}, error) {
 	distribOutput, err := cmd.api.GetDistribution(&cloudfront.GetDistributionInput{
 		Id: cmd.Id,
 	})
@@ -362,7 +363,7 @@ func (cmd *DeleteDistribution) Params() params.Rule {
 	return params.AllOf(params.Key("id"))
 }
 
-func (cmd *DeleteDistribution) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDistribution) ManualRun(renv env.Running) (interface{}, error) {
 	cmd.logger.Info("disabling distribution")
 	updateDistribution := CommandFactory.Build("updatedistribution")().(*UpdateDistribution)
 	updateDistribution.Id = cmd.Id
@@ -372,7 +373,7 @@ func (cmd *DeleteDistribution) ManualRun(ctx map[string]interface{}) (interface{
 	}
 
 	var etag string
-	if out, err := updateDistribution.Run(ctx, nil); err != nil {
+	if out, err := updateDistribution.Run(renv, nil); err != nil {
 		return nil, err
 	} else if str, ok := out.(string); ok {
 		etag = str
@@ -387,7 +388,7 @@ func (cmd *DeleteDistribution) ManualRun(ctx map[string]interface{}) (interface{
 		return nil, fmt.Errorf("%v", errs)
 	}
 
-	if _, err := checkDistribution.Run(ctx, nil); err != nil {
+	if _, err := checkDistribution.Run(renv, nil); err != nil {
 		return nil, err
 	}
 

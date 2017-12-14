@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -46,7 +47,7 @@ func (cmd *CreateRole) Params() params.Rule {
 	)
 }
 
-func (cmd *CreateRole) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRole) ManualRun(renv env.Running) (interface{}, error) {
 	princ := new(principal)
 	if cmd.PrincipalAccount != nil {
 		princ.AWS = StringValue(cmd.PrincipalAccount)
@@ -91,12 +92,12 @@ func (cmd *CreateRole) ManualRun(ctx map[string]interface{}) (interface{}, error
 
 	createInstProfile := CommandFactory.Build("createinstanceprofile")().(*CreateInstanceprofile)
 	createInstProfile.Name = cmd.Name
-	createInstProfile.Run(ctx, nil)
+	createInstProfile.Run(renv, nil)
 
 	attachRole := CommandFactory.Build("attachrole")().(*AttachRole)
 	attachRole.Name = role.RoleName
 	attachRole.Instanceprofile = role.RoleName
-	attachRole.Run(ctx, nil)
+	attachRole.Run(renv, nil)
 
 	if v := cmd.SleepAfter; v != nil {
 		vv := Int64AsIntValue(v)
@@ -123,15 +124,15 @@ func (cmd *DeleteRole) Params() params.Rule {
 	return params.AllOf(params.Key("name"))
 }
 
-func (cmd *DeleteRole) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRole) ManualRun(renv env.Running) (interface{}, error) {
 	detachRole := CommandFactory.Build("detachrole")().(*DetachRole)
 	detachRole.Name = cmd.Name
 	detachRole.Instanceprofile = cmd.Name
-	detachRole.Run(ctx, nil)
+	detachRole.Run(renv, nil)
 
 	deleteInstProfile := CommandFactory.Build("deleteinstanceprofile")().(*DeleteInstanceprofile)
 	deleteInstProfile.Name = cmd.Name
-	deleteInstProfile.Run(ctx, nil)
+	deleteInstProfile.Run(renv, nil)
 
 	input := &iam.DeleteRoleInput{}
 	if err := setFieldWithType(cmd.Name, input, "RoleName", awsstr); err != nil {

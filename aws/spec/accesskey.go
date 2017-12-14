@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -65,7 +66,7 @@ func (cmd *CreateAccesskey) ConvertParams() ([]string, func(values map[string]in
 		}
 }
 
-func (cmd *CreateAccesskey) AfterRun(ctx map[string]interface{}, output interface{}) error {
+func (cmd *CreateAccesskey) AfterRun(renv env.Running, output interface{}) error {
 	accessKey := output.(*iam.CreateAccessKeyOutput).AccessKey
 	if !BoolValue(cmd.Save) {
 		cmd.logger.Infof("Access key created. Here are the crendentials for user %s:", aws.StringValue(accessKey.UserName))

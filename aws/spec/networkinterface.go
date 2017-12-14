@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -101,7 +102,7 @@ func (cmd *DetachNetworkinterface) Params() params.Rule {
 	)
 }
 
-func (cmd *DetachNetworkinterface) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
@@ -110,7 +111,7 @@ func (cmd *DetachNetworkinterface) DryRun(ctx, params map[string]interface{}) (i
 	input.DryRun = Bool(true)
 
 	if cmd.Attachment != nil {
-		if err := setFieldWithType(cmd.Attachment, input, "AttachmentId", awsstr, ctx); err != nil {
+		if err := setFieldWithType(cmd.Attachment, input, "AttachmentId", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 	} else if cmd.Instance != nil && cmd.Id != nil {
@@ -125,7 +126,7 @@ func (cmd *DetachNetworkinterface) DryRun(ctx, params map[string]interface{}) (i
 	}
 
 	if cmd.Force != nil {
-		if err := setFieldWithType(cmd.Force, input, "Force", awsbool, ctx); err != nil {
+		if err := setFieldWithType(cmd.Force, input, "Force", awsbool, renv.Context()); err != nil {
 			return nil, err
 		}
 	}
@@ -143,11 +144,11 @@ func (cmd *DetachNetworkinterface) DryRun(ctx, params map[string]interface{}) (i
 	return nil, err
 }
 
-func (cmd *DetachNetworkinterface) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DetachNetworkinterface) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DetachNetworkInterfaceInput{}
 
 	if cmd.Attachment != nil {
-		if err := setFieldWithType(cmd.Attachment, input, "AttachmentId", awsstr, ctx); err != nil {
+		if err := setFieldWithType(cmd.Attachment, input, "AttachmentId", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 	} else if cmd.Instance != nil && cmd.Id != nil {
@@ -162,7 +163,7 @@ func (cmd *DetachNetworkinterface) ManualRun(ctx map[string]interface{}) (interf
 	}
 
 	if cmd.Force != nil {
-		if err := setFieldWithType(cmd.Force, input, "Force", awsbool, ctx); err != nil {
+		if err := setFieldWithType(cmd.Force, input, "Force", awsbool, renv.Context()); err != nil {
 			return nil, err
 		}
 	}
@@ -191,7 +192,7 @@ func (cmd *CheckNetworkinterface) Validate_State() error {
 	return NewEnumValidator("available", "attaching", "detaching", "in-use", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckNetworkinterface) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckNetworkinterface) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: []*string{cmd.Id},
 	}

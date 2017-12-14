@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -113,7 +114,7 @@ func (cmd *AttachAlarm) Params() params.Rule {
 	return params.AllOf(params.Key("action-arn"), params.Key("name"))
 }
 
-func (cmd *AttachAlarm) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *AttachAlarm) ManualRun(renv env.Running) (interface{}, error) {
 	alarm, err := getAlarm(cmd.api, cmd.Name)
 	if err != nil {
 		return nil, err
@@ -155,7 +156,7 @@ func (cmd *DetachAlarm) Params() params.Rule {
 	return params.AllOf(params.Key("action-arn"), params.Key("name"))
 }
 
-func (cmd *DetachAlarm) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DetachAlarm) ManualRun(renv env.Running) (interface{}, error) {
 	alarm, err := getAlarm(cmd.api, cmd.Name)
 	if err != nil {
 		return nil, err

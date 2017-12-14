@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -76,7 +77,7 @@ func (cmd *CheckNatgateway) Validate_State() error {
 	return NewEnumValidator("pending", "failed", "available", "deleting", "deleted", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckNatgateway) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckNatgateway) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DescribeNatGatewaysInput{
 		NatGatewayIds: []*string{cmd.Id},
 	}

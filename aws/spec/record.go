@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -45,7 +46,7 @@ func (cmd *CreateRecord) Params() params.Rule {
 	)
 }
 
-func (cmd *CreateRecord) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRecord) ManualRun(renv env.Running) (interface{}, error) {
 	start := time.Now()
 	output, err := changeResourceRecordSets(cmd.api, String("CREATE"), cmd.Zone, cmd.Name, cmd.Type, cmd.Value, cmd.Comment, cmd.Ttl)
 	cmd.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
@@ -72,7 +73,7 @@ func (cmd *UpdateRecord) Params() params.Rule {
 	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"))
 }
 
-func (cmd *UpdateRecord) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateRecord) ManualRun(renv env.Running) (interface{}, error) {
 	start := time.Now()
 	output, err := changeResourceRecordSets(cmd.api, String("UPSERT"), cmd.Zone, cmd.Name, cmd.Type, cmd.Value, nil, cmd.Ttl)
 	cmd.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))
@@ -99,7 +100,7 @@ func (cmd *DeleteRecord) Params() params.Rule {
 	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"))
 }
 
-func (cmd *DeleteRecord) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRecord) ManualRun(renv env.Running) (interface{}, error) {
 	start := time.Now()
 	output, err := changeResourceRecordSets(cmd.api, String("DELETE"), cmd.Zone, cmd.Name, cmd.Type, cmd.Value, nil, cmd.Ttl)
 	cmd.logger.ExtraVerbosef("route53.ChangeResourceRecordSets call took %s", time.Since(start))

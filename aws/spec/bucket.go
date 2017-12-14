@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -65,7 +66,7 @@ func (cmd *UpdateBucket) Params() params.Rule {
 	)
 }
 
-func (cmd *UpdateBucket) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateBucket) ManualRun(renv env.Running) (interface{}, error) {
 	start := time.Now()
 
 	if cmd.Acl != nil { // Update the canned ACL to apply to the bucket

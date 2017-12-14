@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -96,7 +97,7 @@ func (cmd *UpdateSecuritygroup) Validate_Outbound() error {
 	return NewEnumValidator("authorize", "revoke").Validate(cmd.Outbound)
 }
 
-func (cmd *UpdateSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
@@ -146,7 +147,7 @@ func (cmd *UpdateSecuritygroup) DryRun(ctx, params map[string]interface{}) (inte
 	return nil, fmt.Errorf("dry run: update securitygroup: %s", err)
 }
 
-func (cmd *UpdateSecuritygroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {
 	ipPerms, err := cmd.buildIpPermissions()
 	if err != nil {
 		return nil, err
@@ -232,7 +233,7 @@ func (cmd *CheckSecuritygroup) Validate_State() error {
 	return NewEnumValidator("unused").Validate(cmd.State)
 }
 
-func (cmd *CheckSecuritygroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DescribeNetworkInterfacesInput{
 		Filters: []*ec2.Filter{
 			{Name: String("group-id"), Values: []*string{cmd.Id}},
@@ -276,7 +277,7 @@ func (cmd *AttachSecuritygroup) Params() params.Rule {
 	return params.AllOf(params.Key("id"), params.Key("instance"))
 }
 
-func (cmd *AttachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *AttachSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {
 	groups, err := fetchInstanceSecurityGroups(cmd.api, StringValue(cmd.Instance))
 	if err != nil {
 		return nil, fmt.Errorf("fetching securitygroups for instance %s: %s", StringValue(cmd.Instance), err)
@@ -308,7 +309,7 @@ func (cmd *DetachSecuritygroup) Params() params.Rule {
 	return params.AllOf(params.Key("id"), params.Key("instance"))
 }
 
-func (cmd *DetachSecuritygroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DetachSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {
 	groups, err := fetchInstanceSecurityGroups(cmd.api, StringValue(cmd.Instance))
 	if err != nil {
 		return nil, fmt.Errorf("fetching securitygroups for instance %s: %s", StringValue(cmd.Instance), err)

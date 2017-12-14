@@ -19,6 +19,8 @@ package ast
 import (
 	"reflect"
 	"testing"
+
+	"github.com/wallix/awless/template/env"
 )
 
 func TestCloneAST(t *testing.T) {
@@ -82,9 +84,6 @@ func TestIsQuoted(t *testing.T) {
 
 type fakeCmd struct{}
 
-func (*fakeCmd) Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error) {
-	return nil, nil
-}
-func (*fakeCmd) DryRun(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error) {
+func (*fakeCmd) Run(env.Running, map[string]interface{}) (interface{}, error) {
 	return nil, nil
 }

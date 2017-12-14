@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -150,10 +151,10 @@ func (cmd *CreateDatabase) Validate_ReadReplicaIdentifier() error {
 	return nil
 }
 
-func (cmd *CreateDatabase) ManualRun(ctx map[string]interface{}) (output interface{}, err error) {
+func (cmd *CreateDatabase) ManualRun(renv env.Running) (output interface{}, err error) {
 	if replica := cmd.ReadReplicaIdentifier; replica != nil {
 		input := &rds.CreateDBInstanceReadReplicaInput{}
-		if ierr := structInjector(cmd, input, ctx); ierr != nil {
+		if ierr := structInjector(cmd, input, renv.Context()); ierr != nil {
 			return nil, fmt.Errorf("cannot inject in rds.CreateDBInstanceReadReplicaInput: %s", ierr)
 		}
 		start := time.Now()
@@ -161,7 +162,7 @@ func (cmd *CreateDatabase) ManualRun(ctx map[string]interface{}) (output interfa
 		cmd.logger.ExtraVerbosef("rds.CreateDBInstanceReadReplica call took %s", time.Since(start))
 	} else {
 		input := &rds.CreateDBInstanceInput{}
-		if ierr := structInjector(cmd, input, ctx); ierr != nil {
+		if ierr := structInjector(cmd, input, renv.Context()); ierr != nil {
 			return nil, fmt.Errorf("cannot inject in rds.CreateDBInstanceInput: %s", ierr)
 		}
 		start := time.Now()
@@ -234,7 +235,7 @@ func (cmd *CheckDatabase) Validate_State() error {
 		notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckDatabase) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckDatabase) ManualRun(renv env.Running) (interface{}, error) {
 	input := &rds.DescribeDBInstancesInput{
 		DBInstanceIdentifier: cmd.Id,
 	}

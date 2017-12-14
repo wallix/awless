@@ -23,6 +23,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/wallix/awless/template/env"
 )
 
 type Node interface {
@@ -61,8 +63,7 @@ type WithHoles interface {
 }
 
 type Command interface {
-	Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error)
-	DryRun(ctx, params map[string]interface{}) (interface{}, error)
+	Run(env.Running, map[string]interface{}) (interface{}, error)
 }
 
 type CommandNode struct {

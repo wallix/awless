@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -45,19 +46,19 @@ func (cmd *CreateCertificate) Params() params.Rule {
 	)
 }
 
-func (cmd *CreateCertificate) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CreateCertificate) ManualRun(renv env.Running) (interface{}, error) {
 	input := &acm.RequestCertificateInput{}
 	domains := awssdk.StringValueSlice(cmd.Domains)
 	if len(domains) == 0 {
 		return nil, fmt.Errorf("'domains' must contain at least one element")
 	}
 	// Required params
-	err := setFieldWithType(domains[0], input, "DomainName", awsstr, ctx)
+	err := setFieldWithType(domains[0], input, "DomainName", awsstr, renv.Context())
 	if err != nil {
 		return nil, err
 	}
 	if len(domains) > 1 {
-		if err = setFieldWithType(domains[1:], input, "SubjectAlternativeNames", awsstringslice, ctx); err != nil {
+		if err = setFieldWithType(domains[1:], input, "SubjectAlternativeNames", awsstringslice, renv.Context()); err != nil {
 			return nil, err
 		}
 	}
@@ -135,7 +136,7 @@ func (cmd *CheckCertificate) Validate_State() error {
 	return NewEnumValidator("issued", "pending_validation", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckCertificate) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckCertificate) ManualRun(renv env.Running) (interface{}, error) {
 	input := &acm.DescribeCertificateInput{
 		CertificateArn: cmd.Arn,
 	}

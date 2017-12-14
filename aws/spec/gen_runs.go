@@ -60,6 +60,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/wallix/awless/cloud/graph"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/env"
 )
 
 func NewAttachAlarm(sess *session.Session, g cloudgraph.GraphAPI, l ...*logger.Logger) *AttachAlarm {
@@ -80,18 +81,25 @@ func (cmd *AttachAlarm) SetApi(api cloudwatchiface.CloudWatchAPI) {
 	cmd.api = api
 }
 
-func (cmd *AttachAlarm) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachAlarm) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachAlarm) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +120,7 @@ func (cmd *AttachAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -131,7 +139,7 @@ func (cmd *AttachAlarm) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *AttachAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
 
@@ -157,18 +165,25 @@ func (cmd *AttachContainertask) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *AttachContainertask) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachContainertask) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachContainertask) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +204,7 @@ func (cmd *AttachContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -208,7 +223,7 @@ func (cmd *AttachContainertask) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *AttachContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
 }
 
@@ -234,19 +249,26 @@ func (cmd *AttachElasticip) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachElasticip) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachElasticip) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachElasticip) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.AssociateAddressInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.AssociateAddressInput: %s", err)
 	}
 	start := time.Now()
@@ -272,7 +294,7 @@ func (cmd *AttachElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -291,14 +313,14 @@ func (cmd *AttachElasticip) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *AttachElasticip) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AssociateAddressInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.AssociateAddressInput: %s", err)
 	}
 
@@ -338,19 +360,26 @@ func (cmd *AttachInstance) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.RegisterTargetsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.RegisterTargetsInput: %s", err)
 	}
 	start := time.Now()
@@ -376,7 +405,7 @@ func (cmd *AttachInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -395,7 +424,7 @@ func (cmd *AttachInstance) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *AttachInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
 }
 
@@ -421,18 +450,25 @@ func (cmd *AttachInstanceprofile) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachInstanceprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInstanceprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachInstanceprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -453,7 +489,7 @@ func (cmd *AttachInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -494,19 +530,26 @@ func (cmd *AttachInternetgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachInternetgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInternetgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachInternetgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.AttachInternetGatewayInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.AttachInternetGatewayInput: %s", err)
 	}
 	start := time.Now()
@@ -532,7 +575,7 @@ func (cmd *AttachInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -551,14 +594,14 @@ func (cmd *AttachInternetgateway) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *AttachInternetgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AttachInternetGatewayInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.AttachInternetGatewayInput: %s", err)
 	}
 
@@ -598,19 +641,26 @@ func (cmd *AttachMfadevice) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *AttachMfadevice) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachMfadevice) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachMfadevice) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.EnableMFADeviceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.EnableMFADeviceInput: %s", err)
 	}
 	start := time.Now()
@@ -636,7 +686,7 @@ func (cmd *AttachMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -655,7 +705,7 @@ func (cmd *AttachMfadevice) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *AttachMfadevice) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
 
@@ -681,19 +731,26 @@ func (cmd *AttachNetworkinterface) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachNetworkinterface) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachNetworkinterface) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachNetworkinterface) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.AttachNetworkInterfaceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.AttachNetworkInterfaceInput: %s", err)
 	}
 	start := time.Now()
@@ -719,7 +776,7 @@ func (cmd *AttachNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -738,14 +795,14 @@ func (cmd *AttachNetworkinterface) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *AttachNetworkinterface) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AttachNetworkInterfaceInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.AttachNetworkInterfaceInput: %s", err)
 	}
 
@@ -785,18 +842,25 @@ func (cmd *AttachPolicy) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *AttachPolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachPolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachPolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -817,7 +881,7 @@ func (cmd *AttachPolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -836,7 +900,7 @@ func (cmd *AttachPolicy) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *AttachPolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachPolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
 
@@ -862,19 +926,26 @@ func (cmd *AttachRole) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *AttachRole) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachRole) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachRole) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.AddRoleToInstanceProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.AddRoleToInstanceProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -900,7 +971,7 @@ func (cmd *AttachRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -919,7 +990,7 @@ func (cmd *AttachRole) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *AttachRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
 }
 
@@ -945,19 +1016,26 @@ func (cmd *AttachRoutetable) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachRoutetable) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachRoutetable) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachRoutetable) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.AssociateRouteTableInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.AssociateRouteTableInput: %s", err)
 	}
 	start := time.Now()
@@ -983,7 +1061,7 @@ func (cmd *AttachRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1002,14 +1080,14 @@ func (cmd *AttachRoutetable) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *AttachRoutetable) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AssociateRouteTableInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.AssociateRouteTableInput: %s", err)
 	}
 
@@ -1049,18 +1127,25 @@ func (cmd *AttachSecuritygroup) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachSecuritygroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachSecuritygroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachSecuritygroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1081,7 +1166,7 @@ func (cmd *AttachSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1100,7 +1185,7 @@ func (cmd *AttachSecuritygroup) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *AttachSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
 }
 
@@ -1126,19 +1211,26 @@ func (cmd *AttachUser) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *AttachUser) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachUser) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachUser) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.AddUserToGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.AddUserToGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -1164,7 +1256,7 @@ func (cmd *AttachUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1183,7 +1275,7 @@ func (cmd *AttachUser) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *AttachUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
 
@@ -1209,19 +1301,26 @@ func (cmd *AttachVolume) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *AttachVolume) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachVolume) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachVolume) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.AttachVolumeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.AttachVolumeInput: %s", err)
 	}
 	start := time.Now()
@@ -1247,7 +1346,7 @@ func (cmd *AttachVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1266,14 +1365,14 @@ func (cmd *AttachVolume) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *AttachVolume) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AttachVolumeInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.AttachVolumeInput: %s", err)
 	}
 
@@ -1313,18 +1412,25 @@ func (cmd *AuthenticateRegistry) SetApi(api ecriface.ECRAPI) {
 	cmd.api = api
 }
 
-func (cmd *AuthenticateRegistry) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AuthenticateRegistry) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AuthenticateRegistry) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1345,7 +1451,7 @@ func (cmd *AuthenticateRegistry) Run(ctx, params map[string]interface{}) (interf
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1364,7 +1470,7 @@ func (cmd *AuthenticateRegistry) ValidateCommand(params map[string]interface{}, 
 	return
 }
 
-func (cmd *AuthenticateRegistry) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AuthenticateRegistry) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("registry"), nil
 }
 
@@ -1390,18 +1496,25 @@ func (cmd *CheckCertificate) SetApi(api acmiface.ACMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CheckCertificate) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckCertificate) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckCertificate) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1422,7 +1535,7 @@ func (cmd *CheckCertificate) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1441,7 +1554,7 @@ func (cmd *CheckCertificate) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *CheckCertificate) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckCertificate) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("certificate"), nil
 }
 
@@ -1467,18 +1580,25 @@ func (cmd *CheckDatabase) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CheckDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckDatabase) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckDatabase) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1499,7 +1619,7 @@ func (cmd *CheckDatabase) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1518,7 +1638,7 @@ func (cmd *CheckDatabase) ValidateCommand(params map[string]interface{}, refs []
 	return
 }
 
-func (cmd *CheckDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
 
@@ -1544,18 +1664,25 @@ func (cmd *CheckDistribution) SetApi(api cloudfrontiface.CloudFrontAPI) {
 	cmd.api = api
 }
 
-func (cmd *CheckDistribution) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckDistribution) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckDistribution) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1576,7 +1703,7 @@ func (cmd *CheckDistribution) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1595,7 +1722,7 @@ func (cmd *CheckDistribution) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *CheckDistribution) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("distribution"), nil
 }
 
@@ -1621,18 +1748,25 @@ func (cmd *CheckInstance) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CheckInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1653,7 +1787,7 @@ func (cmd *CheckInstance) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1672,7 +1806,7 @@ func (cmd *CheckInstance) ValidateCommand(params map[string]interface{}, refs []
 	return
 }
 
-func (cmd *CheckInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
 }
 
@@ -1698,18 +1832,25 @@ func (cmd *CheckLoadbalancer) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *CheckLoadbalancer) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckLoadbalancer) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckLoadbalancer) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1730,7 +1871,7 @@ func (cmd *CheckLoadbalancer) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1749,7 +1890,7 @@ func (cmd *CheckLoadbalancer) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *CheckLoadbalancer) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckLoadbalancer) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loadbalancer"), nil
 }
 
@@ -1775,18 +1916,25 @@ func (cmd *CheckNatgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CheckNatgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckNatgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckNatgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1807,7 +1955,7 @@ func (cmd *CheckNatgateway) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1826,7 +1974,7 @@ func (cmd *CheckNatgateway) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *CheckNatgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckNatgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
 }
 
@@ -1852,18 +2000,25 @@ func (cmd *CheckNetworkinterface) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CheckNetworkinterface) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckNetworkinterface) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckNetworkinterface) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1884,7 +2039,7 @@ func (cmd *CheckNetworkinterface) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1903,7 +2058,7 @@ func (cmd *CheckNetworkinterface) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *CheckNetworkinterface) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("networkinterface"), nil
 }
 
@@ -1929,18 +2084,25 @@ func (cmd *CheckScalinggroup) SetApi(api autoscalingiface.AutoScalingAPI) {
 	cmd.api = api
 }
 
-func (cmd *CheckScalinggroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckScalinggroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckScalinggroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -1961,7 +2123,7 @@ func (cmd *CheckScalinggroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -1980,7 +2142,7 @@ func (cmd *CheckScalinggroup) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *CheckScalinggroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
 }
 
@@ -2006,18 +2168,25 @@ func (cmd *CheckSecuritygroup) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CheckSecuritygroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckSecuritygroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckSecuritygroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -2038,7 +2207,7 @@ func (cmd *CheckSecuritygroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2057,7 +2226,7 @@ func (cmd *CheckSecuritygroup) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *CheckSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
 }
 
@@ -2083,18 +2252,25 @@ func (cmd *CheckVolume) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CheckVolume) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckVolume) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CheckVolume) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -2115,7 +2291,7 @@ func (cmd *CheckVolume) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2134,7 +2310,7 @@ func (cmd *CheckVolume) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CheckVolume) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CheckVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("volume"), nil
 }
 
@@ -2160,19 +2336,26 @@ func (cmd *CopyImage) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CopyImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CopyImage) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CopyImage) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CopyImageInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CopyImageInput: %s", err)
 	}
 	start := time.Now()
@@ -2198,7 +2381,7 @@ func (cmd *CopyImage) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2217,14 +2400,14 @@ func (cmd *CopyImage) ValidateCommand(params map[string]interface{}, refs []stri
 	return
 }
 
-func (cmd *CopyImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CopyImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CopyImageInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CopyImageInput: %s", err)
 	}
 
@@ -2264,19 +2447,26 @@ func (cmd *CopySnapshot) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CopySnapshot) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CopySnapshot) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CopySnapshot) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CopySnapshotInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CopySnapshotInput: %s", err)
 	}
 	start := time.Now()
@@ -2302,7 +2492,7 @@ func (cmd *CopySnapshot) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2321,14 +2511,14 @@ func (cmd *CopySnapshot) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *CopySnapshot) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CopySnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CopySnapshotInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CopySnapshotInput: %s", err)
 	}
 
@@ -2368,19 +2558,26 @@ func (cmd *CreateAccesskey) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateAccesskey) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAccesskey) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateAccesskey) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreateAccessKeyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreateAccessKeyInput: %s", err)
 	}
 	start := time.Now()
@@ -2406,7 +2603,7 @@ func (cmd *CreateAccesskey) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2425,7 +2622,7 @@ func (cmd *CreateAccesskey) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *CreateAccesskey) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAccesskey) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("accesskey"), nil
 }
 
@@ -2451,19 +2648,26 @@ func (cmd *CreateAlarm) SetApi(api cloudwatchiface.CloudWatchAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateAlarm) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAlarm) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateAlarm) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudwatch.PutMetricAlarmInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudwatch.PutMetricAlarmInput: %s", err)
 	}
 	start := time.Now()
@@ -2489,7 +2693,7 @@ func (cmd *CreateAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2508,7 +2712,7 @@ func (cmd *CreateAlarm) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
 
@@ -2534,19 +2738,26 @@ func (cmd *CreateAppscalingpolicy) SetApi(api applicationautoscalingiface.Applic
 	cmd.api = api
 }
 
-func (cmd *CreateAppscalingpolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAppscalingpolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateAppscalingpolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &applicationautoscaling.PutScalingPolicyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in applicationautoscaling.PutScalingPolicyInput: %s", err)
 	}
 	start := time.Now()
@@ -2572,7 +2783,7 @@ func (cmd *CreateAppscalingpolicy) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2591,7 +2802,7 @@ func (cmd *CreateAppscalingpolicy) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *CreateAppscalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAppscalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingpolicy"), nil
 }
 
@@ -2617,19 +2828,26 @@ func (cmd *CreateAppscalingtarget) SetApi(api applicationautoscalingiface.Applic
 	cmd.api = api
 }
 
-func (cmd *CreateAppscalingtarget) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAppscalingtarget) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateAppscalingtarget) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &applicationautoscaling.RegisterScalableTargetInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in applicationautoscaling.RegisterScalableTargetInput: %s", err)
 	}
 	start := time.Now()
@@ -2655,7 +2873,7 @@ func (cmd *CreateAppscalingtarget) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2674,7 +2892,7 @@ func (cmd *CreateAppscalingtarget) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *CreateAppscalingtarget) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateAppscalingtarget) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingtarget"), nil
 }
 
@@ -2700,19 +2918,26 @@ func (cmd *CreateBucket) SetApi(api s3iface.S3API) {
 	cmd.api = api
 }
 
-func (cmd *CreateBucket) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateBucket) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateBucket) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &s3.CreateBucketInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in s3.CreateBucketInput: %s", err)
 	}
 	start := time.Now()
@@ -2738,7 +2963,7 @@ func (cmd *CreateBucket) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2757,7 +2982,7 @@ func (cmd *CreateBucket) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *CreateBucket) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateBucket) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("bucket"), nil
 }
 
@@ -2783,18 +3008,25 @@ func (cmd *CreateCertificate) SetApi(api acmiface.ACMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateCertificate) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateCertificate) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateCertificate) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -2815,7 +3047,7 @@ func (cmd *CreateCertificate) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2834,7 +3066,7 @@ func (cmd *CreateCertificate) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *CreateCertificate) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateCertificate) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("certificate"), nil
 }
 
@@ -2860,19 +3092,26 @@ func (cmd *CreateContainercluster) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateContainercluster) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateContainercluster) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateContainercluster) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ecs.CreateClusterInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ecs.CreateClusterInput: %s", err)
 	}
 	start := time.Now()
@@ -2898,7 +3137,7 @@ func (cmd *CreateContainercluster) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2917,7 +3156,7 @@ func (cmd *CreateContainercluster) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *CreateContainercluster) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateContainercluster) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containercluster"), nil
 }
 
@@ -2943,18 +3182,25 @@ func (cmd *CreateDatabase) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDatabase) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateDatabase) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -2975,7 +3221,7 @@ func (cmd *CreateDatabase) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -2994,7 +3240,7 @@ func (cmd *CreateDatabase) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *CreateDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
 
@@ -3020,19 +3266,26 @@ func (cmd *CreateDbsubnetgroup) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateDbsubnetgroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDbsubnetgroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateDbsubnetgroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &rds.CreateDBSubnetGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in rds.CreateDBSubnetGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -3058,7 +3311,7 @@ func (cmd *CreateDbsubnetgroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3077,7 +3330,7 @@ func (cmd *CreateDbsubnetgroup) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *CreateDbsubnetgroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDbsubnetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("dbsubnetgroup"), nil
 }
 
@@ -3103,18 +3356,25 @@ func (cmd *CreateDistribution) SetApi(api cloudfrontiface.CloudFrontAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateDistribution) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDistribution) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateDistribution) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -3135,7 +3395,7 @@ func (cmd *CreateDistribution) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3154,7 +3414,7 @@ func (cmd *CreateDistribution) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *CreateDistribution) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("distribution"), nil
 }
 
@@ -3180,19 +3440,26 @@ func (cmd *CreateElasticip) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateElasticip) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateElasticip) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateElasticip) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.AllocateAddressInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.AllocateAddressInput: %s", err)
 	}
 	start := time.Now()
@@ -3218,7 +3485,7 @@ func (cmd *CreateElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3237,14 +3504,14 @@ func (cmd *CreateElasticip) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *CreateElasticip) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AllocateAddressInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.AllocateAddressInput: %s", err)
 	}
 
@@ -3284,19 +3551,26 @@ func (cmd *CreateFunction) SetApi(api lambdaiface.LambdaAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateFunction) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateFunction) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateFunction) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &lambda.CreateFunctionInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in lambda.CreateFunctionInput: %s", err)
 	}
 	start := time.Now()
@@ -3322,7 +3596,7 @@ func (cmd *CreateFunction) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3341,7 +3615,7 @@ func (cmd *CreateFunction) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *CreateFunction) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateFunction) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("function"), nil
 }
 
@@ -3367,19 +3641,26 @@ func (cmd *CreateGroup) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateGroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateGroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateGroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreateGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreateGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -3405,7 +3686,7 @@ func (cmd *CreateGroup) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3424,7 +3705,7 @@ func (cmd *CreateGroup) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateGroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateGroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("group"), nil
 }
 
@@ -3450,19 +3731,26 @@ func (cmd *CreateImage) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateImage) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateImage) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateImageInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateImageInput: %s", err)
 	}
 	start := time.Now()
@@ -3488,7 +3776,7 @@ func (cmd *CreateImage) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3507,14 +3795,14 @@ func (cmd *CreateImage) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateImageInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateImageInput: %s", err)
 	}
 
@@ -3554,19 +3842,26 @@ func (cmd *CreateInstance) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.RunInstancesInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.RunInstancesInput: %s", err)
 	}
 	start := time.Now()
@@ -3592,7 +3887,7 @@ func (cmd *CreateInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3611,14 +3906,14 @@ func (cmd *CreateInstance) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *CreateInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.RunInstancesInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.RunInstancesInput: %s", err)
 	}
 
@@ -3658,19 +3953,26 @@ func (cmd *CreateInstanceprofile) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateInstanceprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateInstanceprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateInstanceprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreateInstanceProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreateInstanceProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -3696,7 +3998,7 @@ func (cmd *CreateInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3715,7 +4017,7 @@ func (cmd *CreateInstanceprofile) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *CreateInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
 }
 
@@ -3741,19 +4043,26 @@ func (cmd *CreateInternetgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateInternetgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateInternetgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateInternetgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateInternetGatewayInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateInternetGatewayInput: %s", err)
 	}
 	start := time.Now()
@@ -3779,7 +4088,7 @@ func (cmd *CreateInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3798,14 +4107,14 @@ func (cmd *CreateInternetgateway) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *CreateInternetgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateInternetGatewayInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateInternetGatewayInput: %s", err)
 	}
 
@@ -3845,19 +4154,26 @@ func (cmd *CreateKeypair) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateKeypair) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateKeypair) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateKeypair) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.ImportKeyPairInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.ImportKeyPairInput: %s", err)
 	}
 	start := time.Now()
@@ -3883,7 +4199,7 @@ func (cmd *CreateKeypair) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3902,7 +4218,7 @@ func (cmd *CreateKeypair) ValidateCommand(params map[string]interface{}, refs []
 	return
 }
 
-func (cmd *CreateKeypair) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateKeypair) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("keypair"), nil
 }
 
@@ -3928,19 +4244,26 @@ func (cmd *CreateLaunchconfiguration) SetApi(api autoscalingiface.AutoScalingAPI
 	cmd.api = api
 }
 
-func (cmd *CreateLaunchconfiguration) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateLaunchconfiguration) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateLaunchconfiguration) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.CreateLaunchConfigurationInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.CreateLaunchConfigurationInput: %s", err)
 	}
 	start := time.Now()
@@ -3966,7 +4289,7 @@ func (cmd *CreateLaunchconfiguration) Run(ctx, params map[string]interface{}) (i
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -3985,7 +4308,7 @@ func (cmd *CreateLaunchconfiguration) ValidateCommand(params map[string]interfac
 	return
 }
 
-func (cmd *CreateLaunchconfiguration) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateLaunchconfiguration) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("launchconfiguration"), nil
 }
 
@@ -4011,19 +4334,26 @@ func (cmd *CreateListener) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateListener) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateListener) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateListener) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.CreateListenerInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.CreateListenerInput: %s", err)
 	}
 	start := time.Now()
@@ -4049,7 +4379,7 @@ func (cmd *CreateListener) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4068,7 +4398,7 @@ func (cmd *CreateListener) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *CreateListener) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateListener) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("listener"), nil
 }
 
@@ -4094,19 +4424,26 @@ func (cmd *CreateLoadbalancer) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateLoadbalancer) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateLoadbalancer) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateLoadbalancer) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.CreateLoadBalancerInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.CreateLoadBalancerInput: %s", err)
 	}
 	start := time.Now()
@@ -4132,7 +4469,7 @@ func (cmd *CreateLoadbalancer) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4151,7 +4488,7 @@ func (cmd *CreateLoadbalancer) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *CreateLoadbalancer) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateLoadbalancer) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loadbalancer"), nil
 }
 
@@ -4177,19 +4514,26 @@ func (cmd *CreateLoginprofile) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateLoginprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateLoginprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateLoginprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreateLoginProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreateLoginProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -4215,7 +4559,7 @@ func (cmd *CreateLoginprofile) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4234,7 +4578,7 @@ func (cmd *CreateLoginprofile) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *CreateLoginprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateLoginprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loginprofile"), nil
 }
 
@@ -4260,18 +4604,25 @@ func (cmd *CreateMfadevice) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateMfadevice) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateMfadevice) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateMfadevice) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -4292,7 +4643,7 @@ func (cmd *CreateMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4311,7 +4662,7 @@ func (cmd *CreateMfadevice) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *CreateMfadevice) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
 
@@ -4337,19 +4688,26 @@ func (cmd *CreateNatgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateNatgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateNatgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateNatgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateNatGatewayInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateNatGatewayInput: %s", err)
 	}
 	start := time.Now()
@@ -4375,7 +4733,7 @@ func (cmd *CreateNatgateway) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4394,7 +4752,7 @@ func (cmd *CreateNatgateway) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *CreateNatgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateNatgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
 }
 
@@ -4420,19 +4778,26 @@ func (cmd *CreateNetworkinterface) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateNetworkinterface) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateNetworkinterface) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateNetworkinterface) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateNetworkInterfaceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateNetworkInterfaceInput: %s", err)
 	}
 	start := time.Now()
@@ -4458,7 +4823,7 @@ func (cmd *CreateNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4477,14 +4842,14 @@ func (cmd *CreateNetworkinterface) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *CreateNetworkinterface) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateNetworkInterfaceInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateNetworkInterfaceInput: %s", err)
 	}
 
@@ -4524,19 +4889,26 @@ func (cmd *CreatePolicy) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreatePolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreatePolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreatePolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreatePolicyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreatePolicyInput: %s", err)
 	}
 	start := time.Now()
@@ -4562,7 +4934,7 @@ func (cmd *CreatePolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4581,7 +4953,7 @@ func (cmd *CreatePolicy) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *CreatePolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreatePolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
 
@@ -4607,19 +4979,26 @@ func (cmd *CreateQueue) SetApi(api sqsiface.SQSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateQueue) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateQueue) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateQueue) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &sqs.CreateQueueInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in sqs.CreateQueueInput: %s", err)
 	}
 	start := time.Now()
@@ -4645,7 +5024,7 @@ func (cmd *CreateQueue) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4664,7 +5043,7 @@ func (cmd *CreateQueue) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateQueue) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateQueue) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("queue"), nil
 }
 
@@ -4690,18 +5069,25 @@ func (cmd *CreateRecord) SetApi(api route53iface.Route53API) {
 	cmd.api = api
 }
 
-func (cmd *CreateRecord) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRecord) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateRecord) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -4722,7 +5108,7 @@ func (cmd *CreateRecord) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4741,7 +5127,7 @@ func (cmd *CreateRecord) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *CreateRecord) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRecord) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("record"), nil
 }
 
@@ -4767,19 +5153,26 @@ func (cmd *CreateRepository) SetApi(api ecriface.ECRAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateRepository) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRepository) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateRepository) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ecr.CreateRepositoryInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ecr.CreateRepositoryInput: %s", err)
 	}
 	start := time.Now()
@@ -4805,7 +5198,7 @@ func (cmd *CreateRepository) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4824,7 +5217,7 @@ func (cmd *CreateRepository) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *CreateRepository) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRepository) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("repository"), nil
 }
 
@@ -4850,18 +5243,25 @@ func (cmd *CreateRole) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateRole) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRole) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateRole) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -4882,7 +5282,7 @@ func (cmd *CreateRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4901,7 +5301,7 @@ func (cmd *CreateRole) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *CreateRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
 }
 
@@ -4927,19 +5327,26 @@ func (cmd *CreateRoute) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateRoute) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRoute) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateRoute) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateRouteInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateRouteInput: %s", err)
 	}
 	start := time.Now()
@@ -4965,7 +5372,7 @@ func (cmd *CreateRoute) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -4984,14 +5391,14 @@ func (cmd *CreateRoute) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateRoute) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRoute) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateRouteInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateRouteInput: %s", err)
 	}
 
@@ -5031,19 +5438,26 @@ func (cmd *CreateRoutetable) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateRoutetable) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRoutetable) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateRoutetable) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateRouteTableInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateRouteTableInput: %s", err)
 	}
 	start := time.Now()
@@ -5069,7 +5483,7 @@ func (cmd *CreateRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5088,14 +5502,14 @@ func (cmd *CreateRoutetable) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *CreateRoutetable) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateRouteTableInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateRouteTableInput: %s", err)
 	}
 
@@ -5135,18 +5549,25 @@ func (cmd *CreateS3object) SetApi(api s3iface.S3API) {
 	cmd.api = api
 }
 
-func (cmd *CreateS3object) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateS3object) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateS3object) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -5167,7 +5588,7 @@ func (cmd *CreateS3object) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5186,7 +5607,7 @@ func (cmd *CreateS3object) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *CreateS3object) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateS3object) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
 }
 
@@ -5212,19 +5633,26 @@ func (cmd *CreateScalinggroup) SetApi(api autoscalingiface.AutoScalingAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateScalinggroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateScalinggroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateScalinggroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.CreateAutoScalingGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.CreateAutoScalingGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -5250,7 +5678,7 @@ func (cmd *CreateScalinggroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5269,7 +5697,7 @@ func (cmd *CreateScalinggroup) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *CreateScalinggroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
 }
 
@@ -5295,19 +5723,26 @@ func (cmd *CreateScalingpolicy) SetApi(api autoscalingiface.AutoScalingAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateScalingpolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateScalingpolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateScalingpolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.PutScalingPolicyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.PutScalingPolicyInput: %s", err)
 	}
 	start := time.Now()
@@ -5333,7 +5768,7 @@ func (cmd *CreateScalingpolicy) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5352,7 +5787,7 @@ func (cmd *CreateScalingpolicy) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *CreateScalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateScalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalingpolicy"), nil
 }
 
@@ -5378,19 +5813,26 @@ func (cmd *CreateSecuritygroup) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateSecuritygroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSecuritygroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateSecuritygroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateSecurityGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateSecurityGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -5416,7 +5858,7 @@ func (cmd *CreateSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5435,14 +5877,14 @@ func (cmd *CreateSecuritygroup) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *CreateSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateSecurityGroupInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateSecurityGroupInput: %s", err)
 	}
 
@@ -5482,19 +5924,26 @@ func (cmd *CreateSnapshot) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateSnapshot) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSnapshot) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateSnapshot) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateSnapshotInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateSnapshotInput: %s", err)
 	}
 	start := time.Now()
@@ -5520,7 +5969,7 @@ func (cmd *CreateSnapshot) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5539,14 +5988,14 @@ func (cmd *CreateSnapshot) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *CreateSnapshot) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateSnapshotInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateSnapshotInput: %s", err)
 	}
 
@@ -5586,19 +6035,26 @@ func (cmd *CreateStack) SetApi(api cloudformationiface.CloudFormationAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateStack) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateStack) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateStack) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudformation.CreateStackInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudformation.CreateStackInput: %s", err)
 	}
 	start := time.Now()
@@ -5624,7 +6080,7 @@ func (cmd *CreateStack) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5643,7 +6099,7 @@ func (cmd *CreateStack) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateStack) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateStack) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
 }
 
@@ -5669,19 +6125,26 @@ func (cmd *CreateSubnet) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateSubnet) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSubnet) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateSubnet) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateSubnetInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateSubnetInput: %s", err)
 	}
 	start := time.Now()
@@ -5707,7 +6170,7 @@ func (cmd *CreateSubnet) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5726,14 +6189,14 @@ func (cmd *CreateSubnet) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *CreateSubnet) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateSubnetInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateSubnetInput: %s", err)
 	}
 
@@ -5773,19 +6236,26 @@ func (cmd *CreateSubscription) SetApi(api snsiface.SNSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateSubscription) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSubscription) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateSubscription) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &sns.SubscribeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in sns.SubscribeInput: %s", err)
 	}
 	start := time.Now()
@@ -5811,7 +6281,7 @@ func (cmd *CreateSubscription) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5830,7 +6300,7 @@ func (cmd *CreateSubscription) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *CreateSubscription) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateSubscription) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("subscription"), nil
 }
 
@@ -5856,18 +6326,25 @@ func (cmd *CreateTag) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateTag) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTag) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateTag) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -5888,7 +6365,7 @@ func (cmd *CreateTag) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5929,19 +6406,26 @@ func (cmd *CreateTargetgroup) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateTargetgroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTargetgroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateTargetgroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.CreateTargetGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.CreateTargetGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -5967,7 +6451,7 @@ func (cmd *CreateTargetgroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -5986,7 +6470,7 @@ func (cmd *CreateTargetgroup) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *CreateTargetgroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTargetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("targetgroup"), nil
 }
 
@@ -6012,19 +6496,26 @@ func (cmd *CreateTopic) SetApi(api snsiface.SNSAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateTopic) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTopic) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateTopic) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &sns.CreateTopicInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in sns.CreateTopicInput: %s", err)
 	}
 	start := time.Now()
@@ -6050,7 +6541,7 @@ func (cmd *CreateTopic) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6069,7 +6560,7 @@ func (cmd *CreateTopic) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *CreateTopic) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTopic) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("topic"), nil
 }
 
@@ -6095,19 +6586,26 @@ func (cmd *CreateUser) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *CreateUser) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateUser) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateUser) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreateUserInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreateUserInput: %s", err)
 	}
 	start := time.Now()
@@ -6133,7 +6631,7 @@ func (cmd *CreateUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6152,7 +6650,7 @@ func (cmd *CreateUser) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *CreateUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
 
@@ -6178,19 +6676,26 @@ func (cmd *CreateVolume) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateVolume) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateVolume) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateVolume) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateVolumeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateVolumeInput: %s", err)
 	}
 	start := time.Now()
@@ -6216,7 +6721,7 @@ func (cmd *CreateVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6235,14 +6740,14 @@ func (cmd *CreateVolume) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *CreateVolume) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateVolumeInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateVolumeInput: %s", err)
 	}
 
@@ -6282,19 +6787,26 @@ func (cmd *CreateVpc) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *CreateVpc) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateVpc) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateVpc) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.CreateVpcInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateVpcInput: %s", err)
 	}
 	start := time.Now()
@@ -6320,7 +6832,7 @@ func (cmd *CreateVpc) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6339,14 +6851,14 @@ func (cmd *CreateVpc) ValidateCommand(params map[string]interface{}, refs []stri
 	return
 }
 
-func (cmd *CreateVpc) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateVpc) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateVpcInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateVpcInput: %s", err)
 	}
 
@@ -6386,19 +6898,26 @@ func (cmd *CreateZone) SetApi(api route53iface.Route53API) {
 	cmd.api = api
 }
 
-func (cmd *CreateZone) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateZone) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *CreateZone) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &route53.CreateHostedZoneInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in route53.CreateHostedZoneInput: %s", err)
 	}
 	start := time.Now()
@@ -6424,7 +6943,7 @@ func (cmd *CreateZone) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6443,7 +6962,7 @@ func (cmd *CreateZone) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *CreateZone) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateZone) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("zone"), nil
 }
 
@@ -6469,19 +6988,26 @@ func (cmd *DeleteAccesskey) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteAccesskey) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAccesskey) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteAccesskey) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeleteAccessKeyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeleteAccessKeyInput: %s", err)
 	}
 	start := time.Now()
@@ -6507,7 +7033,7 @@ func (cmd *DeleteAccesskey) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6526,7 +7052,7 @@ func (cmd *DeleteAccesskey) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *DeleteAccesskey) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAccesskey) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("accesskey"), nil
 }
 
@@ -6552,19 +7078,26 @@ func (cmd *DeleteAlarm) SetApi(api cloudwatchiface.CloudWatchAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteAlarm) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAlarm) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteAlarm) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudwatch.DeleteAlarmsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudwatch.DeleteAlarmsInput: %s", err)
 	}
 	start := time.Now()
@@ -6590,7 +7123,7 @@ func (cmd *DeleteAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6609,7 +7142,7 @@ func (cmd *DeleteAlarm) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DeleteAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
 
@@ -6635,19 +7168,26 @@ func (cmd *DeleteAppscalingpolicy) SetApi(api applicationautoscalingiface.Applic
 	cmd.api = api
 }
 
-func (cmd *DeleteAppscalingpolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAppscalingpolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteAppscalingpolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &applicationautoscaling.DeleteScalingPolicyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in applicationautoscaling.DeleteScalingPolicyInput: %s", err)
 	}
 	start := time.Now()
@@ -6673,7 +7213,7 @@ func (cmd *DeleteAppscalingpolicy) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6692,7 +7232,7 @@ func (cmd *DeleteAppscalingpolicy) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *DeleteAppscalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAppscalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingpolicy"), nil
 }
 
@@ -6718,19 +7258,26 @@ func (cmd *DeleteAppscalingtarget) SetApi(api applicationautoscalingiface.Applic
 	cmd.api = api
 }
 
-func (cmd *DeleteAppscalingtarget) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAppscalingtarget) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteAppscalingtarget) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &applicationautoscaling.DeregisterScalableTargetInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in applicationautoscaling.DeregisterScalableTargetInput: %s", err)
 	}
 	start := time.Now()
@@ -6756,7 +7303,7 @@ func (cmd *DeleteAppscalingtarget) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6775,7 +7322,7 @@ func (cmd *DeleteAppscalingtarget) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *DeleteAppscalingtarget) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteAppscalingtarget) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingtarget"), nil
 }
 
@@ -6801,19 +7348,26 @@ func (cmd *DeleteBucket) SetApi(api s3iface.S3API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteBucket) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteBucket) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteBucket) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &s3.DeleteBucketInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in s3.DeleteBucketInput: %s", err)
 	}
 	start := time.Now()
@@ -6839,7 +7393,7 @@ func (cmd *DeleteBucket) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6858,7 +7412,7 @@ func (cmd *DeleteBucket) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DeleteBucket) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteBucket) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("bucket"), nil
 }
 
@@ -6884,19 +7438,26 @@ func (cmd *DeleteCertificate) SetApi(api acmiface.ACMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteCertificate) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteCertificate) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteCertificate) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &acm.DeleteCertificateInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in acm.DeleteCertificateInput: %s", err)
 	}
 	start := time.Now()
@@ -6922,7 +7483,7 @@ func (cmd *DeleteCertificate) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -6941,7 +7502,7 @@ func (cmd *DeleteCertificate) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *DeleteCertificate) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteCertificate) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("certificate"), nil
 }
 
@@ -6967,19 +7528,26 @@ func (cmd *DeleteContainercluster) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteContainercluster) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteContainercluster) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteContainercluster) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ecs.DeleteClusterInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ecs.DeleteClusterInput: %s", err)
 	}
 	start := time.Now()
@@ -7005,7 +7573,7 @@ func (cmd *DeleteContainercluster) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7024,7 +7592,7 @@ func (cmd *DeleteContainercluster) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *DeleteContainercluster) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteContainercluster) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containercluster"), nil
 }
 
@@ -7050,18 +7618,25 @@ func (cmd *DeleteContainertask) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteContainertask) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteContainertask) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteContainertask) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -7082,7 +7657,7 @@ func (cmd *DeleteContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7123,19 +7698,26 @@ func (cmd *DeleteDatabase) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDatabase) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteDatabase) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &rds.DeleteDBInstanceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in rds.DeleteDBInstanceInput: %s", err)
 	}
 	start := time.Now()
@@ -7161,7 +7743,7 @@ func (cmd *DeleteDatabase) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7180,7 +7762,7 @@ func (cmd *DeleteDatabase) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DeleteDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
 
@@ -7206,19 +7788,26 @@ func (cmd *DeleteDbsubnetgroup) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteDbsubnetgroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDbsubnetgroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteDbsubnetgroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &rds.DeleteDBSubnetGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in rds.DeleteDBSubnetGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -7244,7 +7833,7 @@ func (cmd *DeleteDbsubnetgroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7263,7 +7852,7 @@ func (cmd *DeleteDbsubnetgroup) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *DeleteDbsubnetgroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDbsubnetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("dbsubnetgroup"), nil
 }
 
@@ -7289,18 +7878,25 @@ func (cmd *DeleteDistribution) SetApi(api cloudfrontiface.CloudFrontAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteDistribution) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDistribution) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteDistribution) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -7321,7 +7917,7 @@ func (cmd *DeleteDistribution) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7340,7 +7936,7 @@ func (cmd *DeleteDistribution) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *DeleteDistribution) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("distribution"), nil
 }
 
@@ -7366,19 +7962,26 @@ func (cmd *DeleteElasticip) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteElasticip) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteElasticip) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteElasticip) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.ReleaseAddressInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.ReleaseAddressInput: %s", err)
 	}
 	start := time.Now()
@@ -7404,7 +8007,7 @@ func (cmd *DeleteElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7423,14 +8026,14 @@ func (cmd *DeleteElasticip) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *DeleteElasticip) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.ReleaseAddressInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.ReleaseAddressInput: %s", err)
 	}
 
@@ -7470,19 +8073,26 @@ func (cmd *DeleteFunction) SetApi(api lambdaiface.LambdaAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteFunction) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteFunction) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteFunction) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &lambda.DeleteFunctionInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in lambda.DeleteFunctionInput: %s", err)
 	}
 	start := time.Now()
@@ -7508,7 +8118,7 @@ func (cmd *DeleteFunction) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7527,7 +8137,7 @@ func (cmd *DeleteFunction) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DeleteFunction) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteFunction) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("function"), nil
 }
 
@@ -7553,19 +8163,26 @@ func (cmd *DeleteGroup) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteGroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteGroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteGroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeleteGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeleteGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -7591,7 +8208,7 @@ func (cmd *DeleteGroup) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7610,7 +8227,7 @@ func (cmd *DeleteGroup) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DeleteGroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteGroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("group"), nil
 }
 
@@ -7636,18 +8253,25 @@ func (cmd *DeleteImage) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteImage) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteImage) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -7668,7 +8292,7 @@ func (cmd *DeleteImage) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7709,19 +8333,26 @@ func (cmd *DeleteInstance) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.TerminateInstancesInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.TerminateInstancesInput: %s", err)
 	}
 	start := time.Now()
@@ -7747,7 +8378,7 @@ func (cmd *DeleteInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7766,14 +8397,14 @@ func (cmd *DeleteInstance) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DeleteInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.TerminateInstancesInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.TerminateInstancesInput: %s", err)
 	}
 
@@ -7813,19 +8444,26 @@ func (cmd *DeleteInstanceprofile) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteInstanceprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteInstanceprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteInstanceprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeleteInstanceProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeleteInstanceProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -7851,7 +8489,7 @@ func (cmd *DeleteInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7870,7 +8508,7 @@ func (cmd *DeleteInstanceprofile) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *DeleteInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
 }
 
@@ -7896,19 +8534,26 @@ func (cmd *DeleteInternetgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteInternetgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteInternetgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteInternetgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteInternetGatewayInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteInternetGatewayInput: %s", err)
 	}
 	start := time.Now()
@@ -7934,7 +8579,7 @@ func (cmd *DeleteInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -7953,14 +8598,14 @@ func (cmd *DeleteInternetgateway) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *DeleteInternetgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteInternetGatewayInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteInternetGatewayInput: %s", err)
 	}
 
@@ -8000,19 +8645,26 @@ func (cmd *DeleteKeypair) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteKeypair) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteKeypair) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteKeypair) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteKeyPairInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteKeyPairInput: %s", err)
 	}
 	start := time.Now()
@@ -8038,7 +8690,7 @@ func (cmd *DeleteKeypair) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8057,14 +8709,14 @@ func (cmd *DeleteKeypair) ValidateCommand(params map[string]interface{}, refs []
 	return
 }
 
-func (cmd *DeleteKeypair) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteKeypair) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteKeyPairInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteKeyPairInput: %s", err)
 	}
 
@@ -8104,19 +8756,26 @@ func (cmd *DeleteLaunchconfiguration) SetApi(api autoscalingiface.AutoScalingAPI
 	cmd.api = api
 }
 
-func (cmd *DeleteLaunchconfiguration) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteLaunchconfiguration) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteLaunchconfiguration) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.DeleteLaunchConfigurationInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.DeleteLaunchConfigurationInput: %s", err)
 	}
 	start := time.Now()
@@ -8142,7 +8801,7 @@ func (cmd *DeleteLaunchconfiguration) Run(ctx, params map[string]interface{}) (i
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8161,7 +8820,7 @@ func (cmd *DeleteLaunchconfiguration) ValidateCommand(params map[string]interfac
 	return
 }
 
-func (cmd *DeleteLaunchconfiguration) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteLaunchconfiguration) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("launchconfiguration"), nil
 }
 
@@ -8187,19 +8846,26 @@ func (cmd *DeleteListener) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteListener) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteListener) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteListener) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.DeleteListenerInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.DeleteListenerInput: %s", err)
 	}
 	start := time.Now()
@@ -8225,7 +8891,7 @@ func (cmd *DeleteListener) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8244,7 +8910,7 @@ func (cmd *DeleteListener) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DeleteListener) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteListener) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("listener"), nil
 }
 
@@ -8270,19 +8936,26 @@ func (cmd *DeleteLoadbalancer) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteLoadbalancer) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteLoadbalancer) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteLoadbalancer) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.DeleteLoadBalancerInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.DeleteLoadBalancerInput: %s", err)
 	}
 	start := time.Now()
@@ -8308,7 +8981,7 @@ func (cmd *DeleteLoadbalancer) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8327,7 +9000,7 @@ func (cmd *DeleteLoadbalancer) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *DeleteLoadbalancer) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteLoadbalancer) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loadbalancer"), nil
 }
 
@@ -8353,19 +9026,26 @@ func (cmd *DeleteLoginprofile) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteLoginprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteLoginprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteLoginprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeleteLoginProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeleteLoginProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -8391,7 +9071,7 @@ func (cmd *DeleteLoginprofile) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8410,7 +9090,7 @@ func (cmd *DeleteLoginprofile) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *DeleteLoginprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteLoginprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loginprofile"), nil
 }
 
@@ -8436,19 +9116,26 @@ func (cmd *DeleteMfadevice) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteMfadevice) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteMfadevice) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteMfadevice) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeleteVirtualMFADeviceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeleteVirtualMFADeviceInput: %s", err)
 	}
 	start := time.Now()
@@ -8474,7 +9161,7 @@ func (cmd *DeleteMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8493,7 +9180,7 @@ func (cmd *DeleteMfadevice) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *DeleteMfadevice) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
 
@@ -8519,19 +9206,26 @@ func (cmd *DeleteNatgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteNatgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteNatgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteNatgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteNatGatewayInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteNatGatewayInput: %s", err)
 	}
 	start := time.Now()
@@ -8557,7 +9251,7 @@ func (cmd *DeleteNatgateway) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8576,7 +9270,7 @@ func (cmd *DeleteNatgateway) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *DeleteNatgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteNatgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
 }
 
@@ -8602,19 +9296,26 @@ func (cmd *DeleteNetworkinterface) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteNetworkinterface) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteNetworkinterface) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteNetworkinterface) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteNetworkInterfaceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteNetworkInterfaceInput: %s", err)
 	}
 	start := time.Now()
@@ -8640,7 +9341,7 @@ func (cmd *DeleteNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8659,14 +9360,14 @@ func (cmd *DeleteNetworkinterface) ValidateCommand(params map[string]interface{}
 	return
 }
 
-func (cmd *DeleteNetworkinterface) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteNetworkInterfaceInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteNetworkInterfaceInput: %s", err)
 	}
 
@@ -8706,19 +9407,26 @@ func (cmd *DeletePolicy) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeletePolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeletePolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeletePolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeletePolicyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeletePolicyInput: %s", err)
 	}
 	start := time.Now()
@@ -8744,7 +9452,7 @@ func (cmd *DeletePolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8763,7 +9471,7 @@ func (cmd *DeletePolicy) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DeletePolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeletePolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
 
@@ -8789,19 +9497,26 @@ func (cmd *DeleteQueue) SetApi(api sqsiface.SQSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteQueue) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteQueue) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteQueue) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &sqs.DeleteQueueInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in sqs.DeleteQueueInput: %s", err)
 	}
 	start := time.Now()
@@ -8827,7 +9542,7 @@ func (cmd *DeleteQueue) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8846,7 +9561,7 @@ func (cmd *DeleteQueue) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DeleteQueue) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteQueue) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("queue"), nil
 }
 
@@ -8872,18 +9587,25 @@ func (cmd *DeleteRecord) SetApi(api route53iface.Route53API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteRecord) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRecord) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteRecord) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -8904,7 +9626,7 @@ func (cmd *DeleteRecord) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -8923,7 +9645,7 @@ func (cmd *DeleteRecord) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DeleteRecord) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRecord) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("record"), nil
 }
 
@@ -8949,19 +9671,26 @@ func (cmd *DeleteRepository) SetApi(api ecriface.ECRAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteRepository) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRepository) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteRepository) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ecr.DeleteRepositoryInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ecr.DeleteRepositoryInput: %s", err)
 	}
 	start := time.Now()
@@ -8987,7 +9716,7 @@ func (cmd *DeleteRepository) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9006,7 +9735,7 @@ func (cmd *DeleteRepository) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *DeleteRepository) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRepository) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("repository"), nil
 }
 
@@ -9032,18 +9761,25 @@ func (cmd *DeleteRole) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteRole) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRole) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteRole) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -9064,7 +9800,7 @@ func (cmd *DeleteRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9083,7 +9819,7 @@ func (cmd *DeleteRole) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *DeleteRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
 }
 
@@ -9109,19 +9845,26 @@ func (cmd *DeleteRoute) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteRoute) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRoute) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteRoute) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteRouteInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteRouteInput: %s", err)
 	}
 	start := time.Now()
@@ -9147,7 +9890,7 @@ func (cmd *DeleteRoute) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9166,14 +9909,14 @@ func (cmd *DeleteRoute) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DeleteRoute) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRoute) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteRouteInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteRouteInput: %s", err)
 	}
 
@@ -9213,19 +9956,26 @@ func (cmd *DeleteRoutetable) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteRoutetable) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRoutetable) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteRoutetable) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteRouteTableInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteRouteTableInput: %s", err)
 	}
 	start := time.Now()
@@ -9251,7 +10001,7 @@ func (cmd *DeleteRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9270,14 +10020,14 @@ func (cmd *DeleteRoutetable) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *DeleteRoutetable) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteRouteTableInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteRouteTableInput: %s", err)
 	}
 
@@ -9317,19 +10067,26 @@ func (cmd *DeleteS3object) SetApi(api s3iface.S3API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteS3object) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteS3object) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteS3object) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &s3.DeleteObjectInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in s3.DeleteObjectInput: %s", err)
 	}
 	start := time.Now()
@@ -9355,7 +10112,7 @@ func (cmd *DeleteS3object) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9374,7 +10131,7 @@ func (cmd *DeleteS3object) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DeleteS3object) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteS3object) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
 }
 
@@ -9400,19 +10157,26 @@ func (cmd *DeleteScalinggroup) SetApi(api autoscalingiface.AutoScalingAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteScalinggroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteScalinggroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteScalinggroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.DeleteAutoScalingGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.DeleteAutoScalingGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -9438,7 +10202,7 @@ func (cmd *DeleteScalinggroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9457,7 +10221,7 @@ func (cmd *DeleteScalinggroup) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *DeleteScalinggroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
 }
 
@@ -9483,19 +10247,26 @@ func (cmd *DeleteScalingpolicy) SetApi(api autoscalingiface.AutoScalingAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteScalingpolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteScalingpolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteScalingpolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.DeletePolicyInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.DeletePolicyInput: %s", err)
 	}
 	start := time.Now()
@@ -9521,7 +10292,7 @@ func (cmd *DeleteScalingpolicy) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9540,7 +10311,7 @@ func (cmd *DeleteScalingpolicy) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *DeleteScalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteScalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalingpolicy"), nil
 }
 
@@ -9566,19 +10337,26 @@ func (cmd *DeleteSecuritygroup) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteSecuritygroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSecuritygroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteSecuritygroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteSecurityGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteSecurityGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -9604,7 +10382,7 @@ func (cmd *DeleteSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9623,14 +10401,14 @@ func (cmd *DeleteSecuritygroup) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *DeleteSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteSecurityGroupInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteSecurityGroupInput: %s", err)
 	}
 
@@ -9670,19 +10448,26 @@ func (cmd *DeleteSnapshot) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteSnapshot) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSnapshot) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteSnapshot) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteSnapshotInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteSnapshotInput: %s", err)
 	}
 	start := time.Now()
@@ -9708,7 +10493,7 @@ func (cmd *DeleteSnapshot) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9727,14 +10512,14 @@ func (cmd *DeleteSnapshot) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DeleteSnapshot) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteSnapshotInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteSnapshotInput: %s", err)
 	}
 
@@ -9774,19 +10559,26 @@ func (cmd *DeleteStack) SetApi(api cloudformationiface.CloudFormationAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteStack) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteStack) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteStack) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudformation.DeleteStackInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudformation.DeleteStackInput: %s", err)
 	}
 	start := time.Now()
@@ -9812,7 +10604,7 @@ func (cmd *DeleteStack) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9831,7 +10623,7 @@ func (cmd *DeleteStack) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DeleteStack) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteStack) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
 }
 
@@ -9857,19 +10649,26 @@ func (cmd *DeleteSubnet) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteSubnet) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSubnet) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteSubnet) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteSubnetInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteSubnetInput: %s", err)
 	}
 	start := time.Now()
@@ -9895,7 +10694,7 @@ func (cmd *DeleteSubnet) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -9914,14 +10713,14 @@ func (cmd *DeleteSubnet) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DeleteSubnet) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteSubnetInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteSubnetInput: %s", err)
 	}
 
@@ -9961,19 +10760,26 @@ func (cmd *DeleteSubscription) SetApi(api snsiface.SNSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteSubscription) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSubscription) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteSubscription) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &sns.UnsubscribeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in sns.UnsubscribeInput: %s", err)
 	}
 	start := time.Now()
@@ -9999,7 +10805,7 @@ func (cmd *DeleteSubscription) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10018,7 +10824,7 @@ func (cmd *DeleteSubscription) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *DeleteSubscription) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteSubscription) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("subscription"), nil
 }
 
@@ -10044,18 +10850,25 @@ func (cmd *DeleteTag) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteTag) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTag) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteTag) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -10076,7 +10889,7 @@ func (cmd *DeleteTag) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10117,19 +10930,26 @@ func (cmd *DeleteTargetgroup) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteTargetgroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTargetgroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteTargetgroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.DeleteTargetGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.DeleteTargetGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -10155,7 +10975,7 @@ func (cmd *DeleteTargetgroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10174,7 +10994,7 @@ func (cmd *DeleteTargetgroup) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *DeleteTargetgroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTargetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("targetgroup"), nil
 }
 
@@ -10200,19 +11020,26 @@ func (cmd *DeleteTopic) SetApi(api snsiface.SNSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteTopic) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTopic) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteTopic) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &sns.DeleteTopicInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in sns.DeleteTopicInput: %s", err)
 	}
 	start := time.Now()
@@ -10238,7 +11065,7 @@ func (cmd *DeleteTopic) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10257,7 +11084,7 @@ func (cmd *DeleteTopic) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DeleteTopic) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTopic) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("topic"), nil
 }
 
@@ -10283,19 +11110,26 @@ func (cmd *DeleteUser) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DeleteUser) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteUser) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteUser) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeleteUserInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeleteUserInput: %s", err)
 	}
 	start := time.Now()
@@ -10321,7 +11155,7 @@ func (cmd *DeleteUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10340,7 +11174,7 @@ func (cmd *DeleteUser) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *DeleteUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
 
@@ -10366,19 +11200,26 @@ func (cmd *DeleteVolume) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteVolume) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteVolume) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteVolume) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteVolumeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteVolumeInput: %s", err)
 	}
 	start := time.Now()
@@ -10404,7 +11245,7 @@ func (cmd *DeleteVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10423,14 +11264,14 @@ func (cmd *DeleteVolume) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DeleteVolume) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteVolumeInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteVolumeInput: %s", err)
 	}
 
@@ -10470,19 +11311,26 @@ func (cmd *DeleteVpc) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteVpc) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteVpc) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteVpc) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DeleteVpcInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteVpcInput: %s", err)
 	}
 	start := time.Now()
@@ -10508,7 +11356,7 @@ func (cmd *DeleteVpc) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10527,14 +11375,14 @@ func (cmd *DeleteVpc) ValidateCommand(params map[string]interface{}, refs []stri
 	return
 }
 
-func (cmd *DeleteVpc) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteVpc) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteVpcInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteVpcInput: %s", err)
 	}
 
@@ -10574,19 +11422,26 @@ func (cmd *DeleteZone) SetApi(api route53iface.Route53API) {
 	cmd.api = api
 }
 
-func (cmd *DeleteZone) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteZone) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DeleteZone) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &route53.DeleteHostedZoneInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in route53.DeleteHostedZoneInput: %s", err)
 	}
 	start := time.Now()
@@ -10612,7 +11467,7 @@ func (cmd *DeleteZone) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10631,7 +11486,7 @@ func (cmd *DeleteZone) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *DeleteZone) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteZone) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("zone"), nil
 }
 
@@ -10657,18 +11512,25 @@ func (cmd *DetachAlarm) SetApi(api cloudwatchiface.CloudWatchAPI) {
 	cmd.api = api
 }
 
-func (cmd *DetachAlarm) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachAlarm) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachAlarm) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -10689,7 +11551,7 @@ func (cmd *DetachAlarm) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10708,7 +11570,7 @@ func (cmd *DetachAlarm) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *DetachAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
 
@@ -10734,18 +11596,25 @@ func (cmd *DetachContainertask) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *DetachContainertask) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachContainertask) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachContainertask) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -10766,7 +11635,7 @@ func (cmd *DetachContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10785,7 +11654,7 @@ func (cmd *DetachContainertask) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *DetachContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
 }
 
@@ -10811,19 +11680,26 @@ func (cmd *DetachElasticip) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachElasticip) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachElasticip) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachElasticip) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DisassociateAddressInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DisassociateAddressInput: %s", err)
 	}
 	start := time.Now()
@@ -10849,7 +11725,7 @@ func (cmd *DetachElasticip) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10868,14 +11744,14 @@ func (cmd *DetachElasticip) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *DetachElasticip) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DisassociateAddressInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DisassociateAddressInput: %s", err)
 	}
 
@@ -10915,19 +11791,26 @@ func (cmd *DetachInstance) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &elbv2.DeregisterTargetsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in elbv2.DeregisterTargetsInput: %s", err)
 	}
 	start := time.Now()
@@ -10953,7 +11836,7 @@ func (cmd *DetachInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -10972,7 +11855,7 @@ func (cmd *DetachInstance) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *DetachInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
 }
 
@@ -10998,18 +11881,25 @@ func (cmd *DetachInstanceprofile) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachInstanceprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInstanceprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachInstanceprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -11030,7 +11920,7 @@ func (cmd *DetachInstanceprofile) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11049,7 +11939,7 @@ func (cmd *DetachInstanceprofile) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *DetachInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
 }
 
@@ -11075,19 +11965,26 @@ func (cmd *DetachInternetgateway) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachInternetgateway) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInternetgateway) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachInternetgateway) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DetachInternetGatewayInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DetachInternetGatewayInput: %s", err)
 	}
 	start := time.Now()
@@ -11113,7 +12010,7 @@ func (cmd *DetachInternetgateway) Run(ctx, params map[string]interface{}) (inter
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11132,14 +12029,14 @@ func (cmd *DetachInternetgateway) ValidateCommand(params map[string]interface{},
 	return
 }
 
-func (cmd *DetachInternetgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DetachInternetGatewayInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DetachInternetGatewayInput: %s", err)
 	}
 
@@ -11179,19 +12076,26 @@ func (cmd *DetachMfadevice) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DetachMfadevice) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachMfadevice) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachMfadevice) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.DeactivateMFADeviceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.DeactivateMFADeviceInput: %s", err)
 	}
 	start := time.Now()
@@ -11217,7 +12121,7 @@ func (cmd *DetachMfadevice) Run(ctx, params map[string]interface{}) (interface{}
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11236,7 +12140,7 @@ func (cmd *DetachMfadevice) ValidateCommand(params map[string]interface{}, refs 
 	return
 }
 
-func (cmd *DetachMfadevice) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
 
@@ -11262,18 +12166,25 @@ func (cmd *DetachNetworkinterface) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachNetworkinterface) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachNetworkinterface) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachNetworkinterface) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -11294,7 +12205,7 @@ func (cmd *DetachNetworkinterface) Run(ctx, params map[string]interface{}) (inte
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11335,18 +12246,25 @@ func (cmd *DetachPolicy) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DetachPolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachPolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachPolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -11367,7 +12285,7 @@ func (cmd *DetachPolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11386,7 +12304,7 @@ func (cmd *DetachPolicy) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DetachPolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachPolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
 
@@ -11412,19 +12330,26 @@ func (cmd *DetachRole) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DetachRole) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachRole) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachRole) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.RemoveRoleFromInstanceProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.RemoveRoleFromInstanceProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -11450,7 +12375,7 @@ func (cmd *DetachRole) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11469,7 +12394,7 @@ func (cmd *DetachRole) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *DetachRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
 }
 
@@ -11495,19 +12420,26 @@ func (cmd *DetachRoutetable) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachRoutetable) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachRoutetable) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachRoutetable) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DisassociateRouteTableInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DisassociateRouteTableInput: %s", err)
 	}
 	start := time.Now()
@@ -11533,7 +12465,7 @@ func (cmd *DetachRoutetable) Run(ctx, params map[string]interface{}) (interface{
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11552,14 +12484,14 @@ func (cmd *DetachRoutetable) ValidateCommand(params map[string]interface{}, refs
 	return
 }
 
-func (cmd *DetachRoutetable) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DisassociateRouteTableInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DisassociateRouteTableInput: %s", err)
 	}
 
@@ -11599,18 +12531,25 @@ func (cmd *DetachSecuritygroup) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachSecuritygroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachSecuritygroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachSecuritygroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -11631,7 +12570,7 @@ func (cmd *DetachSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11650,7 +12589,7 @@ func (cmd *DetachSecuritygroup) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *DetachSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
 }
 
@@ -11676,19 +12615,26 @@ func (cmd *DetachUser) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *DetachUser) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachUser) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachUser) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.RemoveUserFromGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.RemoveUserFromGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -11714,7 +12660,7 @@ func (cmd *DetachUser) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11733,7 +12679,7 @@ func (cmd *DetachUser) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *DetachUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
 
@@ -11759,19 +12705,26 @@ func (cmd *DetachVolume) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *DetachVolume) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachVolume) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *DetachVolume) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.DetachVolumeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DetachVolumeInput: %s", err)
 	}
 	start := time.Now()
@@ -11797,7 +12750,7 @@ func (cmd *DetachVolume) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11816,14 +12769,14 @@ func (cmd *DetachVolume) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *DetachVolume) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DetachVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DetachVolumeInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.DetachVolumeInput: %s", err)
 	}
 
@@ -11863,19 +12816,26 @@ func (cmd *ImportImage) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *ImportImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *ImportImage) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *ImportImage) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.ImportImageInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.ImportImageInput: %s", err)
 	}
 	start := time.Now()
@@ -11901,7 +12861,7 @@ func (cmd *ImportImage) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -11920,14 +12880,14 @@ func (cmd *ImportImage) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *ImportImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *ImportImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.ImportImageInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.ImportImageInput: %s", err)
 	}
 
@@ -11967,19 +12927,26 @@ func (cmd *StartAlarm) SetApi(api cloudwatchiface.CloudWatchAPI) {
 	cmd.api = api
 }
 
-func (cmd *StartAlarm) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartAlarm) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StartAlarm) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudwatch.EnableAlarmActionsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudwatch.EnableAlarmActionsInput: %s", err)
 	}
 	start := time.Now()
@@ -12005,7 +12972,7 @@ func (cmd *StartAlarm) Run(ctx, params map[string]interface{}) (interface{}, err
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12024,7 +12991,7 @@ func (cmd *StartAlarm) ValidateCommand(params map[string]interface{}, refs []str
 	return
 }
 
-func (cmd *StartAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
 
@@ -12050,18 +13017,25 @@ func (cmd *StartContainertask) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *StartContainertask) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartContainertask) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StartContainertask) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -12082,7 +13056,7 @@ func (cmd *StartContainertask) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12101,7 +13075,7 @@ func (cmd *StartContainertask) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *StartContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
 }
 
@@ -12127,19 +13101,26 @@ func (cmd *StartDatabase) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *StartDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartDatabase) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StartDatabase) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &rds.StartDBInstanceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in rds.StartDBInstanceInput: %s", err)
 	}
 	start := time.Now()
@@ -12165,7 +13146,7 @@ func (cmd *StartDatabase) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12184,7 +13165,7 @@ func (cmd *StartDatabase) ValidateCommand(params map[string]interface{}, refs []
 	return
 }
 
-func (cmd *StartDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
 
@@ -12210,19 +13191,26 @@ func (cmd *StartInstance) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *StartInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StartInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.StartInstancesInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.StartInstancesInput: %s", err)
 	}
 	start := time.Now()
@@ -12248,7 +13236,7 @@ func (cmd *StartInstance) Run(ctx, params map[string]interface{}) (interface{}, 
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12267,14 +13255,14 @@ func (cmd *StartInstance) ValidateCommand(params map[string]interface{}, refs []
 	return
 }
 
-func (cmd *StartInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StartInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.StartInstancesInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.StartInstancesInput: %s", err)
 	}
 
@@ -12314,19 +13302,26 @@ func (cmd *StopAlarm) SetApi(api cloudwatchiface.CloudWatchAPI) {
 	cmd.api = api
 }
 
-func (cmd *StopAlarm) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopAlarm) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StopAlarm) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudwatch.DisableAlarmActionsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudwatch.DisableAlarmActionsInput: %s", err)
 	}
 	start := time.Now()
@@ -12352,7 +13347,7 @@ func (cmd *StopAlarm) Run(ctx, params map[string]interface{}) (interface{}, erro
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12371,7 +13366,7 @@ func (cmd *StopAlarm) ValidateCommand(params map[string]interface{}, refs []stri
 	return
 }
 
-func (cmd *StopAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
 
@@ -12397,18 +13392,25 @@ func (cmd *StopContainertask) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *StopContainertask) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopContainertask) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StopContainertask) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -12429,7 +13431,7 @@ func (cmd *StopContainertask) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12448,7 +13450,7 @@ func (cmd *StopContainertask) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *StopContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
 }
 
@@ -12474,19 +13476,26 @@ func (cmd *StopDatabase) SetApi(api rdsiface.RDSAPI) {
 	cmd.api = api
 }
 
-func (cmd *StopDatabase) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopDatabase) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StopDatabase) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &rds.StopDBInstanceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in rds.StopDBInstanceInput: %s", err)
 	}
 	start := time.Now()
@@ -12512,7 +13521,7 @@ func (cmd *StopDatabase) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12531,7 +13540,7 @@ func (cmd *StopDatabase) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *StopDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
 
@@ -12557,19 +13566,26 @@ func (cmd *StopInstance) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *StopInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *StopInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.StopInstancesInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.StopInstancesInput: %s", err)
 	}
 	start := time.Now()
@@ -12595,7 +13611,7 @@ func (cmd *StopInstance) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12614,14 +13630,14 @@ func (cmd *StopInstance) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *StopInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *StopInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.StopInstancesInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.StopInstancesInput: %s", err)
 	}
 
@@ -12661,18 +13677,25 @@ func (cmd *UpdateBucket) SetApi(api s3iface.S3API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateBucket) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateBucket) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateBucket) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -12693,7 +13716,7 @@ func (cmd *UpdateBucket) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12712,7 +13735,7 @@ func (cmd *UpdateBucket) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *UpdateBucket) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateBucket) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("bucket"), nil
 }
 
@@ -12738,19 +13761,26 @@ func (cmd *UpdateContainertask) SetApi(api ecsiface.ECSAPI) {
 	cmd.api = api
 }
 
-func (cmd *UpdateContainertask) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateContainertask) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateContainertask) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ecs.UpdateServiceInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ecs.UpdateServiceInput: %s", err)
 	}
 	start := time.Now()
@@ -12776,7 +13806,7 @@ func (cmd *UpdateContainertask) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12795,7 +13825,7 @@ func (cmd *UpdateContainertask) ValidateCommand(params map[string]interface{}, r
 	return
 }
 
-func (cmd *UpdateContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
 }
 
@@ -12821,18 +13851,25 @@ func (cmd *UpdateDistribution) SetApi(api cloudfrontiface.CloudFrontAPI) {
 	cmd.api = api
 }
 
-func (cmd *UpdateDistribution) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateDistribution) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateDistribution) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -12853,7 +13890,7 @@ func (cmd *UpdateDistribution) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12872,7 +13909,7 @@ func (cmd *UpdateDistribution) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *UpdateDistribution) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("distribution"), nil
 }
 
@@ -12898,18 +13935,25 @@ func (cmd *UpdateImage) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateImage) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateImage) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateImage) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -12930,7 +13974,7 @@ func (cmd *UpdateImage) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -12971,19 +14015,26 @@ func (cmd *UpdateInstance) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateInstance) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.ModifyInstanceAttributeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.ModifyInstanceAttributeInput: %s", err)
 	}
 	start := time.Now()
@@ -13009,7 +14060,7 @@ func (cmd *UpdateInstance) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13028,14 +14079,14 @@ func (cmd *UpdateInstance) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *UpdateInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.ModifyInstanceAttributeInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.ModifyInstanceAttributeInput: %s", err)
 	}
 
@@ -13075,19 +14126,26 @@ func (cmd *UpdateLoginprofile) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *UpdateLoginprofile) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateLoginprofile) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateLoginprofile) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.UpdateLoginProfileInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.UpdateLoginProfileInput: %s", err)
 	}
 	start := time.Now()
@@ -13113,7 +14171,7 @@ func (cmd *UpdateLoginprofile) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13132,7 +14190,7 @@ func (cmd *UpdateLoginprofile) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *UpdateLoginprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateLoginprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loginprofile"), nil
 }
 
@@ -13158,19 +14216,26 @@ func (cmd *UpdatePolicy) SetApi(api iamiface.IAMAPI) {
 	cmd.api = api
 }
 
-func (cmd *UpdatePolicy) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdatePolicy) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdatePolicy) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &iam.CreatePolicyVersionInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in iam.CreatePolicyVersionInput: %s", err)
 	}
 	start := time.Now()
@@ -13196,7 +14261,7 @@ func (cmd *UpdatePolicy) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13215,7 +14280,7 @@ func (cmd *UpdatePolicy) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *UpdatePolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdatePolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
 
@@ -13241,18 +14306,25 @@ func (cmd *UpdateRecord) SetApi(api route53iface.Route53API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateRecord) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateRecord) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateRecord) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -13273,7 +14345,7 @@ func (cmd *UpdateRecord) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13292,7 +14364,7 @@ func (cmd *UpdateRecord) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *UpdateRecord) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateRecord) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("record"), nil
 }
 
@@ -13318,19 +14390,26 @@ func (cmd *UpdateS3object) SetApi(api s3iface.S3API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateS3object) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateS3object) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateS3object) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &s3.PutObjectAclInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in s3.PutObjectAclInput: %s", err)
 	}
 	start := time.Now()
@@ -13356,7 +14435,7 @@ func (cmd *UpdateS3object) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13375,7 +14454,7 @@ func (cmd *UpdateS3object) ValidateCommand(params map[string]interface{}, refs [
 	return
 }
 
-func (cmd *UpdateS3object) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateS3object) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
 }
 
@@ -13401,19 +14480,26 @@ func (cmd *UpdateScalinggroup) SetApi(api autoscalingiface.AutoScalingAPI) {
 	cmd.api = api
 }
 
-func (cmd *UpdateScalinggroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateScalinggroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateScalinggroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &autoscaling.UpdateAutoScalingGroupInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in autoscaling.UpdateAutoScalingGroupInput: %s", err)
 	}
 	start := time.Now()
@@ -13439,7 +14525,7 @@ func (cmd *UpdateScalinggroup) Run(ctx, params map[string]interface{}) (interfac
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13458,7 +14544,7 @@ func (cmd *UpdateScalinggroup) ValidateCommand(params map[string]interface{}, re
 	return
 }
 
-func (cmd *UpdateScalinggroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
 }
 
@@ -13484,18 +14570,25 @@ func (cmd *UpdateSecuritygroup) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateSecuritygroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateSecuritygroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateSecuritygroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -13516,7 +14609,7 @@ func (cmd *UpdateSecuritygroup) Run(ctx, params map[string]interface{}) (interfa
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13557,19 +14650,26 @@ func (cmd *UpdateStack) SetApi(api cloudformationiface.CloudFormationAPI) {
 	cmd.api = api
 }
 
-func (cmd *UpdateStack) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateStack) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateStack) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &cloudformation.UpdateStackInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in cloudformation.UpdateStackInput: %s", err)
 	}
 	start := time.Now()
@@ -13595,7 +14695,7 @@ func (cmd *UpdateStack) Run(ctx, params map[string]interface{}) (interface{}, er
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13614,7 +14714,7 @@ func (cmd *UpdateStack) ValidateCommand(params map[string]interface{}, refs []st
 	return
 }
 
-func (cmd *UpdateStack) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateStack) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
 }
 
@@ -13640,19 +14740,26 @@ func (cmd *UpdateSubnet) SetApi(api ec2iface.EC2API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateSubnet) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateSubnet) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateSubnet) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
 	input := &ec2.ModifySubnetAttributeInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.ModifySubnetAttributeInput: %s", err)
 	}
 	start := time.Now()
@@ -13678,7 +14785,7 @@ func (cmd *UpdateSubnet) Run(ctx, params map[string]interface{}) (interface{}, e
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13697,7 +14804,7 @@ func (cmd *UpdateSubnet) ValidateCommand(params map[string]interface{}, refs []s
 	return
 }
 
-func (cmd *UpdateSubnet) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("subnet"), nil
 }
 
@@ -13723,18 +14830,25 @@ func (cmd *UpdateTargetgroup) SetApi(api elbv2iface.ELBV2API) {
 	cmd.api = api
 }
 
-func (cmd *UpdateTargetgroup) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateTargetgroup) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *UpdateTargetgroup) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -13755,7 +14869,7 @@ func (cmd *UpdateTargetgroup) Run(ctx, params map[string]interface{}) (interface
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -13774,7 +14888,7 @@ func (cmd *UpdateTargetgroup) ValidateCommand(params map[string]interface{}, ref
 	return
 }
 
-func (cmd *UpdateTargetgroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateTargetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("targetgroup"), nil
 }
 

@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -46,7 +47,7 @@ func (cmd *AuthenticateRegistry) Params() params.Rule {
 	return params.AtLeastOneOf(params.Key("accounts"), params.Key("no-confirm"), params.Key("no-docker-login"))
 }
 
-func (cmd *AuthenticateRegistry) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *AuthenticateRegistry) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ecr.GetAuthorizationTokenInput{}
 	var err error
 

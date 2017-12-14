@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"time"
@@ -70,7 +71,7 @@ func (cmd *AttachInstanceprofile) Params() params.Rule {
 	)
 }
 
-func (cmd *AttachInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
@@ -94,7 +95,7 @@ func (cmd *AttachInstanceprofile) DryRun(ctx, params map[string]interface{}) (in
 	return fakeDryRunId("instanceprofile"), nil
 }
 
-func (cmd *AttachInstanceprofile) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *AttachInstanceprofile) ManualRun(renv env.Running) (interface{}, error) {
 	instanceId := StringValue(cmd.Instance)
 	profileName := StringValue(cmd.Name)
 
@@ -137,10 +138,10 @@ func (cmd *AttachInstanceprofile) ManualRun(ctx map[string]interface{}) (interfa
 	}
 
 	input := &ec2.AssociateIamInstanceProfileInput{}
-	if err := setFieldWithType(instanceId, input, "InstanceId", awsstr, ctx); err != nil {
+	if err := setFieldWithType(instanceId, input, "InstanceId", awsstr, renv.Context()); err != nil {
 		return nil, err
 	}
-	if err := setFieldWithType(profileName, input, "IamInstanceProfile.Name", awsstr, ctx); err != nil {
+	if err := setFieldWithType(profileName, input, "IamInstanceProfile.Name", awsstr, renv.Context()); err != nil {
 		return nil, err
 	}
 
@@ -163,7 +164,7 @@ func (cmd *DetachInstanceprofile) Params() params.Rule {
 	return params.AllOf(params.Key("instance"), params.Key("name"))
 }
 
-func (cmd *DetachInstanceprofile) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DetachInstanceprofile) ManualRun(renv env.Running) (interface{}, error) {
 	instanceId := StringValue(cmd.Instance)
 	profileName := StringValue(cmd.Name)
 

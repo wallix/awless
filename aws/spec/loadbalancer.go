@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 )
 
@@ -84,7 +85,7 @@ func (cmd *CheckLoadbalancer) Validate_State() error {
 	return NewEnumValidator("provisioning", "active", "failed", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckLoadbalancer) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckLoadbalancer) ManualRun(renv env.Running) (interface{}, error) {
 	input := &elbv2.DescribeLoadBalancersInput{
 		LoadBalancerArns: []*string{cmd.Id},
 	}

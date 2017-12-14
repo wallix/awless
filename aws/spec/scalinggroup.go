@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -107,7 +108,7 @@ func (cmd *CheckScalinggroup) Params() params.Rule {
 	return params.AllOf(params.Key("count"), params.Key("name"), params.Key("timeout"))
 }
 
-func (sg *CheckScalinggroup) ManualRun(map[string]interface{}) (interface{}, error) {
+func (sg *CheckScalinggroup) ManualRun(renv env.Running) (interface{}, error) {
 	input := &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{sg.Name},
 	}

@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 )
 
@@ -55,9 +56,9 @@ func (cmd *CreateSubnet) ExtractResult(i interface{}) string {
 	return awssdk.StringValue(i.(*ec2.CreateSubnetOutput).Subnet.SubnetId)
 }
 
-func (cmd *CreateSubnet) AfterRun(ctx map[string]interface{}, output interface{}) error {
+func (cmd *CreateSubnet) AfterRun(renv env.Running, output interface{}) error {
 	subnetId := awssdk.String(cmd.ExtractResult(output))
-	if err := createNameTag(subnetId, cmd.Name, ctx); err != nil {
+	if err := createNameTag(subnetId, cmd.Name, renv); err != nil {
 		return err
 	}
 
@@ -65,7 +66,7 @@ func (cmd *CreateSubnet) AfterRun(ctx map[string]interface{}, output interface{}
 		updateSubnet := CommandFactory.Build("updatesubnet")().(*UpdateSubnet)
 		updateSubnet.Id = subnetId
 		updateSubnet.Public = Bool(true)
-		if _, err := updateSubnet.Run(ctx, nil); err != nil {
+		if _, err := updateSubnet.Run(renv, nil); err != nil {
 			return err
 		}
 	}

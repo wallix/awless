@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/internal/ast"
 	"github.com/wallix/awless/template/params"
 )
@@ -175,10 +176,7 @@ func TestCheckInvalidReferencesDeclarationPass(t *testing.T) {
 type mockCommandWithResult struct{ id string }
 
 func (c *mockCommandWithResult) ValidateCommand(map[string]interface{}, []string) []error { return nil }
-func (c *mockCommandWithResult) Run(ctx, params map[string]interface{}) (interface{}, error) {
-	return nil, nil
-}
-func (c *mockCommandWithResult) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (c *mockCommandWithResult) Run(env.Running, map[string]interface{}) (interface{}, error) {
 	return nil, nil
 }
 func (c *mockCommandWithResult) ExtractResult(i interface{}) string { return "" }
@@ -389,9 +387,8 @@ type mockCommand struct{ id string }
 func (c *mockCommand) ValidateCommand(map[string]interface{}, []string) []error {
 	return []error{errors.New(c.id)}
 }
-func (c *mockCommand) Run(ctx, params map[string]interface{}) (interface{}, error)    { return nil, nil }
-func (c *mockCommand) DryRun(ctx, params map[string]interface{}) (interface{}, error) { return nil, nil }
-func (c *mockCommand) Params() params.Rule                                            { return nil }
+func (c *mockCommand) Run(env.Running, map[string]interface{}) (interface{}, error) { return nil, nil }
+func (c *mockCommand) Params() params.Rule                                          { return nil }
 
 type parameters map[string]interface{}
 type holesKeys map[string][]string

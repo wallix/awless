@@ -3,7 +3,7 @@ test:
 	@go test ./...
 
 generate:
-	@echo Generating commands code
+	@echo Generating commands code: runtime, doc, etc.
 	@go generate gen/aws/generators/main.go
 
 build: generate test

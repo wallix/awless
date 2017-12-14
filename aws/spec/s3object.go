@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -63,7 +64,7 @@ func (cmd *CreateS3object) Validate_File() error {
 	return nil
 }
 
-func (cmd *CreateS3object) ManualRun(map[string]interface{}) (interface{}, error) {
+func (cmd *CreateS3object) ManualRun(env.Running) (interface{}, error) {
 	input := &s3.PutObjectInput{}
 
 	f, err := os.Open(StringValue(cmd.File))

@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -80,7 +81,7 @@ func (cmd *UpdateTargetgroup) Params() params.Rule {
 	)
 }
 
-func (tg *UpdateTargetgroup) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (tg *UpdateTargetgroup) ManualRun(renv env.Running) (interface{}, error) {
 	tgArn := StringValue(tg.Id)
 
 	attrsInput := &elbv2.ModifyTargetGroupAttributesInput{}
@@ -111,7 +112,7 @@ func (tg *UpdateTargetgroup) ManualRun(ctx map[string]interface{}) (interface{},
 	var err error
 
 	if areTargetAttrsModified {
-		if err = setFieldWithType(tgArn, attrsInput, "TargetGroupArn", awsstr, ctx); err != nil {
+		if err = setFieldWithType(tgArn, attrsInput, "TargetGroupArn", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 		start := time.Now()
@@ -125,55 +126,55 @@ func (tg *UpdateTargetgroup) ManualRun(ctx map[string]interface{}) (interface{},
 	var isTargetGroupModified bool
 
 	if v := tg.Healthcheckinterval; v != nil {
-		if err = setFieldWithType(v, input, "HealthCheckIntervalSeconds", awsint64, ctx); err != nil {
+		if err = setFieldWithType(v, input, "HealthCheckIntervalSeconds", awsint64, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 	if v := tg.Healthcheckpath; v != nil {
-		if err = setFieldWithType(v, input, "HealthCheckPath", awsstr, ctx); err != nil {
+		if err = setFieldWithType(v, input, "HealthCheckPath", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 	if v := tg.Healthcheckport; v != nil {
-		if err = setFieldWithType(v, input, "HealthCheckPort", awsstr, ctx); err != nil {
+		if err = setFieldWithType(v, input, "HealthCheckPort", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 	}
 	if v := tg.Healthcheckprotocol; v != nil {
-		if err = setFieldWithType(v, input, "HealthCheckProtocol", awsstr, ctx); err != nil {
+		if err = setFieldWithType(v, input, "HealthCheckProtocol", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 	if v := tg.Healthchecktimeout; v != nil {
-		if err = setFieldWithType(v, input, "HealthCheckTimeoutSeconds", awsint64, ctx); err != nil {
+		if err = setFieldWithType(v, input, "HealthCheckTimeoutSeconds", awsint64, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 	if v := tg.Healthythreshold; v != nil {
-		if err = setFieldWithType(v, input, "HealthyThresholdCount", awsint64, ctx); err != nil {
+		if err = setFieldWithType(v, input, "HealthyThresholdCount", awsint64, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 	if v := tg.Unhealthythreshold; v != nil {
-		if err = setFieldWithType(v, input, "UnhealthyThresholdCount", awsint64, ctx); err != nil {
+		if err = setFieldWithType(v, input, "UnhealthyThresholdCount", awsint64, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 	if v := tg.Matcher; v != nil {
-		if err = setFieldWithType(v, input, "Matcher.HttpCode", awsstr, ctx); err != nil {
+		if err = setFieldWithType(v, input, "Matcher.HttpCode", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 		isTargetGroupModified = true
 	}
 
 	if isTargetGroupModified {
-		if err = setFieldWithType(tgArn, input, "TargetGroupArn", awsstr, ctx); err != nil {
+		if err = setFieldWithType(tgArn, input, "TargetGroupArn", awsstr, renv.Context()); err != nil {
 			return nil, err
 		}
 		start := time.Now()

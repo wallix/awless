@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -57,7 +58,7 @@ func (cmd *CreateImage) Validate_Name() (err error) {
 	return
 }
 
-func (cmd *CreateImage) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *CreateImage) BeforeRun(renv env.Running) error {
 	if reboot := cmd.Reboot; reboot != nil && *reboot {
 		cmd.Reboot = nil
 	} else {
@@ -106,12 +107,12 @@ func (cmd *UpdateImage) prepareImageAttributeInput(ctx map[string]interface{}) (
 	return input, nil
 }
 
-func (cmd *UpdateImage) ManualRun(ctx map[string]interface{}) (interface{}, error) {
-	input, err := cmd.prepareImageAttributeInput(ctx)
+func (cmd *UpdateImage) ManualRun(renv env.Running) (interface{}, error) {
+	input, err := cmd.prepareImageAttributeInput(renv.Context())
 	if err != nil {
 		return nil, err
 	}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.ModifyImageAttributeInput: %s", err)
 	}
 	start := time.Now()
@@ -120,16 +121,16 @@ func (cmd *UpdateImage) ManualRun(ctx map[string]interface{}) (interface{}, erro
 	return output, err
 }
 
-func (cmd *UpdateImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *UpdateImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
-	input, err := cmd.prepareImageAttributeInput(ctx)
+	input, err := cmd.prepareImageAttributeInput(renv.Context())
 	if err != nil {
 		return nil, err
 	}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.ModifyImageAttributeInput: %s", err)
 	}
 
@@ -212,7 +213,7 @@ func (cmd *DeleteImage) Params() params.Rule {
 	)
 }
 
-func (cmd *DeleteImage) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
@@ -247,7 +248,7 @@ func (cmd *DeleteImage) DryRun(ctx, params map[string]interface{}) (interface{},
 	return nil, err
 }
 
-func (cmd *DeleteImage) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteImage) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DeregisterImageInput{}
 
 	if err := setFieldWithType(cmd.Id, input, "ImageId", awsstr); err != nil {
@@ -276,7 +277,7 @@ func (cmd *DeleteImage) ManualRun(ctx map[string]interface{}) (interface{}, erro
 			if errs := deleteSnapshot.ValidateCommand(nil, nil); len(errs) > 0 {
 				return nil, fmt.Errorf("%v", errs)
 			}
-			if _, err := deleteSnapshot.Run(ctx, nil); err != nil {
+			if _, err := deleteSnapshot.Run(renv, nil); err != nil {
 				return nil, fmt.Errorf("delete snapshot %s: %s", snap, err)
 			}
 		}

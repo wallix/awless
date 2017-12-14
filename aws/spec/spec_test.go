@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 )
 
@@ -34,10 +35,7 @@ type validParamTestStruct struct {
 func (*validParamTestStruct) Params() params.Rule                                      { return nil }
 func (*validParamTestStruct) ValidateCommand(map[string]interface{}, []string) []error { return nil }
 func (*validParamTestStruct) inject(params map[string]interface{}) error               { return nil }
-func (*validParamTestStruct) Run(ctx map[string]interface{}, params map[string]interface{}) (interface{}, error) {
-	return nil, nil
-}
-func (*validParamTestStruct) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (*validParamTestStruct) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return nil, nil
 }
 

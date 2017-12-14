@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -47,14 +48,14 @@ func (cmd *CreateTag) Params() params.Rule {
 	return params.AllOf(params.Key("key"), params.Key("resource"), params.Key("value"))
 }
 
-func (cmd *CreateTag) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTag) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateTagsInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateTagsInput: %s", err)
 	}
 	input.Tags = []*ec2.Tag{{Key: cmd.Key, Value: cmd.Value}}
@@ -73,9 +74,9 @@ func (cmd *CreateTag) DryRun(ctx, params map[string]interface{}) (interface{}, e
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateTag) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CreateTag) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.CreateTagsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.CreateTagsInput: %s", err)
 	}
 	input.Tags = []*ec2.Tag{{Key: cmd.Key, Value: cmd.Value}}
@@ -106,14 +107,14 @@ func (cmd *DeleteTag) Params() params.Rule {
 	)
 }
 
-func (cmd *DeleteTag) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTag) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteTagsInput{}
 	input.SetDryRun(true)
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteTagsInput: %s", err)
 	}
 	input.Tags = []*ec2.Tag{{Key: cmd.Key, Value: cmd.Value}}
@@ -132,9 +133,9 @@ func (cmd *DeleteTag) DryRun(ctx, params map[string]interface{}) (interface{}, e
 	return nil, err
 }
 
-func (cmd *DeleteTag) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteTag) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DeleteTagsInput{}
-	if err := structInjector(cmd, input, ctx); err != nil {
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
 		return nil, fmt.Errorf("cannot inject in ec2.DeleteTagsInput: %s", err)
 	}
 	input.Tags = []*ec2.Tag{{Key: cmd.Key, Value: cmd.Value}}
@@ -145,7 +146,7 @@ func (cmd *DeleteTag) ManualRun(ctx map[string]interface{}) (interface{}, error)
 	return nil, err
 }
 
-func createNameTag(resource, name *string, ctx map[string]interface{}) error {
+func createNameTag(resource, name *string, renv env.Running) error {
 	createTag := CommandFactory.Build("createtag")().(*CreateTag)
 	createTag.Key = String("Name")
 	createTag.Value = name
@@ -153,7 +154,7 @@ func createNameTag(resource, name *string, ctx map[string]interface{}) error {
 	if errs := createTag.ValidateCommand(nil, nil); len(errs) > 0 {
 		return fmt.Errorf("%v", errs)
 	}
-	_, err := createTag.Run(ctx, nil)
+	_, err := createTag.Run(renv, nil)
 	return err
 }
 

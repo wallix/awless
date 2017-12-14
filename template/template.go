@@ -41,13 +41,9 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	for _, sts := range s.Statements {
 		clone := sts.Clone()
 		current.Statements = append(current.Statements, clone)
-		ctx := map[string]interface{}{
-			"Variables":  env.ResolvedVariables,
-			"References": env.ResolvedVariables, // retro-compatibility with v0.1.2
-		}
 		switch n := clone.Node.(type) {
 		case *ast.CommandNode:
-			if stop := processCmdNode(env, n, vars, ctx); stop {
+			if stop := processCmdNode(env, n, vars); stop {
 				return current, nil
 			}
 		case *ast.DeclarationNode:
@@ -55,7 +51,7 @@ func (s *Template) Run(env *Env) (*Template, error) {
 			expr := n.Expr
 			switch n := expr.(type) {
 			case *ast.CommandNode:
-				if stop := processCmdNode(env, n, vars, ctx); stop {
+				if stop := processCmdNode(env, n, vars); stop {
 					return current, nil
 				}
 				vars[ident] = n.Result()
@@ -70,13 +66,15 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	return current, nil
 }
 
-func processCmdNode(env *Env, n *ast.CommandNode, vars map[string]interface{}, ctx map[string]interface{}) bool {
+func processCmdNode(env *Env, n *ast.CommandNode, vars map[string]interface{}) bool {
+	env.AddContext("Variables", env.ResolvedVariables)
+	env.AddContext("References", env.ResolvedVariables) // retro-compatibility with v0.1.2
 	n.ProcessRefs(vars)
-	if env.IsDryRun {
-		n.CmdResult, n.CmdErr = n.Command.DryRun(ctx, n.ToDriverParams())
+	if env.IsDryRun() {
+		n.CmdResult, n.CmdErr = n.Command.Run(env, n.ToDriverParams())
 		n.CmdErr = prefixError(n.CmdErr, "dry run")
 	} else {
-		n.CmdResult, n.CmdErr = n.Run(ctx, n.ToDriverParams())
+		n.CmdResult, n.CmdErr = n.Run(env, n.ToDriverParams())
 		var res, status string
 		if n.CmdResult != nil {
 			res = " (" + color.New(color.FgCyan).Sprint(n.CmdResult) + ") "

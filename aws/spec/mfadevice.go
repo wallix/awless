@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -49,7 +50,7 @@ func (cmd *CreateMfadevice) Params() params.Rule {
 	return params.AllOf(params.Key("name"))
 }
 
-func (cmd *CreateMfadevice) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CreateMfadevice) ManualRun(renv env.Running) (interface{}, error) {
 	name := StringValue(cmd.Name)
 	input := &iam.CreateVirtualMFADeviceInput{
 		VirtualMFADeviceName: cmd.Name,
@@ -120,7 +121,7 @@ func (cmd *AttachMfadevice) Params() params.Rule {
 	)
 }
 
-func (cmd *AttachMfadevice) AfterRun(ctx map[string]interface{}, output interface{}) error {
+func (cmd *AttachMfadevice) AfterRun(renv env.Running, output interface{}) error {
 	if !BoolValue(cmd.NoPrompt) {
 		if promptConfirm("\nDo you want to create a profile for this MFA device in %s?", awsConfigFilepath) {
 			roleArn, err := promptRole(cmd.api)

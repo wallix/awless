@@ -276,20 +276,27 @@ func (cmd *{{ $cmdName }}) SetApi(api {{$tag.API}}iface.{{ ApiToInterface $tag.A
 	cmd.api = api
 }
 
-func (cmd *{{ $cmdName }}) Run(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *{{ $cmdName }}) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 	
 	if v, ok := implementsBeforeRun(cmd); ok {
-		if brErr := v.BeforeRun(ctx); brErr != nil {
+		if brErr := v.BeforeRun(renv); brErr != nil {
 			return nil, fmt.Errorf("before run: %s", brErr)
 		}
 	}
 	
 	{{ if $tag.Call }}
 	input := &{{ $tag.Input }}{}
-	if err := structInjector(cmd, input, ctx) ; err != nil {
+	if err := structInjector(cmd, input, renv.Context()) ; err != nil {
 		return nil, fmt.Errorf("cannot inject in {{ $tag.Input }}: %s", err)
 	}
 	start := time.Now()
@@ -300,7 +307,7 @@ func (cmd *{{ $cmdName }}) Run(ctx, params map[string]interface{}) (interface{},
 	}
 	{{- else }}
 	
-	output, err := cmd.ManualRun(ctx)
+	output, err := cmd.ManualRun(renv)
 	if err != nil {
 		return nil, err
 	}
@@ -322,7 +329,7 @@ func (cmd *{{ $cmdName }}) Run(ctx, params map[string]interface{}) (interface{},
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
-		if brErr := v.AfterRun(ctx, output); brErr != nil {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
 			return nil, fmt.Errorf("after run: %s", brErr)
 		}
 	}
@@ -343,14 +350,14 @@ func (cmd *{{ $cmdName }}) ValidateCommand(params map[string]interface{}, refs [
 
 {{ if $tag.HasDryRun }}
 	{{ if $tag.GenDryRun }}
-	func (cmd *{{ $cmdName }}) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+	func (cmd *{{ $cmdName }}) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 		if err := cmd.inject(params); err != nil {
 			return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
 		}
 
 		input := &{{ $tag.Input }}{}
 		input.SetDryRun(true)
-		if err := structInjector(cmd, input, ctx) ; err != nil {
+		if err := structInjector(cmd, input, renv.Context()) ; err != nil {
 			return nil, fmt.Errorf("dry run: cannot inject in {{ $tag.Input }}: %s", err)
 		}
 
@@ -369,7 +376,7 @@ func (cmd *{{ $cmdName }}) ValidateCommand(params map[string]interface{}, refs [
 	}
 	{{- end }}
 {{- else }}
-func (cmd *{{ $cmdName }}) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *{{ $cmdName }}) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("{{ $tag.Entity }}"), nil
 }
 {{- end }}

@@ -19,6 +19,7 @@ import (
 	"net"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -51,8 +52,8 @@ func (cmd *CreateVpc) ExtractResult(i interface{}) string {
 	return awssdk.StringValue(i.(*ec2.CreateVpcOutput).Vpc.VpcId)
 }
 
-func (cmd *CreateVpc) AfterRun(ctx map[string]interface{}, output interface{}) error {
-	return createNameTag(awssdk.String(cmd.ExtractResult(output)), cmd.Name, ctx)
+func (cmd *CreateVpc) AfterRun(renv env.Running, output interface{}) error {
+	return createNameTag(awssdk.String(cmd.ExtractResult(output)), cmd.Name, renv)
 }
 
 type DeleteVpc struct {

@@ -11,12 +11,11 @@ import (
 	"github.com/wallix/awless/template/params"
 )
 
-type LookupFunc func(...string) interface{}
-
 type Env struct {
-	Lookuper LookupFunc
-	IsDryRun bool
+	dryRun bool
+	ctx    map[string]interface{}
 
+	Lookuper          LookupFunc
 	ResolvedVariables map[string]interface{}
 
 	Fillers          map[string]interface{}
@@ -27,6 +26,8 @@ type Env struct {
 	processedFillers map[string]interface{}
 }
 
+type LookupFunc func(...string) interface{}
+
 func NewEnv() *Env {
 	return &Env{
 		AliasFunc:         nil,
@@ -34,8 +35,32 @@ func NewEnv() *Env {
 		Lookuper:          func(...string) interface{} { return nil },
 		Log:               logger.DiscardLogger,
 		ResolvedVariables: make(map[string]interface{}),
+		ctx:               make(map[string]interface{}),
 		processedFillers:  make(map[string]interface{}),
 	}
+}
+
+func (e *Env) Context() (out map[string]interface{}) {
+	out = make(map[string]interface{})
+	for k, v := range e.ctx {
+		out[k] = v
+	}
+	return
+}
+
+func (e *Env) AddContext(k string, i interface{}) {
+	if e.ctx == nil {
+		e.ctx = make(map[string]interface{})
+	}
+	e.ctx[k] = i
+}
+
+func (e *Env) IsDryRun() bool {
+	return e.dryRun
+}
+
+func (e *Env) SetDryRun(b bool) {
+	e.dryRun = b
 }
 
 func (e *Env) AddFillers(fills ...map[string]interface{}) {

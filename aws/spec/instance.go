@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 )
 
@@ -91,8 +92,8 @@ func (cmd *CreateInstance) ExtractResult(i interface{}) string {
 	return StringValue(i.(*ec2.Reservation).Instances[0].InstanceId)
 }
 
-func (cmd *CreateInstance) AfterRun(ctx map[string]interface{}, output interface{}) error {
-	return createNameTag(String(cmd.ExtractResult(output)), cmd.Name, ctx)
+func (cmd *CreateInstance) AfterRun(renv env.Running, output interface{}) error {
+	return createNameTag(String(cmd.ExtractResult(output)), cmd.Name, renv)
 }
 
 type UpdateInstance struct {
@@ -188,7 +189,7 @@ func (cmd *CheckInstance) Validate_State() error {
 	return NewEnumValidator("pending", "running", "shutting-down", "terminated", "stopping", "stopped", notFoundState).Validate(cmd.State)
 }
 
-func (cmd *CheckInstance) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *CheckInstance) ManualRun(renv env.Running) (interface{}, error) {
 	input := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{cmd.Id},
 	}

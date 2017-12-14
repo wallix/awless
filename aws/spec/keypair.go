@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -62,7 +63,7 @@ func (cmd *CreateKeypair) Validate_Name() error {
 	return nil
 }
 
-func (cmd *CreateKeypair) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *CreateKeypair) BeforeRun(renv env.Running) error {
 	var encryptedMsg string
 	var encrypted bool
 

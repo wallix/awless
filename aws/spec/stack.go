@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -75,7 +76,7 @@ func (cmd *CreateStack) ExtractResult(i interface{}) string {
 // Add StackFile support via BeforeRun hook
 // https://github.com/wallix/awless/issues/145
 // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
-func (cmd *CreateStack) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *CreateStack) BeforeRun(renv env.Running) error {
 	var err error
 	cmd.Parameters, cmd.Tags, cmd.PolicyBody, err = processStackFile(cmd.StackFile, cmd.PolicyFile, cmd.Parameters, cmd.Tags)
 	return err
@@ -114,7 +115,7 @@ func (cmd *UpdateStack) ExtractResult(i interface{}) string {
 // Add StackFile support via BeforeRun hook
 // https://github.com/wallix/awless/issues/145
 // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html
-func (cmd *UpdateStack) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *UpdateStack) BeforeRun(renv env.Running) error {
 	var err error
 	cmd.Parameters, cmd.Tags, cmd.PolicyBody, err = processStackFile(cmd.StackFile, cmd.PolicyFile, cmd.Parameters, cmd.Tags)
 	return err

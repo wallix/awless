@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -57,7 +58,7 @@ func (cmd *CreatePolicy) Params() params.Rule {
 	)
 }
 
-func (cmd *CreatePolicy) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *CreatePolicy) BeforeRun(renv env.Running) error {
 	stat, err := buildStatementFromParams(cmd.Effect, cmd.Resource, cmd.Action, cmd.Conditions)
 	if err != nil {
 		return err
@@ -100,7 +101,7 @@ func (cmd *UpdatePolicy) Params() params.Rule {
 	)
 }
 
-func (cmd *UpdatePolicy) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *UpdatePolicy) BeforeRun(renv env.Running) error {
 	document, err := cmd.getPolicyLastVersionDocument(cmd.Arn)
 	if err != nil {
 		return err
@@ -182,7 +183,7 @@ func (cmd *DeletePolicy) Params() params.Rule {
 	)
 }
 
-func (cmd *DeletePolicy) BeforeRun(ctx map[string]interface{}) error {
+func (cmd *DeletePolicy) BeforeRun(renv env.Running) error {
 	if BoolValue(cmd.AllVersions) {
 		list, err := cmd.api.ListPolicyVersions(&iam.ListPolicyVersionsInput{PolicyArn: cmd.Arn})
 		if err != nil {
@@ -238,7 +239,7 @@ func (cmd *AttachPolicy) ConvertParams() ([]string, func(values map[string]inter
 		}
 }
 
-func (cmd *AttachPolicy) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *AttachPolicy) ManualRun(renv env.Running) (interface{}, error) {
 	start := time.Now()
 	switch {
 	case cmd.User != nil:
@@ -303,7 +304,7 @@ func (cmd *DetachPolicy) ConvertParams() ([]string, func(values map[string]inter
 		}
 }
 
-func (cmd *DetachPolicy) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DetachPolicy) ManualRun(renv env.Running) (interface{}, error) {
 	start := time.Now()
 	switch {
 	case cmd.User != nil:

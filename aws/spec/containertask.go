@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wallix/awless/cloud/graph"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -63,7 +64,7 @@ func (cmd *StartContainertask) Validate_Type() error {
 	return nil
 }
 
-func (cmd *StartContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *StartContainertask) ManualRun(renv env.Running) (interface{}, error) {
 	switch StringValue(cmd.Type) {
 	case "service":
 		setters := []setter{
@@ -161,7 +162,7 @@ func (cmd *StopContainertask) Validate_Type() error {
 	return nil
 }
 
-func (cmd *StopContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *StopContainertask) ManualRun(renv env.Running) (interface{}, error) {
 	switch StringValue(cmd.Type) {
 	case "service":
 		call := &awsCall{
@@ -229,7 +230,7 @@ func (cmd *AttachContainertask) Params() params.Rule {
 	)
 }
 
-func (cmd *AttachContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *AttachContainertask) ManualRun(renv env.Running) (interface{}, error) {
 	var taskDefinitionInput *ecs.RegisterTaskDefinitionInput
 	taskDefinitionName := StringValue(cmd.Name)
 
@@ -330,7 +331,7 @@ func (cmd *DetachContainertask) Params() params.Rule {
 	return params.AllOf(params.Key("container-name"), params.Key("name"))
 }
 
-func (cmd *DetachContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DetachContainertask) ManualRun(renv env.Running) (interface{}, error) {
 	taskdefOutput, err := cmd.api.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
 		TaskDefinition: cmd.Name,
 	})
@@ -401,7 +402,7 @@ func (cmd *DeleteContainertask) Params() params.Rule {
 	)
 }
 
-func (cmd *DeleteContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
@@ -429,7 +430,7 @@ func (cmd *DeleteContainertask) DryRun(ctx, params map[string]interface{}) (inte
 	return nil, nil
 }
 
-func (cmd *DeleteContainertask) ManualRun(ctx map[string]interface{}) (interface{}, error) {
+func (cmd *DeleteContainertask) ManualRun(renv env.Running) (interface{}, error) {
 	taskDefinitionName := StringValue(cmd.Name)
 
 	if BoolValue(cmd.AllVersions) {
