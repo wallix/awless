@@ -374,10 +374,6 @@ func (cmd *{{ $cmdName }}) DryRun(ctx, params map[string]interface{}) (interface
 }
 {{- end }}
 
-func (cmd *{{ $cmdName }}) ParamsHelp() string {
-	return generateParamsHelp("{{ $tag.Action }}{{ $tag.Entity }}", structListParamsKeys(cmd))
-}
-
 func (cmd *{{ $cmdName }}) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }

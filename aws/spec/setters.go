@@ -607,21 +607,6 @@ func structSetter(s interface{}, params map[string]interface{}) error {
 	return nil
 }
 
-func structListParamsKeys(src interface{}) map[string]bool {
-	val := reflect.ValueOf(src).Elem()
-	stru := val.Type()
-
-	result := make(map[string]bool)
-	for i := 0; i < stru.NumField(); i++ {
-		field := stru.Field(i)
-		if name, ok := field.Tag.Lookup("templateName"); ok {
-			_, req := field.Tag.Lookup("required")
-			result[name] = req
-		}
-	}
-	return result
-}
-
 func structInjector(src, dest interface{}, ctx map[string]interface{}) error {
 	val := reflect.ValueOf(src).Elem()
 	stru := val.Type()
@@ -657,16 +642,6 @@ func validateStruct(s interface{}, ignoredParams []string) error {
 	var messages []string
 	for i := 0; i < stru.NumField(); i++ {
 		field := stru.Field(i)
-		if _, ok := field.Tag.Lookup("required"); ok {
-			fieldName := field.Name
-			if tplName, ok := field.Tag.Lookup("templateName"); ok {
-				fieldName = tplName
-			}
-			if val.Elem().Field(i).IsNil() && !contains(ignoredParams, fieldName) {
-				messages = append(messages, fmt.Sprintf("missing required field '%s'", fieldName))
-			}
-		}
-
 		if tplName, ok := field.Tag.Lookup("templateName"); ok && !contains(ignoredParams, tplName) {
 			if val.Elem().Field(i).IsNil() {
 				continue

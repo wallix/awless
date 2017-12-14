@@ -143,8 +143,7 @@ func verifyCommandsDefinedPass(tpl *Template, env *Env) (*Template, *Env, error)
 
 	for _, node := range tpl.CommandNodesIterator() {
 		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
-		cmd := env.Lookuper(key)
-		if cmd == nil {
+		if cmd := env.Lookuper(key); cmd == nil {
 			return tpl, env, fmt.Errorf("cannot find command for '%s'", key)
 		}
 	}

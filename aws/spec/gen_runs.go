@@ -135,10 +135,6 @@ func (cmd *AttachAlarm) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("alarm"), nil
 }
 
-func (cmd *AttachAlarm) ParamsHelp() string {
-	return generateParamsHelp("attachalarm", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -214,10 +210,6 @@ func (cmd *AttachContainertask) ValidateCommand(params map[string]interface{}, r
 
 func (cmd *AttachContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
-}
-
-func (cmd *AttachContainertask) ParamsHelp() string {
-	return generateParamsHelp("attachcontainertask", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachContainertask) inject(params map[string]interface{}) error {
@@ -324,10 +316,6 @@ func (cmd *AttachElasticip) DryRun(ctx, params map[string]interface{}) (interfac
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *AttachElasticip) ParamsHelp() string {
-	return generateParamsHelp("attachelasticip", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -411,10 +399,6 @@ func (cmd *AttachInstance) DryRun(ctx, params map[string]interface{}) (interface
 	return fakeDryRunId("instance"), nil
 }
 
-func (cmd *AttachInstance) ParamsHelp() string {
-	return generateParamsHelp("attachinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -486,10 +470,6 @@ func (cmd *AttachInstanceprofile) ValidateCommand(params map[string]interface{},
 	}
 
 	return
-}
-
-func (cmd *AttachInstanceprofile) ParamsHelp() string {
-	return generateParamsHelp("attachinstanceprofile", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachInstanceprofile) inject(params map[string]interface{}) error {
@@ -596,10 +576,6 @@ func (cmd *AttachInternetgateway) DryRun(ctx, params map[string]interface{}) (in
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *AttachInternetgateway) ParamsHelp() string {
-	return generateParamsHelp("attachinternetgateway", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -681,10 +657,6 @@ func (cmd *AttachMfadevice) ValidateCommand(params map[string]interface{}, refs 
 
 func (cmd *AttachMfadevice) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
-}
-
-func (cmd *AttachMfadevice) ParamsHelp() string {
-	return generateParamsHelp("attachmfadevice", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachMfadevice) inject(params map[string]interface{}) error {
@@ -791,10 +763,6 @@ func (cmd *AttachNetworkinterface) DryRun(ctx, params map[string]interface{}) (i
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *AttachNetworkinterface) ParamsHelp() string {
-	return generateParamsHelp("attachnetworkinterface", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -870,10 +838,6 @@ func (cmd *AttachPolicy) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *AttachPolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
-}
-
-func (cmd *AttachPolicy) ParamsHelp() string {
-	return generateParamsHelp("attachpolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachPolicy) inject(params map[string]interface{}) error {
@@ -957,10 +921,6 @@ func (cmd *AttachRole) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *AttachRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
-}
-
-func (cmd *AttachRole) ParamsHelp() string {
-	return generateParamsHelp("attachrole", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachRole) inject(params map[string]interface{}) error {
@@ -1067,10 +1027,6 @@ func (cmd *AttachRoutetable) DryRun(ctx, params map[string]interface{}) (interfa
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *AttachRoutetable) ParamsHelp() string {
-	return generateParamsHelp("attachroutetable", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -1146,10 +1102,6 @@ func (cmd *AttachSecuritygroup) ValidateCommand(params map[string]interface{}, r
 
 func (cmd *AttachSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
-}
-
-func (cmd *AttachSecuritygroup) ParamsHelp() string {
-	return generateParamsHelp("attachsecuritygroup", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachSecuritygroup) inject(params map[string]interface{}) error {
@@ -1233,10 +1185,6 @@ func (cmd *AttachUser) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *AttachUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
-}
-
-func (cmd *AttachUser) ParamsHelp() string {
-	return generateParamsHelp("attachuser", structListParamsKeys(cmd))
 }
 
 func (cmd *AttachUser) inject(params map[string]interface{}) error {
@@ -1343,10 +1291,6 @@ func (cmd *AttachVolume) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *AttachVolume) ParamsHelp() string {
-	return generateParamsHelp("attachvolume", structListParamsKeys(cmd))
-}
-
 func (cmd *AttachVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -1422,10 +1366,6 @@ func (cmd *AuthenticateRegistry) ValidateCommand(params map[string]interface{}, 
 
 func (cmd *AuthenticateRegistry) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("registry"), nil
-}
-
-func (cmd *AuthenticateRegistry) ParamsHelp() string {
-	return generateParamsHelp("authenticateregistry", structListParamsKeys(cmd))
 }
 
 func (cmd *AuthenticateRegistry) inject(params map[string]interface{}) error {
@@ -1505,10 +1445,6 @@ func (cmd *CheckCertificate) DryRun(ctx, params map[string]interface{}) (interfa
 	return fakeDryRunId("certificate"), nil
 }
 
-func (cmd *CheckCertificate) ParamsHelp() string {
-	return generateParamsHelp("checkcertificate", structListParamsKeys(cmd))
-}
-
 func (cmd *CheckCertificate) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -1584,10 +1520,6 @@ func (cmd *CheckDatabase) ValidateCommand(params map[string]interface{}, refs []
 
 func (cmd *CheckDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
-}
-
-func (cmd *CheckDatabase) ParamsHelp() string {
-	return generateParamsHelp("checkdatabase", structListParamsKeys(cmd))
 }
 
 func (cmd *CheckDatabase) inject(params map[string]interface{}) error {
@@ -1667,10 +1599,6 @@ func (cmd *CheckDistribution) DryRun(ctx, params map[string]interface{}) (interf
 	return fakeDryRunId("distribution"), nil
 }
 
-func (cmd *CheckDistribution) ParamsHelp() string {
-	return generateParamsHelp("checkdistribution", structListParamsKeys(cmd))
-}
-
 func (cmd *CheckDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -1746,10 +1674,6 @@ func (cmd *CheckInstance) ValidateCommand(params map[string]interface{}, refs []
 
 func (cmd *CheckInstance) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
-}
-
-func (cmd *CheckInstance) ParamsHelp() string {
-	return generateParamsHelp("checkinstance", structListParamsKeys(cmd))
 }
 
 func (cmd *CheckInstance) inject(params map[string]interface{}) error {
@@ -1829,10 +1753,6 @@ func (cmd *CheckLoadbalancer) DryRun(ctx, params map[string]interface{}) (interf
 	return fakeDryRunId("loadbalancer"), nil
 }
 
-func (cmd *CheckLoadbalancer) ParamsHelp() string {
-	return generateParamsHelp("checkloadbalancer", structListParamsKeys(cmd))
-}
-
 func (cmd *CheckLoadbalancer) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -1908,10 +1828,6 @@ func (cmd *CheckNatgateway) ValidateCommand(params map[string]interface{}, refs 
 
 func (cmd *CheckNatgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
-}
-
-func (cmd *CheckNatgateway) ParamsHelp() string {
-	return generateParamsHelp("checknatgateway", structListParamsKeys(cmd))
 }
 
 func (cmd *CheckNatgateway) inject(params map[string]interface{}) error {
@@ -1991,10 +1907,6 @@ func (cmd *CheckNetworkinterface) DryRun(ctx, params map[string]interface{}) (in
 	return fakeDryRunId("networkinterface"), nil
 }
 
-func (cmd *CheckNetworkinterface) ParamsHelp() string {
-	return generateParamsHelp("checknetworkinterface", structListParamsKeys(cmd))
-}
-
 func (cmd *CheckNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2070,10 +1982,6 @@ func (cmd *CheckScalinggroup) ValidateCommand(params map[string]interface{}, ref
 
 func (cmd *CheckScalinggroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
-}
-
-func (cmd *CheckScalinggroup) ParamsHelp() string {
-	return generateParamsHelp("checkscalinggroup", structListParamsKeys(cmd))
 }
 
 func (cmd *CheckScalinggroup) inject(params map[string]interface{}) error {
@@ -2153,10 +2061,6 @@ func (cmd *CheckSecuritygroup) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("securitygroup"), nil
 }
 
-func (cmd *CheckSecuritygroup) ParamsHelp() string {
-	return generateParamsHelp("checksecuritygroup", structListParamsKeys(cmd))
-}
-
 func (cmd *CheckSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2232,10 +2136,6 @@ func (cmd *CheckVolume) ValidateCommand(params map[string]interface{}, refs []st
 
 func (cmd *CheckVolume) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("volume"), nil
-}
-
-func (cmd *CheckVolume) ParamsHelp() string {
-	return generateParamsHelp("checkvolume", structListParamsKeys(cmd))
 }
 
 func (cmd *CheckVolume) inject(params map[string]interface{}) error {
@@ -2342,10 +2242,6 @@ func (cmd *CopyImage) DryRun(ctx, params map[string]interface{}) (interface{}, e
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CopyImage) ParamsHelp() string {
-	return generateParamsHelp("copyimage", structListParamsKeys(cmd))
-}
-
 func (cmd *CopyImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2450,10 +2346,6 @@ func (cmd *CopySnapshot) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CopySnapshot) ParamsHelp() string {
-	return generateParamsHelp("copysnapshot", structListParamsKeys(cmd))
-}
-
 func (cmd *CopySnapshot) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2535,10 +2427,6 @@ func (cmd *CreateAccesskey) ValidateCommand(params map[string]interface{}, refs 
 
 func (cmd *CreateAccesskey) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("accesskey"), nil
-}
-
-func (cmd *CreateAccesskey) ParamsHelp() string {
-	return generateParamsHelp("createaccesskey", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateAccesskey) inject(params map[string]interface{}) error {
@@ -2624,10 +2512,6 @@ func (cmd *CreateAlarm) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("alarm"), nil
 }
 
-func (cmd *CreateAlarm) ParamsHelp() string {
-	return generateParamsHelp("createalarm", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2709,10 +2593,6 @@ func (cmd *CreateAppscalingpolicy) ValidateCommand(params map[string]interface{}
 
 func (cmd *CreateAppscalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingpolicy"), nil
-}
-
-func (cmd *CreateAppscalingpolicy) ParamsHelp() string {
-	return generateParamsHelp("createappscalingpolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateAppscalingpolicy) inject(params map[string]interface{}) error {
@@ -2798,10 +2678,6 @@ func (cmd *CreateAppscalingtarget) DryRun(ctx, params map[string]interface{}) (i
 	return fakeDryRunId("appscalingtarget"), nil
 }
 
-func (cmd *CreateAppscalingtarget) ParamsHelp() string {
-	return generateParamsHelp("createappscalingtarget", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateAppscalingtarget) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2885,10 +2761,6 @@ func (cmd *CreateBucket) DryRun(ctx, params map[string]interface{}) (interface{}
 	return fakeDryRunId("bucket"), nil
 }
 
-func (cmd *CreateBucket) ParamsHelp() string {
-	return generateParamsHelp("createbucket", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateBucket) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -2964,10 +2836,6 @@ func (cmd *CreateCertificate) ValidateCommand(params map[string]interface{}, ref
 
 func (cmd *CreateCertificate) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("certificate"), nil
-}
-
-func (cmd *CreateCertificate) ParamsHelp() string {
-	return generateParamsHelp("createcertificate", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateCertificate) inject(params map[string]interface{}) error {
@@ -3053,10 +2921,6 @@ func (cmd *CreateContainercluster) DryRun(ctx, params map[string]interface{}) (i
 	return fakeDryRunId("containercluster"), nil
 }
 
-func (cmd *CreateContainercluster) ParamsHelp() string {
-	return generateParamsHelp("createcontainercluster", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateContainercluster) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -3132,10 +2996,6 @@ func (cmd *CreateDatabase) ValidateCommand(params map[string]interface{}, refs [
 
 func (cmd *CreateDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
-}
-
-func (cmd *CreateDatabase) ParamsHelp() string {
-	return generateParamsHelp("createdatabase", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateDatabase) inject(params map[string]interface{}) error {
@@ -3221,10 +3081,6 @@ func (cmd *CreateDbsubnetgroup) DryRun(ctx, params map[string]interface{}) (inte
 	return fakeDryRunId("dbsubnetgroup"), nil
 }
 
-func (cmd *CreateDbsubnetgroup) ParamsHelp() string {
-	return generateParamsHelp("createdbsubnetgroup", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateDbsubnetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -3300,10 +3156,6 @@ func (cmd *CreateDistribution) ValidateCommand(params map[string]interface{}, re
 
 func (cmd *CreateDistribution) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("distribution"), nil
-}
-
-func (cmd *CreateDistribution) ParamsHelp() string {
-	return generateParamsHelp("createdistribution", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateDistribution) inject(params map[string]interface{}) error {
@@ -3410,10 +3262,6 @@ func (cmd *CreateElasticip) DryRun(ctx, params map[string]interface{}) (interfac
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateElasticip) ParamsHelp() string {
-	return generateParamsHelp("createelasticip", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -3497,10 +3345,6 @@ func (cmd *CreateFunction) DryRun(ctx, params map[string]interface{}) (interface
 	return fakeDryRunId("function"), nil
 }
 
-func (cmd *CreateFunction) ParamsHelp() string {
-	return generateParamsHelp("createfunction", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateFunction) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -3582,10 +3426,6 @@ func (cmd *CreateGroup) ValidateCommand(params map[string]interface{}, refs []st
 
 func (cmd *CreateGroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("group"), nil
-}
-
-func (cmd *CreateGroup) ParamsHelp() string {
-	return generateParamsHelp("creategroup", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateGroup) inject(params map[string]interface{}) error {
@@ -3692,10 +3532,6 @@ func (cmd *CreateImage) DryRun(ctx, params map[string]interface{}) (interface{},
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateImage) ParamsHelp() string {
-	return generateParamsHelp("createimage", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -3800,10 +3636,6 @@ func (cmd *CreateInstance) DryRun(ctx, params map[string]interface{}) (interface
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateInstance) ParamsHelp() string {
-	return generateParamsHelp("createinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -3885,10 +3717,6 @@ func (cmd *CreateInstanceprofile) ValidateCommand(params map[string]interface{},
 
 func (cmd *CreateInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
-}
-
-func (cmd *CreateInstanceprofile) ParamsHelp() string {
-	return generateParamsHelp("createinstanceprofile", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateInstanceprofile) inject(params map[string]interface{}) error {
@@ -3995,10 +3823,6 @@ func (cmd *CreateInternetgateway) DryRun(ctx, params map[string]interface{}) (in
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateInternetgateway) ParamsHelp() string {
-	return generateParamsHelp("createinternetgateway", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -4080,10 +3904,6 @@ func (cmd *CreateKeypair) ValidateCommand(params map[string]interface{}, refs []
 
 func (cmd *CreateKeypair) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("keypair"), nil
-}
-
-func (cmd *CreateKeypair) ParamsHelp() string {
-	return generateParamsHelp("createkeypair", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateKeypair) inject(params map[string]interface{}) error {
@@ -4169,10 +3989,6 @@ func (cmd *CreateLaunchconfiguration) DryRun(ctx, params map[string]interface{})
 	return fakeDryRunId("launchconfiguration"), nil
 }
 
-func (cmd *CreateLaunchconfiguration) ParamsHelp() string {
-	return generateParamsHelp("createlaunchconfiguration", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateLaunchconfiguration) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -4254,10 +4070,6 @@ func (cmd *CreateListener) ValidateCommand(params map[string]interface{}, refs [
 
 func (cmd *CreateListener) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("listener"), nil
-}
-
-func (cmd *CreateListener) ParamsHelp() string {
-	return generateParamsHelp("createlistener", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateListener) inject(params map[string]interface{}) error {
@@ -4343,10 +4155,6 @@ func (cmd *CreateLoadbalancer) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("loadbalancer"), nil
 }
 
-func (cmd *CreateLoadbalancer) ParamsHelp() string {
-	return generateParamsHelp("createloadbalancer", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateLoadbalancer) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -4430,10 +4238,6 @@ func (cmd *CreateLoginprofile) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("loginprofile"), nil
 }
 
-func (cmd *CreateLoginprofile) ParamsHelp() string {
-	return generateParamsHelp("createloginprofile", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateLoginprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -4509,10 +4313,6 @@ func (cmd *CreateMfadevice) ValidateCommand(params map[string]interface{}, refs 
 
 func (cmd *CreateMfadevice) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
-}
-
-func (cmd *CreateMfadevice) ParamsHelp() string {
-	return generateParamsHelp("createmfadevice", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateMfadevice) inject(params map[string]interface{}) error {
@@ -4596,10 +4396,6 @@ func (cmd *CreateNatgateway) ValidateCommand(params map[string]interface{}, refs
 
 func (cmd *CreateNatgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
-}
-
-func (cmd *CreateNatgateway) ParamsHelp() string {
-	return generateParamsHelp("createnatgateway", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateNatgateway) inject(params map[string]interface{}) error {
@@ -4706,10 +4502,6 @@ func (cmd *CreateNetworkinterface) DryRun(ctx, params map[string]interface{}) (i
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateNetworkinterface) ParamsHelp() string {
-	return generateParamsHelp("createnetworkinterface", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -4791,10 +4583,6 @@ func (cmd *CreatePolicy) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *CreatePolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
-}
-
-func (cmd *CreatePolicy) ParamsHelp() string {
-	return generateParamsHelp("createpolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *CreatePolicy) inject(params map[string]interface{}) error {
@@ -4880,10 +4668,6 @@ func (cmd *CreateQueue) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("queue"), nil
 }
 
-func (cmd *CreateQueue) ParamsHelp() string {
-	return generateParamsHelp("createqueue", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateQueue) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -4959,10 +4743,6 @@ func (cmd *CreateRecord) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *CreateRecord) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("record"), nil
-}
-
-func (cmd *CreateRecord) ParamsHelp() string {
-	return generateParamsHelp("createrecord", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateRecord) inject(params map[string]interface{}) error {
@@ -5048,10 +4828,6 @@ func (cmd *CreateRepository) DryRun(ctx, params map[string]interface{}) (interfa
 	return fakeDryRunId("repository"), nil
 }
 
-func (cmd *CreateRepository) ParamsHelp() string {
-	return generateParamsHelp("createrepository", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateRepository) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -5127,10 +4903,6 @@ func (cmd *CreateRole) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *CreateRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
-}
-
-func (cmd *CreateRole) ParamsHelp() string {
-	return generateParamsHelp("createrole", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateRole) inject(params map[string]interface{}) error {
@@ -5237,10 +5009,6 @@ func (cmd *CreateRoute) DryRun(ctx, params map[string]interface{}) (interface{},
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateRoute) ParamsHelp() string {
-	return generateParamsHelp("createroute", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateRoute) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -5345,10 +5113,6 @@ func (cmd *CreateRoutetable) DryRun(ctx, params map[string]interface{}) (interfa
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateRoutetable) ParamsHelp() string {
-	return generateParamsHelp("createroutetable", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -5424,10 +5188,6 @@ func (cmd *CreateS3object) ValidateCommand(params map[string]interface{}, refs [
 
 func (cmd *CreateS3object) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
-}
-
-func (cmd *CreateS3object) ParamsHelp() string {
-	return generateParamsHelp("creates3object", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateS3object) inject(params map[string]interface{}) error {
@@ -5513,10 +5273,6 @@ func (cmd *CreateScalinggroup) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("scalinggroup"), nil
 }
 
-func (cmd *CreateScalinggroup) ParamsHelp() string {
-	return generateParamsHelp("createscalinggroup", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -5598,10 +5354,6 @@ func (cmd *CreateScalingpolicy) ValidateCommand(params map[string]interface{}, r
 
 func (cmd *CreateScalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalingpolicy"), nil
-}
-
-func (cmd *CreateScalingpolicy) ParamsHelp() string {
-	return generateParamsHelp("createscalingpolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateScalingpolicy) inject(params map[string]interface{}) error {
@@ -5708,10 +5460,6 @@ func (cmd *CreateSecuritygroup) DryRun(ctx, params map[string]interface{}) (inte
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateSecuritygroup) ParamsHelp() string {
-	return generateParamsHelp("createsecuritygroup", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -5816,10 +5564,6 @@ func (cmd *CreateSnapshot) DryRun(ctx, params map[string]interface{}) (interface
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateSnapshot) ParamsHelp() string {
-	return generateParamsHelp("createsnapshot", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateSnapshot) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -5901,10 +5645,6 @@ func (cmd *CreateStack) ValidateCommand(params map[string]interface{}, refs []st
 
 func (cmd *CreateStack) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
-}
-
-func (cmd *CreateStack) ParamsHelp() string {
-	return generateParamsHelp("createstack", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateStack) inject(params map[string]interface{}) error {
@@ -6011,10 +5751,6 @@ func (cmd *CreateSubnet) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateSubnet) ParamsHelp() string {
-	return generateParamsHelp("createsubnet", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateSubnet) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6098,10 +5834,6 @@ func (cmd *CreateSubscription) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("subscription"), nil
 }
 
-func (cmd *CreateSubscription) ParamsHelp() string {
-	return generateParamsHelp("createsubscription", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateSubscription) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6173,10 +5905,6 @@ func (cmd *CreateTag) ValidateCommand(params map[string]interface{}, refs []stri
 	}
 
 	return
-}
-
-func (cmd *CreateTag) ParamsHelp() string {
-	return generateParamsHelp("createtag", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateTag) inject(params map[string]interface{}) error {
@@ -6262,10 +5990,6 @@ func (cmd *CreateTargetgroup) DryRun(ctx, params map[string]interface{}) (interf
 	return fakeDryRunId("targetgroup"), nil
 }
 
-func (cmd *CreateTargetgroup) ParamsHelp() string {
-	return generateParamsHelp("createtargetgroup", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateTargetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6349,10 +6073,6 @@ func (cmd *CreateTopic) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("topic"), nil
 }
 
-func (cmd *CreateTopic) ParamsHelp() string {
-	return generateParamsHelp("createtopic", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateTopic) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6434,10 +6154,6 @@ func (cmd *CreateUser) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *CreateUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
-}
-
-func (cmd *CreateUser) ParamsHelp() string {
-	return generateParamsHelp("createuser", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateUser) inject(params map[string]interface{}) error {
@@ -6544,10 +6260,6 @@ func (cmd *CreateVolume) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateVolume) ParamsHelp() string {
-	return generateParamsHelp("createvolume", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6652,10 +6364,6 @@ func (cmd *CreateVpc) DryRun(ctx, params map[string]interface{}) (interface{}, e
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *CreateVpc) ParamsHelp() string {
-	return generateParamsHelp("createvpc", structListParamsKeys(cmd))
-}
-
 func (cmd *CreateVpc) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6737,10 +6445,6 @@ func (cmd *CreateZone) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *CreateZone) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("zone"), nil
-}
-
-func (cmd *CreateZone) ParamsHelp() string {
-	return generateParamsHelp("createzone", structListParamsKeys(cmd))
 }
 
 func (cmd *CreateZone) inject(params map[string]interface{}) error {
@@ -6826,10 +6530,6 @@ func (cmd *DeleteAccesskey) DryRun(ctx, params map[string]interface{}) (interfac
 	return fakeDryRunId("accesskey"), nil
 }
 
-func (cmd *DeleteAccesskey) ParamsHelp() string {
-	return generateParamsHelp("deleteaccesskey", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteAccesskey) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -6911,10 +6611,6 @@ func (cmd *DeleteAlarm) ValidateCommand(params map[string]interface{}, refs []st
 
 func (cmd *DeleteAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
-}
-
-func (cmd *DeleteAlarm) ParamsHelp() string {
-	return generateParamsHelp("deletealarm", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteAlarm) inject(params map[string]interface{}) error {
@@ -7000,10 +6696,6 @@ func (cmd *DeleteAppscalingpolicy) DryRun(ctx, params map[string]interface{}) (i
 	return fakeDryRunId("appscalingpolicy"), nil
 }
 
-func (cmd *DeleteAppscalingpolicy) ParamsHelp() string {
-	return generateParamsHelp("deleteappscalingpolicy", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteAppscalingpolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -7085,10 +6777,6 @@ func (cmd *DeleteAppscalingtarget) ValidateCommand(params map[string]interface{}
 
 func (cmd *DeleteAppscalingtarget) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingtarget"), nil
-}
-
-func (cmd *DeleteAppscalingtarget) ParamsHelp() string {
-	return generateParamsHelp("deleteappscalingtarget", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteAppscalingtarget) inject(params map[string]interface{}) error {
@@ -7174,10 +6862,6 @@ func (cmd *DeleteBucket) DryRun(ctx, params map[string]interface{}) (interface{}
 	return fakeDryRunId("bucket"), nil
 }
 
-func (cmd *DeleteBucket) ParamsHelp() string {
-	return generateParamsHelp("deletebucket", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteBucket) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -7259,10 +6943,6 @@ func (cmd *DeleteCertificate) ValidateCommand(params map[string]interface{}, ref
 
 func (cmd *DeleteCertificate) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("certificate"), nil
-}
-
-func (cmd *DeleteCertificate) ParamsHelp() string {
-	return generateParamsHelp("deletecertificate", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteCertificate) inject(params map[string]interface{}) error {
@@ -7348,10 +7028,6 @@ func (cmd *DeleteContainercluster) DryRun(ctx, params map[string]interface{}) (i
 	return fakeDryRunId("containercluster"), nil
 }
 
-func (cmd *DeleteContainercluster) ParamsHelp() string {
-	return generateParamsHelp("deletecontainercluster", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteContainercluster) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -7423,10 +7099,6 @@ func (cmd *DeleteContainertask) ValidateCommand(params map[string]interface{}, r
 	}
 
 	return
-}
-
-func (cmd *DeleteContainertask) ParamsHelp() string {
-	return generateParamsHelp("deletecontainertask", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteContainertask) inject(params map[string]interface{}) error {
@@ -7512,10 +7184,6 @@ func (cmd *DeleteDatabase) DryRun(ctx, params map[string]interface{}) (interface
 	return fakeDryRunId("database"), nil
 }
 
-func (cmd *DeleteDatabase) ParamsHelp() string {
-	return generateParamsHelp("deletedatabase", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteDatabase) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -7599,10 +7267,6 @@ func (cmd *DeleteDbsubnetgroup) DryRun(ctx, params map[string]interface{}) (inte
 	return fakeDryRunId("dbsubnetgroup"), nil
 }
 
-func (cmd *DeleteDbsubnetgroup) ParamsHelp() string {
-	return generateParamsHelp("deletedbsubnetgroup", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteDbsubnetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -7678,10 +7342,6 @@ func (cmd *DeleteDistribution) ValidateCommand(params map[string]interface{}, re
 
 func (cmd *DeleteDistribution) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("distribution"), nil
-}
-
-func (cmd *DeleteDistribution) ParamsHelp() string {
-	return generateParamsHelp("deletedistribution", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteDistribution) inject(params map[string]interface{}) error {
@@ -7788,10 +7448,6 @@ func (cmd *DeleteElasticip) DryRun(ctx, params map[string]interface{}) (interfac
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteElasticip) ParamsHelp() string {
-	return generateParamsHelp("deleteelasticip", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -7873,10 +7529,6 @@ func (cmd *DeleteFunction) ValidateCommand(params map[string]interface{}, refs [
 
 func (cmd *DeleteFunction) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("function"), nil
-}
-
-func (cmd *DeleteFunction) ParamsHelp() string {
-	return generateParamsHelp("deletefunction", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteFunction) inject(params map[string]interface{}) error {
@@ -7962,10 +7614,6 @@ func (cmd *DeleteGroup) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("group"), nil
 }
 
-func (cmd *DeleteGroup) ParamsHelp() string {
-	return generateParamsHelp("deletegroup", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteGroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8037,10 +7685,6 @@ func (cmd *DeleteImage) ValidateCommand(params map[string]interface{}, refs []st
 	}
 
 	return
-}
-
-func (cmd *DeleteImage) ParamsHelp() string {
-	return generateParamsHelp("deleteimage", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteImage) inject(params map[string]interface{}) error {
@@ -8147,10 +7791,6 @@ func (cmd *DeleteInstance) DryRun(ctx, params map[string]interface{}) (interface
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteInstance) ParamsHelp() string {
-	return generateParamsHelp("deleteinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8232,10 +7872,6 @@ func (cmd *DeleteInstanceprofile) ValidateCommand(params map[string]interface{},
 
 func (cmd *DeleteInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
-}
-
-func (cmd *DeleteInstanceprofile) ParamsHelp() string {
-	return generateParamsHelp("deleteinstanceprofile", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteInstanceprofile) inject(params map[string]interface{}) error {
@@ -8342,10 +7978,6 @@ func (cmd *DeleteInternetgateway) DryRun(ctx, params map[string]interface{}) (in
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteInternetgateway) ParamsHelp() string {
-	return generateParamsHelp("deleteinternetgateway", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8450,10 +8082,6 @@ func (cmd *DeleteKeypair) DryRun(ctx, params map[string]interface{}) (interface{
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteKeypair) ParamsHelp() string {
-	return generateParamsHelp("deletekeypair", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteKeypair) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8535,10 +8163,6 @@ func (cmd *DeleteLaunchconfiguration) ValidateCommand(params map[string]interfac
 
 func (cmd *DeleteLaunchconfiguration) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("launchconfiguration"), nil
-}
-
-func (cmd *DeleteLaunchconfiguration) ParamsHelp() string {
-	return generateParamsHelp("deletelaunchconfiguration", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteLaunchconfiguration) inject(params map[string]interface{}) error {
@@ -8624,10 +8248,6 @@ func (cmd *DeleteListener) DryRun(ctx, params map[string]interface{}) (interface
 	return fakeDryRunId("listener"), nil
 }
 
-func (cmd *DeleteListener) ParamsHelp() string {
-	return generateParamsHelp("deletelistener", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteListener) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8709,10 +8329,6 @@ func (cmd *DeleteLoadbalancer) ValidateCommand(params map[string]interface{}, re
 
 func (cmd *DeleteLoadbalancer) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loadbalancer"), nil
-}
-
-func (cmd *DeleteLoadbalancer) ParamsHelp() string {
-	return generateParamsHelp("deleteloadbalancer", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteLoadbalancer) inject(params map[string]interface{}) error {
@@ -8798,10 +8414,6 @@ func (cmd *DeleteLoginprofile) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("loginprofile"), nil
 }
 
-func (cmd *DeleteLoginprofile) ParamsHelp() string {
-	return generateParamsHelp("deleteloginprofile", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteLoginprofile) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8885,10 +8497,6 @@ func (cmd *DeleteMfadevice) DryRun(ctx, params map[string]interface{}) (interfac
 	return fakeDryRunId("mfadevice"), nil
 }
 
-func (cmd *DeleteMfadevice) ParamsHelp() string {
-	return generateParamsHelp("deletemfadevice", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteMfadevice) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -8970,10 +8578,6 @@ func (cmd *DeleteNatgateway) ValidateCommand(params map[string]interface{}, refs
 
 func (cmd *DeleteNatgateway) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
-}
-
-func (cmd *DeleteNatgateway) ParamsHelp() string {
-	return generateParamsHelp("deletenatgateway", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteNatgateway) inject(params map[string]interface{}) error {
@@ -9080,10 +8684,6 @@ func (cmd *DeleteNetworkinterface) DryRun(ctx, params map[string]interface{}) (i
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteNetworkinterface) ParamsHelp() string {
-	return generateParamsHelp("deletenetworkinterface", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -9165,10 +8765,6 @@ func (cmd *DeletePolicy) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *DeletePolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
-}
-
-func (cmd *DeletePolicy) ParamsHelp() string {
-	return generateParamsHelp("deletepolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *DeletePolicy) inject(params map[string]interface{}) error {
@@ -9254,10 +8850,6 @@ func (cmd *DeleteQueue) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("queue"), nil
 }
 
-func (cmd *DeleteQueue) ParamsHelp() string {
-	return generateParamsHelp("deletequeue", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteQueue) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -9333,10 +8925,6 @@ func (cmd *DeleteRecord) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *DeleteRecord) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("record"), nil
-}
-
-func (cmd *DeleteRecord) ParamsHelp() string {
-	return generateParamsHelp("deleterecord", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteRecord) inject(params map[string]interface{}) error {
@@ -9422,10 +9010,6 @@ func (cmd *DeleteRepository) DryRun(ctx, params map[string]interface{}) (interfa
 	return fakeDryRunId("repository"), nil
 }
 
-func (cmd *DeleteRepository) ParamsHelp() string {
-	return generateParamsHelp("deleterepository", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteRepository) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -9501,10 +9085,6 @@ func (cmd *DeleteRole) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *DeleteRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
-}
-
-func (cmd *DeleteRole) ParamsHelp() string {
-	return generateParamsHelp("deleterole", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteRole) inject(params map[string]interface{}) error {
@@ -9611,10 +9191,6 @@ func (cmd *DeleteRoute) DryRun(ctx, params map[string]interface{}) (interface{},
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteRoute) ParamsHelp() string {
-	return generateParamsHelp("deleteroute", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteRoute) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -9719,10 +9295,6 @@ func (cmd *DeleteRoutetable) DryRun(ctx, params map[string]interface{}) (interfa
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteRoutetable) ParamsHelp() string {
-	return generateParamsHelp("deleteroutetable", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -9804,10 +9376,6 @@ func (cmd *DeleteS3object) ValidateCommand(params map[string]interface{}, refs [
 
 func (cmd *DeleteS3object) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
-}
-
-func (cmd *DeleteS3object) ParamsHelp() string {
-	return generateParamsHelp("deletes3object", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteS3object) inject(params map[string]interface{}) error {
@@ -9893,10 +9461,6 @@ func (cmd *DeleteScalinggroup) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("scalinggroup"), nil
 }
 
-func (cmd *DeleteScalinggroup) ParamsHelp() string {
-	return generateParamsHelp("deletescalinggroup", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -9978,10 +9542,6 @@ func (cmd *DeleteScalingpolicy) ValidateCommand(params map[string]interface{}, r
 
 func (cmd *DeleteScalingpolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalingpolicy"), nil
-}
-
-func (cmd *DeleteScalingpolicy) ParamsHelp() string {
-	return generateParamsHelp("deletescalingpolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteScalingpolicy) inject(params map[string]interface{}) error {
@@ -10088,10 +9648,6 @@ func (cmd *DeleteSecuritygroup) DryRun(ctx, params map[string]interface{}) (inte
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteSecuritygroup) ParamsHelp() string {
-	return generateParamsHelp("deletesecuritygroup", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteSecuritygroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -10196,10 +9752,6 @@ func (cmd *DeleteSnapshot) DryRun(ctx, params map[string]interface{}) (interface
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteSnapshot) ParamsHelp() string {
-	return generateParamsHelp("deletesnapshot", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteSnapshot) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -10281,10 +9833,6 @@ func (cmd *DeleteStack) ValidateCommand(params map[string]interface{}, refs []st
 
 func (cmd *DeleteStack) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
-}
-
-func (cmd *DeleteStack) ParamsHelp() string {
-	return generateParamsHelp("deletestack", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteStack) inject(params map[string]interface{}) error {
@@ -10391,10 +9939,6 @@ func (cmd *DeleteSubnet) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteSubnet) ParamsHelp() string {
-	return generateParamsHelp("deletesubnet", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteSubnet) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -10478,10 +10022,6 @@ func (cmd *DeleteSubscription) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("subscription"), nil
 }
 
-func (cmd *DeleteSubscription) ParamsHelp() string {
-	return generateParamsHelp("deletesubscription", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteSubscription) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -10553,10 +10093,6 @@ func (cmd *DeleteTag) ValidateCommand(params map[string]interface{}, refs []stri
 	}
 
 	return
-}
-
-func (cmd *DeleteTag) ParamsHelp() string {
-	return generateParamsHelp("deletetag", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteTag) inject(params map[string]interface{}) error {
@@ -10642,10 +10178,6 @@ func (cmd *DeleteTargetgroup) DryRun(ctx, params map[string]interface{}) (interf
 	return fakeDryRunId("targetgroup"), nil
 }
 
-func (cmd *DeleteTargetgroup) ParamsHelp() string {
-	return generateParamsHelp("deletetargetgroup", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteTargetgroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -10729,10 +10261,6 @@ func (cmd *DeleteTopic) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("topic"), nil
 }
 
-func (cmd *DeleteTopic) ParamsHelp() string {
-	return generateParamsHelp("deletetopic", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteTopic) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -10814,10 +10342,6 @@ func (cmd *DeleteUser) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *DeleteUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
-}
-
-func (cmd *DeleteUser) ParamsHelp() string {
-	return generateParamsHelp("deleteuser", structListParamsKeys(cmd))
 }
 
 func (cmd *DeleteUser) inject(params map[string]interface{}) error {
@@ -10924,10 +10448,6 @@ func (cmd *DeleteVolume) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteVolume) ParamsHelp() string {
-	return generateParamsHelp("deletevolume", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11032,10 +10552,6 @@ func (cmd *DeleteVpc) DryRun(ctx, params map[string]interface{}) (interface{}, e
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DeleteVpc) ParamsHelp() string {
-	return generateParamsHelp("deletevpc", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteVpc) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11119,10 +10635,6 @@ func (cmd *DeleteZone) DryRun(ctx, params map[string]interface{}) (interface{}, 
 	return fakeDryRunId("zone"), nil
 }
 
-func (cmd *DeleteZone) ParamsHelp() string {
-	return generateParamsHelp("deletezone", structListParamsKeys(cmd))
-}
-
 func (cmd *DeleteZone) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11200,10 +10712,6 @@ func (cmd *DetachAlarm) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("alarm"), nil
 }
 
-func (cmd *DetachAlarm) ParamsHelp() string {
-	return generateParamsHelp("detachalarm", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11279,10 +10787,6 @@ func (cmd *DetachContainertask) ValidateCommand(params map[string]interface{}, r
 
 func (cmd *DetachContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
-}
-
-func (cmd *DetachContainertask) ParamsHelp() string {
-	return generateParamsHelp("detachcontainertask", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachContainertask) inject(params map[string]interface{}) error {
@@ -11389,10 +10893,6 @@ func (cmd *DetachElasticip) DryRun(ctx, params map[string]interface{}) (interfac
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DetachElasticip) ParamsHelp() string {
-	return generateParamsHelp("detachelasticip", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachElasticip) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11476,10 +10976,6 @@ func (cmd *DetachInstance) DryRun(ctx, params map[string]interface{}) (interface
 	return fakeDryRunId("instance"), nil
 }
 
-func (cmd *DetachInstance) ParamsHelp() string {
-	return generateParamsHelp("detachinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11555,10 +11051,6 @@ func (cmd *DetachInstanceprofile) ValidateCommand(params map[string]interface{},
 
 func (cmd *DetachInstanceprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
-}
-
-func (cmd *DetachInstanceprofile) ParamsHelp() string {
-	return generateParamsHelp("detachinstanceprofile", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachInstanceprofile) inject(params map[string]interface{}) error {
@@ -11665,10 +11157,6 @@ func (cmd *DetachInternetgateway) DryRun(ctx, params map[string]interface{}) (in
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DetachInternetgateway) ParamsHelp() string {
-	return generateParamsHelp("detachinternetgateway", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11752,10 +11240,6 @@ func (cmd *DetachMfadevice) DryRun(ctx, params map[string]interface{}) (interfac
 	return fakeDryRunId("mfadevice"), nil
 }
 
-func (cmd *DetachMfadevice) ParamsHelp() string {
-	return generateParamsHelp("detachmfadevice", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachMfadevice) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -11827,10 +11311,6 @@ func (cmd *DetachNetworkinterface) ValidateCommand(params map[string]interface{}
 	}
 
 	return
-}
-
-func (cmd *DetachNetworkinterface) ParamsHelp() string {
-	return generateParamsHelp("detachnetworkinterface", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachNetworkinterface) inject(params map[string]interface{}) error {
@@ -11908,10 +11388,6 @@ func (cmd *DetachPolicy) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *DetachPolicy) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
-}
-
-func (cmd *DetachPolicy) ParamsHelp() string {
-	return generateParamsHelp("detachpolicy", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachPolicy) inject(params map[string]interface{}) error {
@@ -11995,10 +11471,6 @@ func (cmd *DetachRole) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *DetachRole) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
-}
-
-func (cmd *DetachRole) ParamsHelp() string {
-	return generateParamsHelp("detachrole", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachRole) inject(params map[string]interface{}) error {
@@ -12105,10 +11577,6 @@ func (cmd *DetachRoutetable) DryRun(ctx, params map[string]interface{}) (interfa
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DetachRoutetable) ParamsHelp() string {
-	return generateParamsHelp("detachroutetable", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachRoutetable) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -12184,10 +11652,6 @@ func (cmd *DetachSecuritygroup) ValidateCommand(params map[string]interface{}, r
 
 func (cmd *DetachSecuritygroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
-}
-
-func (cmd *DetachSecuritygroup) ParamsHelp() string {
-	return generateParamsHelp("detachsecuritygroup", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachSecuritygroup) inject(params map[string]interface{}) error {
@@ -12271,10 +11735,6 @@ func (cmd *DetachUser) ValidateCommand(params map[string]interface{}, refs []str
 
 func (cmd *DetachUser) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
-}
-
-func (cmd *DetachUser) ParamsHelp() string {
-	return generateParamsHelp("detachuser", structListParamsKeys(cmd))
 }
 
 func (cmd *DetachUser) inject(params map[string]interface{}) error {
@@ -12381,10 +11841,6 @@ func (cmd *DetachVolume) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *DetachVolume) ParamsHelp() string {
-	return generateParamsHelp("detachvolume", structListParamsKeys(cmd))
-}
-
 func (cmd *DetachVolume) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -12489,10 +11945,6 @@ func (cmd *ImportImage) DryRun(ctx, params map[string]interface{}) (interface{},
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *ImportImage) ParamsHelp() string {
-	return generateParamsHelp("importimage", structListParamsKeys(cmd))
-}
-
 func (cmd *ImportImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -12576,10 +12028,6 @@ func (cmd *StartAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, 
 	return fakeDryRunId("alarm"), nil
 }
 
-func (cmd *StartAlarm) ParamsHelp() string {
-	return generateParamsHelp("startalarm", structListParamsKeys(cmd))
-}
-
 func (cmd *StartAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -12655,10 +12103,6 @@ func (cmd *StartContainertask) ValidateCommand(params map[string]interface{}, re
 
 func (cmd *StartContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
-}
-
-func (cmd *StartContainertask) ParamsHelp() string {
-	return generateParamsHelp("startcontainertask", structListParamsKeys(cmd))
 }
 
 func (cmd *StartContainertask) inject(params map[string]interface{}) error {
@@ -12742,10 +12186,6 @@ func (cmd *StartDatabase) ValidateCommand(params map[string]interface{}, refs []
 
 func (cmd *StartDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
-}
-
-func (cmd *StartDatabase) ParamsHelp() string {
-	return generateParamsHelp("startdatabase", structListParamsKeys(cmd))
 }
 
 func (cmd *StartDatabase) inject(params map[string]interface{}) error {
@@ -12852,10 +12292,6 @@ func (cmd *StartInstance) DryRun(ctx, params map[string]interface{}) (interface{
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *StartInstance) ParamsHelp() string {
-	return generateParamsHelp("startinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *StartInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -12939,10 +12375,6 @@ func (cmd *StopAlarm) DryRun(ctx, params map[string]interface{}) (interface{}, e
 	return fakeDryRunId("alarm"), nil
 }
 
-func (cmd *StopAlarm) ParamsHelp() string {
-	return generateParamsHelp("stopalarm", structListParamsKeys(cmd))
-}
-
 func (cmd *StopAlarm) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -13018,10 +12450,6 @@ func (cmd *StopContainertask) ValidateCommand(params map[string]interface{}, ref
 
 func (cmd *StopContainertask) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
-}
-
-func (cmd *StopContainertask) ParamsHelp() string {
-	return generateParamsHelp("stopcontainertask", structListParamsKeys(cmd))
 }
 
 func (cmd *StopContainertask) inject(params map[string]interface{}) error {
@@ -13105,10 +12533,6 @@ func (cmd *StopDatabase) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *StopDatabase) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
-}
-
-func (cmd *StopDatabase) ParamsHelp() string {
-	return generateParamsHelp("stopdatabase", structListParamsKeys(cmd))
 }
 
 func (cmd *StopDatabase) inject(params map[string]interface{}) error {
@@ -13215,10 +12639,6 @@ func (cmd *StopInstance) DryRun(ctx, params map[string]interface{}) (interface{}
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *StopInstance) ParamsHelp() string {
-	return generateParamsHelp("stopinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *StopInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -13294,10 +12714,6 @@ func (cmd *UpdateBucket) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *UpdateBucket) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("bucket"), nil
-}
-
-func (cmd *UpdateBucket) ParamsHelp() string {
-	return generateParamsHelp("updatebucket", structListParamsKeys(cmd))
 }
 
 func (cmd *UpdateBucket) inject(params map[string]interface{}) error {
@@ -13383,10 +12799,6 @@ func (cmd *UpdateContainertask) DryRun(ctx, params map[string]interface{}) (inte
 	return fakeDryRunId("containertask"), nil
 }
 
-func (cmd *UpdateContainertask) ParamsHelp() string {
-	return generateParamsHelp("updatecontainertask", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateContainertask) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -13464,10 +12876,6 @@ func (cmd *UpdateDistribution) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("distribution"), nil
 }
 
-func (cmd *UpdateDistribution) ParamsHelp() string {
-	return generateParamsHelp("updatedistribution", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateDistribution) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -13539,10 +12947,6 @@ func (cmd *UpdateImage) ValidateCommand(params map[string]interface{}, refs []st
 	}
 
 	return
-}
-
-func (cmd *UpdateImage) ParamsHelp() string {
-	return generateParamsHelp("updateimage", structListParamsKeys(cmd))
 }
 
 func (cmd *UpdateImage) inject(params map[string]interface{}) error {
@@ -13649,10 +13053,6 @@ func (cmd *UpdateInstance) DryRun(ctx, params map[string]interface{}) (interface
 	return nil, fmt.Errorf("dry run: %s", err)
 }
 
-func (cmd *UpdateInstance) ParamsHelp() string {
-	return generateParamsHelp("updateinstance", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateInstance) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -13734,10 +13134,6 @@ func (cmd *UpdateLoginprofile) ValidateCommand(params map[string]interface{}, re
 
 func (cmd *UpdateLoginprofile) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loginprofile"), nil
-}
-
-func (cmd *UpdateLoginprofile) ParamsHelp() string {
-	return generateParamsHelp("updateloginprofile", structListParamsKeys(cmd))
 }
 
 func (cmd *UpdateLoginprofile) inject(params map[string]interface{}) error {
@@ -13823,10 +13219,6 @@ func (cmd *UpdatePolicy) DryRun(ctx, params map[string]interface{}) (interface{}
 	return fakeDryRunId("policy"), nil
 }
 
-func (cmd *UpdatePolicy) ParamsHelp() string {
-	return generateParamsHelp("updatepolicy", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdatePolicy) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -13902,10 +13294,6 @@ func (cmd *UpdateRecord) ValidateCommand(params map[string]interface{}, refs []s
 
 func (cmd *UpdateRecord) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("record"), nil
-}
-
-func (cmd *UpdateRecord) ParamsHelp() string {
-	return generateParamsHelp("updaterecord", structListParamsKeys(cmd))
 }
 
 func (cmd *UpdateRecord) inject(params map[string]interface{}) error {
@@ -13991,10 +13379,6 @@ func (cmd *UpdateS3object) DryRun(ctx, params map[string]interface{}) (interface
 	return fakeDryRunId("s3object"), nil
 }
 
-func (cmd *UpdateS3object) ParamsHelp() string {
-	return generateParamsHelp("updates3object", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateS3object) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -14078,10 +13462,6 @@ func (cmd *UpdateScalinggroup) DryRun(ctx, params map[string]interface{}) (inter
 	return fakeDryRunId("scalinggroup"), nil
 }
 
-func (cmd *UpdateScalinggroup) ParamsHelp() string {
-	return generateParamsHelp("updatescalinggroup", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateScalinggroup) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -14153,10 +13533,6 @@ func (cmd *UpdateSecuritygroup) ValidateCommand(params map[string]interface{}, r
 	}
 
 	return
-}
-
-func (cmd *UpdateSecuritygroup) ParamsHelp() string {
-	return generateParamsHelp("updatesecuritygroup", structListParamsKeys(cmd))
 }
 
 func (cmd *UpdateSecuritygroup) inject(params map[string]interface{}) error {
@@ -14242,10 +13618,6 @@ func (cmd *UpdateStack) DryRun(ctx, params map[string]interface{}) (interface{},
 	return fakeDryRunId("stack"), nil
 }
 
-func (cmd *UpdateStack) ParamsHelp() string {
-	return generateParamsHelp("updatestack", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateStack) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -14329,10 +13701,6 @@ func (cmd *UpdateSubnet) DryRun(ctx, params map[string]interface{}) (interface{}
 	return fakeDryRunId("subnet"), nil
 }
 
-func (cmd *UpdateSubnet) ParamsHelp() string {
-	return generateParamsHelp("updatesubnet", structListParamsKeys(cmd))
-}
-
 func (cmd *UpdateSubnet) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -14408,10 +13776,6 @@ func (cmd *UpdateTargetgroup) ValidateCommand(params map[string]interface{}, ref
 
 func (cmd *UpdateTargetgroup) DryRun(ctx, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("targetgroup"), nil
-}
-
-func (cmd *UpdateTargetgroup) ParamsHelp() string {
-	return generateParamsHelp("updatetargetgroup", structListParamsKeys(cmd))
 }
 
 func (cmd *UpdateTargetgroup) inject(params map[string]interface{}) error {

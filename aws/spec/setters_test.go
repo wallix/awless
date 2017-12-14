@@ -640,10 +640,10 @@ func TestSetFieldWithMultiType(t *testing.T) {
 }
 
 type TestStruct struct {
-	FieldStringRequired *string   `awsName:"CloudStringRequired" awsType:"awsstr" templateName:"fstringrequired" required:""`
+	FieldStringRequired *string   `awsName:"CloudStringRequired" awsType:"awsstr" templateName:"fstringrequired"`
 	FieldString         *string   `awsName:"CloudString" awsType:"awsstr" templateName:"fstring"`
 	FieldInt64          *int64    `awsName:"CloudInt64" awsType:"awsint64" templateName:"fint"`
-	FieldBool           *bool     `awsName:"Embedded.CloudBool" awsType:"awsbool" templateName:"fbool" required:""`
+	FieldBool           *bool     `awsName:"Embedded.CloudBool" awsType:"awsbool" templateName:"fbool"`
 	FieldStringSlice    []*string `awsName:"CloudStringSlice" awsType:"awsstringslice" templateName:"fstrslice"`
 	NilField            *string   `awsName:"CloudNilString" awsType:"awsstr" templateName:"fnilstring"`
 	MultiCloudField     *int64    `awsName:"CloudField1,CloudField2" awsType:"awsint64" templateName:"fmultistring"`
@@ -670,7 +670,7 @@ func (ts *TestStruct) Validate_FieldInt64() (err error) {
 	return
 }
 
-func TestValidateStruct(t *testing.T) {
+func TestFieldValidator(t *testing.T) {
 	tcases := []struct {
 		stru        *TestStruct
 		ignored     []string
@@ -680,25 +680,18 @@ func TestValidateStruct(t *testing.T) {
 	}{
 		{
 			stru:     &TestStruct{FieldStringRequired: awssdk.String(""), FieldInt64: awssdk.Int64(12)},
-			contains: []string{"fstringrequired should not be empty", "fint should not exceed 10", "missing required field 'fbool'"},
+			contains: []string{"fint should not exceed 10"},
 			err:      true,
 		},
 		{
 			stru:        &TestStruct{FieldStringRequired: awssdk.String("not empty"), FieldInt64: awssdk.Int64(12)},
-			contains:    []string{"fint should not exceed 10", "missing required field 'fbool'"},
+			contains:    []string{"fint should not exceed 10"},
 			notContains: []string{"fstring"},
 			err:         true,
 		},
 		{
 			stru:        &TestStruct{FieldStringRequired: awssdk.String(""), FieldInt64: awssdk.Int64(9), FieldBool: awssdk.Bool(true)},
-			contains:    []string{"fstringrequired should not be empty"},
 			notContains: []string{"fint"},
-			err:         true,
-		},
-		{
-			stru:        &TestStruct{FieldStringRequired: awssdk.String("any"), FieldInt64: awssdk.Int64(8)},
-			contains:    []string{"missing required field 'fbool'"},
-			notContains: []string{"fint", "fstringrequired"},
 			err:         true,
 		},
 		{
@@ -805,22 +798,6 @@ func TestStructInjector(t *testing.T) {
 	if got, want := out, exp; !reflect.DeepEqual(got, want) {
 		// pretty.Print(got)
 		// pretty.Print(want)
-		t.Fatalf("\ngot %#v\n\nwant %#v\n", got, want)
-	}
-}
-
-func TestListParamsWithRequiredFlag(t *testing.T) {
-	type any struct {
-		A string `templateName:"a" required:""`
-		B string `templateName:"b" required:""`
-		C string `templateName:"c"`
-		D int    `templateName:"d"`
-	}
-	keys := structListParamsKeys(new(any))
-
-	exp := map[string]bool{"a": true, "b": true, "c": false, "d": false}
-
-	if got, want := keys, exp; !reflect.DeepEqual(got, want) {
 		t.Fatalf("\ngot %#v\n\nwant %#v\n", got, want)
 	}
 }
