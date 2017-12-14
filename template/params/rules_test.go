@@ -50,25 +50,6 @@ func TestPrintRules(t *testing.T) {
 	}
 }
 
-func TestRuleOptionals(t *testing.T) {
-	tcases := []struct {
-		rules     params.Rule
-		optionals []string
-	}{
-		{rules: params.Opt("1", "2", "3"), optionals: []string{"1", "2", "3"}},
-
-		{rules: params.AllOf(params.Key("1"), params.Opt("2", "3")), optionals: []string{"2", "3"}},
-		{rules: params.OnlyOneOf(params.Key("1"), params.Opt("2", "3")), optionals: []string{"2", "3"}},
-		{rules: params.AtLeastOneOf(params.Key("1"), params.Opt("2", "3")), optionals: []string{"2", "3"}},
-	}
-
-	for _, tcase := range tcases {
-		if got, want := tcase.rules.Optionals(), tcase.optionals; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-	}
-}
-
 func TestRuleMissing(t *testing.T) {
 	tcases := []struct {
 		rules   params.Rule

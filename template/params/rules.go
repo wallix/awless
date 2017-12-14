@@ -7,28 +7,21 @@ import (
 	"strings"
 )
 
-func List(r Rule) (out []string, opts []string) {
-	opts = r.Optionals()
-	for _, v := range collect(r) {
-		if !contains(opts, v) {
-			out = append(out, v)
-		}
-	}
-	sort.Strings(out)
-	sort.Strings(opts)
-	return
+func List(r Rule) ([]string, []string) {
+	return collect(r)
 }
 
 func Validate(r Rule, input []string) error {
-	if err := unexpected(r, input); err != nil {
+	if err := invalidParams(r, input); err != nil {
 		return err
 	}
 	return r.Run(input)
 }
 
-func unexpected(r Rule, input []string) (err error) {
+func invalidParams(r Rule, input []string) (err error) {
 	var unex []string
-	all := collect(r)
+	params, opts := collect(r)
+	all := append(params, opts...)
 	for _, s := range input {
 		if !contains(all, s) {
 			unex = append(unex, s)
@@ -40,16 +33,17 @@ func unexpected(r Rule, input []string) (err error) {
 	return
 }
 
-func collect(r Rule) (out []string) {
+func collect(r Rule) (out []string, opts []string) {
 	r.Visit(func(r Rule) {
 		switch v := r.(type) {
 		case Key:
 			out = append(out, v.String())
 		case opt:
-			out = append(out, v.optionals...)
+			opts = append(opts, v.optionals...)
 		}
 	})
 	sort.Strings(out)
+	sort.Strings(opts)
 	return
 }
 
@@ -57,7 +51,6 @@ type Rule interface {
 	Visit(func(Rule))
 	Run(input []string) error
 	Required() []string
-	Optionals() []string
 	Missing(input []string) []string
 	String() string
 }
@@ -210,10 +203,6 @@ func (n opt) Required() []string {
 	return []string{}
 }
 
-func (n opt) Optionals() []string {
-	return n.optionals
-}
-
 func (n opt) String() string {
 	return "[" + strings.Join(n.optionals, " ") + "]"
 }
@@ -242,10 +231,6 @@ func (n Key) Required() []string {
 	return []string{string(n)}
 }
 
-func (n Key) Optionals() []string {
-	return []string{}
-}
-
 func (n Key) String() string {
 	return string(n)
 }
@@ -259,7 +244,6 @@ func None() Rule {
 func (n none) Visit(func(Rule))                {}
 func (n none) Run(input []string) error        { return nil }
 func (n none) Required() []string              { return []string{} }
-func (n none) Optionals() []string             { return []string{} }
 func (n none) Missing(input []string) []string { return []string{} }
 func (n none) String() string                  { return "none" }
 
@@ -288,16 +272,6 @@ func (r defaultRule) Visit(fn func(r Rule)) {
 	for _, n := range r.rules {
 		n.Visit(fn)
 	}
-}
-
-func (r defaultRule) Optionals() (o []string) {
-	for _, r := range r.rules {
-		switch v := r.(type) {
-		case opt:
-			o = append(o, v.optionals...)
-		}
-	}
-	return
 }
 
 func contains(arr []string, s string) bool {
