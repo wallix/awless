@@ -32,20 +32,16 @@ func (ru *Runner) Run() error {
 	}
 	tplExec.SetMessage(ru.Message)
 
-	env := NewEnv()
-	env.Log = ru.Log
-	env.AddFillers(ru.Fillers...)
-	env.AliasFunc = ru.AliasFunc
-	env.MissingHolesFunc = ru.MissingHolesFunc
-	env.Lookuper = ru.CmdLookuper
+	cenv := NewEnv().WithAliasFunc(ru.AliasFunc).WithMissingHolesFunc(ru.MissingHolesFunc).
+		WithFillers(ru.Fillers...).WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).Build()
 
 	var err error
-	tplExec.Template, env, err = Compile(tplExec.Template, env, NewRunnerCompileMode)
+	tplExec.Template, cenv, err = Compile(tplExec.Template, cenv, NewRunnerCompileMode)
 	if err != nil {
 		return err
 	}
 
-	tplExec.Fillers = env.GetProcessedFillers()
+	tplExec.Fillers = cenv.ProcessedFillers()
 
 	errs := tplExec.Template.Validate(ru.Validators...)
 	if len(errs) > 0 {
@@ -61,8 +57,8 @@ func (ru *Runner) Run() error {
 		logger.Info("Dry running template ...")
 	}
 
-	env.SetDryRun(true)
-	if _, err = tplExec.Template.Run(env); err != nil {
+	renv := NewRunEnv(cenv)
+	if _, err = tplExec.Template.DryRun(renv); err != nil {
 		switch t := err.(type) {
 		case *Errors:
 			errs, _ := t.Errors()
@@ -74,7 +70,6 @@ func (ru *Runner) Run() error {
 		}
 		return errors.New("Dry run failed")
 	}
-	env.SetDryRun(false)
 
 	ok, err := ru.BeforeRun(tplExec)
 	if err != nil {
@@ -82,7 +77,7 @@ func (ru *Runner) Run() error {
 	}
 
 	if ok {
-		tplExec.Template, err = tplExec.Template.Run(env)
+		tplExec.Template, err = tplExec.Template.Run(renv)
 		if err != nil {
 			logger.Errorf("Running template error: %s", err)
 		}

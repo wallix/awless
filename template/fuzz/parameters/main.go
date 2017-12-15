@@ -11,17 +11,15 @@ import (
 func Fuzz(data []byte) int {
 	var ok bool
 	for _, def := range awsspec.AWSTemplatesDefinitions {
-		env := template.NewEnv()
 		fillers := make(map[string]interface{})
 		for _, param := range def.Params.Required() {
 			fillers[param] = "default"
 		}
-		env.AddFillers(fillers)
 
-		env.AliasFunc = func(e, k, v string) string { return "" }
-		env.Lookuper = func(tokens ...string) interface{} {
-			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
-		}
+		env := template.NewEnv().WithFillers(fillers).WithAliasFunc(func(e, k, v string) string { return "" }).
+			WithLookupCommandFunc(func(tokens ...string) interface{} {
+				return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
+			}).Build()
 		for _, param := range def.Params.Required() {
 			inTpl, err := template.Parse(fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, param, string(data)))
 			if err != nil {

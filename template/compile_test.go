@@ -11,10 +11,9 @@ import (
 )
 
 func TestParamsProcessing(t *testing.T) {
-	env := template.NewEnv()
-	env.Lookuper = func(tokens ...string) interface{} {
+	env := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
-	}
+	}).Build()
 
 	t.Run("validation", func(t *testing.T) {
 		tpl := template.MustParse("create instance invalid=any")
@@ -142,9 +141,7 @@ create loadbalancer name=mylb subnets=subnet-1, subnet-2
 	}
 
 	for i, tcase := range tcases {
-		env := template.NewEnv()
-
-		env.AddFillers(map[string]interface{}{
+		env := template.NewEnv().WithFillers(map[string]interface{}{
 			"instance.type":   "t2.micro",
 			"test.cidr":       "10.0.2.0/24",
 			"instance.count":  42,
@@ -157,19 +154,16 @@ create loadbalancer name=mylb subnets=subnet-1, subnet-2
 			"instance.name":   "myinstance",
 			"hole":            ast.NewAliasValue("sub"),
 			"private.subnets": []interface{}{"sub-1234", "sub-2345"},
-		})
-		env.AliasFunc = func(e, k, v string) string {
+		}).WithAliasFunc(func(e, k, v string) string {
 			vals := map[string]string{
 				"vpc":      "vpc-1234",
 				"subalias": "sub-1111",
 				"sub":      "sub-2345",
 			}
 			return vals[v]
-		}
-
-		env.Lookuper = func(tokens ...string) interface{} {
+		}).WithLookupCommandFunc(func(tokens ...string) interface{} {
 			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
-		}
+		}).Build()
 
 		inTpl := template.MustParse(tcase.tpl)
 
@@ -182,11 +176,11 @@ create loadbalancer name=mylb subnets=subnet-1, subnet-2
 			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
 		}
 
-		if got, want := env.GetProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
+		if got, want := env.ProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d: got %v, want %v", i+1, got, want)
 		}
 
-		if got, want := env.ResolvedVariables, tcase.expResolvedVariables; !reflect.DeepEqual(got, want) {
+		if got, want := env.ResolvedVariables(), tcase.expResolvedVariables; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d: got %v, want %v", i+1, got, want)
 		}
 	}
@@ -225,24 +219,21 @@ func TestExternallyProvidedParams(t *testing.T) {
 		}, //retro-compatibility with old list style, without brackets
 	}
 	for i, tcase := range tcases {
-		env := template.NewEnv()
-		env.Lookuper = func(tokens ...string) interface{} {
-			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
+		externalFillters, err := template.ParseParams(tcase.externalParams)
+		if err != nil {
+			t.Fatal(err)
 		}
-		env.AliasFunc = func(e, k, v string) string {
+		env := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
+			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
+		}).WithAliasFunc(func(e, k, v string) string {
 			vals := map[string]string{
 				"subalias": "subnet-111",
 				"sub1":     "subnet-123",
 				"sub2":     "subnet-234",
 			}
 			return vals[v]
-		}
+		}).WithFillers(externalFillters).Build()
 
-		externalFillters, err := template.ParseParams(tcase.externalParams)
-		if err != nil {
-			t.Fatal(err)
-		}
-		env.Fillers = externalFillters
 		inTpl := template.MustParse(tcase.template)
 
 		compiled, _, err := template.Compile(inTpl, env, template.NewRunnerCompileMode)
@@ -254,7 +245,7 @@ func TestExternallyProvidedParams(t *testing.T) {
 			t.Fatalf("%d: got\n%s\nwant\n%s", i+1, got, want)
 		}
 
-		if got, want := env.GetProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
+		if got, want := env.ProcessedFillers(), tcase.expProcessedFillers; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d: got %#v, want %#v", i+1, got, want)
 		}
 	}

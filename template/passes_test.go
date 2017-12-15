@@ -28,8 +28,7 @@ func (c *mockCommand) ConvertParams() ([]string, func(values map[string]interfac
 func TestCommandsPasses(t *testing.T) {
 	cmd1, cmd2, cmd3 := &mockCommand{"1"}, &mockCommand{"2"}, &mockCommand{"3"}
 	var count int
-	env := NewEnv()
-	env.Lookuper = func(...string) interface{} {
+	env := NewEnv().WithLookupCommandFunc(func(...string) interface{} {
 		count++
 		switch count {
 		case 1:
@@ -41,7 +40,7 @@ func TestCommandsPasses(t *testing.T) {
 		default:
 			panic("whaat")
 		}
-	}
+	}).Build()
 
 	t.Run("verify commands exist", func(t *testing.T) {
 		tpl := MustParse("create instance\nsub = create subnet\ncreate instance")
@@ -107,7 +106,7 @@ func TestCommandsPasses(t *testing.T) {
 }
 
 func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
-	env := NewEnv()
+	env := NewEnv().Build()
 	tcases := []struct {
 		tpl         string
 		expAliasErr string
@@ -146,7 +145,7 @@ func TestBailOnUnresolvedAliasOrHoles(t *testing.T) {
 }
 
 func TestCheckInvalidReferencesDeclarationPass(t *testing.T) {
-	env := NewEnv()
+	env := NewEnv().Build()
 	tcases := []struct {
 		tpl    string
 		expErr string
@@ -182,8 +181,7 @@ func (c *mockCommandWithResult) Run(env.Running, map[string]interface{}) (interf
 func (c *mockCommandWithResult) ExtractResult(i interface{}) string { return "" }
 
 func TestFailOnDeclarationWithNoResultPass(t *testing.T) {
-	env := NewEnv()
-	env.Lookuper = func(tokens ...string) interface{} {
+	env := NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 		switch strings.Join(tokens, "") {
 		case "createinstance":
 			return &mockCommandWithResult{"create instance"}
@@ -194,7 +192,7 @@ func TestFailOnDeclarationWithNoResultPass(t *testing.T) {
 		default:
 			panic("whaat")
 		}
-	}
+	}).Build()
 	tcases := []struct {
 		tpl    string
 		expErr string
@@ -222,8 +220,7 @@ func TestResolveMissingHolesPass(t *testing.T) {
 	create instance name={redis.prod} id={redis.prod} count=3`)
 
 	var count int
-	env := NewEnv()
-	env.MissingHolesFunc = func(in string, paramPaths []string) interface{} {
+	env := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string) interface{} {
 		count++
 		switch in {
 		case "instance.subnet":
@@ -250,8 +247,7 @@ func TestResolveMissingHolesPass(t *testing.T) {
 		default:
 			return ""
 		}
-	}
-	env.AddFillers(map[string]interface{}{"instance.type": "t2.micro"})
+	}).WithFillers(map[string]interface{}{"instance.type": "t2.micro"}).Build()
 
 	pass := newMultiPass(resolveHolesPass, resolveMissingHolesPass)
 
@@ -277,15 +273,13 @@ func TestResolveMissingHolesPass(t *testing.T) {
 func TestResolveAliasPass(t *testing.T) {
 	tpl := MustParse("create instance subnet=@my-subnet ami={instance.ami} count=3")
 
-	env := NewEnv()
-	env.AliasFunc = func(e, k, v string) string {
+	env := NewEnv().WithAliasFunc(func(e, k, v string) string {
 		vals := map[string]string{
 			"my-ami":    "ami-12345",
 			"my-subnet": "sub-12345",
 		}
 		return vals[v]
-	}
-	env.AddFillers(map[string]interface{}{"instance.ami": ast.NewAliasValue("my-ami")})
+	}).WithFillers(map[string]interface{}{"instance.ami": ast.NewAliasValue("my-ami")}).Build()
 
 	pass := newMultiPass(resolveHolesPass, resolveAliasPass)
 
@@ -300,11 +294,10 @@ func TestResolveAliasPass(t *testing.T) {
 func TestResolveHolesPass(t *testing.T) {
 	tpl := MustParse("create instance count={instance.count} type={instance.type}")
 
-	env := NewEnv()
-	env.AddFillers(map[string]interface{}{
+	env := NewEnv().WithFillers(map[string]interface{}{
 		"instance.count": 3,
 		"instance.type":  "t2.micro",
-	})
+	}).Build()
 
 	tpl, _, err := resolveHolesPass(tpl, env)
 	if err != nil {
@@ -316,7 +309,7 @@ func TestResolveHolesPass(t *testing.T) {
 }
 
 func TestInlineVariableWithValue(t *testing.T) {
-	env := NewEnv()
+	env := NewEnv().Build()
 	tcases := []struct {
 		tpl      string
 		expError string
@@ -347,7 +340,7 @@ func TestInlineVariableWithValue(t *testing.T) {
 
 func TestDefaultEnvWithNilFunc(t *testing.T) {
 	text := "create instance name={instance.name} subnet=@mysubnet"
-	env := NewEnv()
+	env := NewEnv().Build()
 	tpl := MustParse(text)
 
 	pass := newMultiPass(resolveHolesPass, resolveMissingHolesPass, resolveAliasPass)

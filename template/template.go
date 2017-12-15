@@ -24,6 +24,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/oklog/ulid"
+	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/internal/ast"
 )
 
@@ -32,7 +33,13 @@ type Template struct {
 	*ast.AST
 }
 
-func (s *Template) Run(env *Env) (*Template, error) {
+func (s *Template) DryRun(renv env.Running) (*Template, error) {
+	renv.SetDryRun(true)
+	defer renv.SetDryRun(false)
+	return s.Run(renv)
+}
+
+func (s *Template) Run(renv env.Running) (*Template, error) {
 	vars := map[string]interface{}{}
 
 	current := &Template{AST: &ast.AST{}}
@@ -43,7 +50,7 @@ func (s *Template) Run(env *Env) (*Template, error) {
 		current.Statements = append(current.Statements, clone)
 		switch n := clone.Node.(type) {
 		case *ast.CommandNode:
-			if stop := processCmdNode(env, n, vars); stop {
+			if stop := processCmdNode(renv, n, vars); stop {
 				return current, nil
 			}
 		case *ast.DeclarationNode:
@@ -51,7 +58,7 @@ func (s *Template) Run(env *Env) (*Template, error) {
 			expr := n.Expr
 			switch n := expr.(type) {
 			case *ast.CommandNode:
-				if stop := processCmdNode(env, n, vars); stop {
+				if stop := processCmdNode(renv, n, vars); stop {
 					return current, nil
 				}
 				vars[ident] = n.Result()
@@ -66,15 +73,13 @@ func (s *Template) Run(env *Env) (*Template, error) {
 	return current, nil
 }
 
-func processCmdNode(env *Env, n *ast.CommandNode, vars map[string]interface{}) bool {
-	env.AddContext("Variables", env.ResolvedVariables)
-	env.AddContext("References", env.ResolvedVariables) // retro-compatibility with v0.1.2
+func processCmdNode(renv env.Running, n *ast.CommandNode, vars map[string]interface{}) bool {
 	n.ProcessRefs(vars)
-	if env.IsDryRun() {
-		n.CmdResult, n.CmdErr = n.Command.Run(env, n.ToDriverParams())
+	if renv.IsDryRun() {
+		n.CmdResult, n.CmdErr = n.Command.Run(renv, n.ToDriverParams())
 		n.CmdErr = prefixError(n.CmdErr, "dry run")
 	} else {
-		n.CmdResult, n.CmdErr = n.Run(env, n.ToDriverParams())
+		n.CmdResult, n.CmdErr = n.Run(renv, n.ToDriverParams())
 		var res, status string
 		if n.CmdResult != nil {
 			res = " (" + color.New(color.FgCyan).Sprint(n.CmdResult) + ") "
@@ -84,9 +89,9 @@ func processCmdNode(env *Env, n *ast.CommandNode, vars map[string]interface{}) b
 		} else {
 			status = color.New(color.FgGreen).Sprint("OK")
 		}
-		env.Log.Infof("%s %s %s%s", status, n.Action, n.Entity, res)
+		renv.Log().Infof("%s %s %s%s", status, n.Action, n.Entity, res)
 		if n.CmdErr != nil {
-			env.Log.MultiLineError(n.CmdErr)
+			renv.Log().MultiLineError(n.CmdErr)
 		}
 	}
 	return n.CmdErr != nil

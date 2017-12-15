@@ -61,16 +61,15 @@ func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 	}
 	awsspec.CommandFactory = NewAcceptanceFactory(b.mock, b.graph, l...)
 
-	env := template.NewEnv()
-	env.Lookuper = func(tokens ...string) interface{} {
+	cenv := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 		return awsspec.CommandFactory.Build(strings.Join(tokens, ""))()
-	}
-	compiled, env, err := template.Compile(tpl, env, template.NewRunnerCompileMode)
+	}).Build()
+	compiled, cenv, err := template.Compile(tpl, cenv, template.NewRunnerCompileMode)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ran, err := compiled.Run(env)
+	ran, err := compiled.Run(template.NewRunEnv(cenv))
 	if err != nil {
 		t.Fatal(err)
 	}
