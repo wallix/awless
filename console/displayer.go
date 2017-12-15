@@ -79,7 +79,7 @@ func (b *Builder) buildQuery() (cloud.Query, error) {
 			key := ColumnDefinitions(b.columnDefinitions).resolveKey(name)
 
 			if key != "" {
-				matchers = append(matchers, match.Property(key, val).IgnoreCase().MatchString())
+				matchers = append(matchers, match.Property(key, val).IgnoreCase().MatchString().Contains())
 			} else {
 				var allowed []string
 				for _, h := range b.columnDefinitions {

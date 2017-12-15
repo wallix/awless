@@ -62,6 +62,7 @@ type propertyMatcher struct {
 	value         interface{}
 	matchOnString bool
 	ignoreCase    bool
+	contains      bool
 }
 
 func (m propertyMatcher) Match(r cloud.Resource) bool {
@@ -75,10 +76,18 @@ func (m propertyMatcher) Match(r cloud.Resource) bool {
 		expectVal = fmt.Sprint(m.value)
 	}
 	if m.ignoreCase {
+		if vv, vIsStr := v.(string); vIsStr {
+			v = strings.ToLower(vv)
+		}
+		if expect, expectIsStr := expectVal.(string); expectIsStr {
+			expectVal = strings.ToLower(expect)
+		}
+	}
+	if m.contains {
 		vv, vIsStr := v.(string)
 		expect, expectIsStr := expectVal.(string)
 		if vIsStr && expectIsStr {
-			return strings.ToLower(vv) == strings.ToLower(expect)
+			return strings.Contains(vv, expect)
 		}
 	}
 	return reflect.DeepEqual(v, expectVal)
@@ -95,6 +104,11 @@ func (p propertyMatcher) MatchString() propertyMatcher {
 
 func (p propertyMatcher) IgnoreCase() propertyMatcher {
 	p.ignoreCase = true
+	return p
+}
+
+func (p propertyMatcher) Contains() propertyMatcher {
+	p.contains = true
 	return p
 }
 
