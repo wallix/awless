@@ -17,7 +17,7 @@
 - exploration of your cloud infrastructure and resources relations, **even offline** using a local graph storage
 - greater output's readability with numerous machine and human friendly formats
 - ensure smart defaults & security best practices
-- connect easily through smart SSH to your private & public instances
+- connect easily using awless' smart SSH to your private & public instances
 
 
 # Install
@@ -37,22 +37,22 @@ Choose one of the following options:
 <em>Note that the video above is in <a href="https://en.wikipedia.org/wiki/APNG">APNG</a> and requires a recent browser.</em>
 </p>
 
-- Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.: `awless list`
-- Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
-- Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
 - Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.: `awless show`
+- Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates: `awless run my-awless-templates/create_my_infra.txt`
 - Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
-- Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=http://...` 
 - Easy reporting of all the CLI template executions: `awless log`
 - Revert of executed templates and resources creation: `awless revert`
 - Create instances with a specific community bare distribution independently of the AWS region: `awless create instance distro=debian ...`
+- Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=http://...` 
 - Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
 - Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --latest-id`
-- Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
+- Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.: `awless list`
+- Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
+- Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
 
 # Getting started
 
