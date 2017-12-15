@@ -148,9 +148,8 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		}
 
 		type resStruct struct {
-			res   *ecs.TaskDefinition
-			tasks []*ecs.Task
-			err   error
+			res *ecs.TaskDefinition
+			err error
 		}
 
 		var wg sync.WaitGroup

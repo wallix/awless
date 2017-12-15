@@ -536,16 +536,6 @@ func failOnUnresolvedAliasPass(tpl *Template, env *Env) (*Template, *Env, error)
 	return tpl, env, nil
 }
 
-func foundIn(key string, slice []string) (found bool) {
-	for _, k := range slice {
-		if k == key {
-			found = true
-			break
-		}
-	}
-	return
-}
-
 func cmdErr(cmd *ast.CommandNode, i interface{}, a ...interface{}) error {
 	var prefix string
 	if cmd != nil {

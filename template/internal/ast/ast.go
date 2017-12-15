@@ -36,10 +36,7 @@ type AST struct {
 	Statements []*Statement
 
 	// state to build the AST
-	currentStatement   *Statement
-	currentKey         string
-	currentListBuilder *listValueBuilder
-	stmtBuilder        *statementBuilder
+	stmtBuilder *statementBuilder
 }
 
 type Statement struct {

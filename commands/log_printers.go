@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"sort"
-	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -138,21 +136,4 @@ func writeMultilineLogHeader(t *template.TemplateExecution, w io.Writer) {
 		fmt.Fprintf(w, "Region: %s\n", t.Locale)
 	}
 	fmt.Fprintln(w)
-}
-
-func alignActionEntityCount(items map[string]int) (out []string) {
-	var all []string
-	for actionentity, count := range items {
-		all = append(all, fmt.Sprintf("%d %s", count, actionentity))
-	}
-	sort.Strings(all)
-
-	max := 6
-	for i := 0; i < len(all)/max; i++ {
-		out = append(out, strings.Join(all[i:i+max], ", "))
-	}
-	if remain := len(all) % max; remain > 0 {
-		out = append(out, strings.Join(all[len(all)-remain:], ", "))
-	}
-	return
 }

@@ -157,18 +157,6 @@ func (s *Template) visitCommandNodesE(fn func(n *ast.CommandNode) error) error {
 	return nil
 }
 
-func (s *Template) visitCommandDeclarationNodes(fn func(n *ast.DeclarationNode)) {
-	for _, cmd := range s.commandDeclarationNodesIterator() {
-		fn(cmd)
-	}
-}
-
-func (s *Template) visitDeclarationNodes(fn func(n *ast.DeclarationNode)) {
-	for _, dcl := range s.declarationNodesIterator() {
-		fn(dcl)
-	}
-}
-
 func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 	for _, sts := range s.Statements {
 		switch nn := sts.Node.(type) {
@@ -218,17 +206,6 @@ func (s *Template) CommandNodesReverseIterator() (nodes []*ast.CommandNode) {
 	return
 }
 
-func (s *Template) commandDeclarationNodesIterator() (nodes []*ast.DeclarationNode) {
-	for _, node := range s.declarationNodesIterator() {
-		expr := node.Expr
-		switch expr.(type) {
-		case *ast.CommandNode:
-			nodes = append(nodes, node)
-		}
-	}
-	return
-}
-
 func (s *Template) declarationNodesIterator() (nodes []*ast.DeclarationNode) {
 	for _, sts := range s.Statements {
 		switch n := sts.Node.(type) {
@@ -264,10 +241,6 @@ type Errors struct {
 
 func (d *Errors) Errors() ([]error, bool) {
 	return d.errs, len(d.errs) > 0
-}
-
-func (d *Errors) add(err error) {
-	d.errs = append(d.errs, err)
 }
 
 func (d *Errors) Error() string {

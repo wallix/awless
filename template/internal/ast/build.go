@@ -3,7 +3,6 @@ package ast
 import (
 	"fmt"
 	"net"
-	"regexp"
 	"strconv"
 )
 
@@ -183,8 +182,6 @@ func (a *AST) addParamRefValue(text string) {
 func (a *AST) addParamHoleValue(text string) {
 	a.stmtBuilder.addParamValue(&holeValue{hole: text})
 }
-
-var holeRegex = regexp.MustCompile("{([a-zA-Z0-9-_.]+)}")
 
 func (a *AST) addAliasParam(text string) {
 	a.stmtBuilder.addParamValue(&aliasValue{alias: text})

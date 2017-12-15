@@ -83,7 +83,6 @@ type awsCall struct {
 	fnName  string
 	fn      interface{}
 	logger  *logger.Logger
-	graph   cloud.GraphAPI
 	setters []setter
 }
 
@@ -125,7 +124,6 @@ type checker struct {
 	fetchFunc   func() (string, error)
 	expect      string
 	logger      *logger.Logger
-	graph       cloud.GraphAPI
 	checkName   string
 }
 

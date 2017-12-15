@@ -393,17 +393,6 @@ func resolveAliasFunc(entity, key, alias string) string {
 	return ""
 }
 
-func sprintProcessedParams(processed map[string]interface{}) string {
-	if len(processed) == 0 {
-		return "<none>"
-	}
-	var str []string
-	for k, v := range processed {
-		str = append(str, fmt.Sprintf("%s=%v", k, v))
-	}
-	return strings.Join(str, ", ")
-}
-
 func oneLinerShortDesc(action string, entities []string) string {
 	if len(entities) > 5 {
 		return fmt.Sprintf("%s, \u2026 (see `awless %s -h` for more)", strings.Join(entities[0:5], ", "), action)

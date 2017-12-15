@@ -15,7 +15,6 @@ func TestAssignAPIs(t *testing.T) {
 		ec2iface.EC2API
 	}
 	type any struct {
-		s string
 	}
 
 	conf := NewConfig(&iamMock{}, ec2Mock{}, nil, nil, any{}, new(any))

@@ -51,8 +51,3 @@ func (res Resources) Map(f func(Resource) string) (out []string) {
 	}
 	return
 }
-
-type propertyValue struct {
-	Name  string
-	Value interface{}
-}

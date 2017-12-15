@@ -392,8 +392,6 @@ func (c *mockCommand) Params() params.Rule                                      
 
 type parameters map[string]interface{}
 type holesKeys map[string][]string
-type refs map[string][]string
-type aliases map[string][]string
 
 func assertVariableValues(t *testing.T, tpl *Template, exp ...interface{}) {
 	for i, decl := range tpl.expressionNodesIterator() {
@@ -426,34 +424,6 @@ func assertCmdHoles(t *testing.T, tpl *Template, exp ...holesKeys) {
 		}
 		if got, want := holesKeys(h), exp[i]; !reflect.DeepEqual(got, want) {
 			t.Fatalf("holes keys: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
-		}
-	}
-}
-
-func assertCmdRefs(t *testing.T, tpl *Template, exp ...refs) {
-	for i, cmd := range tpl.CommandNodesIterator() {
-		r := make(map[string][]string)
-		for k, p := range cmd.Params {
-			if withRefs, ok := p.(ast.WithRefs); ok && len(withRefs.GetRefs()) > 0 {
-				r[k] = withRefs.GetRefs()
-			}
-		}
-		if got, want := refs(r), exp[i]; !reflect.DeepEqual(got, want) {
-			t.Fatalf("refs: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
-		}
-	}
-}
-
-func assertCmdAliases(t *testing.T, tpl *Template, exp ...aliases) {
-	for i, cmd := range tpl.CommandNodesIterator() {
-		r := make(map[string][]string)
-		for k, p := range cmd.Params {
-			if withAliases, ok := p.(ast.WithAlias); ok && len(withAliases.GetAliases()) > 0 {
-				r[k] = withAliases.GetAliases()
-			}
-		}
-		if got, want := aliases(r), exp[i]; !reflect.DeepEqual(got, want) {
-			t.Fatalf("refs: cmd %d: \ngot\n%v\n\nwant\n%v\n", i+1, got, want)
 		}
 	}
 }

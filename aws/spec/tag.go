@@ -27,7 +27,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/wallix/awless/logger"
@@ -38,7 +37,6 @@ type CreateTag struct {
 	logger   *logger.Logger
 	graph    cloud.GraphAPI
 	api      ec2iface.EC2API
-	sess     *session.Session
 	Resource *string `awsName:"Resources" awsType:"awsstringslice" templateName:"resource"`
 	Key      *string `templateName:"key"`
 	Value    *string `templateName:"value"`

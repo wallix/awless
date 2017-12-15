@@ -3,9 +3,6 @@ package awsspec
 import (
 	"strings"
 	"testing"
-
-	"github.com/wallix/awless/template/env"
-	"github.com/wallix/awless/template/params"
 )
 
 func checkErrs(t *testing.T, errs []error, length int, expected ...string) {
@@ -24,19 +21,6 @@ func checkErrs(t *testing.T, errs []error, length int, expected ...string) {
 			t.Fatalf("'%s' should be in errors %v", exp, errs)
 		}
 	}
-}
-
-type validParamTestStruct struct {
-	Param1 *string `templateName:"param1" required:""`
-	Param2 *string `templateName:"param2" required:""`
-	Param3 *string `templateName:"param3"`
-}
-
-func (*validParamTestStruct) Params() params.Rule                                      { return nil }
-func (*validParamTestStruct) ValidateCommand(map[string]interface{}, []string) []error { return nil }
-func (*validParamTestStruct) inject(params map[string]interface{}) error               { return nil }
-func (*validParamTestStruct) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
-	return nil, nil
 }
 
 func TestEnumValidator(t *testing.T) {
@@ -69,37 +53,4 @@ func TestEnumValidator(t *testing.T) {
 			}
 		}
 	}
-}
-
-func keys(m map[string]interface{}) (keys []string) {
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return
-}
-
-func convertParamsIfAvailable(cmd interface{}, params map[string]interface{}) (map[string]interface{}, error) {
-	type C interface {
-		ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error))
-	}
-	if v, ok := cmd.(C); ok {
-		keys, convFunc := v.ConvertParams()
-		values := make(map[string]interface{})
-		for _, k := range keys {
-			if vv, ok := params[k]; ok {
-				values[k] = vv
-			}
-		}
-		converted, err := convFunc(values)
-		if err != nil {
-			return params, err
-		}
-		for _, k := range keys {
-			delete(params, k)
-		}
-		for k, v := range converted {
-			params[k] = v
-		}
-	}
-	return params, nil
 }
