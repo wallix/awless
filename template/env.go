@@ -1,6 +1,8 @@
 package template
 
 import (
+	"sync"
+
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/template/env"
 )
@@ -25,8 +27,8 @@ func NewRunEnv(cenv env.Compiling, context ...map[string]interface{}) env.Runnin
 			renv.ctx[k] = v
 		}
 	}
-	renv.ctx["Variables"] = cenv.ResolvedVariables()
-	renv.ctx["References"] = cenv.ResolvedVariables() // retro-compatibility with v0.1.2
+	renv.ctx["Variables"] = cenv.Get(env.RESOLVED_VARS)
+	renv.ctx["References"] = cenv.Get(env.RESOLVED_VARS) // retro-compatibility with v0.1.2
 
 	return renv
 }
@@ -52,58 +54,11 @@ func (e *runEnv) Log() *logger.Logger {
 }
 
 type compileEnv struct {
-	fillers, processedFillers, resolvedVariables map[string]interface{}
-	lookupCommandFunc                            func(...string) interface{}
-	aliasFunc                                    func(entity, key, alias string) string
-	missingHolesFunc                             func(string, []string) interface{}
-	log                                          *logger.Logger
-}
-
-func (e *compileEnv) Log() *logger.Logger {
-	return e.log
-}
-
-func (e *compileEnv) ResolvedVariables() (out map[string]interface{}) {
-	out = make(map[string]interface{})
-	for k, v := range e.resolvedVariables {
-		out[k] = v
-	}
-	return
-}
-
-func (e *compileEnv) addResolvedVariables(k string, i interface{}) {
-	if e.resolvedVariables == nil {
-		e.resolvedVariables = make(map[string]interface{})
-	}
-	e.resolvedVariables[k] = i
-}
-
-func (e *compileEnv) Fillers() (out map[string]interface{}) {
-	out = make(map[string]interface{})
-	for k, v := range e.fillers {
-		out[k] = v
-	}
-	return
-}
-
-func (e *compileEnv) ProcessedFillers() (copy map[string]interface{}) {
-	copy = make(map[string]interface{}, 0)
-	for k, v := range e.processedFillers {
-		copy[k] = v
-	}
-	return
-}
-
-func (e *compileEnv) addToProcessedFillers(fills ...map[string]interface{}) {
-	if e.processedFillers == nil {
-		e.processedFillers = make(map[string]interface{})
-	}
-
-	for _, f := range fills {
-		for k, v := range f {
-			e.processedFillers[k] = v
-		}
-	}
+	*dataMap
+	lookupCommandFunc func(...string) interface{}
+	aliasFunc         func(entity, key, alias string) string
+	missingHolesFunc  func(string, []string) interface{}
+	log               *logger.Logger
 }
 
 func (e *compileEnv) LookupCommandFunc() func(...string) interface{} {
@@ -118,14 +73,50 @@ func (e *compileEnv) MissingHolesFunc() func(string, []string) interface{} {
 	return e.missingHolesFunc
 }
 
+func (e *compileEnv) Log() *logger.Logger {
+	return e.log
+}
+
 func NewEnv() *envBuilder {
 	b := &envBuilder{new(compileEnv)}
 	b.E.lookupCommandFunc = func(...string) interface{} { return nil }
 	b.E.log = logger.DiscardLogger
-	b.E.fillers = make(map[string]interface{})
-	b.E.processedFillers = make(map[string]interface{})
-	b.E.resolvedVariables = make(map[string]interface{})
+	b.E.dataMap = new(dataMap)
 	return b
+}
+
+type dataMap struct {
+	mu sync.Mutex
+	M  map[int]map[string]interface{}
+}
+
+func (d *dataMap) Push(typ int, data ...map[string]interface{}) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.M == nil {
+		d.M = make(map[int]map[string]interface{})
+	}
+	if d.M[typ] == nil {
+		d.M[typ] = make(map[string]interface{})
+	}
+	for _, m := range data {
+		for k, v := range m {
+			d.M[typ][k] = v
+		}
+	}
+}
+
+func (d *dataMap) Get(typ int) (out map[string]interface{}) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	out = make(map[string]interface{})
+	if d.M[typ] == nil {
+		return
+	}
+	for k, v := range d.M[typ] {
+		out[k] = v
+	}
+	return
 }
 
 type envBuilder struct {
@@ -144,16 +135,6 @@ func (b *envBuilder) WithMissingHolesFunc(fn func(string, []string) interface{})
 
 func (b *envBuilder) WithLookupCommandFunc(fn func(...string) interface{}) *envBuilder {
 	b.E.lookupCommandFunc = fn
-	return b
-}
-
-func (b *envBuilder) WithFillers(maps ...map[string]interface{}) *envBuilder {
-	b.E.fillers = make(map[string]interface{})
-	for _, m := range maps {
-		for k, v := range m {
-			b.E.fillers[k] = v
-		}
-	}
 	return b
 }
 

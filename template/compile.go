@@ -297,7 +297,7 @@ func inlineVariableValuePass(tpl *Template, cenv env.Compiling) (*Template, env.
 			value, isValue := decl.Expr.(*ast.ValueNode)
 			if isValue {
 				if val := value.Value.Value(); val != nil {
-					cenv.(*compileEnv).addResolvedVariables(decl.Ident, val)
+					cenv.Push(env.RESOLVED_VARS, map[string]interface{}{decl.Ident: val})
 				}
 				for j := i + 1; j < len(tpl.Statements); j++ {
 					expr := extractExpressionNode(tpl.Statements[j])
@@ -319,8 +319,8 @@ func inlineVariableValuePass(tpl *Template, cenv env.Compiling) (*Template, env.
 
 func resolveHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	tpl.visitHoles(func(h ast.WithHoles) {
-		processed := h.ProcessHoles(cenv.Fillers())
-		cenv.(*compileEnv).addToProcessedFillers(processed)
+		processed := h.ProcessHoles(cenv.Get(env.FILLERS))
+		cenv.Push(env.PROCESSED_FILLERS, processed)
 	})
 
 	return tpl, cenv, nil
@@ -343,18 +343,17 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 		sortedHoles = append(sortedHoles, k)
 	}
 	sort.Strings(sortedHoles)
-	fillers := make(map[string]interface{})
 
 	for _, k := range sortedHoles {
 		if cenv.MissingHolesFunc() != nil {
 			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k])
-			fillers[k] = actual
+			cenv.Push(env.FILLERS, map[string]interface{}{k: actual})
 		}
 	}
 
 	tpl.visitHoles(func(h ast.WithHoles) {
-		processed := h.ProcessHoles(fillers)
-		cenv.(*compileEnv).addToProcessedFillers(processed)
+		processed := h.ProcessHoles(cenv.Get(env.FILLERS))
+		cenv.Push(env.PROCESSED_FILLERS, processed)
 	})
 
 	return tpl, cenv, nil

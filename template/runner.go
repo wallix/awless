@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/wallix/awless/logger"
+	"github.com/wallix/awless/template/env"
 )
 
 type Runner struct {
@@ -33,7 +34,8 @@ func (ru *Runner) Run() error {
 	tplExec.SetMessage(ru.Message)
 
 	cenv := NewEnv().WithAliasFunc(ru.AliasFunc).WithMissingHolesFunc(ru.MissingHolesFunc).
-		WithFillers(ru.Fillers...).WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).Build()
+		WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).Build()
+	cenv.Push(env.FILLERS, ru.Fillers...)
 
 	var err error
 	tplExec.Template, cenv, err = Compile(tplExec.Template, cenv, NewRunnerCompileMode)
@@ -41,7 +43,7 @@ func (ru *Runner) Run() error {
 		return err
 	}
 
-	tplExec.Fillers = cenv.ProcessedFillers()
+	tplExec.Fillers = cenv.Get(env.PROCESSED_FILLERS)
 
 	errs := tplExec.Template.Validate(ru.Validators...)
 	if len(errs) > 0 {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/template"
+	"github.com/wallix/awless/template/env"
 )
 
 func Fuzz(data []byte) int {
@@ -16,17 +17,18 @@ func Fuzz(data []byte) int {
 			fillers[param] = "default"
 		}
 
-		env := template.NewEnv().WithFillers(fillers).WithAliasFunc(func(e, k, v string) string { return "" }).
+		cenv := template.NewEnv().WithAliasFunc(func(e, k, v string) string { return "" }).
 			WithLookupCommandFunc(func(tokens ...string) interface{} {
 				return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 			}).Build()
+		cenv.Push(env.FILLERS, fillers)
 		for _, param := range def.Params.Required() {
 			inTpl, err := template.Parse(fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, param, string(data)))
 			if err != nil {
 				continue
 			}
 
-			_, _, err = template.Compile(inTpl, env, template.TestCompileMode)
+			_, _, err = template.Compile(inTpl, cenv, template.TestCompileMode)
 			if err != nil {
 				continue
 			}

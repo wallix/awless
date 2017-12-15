@@ -1,6 +1,14 @@
 package env
 
-import "github.com/wallix/awless/logger"
+import (
+	"github.com/wallix/awless/logger"
+)
+
+const (
+	FILLERS = iota
+	PROCESSED_FILLERS
+	RESOLVED_VARS
+)
 
 type log interface {
 	Log() *logger.Logger
@@ -17,8 +25,7 @@ type Compiling interface {
 	log
 	LookupCommandFunc() func(...string) interface{}
 	AliasFunc() func(entity, key, alias string) string
-	Fillers() map[string]interface{}
-	ProcessedFillers() map[string]interface{}
-	ResolvedVariables() map[string]interface{}
 	MissingHolesFunc() func(string, []string) interface{}
+	Push(int, ...map[string]interface{})
+	Get(int) map[string]interface{}
 }

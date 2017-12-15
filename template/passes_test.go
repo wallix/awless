@@ -220,7 +220,7 @@ func TestResolveMissingHolesPass(t *testing.T) {
 	create instance name={redis.prod} id={redis.prod} count=3`)
 
 	var count int
-	env := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string) interface{} {
+	cenv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string) interface{} {
 		count++
 		switch in {
 		case "instance.subnet":
@@ -247,11 +247,13 @@ func TestResolveMissingHolesPass(t *testing.T) {
 		default:
 			return ""
 		}
-	}).WithFillers(map[string]interface{}{"instance.type": "t2.micro"}).Build()
+	}).Build()
+
+	cenv.Push(env.FILLERS, map[string]interface{}{"instance.type": "t2.micro"})
 
 	pass := newMultiPass(resolveHolesPass, resolveMissingHolesPass)
 
-	tpl, _, err := pass.compile(tpl, env)
+	tpl, _, err := pass.compile(tpl, cenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -273,17 +275,19 @@ func TestResolveMissingHolesPass(t *testing.T) {
 func TestResolveAliasPass(t *testing.T) {
 	tpl := MustParse("create instance subnet=@my-subnet ami={instance.ami} count=3")
 
-	env := NewEnv().WithAliasFunc(func(e, k, v string) string {
+	cenv := NewEnv().WithAliasFunc(func(e, k, v string) string {
 		vals := map[string]string{
 			"my-ami":    "ami-12345",
 			"my-subnet": "sub-12345",
 		}
 		return vals[v]
-	}).WithFillers(map[string]interface{}{"instance.ami": ast.NewAliasValue("my-ami")}).Build()
+	}).Build()
+
+	cenv.Push(env.FILLERS, map[string]interface{}{"instance.ami": ast.NewAliasValue("my-ami")})
 
 	pass := newMultiPass(resolveHolesPass, resolveAliasPass)
 
-	tpl, _, err := pass.compile(tpl, env)
+	tpl, _, err := pass.compile(tpl, cenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,12 +298,13 @@ func TestResolveAliasPass(t *testing.T) {
 func TestResolveHolesPass(t *testing.T) {
 	tpl := MustParse("create instance count={instance.count} type={instance.type}")
 
-	env := NewEnv().WithFillers(map[string]interface{}{
+	cenv := NewEnv().Build()
+	cenv.Push(env.FILLERS, map[string]interface{}{
 		"instance.count": 3,
 		"instance.type":  "t2.micro",
-	}).Build()
+	})
 
-	tpl, _, err := resolveHolesPass(tpl, env)
+	tpl, _, err := resolveHolesPass(tpl, cenv)
 	if err != nil {
 		t.Fatal(err)
 	}
