@@ -22,8 +22,9 @@ type NetworkMonitor struct {
 
 type req struct {
 	*request.Request
-	from time.Time
-	to   time.Time
+	from    time.Time
+	to      time.Time
+	retries []time.Time
 }
 
 func (n *NetworkMonitor) DisplayStats(w io.Writer) {
@@ -56,18 +57,34 @@ func (n *NetworkMonitor) DisplayStats(w io.Writer) {
 	maxDuration := max.Sub(min)
 
 	for _, r := range sorted {
-		duration := r.to.Sub(r.from)
-		width := uint(duration) * maxwidth / uint(maxDuration)
-		before := uint(r.from.Sub(min)) * maxwidth / uint(maxDuration)
-		after := maxwidth - width - before
-		fmt.Fprintf(w, "%s[%s]%s %s(%dms)\n", strings.Repeat(" ", int(before)), strings.Repeat("-", int(width)), strings.Repeat(" ", int(after)), r.Operation.Name, duration/(1000*1000))
+		if len(r.retries) > 0 {
+			drawRequest(w, r.Operation.Name, min, r.from, r.retries[0], maxwidth, maxDuration, "[", "X")
+			for i := 0; i < len(r.retries)-1; i++ {
+				drawRequest(w, r.Operation.Name, min, r.retries[i], r.retries[i+1], maxwidth, maxDuration, "o", "X")
+			}
+			drawRequest(w, r.Operation.Name, min, r.retries[len(r.retries)-1], r.to, maxwidth, maxDuration, "o", "]")
+		} else {
+			drawRequest(w, r.Operation.Name, min, r.from, r.to, maxwidth, maxDuration, "[", "]")
+		}
 	}
+}
+
+func drawRequest(w io.Writer, name string, min, from, to time.Time, maxwidth uint, maxduration time.Duration, startChar, stopChar string) {
+	duration := to.Sub(from)
+	width := uint(duration) * maxwidth / uint(maxduration)
+	before := uint(from.Sub(min)) * maxwidth / uint(maxduration)
+	after := maxwidth - width - before
+	fmt.Fprintf(w, "%s%s%s%s%s %s(%dms)\n", strings.Repeat(" ", int(before)), startChar, strings.Repeat("-", int(width)), stopChar, strings.Repeat(" ", int(after)), name, duration/(1000*1000))
 }
 
 func (n *NetworkMonitor) addRequest(r *request.Request) {
 	n.l.Lock()
 	defer n.l.Unlock()
-	n.requests[r] = &req{Request: r, from: time.Now().UTC()}
+	if request, ok := n.requests[r]; ok {
+		request.retries = append(request.retries, time.Now().UTC())
+	} else {
+		n.requests[r] = &req{Request: r, from: time.Now().UTC()}
+	}
 }
 
 func (n *NetworkMonitor) setRequestEnd(r *request.Request) {
