@@ -49,12 +49,12 @@ type CreateInstance struct {
 	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
-func (cmd *CreateInstance) Params() params.Rule {
-	return params.AllOf(
+func (cmd *CreateInstance) Params() params.Spec {
+	return params.NewSpec(params.AllOf(
 		params.OnlyOneOf(params.Key("distro"), params.Key("image")),
 		params.Key("count"), params.Key("type"), params.Key("name"), params.Key("subnet"),
 		params.Opt("keypair", "ip", "userdata", "securitygroup", "lock", "role"),
-	)
+	))
 }
 
 func (cmd *CreateInstance) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -105,10 +105,10 @@ type UpdateInstance struct {
 	Lock   *bool   `awsName:"DisableApiTermination" awsType:"awsboolattribute" templateName:"lock"`
 }
 
-func (cmd *UpdateInstance) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *UpdateInstance) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("lock", "type"),
-	)
+	))
 }
 
 type DeleteInstance struct {
@@ -130,8 +130,8 @@ func (cmd *DeleteInstance) ConvertParams() ([]string, func(values map[string]int
 		}
 }
 
-func (cmd *DeleteInstance) Params() params.Rule {
-	return params.OnlyOneOf(params.Key("ids"), params.Key("id"))
+func (cmd *DeleteInstance) Params() params.Spec {
+	return params.NewSpec(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
 }
 
 type StartInstance struct {
@@ -142,8 +142,8 @@ type StartInstance struct {
 	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
 }
 
-func (cmd *StartInstance) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *StartInstance) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 func (cmd *StartInstance) ExtractResult(i interface{}) string {
@@ -158,8 +158,8 @@ type StopInstance struct {
 	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
 }
 
-func (cmd *StopInstance) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *StopInstance) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 func (cmd *StopInstance) ExtractResult(i interface{}) string {
@@ -180,12 +180,13 @@ type CheckInstance struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckInstance) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckInstance) Validate_State() error {
-	return NewEnumValidator("pending", "running", "shutting-down", "terminated", "stopping", "stopped", notFoundState).Validate(cmd.State)
+func (cmd *CheckInstance) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("pending", "running", "shutting-down", "terminated", "stopping", "stopped", notFoundState),
+		},
+	)
 }
 
 func (cmd *CheckInstance) ManualRun(renv env.Running) (interface{}, error) {
@@ -236,10 +237,10 @@ type AttachInstance struct {
 	Port        *int64  `awsName:"Targets[0]Port" awsType:"awsslicestructint64" templateName:"port"`
 }
 
-func (cmd *AttachInstance) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("targetgroup"),
+func (cmd *AttachInstance) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("targetgroup"),
 		params.Opt("port"),
-	)
+	))
 }
 
 type DetachInstance struct {
@@ -251,6 +252,6 @@ type DetachInstance struct {
 	Id          *string `awsName:"Targets[0]Id" awsType:"awsslicestruct" templateName:"id"`
 }
 
-func (cmd *DetachInstance) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("targetgroup"))
+func (cmd *DetachInstance) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("targetgroup")))
 }

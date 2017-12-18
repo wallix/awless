@@ -16,8 +16,6 @@ limitations under the License.
 package awsspec
 
 import (
-	"net"
-
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -39,16 +37,12 @@ type CreateSubnet struct {
 	Name             *string `templateName:"name"`
 }
 
-func (cmd *CreateSubnet) Params() params.Rule {
-	return params.AllOf(
-		params.Key("cidr"), params.Key("vpc"),
-		params.Opt("availabilityzone", "public", "name"),
-	)
-}
-
-func (cmd *CreateSubnet) Validate_CIDR() error {
-	_, _, err := net.ParseCIDR(StringValue(cmd.CIDR))
-	return err
+func (cmd *CreateSubnet) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("cidr"), params.Key("vpc"), params.Opt("availabilityzone", "public", "name")),
+		params.Validators{
+			"cidr": params.IsCIDR,
+		})
 }
 
 func (cmd *CreateSubnet) ExtractResult(i interface{}) string {
@@ -82,8 +76,8 @@ type UpdateSubnet struct {
 	Public *bool   `awsName:"MapPublicIpOnLaunch" awsType:"awsboolattribute" templateName:"public"`
 }
 
-func (cmd *UpdateSubnet) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Opt("public"))
+func (cmd *UpdateSubnet) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Opt("public")))
 }
 
 type DeleteSubnet struct {
@@ -94,6 +88,6 @@ type DeleteSubnet struct {
 	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSubnet) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteSubnet) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

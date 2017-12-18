@@ -40,10 +40,10 @@ type CreateCertificate struct {
 	ValidationDomains []*string `templateName:"validation-domains"`
 }
 
-func (cmd *CreateCertificate) Params() params.Rule {
-	return params.AllOf(params.Key("domains"),
+func (cmd *CreateCertificate) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("domains"),
 		params.Opt("validation-domains"),
-	)
+	))
 }
 
 func (cmd *CreateCertificate) ManualRun(renv env.Running) (interface{}, error) {
@@ -114,8 +114,8 @@ type DeleteCertificate struct {
 	Arn    *string `awsName:"CertificateArn" awsType:"awsstr" templateName:"arn"`
 }
 
-func (cmd *DeleteCertificate) Params() params.Rule {
-	return params.AllOf(params.Key("arn"))
+func (cmd *DeleteCertificate) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("arn")))
 }
 
 type CheckCertificate struct {
@@ -128,12 +128,12 @@ type CheckCertificate struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckCertificate) Params() params.Rule {
-	return params.AllOf(params.Key("arn"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckCertificate) Validate_State() error {
-	return NewEnumValidator("issued", "pending_validation", notFoundState).Validate(cmd.State)
+func (cmd *CheckCertificate) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("arn"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("issued", "pending_validation", notFoundState),
+		})
 }
 
 func (cmd *CheckCertificate) ManualRun(renv env.Running) (interface{}, error) {

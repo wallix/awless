@@ -32,8 +32,8 @@ type CreateRepository struct {
 	Name   *string `awsName:"RepositoryName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateRepository) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateRepository) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *CreateRepository) ExtractResult(i interface{}) string {
@@ -50,8 +50,8 @@ type DeleteRepository struct {
 	Account *string `awsName:"RegistryId" awsType:"awsstr" templateName:"account"`
 }
 
-func (cmd *DeleteRepository) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *DeleteRepository) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("account", "force"),
-	)
+	))
 }

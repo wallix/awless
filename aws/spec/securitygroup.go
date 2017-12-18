@@ -18,7 +18,6 @@ package awsspec
 import (
 	"errors"
 	"fmt"
-	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -44,8 +43,8 @@ type CreateSecuritygroup struct {
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateSecuritygroup) Params() params.Rule {
-	return params.AllOf(params.Key("description"), params.Key("name"), params.Key("vpc"))
+func (cmd *CreateSecuritygroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("description"), params.Key("name"), params.Key("vpc")))
 }
 
 func (cmd *CreateSecuritygroup) ExtractResult(i interface{}) string {
@@ -66,35 +65,24 @@ type UpdateSecuritygroup struct {
 	Portrange     *string `templateName:"portrange"`
 }
 
-func (cmd *UpdateSecuritygroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("protocol"),
-		params.Opt("cidr", "inbound", "outbound", "portrange", "securitygroup"),
-	)
-}
-
-func (cmd *UpdateSecuritygroup) Validate_CIDR() error {
-	_, _, err := net.ParseCIDR(StringValue(cmd.CIDR))
-	return err
-}
-
-// Fail fast when protocol is TCP/UDP and port range is missing, instead of waiting
-// for AWS server validation error:
-//     InvalidParameterValue: Invalid value 'Must specify both from and to ports with TCP/UDP.' for portRange.
-func (cmd *UpdateSecuritygroup) Validate_Protocol() error {
-	if p := cmd.Protocol; p != nil {
-		if isTCPorUDP(*p) && cmd.Portrange == nil {
-			return errors.New("missing 'portrange' when protocol is TCP/UDP")
-		}
-	}
-	return nil
-}
-
-func (cmd *UpdateSecuritygroup) Validate_Inbound() error {
-	return NewEnumValidator("authorize", "revoke").Validate(cmd.Inbound)
-}
-
-func (cmd *UpdateSecuritygroup) Validate_Outbound() error {
-	return NewEnumValidator("authorize", "revoke").Validate(cmd.Outbound)
+func (cmd *UpdateSecuritygroup) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("protocol"), params.Opt("cidr", "inbound", "outbound", "portrange", "securitygroup")),
+		params.Validators{
+			"cidr":     params.IsCIDR,
+			"inbound":  params.IsInEnumIgnoreCase("authorize", "revoke"),
+			"outbound": params.IsInEnumIgnoreCase("authorize", "revoke"),
+			// Fail fast when protocol is TCP/UDP and port range is missing, instead of waiting
+			// for AWS server validation error:
+			//     InvalidParameterValue: Invalid value 'Must specify both from and to ports with TCP/UDP.' for portRange.
+			"protocol": func(protocol interface{}, others map[string]interface{}) error {
+				_, hasPortRange := others["portrange"]
+				if isTCPorUDP(fmt.Sprint(protocol)) && !hasPortRange {
+					return errors.New("missing 'portrange' when protocol is TCP/UDP")
+				}
+				return nil
+			},
+		})
 }
 
 func (cmd *UpdateSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -211,8 +199,8 @@ type DeleteSecuritygroup struct {
 	Id     *string `awsName:"GroupId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSecuritygroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteSecuritygroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 type CheckSecuritygroup struct {
@@ -225,12 +213,12 @@ type CheckSecuritygroup struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckSecuritygroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckSecuritygroup) Validate_State() error {
-	return NewEnumValidator("unused").Validate(cmd.State)
+func (cmd *CheckSecuritygroup) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("unused"),
+		})
 }
 
 func (cmd *CheckSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {
@@ -273,8 +261,8 @@ type AttachSecuritygroup struct {
 	Instance *string `templateName:"instance"`
 }
 
-func (cmd *AttachSecuritygroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("instance"))
+func (cmd *AttachSecuritygroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("instance")))
 }
 
 func (cmd *AttachSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {
@@ -305,8 +293,8 @@ type DetachSecuritygroup struct {
 	Instance *string `templateName:"instance"`
 }
 
-func (cmd *DetachSecuritygroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("instance"))
+func (cmd *DetachSecuritygroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("instance")))
 }
 
 func (cmd *DetachSecuritygroup) ManualRun(renv env.Running) (interface{}, error) {

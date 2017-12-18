@@ -46,10 +46,10 @@ type CreateScalinggroup struct {
 	Targetgroups           []*string `awsName:"TargetGroupARNs" awsType:"awsstringslice" templateName:"targetgroups"`
 }
 
-func (cmd *CreateScalinggroup) Params() params.Rule {
-	return params.AllOf(params.Key("launchconfiguration"), params.Key("max-size"), params.Key("min-size"), params.Key("name"), params.Key("subnets"),
+func (cmd *CreateScalinggroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("launchconfiguration"), params.Key("max-size"), params.Key("min-size"), params.Key("name"), params.Key("subnets"),
 		params.Opt("cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "new-instances-protected", "targetgroups"),
-	)
+	))
 }
 
 func (cmd *CreateScalinggroup) ExtractResult(i interface{}) string {
@@ -73,10 +73,10 @@ type UpdateScalinggroup struct {
 	Subnets                []*string `awsName:"VPCZoneIdentifier" awsType:"awscsvstr" templateName:"subnets"`
 }
 
-func (cmd *UpdateScalinggroup) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *UpdateScalinggroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "launchconfiguration", "max-size", "min-size", "new-instances-protected", "subnets"),
-	)
+	))
 }
 
 type DeleteScalinggroup struct {
@@ -88,10 +88,10 @@ type DeleteScalinggroup struct {
 	Force  *bool   `awsName:"ForceDelete" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DeleteScalinggroup) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *DeleteScalinggroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("force"),
-	)
+	))
 }
 
 type CheckScalinggroup struct {
@@ -104,8 +104,8 @@ type CheckScalinggroup struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckScalinggroup) Params() params.Rule {
-	return params.AllOf(params.Key("count"), params.Key("name"), params.Key("timeout"))
+func (cmd *CheckScalinggroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("count"), params.Key("name"), params.Key("timeout")))
 }
 
 func (sg *CheckScalinggroup) ManualRun(renv env.Running) (interface{}, error) {

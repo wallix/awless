@@ -16,8 +16,6 @@ limitations under the License.
 package awsspec
 
 import (
-	"net"
-
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
@@ -37,15 +35,12 @@ type CreateVpc struct {
 	Name   *string `awsName:"Name" templateName:"name"`
 }
 
-func (cmd *CreateVpc) Params() params.Rule {
-	return params.AllOf(params.Key("cidr"),
-		params.Opt("name"),
-	)
-}
-
-func (cmd *CreateVpc) Validate_CIDR() error {
-	_, _, err := net.ParseCIDR(StringValue(cmd.CIDR))
-	return err
+func (cmd *CreateVpc) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("cidr"), params.Opt("name")),
+		params.Validators{
+			"cidr": params.IsCIDR,
+		})
 }
 
 func (cmd *CreateVpc) ExtractResult(i interface{}) string {
@@ -64,6 +59,6 @@ type DeleteVpc struct {
 	Id     *string `awsName:"VpcId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteVpc) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteVpc) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

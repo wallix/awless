@@ -32,8 +32,8 @@ type CreateRoutetable struct {
 	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 }
 
-func (cmd *CreateRoutetable) Params() params.Rule {
-	return params.AllOf(params.Key("vpc"))
+func (cmd *CreateRoutetable) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("vpc")))
 }
 
 func (cmd *CreateRoutetable) ExtractResult(i interface{}) string {
@@ -48,8 +48,8 @@ type DeleteRoutetable struct {
 	Id     *string `awsName:"RouteTableId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteRoutetable) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteRoutetable) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 type AttachRoutetable struct {
@@ -61,8 +61,8 @@ type AttachRoutetable struct {
 	Subnet *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 }
 
-func (cmd *AttachRoutetable) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("subnet"))
+func (cmd *AttachRoutetable) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("subnet")))
 }
 
 func (cmd *AttachRoutetable) ExtractResult(i interface{}) string {
@@ -77,6 +77,6 @@ type DetachRoutetable struct {
 	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association"`
 }
 
-func (cmd *DetachRoutetable) Params() params.Rule {
-	return params.AllOf(params.Key("association"))
+func (cmd *DetachRoutetable) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("association")))
 }

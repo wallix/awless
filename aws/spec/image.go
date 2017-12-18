@@ -16,7 +16,6 @@ limitations under the License.
 package awsspec
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -43,19 +42,12 @@ type CreateImage struct {
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateImage) Params() params.Rule {
-	return params.AllOf(params.Key("instance"), params.Key("name"),
-		params.Opt("description", "reboot"),
-	)
-}
-
-func (cmd *CreateImage) Validate_Name() (err error) {
-	if name := cmd.Name; name != nil {
-		if len(*name) < 3 {
-			err = errors.New("should at least be 3 characters")
-		}
-	}
-	return
+func (cmd *CreateImage) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("instance"), params.Key("name"), params.Opt("description", "reboot")),
+		params.Validators{
+			"name": params.MinLengthOf(3),
+		})
 }
 
 func (cmd *CreateImage) BeforeRun(renv env.Running) error {
@@ -84,10 +76,10 @@ type UpdateImage struct {
 	Description  *string   `awsName:"Description" awsType:"awsstringattribute" templateName:"description"`
 }
 
-func (cmd *UpdateImage) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *UpdateImage) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("accounts", "description", "groups", "operation", "product-codes"),
-	)
+	))
 }
 
 func (cmd *UpdateImage) prepareImageAttributeInput(ctx map[string]interface{}) (*ec2.ModifyImageAttributeInput, error) {
@@ -160,10 +152,10 @@ type CopyImage struct {
 	Description  *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CopyImage) Params() params.Rule {
-	return params.AllOf(params.Key("name"), params.Key("source-id"), params.Key("source-region"),
+func (cmd *CopyImage) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("source-id"), params.Key("source-region"),
 		params.Opt("description", "encrypted"),
-	)
+	))
 }
 
 func (cmd *CopyImage) ExtractResult(i interface{}) string {
@@ -186,12 +178,12 @@ type ImportImage struct {
 	S3object     *string `awsName:"DiskContainers[0]UserBucket.S3Key" awsType:"awsslicestruct" templateName:"s3object"`
 }
 
-func (cmd *ImportImage) Params() params.Rule {
-	return params.OnlyOneOf(
+func (cmd *ImportImage) Params() params.Spec {
+	return params.NewSpec(params.OnlyOneOf(
 		params.Key("snapshot"), params.Key("url"),
 		params.AllOf(params.Key("bucket"), params.Key("s3object")),
 		params.Opt("architecture", "description", "license", "platform", "role"),
-	)
+	))
 }
 
 func (cmd *ImportImage) ExtractResult(i interface{}) string {
@@ -207,10 +199,10 @@ type DeleteImage struct {
 	DeleteSnapshots *bool   `templateName:"delete-snapshots"`
 }
 
-func (cmd *DeleteImage) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *DeleteImage) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("delete-snapshots"),
-	)
+	))
 }
 
 func (cmd *DeleteImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -273,11 +265,13 @@ func (cmd *DeleteImage) ManualRun(renv env.Running) (interface{}, error) {
 	if BoolValue(cmd.DeleteSnapshots) {
 		for _, snap := range snaps {
 			deleteSnapshot := CommandFactory.Build("deletesnapshot")().(*DeleteSnapshot)
-			deleteSnapshot.Id = String(snap)
-			if errs := deleteSnapshot.ValidateCommand(nil, nil); len(errs) > 0 {
-				return nil, fmt.Errorf("%v", errs)
+			entries := map[string]interface{}{
+				"id": snap,
 			}
-			if _, err := deleteSnapshot.Run(renv, nil); err != nil {
+			if err := params.Validate(deleteSnapshot.Params().Validators(), entries); err != nil {
+				return nil, err
+			}
+			if _, err := deleteSnapshot.Run(renv, entries); err != nil {
 				return nil, fmt.Errorf("delete snapshot %s: %s", snap, err)
 			}
 		}

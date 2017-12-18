@@ -42,8 +42,8 @@ type CreateTag struct {
 	Value    *string `templateName:"value"`
 }
 
-func (cmd *CreateTag) Params() params.Rule {
-	return params.AllOf(params.Key("key"), params.Key("resource"), params.Key("value"))
+func (cmd *CreateTag) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("key"), params.Key("resource"), params.Key("value")))
 }
 
 func (cmd *CreateTag) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -99,10 +99,10 @@ type DeleteTag struct {
 	Value    *string `templateName:"value"`
 }
 
-func (cmd *DeleteTag) Params() params.Rule {
-	return params.AllOf(params.Key("key"), params.Key("resource"),
+func (cmd *DeleteTag) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("key"), params.Key("resource"),
 		params.Opt("value"),
-	)
+	))
 }
 
 func (cmd *DeleteTag) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -146,13 +146,15 @@ func (cmd *DeleteTag) ManualRun(renv env.Running) (interface{}, error) {
 
 func createNameTag(resource, name *string, renv env.Running) error {
 	createTag := CommandFactory.Build("createtag")().(*CreateTag)
-	createTag.Key = String("Name")
-	createTag.Value = name
-	createTag.Resource = resource
-	if errs := createTag.ValidateCommand(nil, nil); len(errs) > 0 {
-		return fmt.Errorf("%v", errs)
+	entries := map[string]interface{}{
+		"key":      "Name",
+		"value":    name,
+		"resource": resource,
 	}
-	_, err := createTag.Run(renv, nil)
+	if err := params.Validate(createTag.Params().Validators(), entries); err != nil {
+		return err
+	}
+	_, err := createTag.Run(renv, entries)
 	return err
 }
 

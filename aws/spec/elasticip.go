@@ -32,8 +32,8 @@ type CreateElasticip struct {
 	Domain *string `awsName:"Domain" awsType:"awsstr" templateName:"domain"`
 }
 
-func (cmd *CreateElasticip) Params() params.Rule {
-	return params.AllOf(params.Key("domain"))
+func (cmd *CreateElasticip) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("domain")))
 }
 
 func (cmd *CreateElasticip) ExtractResult(i interface{}) string {
@@ -49,8 +49,8 @@ type DeleteElasticip struct {
 	Ip     *string `awsName:"PublicIp" awsType:"awsstr" templateName:"ip"`
 }
 
-func (cmd *DeleteElasticip) Params() params.Rule {
-	return params.OnlyOneOf(params.Key("id"), params.Key("ip"))
+func (cmd *DeleteElasticip) Params() params.Spec {
+	return params.NewSpec(params.OnlyOneOf(params.Key("id"), params.Key("ip")))
 }
 
 type AttachElasticip struct {
@@ -65,10 +65,10 @@ type AttachElasticip struct {
 	AllowReassociation *bool   `awsName:"AllowReassociation" awsType:"awsbool" templateName:"allow-reassociation"`
 }
 
-func (cmd *AttachElasticip) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *AttachElasticip) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("allow-reassociation", "instance", "networkinterface", "privateip"),
-	)
+	))
 }
 
 func (cmd *AttachElasticip) ExtractResult(i interface{}) string {
@@ -83,6 +83,6 @@ type DetachElasticip struct {
 	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association"`
 }
 
-func (cmd *DetachElasticip) Params() params.Rule {
-	return params.AllOf(params.Key("association"))
+func (cmd *DetachElasticip) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("association")))
 }

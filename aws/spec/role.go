@@ -41,10 +41,10 @@ type CreateRole struct {
 	SleepAfter       *int64    `templateName:"sleep-after"`
 }
 
-func (cmd *CreateRole) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *CreateRole) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("conditions", "principal-account", "principal-service", "principal-user", "sleep-after"),
-	)
+	))
 }
 
 func (cmd *CreateRole) ManualRun(renv env.Running) (interface{}, error) {
@@ -120,8 +120,8 @@ type DeleteRole struct {
 	Name   *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
 
-func (cmd *DeleteRole) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteRole) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *DeleteRole) ManualRun(renv env.Running) (interface{}, error) {
@@ -154,8 +154,8 @@ type AttachRole struct {
 	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
 
-func (cmd *AttachRole) Params() params.Rule {
-	return params.AllOf(params.Key("instanceprofile"), params.Key("name"))
+func (cmd *AttachRole) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("instanceprofile"), params.Key("name")))
 }
 
 type DetachRole struct {
@@ -167,6 +167,6 @@ type DetachRole struct {
 	Name            *string `awsName:"RoleName" awsType:"awsstr" templateName:"name" `
 }
 
-func (cmd *DetachRole) Params() params.Rule {
-	return params.AllOf(params.Key("instanceprofile"), params.Key("name"))
+func (cmd *DetachRole) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("instanceprofile"), params.Key("name")))
 }

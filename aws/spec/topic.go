@@ -32,8 +32,8 @@ type CreateTopic struct {
 	Name   *string `awsName:"Name" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateTopic) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateTopic) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *CreateTopic) ExtractResult(i interface{}) string {
@@ -48,6 +48,6 @@ type DeleteTopic struct {
 	Id     *string `awsName:"TopicArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteTopic) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteTopic) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

@@ -51,14 +51,14 @@ type CreateAlarm struct {
 	Unit                    *string   `awsName:"Unit" awsType:"awsstr" templateName:"unit"`
 }
 
-func (cmd *CreateAlarm) Params() params.Rule {
-	return params.AllOf(params.Key("evaluation-periods"), params.Key("metric"), params.Key("name"), params.Key("namespace"), params.Key("operator"), params.Key("period"), params.Key("statistic-function"), params.Key("threshold"),
-		params.Opt("alarm-actions", "description", "dimensions", "enabled", "insufficientdata-actions", "ok-actions", "unit"),
-	)
-}
-
-func (cmd *CreateAlarm) Validate_Operator() error {
-	return NewEnumValidator("GreaterThanThreshold", "LessThanThreshold", "LessThanOrEqualToThreshold", "GreaterThanOrEqualToThreshold").Validate(cmd.Operator)
+func (cmd *CreateAlarm) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("evaluation-periods"), params.Key("metric"), params.Key("name"), params.Key("namespace"), params.Key("operator"), params.Key("period"), params.Key("statistic-function"), params.Key("threshold"),
+			params.Opt("alarm-actions", "description", "dimensions", "enabled", "insufficientdata-actions", "ok-actions", "unit"),
+		),
+		params.Validators{
+			"operator": params.IsInEnumIgnoreCase("GreaterThanThreshold", "LessThanThreshold", "LessThanOrEqualToThreshold", "GreaterThanOrEqualToThreshold"),
+		})
 }
 
 func (cmd *CreateAlarm) ExtractResult(i interface{}) string {
@@ -73,8 +73,8 @@ type DeleteAlarm struct {
 	Name   []*string `awsName:"AlarmNames" awsType:"awsstringslice" templateName:"name"`
 }
 
-func (cmd *DeleteAlarm) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteAlarm) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 type StartAlarm struct {
@@ -85,8 +85,8 @@ type StartAlarm struct {
 	Names  []*string `awsName:"AlarmNames" awsType:"awsstringslice" templateName:"names"`
 }
 
-func (cmd *StartAlarm) Params() params.Rule {
-	return params.AllOf(params.Key("names"))
+func (cmd *StartAlarm) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("names")))
 }
 
 type StopAlarm struct {
@@ -97,8 +97,8 @@ type StopAlarm struct {
 	Names  []*string `awsName:"AlarmNames" awsType:"awsstringslice" templateName:"names"`
 }
 
-func (cmd *StopAlarm) Params() params.Rule {
-	return params.AllOf(params.Key("names"))
+func (cmd *StopAlarm) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("names")))
 }
 
 type AttachAlarm struct {
@@ -110,8 +110,8 @@ type AttachAlarm struct {
 	ActionArn *string `templateName:"action-arn"`
 }
 
-func (cmd *AttachAlarm) Params() params.Rule {
-	return params.AllOf(params.Key("action-arn"), params.Key("name"))
+func (cmd *AttachAlarm) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("action-arn"), params.Key("name")))
 }
 
 func (cmd *AttachAlarm) ManualRun(renv env.Running) (interface{}, error) {
@@ -152,8 +152,8 @@ type DetachAlarm struct {
 	ActionArn *string `templateName:"action-arn"`
 }
 
-func (cmd *DetachAlarm) Params() params.Rule {
-	return params.AllOf(params.Key("action-arn"), params.Key("name"))
+func (cmd *DetachAlarm) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("action-arn"), params.Key("name")))
 }
 
 func (cmd *DetachAlarm) ManualRun(renv env.Running) (interface{}, error) {

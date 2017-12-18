@@ -43,11 +43,11 @@ type CreateLoadbalancer struct {
 	Type           *string   `awsName:"Type" awsType:"awsstr" templateName:"type"`
 }
 
-func (cmd *CreateLoadbalancer) Params() params.Rule {
-	return params.AllOf(
+func (cmd *CreateLoadbalancer) Params() params.Spec {
+	return params.NewSpec(params.AllOf(
 		params.Key("name"), params.Key("subnets"),
 		params.Opt("subnet-mappings", "iptype", "scheme", "securitygroups", "type"),
-	)
+	))
 }
 
 func (cmd *CreateLoadbalancer) ExtractResult(i interface{}) string {
@@ -62,8 +62,8 @@ type DeleteLoadbalancer struct {
 	Id     *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteLoadbalancer) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteLoadbalancer) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 type CheckLoadbalancer struct {
@@ -76,12 +76,12 @@ type CheckLoadbalancer struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckLoadbalancer) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckLoadbalancer) Validate_State() error {
-	return NewEnumValidator("provisioning", "active", "failed", notFoundState).Validate(cmd.State)
+func (cmd *CheckLoadbalancer) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("provisioning", "active", "failed", notFoundState),
+		})
 }
 
 func (cmd *CheckLoadbalancer) ManualRun(renv env.Running) (interface{}, error) {

@@ -54,10 +54,10 @@ type CreateDistribution struct {
 	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
-func (cmd *CreateDistribution) Params() params.Rule {
-	return params.AllOf(params.Key("origin-domain"),
+func (cmd *CreateDistribution) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("origin-domain"),
 		params.Opt("certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-path", "price-class"),
-	)
+	))
 }
 
 func (cmd *CreateDistribution) ManualRun(renv env.Running) (interface{}, error) {
@@ -156,12 +156,12 @@ type CheckDistribution struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckDistribution) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckDistribution) Validate_State() error {
-	return NewEnumValidator("deployed", "inprogress", notFoundState).Validate(cmd.State)
+func (cmd *CheckDistribution) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("deployed", "inprogress", notFoundState),
+		})
 }
 
 func (cmd *CheckDistribution) ManualRun(renv env.Running) (interface{}, error) {
@@ -214,10 +214,10 @@ type UpdateDistribution struct {
 	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
-func (cmd *UpdateDistribution) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *UpdateDistribution) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-domain", "origin-path", "price-class"),
-	)
+	))
 }
 
 func (cmd *UpdateDistribution) ManualRun(renv env.Running) (interface{}, error) {
@@ -359,21 +359,23 @@ type DeleteDistribution struct {
 	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteDistribution) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteDistribution) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 func (cmd *DeleteDistribution) ManualRun(renv env.Running) (interface{}, error) {
 	cmd.logger.Info("disabling distribution")
 	updateDistribution := CommandFactory.Build("updatedistribution")().(*UpdateDistribution)
-	updateDistribution.Id = cmd.Id
-	updateDistribution.Enable = Bool(false)
-	if errs := updateDistribution.ValidateCommand(nil, nil); len(errs) > 0 {
-		return nil, fmt.Errorf("%v", errs)
+	entries := map[string]interface{}{
+		"id":     cmd.Id,
+		"enable": false,
+	}
+	if err := params.Validate(updateDistribution.Params().Validators(), entries); err != nil {
+		return nil, err
 	}
 
 	var etag string
-	if out, err := updateDistribution.Run(renv, nil); err != nil {
+	if out, err := updateDistribution.Run(renv, entries); err != nil {
 		return nil, err
 	} else if str, ok := out.(string); ok {
 		etag = str
@@ -381,14 +383,16 @@ func (cmd *DeleteDistribution) ManualRun(renv env.Running) (interface{}, error) 
 
 	cmd.logger.Info("check distribution disabling has been propagated")
 	checkDistribution := CommandFactory.Build("checkdistribution")().(*CheckDistribution)
-	checkDistribution.Id = cmd.Id
-	checkDistribution.State = String("Deployed")
-	checkDistribution.Timeout = Int64(900)
-	if errs := checkDistribution.ValidateCommand(nil, nil); len(errs) > 0 {
-		return nil, fmt.Errorf("%v", errs)
+	entries = map[string]interface{}{
+		"id":      cmd.Id,
+		"state":   "Deployed",
+		"timeout": 900,
+	}
+	if err := params.Validate(checkDistribution.Params().Validators(), entries); err != nil {
+		return nil, err
 	}
 
-	if _, err := checkDistribution.Run(renv, nil); err != nil {
+	if _, err := checkDistribution.Run(renv, entries); err != nil {
 		return nil, err
 	}
 

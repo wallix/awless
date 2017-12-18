@@ -37,10 +37,10 @@ type CreateBucket struct {
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 }
 
-func (cmd *CreateBucket) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *CreateBucket) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("acl"),
-	)
+	))
 }
 
 func (cmd *CreateBucket) ExtractResult(i interface{}) string {
@@ -60,10 +60,10 @@ type UpdateBucket struct {
 	EnforceHttps     *bool   `templateName:"enforce-https"`
 }
 
-func (cmd *UpdateBucket) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *UpdateBucket) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("acl", "enforce-https", "index-suffix", "public-website", "redirect-hostname"),
-	)
+	))
 }
 
 func (cmd *UpdateBucket) ManualRun(renv env.Running) (interface{}, error) {
@@ -124,6 +124,6 @@ type DeleteBucket struct {
 	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteBucket) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteBucket) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }

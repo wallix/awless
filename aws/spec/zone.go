@@ -37,10 +37,10 @@ type CreateZone struct {
 	Vpcregion       *string `awsName:"VPC.VPCRegion" awsType:"awsstr" templateName:"vpcregion"`
 }
 
-func (cmd *CreateZone) Params() params.Rule {
-	return params.AllOf(params.Key("callerreference"), params.Key("name"),
+func (cmd *CreateZone) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("callerreference"), params.Key("name"),
 		params.Opt("comment", "delegationsetid", "isprivate", "vpcid", "vpcregion"),
-	)
+	))
 }
 
 func (cmd *CreateZone) ExtractResult(i interface{}) string {
@@ -55,6 +55,6 @@ type DeleteZone struct {
 	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteZone) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteZone) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

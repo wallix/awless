@@ -48,20 +48,22 @@ type StartContainertask struct {
 	LoadBalancerTargetgroup   *string `templateName:"loadbalancer.targetgroup"`
 }
 
-func (cmd *StartContainertask) Params() params.Rule {
-	return params.AllOf(params.Key("cluster"), params.Key("desired-count"), params.Key("name"), params.Key("type"),
-		params.Opt("deployment-name", "loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role"),
-	)
-}
-
-func (cmd *StartContainertask) Validate_Type() error {
-	if err := NewEnumValidator("task", "service").Validate(cmd.Type); err != nil {
-		return err
-	}
-	if StringValue(cmd.Type) == "service" && cmd.DeploymentName == nil {
-		return errors.New("missing required param when type=service: 'deployment-name'")
-	}
-	return nil
+func (cmd *StartContainertask) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("cluster"), params.Key("desired-count"), params.Key("name"), params.Key("type"), params.Opt("deployment-name", "loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role")),
+		params.Validators{
+			"type": func(i interface{}, others map[string]interface{}) error {
+				typ := fmt.Sprint(i)
+				if typ != "task" && typ != "service" {
+					return fmt.Errorf("expected any of [task service] but got %s", typ)
+				}
+				_, hasDepName := others["deployment-name"]
+				if typ == "service" && !hasDepName {
+					return errors.New("missing required param 'deployment-name' when type=service")
+				}
+				return nil
+			},
+		})
 }
 
 func (cmd *StartContainertask) ManualRun(renv env.Running) (interface{}, error) {
@@ -143,23 +145,26 @@ type StopContainertask struct {
 	RunArn         *string `templateName:"run-arn"`
 }
 
-func (cmd *StopContainertask) Params() params.Rule {
-	return params.AllOf(params.Key("cluster"), params.Key("type"),
-		params.Opt("deployment-name", "run-arn"),
-	)
-}
-
-func (cmd *StopContainertask) Validate_Type() error {
-	if err := NewEnumValidator("task", "service").Validate(cmd.Type); err != nil {
-		return err
-	}
-	if StringValue(cmd.Type) == "service" && cmd.DeploymentName == nil {
-		return errors.New("missing required param when type=service: 'deployment-name'")
-	}
-	if StringValue(cmd.Type) == "task" && cmd.RunArn == nil {
-		return errors.New("missing required param when type=service: 'run-arn'")
-	}
-	return nil
+func (cmd *StopContainertask) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("cluster"), params.Key("type"), params.Opt("deployment-name", "run-arn")),
+		params.Validators{
+			"type": func(i interface{}, others map[string]interface{}) error {
+				typ := fmt.Sprint(i)
+				if typ != "task" && typ != "service" {
+					return fmt.Errorf("expected any of [task service] but got %s", typ)
+				}
+				_, hasDepName := others["deployment-name"]
+				if typ == "service" && !hasDepName {
+					return errors.New("missing required param 'deployment-name' when type=service")
+				}
+				_, hasRunARN := others["run-arn"]
+				if typ == "task" && !hasRunARN {
+					return errors.New("missing required param 'run-arn' when type=task")
+				}
+				return nil
+			},
+		})
 }
 
 func (cmd *StopContainertask) ManualRun(renv env.Running) (interface{}, error) {
@@ -202,10 +207,10 @@ type UpdateContainertask struct {
 	Name           *string `awsName:"TaskDefinition" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *UpdateContainertask) Params() params.Rule {
-	return params.AllOf(params.Key("cluster"), params.Key("deployment-name"),
+func (cmd *UpdateContainertask) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("cluster"), params.Key("deployment-name"),
 		params.Opt("desired-count", "name"),
-	)
+	))
 }
 
 type AttachContainertask struct {
@@ -224,10 +229,10 @@ type AttachContainertask struct {
 	Ports           []*string `templateName:"ports"`
 }
 
-func (cmd *AttachContainertask) Params() params.Rule {
-	return params.AllOf(params.Key("container-name"), params.Key("image"), params.Key("memory-hard-limit"), params.Key("name"),
+func (cmd *AttachContainertask) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("container-name"), params.Key("image"), params.Key("memory-hard-limit"), params.Key("name"),
 		params.Opt("command", "env", "ports", "privileged", "workdir"),
-	)
+	))
 }
 
 func (cmd *AttachContainertask) ManualRun(renv env.Running) (interface{}, error) {
@@ -327,8 +332,8 @@ type DetachContainertask struct {
 	ContainerName *string `templateName:"container-name"`
 }
 
-func (cmd *DetachContainertask) Params() params.Rule {
-	return params.AllOf(params.Key("container-name"), params.Key("name"))
+func (cmd *DetachContainertask) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("container-name"), params.Key("name")))
 }
 
 func (cmd *DetachContainertask) ManualRun(renv env.Running) (interface{}, error) {
@@ -396,10 +401,10 @@ type DeleteContainertask struct {
 	AllVersions *bool   `templateName:"all-versions"`
 }
 
-func (cmd *DeleteContainertask) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *DeleteContainertask) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("all-versions"),
-	)
+	))
 }
 
 func (cmd *DeleteContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {

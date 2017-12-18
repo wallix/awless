@@ -16,7 +16,6 @@ limitations under the License.
 package awsspec
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -80,75 +79,66 @@ type CreateDatabase struct {
 	CopyTagsToSnapshot *string `awsName:"CopyTagsToSnapshot" awsType:"awsbool" templateName:"copytagstosnapshot"`
 }
 
-func (cmd *CreateDatabase) Params() params.Rule {
-	return params.OnlyOneOf(
+func (cmd *CreateDatabase) Params() params.Spec {
+	return params.NewSpec(params.OnlyOneOf(
 		params.AllOf(params.Key("type"), params.Key("id"), params.Key("engine"), params.Key("password"), params.Key("username"), params.Key("size")),
 		params.AllOf(params.Key("replica"), params.Key("replica-source")),
 		params.Opt("autoupgrade", "availabilityzone", "backupretention", "cluster", "dbname", "parametergroup",
 			"dbsecuritygroups", "subnetgroup", "domain", "iamrole", "version", "iops", "license", "multiaz", "optiongroup",
-			"port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecuritygroups"),
+			"port", "backupwindow", "maintenancewindow", "public", "encrypted", "storagetype", "timezone", "vpcsecuritygroups")),
+		params.Validators{
+			"password": params.MinLengthOf(8),
+			"replica": func(i interface{}, others map[string]interface{}) error {
+				msg := "param not allowed in replica (either not applicable or directly inherited from the source DB)"
+				if _, ok := others["backupretention"]; ok {
+					return fmt.Errorf("'backupretention' %s", msg)
+				}
+				if _, ok := others["backupwindow"]; ok {
+					return fmt.Errorf("'backupwindow' %s", msg)
+				}
+				if _, ok := others["cluster"]; ok {
+					return fmt.Errorf("'cluster' %s", msg)
+				}
+				if _, ok := others["dbname"]; ok {
+					return fmt.Errorf("'dbname' %s", msg)
+				}
+				if _, ok := others["dbsecuritygroups"]; ok {
+					return fmt.Errorf("'dbsecuritygroups' %s", msg)
+				}
+				if _, ok := others["domain"]; ok {
+					return fmt.Errorf("'domain' %s", msg)
+				}
+				if _, ok := others["encrypted"]; ok {
+					return fmt.Errorf("'encrypted' %s", msg)
+				}
+				if _, ok := others["iamrole"]; ok {
+					return fmt.Errorf("'iamrole' %s", msg)
+				}
+				if _, ok := others["license"]; ok {
+					return fmt.Errorf("'license' %s", msg)
+				}
+				if _, ok := others["maintenancewindow"]; ok {
+					return fmt.Errorf("'maintenancewindow' %s", msg)
+				}
+				if _, ok := others["multiaz"]; ok {
+					return fmt.Errorf("'multiaz' %s", msg)
+				}
+				if _, ok := others["parametergroup"]; ok {
+					return fmt.Errorf("'parametergroup' %s", msg)
+				}
+				if _, ok := others["timezone"]; ok {
+					return fmt.Errorf("'timezone' %s", msg)
+				}
+				if _, ok := others["vpcsecuritygroups"]; ok {
+					return fmt.Errorf("'vpcsecuritygroups' %s", msg)
+				}
+				if _, ok := others["version"]; ok {
+					return fmt.Errorf("'version' %s", msg)
+				}
+				return nil
+			},
+		},
 	)
-}
-
-func (cmd *CreateDatabase) Validate_Password() (err error) {
-	if pass := cmd.Password; pass != nil {
-		if len(*pass) < 8 {
-			err = errors.New("should at least be 8 characters")
-		}
-	}
-	return
-}
-
-func (cmd *CreateDatabase) Validate_ReadReplicaIdentifier() error {
-	if cmd.ReadReplicaIdentifier != nil {
-		msg := "param not allowed in replica (either not applicable or directly inherited from the source DB)"
-		if cmd.Backupretention != nil {
-			return fmt.Errorf("'backupretention' %s", msg)
-		}
-		if cmd.Backupwindow != nil {
-			return fmt.Errorf("'backupwindow' %s", msg)
-		}
-		if cmd.Cluster != nil {
-			return fmt.Errorf("'cluster' %s", msg)
-		}
-		if cmd.Dbname != nil {
-			return fmt.Errorf("'dbname' %s", msg)
-		}
-		if cmd.Dbsecuritygroups != nil {
-			return fmt.Errorf("'dbsecuritygroups' %s", msg)
-		}
-		if cmd.Domain != nil {
-			return fmt.Errorf("'domain' %s", msg)
-		}
-		if cmd.Encrypted != nil {
-			return fmt.Errorf("'encrypted' %s", msg)
-		}
-		if cmd.Iamrole != nil {
-			return fmt.Errorf("'iamrole' %s", msg)
-		}
-		if cmd.License != nil {
-			return fmt.Errorf("'license' %s", msg)
-		}
-		if cmd.Maintenancewindow != nil {
-			return fmt.Errorf("'maintenancewindow' %s", msg)
-		}
-		if cmd.Multiaz != nil {
-			return fmt.Errorf("'multiaz' %s", msg)
-		}
-		if cmd.Parametergroup != nil {
-			return fmt.Errorf("'parametergroup' %s", msg)
-		}
-		if cmd.Timezone != nil {
-			return fmt.Errorf("'timezone' %s", msg)
-		}
-		if cmd.Vpcsecuritygroups != nil {
-			return fmt.Errorf("'vpcsecuritygroups' %s", msg)
-		}
-		if cmd.Version != nil {
-			return fmt.Errorf("'version' %s", msg)
-		}
-	}
-	return nil
 }
 
 func (cmd *CreateDatabase) ManualRun(renv env.Running) (output interface{}, err error) {
@@ -197,10 +187,10 @@ type DeleteDatabase struct {
 	Snapshot     *string `awsName:"FinalDBSnapshotIdentifier" awsType:"awsstr" templateName:"snapshot"`
 }
 
-func (cmd *DeleteDatabase) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *DeleteDatabase) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("skip-snapshot", "snapshot"),
-	)
+	))
 }
 
 type CheckDatabase struct {
@@ -213,26 +203,16 @@ type CheckDatabase struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckDatabase) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckDatabase) Validate_State() error {
-	return NewEnumValidator(
-		"available",
-		"backing-up",
-		"creating",
-		"deleting",
-		"failed",
-		"maintenance",
-		"modifying",
-		"rebooting",
-		"renaming",
-		"resetting-master-credentials",
-		"restore-error",
-		"storage-full",
-		"upgrading",
-		notFoundState).Validate(cmd.State)
+func (cmd *CheckDatabase) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("available",
+				"backing-up", "creating", "deleting", "failed", "maintenance", "modifying",
+				"rebooting", "renaming", "resetting-master-credentials", "restore-error",
+				"storage-full", "upgrading", notFoundState),
+		},
+	)
 }
 
 func (cmd *CheckDatabase) ManualRun(renv env.Running) (interface{}, error) {
@@ -279,8 +259,8 @@ type StartDatabase struct {
 	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *StartDatabase) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *StartDatabase) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 type StopDatabase struct {
@@ -291,6 +271,6 @@ type StopDatabase struct {
 	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *StopDatabase) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *StopDatabase) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

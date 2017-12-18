@@ -16,7 +16,6 @@ limitations under the License.
 package awsspec
 
 import (
-	"fmt"
 	"mime"
 	"os"
 	"path/filepath"
@@ -43,25 +42,11 @@ type CreateS3object struct {
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 }
 
-func (cmd *CreateS3object) Params() params.Rule {
-	return params.AllOf(params.Key("bucket"), params.Key("file"),
-		params.Opt("acl", "name"),
+func (cmd *CreateS3object) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("bucket"), params.Key("file"), params.Opt("acl", "name")),
+		params.Validators{"file": params.IsFilepath},
 	)
-}
-
-func (cmd *CreateS3object) Validate_File() error {
-	filepath := StringValue(cmd.File)
-	stat, err := os.Stat(filepath)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("cannot find file '%s'", filepath)
-	}
-	if err != nil {
-		return err
-	}
-	if stat.IsDir() {
-		return fmt.Errorf("'%s' is a directory", filepath)
-	}
-	return nil
 }
 
 func (cmd *CreateS3object) ManualRun(env.Running) (interface{}, error) {
@@ -127,10 +112,10 @@ type UpdateS3object struct {
 	Version *string `awsName:"VersionId" awsType:"awsstr" templateName:"version"`
 }
 
-func (cmd *UpdateS3object) Params() params.Rule {
-	return params.AllOf(params.Key("acl"), params.Key("bucket"), params.Key("name"),
+func (cmd *UpdateS3object) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("acl"), params.Key("bucket"), params.Key("name"),
 		params.Opt("version"),
-	)
+	))
 }
 
 type DeleteS3object struct {
@@ -142,8 +127,8 @@ type DeleteS3object struct {
 	Name   *string `awsName:"Key" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteS3object) Params() params.Rule {
-	return params.AllOf(params.Key("bucket"), params.Key("name"))
+func (cmd *DeleteS3object) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("bucket"), params.Key("name")))
 }
 
 type ProgressReadSeeker struct {

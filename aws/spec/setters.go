@@ -18,7 +18,6 @@ package awsspec
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -631,36 +630,6 @@ func structInjector(src, dest interface{}, ctx map[string]interface{}) error {
 				}
 			}
 		}
-	}
-	return nil
-}
-
-func validateStruct(s interface{}, ignoredParams []string) error {
-	val := reflect.ValueOf(s)
-	stru := val.Elem().Type()
-
-	var messages []string
-	for i := 0; i < stru.NumField(); i++ {
-		field := stru.Field(i)
-		if tplName, ok := field.Tag.Lookup("templateName"); ok && !contains(ignoredParams, tplName) {
-			if val.Elem().Field(i).IsNil() {
-				continue
-			}
-			methName := fmt.Sprintf("Validate_%s", field.Name)
-			meth := val.MethodByName(methName)
-
-			if meth != (reflect.Value{}) {
-				results := meth.Call(nil)
-				if len(results) == 1 {
-					if iface := results[0].Interface(); iface != nil {
-						messages = append(messages, fmt.Sprintf("%s: %s", tplName, iface.(error).Error()))
-					}
-				}
-			}
-		}
-	}
-	if len(messages) > 0 {
-		return errors.New(strings.Join(messages, "; "))
 	}
 	return nil
 }

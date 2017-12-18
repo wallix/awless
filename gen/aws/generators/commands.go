@@ -335,17 +335,6 @@ func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *{{ $cmdName }}) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 {{ if $tag.HasDryRun }}
 	{{ if $tag.GenDryRun }}
 	func (cmd *{{ $cmdName }}) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -480,7 +469,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 			Action: "{{ $cmd.Action }}",
 			Entity: "{{ $cmd.Entity }}",
 			Api: "{{ $cmd.API }}",
-			Params: new({{ $cmdName }}).Params(),
+			Params: new({{ $cmdName }}).Params().Rule(),
 		},
 {{- end }}
 }

@@ -34,8 +34,8 @@ type CreateDbsubnetgroup struct {
 	Subnets     []*string `awsName:"SubnetIds" awsType:"awsstringslice" templateName:"subnets"`
 }
 
-func (cmd *CreateDbsubnetgroup) Params() params.Rule {
-	return params.AllOf(params.Key("description"), params.Key("name"), params.Key("subnets"))
+func (cmd *CreateDbsubnetgroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("description"), params.Key("name"), params.Key("subnets")))
 }
 
 func (cmd *CreateDbsubnetgroup) ExtractResult(i interface{}) string {
@@ -50,6 +50,6 @@ type DeleteDbsubnetgroup struct {
 	Name   *string `awsName:"DBSubnetGroupName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteDbsubnetgroup) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteDbsubnetgroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }

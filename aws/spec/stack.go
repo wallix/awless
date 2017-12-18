@@ -17,10 +17,8 @@ package awsspec
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path"
 	"sort"
 	"strings"
@@ -56,17 +54,11 @@ type CreateStack struct {
 	StackFile       *string   `templateName:"stack-file"`
 }
 
-func (cmd *CreateStack) Params() params.Rule {
-	return params.AllOf(params.Key("name"), params.Key("template-file"),
-		params.Opt("capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout"),
+func (cmd *CreateStack) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("name"), params.Key("template-file"), params.Opt("capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout")),
+		params.Validators{"template-file": params.IsFilepath},
 	)
-}
-
-func (cmd *CreateStack) Validate_TemplateFile() error {
-	if _, err := os.Stat(StringValue(cmd.TemplateFile)); err != nil {
-		return errors.New(strings.TrimLeft(err.Error(), "stat "))
-	}
-	return nil
 }
 
 func (cmd *CreateStack) ExtractResult(i interface{}) string {
@@ -102,10 +94,10 @@ type UpdateStack struct {
 	StackFile           *string   `templateName:"stack-file"`
 }
 
-func (cmd *UpdateStack) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *UpdateStack) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "stack-file", "tags", "template-file", "use-previous-template"),
-	)
+	))
 }
 
 func (cmd *UpdateStack) ExtractResult(i interface{}) string {
@@ -253,8 +245,8 @@ type DeleteStack struct {
 	RetainResources []*string `awsName:"RetainResources" awsType:"awsstringslice" templateName:"retain-resources"`
 }
 
-func (cmd *DeleteStack) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
+func (cmd *DeleteStack) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("retain-resources"),
-	)
+	))
 }

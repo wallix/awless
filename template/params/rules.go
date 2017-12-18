@@ -7,18 +7,26 @@ import (
 	"strings"
 )
 
+type Rule interface {
+	Visit(func(Rule))
+	Run(input []string) error
+	Required() []string
+	Missing(input []string) []string
+	String() string
+}
+
 func List(r Rule) ([]string, []string) {
 	return collect(r)
 }
 
-func Validate(r Rule, input []string) error {
-	if err := invalidParams(r, input); err != nil {
+func Run(r Rule, input []string) error {
+	if err := unexpectedParam(r, input); err != nil {
 		return err
 	}
 	return r.Run(input)
 }
 
-func invalidParams(r Rule, input []string) (err error) {
+func unexpectedParam(r Rule, input []string) (err error) {
 	var unex []string
 	params, opts := collect(r)
 	all := append(params, opts...)
@@ -45,14 +53,6 @@ func collect(r Rule) (out []string, opts []string) {
 	sort.Strings(out)
 	sort.Strings(opts)
 	return
-}
-
-type Rule interface {
-	Visit(func(Rule))
-	Run(input []string) error
-	Required() []string
-	Missing(input []string) []string
-	String() string
 }
 
 type allOf struct {

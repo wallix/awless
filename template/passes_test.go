@@ -68,17 +68,6 @@ func TestCommandsPasses(t *testing.T) {
 		}
 	})
 
-	t.Run("validate commands", func(t *testing.T) {
-		tpl := MustParse("create instance\nsub = create subnet\ncreate instance")
-		count = 0
-		_, _, err := validateCommandsPass(tpl, env)
-		if err == nil {
-			t.Fatal("expected err got none")
-		}
-
-		checkContainsAll(t, err.Error(), "123")
-	})
-
 	t.Run("inject command", func(t *testing.T) {
 		count = 0
 		tpl := MustParse("create instance\nsub = create subnet\ncreate instance")
@@ -382,11 +371,8 @@ func TestCmdErr(t *testing.T) {
 
 type mockCommand struct{ id string }
 
-func (c *mockCommand) ValidateCommand(map[string]interface{}, []string) []error {
-	return []error{errors.New(c.id)}
-}
 func (c *mockCommand) Run(env.Running, map[string]interface{}) (interface{}, error) { return nil, nil }
-func (c *mockCommand) Params() params.Rule                                          { return nil }
+func (c *mockCommand) Params() params.Spec                                          { return params.NewSpec(nil) }
 
 type parameters map[string]interface{}
 type holesKeys map[string][]string

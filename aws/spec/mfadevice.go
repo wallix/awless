@@ -46,8 +46,8 @@ type CreateMfadevice struct {
 	Name   *string `templateName:"name"`
 }
 
-func (cmd *CreateMfadevice) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateMfadevice) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *CreateMfadevice) ManualRun(renv env.Running) (interface{}, error) {
@@ -95,8 +95,8 @@ type DeleteMfadevice struct {
 	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteMfadevice) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteMfadevice) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 var (
@@ -115,10 +115,10 @@ type AttachMfadevice struct {
 	NoPrompt *bool   `templateName:"no-prompt"`
 }
 
-func (cmd *AttachMfadevice) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("mfa-code-1"), params.Key("mfa-code-2"), params.Key("user"),
+func (cmd *AttachMfadevice) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("mfa-code-1"), params.Key("mfa-code-2"), params.Key("user"),
 		params.Opt("no-prompt"),
-	)
+	))
 }
 
 func (cmd *AttachMfadevice) AfterRun(renv env.Running, output interface{}) error {
@@ -170,8 +170,8 @@ type DetachMfadevice struct {
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 }
 
-func (cmd *DetachMfadevice) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("user"))
+func (cmd *DetachMfadevice) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("user")))
 }
 
 func displayQRCode(w io.Writer, qrCode barcode.Barcode) {

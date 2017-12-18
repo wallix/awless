@@ -34,8 +34,7 @@ type ResultExtractor interface {
 }
 
 type command interface {
-	Params() params.Rule
-	ValidateCommand(map[string]interface{}, []string) []error
+	Params() params.Spec
 	inject(map[string]interface{}) error
 	Run(env.Running, map[string]interface{}) (interface{}, error)
 }

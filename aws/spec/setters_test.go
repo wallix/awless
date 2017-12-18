@@ -670,69 +670,6 @@ func (ts *TestStruct) Validate_FieldInt64() (err error) {
 	return
 }
 
-func TestFieldValidator(t *testing.T) {
-	tcases := []struct {
-		stru        *TestStruct
-		ignored     []string
-		contains    []string
-		notContains []string
-		err         bool
-	}{
-		{
-			stru:     &TestStruct{FieldStringRequired: awssdk.String(""), FieldInt64: awssdk.Int64(12)},
-			contains: []string{"fint should not exceed 10"},
-			err:      true,
-		},
-		{
-			stru:        &TestStruct{FieldStringRequired: awssdk.String("not empty"), FieldInt64: awssdk.Int64(12)},
-			contains:    []string{"fint should not exceed 10"},
-			notContains: []string{"fstring"},
-			err:         true,
-		},
-		{
-			stru:        &TestStruct{FieldStringRequired: awssdk.String(""), FieldInt64: awssdk.Int64(9), FieldBool: awssdk.Bool(true)},
-			notContains: []string{"fint"},
-			err:         true,
-		},
-		{
-			stru:        &TestStruct{FieldStringRequired: awssdk.String("any"), FieldInt64: awssdk.Int64(8), FieldString: awssdk.String("to short")},
-			contains:    []string{"fstring should be 10 chars"},
-			notContains: []string{"fint", "fstringrequired"},
-			err:         true,
-		},
-		{
-			stru: &TestStruct{FieldStringRequired: awssdk.String("non empty"), FieldInt64: awssdk.Int64(8), FieldBool: awssdk.Bool(true)},
-			err:  false,
-		},
-		{
-			stru:    &TestStruct{FieldStringRequired: awssdk.String("non empty"), FieldInt64: awssdk.Int64(8)},
-			ignored: []string{"fbool"},
-			err:     false,
-		},
-	}
-
-	for i, tcase := range tcases {
-		err := validateStruct(tcase.stru, tcase.ignored)
-		if tcase.err && err == nil {
-			t.Fatalf("%d. expected err got none", i+1)
-		}
-		if !tcase.err && err != nil {
-			t.Fatalf("%d. expected no err got one", i+1)
-		}
-		for _, msg := range tcase.contains {
-			if got, want := err.Error(), msg; !strings.Contains(got, want) {
-				t.Fatalf("%d. %q should contains %q", i+1, got, want)
-			}
-		}
-		for _, msg := range tcase.notContains {
-			if err != nil {
-				if got, want := err.Error(), msg; strings.Contains(got, want) {
-					t.Fatalf("%d. %q should not contains %q", i+1, got, want)
-				}
-			}
-		}
-	}
-}
 func TestStructDynamicSetter(t *testing.T) {
 	params := map[string]interface{}{
 		"fstringrequired": "jdoe",

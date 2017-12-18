@@ -46,10 +46,10 @@ type CreateTargetgroup struct {
 	Matcher             *string `awsName:"Matcher.HttpCode" awsType:"awsstr" templateName:"matcher"`
 }
 
-func (cmd *CreateTargetgroup) Params() params.Rule {
-	return params.AllOf(params.Key("name"), params.Key("port"), params.Key("protocol"), params.Key("vpc"),
+func (cmd *CreateTargetgroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("port"), params.Key("protocol"), params.Key("vpc"),
 		params.Opt("healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "unhealthythreshold"),
-	)
+	))
 }
 
 func (cmd *CreateTargetgroup) ExtractResult(i interface{}) string {
@@ -75,10 +75,10 @@ type UpdateTargetgroup struct {
 	Matcher             *string `awsName:"Matcher.HttpCode" awsType:"awsstr" templateName:"matcher"`
 }
 
-func (cmd *UpdateTargetgroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *UpdateTargetgroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("deregistrationdelay", "healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"),
-	)
+	))
 }
 
 func (tg *UpdateTargetgroup) ManualRun(renv env.Running) (interface{}, error) {
@@ -193,6 +193,6 @@ type DeleteTargetgroup struct {
 	Id     *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteTargetgroup) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteTargetgroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

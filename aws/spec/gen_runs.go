@@ -128,17 +128,6 @@ func (cmd *AttachAlarm) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *AttachAlarm) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
@@ -210,17 +199,6 @@ func (cmd *AttachContainertask) run(renv env.Running, params map[string]interfac
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachContainertask) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -300,17 +278,6 @@ func (cmd *AttachElasticip) run(renv env.Running, params map[string]interface{})
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachElasticip) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -413,17 +380,6 @@ func (cmd *AttachInstance) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *AttachInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
 }
@@ -495,17 +451,6 @@ func (cmd *AttachInstanceprofile) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachInstanceprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachInstanceprofile) inject(params map[string]interface{}) error {
@@ -581,17 +526,6 @@ func (cmd *AttachInternetgateway) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachInternetgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -694,17 +628,6 @@ func (cmd *AttachMfadevice) run(renv env.Running, params map[string]interface{})
 	return extracted, nil
 }
 
-func (cmd *AttachMfadevice) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
@@ -782,17 +705,6 @@ func (cmd *AttachNetworkinterface) run(renv env.Running, params map[string]inter
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachNetworkinterface) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -889,17 +801,6 @@ func (cmd *AttachPolicy) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *AttachPolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachPolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
@@ -979,17 +880,6 @@ func (cmd *AttachRole) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *AttachRole) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
 }
@@ -1067,17 +957,6 @@ func (cmd *AttachRoutetable) run(renv env.Running, params map[string]interface{}
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachRoutetable) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -1174,17 +1053,6 @@ func (cmd *AttachSecuritygroup) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *AttachSecuritygroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
 }
@@ -1264,17 +1132,6 @@ func (cmd *AttachUser) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *AttachUser) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AttachUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
@@ -1352,17 +1209,6 @@ func (cmd *AttachVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *AttachVolume) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *AttachVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -1459,17 +1305,6 @@ func (cmd *AuthenticateRegistry) run(renv env.Running, params map[string]interfa
 	return extracted, nil
 }
 
-func (cmd *AuthenticateRegistry) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *AuthenticateRegistry) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("registry"), nil
 }
@@ -1541,17 +1376,6 @@ func (cmd *CheckCertificate) run(renv env.Running, params map[string]interface{}
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CheckCertificate) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CheckCertificate) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -1627,17 +1451,6 @@ func (cmd *CheckDatabase) run(renv env.Running, params map[string]interface{}) (
 	return extracted, nil
 }
 
-func (cmd *CheckDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CheckDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
@@ -1709,17 +1522,6 @@ func (cmd *CheckDistribution) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CheckDistribution) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CheckDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -1795,17 +1597,6 @@ func (cmd *CheckInstance) run(renv env.Running, params map[string]interface{}) (
 	return extracted, nil
 }
 
-func (cmd *CheckInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CheckInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
 }
@@ -1877,17 +1668,6 @@ func (cmd *CheckLoadbalancer) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CheckLoadbalancer) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CheckLoadbalancer) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -1963,17 +1743,6 @@ func (cmd *CheckNatgateway) run(renv env.Running, params map[string]interface{})
 	return extracted, nil
 }
 
-func (cmd *CheckNatgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CheckNatgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
 }
@@ -2045,17 +1814,6 @@ func (cmd *CheckNetworkinterface) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CheckNetworkinterface) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CheckNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -2131,17 +1889,6 @@ func (cmd *CheckScalinggroup) run(renv env.Running, params map[string]interface{
 	return extracted, nil
 }
 
-func (cmd *CheckScalinggroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CheckScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
 }
@@ -2215,17 +1962,6 @@ func (cmd *CheckSecuritygroup) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *CheckSecuritygroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CheckSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
 }
@@ -2297,17 +2033,6 @@ func (cmd *CheckVolume) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CheckVolume) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CheckVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -2387,17 +2112,6 @@ func (cmd *CopyImage) run(renv env.Running, params map[string]interface{}) (inte
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CopyImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CopyImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -2500,17 +2214,6 @@ func (cmd *CopySnapshot) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *CopySnapshot) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CopySnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -2611,17 +2314,6 @@ func (cmd *CreateAccesskey) run(renv env.Running, params map[string]interface{})
 	return extracted, nil
 }
 
-func (cmd *CreateAccesskey) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateAccesskey) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("accesskey"), nil
 }
@@ -2699,17 +2391,6 @@ func (cmd *CreateAlarm) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateAlarm) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -2791,17 +2472,6 @@ func (cmd *CreateAppscalingpolicy) run(renv env.Running, params map[string]inter
 	return extracted, nil
 }
 
-func (cmd *CreateAppscalingpolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateAppscalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingpolicy"), nil
 }
@@ -2879,17 +2549,6 @@ func (cmd *CreateAppscalingtarget) run(renv env.Running, params map[string]inter
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateAppscalingtarget) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateAppscalingtarget) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -2971,17 +2630,6 @@ func (cmd *CreateBucket) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *CreateBucket) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateBucket) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("bucket"), nil
 }
@@ -3053,17 +2701,6 @@ func (cmd *CreateCertificate) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateCertificate) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateCertificate) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -3145,17 +2782,6 @@ func (cmd *CreateContainercluster) run(renv env.Running, params map[string]inter
 	return extracted, nil
 }
 
-func (cmd *CreateContainercluster) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateContainercluster) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containercluster"), nil
 }
@@ -3227,17 +2853,6 @@ func (cmd *CreateDatabase) run(renv env.Running, params map[string]interface{}) 
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -3319,17 +2934,6 @@ func (cmd *CreateDbsubnetgroup) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *CreateDbsubnetgroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateDbsubnetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("dbsubnetgroup"), nil
 }
@@ -3401,17 +3005,6 @@ func (cmd *CreateDistribution) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateDistribution) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -3491,17 +3084,6 @@ func (cmd *CreateElasticip) run(renv env.Running, params map[string]interface{})
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateElasticip) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -3604,17 +3186,6 @@ func (cmd *CreateFunction) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *CreateFunction) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateFunction) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("function"), nil
 }
@@ -3694,17 +3265,6 @@ func (cmd *CreateGroup) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *CreateGroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateGroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("group"), nil
 }
@@ -3782,17 +3342,6 @@ func (cmd *CreateImage) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -3895,17 +3444,6 @@ func (cmd *CreateInstance) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *CreateInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -4006,17 +3544,6 @@ func (cmd *CreateInstanceprofile) run(renv env.Running, params map[string]interf
 	return extracted, nil
 }
 
-func (cmd *CreateInstanceprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
 }
@@ -4094,17 +3621,6 @@ func (cmd *CreateInternetgateway) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateInternetgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -4207,17 +3723,6 @@ func (cmd *CreateKeypair) run(renv env.Running, params map[string]interface{}) (
 	return extracted, nil
 }
 
-func (cmd *CreateKeypair) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateKeypair) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("keypair"), nil
 }
@@ -4295,17 +3800,6 @@ func (cmd *CreateLaunchconfiguration) run(renv env.Running, params map[string]in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateLaunchconfiguration) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateLaunchconfiguration) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -4387,17 +3881,6 @@ func (cmd *CreateListener) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *CreateListener) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateListener) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("listener"), nil
 }
@@ -4475,17 +3958,6 @@ func (cmd *CreateLoadbalancer) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateLoadbalancer) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateLoadbalancer) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -4567,17 +4039,6 @@ func (cmd *CreateLoginprofile) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *CreateLoginprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateLoginprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loginprofile"), nil
 }
@@ -4649,17 +4110,6 @@ func (cmd *CreateMfadevice) run(renv env.Running, params map[string]interface{})
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateMfadevice) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -4741,17 +4191,6 @@ func (cmd *CreateNatgateway) run(renv env.Running, params map[string]interface{}
 	return extracted, nil
 }
 
-func (cmd *CreateNatgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateNatgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
 }
@@ -4829,17 +4268,6 @@ func (cmd *CreateNetworkinterface) run(renv env.Running, params map[string]inter
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateNetworkinterface) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -4942,17 +4370,6 @@ func (cmd *CreatePolicy) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *CreatePolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreatePolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
@@ -5032,17 +4449,6 @@ func (cmd *CreateQueue) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *CreateQueue) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateQueue) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("queue"), nil
 }
@@ -5114,17 +4520,6 @@ func (cmd *CreateRecord) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateRecord) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateRecord) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -5206,17 +4601,6 @@ func (cmd *CreateRepository) run(renv env.Running, params map[string]interface{}
 	return extracted, nil
 }
 
-func (cmd *CreateRepository) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateRepository) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("repository"), nil
 }
@@ -5288,17 +4672,6 @@ func (cmd *CreateRole) run(renv env.Running, params map[string]interface{}) (int
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateRole) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -5378,17 +4751,6 @@ func (cmd *CreateRoute) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateRoute) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateRoute) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -5491,17 +4853,6 @@ func (cmd *CreateRoutetable) run(renv env.Running, params map[string]interface{}
 	return extracted, nil
 }
 
-func (cmd *CreateRoutetable) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -5596,17 +4947,6 @@ func (cmd *CreateS3object) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *CreateS3object) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateS3object) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
 }
@@ -5684,17 +5024,6 @@ func (cmd *CreateScalinggroup) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateScalinggroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -5776,17 +5105,6 @@ func (cmd *CreateScalingpolicy) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *CreateScalingpolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateScalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalingpolicy"), nil
 }
@@ -5864,17 +5182,6 @@ func (cmd *CreateSecuritygroup) run(renv env.Running, params map[string]interfac
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateSecuritygroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -5977,17 +5284,6 @@ func (cmd *CreateSnapshot) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *CreateSnapshot) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateSnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -6088,17 +5384,6 @@ func (cmd *CreateStack) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *CreateStack) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateStack) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
 }
@@ -6176,17 +5461,6 @@ func (cmd *CreateSubnet) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateSubnet) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -6289,17 +5563,6 @@ func (cmd *CreateSubscription) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *CreateSubscription) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateSubscription) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("subscription"), nil
 }
@@ -6371,17 +5634,6 @@ func (cmd *CreateTag) run(renv env.Running, params map[string]interface{}) (inte
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateTag) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateTag) inject(params map[string]interface{}) error {
@@ -6457,17 +5709,6 @@ func (cmd *CreateTargetgroup) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateTargetgroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateTargetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -6549,17 +5790,6 @@ func (cmd *CreateTopic) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *CreateTopic) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateTopic) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("topic"), nil
 }
@@ -6639,17 +5869,6 @@ func (cmd *CreateUser) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *CreateUser) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
@@ -6727,17 +5946,6 @@ func (cmd *CreateVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *CreateVolume) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *CreateVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -6840,17 +6048,6 @@ func (cmd *CreateVpc) run(renv env.Running, params map[string]interface{}) (inte
 	return extracted, nil
 }
 
-func (cmd *CreateVpc) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateVpc) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -6951,17 +6148,6 @@ func (cmd *CreateZone) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *CreateZone) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *CreateZone) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("zone"), nil
 }
@@ -7039,17 +6225,6 @@ func (cmd *DeleteAccesskey) run(renv env.Running, params map[string]interface{})
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteAccesskey) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteAccesskey) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -7131,17 +6306,6 @@ func (cmd *DeleteAlarm) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *DeleteAlarm) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
@@ -7219,17 +6383,6 @@ func (cmd *DeleteAppscalingpolicy) run(renv env.Running, params map[string]inter
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteAppscalingpolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteAppscalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -7311,17 +6464,6 @@ func (cmd *DeleteAppscalingtarget) run(renv env.Running, params map[string]inter
 	return extracted, nil
 }
 
-func (cmd *DeleteAppscalingtarget) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteAppscalingtarget) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("appscalingtarget"), nil
 }
@@ -7399,17 +6541,6 @@ func (cmd *DeleteBucket) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteBucket) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteBucket) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -7491,17 +6622,6 @@ func (cmd *DeleteCertificate) run(renv env.Running, params map[string]interface{
 	return extracted, nil
 }
 
-func (cmd *DeleteCertificate) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteCertificate) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("certificate"), nil
 }
@@ -7581,17 +6701,6 @@ func (cmd *DeleteContainercluster) run(renv env.Running, params map[string]inter
 	return extracted, nil
 }
 
-func (cmd *DeleteContainercluster) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteContainercluster) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containercluster"), nil
 }
@@ -7663,17 +6772,6 @@ func (cmd *DeleteContainertask) run(renv env.Running, params map[string]interfac
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteContainertask) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteContainertask) inject(params map[string]interface{}) error {
@@ -7749,17 +6847,6 @@ func (cmd *DeleteDatabase) run(renv env.Running, params map[string]interface{}) 
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -7841,17 +6928,6 @@ func (cmd *DeleteDbsubnetgroup) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *DeleteDbsubnetgroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteDbsubnetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("dbsubnetgroup"), nil
 }
@@ -7923,17 +6999,6 @@ func (cmd *DeleteDistribution) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteDistribution) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -8013,17 +7078,6 @@ func (cmd *DeleteElasticip) run(renv env.Running, params map[string]interface{})
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteElasticip) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -8126,17 +7180,6 @@ func (cmd *DeleteFunction) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *DeleteFunction) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteFunction) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("function"), nil
 }
@@ -8216,17 +7259,6 @@ func (cmd *DeleteGroup) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *DeleteGroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteGroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("group"), nil
 }
@@ -8298,17 +7330,6 @@ func (cmd *DeleteImage) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteImage) inject(params map[string]interface{}) error {
@@ -8384,17 +7405,6 @@ func (cmd *DeleteInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -8497,17 +7507,6 @@ func (cmd *DeleteInstanceprofile) run(renv env.Running, params map[string]interf
 	return extracted, nil
 }
 
-func (cmd *DeleteInstanceprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instanceprofile"), nil
 }
@@ -8585,17 +7584,6 @@ func (cmd *DeleteInternetgateway) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteInternetgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -8698,17 +7686,6 @@ func (cmd *DeleteKeypair) run(renv env.Running, params map[string]interface{}) (
 	return extracted, nil
 }
 
-func (cmd *DeleteKeypair) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteKeypair) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -8809,17 +7786,6 @@ func (cmd *DeleteLaunchconfiguration) run(renv env.Running, params map[string]in
 	return extracted, nil
 }
 
-func (cmd *DeleteLaunchconfiguration) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteLaunchconfiguration) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("launchconfiguration"), nil
 }
@@ -8897,17 +7863,6 @@ func (cmd *DeleteListener) run(renv env.Running, params map[string]interface{}) 
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteListener) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteListener) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -8989,17 +7944,6 @@ func (cmd *DeleteLoadbalancer) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *DeleteLoadbalancer) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteLoadbalancer) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loadbalancer"), nil
 }
@@ -9077,17 +8021,6 @@ func (cmd *DeleteLoginprofile) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteLoginprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteLoginprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -9169,17 +8102,6 @@ func (cmd *DeleteMfadevice) run(renv env.Running, params map[string]interface{})
 	return extracted, nil
 }
 
-func (cmd *DeleteMfadevice) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
@@ -9259,17 +8181,6 @@ func (cmd *DeleteNatgateway) run(renv env.Running, params map[string]interface{}
 	return extracted, nil
 }
 
-func (cmd *DeleteNatgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteNatgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("natgateway"), nil
 }
@@ -9347,17 +8258,6 @@ func (cmd *DeleteNetworkinterface) run(renv env.Running, params map[string]inter
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteNetworkinterface) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -9460,17 +8360,6 @@ func (cmd *DeletePolicy) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *DeletePolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeletePolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
@@ -9550,17 +8439,6 @@ func (cmd *DeleteQueue) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *DeleteQueue) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteQueue) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("queue"), nil
 }
@@ -9632,17 +8510,6 @@ func (cmd *DeleteRecord) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteRecord) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteRecord) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -9724,17 +8591,6 @@ func (cmd *DeleteRepository) run(renv env.Running, params map[string]interface{}
 	return extracted, nil
 }
 
-func (cmd *DeleteRepository) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteRepository) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("repository"), nil
 }
@@ -9806,17 +8662,6 @@ func (cmd *DeleteRole) run(renv env.Running, params map[string]interface{}) (int
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteRole) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -9896,17 +8741,6 @@ func (cmd *DeleteRoute) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteRoute) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteRoute) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -10009,17 +8843,6 @@ func (cmd *DeleteRoutetable) run(renv env.Running, params map[string]interface{}
 	return extracted, nil
 }
 
-func (cmd *DeleteRoutetable) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -10120,17 +8943,6 @@ func (cmd *DeleteS3object) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *DeleteS3object) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteS3object) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
 }
@@ -10208,17 +9020,6 @@ func (cmd *DeleteScalinggroup) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteScalinggroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -10300,17 +9101,6 @@ func (cmd *DeleteScalingpolicy) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *DeleteScalingpolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteScalingpolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalingpolicy"), nil
 }
@@ -10388,17 +9178,6 @@ func (cmd *DeleteSecuritygroup) run(renv env.Running, params map[string]interfac
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteSecuritygroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -10501,17 +9280,6 @@ func (cmd *DeleteSnapshot) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *DeleteSnapshot) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteSnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -10612,17 +9380,6 @@ func (cmd *DeleteStack) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *DeleteStack) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteStack) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("stack"), nil
 }
@@ -10700,17 +9457,6 @@ func (cmd *DeleteSubnet) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteSubnet) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -10813,17 +9559,6 @@ func (cmd *DeleteSubscription) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *DeleteSubscription) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteSubscription) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("subscription"), nil
 }
@@ -10895,17 +9630,6 @@ func (cmd *DeleteTag) run(renv env.Running, params map[string]interface{}) (inte
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteTag) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteTag) inject(params map[string]interface{}) error {
@@ -10981,17 +9705,6 @@ func (cmd *DeleteTargetgroup) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteTargetgroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteTargetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -11073,17 +9786,6 @@ func (cmd *DeleteTopic) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *DeleteTopic) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteTopic) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("topic"), nil
 }
@@ -11163,17 +9865,6 @@ func (cmd *DeleteUser) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *DeleteUser) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
@@ -11251,17 +9942,6 @@ func (cmd *DeleteVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DeleteVolume) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DeleteVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -11364,17 +10044,6 @@ func (cmd *DeleteVpc) run(renv env.Running, params map[string]interface{}) (inte
 	return extracted, nil
 }
 
-func (cmd *DeleteVpc) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteVpc) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -11475,17 +10144,6 @@ func (cmd *DeleteZone) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *DeleteZone) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DeleteZone) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("zone"), nil
 }
@@ -11559,17 +10217,6 @@ func (cmd *DetachAlarm) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *DetachAlarm) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
@@ -11641,17 +10288,6 @@ func (cmd *DetachContainertask) run(renv env.Running, params map[string]interfac
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachContainertask) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -11731,17 +10367,6 @@ func (cmd *DetachElasticip) run(renv env.Running, params map[string]interface{})
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachElasticip) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -11844,17 +10469,6 @@ func (cmd *DetachInstance) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *DetachInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("instance"), nil
 }
@@ -11926,17 +10540,6 @@ func (cmd *DetachInstanceprofile) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachInstanceprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -12016,17 +10619,6 @@ func (cmd *DetachInternetgateway) run(renv env.Running, params map[string]interf
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachInternetgateway) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -12129,17 +10721,6 @@ func (cmd *DetachMfadevice) run(renv env.Running, params map[string]interface{})
 	return extracted, nil
 }
 
-func (cmd *DetachMfadevice) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachMfadevice) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("mfadevice"), nil
 }
@@ -12213,17 +10794,6 @@ func (cmd *DetachNetworkinterface) run(renv env.Running, params map[string]inter
 	return extracted, nil
 }
 
-func (cmd *DetachNetworkinterface) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachNetworkinterface) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -12291,17 +10861,6 @@ func (cmd *DetachPolicy) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachPolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachPolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -12383,17 +10942,6 @@ func (cmd *DetachRole) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *DetachRole) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachRole) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("role"), nil
 }
@@ -12471,17 +11019,6 @@ func (cmd *DetachRoutetable) run(renv env.Running, params map[string]interface{}
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachRoutetable) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -12578,17 +11115,6 @@ func (cmd *DetachSecuritygroup) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *DetachSecuritygroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("securitygroup"), nil
 }
@@ -12668,17 +11194,6 @@ func (cmd *DetachUser) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *DetachUser) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *DetachUser) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("user"), nil
 }
@@ -12756,17 +11271,6 @@ func (cmd *DetachVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *DetachVolume) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *DetachVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -12869,17 +11373,6 @@ func (cmd *ImportImage) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *ImportImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *ImportImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
 		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
@@ -12980,17 +11473,6 @@ func (cmd *StartAlarm) run(renv env.Running, params map[string]interface{}) (int
 	return extracted, nil
 }
 
-func (cmd *StartAlarm) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *StartAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
@@ -13062,17 +11544,6 @@ func (cmd *StartContainertask) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *StartContainertask) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *StartContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -13154,17 +11625,6 @@ func (cmd *StartDatabase) run(renv env.Running, params map[string]interface{}) (
 	return extracted, nil
 }
 
-func (cmd *StartDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *StartDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
@@ -13242,17 +11702,6 @@ func (cmd *StartInstance) run(renv env.Running, params map[string]interface{}) (
 	}
 
 	return extracted, nil
-}
-
-func (cmd *StartInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *StartInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -13355,17 +11804,6 @@ func (cmd *StopAlarm) run(renv env.Running, params map[string]interface{}) (inte
 	return extracted, nil
 }
 
-func (cmd *StopAlarm) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *StopAlarm) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("alarm"), nil
 }
@@ -13437,17 +11875,6 @@ func (cmd *StopContainertask) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *StopContainertask) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *StopContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -13529,17 +11956,6 @@ func (cmd *StopDatabase) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *StopDatabase) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *StopDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("database"), nil
 }
@@ -13617,17 +12033,6 @@ func (cmd *StopInstance) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *StopInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *StopInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -13724,17 +12129,6 @@ func (cmd *UpdateBucket) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *UpdateBucket) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateBucket) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("bucket"), nil
 }
@@ -13814,17 +12208,6 @@ func (cmd *UpdateContainertask) run(renv env.Running, params map[string]interfac
 	return extracted, nil
 }
 
-func (cmd *UpdateContainertask) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateContainertask) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("containertask"), nil
 }
@@ -13896,17 +12279,6 @@ func (cmd *UpdateDistribution) run(renv env.Running, params map[string]interface
 	}
 
 	return extracted, nil
-}
-
-func (cmd *UpdateDistribution) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *UpdateDistribution) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -13982,17 +12354,6 @@ func (cmd *UpdateImage) run(renv env.Running, params map[string]interface{}) (in
 	return extracted, nil
 }
 
-func (cmd *UpdateImage) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
@@ -14066,17 +12427,6 @@ func (cmd *UpdateInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 
 	return extracted, nil
-}
-
-func (cmd *UpdateInstance) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *UpdateInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -14179,17 +12529,6 @@ func (cmd *UpdateLoginprofile) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *UpdateLoginprofile) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateLoginprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("loginprofile"), nil
 }
@@ -14269,17 +12608,6 @@ func (cmd *UpdatePolicy) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *UpdatePolicy) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdatePolicy) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("policy"), nil
 }
@@ -14351,17 +12679,6 @@ func (cmd *UpdateRecord) run(renv env.Running, params map[string]interface{}) (i
 	}
 
 	return extracted, nil
-}
-
-func (cmd *UpdateRecord) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *UpdateRecord) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -14443,17 +12760,6 @@ func (cmd *UpdateS3object) run(renv env.Running, params map[string]interface{}) 
 	return extracted, nil
 }
 
-func (cmd *UpdateS3object) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateS3object) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("s3object"), nil
 }
@@ -14533,17 +12839,6 @@ func (cmd *UpdateScalinggroup) run(renv env.Running, params map[string]interface
 	return extracted, nil
 }
 
-func (cmd *UpdateScalinggroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateScalinggroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("scalinggroup"), nil
 }
@@ -14615,17 +12910,6 @@ func (cmd *UpdateSecuritygroup) run(renv env.Running, params map[string]interfac
 	}
 
 	return extracted, nil
-}
-
-func (cmd *UpdateSecuritygroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *UpdateSecuritygroup) inject(params map[string]interface{}) error {
@@ -14701,17 +12985,6 @@ func (cmd *UpdateStack) run(renv env.Running, params map[string]interface{}) (in
 	}
 
 	return extracted, nil
-}
-
-func (cmd *UpdateStack) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *UpdateStack) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -14793,17 +13066,6 @@ func (cmd *UpdateSubnet) run(renv env.Running, params map[string]interface{}) (i
 	return extracted, nil
 }
 
-func (cmd *UpdateSubnet) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
-}
-
 func (cmd *UpdateSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	return fakeDryRunId("subnet"), nil
 }
@@ -14875,17 +13137,6 @@ func (cmd *UpdateTargetgroup) run(renv env.Running, params map[string]interface{
 	}
 
 	return extracted, nil
-}
-
-func (cmd *UpdateTargetgroup) ValidateCommand(params map[string]interface{}, refs []string) (errs []error) {
-	if err := cmd.inject(params); err != nil {
-		return []error{err}
-	}
-	if err := validateStruct(cmd, refs); err != nil {
-		errs = append(errs, err)
-	}
-
-	return
 }
 
 func (cmd *UpdateTargetgroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {

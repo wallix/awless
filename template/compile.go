@@ -127,18 +127,18 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 			return fmt.Errorf("process params: cannot find command for '%s'", key)
 		}
 		type PR interface {
-			Params() params.Rule
+			Params() params.Spec
 		}
-		rule, ok := cmd.(PR)
+		pspec, ok := cmd.(PR)
 		if !ok {
 			return cmdErr(node, "command does not implement param rules")
 		}
-		missing := rule.Params().Missing(node.Keys())
+		missing := pspec.Params().Rule().Missing(node.Keys())
 		for _, e := range missing {
 			normalized := fmt.Sprintf("%s.%s", node.Entity, e)
 			node.Params[e] = ast.NewHoleValue(normalized)
 		}
-		if err := params.Validate(rule.Params(), node.Keys()); err != nil {
+		if err := params.Run(pspec.Params().Rule(), node.Keys()); err != nil {
 			return cmdErr(node, err)
 		}
 		return nil
@@ -194,19 +194,15 @@ func validateCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Com
 		if cmd == nil {
 			return fmt.Errorf("validate: cannot find command for '%s'", key)
 		}
-		type V interface {
-			ValidateCommand(map[string]interface{}, []string) []error
+		type PR interface {
+			Params() params.Spec
 		}
-		if v, ok := cmd.(V); ok {
-			var refsKey []string
-			for k, p := range node.Params {
-				if ref, isRef := p.(ast.WithRefs); isRef && len(ref.GetRefs()) > 0 {
-					refsKey = append(refsKey, k)
-				}
-			}
-			for _, validErr := range v.ValidateCommand(node.ToDriverParams(), refsKey) {
-				errs = append(errs, fmt.Errorf("%s %s: %s", node.Action, node.Entity, validErr.Error()))
-			}
+		spec, ok := cmd.(PR)
+		if !ok {
+			return cmdErr(node, "command does not implement param rules")
+		}
+		if err := params.Validate(spec.Params().Validators(), node.ToDriverParamsExcludingRefs()); err != nil {
+			return cmdErr(node, err)
 		}
 		return nil
 	}

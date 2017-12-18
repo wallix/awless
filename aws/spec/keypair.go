@@ -44,23 +44,23 @@ type CreateKeypair struct {
 	PublicKeyMaterial []byte  `awsName:"PublicKeyMaterial" awsType:"awsbyteslice"`
 }
 
-func (cmd *CreateKeypair) Params() params.Rule {
-	return params.AllOf(params.Key("name"),
-		params.Opt("encrypted"),
-	)
-}
+func (cmd *CreateKeypair) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("name"), params.Opt("encrypted")),
+		params.Validators{
+			"name": func(i interface{}, others map[string]interface{}) error {
+				keyDir := os.Getenv(keyDirEnv)
+				if keyDir == "" {
+					return fmt.Errorf("empty env var '%s'", keyDirEnv)
+				}
 
-func (cmd *CreateKeypair) Validate_Name() error {
-	keyDir := os.Getenv(keyDirEnv)
-	if keyDir == "" {
-		return fmt.Errorf("empty env var '%s'", keyDirEnv)
-	}
-
-	privKeyPath := filepath.Join(keyDir, StringValue(cmd.Name)+".pem")
-	if _, err := os.Stat(privKeyPath); err == nil {
-		return fmt.Errorf("file already exists at path: %s", privKeyPath)
-	}
-	return nil
+				privKeyPath := filepath.Join(keyDir, fmt.Sprint(i)+".pem")
+				if _, err := os.Stat(privKeyPath); err == nil {
+					return fmt.Errorf("file already exists at path: %s", privKeyPath)
+				}
+				return nil
+			},
+		})
 }
 
 func (cmd *CreateKeypair) BeforeRun(renv env.Running) error {
@@ -103,6 +103,6 @@ type DeleteKeypair struct {
 	Name   *string `awsName:"KeyName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteKeypair) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteKeypair) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }

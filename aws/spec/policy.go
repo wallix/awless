@@ -52,10 +52,10 @@ type CreatePolicy struct {
 	Conditions  []*string `templateName:"conditions"`
 }
 
-func (cmd *CreatePolicy) Params() params.Rule {
-	return params.AllOf(params.Key("action"), params.Key("effect"), params.Key("name"), params.Key("resource"),
+func (cmd *CreatePolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("action"), params.Key("effect"), params.Key("name"), params.Key("resource"),
 		params.Opt("conditions", "description"),
-	)
+	))
 }
 
 func (cmd *CreatePolicy) BeforeRun(renv env.Running) error {
@@ -95,10 +95,10 @@ type UpdatePolicy struct {
 	DefaultVersion *bool     `awsName:"SetAsDefault" awsType:"awsbool"`
 }
 
-func (cmd *UpdatePolicy) Params() params.Rule {
-	return params.AllOf(params.Key("action"), params.Key("arn"), params.Key("effect"), params.Key("resource"),
+func (cmd *UpdatePolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("action"), params.Key("arn"), params.Key("effect"), params.Key("resource"),
 		params.Opt("conditions"),
-	)
+	))
 }
 
 func (cmd *UpdatePolicy) BeforeRun(renv env.Running) error {
@@ -177,10 +177,10 @@ type DeletePolicy struct {
 	AllVersions *bool   `templateName:"all-versions"`
 }
 
-func (cmd *DeletePolicy) Params() params.Rule {
-	return params.AllOf(params.Key("arn"),
+func (cmd *DeletePolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("arn"),
 		params.Opt("all-versions"),
-	)
+	))
 }
 
 func (cmd *DeletePolicy) BeforeRun(renv env.Running) error {
@@ -214,11 +214,11 @@ type AttachPolicy struct {
 	Access  *string `templateName:"access"`
 }
 
-func (cmd *AttachPolicy) Params() params.Rule {
-	return params.AllOf(
+func (cmd *AttachPolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(
 		params.OnlyOneOf(params.Key("user"), params.Key("role"), params.Key("group")),
 		params.OnlyOneOf(params.Key("arn"), params.AllOf(params.Key("access"), params.Key("service"))),
-	)
+	))
 }
 
 func (cmd *AttachPolicy) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -279,11 +279,11 @@ type DetachPolicy struct {
 	Role   *string `awsName:"RoleName" awsType:"awsstr" templateName:"role"`
 }
 
-func (cmd *DetachPolicy) Params() params.Rule {
-	return params.AllOf(
+func (cmd *DetachPolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(
 		params.OnlyOneOf(params.Key("user"), params.Key("role"), params.Key("group")),
 		params.OnlyOneOf(params.Key("arn"), params.AllOf(params.Key("access"), params.Key("service"))),
-	)
+	))
 }
 
 func (cmd *DetachPolicy) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {

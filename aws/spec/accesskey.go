@@ -45,10 +45,10 @@ type CreateAccesskey struct {
 	Save   *bool   `templateName:"save"`
 }
 
-func (cmd *CreateAccesskey) Params() params.Rule {
-	return params.AllOf(params.Key("user"),
+func (cmd *CreateAccesskey) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("user"),
 		params.Opt("save", "no-prompt"),
-	)
+	))
 }
 
 func (cmd *CreateAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -121,10 +121,10 @@ type DeleteAccesskey struct {
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 }
 
-func (cmd *DeleteAccesskey) Params() params.Rule {
-	return params.AllOf(params.Key("id"),
+func (cmd *DeleteAccesskey) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("user"),
-	)
+	))
 }
 
 func (cmd *DeleteAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {

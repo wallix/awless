@@ -10,7 +10,7 @@ import (
 )
 
 func TestValidation(t *testing.T) {
-	t.Run("Validate name unique", func(t *testing.T) {
+	t.Run("Run name unique", func(t *testing.T) {
 		text := "create instance name=instance1_name"
 
 		g := graph.NewGraph()
@@ -34,7 +34,7 @@ func TestValidation(t *testing.T) {
 		}
 	})
 
-	t.Run("Validate param is set", func(t *testing.T) {
+	t.Run("Run param is set", func(t *testing.T) {
 		text := `create subnet name=subnet_name
 		create instance name=instance1_name`
 		tpl := template.MustParse(text)

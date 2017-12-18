@@ -40,10 +40,10 @@ type CreateRecord struct {
 	Comment *string `templateName:"comment"`
 }
 
-func (cmd *CreateRecord) Params() params.Rule {
-	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"),
+func (cmd *CreateRecord) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"),
 		params.Opt("comment"),
-	)
+	))
 }
 
 func (cmd *CreateRecord) ManualRun(renv env.Running) (interface{}, error) {
@@ -69,8 +69,8 @@ type UpdateRecord struct {
 	Ttl    *int64  `templateName:"ttl"`
 }
 
-func (cmd *UpdateRecord) Params() params.Rule {
-	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"))
+func (cmd *UpdateRecord) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone")))
 }
 
 func (cmd *UpdateRecord) ManualRun(renv env.Running) (interface{}, error) {
@@ -96,8 +96,8 @@ type DeleteRecord struct {
 	Ttl    *int64  `templateName:"ttl"`
 }
 
-func (cmd *DeleteRecord) Params() params.Rule {
-	return params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"))
+func (cmd *DeleteRecord) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone")))
 }
 
 func (cmd *DeleteRecord) ManualRun(renv env.Running) (interface{}, error) {

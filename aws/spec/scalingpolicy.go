@@ -37,10 +37,10 @@ type CreateScalingpolicy struct {
 	AdjustmentMagnitude *int64  `awsName:"MinAdjustmentMagnitude" awsType:"awsint64" templateName:"adjustment-magnitude"`
 }
 
-func (cmd *CreateScalingpolicy) Params() params.Rule {
-	return params.AllOf(params.Key("adjustment-scaling"), params.Key("adjustment-type"), params.Key("name"), params.Key("scalinggroup"),
+func (cmd *CreateScalingpolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("adjustment-scaling"), params.Key("adjustment-type"), params.Key("name"), params.Key("scalinggroup"),
 		params.Opt("adjustment-magnitude", "cooldown"),
-	)
+	))
 }
 
 func (cmd *CreateScalingpolicy) ExtractResult(i interface{}) string {
@@ -55,6 +55,6 @@ type DeleteScalingpolicy struct {
 	Id     *string `awsName:"PolicyName" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteScalingpolicy) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteScalingpolicy) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

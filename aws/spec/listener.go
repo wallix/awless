@@ -38,10 +38,10 @@ type CreateListener struct {
 	Sslpolicy    *string `awsName:"SslPolicy" awsType:"awsstr" templateName:"sslpolicy"`
 }
 
-func (cmd *CreateListener) Params() params.Rule {
-	return params.AllOf(params.Key("actiontype"), params.Key("loadbalancer"), params.Key("port"), params.Key("protocol"), params.Key("targetgroup"),
+func (cmd *CreateListener) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("actiontype"), params.Key("loadbalancer"), params.Key("port"), params.Key("protocol"), params.Key("targetgroup"),
 		params.Opt("certificate", "sslpolicy"),
-	)
+	))
 }
 
 func (cmd *CreateListener) ExtractResult(i interface{}) string {
@@ -56,6 +56,6 @@ type DeleteListener struct {
 	Id     *string `awsName:"ListenerArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteListener) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteListener) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

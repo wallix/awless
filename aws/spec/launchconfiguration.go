@@ -39,10 +39,10 @@ type CreateLaunchconfiguration struct {
 	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
-func (cmd *CreateLaunchconfiguration) Params() params.Rule {
-	return params.AllOf(params.Key("image"), params.Key("name"), params.Key("type"),
+func (cmd *CreateLaunchconfiguration) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("image"), params.Key("name"), params.Key("type"),
 		params.Opt("distro", "keypair", "public", "role", "securitygroups", "spotprice", "userdata"),
-	)
+	))
 }
 
 func (cmd *CreateLaunchconfiguration) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
@@ -62,6 +62,6 @@ type DeleteLaunchconfiguration struct {
 	Name   *string `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteLaunchconfiguration) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteLaunchconfiguration) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }

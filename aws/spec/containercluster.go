@@ -32,8 +32,8 @@ type CreateContainercluster struct {
 	Name   *string `awsName:"ClusterName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateContainercluster) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateContainercluster) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *CreateContainercluster) ExtractResult(i interface{}) string {
@@ -48,6 +48,6 @@ type DeleteContainercluster struct {
 	Id     *string `awsName:"Cluster" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteContainercluster) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteContainercluster) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }

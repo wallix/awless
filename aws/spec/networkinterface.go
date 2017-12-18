@@ -43,10 +43,10 @@ type CreateNetworkinterface struct {
 	Privateip      *string   `awsName:"PrivateIpAddress" awsType:"awsstr" templateName:"privateip"`
 }
 
-func (cmd *CreateNetworkinterface) Params() params.Rule {
-	return params.AllOf(params.Key("subnet"),
+func (cmd *CreateNetworkinterface) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("subnet"),
 		params.Opt("description", "privateip", "securitygroups"),
-	)
+	))
 }
 
 func (cmd *CreateNetworkinterface) ExtractResult(i interface{}) string {
@@ -61,8 +61,8 @@ type DeleteNetworkinterface struct {
 	Id     *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteNetworkinterface) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteNetworkinterface) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 type AttachNetworkinterface struct {
@@ -75,8 +75,8 @@ type AttachNetworkinterface struct {
 	DeviceIndex *int64  `awsName:"DeviceIndex" awsType:"awsint64" templateName:"device-index"`
 }
 
-func (cmd *AttachNetworkinterface) Params() params.Rule {
-	return params.AllOf(params.Key("device-index"), params.Key("id"), params.Key("instance"))
+func (cmd *AttachNetworkinterface) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("device-index"), params.Key("id"), params.Key("instance")))
 }
 
 func (cmd *AttachNetworkinterface) ExtractResult(i interface{}) string {
@@ -94,12 +94,12 @@ type DetachNetworkinterface struct {
 	Force      *bool   `awsName:"Force" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DetachNetworkinterface) Params() params.Rule {
-	return params.OnlyOneOf(
+func (cmd *DetachNetworkinterface) Params() params.Spec {
+	return params.NewSpec(params.OnlyOneOf(
 		params.AllOf(params.Key("instance"), params.Key("id")),
 		params.Key("attachment"),
 		params.Opt("force"),
-	)
+	))
 }
 
 func (cmd *DetachNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -184,12 +184,12 @@ type CheckNetworkinterface struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckNetworkinterface) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckNetworkinterface) Validate_State() error {
-	return NewEnumValidator("available", "attaching", "detaching", "in-use", notFoundState).Validate(cmd.State)
+func (cmd *CheckNetworkinterface) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("available", "attaching", "detaching", "in-use", notFoundState),
+		})
 }
 
 func (cmd *CheckNetworkinterface) ManualRun(renv env.Running) (interface{}, error) {

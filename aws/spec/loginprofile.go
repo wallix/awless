@@ -34,10 +34,10 @@ type CreateLoginprofile struct {
 	PasswordReset *bool   `awsName:"PasswordResetRequired" awsType:"awsbool" templateName:"password-reset"`
 }
 
-func (cmd *CreateLoginprofile) Params() params.Rule {
-	return params.AllOf(params.Key("password"), params.Key("username"),
+func (cmd *CreateLoginprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("password"), params.Key("username"),
 		params.Opt("password-reset"),
-	)
+	))
 }
 
 func (cmd *CreateLoginprofile) ExtractResult(i interface{}) string {
@@ -54,10 +54,10 @@ type UpdateLoginprofile struct {
 	PasswordReset *bool   `awsName:"PasswordResetRequired" awsType:"awsbool" templateName:"password-reset"`
 }
 
-func (cmd *UpdateLoginprofile) Params() params.Rule {
-	return params.AllOf(params.Key("password"), params.Key("username"),
+func (cmd *UpdateLoginprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("password"), params.Key("username"),
 		params.Opt("password-reset"),
-	)
+	))
 }
 
 type DeleteLoginprofile struct {
@@ -68,6 +68,6 @@ type DeleteLoginprofile struct {
 	Username *string `awsName:"UserName" awsType:"awsstr" templateName:"username"`
 }
 
-func (cmd *DeleteLoginprofile) Params() params.Rule {
-	return params.AllOf(params.Key("username"))
+func (cmd *DeleteLoginprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("username")))
 }

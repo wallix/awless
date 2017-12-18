@@ -16,8 +16,6 @@ limitations under the License.
 package awsspec
 
 import (
-	"net"
-
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/template/params"
 
@@ -35,13 +33,12 @@ type CreateRoute struct {
 	Gateway *string `awsName:"GatewayId" awsType:"awsstr" templateName:"gateway"`
 }
 
-func (cmd *CreateRoute) Params() params.Rule {
-	return params.AllOf(params.Key("cidr"), params.Key("gateway"), params.Key("table"))
-}
-
-func (cmd *CreateRoute) Validate_CIDR() error {
-	_, _, err := net.ParseCIDR(StringValue(cmd.CIDR))
-	return err
+func (cmd *CreateRoute) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("cidr"), params.Key("gateway"), params.Key("table")),
+		params.Validators{
+			"cidr": params.IsCIDR,
+		})
 }
 
 type DeleteRoute struct {
@@ -53,11 +50,10 @@ type DeleteRoute struct {
 	CIDR   *string `awsName:"DestinationCidrBlock" awsType:"awsstr" templateName:"cidr"`
 }
 
-func (cmd *DeleteRoute) Params() params.Rule {
-	return params.AllOf(params.Key("cidr"), params.Key("table"))
-}
-
-func (cmd *DeleteRoute) Validate_CIDR() error {
-	_, _, err := net.ParseCIDR(StringValue(cmd.CIDR))
-	return err
+func (cmd *DeleteRoute) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("cidr"), params.Key("table")),
+		params.Validators{
+			"cidr": params.IsCIDR,
+		})
 }

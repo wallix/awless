@@ -32,8 +32,8 @@ type CreateGroup struct {
 	Name   *string `awsName:"GroupName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateGroup) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateGroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *CreateGroup) ExtractResult(i interface{}) string {
@@ -48,6 +48,6 @@ type DeleteGroup struct {
 	Name   *string `awsName:"GroupName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteGroup) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteGroup) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }

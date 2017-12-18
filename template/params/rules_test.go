@@ -127,7 +127,7 @@ func TestUnexpected(t *testing.T) {
 	}
 
 	for i, tcase := range tcases {
-		err := params.Validate(tcase.rules, tcase.in)
+		err := params.Run(tcase.rules, tcase.in)
 
 		if len(tcase.errContains) > 0 {
 			if err == nil {
@@ -191,7 +191,7 @@ func TestValidateRule(t *testing.T) {
 	}
 
 	for i, tcase := range tcases {
-		err := params.Validate(tcase.rules, tcase.in)
+		err := params.Run(tcase.rules, tcase.in)
 
 		if len(tcase.errContains) > 0 {
 			if err == nil {

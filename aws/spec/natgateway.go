@@ -39,8 +39,8 @@ type CreateNatgateway struct {
 	Subnet      *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 }
 
-func (cmd *CreateNatgateway) Params() params.Rule {
-	return params.AllOf(params.Key("elasticip-id"), params.Key("subnet"))
+func (cmd *CreateNatgateway) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("elasticip-id"), params.Key("subnet")))
 }
 
 func (cmd *CreateNatgateway) ExtractResult(i interface{}) string {
@@ -55,8 +55,8 @@ type DeleteNatgateway struct {
 	Id     *string `awsName:"NatGatewayId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteNatgateway) Params() params.Rule {
-	return params.AllOf(params.Key("id"))
+func (cmd *DeleteNatgateway) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
 type CheckNatgateway struct {
@@ -69,12 +69,12 @@ type CheckNatgateway struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckNatgateway) Params() params.Rule {
-	return params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout"))
-}
-
-func (cmd *CheckNatgateway) Validate_State() error {
-	return NewEnumValidator("pending", "failed", "available", "deleting", "deleted", notFoundState).Validate(cmd.State)
+func (cmd *CheckNatgateway) Params() params.Spec {
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
+		params.Validators{
+			"state": params.IsInEnumIgnoreCase("pending", "failed", "available", "deleting", "deleted", notFoundState),
+		})
 }
 
 func (cmd *CheckNatgateway) ManualRun(renv env.Running) (interface{}, error) {

@@ -39,8 +39,8 @@ type CreateInstanceprofile struct {
 	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateInstanceprofile) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateInstanceprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 type DeleteInstanceprofile struct {
@@ -51,8 +51,8 @@ type DeleteInstanceprofile struct {
 	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteInstanceprofile) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteInstanceprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 type AttachInstanceprofile struct {
@@ -65,10 +65,10 @@ type AttachInstanceprofile struct {
 	Replace  *bool   `templateName:"replace"`
 }
 
-func (cmd *AttachInstanceprofile) Params() params.Rule {
-	return params.AllOf(params.Key("instance"), params.Key("name"),
+func (cmd *AttachInstanceprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("instance"), params.Key("name"),
 		params.Opt("replace"),
-	)
+	))
 }
 
 func (cmd *AttachInstanceprofile) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
@@ -160,8 +160,8 @@ type DetachInstanceprofile struct {
 	Name     *string `templateName:"name"`
 }
 
-func (cmd *DetachInstanceprofile) Params() params.Rule {
-	return params.AllOf(params.Key("instance"), params.Key("name"))
+func (cmd *DetachInstanceprofile) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("instance"), params.Key("name")))
 }
 
 func (cmd *DetachInstanceprofile) ManualRun(renv env.Running) (interface{}, error) {

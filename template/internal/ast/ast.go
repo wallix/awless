@@ -185,6 +185,19 @@ func (c *CommandNode) ToDriverParams() map[string]interface{} {
 	return params
 }
 
+func (c *CommandNode) ToDriverParamsExcludingRefs() map[string]interface{} {
+	params := make(map[string]interface{})
+	for k, v := range c.Params {
+		if _, ok := v.(WithRefs); ok {
+			continue
+		}
+		if v.Value() != nil {
+			params[k] = v.Value()
+		}
+	}
+	return params
+}
+
 func (c *CommandNode) ToFillerParams() map[string]interface{} {
 	params := make(map[string]interface{})
 	for k, v := range c.Params {

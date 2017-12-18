@@ -16,7 +16,7 @@ func TestParamsProcessing(t *testing.T) {
 		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 	}).Build()
 
-	t.Run("validation", func(t *testing.T) {
+	t.Run("unexpected param", func(t *testing.T) {
 		tpl := template.MustParse("create instance invalid=any")
 		_, _, err := template.Compile(tpl, env, template.NewRunnerCompileMode)
 		if err == nil {
@@ -31,6 +31,17 @@ func TestParamsProcessing(t *testing.T) {
 		tpl := template.MustParse("create instance image=ami-123456")
 		compiled, _, _ := template.Compile(tpl, env, template.NewRunnerCompileMode)
 		if got, want := compiled.String(), "create instance count={instance.count} image=ami-123456 name={instance.name} subnet={instance.subnet} type={instance.type}"; got != want {
+			t.Fatalf("%s should contain %s", got, want)
+		}
+	})
+
+	t.Run("format validation", func(t *testing.T) {
+		tpl := template.MustParse("check instance state=woot id=i-45678 timeout=180")
+		_, _, err := template.Compile(tpl, env, template.NewRunnerCompileMode)
+		if err == nil {
+			t.Fatal("expected err got none")
+		}
+		if got, want := err.Error(), "expected any of"; !strings.Contains(got, want) {
 			t.Fatalf("%s should contain %s", got, want)
 		}
 	})

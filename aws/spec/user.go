@@ -32,8 +32,8 @@ type CreateUser struct {
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateUser) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *CreateUser) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 func (cmd *CreateUser) ExtractResult(i interface{}) string {
@@ -48,8 +48,8 @@ type DeleteUser struct {
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteUser) Params() params.Rule {
-	return params.AllOf(params.Key("name"))
+func (cmd *DeleteUser) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
 type AttachUser struct {
@@ -61,8 +61,8 @@ type AttachUser struct {
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *AttachUser) Params() params.Rule {
-	return params.AllOf(params.Key("group"), params.Key("name"))
+func (cmd *AttachUser) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("group"), params.Key("name")))
 }
 
 type DetachUser struct {
@@ -74,6 +74,6 @@ type DetachUser struct {
 	Name   *string `awsName:"UserName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DetachUser) Params() params.Rule {
-	return params.AllOf(params.Key("group"), params.Key("name"))
+func (cmd *DetachUser) Params() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("group"), params.Key("name")))
 }
