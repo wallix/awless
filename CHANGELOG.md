@@ -4,6 +4,7 @@
 
 - Automatically complete the username when deleting an access key by its ID, if it is contained in the local graph model:
     * `awless delete accesskey id=ACCESSKEYID`
+- Better completion for template parameters independently of their display name
 
 ### AWS Services
 

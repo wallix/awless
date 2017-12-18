@@ -155,7 +155,7 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 			fmt.Fprintln(os.Stderr, strings.Join(docs, "; ")+":")
 		}
 
-		autocomplete := holeAutoCompletion(allGraphsOnce.mustLoad(), hole)
+		autocomplete := holeAutoCompletion(allGraphsOnce.mustLoad(), paramPaths)
 		if typedParam != nil {
 			autocomplete = typedParamCompletionFunc(allGraphsOnce.mustLoad(), typedParam.ResourceType, typedParam.PropertyName)
 		}

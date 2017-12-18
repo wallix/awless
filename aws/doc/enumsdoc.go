@@ -16,16 +16,18 @@ var EnumDoc = map[string][]string{
 	"create.subnet.public": {"true", "false"},
 	"update.subnet.public": {"true", "false"},
 
-	"create.instance.distro": {"amazonlinux", "canonical", "redhat", "debian", "suselinux", "windows"},
-	"create.instance.type":   {"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"},
-	"create.instance.lock":   {"true", "false"},
+	"create.instance.distro":   {"amazonlinux", "canonical", "redhat", "debian", "suselinux", "windows"},
+	"create.instance.type":     {"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"},
+	"create.instance.lock":     {"true", "false"},
+	"create.instance.userdata": {""},
 
 	"update.image.operation": {"add", "remove"},
 
 	"create.database.engine": {"mysql", "mariadb", "postgres", "aurora", "oracle-se1", "oracle-se2", "oracle-se", "oracle-ee", "sqlserver-ee", "sqlserver-se", "sqlserver-ex", "sqlserver-web"},
 
-	"create.launchconfiguration.distro": {"amazonlinux", "canonical", "redhat", "debian", "suselinux", "windows"},
-	"create.launchconfiguration.type":   {"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"},
+	"create.launchconfiguration.distro":   {"amazonlinux", "canonical", "redhat", "debian", "suselinux", "windows"},
+	"create.launchconfiguration.type":     {"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"},
+	"create.launchconfiguration.userdata": {""},
 
 	"create.policy.action":   {""},
 	"create.policy.effect":   {"Allow", "Deny"},
@@ -42,4 +44,5 @@ type ParamType struct {
 var ParamTypeDoc = map[string]*ParamType{
 	"create.accesskey.user":     {ResourceType: cloud.User, PropertyName: properties.Name},
 	"update.securitygroup.cidr": {ResourceType: cloud.Subnet, PropertyName: properties.CIDR},
+	"create.instance.role":      {ResourceType: cloud.Role, PropertyName: properties.Name},
 }

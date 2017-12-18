@@ -54,134 +54,141 @@ func TestAutoCompletion(t *testing.T) {
 	g.AddResource(resourcetest.Alarm("2").Prop(p.Dimensions, []*graph.KeyValue{{"def", "val3"}}).Build())
 
 	t.Run("no matches", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "instance").Do([]rune{'a'}, 1)
+		list, _ := holeAutoCompletion(g, []string{"create.instance.id"}).Do([]rune{'a'}, 1)
 		if len(list) != 0 {
 			t.Fatalf("expected empty, got %q", list)
 		}
 	})
 
 	t.Run("empty when property valid but undefined", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "subnet.vpc").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.subnet.vpc"}).Do([]rune{}, 0)
 		if len(list) != 0 {
 			t.Fatalf("expected empty, got %q", list)
 		}
 	})
 
 	t.Run("fallbacks on entity when property invalid", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "subnet.wrong").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.subnet.wrong"}).Do([]rune{}, 0)
 		if got, want := list, toRune("'@subnet 1'", "'@subnet 2'", "s-5", "s-6"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("match on entity type", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "instance").Do([]rune{'@', 'b'}, 2)
+		list, _ := holeAutoCompletion(g, []string{"create.subnet.instance"}).Do([]rune{'@', 'b'}, 2)
 		if got, want := list, toRune("roker_1", "roker_2"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance").Do([]rune{'@', 'r'}, 2)
+		list, _ = holeAutoCompletion(g, []string{"create.subnet.instance"}).Do([]rune{'@', 'r'}, 2)
 		if got, want := list, toRune("edis"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 		var empty [][]rune
-		list, _ = holeAutoCompletion(g, "instance").Do([]rune{'@', 'r', 'e', 'd', 'i', 's'}, 6)
+		list, _ = holeAutoCompletion(g, []string{"create.subnet.instance"}).Do([]rune{'@', 'r', 'e', 'd', 'i', 's'}, 6)
 		if got, want := list, empty; !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("match on entity regular property. Entity has a Name property", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "securitygroup.id").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.securitygroup.id"}).Do([]rune{}, 0)
 		if got, want := list, toRune("@ssh", "sg-1"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("match on entity regular property", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "subnet.cidr").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.subnet.cidr"}).Do([]rune{}, 0)
 		if got, want := list, toRune("10.0.0.0/0", "192.168.0.0/0"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance.type").Do([]rune{}, 0)
+		list, _ = holeAutoCompletion(g, []string{"create.instance.type"}).Do([]rune{}, 0)
 		if got, want := list, toRune("t2.micro", "t3.medium"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("match on non string property", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "instance.activeservicescount").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.instance.activeservicescount"}).Do([]rune{}, 0)
 		if got, want := list, toRune("24", "42", "44"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance.activeservicescount").Do([]rune{'4'}, 1)
+		list, _ = holeAutoCompletion(g, []string{"create.instance.activeservicescount"}).Do([]rune{'4'}, 1)
 		if got, want := list, toRune("2", "4"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "subnet.public").Do([]rune{'t', 'r'}, 2)
+		list, _ = holeAutoCompletion(g, []string{"create.subnet.public"}).Do([]rune{'t', 'r'}, 2)
 		if got, want := list, toRune("ue"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("match on property with '-'", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "instance.active-services-count").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.instance.active-services-count"}).Do([]rune{}, 0)
 		if got, want := list, toRune("24", "42", "44"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("match on entity property which is itself an entity", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "instance.subnet").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.instance.subnet"}).Do([]rune{}, 0)
 		if got, want := list, toRune("'@subnet 1'", "'@subnet 2'", "s-5", "s-6"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("suggests list of entities for plural resources", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "instance.subnets").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.instance.subnets"}).Do([]rune{}, 0)
 		if got, want := list, toRune("'@subnet 1'", "'@subnet 2'", "s-5", "s-6"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance.subnets").Do([]rune{'s', '-', '5', ','}, 4)
+		list, _ = holeAutoCompletion(g, []string{"create.instance.subnets"}).Do([]rune{'s', '-', '5', ','}, 4)
 		if got, want := list, toRune("'@subnet 1'", "'@subnet 2'", "s-5", "s-6"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance.subnets").Do([]rune{'s', '-', '5', ',', 's', '-'}, 6)
+		list, _ = holeAutoCompletion(g, []string{"create.instance.subnets"}).Do([]rune{'s', '-', '5', ',', 's', '-'}, 6)
 		if got, want := list, toRune("5", "6"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance.subnets").Do([]rune{'s', '-', '5', ',', 's', '-', '6', ','}, 8)
+		list, _ = holeAutoCompletion(g, []string{"create.instance.subnets"}).Do([]rune{'s', '-', '5', ',', 's', '-', '6', ','}, 8)
 		if got, want := list, toRune("'@subnet 1'", "'@subnet 2'", "s-5", "s-6"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "instance.subnets").Do([]rune{'s', '-', '5', ',', '\'', '@', 's', 'u'}, 7)
+		list, _ = holeAutoCompletion(g, []string{"create.instance.subnets"}).Do([]rune{'s', '-', '5', ',', '\'', '@', 's', 'u'}, 7)
 		if got, want := list, toRune("bnet 1'", "bnet 2'"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("suggests multiple properties when containing a ','", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "alarm.dimensions").Do([]rune{}, 0)
+		list, _ := holeAutoCompletion(g, []string{"create.alarm.dimensions"}).Do([]rune{}, 0)
 		if got, want := list, toRune("abc:val1", "abd:val2", "def:val3"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "alarm.dimensions").Do([]rune{'a', 'b'}, 2)
+		list, _ = holeAutoCompletion(g, []string{"create.alarm.dimensions"}).Do([]rune{'a', 'b'}, 2)
 		if got, want := list, toRune("c:val1", "d:val2"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "alarm.dimensions").Do([]rune{'a', 'b', 'c', ':', 'v', 'a', 'l', '1', ','}, 9)
+		list, _ = holeAutoCompletion(g, []string{"create.alarm.dimensions"}).Do([]rune{'a', 'b', 'c', ':', 'v', 'a', 'l', '1', ','}, 9)
 		if got, want := list, toRune("abc:val1", "abd:val2", "def:val3"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})
 
 	t.Run("support [ for multiple properties ", func(t *testing.T) {
-		list, _ := holeAutoCompletion(g, "alarm.dimensions").Do([]rune{'[', 'a', 'b'}, 3)
+		list, _ := holeAutoCompletion(g, []string{"create.alarm.dimensions"}).Do([]rune{'[', 'a', 'b'}, 3)
 		if got, want := list, toRune("c:val1", "d:val2"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
-		list, _ = holeAutoCompletion(g, "alarm.dimensions").Do([]rune{'[', 'a', 'b', 'c', ':', 'v', 'a', 'l', '1', ','}, 10)
+		list, _ = holeAutoCompletion(g, []string{"create.alarm.dimensions"}).Do([]rune{'[', 'a', 'b', 'c', ':', 'v', 'a', 'l', '1', ','}, 10)
 		if got, want := list, toRune("abc:val1", "abd:val2", "def:val3"); !reflect.DeepEqual(got, want) {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+	})
+
+	t.Run("with multiple param paths", func(t *testing.T) {
+		list, _ := holeAutoCompletion(g, []string{"create.instance.subnet", "update.securitygroup.name"}).Do([]rune{'s'}, 1)
+		if got, want := list, toRune("-5", "-6", "sh"); !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %q, want %q", got, want)
 		}
 	})

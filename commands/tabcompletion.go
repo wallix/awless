@@ -32,67 +32,80 @@ func typedParamCompletionFunc(g cloud.GraphAPI, resourceType, propName string) r
 
 	return readline.NewPrefixCompleter(items...)
 }
-func holeAutoCompletion(g cloud.GraphAPI, hole string) readline.AutoCompleter {
-	completeFunc := func(string) []string { return []string{} }
+func holeAutoCompletion(g cloud.GraphAPI, paramPaths []string) readline.AutoCompleter {
+	type typesProp struct {
+		types []string
+		prop  string
+	}
 
-	if entityTypes, entityProp := guessEntityTypeFromHoleQuestion(hole); len(entityTypes) > 0 {
-		var resources []cloud.Resource
-		res, err := g.Find(cloud.NewQuery(entityTypes...))
-		resources = append(resources, res...)
-		exitOn(err)
+	var entities []typesProp
 
-		if len(resources) == 0 {
-			return &prefixCompleter{callback: completeFunc}
+	for _, paramPath := range paramPaths {
+		splits := strings.Split(paramPath, ".")
+		if len(splits) != 3 {
+			continue
 		}
 
-		if entityProp != "" {
-			var validPropName string
+		if entityTypes, entityProp := guessEntityTypeFromHoleQuestion(splits[1] + "." + splits[2]); len(entityTypes) > 0 {
+			entities = append(entities, typesProp{types: entityTypes, prop: entityProp})
+		}
+	}
+
+	var possibleSuggests []string
+	for _, entityProp := range entities {
+		resources, err := g.Find(cloud.NewQuery(entityProp.types...))
+		exitOn(err)
+		if len(resources) == 0 {
+			continue
+		}
+
+		var validPropName string
+		if entityProp.prop != "" {
 			for _, r := range resources {
 				for propName := range r.Properties() {
-					if keyCorrespondsToProperty(entityProp, propName) {
+					if keyCorrespondsToProperty(entityProp.prop, propName) {
 						validPropName = propName
 					}
 				}
 			}
+		}
+		if validPropName == "" {
+			for _, r := range resources {
+				possibleSuggests = append(possibleSuggests, r.Id())
+				possibleSuggests = appendWithNameAliases(possibleSuggests, r)
+			}
+			continue
+		}
 
-			if validPropName != "" {
-				completeFunc = func(s string) (suggest []string) {
-					for _, res := range resources {
-						if v, ok := res.Properties()[validPropName]; ok {
-							switch prop := v.(type) {
-							case string, float64, int, bool:
-								suggest = appendIfContains(suggest, fmt.Sprint(prop), s)
-								if validPropName == "ID" {
-									suggest = appendWithNameAliases(suggest, res, s)
-								}
-							case []string:
-								for _, str := range prop {
-									suggest = appendIfContains(suggest, str, s)
-								}
-							case []*graph.KeyValue:
-								for _, kv := range prop {
-									suggest = appendIfContains(suggest, fmt.Sprintf("%s:%s", kv.KeyName, kv.Value), s)
-								}
-							}
-						}
+		for _, r := range resources {
+			if v, ok := r.Property(validPropName); ok {
+				switch prop := v.(type) {
+				case string, float64, int, bool:
+					possibleSuggests = append(possibleSuggests, fmt.Sprint(prop))
+					if validPropName == "ID" {
+						possibleSuggests = appendWithNameAliases(possibleSuggests, r)
 					}
-					suggest = quotedSortedSet(suggest)
-					return
+				case []string:
+					for _, str := range prop {
+						possibleSuggests = append(possibleSuggests, str)
+					}
+				case []*graph.KeyValue:
+					for _, kv := range prop {
+						possibleSuggests = append(possibleSuggests, fmt.Sprintf("%s:%s", kv.KeyName, kv.Value))
+					}
 				}
-				return &prefixCompleter{callback: completeFunc, splitChar: ","}
 			}
 		}
+	}
 
-		completeFunc = func(s string) (suggest []string) {
-			s = splitKeepLast(s, ",")
-			s = strings.TrimLeft(s, "'@\"")
-			for _, res := range resources {
-				suggest = appendIfContains(suggest, res.Id(), s)
-				suggest = appendWithNameAliases(suggest, res, s)
-			}
-			suggest = quotedSortedSet(suggest)
-			return
+	completeFunc := func(s string) (suggest []string) {
+		s = splitKeepLast(s, ",")
+		s = strings.TrimLeft(s, "'@\"")
+		for _, possible := range possibleSuggests {
+			suggest = appendIfContains(suggest, possible, s)
 		}
+		suggest = quotedSortedSet(suggest)
+		return
 	}
 
 	return &prefixCompleter{callback: completeFunc, splitChar: ","}
@@ -234,13 +247,13 @@ func appendIfContains(slice []string, value, subst string) []string {
 	return slice
 }
 
-func appendWithNameAliases(slice []string, res cloud.Resource, s string) []string {
+func appendWithNameAliases(slice []string, res cloud.Resource) []string {
 	if val, ok := res.Properties()["Name"]; ok {
 		switch val.(type) {
 		case string:
 			name := val.(string)
 			if name != "" {
-				slice = appendIfContains(slice, fmt.Sprintf("@%s", name), s)
+				slice = append(slice, fmt.Sprintf("@%s", name))
 			}
 		}
 	}
