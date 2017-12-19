@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/internal/ast"
@@ -186,8 +185,6 @@ func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compil
 }
 
 func validateCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	var errs []error
-
 	collectValidationErrs := func(node *ast.CommandNode) error {
 		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
 		cmd := cenv.LookupCommandFunc()(key)
@@ -206,23 +203,8 @@ func validateCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Com
 		}
 		return nil
 	}
-	if err := tpl.visitCommandNodesE(collectValidationErrs); err != nil {
-		return tpl, cenv, err
-	}
-	switch len(errs) {
-	case 0:
-		return tpl, cenv, nil
-	case 1:
-		return tpl, cenv, fmt.Errorf("validation error: %s", errs[0])
-	default:
-		var errsSrings []string
-		for _, err := range errs {
-			if err != nil {
-				errsSrings = append(errsSrings, err.Error())
-			}
-		}
-		return tpl, cenv, fmt.Errorf("validation errors:\n\t- %s", strings.Join(errsSrings, "\n\t- "))
-	}
+	err := tpl.visitCommandNodesE(collectValidationErrs)
+	return tpl, cenv, err
 }
 
 func injectCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
