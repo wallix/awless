@@ -47,9 +47,7 @@ NoRefValue <- ConcatenationValue
 Value <- RefValue {  p.addParamRefValue(text) }
       / NoRefValue
         
-CustomTypedValue <- <CidrValue> { p.addParamCidrValue(text) }
-        / <IpValue> { p.addParamIpValue(text) }
-        / <IntRangeValue> { p.addParamValue(text) }
+CustomTypedValue <- <IntRangeValue> { p.addParamValue(text) }
 
 UnquotedParamValue <- <UnquotedParam> { p.addParamValue(text) }
 UnquotedParam <- [a-zA-Z0-9-._:/+;~@<>*]+ # This regex is in sync with template/internal/ast.simpleStringValue
@@ -63,8 +61,6 @@ QuotedString <- DoubleQuotedValue / SingleQuotedValue
 DoubleQuotedValue <- DoubleQuote <[^"]*> DoubleQuote
 SingleQuotedValue <- SingleQuote <[^']*> SingleQuote
 
-CidrValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'/'[0-9]+
-IpValue <- [0-9]+[.][0-9]+[.][0-9]+[.][0-9]+
 IntRangeValue <- [0-9]+'-'[0-9]+
 
 RefValue <- '$'<Identifier>

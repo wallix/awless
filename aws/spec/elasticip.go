@@ -50,7 +50,10 @@ type DeleteElasticip struct {
 }
 
 func (cmd *DeleteElasticip) Params() params.Spec {
-	return params.NewSpec(params.OnlyOneOf(params.Key("id"), params.Key("ip")))
+	return params.NewSpec(
+		params.OnlyOneOf(params.Key("id"), params.Key("ip")),
+		params.Validators{"ip": params.IsIP},
+	)
 }
 
 type AttachElasticip struct {
@@ -66,9 +69,10 @@ type AttachElasticip struct {
 }
 
 func (cmd *AttachElasticip) Params() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("id"),
-		params.Opt("allow-reassociation", "instance", "networkinterface", "privateip"),
-	))
+	return params.NewSpec(
+		params.AllOf(params.Key("id"), params.Opt("allow-reassociation", "instance", "networkinterface", "privateip")),
+		params.Validators{"privateip": params.IsIP},
+	)
 }
 
 func (cmd *AttachElasticip) ExtractResult(i interface{}) string {

@@ -40,9 +40,7 @@ type CreateSubnet struct {
 func (cmd *CreateSubnet) Params() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Key("vpc"), params.Opt("availabilityzone", "public", "name")),
-		params.Validators{
-			"cidr": params.IsCIDR,
-		})
+		params.Validators{"cidr": params.IsCIDR})
 }
 
 func (cmd *CreateSubnet) ExtractResult(i interface{}) string {

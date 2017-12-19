@@ -44,9 +44,10 @@ type CreateNetworkinterface struct {
 }
 
 func (cmd *CreateNetworkinterface) Params() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("subnet"),
-		params.Opt("description", "privateip", "securitygroups"),
-	))
+	return params.NewSpec(
+		params.AllOf(params.Key("subnet"), params.Opt("description", "privateip", "securitygroups")),
+		params.Validators{"privateip": params.IsIP},
+	)
 }
 
 func (cmd *CreateNetworkinterface) ExtractResult(i interface{}) string {

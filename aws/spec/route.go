@@ -36,9 +36,7 @@ type CreateRoute struct {
 func (cmd *CreateRoute) Params() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Key("gateway"), params.Key("table")),
-		params.Validators{
-			"cidr": params.IsCIDR,
-		})
+		params.Validators{"cidr": params.IsCIDR})
 }
 
 type DeleteRoute struct {
@@ -53,7 +51,5 @@ type DeleteRoute struct {
 func (cmd *DeleteRoute) Params() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Key("table")),
-		params.Validators{
-			"cidr": params.IsCIDR,
-		})
+		params.Validators{"cidr": params.IsCIDR})
 }

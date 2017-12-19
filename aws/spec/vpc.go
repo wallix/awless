@@ -38,9 +38,7 @@ type CreateVpc struct {
 func (cmd *CreateVpc) Params() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Opt("name")),
-		params.Validators{
-			"cidr": params.IsCIDR,
-		})
+		params.Validators{"cidr": params.IsCIDR})
 }
 
 func (cmd *CreateVpc) ExtractResult(i interface{}) string {

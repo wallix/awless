@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"net"
 	"strconv"
 )
 
@@ -157,22 +156,6 @@ func (a *AST) lastValueInConcatenation() {
 
 func (a *AST) addStringValue(text string) {
 	a.stmtBuilder.addParamValue(&interfaceValue{val: text})
-}
-
-func (a *AST) addParamCidrValue(text string) {
-	_, ipnet, err := net.ParseCIDR(text)
-	if err != nil {
-		panic(fmt.Errorf("cannot convert '%s' to net cidr", text))
-	}
-	a.stmtBuilder.addParamValue(&interfaceValue{val: ipnet.String()})
-}
-
-func (a *AST) addParamIpValue(text string) {
-	ip := net.ParseIP(text)
-	if ip == nil {
-		panic(fmt.Errorf("cannot convert '%s' to net ip", text))
-	}
-	a.stmtBuilder.addParamValue(&interfaceValue{val: ip.String()})
 }
 
 func (a *AST) addParamRefValue(text string) {

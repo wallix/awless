@@ -50,11 +50,13 @@ type CreateInstance struct {
 }
 
 func (cmd *CreateInstance) Params() params.Spec {
-	return params.NewSpec(params.AllOf(
-		params.OnlyOneOf(params.Key("distro"), params.Key("image")),
-		params.Key("count"), params.Key("type"), params.Key("name"), params.Key("subnet"),
-		params.Opt("keypair", "ip", "userdata", "securitygroup", "lock", "role"),
-	))
+	return params.NewSpec(
+		params.AllOf(params.OnlyOneOf(params.Key("distro"), params.Key("image")),
+			params.Key("count"), params.Key("type"), params.Key("name"), params.Key("subnet"),
+			params.Opt("keypair", "ip", "userdata", "securitygroup", "lock", "role"),
+		),
+		params.Validators{"ip": params.IsIP},
+	)
 }
 
 func (cmd *CreateInstance) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {

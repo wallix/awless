@@ -105,6 +105,17 @@ func IsCIDR(i interface{}, others map[string]interface{}) error {
 
 }
 
+func IsIP(i interface{}, others map[string]interface{}) (err error) {
+	s, err := toString(i)
+	if err != nil {
+		return
+	}
+	if ip := net.ParseIP(s); ip == nil {
+		err = fmt.Errorf("expected valid IP address but got '%s'", s)
+	}
+	return
+}
+
 func toString(i interface{}) (string, error) {
 	s, ok := i.(string)
 	if !ok {
