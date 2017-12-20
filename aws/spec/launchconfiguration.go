@@ -40,8 +40,10 @@ type CreateLaunchconfiguration struct {
 }
 
 func (cmd *CreateLaunchconfiguration) ParamsSpec() params.Spec {
-	builder := params.SpecBuilder(params.AllOf(params.Key("image"), params.Key("name"), params.Key("type"),
-		params.Opt("distro", "keypair", "public", "role", "securitygroups", "spotprice", "userdata"),
+	builder := params.SpecBuilder(params.AllOf(
+		params.OnlyOneOf(params.Key("distro"), params.Key("image")),
+		params.Key("name"), params.Key("type"),
+		params.Opt("keypair", "public", "role", "securitygroups", "spotprice", "userdata"),
 	))
 	builder.AddReducer(func(values map[string]interface{}) (map[string]interface{}, error) {
 		fn := CommandFactory.Build("createinstance")().(*CreateInstance).convertDistroToAMI
