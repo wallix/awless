@@ -84,7 +84,7 @@ func injectCommandsInNodesPass(tpl *Template, cenv env.Compiling) (*Template, en
 		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
 		cmd, ok := cenv.LookupCommandFunc()(key).(ast.Command)
 		if !ok {
-			return tpl, cenv, fmt.Errorf("cast: %v is not a command", cmd)
+			return tpl, cenv, fmt.Errorf("%s: casting: %v is not a command", key, cmd)
 		}
 		if cmd == nil {
 			return tpl, cenv, fmt.Errorf("command for '%s' is nil", key)
@@ -100,15 +100,10 @@ func failOnDeclarationWithNoResultPass(tpl *Template, cenv env.Compiling) (*Temp
 		if !ok {
 			return nil
 		}
-		key := fmt.Sprintf("%s%s", cmdNode.Action, cmdNode.Entity)
-		cmd := cenv.LookupCommandFunc()(key)
-		if cmd == nil {
-			return fmt.Errorf("validate: cannot find command for '%s'", key)
-		}
 		type ER interface {
 			ExtractResult(interface{}) string
 		}
-		if _, ok := cmd.(ER); !ok {
+		if _, ok := cmdNode.Command.(ER); !ok {
 			return cmdErr(cmdNode, "command does not return a result, cannot assign to a variable")
 		}
 		return nil

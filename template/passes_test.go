@@ -108,7 +108,7 @@ func TestCheckInvalidReferencesDeclarationPass(t *testing.T) {
 
 type mockCommandWithResult struct{ id string }
 
-func (c *mockCommandWithResult) ValidateCommand(map[string]interface{}, []string) []error { return nil }
+func (c *mockCommandWithResult) ParamsSpec() params.Spec { return nil }
 func (c *mockCommandWithResult) Run(env.Running, map[string]interface{}) (interface{}, error) {
 	return nil, nil
 }
@@ -136,7 +136,8 @@ func TestFailOnDeclarationWithNoResultPass(t *testing.T) {
 	}
 
 	for i, tcase := range tcases {
-		_, _, err := failOnDeclarationWithNoResultPass(MustParse(tcase.tpl), env)
+		pass := newMultiPass(injectCommandsInNodesPass, failOnDeclarationWithNoResultPass)
+		_, _, err := pass.compile(MustParse(tcase.tpl), env)
 		if tcase.expErr == "" && err != nil {
 			t.Fatalf("%d: %v", i+1, err)
 		}
