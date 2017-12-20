@@ -34,7 +34,7 @@ type CreateSubscription struct {
 	Protocol *string `awsName:"Protocol" awsType:"awsstr" templateName:"protocol"`
 }
 
-func (cmd *CreateSubscription) Params() params.Spec {
+func (cmd *CreateSubscription) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("endpoint"), params.Key("protocol"), params.Key("topic")))
 }
 
@@ -50,6 +50,6 @@ type DeleteSubscription struct {
 	Id     *string `awsName:"SubscriptionArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSubscription) Params() params.Spec {
+func (cmd *DeleteSubscription) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }

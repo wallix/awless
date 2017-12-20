@@ -40,7 +40,7 @@ type CreateCertificate struct {
 	ValidationDomains []*string `templateName:"validation-domains"`
 }
 
-func (cmd *CreateCertificate) Params() params.Spec {
+func (cmd *CreateCertificate) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("domains"),
 		params.Opt("validation-domains"),
 	))
@@ -114,7 +114,7 @@ type DeleteCertificate struct {
 	Arn    *string `awsName:"CertificateArn" awsType:"awsstr" templateName:"arn"`
 }
 
-func (cmd *DeleteCertificate) Params() params.Spec {
+func (cmd *DeleteCertificate) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("arn")))
 }
 
@@ -128,7 +128,7 @@ type CheckCertificate struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckCertificate) Params() params.Spec {
+func (cmd *CheckCertificate) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("arn"), params.Key("state"), params.Key("timeout")),
 		params.Validators{

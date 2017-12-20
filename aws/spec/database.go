@@ -79,7 +79,7 @@ type CreateDatabase struct {
 	CopyTagsToSnapshot *string `awsName:"CopyTagsToSnapshot" awsType:"awsbool" templateName:"copytagstosnapshot"`
 }
 
-func (cmd *CreateDatabase) Params() params.Spec {
+func (cmd *CreateDatabase) ParamsSpec() params.Spec {
 	return params.NewSpec(params.OnlyOneOf(
 		params.AllOf(params.Key("type"), params.Key("id"), params.Key("engine"), params.Key("password"), params.Key("username"), params.Key("size")),
 		params.AllOf(params.Key("replica"), params.Key("replica-source")),
@@ -187,7 +187,7 @@ type DeleteDatabase struct {
 	Snapshot     *string `awsName:"FinalDBSnapshotIdentifier" awsType:"awsstr" templateName:"snapshot"`
 }
 
-func (cmd *DeleteDatabase) Params() params.Spec {
+func (cmd *DeleteDatabase) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("skip-snapshot", "snapshot"),
 	))
@@ -203,7 +203,7 @@ type CheckDatabase struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckDatabase) Params() params.Spec {
+func (cmd *CheckDatabase) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{
@@ -259,7 +259,7 @@ type StartDatabase struct {
 	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *StartDatabase) Params() params.Spec {
+func (cmd *StartDatabase) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -271,6 +271,6 @@ type StopDatabase struct {
 	Id     *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *StopDatabase) Params() params.Spec {
+func (cmd *StopDatabase) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }

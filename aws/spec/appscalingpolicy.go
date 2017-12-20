@@ -41,7 +41,7 @@ type CreateAppscalingpolicy struct {
 	StepscalingMinAdjustmentMagnitude *int64    `awsName:"StepScalingPolicyConfiguration.MinAdjustmentMagnitude" awsType:"awsint64" templateName:"stepscaling-min-adjustment-magnitude"`
 }
 
-func (cmd *CreateAppscalingpolicy) Params() params.Spec {
+func (cmd *CreateAppscalingpolicy) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("dimension"), params.Key("name"), params.Key("resource"), params.Key("service-namespace"), params.Key("stepscaling-adjustment-type"), params.Key("stepscaling-adjustments"), params.Key("type"),
 		params.Opt("stepscaling-aggregation-type", "stepscaling-cooldown", "stepscaling-min-adjustment-magnitude"),
 	))
@@ -62,6 +62,6 @@ type DeleteAppscalingpolicy struct {
 	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
 }
 
-func (cmd *DeleteAppscalingpolicy) Params() params.Spec {
+func (cmd *DeleteAppscalingpolicy) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("dimension"), params.Key("name"), params.Key("resource"), params.Key("service-namespace")))
 }

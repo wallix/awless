@@ -38,7 +38,7 @@ type CreateVolume struct {
 	Size             *int64  `awsName:"Size" awsType:"awsint64" templateName:"size"`
 }
 
-func (cmd *CreateVolume) Params() params.Spec {
+func (cmd *CreateVolume) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("availabilityzone"), params.Key("size")))
 }
 
@@ -56,7 +56,7 @@ type CheckVolume struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckVolume) Params() params.Spec {
+func (cmd *CheckVolume) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{
@@ -105,7 +105,7 @@ type DeleteVolume struct {
 	Id     *string `awsName:"VolumeId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteVolume) Params() params.Spec {
+func (cmd *DeleteVolume) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -119,7 +119,7 @@ type AttachVolume struct {
 	Instance *string `awsName:"InstanceId" awsType:"awsstr" templateName:"instance"`
 }
 
-func (cmd *AttachVolume) Params() params.Spec {
+func (cmd *AttachVolume) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("device"), params.Key("id"), params.Key("instance")))
 }
 func (cmd *AttachVolume) ExtractResult(i interface{}) string {
@@ -137,7 +137,7 @@ type DetachVolume struct {
 	Force    *bool   `awsName:"Force" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DetachVolume) Params() params.Spec {
+func (cmd *DetachVolume) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("device"), params.Key("id"), params.Key("instance"),
 		params.Opt("force"),
 	))

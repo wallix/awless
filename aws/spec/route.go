@@ -33,7 +33,7 @@ type CreateRoute struct {
 	Gateway *string `awsName:"GatewayId" awsType:"awsstr" templateName:"gateway"`
 }
 
-func (cmd *CreateRoute) Params() params.Spec {
+func (cmd *CreateRoute) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Key("gateway"), params.Key("table")),
 		params.Validators{"cidr": params.IsCIDR})
@@ -48,7 +48,7 @@ type DeleteRoute struct {
 	CIDR   *string `awsName:"DestinationCidrBlock" awsType:"awsstr" templateName:"cidr"`
 }
 
-func (cmd *DeleteRoute) Params() params.Spec {
+func (cmd *DeleteRoute) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Key("table")),
 		params.Validators{"cidr": params.IsCIDR})

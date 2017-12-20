@@ -52,7 +52,7 @@ type CreatePolicy struct {
 	Conditions  []*string `templateName:"conditions"`
 }
 
-func (cmd *CreatePolicy) Params() params.Spec {
+func (cmd *CreatePolicy) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("action"), params.Key("effect"), params.Key("name"), params.Key("resource"),
 		params.Opt("conditions", "description"),
 	))
@@ -95,7 +95,7 @@ type UpdatePolicy struct {
 	DefaultVersion *bool     `awsName:"SetAsDefault" awsType:"awsbool"`
 }
 
-func (cmd *UpdatePolicy) Params() params.Spec {
+func (cmd *UpdatePolicy) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("action"), params.Key("arn"), params.Key("effect"), params.Key("resource"),
 		params.Opt("conditions"),
 	))
@@ -177,7 +177,7 @@ type DeletePolicy struct {
 	AllVersions *bool   `templateName:"all-versions"`
 }
 
-func (cmd *DeletePolicy) Params() params.Spec {
+func (cmd *DeletePolicy) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("arn"),
 		params.Opt("all-versions"),
 	))
@@ -214,29 +214,28 @@ type AttachPolicy struct {
 	Access  *string `templateName:"access"`
 }
 
-func (cmd *AttachPolicy) Params() params.Spec {
-	return params.NewSpec(params.AllOf(
+func (cmd *AttachPolicy) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.AllOf(
 		params.OnlyOneOf(params.Key("user"), params.Key("role"), params.Key("group")),
 		params.OnlyOneOf(params.Key("arn"), params.AllOf(params.Key("access"), params.Key("service"))),
 	))
+	builder.AddReducer(transformAccessServiceToARN, "access", "service")
+	return builder.Done()
 }
 
-func (cmd *AttachPolicy) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"access", "service"},
-		func(values map[string]interface{}) (map[string]interface{}, error) {
-			service, hasService := values["service"].(string)
-			access, hasAccess := values["access"].(string)
+func transformAccessServiceToARN(values map[string]interface{}) (map[string]interface{}, error) {
+	service, hasService := values["service"].(string)
+	access, hasAccess := values["access"].(string)
 
-			if hasService && hasAccess {
-				pol, err := lookupAWSPolicy(service, access)
-				if err != nil {
-					return values, err
-				}
-				return map[string]interface{}{"arn": pol.Arn}, nil
-			} else {
-				return nil, nil
-			}
+	if hasService && hasAccess {
+		pol, err := lookupAWSPolicy(service, access)
+		if err != nil {
+			return values, err
 		}
+		return map[string]interface{}{"arn": pol.Arn}, nil
+	} else {
+		return nil, nil
+	}
 }
 
 func (cmd *AttachPolicy) ManualRun(renv env.Running) (interface{}, error) {
@@ -279,29 +278,13 @@ type DetachPolicy struct {
 	Role   *string `awsName:"RoleName" awsType:"awsstr" templateName:"role"`
 }
 
-func (cmd *DetachPolicy) Params() params.Spec {
-	return params.NewSpec(params.AllOf(
+func (cmd *DetachPolicy) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.AllOf(
 		params.OnlyOneOf(params.Key("user"), params.Key("role"), params.Key("group")),
 		params.OnlyOneOf(params.Key("arn"), params.AllOf(params.Key("access"), params.Key("service"))),
 	))
-}
-
-func (cmd *DetachPolicy) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"access", "service"},
-		func(values map[string]interface{}) (map[string]interface{}, error) {
-			service, hasService := values["service"].(string)
-			access, hasAccess := values["access"].(string)
-
-			if hasService && hasAccess {
-				pol, err := lookupAWSPolicy(service, access)
-				if err != nil {
-					return values, err
-				}
-				return map[string]interface{}{"arn": pol.Arn}, nil
-			} else {
-				return nil, nil
-			}
-		}
+	builder.AddReducer(transformAccessServiceToARN, "access", "service")
+	return builder.Done()
 }
 
 func (cmd *DetachPolicy) ManualRun(renv env.Running) (interface{}, error) {

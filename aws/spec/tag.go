@@ -42,7 +42,7 @@ type CreateTag struct {
 	Value    *string `templateName:"value"`
 }
 
-func (cmd *CreateTag) Params() params.Spec {
+func (cmd *CreateTag) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("key"), params.Key("resource"), params.Key("value")))
 }
 
@@ -99,7 +99,7 @@ type DeleteTag struct {
 	Value    *string `templateName:"value"`
 }
 
-func (cmd *DeleteTag) Params() params.Spec {
+func (cmd *DeleteTag) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("key"), params.Key("resource"),
 		params.Opt("value"),
 	))
@@ -151,7 +151,7 @@ func createNameTag(resource, name *string, renv env.Running) error {
 		"value":    name,
 		"resource": resource,
 	}
-	if err := params.Validate(createTag.Params().Validators(), entries); err != nil {
+	if err := params.Validate(createTag.ParamsSpec().Validators(), entries); err != nil {
 		return err
 	}
 	_, err := createTag.Run(renv, entries)

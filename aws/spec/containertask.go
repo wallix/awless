@@ -48,7 +48,7 @@ type StartContainertask struct {
 	LoadBalancerTargetgroup   *string `templateName:"loadbalancer.targetgroup"`
 }
 
-func (cmd *StartContainertask) Params() params.Spec {
+func (cmd *StartContainertask) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cluster"), params.Key("desired-count"), params.Key("name"), params.Key("type"), params.Opt("deployment-name", "loadbalancer.container-name", "loadbalancer.container-port", "loadbalancer.targetgroup", "role")),
 		params.Validators{
@@ -145,7 +145,7 @@ type StopContainertask struct {
 	RunArn         *string `templateName:"run-arn"`
 }
 
-func (cmd *StopContainertask) Params() params.Spec {
+func (cmd *StopContainertask) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cluster"), params.Key("type"), params.Opt("deployment-name", "run-arn")),
 		params.Validators{
@@ -207,7 +207,7 @@ type UpdateContainertask struct {
 	Name           *string `awsName:"TaskDefinition" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *UpdateContainertask) Params() params.Spec {
+func (cmd *UpdateContainertask) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("cluster"), params.Key("deployment-name"),
 		params.Opt("desired-count", "name"),
 	))
@@ -229,7 +229,7 @@ type AttachContainertask struct {
 	Ports           []*string `templateName:"ports"`
 }
 
-func (cmd *AttachContainertask) Params() params.Spec {
+func (cmd *AttachContainertask) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("container-name"), params.Key("image"), params.Key("memory-hard-limit"), params.Key("name"),
 		params.Opt("command", "env", "ports", "privileged", "workdir"),
 	))
@@ -332,7 +332,7 @@ type DetachContainertask struct {
 	ContainerName *string `templateName:"container-name"`
 }
 
-func (cmd *DetachContainertask) Params() params.Spec {
+func (cmd *DetachContainertask) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("container-name"), params.Key("name")))
 }
 
@@ -401,7 +401,7 @@ type DeleteContainertask struct {
 	AllVersions *bool   `templateName:"all-versions"`
 }
 
-func (cmd *DeleteContainertask) Params() params.Spec {
+func (cmd *DeleteContainertask) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("all-versions"),
 	))

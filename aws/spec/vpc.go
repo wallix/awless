@@ -35,7 +35,7 @@ type CreateVpc struct {
 	Name   *string `awsName:"Name" templateName:"name"`
 }
 
-func (cmd *CreateVpc) Params() params.Spec {
+func (cmd *CreateVpc) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Opt("name")),
 		params.Validators{"cidr": params.IsCIDR})
@@ -57,6 +57,6 @@ type DeleteVpc struct {
 	Id     *string `awsName:"VpcId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteVpc) Params() params.Spec {
+func (cmd *DeleteVpc) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }

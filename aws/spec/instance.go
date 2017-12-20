@@ -49,18 +49,16 @@ type CreateInstance struct {
 	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
-func (cmd *CreateInstance) Params() params.Spec {
-	return params.NewSpec(
+func (cmd *CreateInstance) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(
 		params.AllOf(params.OnlyOneOf(params.Key("distro"), params.Key("image")),
 			params.Key("count"), params.Key("type"), params.Key("name"), params.Key("subnet"),
 			params.Opt("keypair", "ip", "userdata", "securitygroup", "lock", "role"),
 		),
 		params.Validators{"ip": params.IsIP},
 	)
-}
-
-func (cmd *CreateInstance) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"distro"}, cmd.convertDistroToAMI
+	builder.AddReducer(cmd.convertDistroToAMI, "distro")
+	return builder.Done()
 }
 
 func (cmd *CreateInstance) convertDistroToAMI(values map[string]interface{}) (map[string]interface{}, error) {
@@ -107,10 +105,8 @@ type UpdateInstance struct {
 	Lock   *bool   `awsName:"DisableApiTermination" awsType:"awsboolattribute" templateName:"lock"`
 }
 
-func (cmd *UpdateInstance) Params() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("id"),
-		params.Opt("lock", "type"),
-	))
+func (cmd *UpdateInstance) ParamsSpec() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Opt("lock", "type")))
 }
 
 type DeleteInstance struct {
@@ -121,19 +117,16 @@ type DeleteInstance struct {
 	IDs    []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"ids"`
 }
 
-func (cmd *DeleteInstance) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"id"},
-		func(values map[string]interface{}) (map[string]interface{}, error) {
-			if id, hasID := values["id"]; hasID {
-				return map[string]interface{}{"ids": id}, nil
-			} else {
-				return nil, nil
-			}
+func (cmd *DeleteInstance) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
+	builder.AddReducer(func(values map[string]interface{}) (map[string]interface{}, error) {
+		if id, hasID := values["id"]; hasID {
+			return map[string]interface{}{"ids": id}, nil
+		} else {
+			return nil, nil
 		}
-}
-
-func (cmd *DeleteInstance) Params() params.Spec {
-	return params.NewSpec(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
+	}, "id")
+	return builder.Done()
 }
 
 type StartInstance struct {
@@ -144,7 +137,7 @@ type StartInstance struct {
 	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
 }
 
-func (cmd *StartInstance) Params() params.Spec {
+func (cmd *StartInstance) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -160,7 +153,7 @@ type StopInstance struct {
 	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
 }
 
-func (cmd *StopInstance) Params() params.Spec {
+func (cmd *StopInstance) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -182,7 +175,7 @@ type CheckInstance struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckInstance) Params() params.Spec {
+func (cmd *CheckInstance) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{
@@ -239,7 +232,7 @@ type AttachInstance struct {
 	Port        *int64  `awsName:"Targets[0]Port" awsType:"awsslicestructint64" templateName:"port"`
 }
 
-func (cmd *AttachInstance) Params() params.Spec {
+func (cmd *AttachInstance) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("targetgroup"),
 		params.Opt("port"),
 	))
@@ -254,6 +247,6 @@ type DetachInstance struct {
 	Id          *string `awsName:"Targets[0]Id" awsType:"awsslicestruct" templateName:"id"`
 }
 
-func (cmd *DetachInstance) Params() params.Spec {
+func (cmd *DetachInstance) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("targetgroup")))
 }

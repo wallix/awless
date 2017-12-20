@@ -46,7 +46,7 @@ type CreateTargetgroup struct {
 	Matcher             *string `awsName:"Matcher.HttpCode" awsType:"awsstr" templateName:"matcher"`
 }
 
-func (cmd *CreateTargetgroup) Params() params.Spec {
+func (cmd *CreateTargetgroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("port"), params.Key("protocol"), params.Key("vpc"),
 		params.Opt("healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "unhealthythreshold"),
 	))
@@ -75,7 +75,7 @@ type UpdateTargetgroup struct {
 	Matcher             *string `awsName:"Matcher.HttpCode" awsType:"awsstr" templateName:"matcher"`
 }
 
-func (cmd *UpdateTargetgroup) Params() params.Spec {
+func (cmd *UpdateTargetgroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("deregistrationdelay", "healthcheckinterval", "healthcheckpath", "healthcheckport", "healthcheckprotocol", "healthchecktimeout", "healthythreshold", "matcher", "stickiness", "stickinessduration", "unhealthythreshold"),
 	))
@@ -193,6 +193,6 @@ type DeleteTargetgroup struct {
 	Id     *string `awsName:"TargetGroupArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteTargetgroup) Params() params.Spec {
+func (cmd *DeleteTargetgroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }

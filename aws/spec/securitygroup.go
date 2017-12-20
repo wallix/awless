@@ -43,7 +43,7 @@ type CreateSecuritygroup struct {
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateSecuritygroup) Params() params.Spec {
+func (cmd *CreateSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("description"), params.Key("name"), params.Key("vpc")))
 }
 
@@ -65,7 +65,7 @@ type UpdateSecuritygroup struct {
 	Portrange     *string `templateName:"portrange"`
 }
 
-func (cmd *UpdateSecuritygroup) Params() params.Spec {
+func (cmd *UpdateSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("protocol"), params.Opt("cidr", "inbound", "outbound", "portrange", "securitygroup")),
 		params.Validators{
@@ -199,7 +199,7 @@ type DeleteSecuritygroup struct {
 	Id     *string `awsName:"GroupId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSecuritygroup) Params() params.Spec {
+func (cmd *DeleteSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -213,7 +213,7 @@ type CheckSecuritygroup struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckSecuritygroup) Params() params.Spec {
+func (cmd *CheckSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{
@@ -261,7 +261,7 @@ type AttachSecuritygroup struct {
 	Instance *string `templateName:"instance"`
 }
 
-func (cmd *AttachSecuritygroup) Params() params.Spec {
+func (cmd *AttachSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("instance")))
 }
 
@@ -293,7 +293,7 @@ type DetachSecuritygroup struct {
 	Instance *string `templateName:"instance"`
 }
 
-func (cmd *DetachSecuritygroup) Params() params.Spec {
+func (cmd *DetachSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("instance")))
 }
 

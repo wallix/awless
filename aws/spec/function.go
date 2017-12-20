@@ -43,7 +43,7 @@ type CreateFunction struct {
 	Timeout       *int64  `awsName:"Timeout" awsType:"awsint64" templateName:"timeout"`
 }
 
-func (cmd *CreateFunction) Params() params.Spec {
+func (cmd *CreateFunction) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("handler"), params.Key("name"), params.Key("role"), params.Key("runtime"),
 		params.Opt("bucket", "description", "memory", "object", "objectversion", "publish", "timeout", "zipfile"),
 	))
@@ -62,7 +62,7 @@ type DeleteFunction struct {
 	Version *string `awsName:"Qualifier" awsType:"awsstr" templateName:"version"`
 }
 
-func (cmd *DeleteFunction) Params() params.Spec {
+func (cmd *DeleteFunction) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("version"),
 	))

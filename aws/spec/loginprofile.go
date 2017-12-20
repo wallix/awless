@@ -34,7 +34,7 @@ type CreateLoginprofile struct {
 	PasswordReset *bool   `awsName:"PasswordResetRequired" awsType:"awsbool" templateName:"password-reset"`
 }
 
-func (cmd *CreateLoginprofile) Params() params.Spec {
+func (cmd *CreateLoginprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("password"), params.Key("username"),
 		params.Opt("password-reset"),
 	))
@@ -54,7 +54,7 @@ type UpdateLoginprofile struct {
 	PasswordReset *bool   `awsName:"PasswordResetRequired" awsType:"awsbool" templateName:"password-reset"`
 }
 
-func (cmd *UpdateLoginprofile) Params() params.Spec {
+func (cmd *UpdateLoginprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("password"), params.Key("username"),
 		params.Opt("password-reset"),
 	))
@@ -68,6 +68,6 @@ type DeleteLoginprofile struct {
 	Username *string `awsName:"UserName" awsType:"awsstr" templateName:"username"`
 }
 
-func (cmd *DeleteLoginprofile) Params() params.Spec {
+func (cmd *DeleteLoginprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("username")))
 }

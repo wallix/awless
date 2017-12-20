@@ -37,7 +37,7 @@ type CreateBucket struct {
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 }
 
-func (cmd *CreateBucket) Params() params.Spec {
+func (cmd *CreateBucket) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("acl"),
 	))
@@ -60,7 +60,7 @@ type UpdateBucket struct {
 	EnforceHttps     *bool   `templateName:"enforce-https"`
 }
 
-func (cmd *UpdateBucket) Params() params.Spec {
+func (cmd *UpdateBucket) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("acl", "enforce-https", "index-suffix", "public-website", "redirect-hostname"),
 	))
@@ -124,6 +124,6 @@ type DeleteBucket struct {
 	Name   *string `awsName:"Bucket" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteBucket) Params() params.Spec {
+func (cmd *DeleteBucket) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }

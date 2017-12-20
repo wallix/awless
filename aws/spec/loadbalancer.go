@@ -43,7 +43,7 @@ type CreateLoadbalancer struct {
 	Type           *string   `awsName:"Type" awsType:"awsstr" templateName:"type"`
 }
 
-func (cmd *CreateLoadbalancer) Params() params.Spec {
+func (cmd *CreateLoadbalancer) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(
 		params.Key("name"), params.Key("subnets"),
 		params.Opt("subnet-mappings", "iptype", "scheme", "securitygroups", "type"),
@@ -62,7 +62,7 @@ type DeleteLoadbalancer struct {
 	Id     *string `awsName:"LoadBalancerArn" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteLoadbalancer) Params() params.Spec {
+func (cmd *DeleteLoadbalancer) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -76,7 +76,7 @@ type CheckLoadbalancer struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckLoadbalancer) Params() params.Spec {
+func (cmd *CheckLoadbalancer) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{

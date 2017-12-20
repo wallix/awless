@@ -469,7 +469,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 			Action: "{{ $cmd.Action }}",
 			Entity: "{{ $cmd.Entity }}",
 			Api: "{{ $cmd.API }}",
-			Params: new({{ $cmdName }}).Params().Rule(),
+			Params: new({{ $cmdName }}).ParamsSpec().Rule(),
 		},
 {{- end }}
 }

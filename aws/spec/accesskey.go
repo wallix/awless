@@ -45,14 +45,11 @@ type CreateAccesskey struct {
 	Save   *bool   `templateName:"save"`
 }
 
-func (cmd *CreateAccesskey) Params() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("user"),
+func (cmd *CreateAccesskey) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.AllOf(params.Key("user"),
 		params.Opt("save", "no-prompt"),
 	))
-}
-
-func (cmd *CreateAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"no-prompt"},
+	builder.AddReducer(
 		func(values map[string]interface{}) (map[string]interface{}, error) {
 			if noPrompt, hasNoPrompt := values["no-prompt"]; hasNoPrompt {
 				b, err := castBool(noPrompt)
@@ -63,7 +60,10 @@ func (cmd *CreateAccesskey) ConvertParams() ([]string, func(values map[string]in
 			} else {
 				return nil, nil
 			}
-		}
+		},
+		"no-prompt",
+	)
+	return builder.Done()
 }
 
 func (cmd *CreateAccesskey) AfterRun(renv env.Running, output interface{}) error {
@@ -121,14 +121,11 @@ type DeleteAccesskey struct {
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 }
 
-func (cmd *DeleteAccesskey) Params() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("id"),
+func (cmd *DeleteAccesskey) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.AllOf(params.Key("id"),
 		params.Opt("user"),
 	))
-}
-
-func (cmd *DeleteAccesskey) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"user", "id"},
+	builder.AddReducer(
 		func(values map[string]interface{}) (map[string]interface{}, error) {
 			_, hasUser := values["user"].(string)
 			id, hasId := values["id"].(string)
@@ -142,7 +139,10 @@ func (cmd *DeleteAccesskey) ConvertParams() ([]string, func(values map[string]in
 				}
 			}
 			return values, nil
-		}
+		},
+		"user", "id",
+	)
+	return builder.Done()
 }
 
 var (

@@ -39,7 +39,7 @@ type CreateQueue struct {
 	VisibilityTimeout *string `awsName:"Attributes[VisibilityTimeout]" awsType:"awsstringpointermap" templateName:"visibility-timeout"`
 }
 
-func (cmd *CreateQueue) Params() params.Spec {
+func (cmd *CreateQueue) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("delay", "max-msg-size", "msg-wait", "policy", "redrive-policy", "retention-period", "visibility-timeout"),
 	))
@@ -57,6 +57,6 @@ type DeleteQueue struct {
 	Url    *string `awsName:"QueueUrl" awsType:"awsstr" templateName:"url"`
 }
 
-func (cmd *DeleteQueue) Params() params.Spec {
+func (cmd *DeleteQueue) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("url")))
 }

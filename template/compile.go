@@ -14,7 +14,7 @@ type Mode []compileFunc
 
 var (
 	TestCompileMode = []compileFunc{
-		verifyCommandsDefinedPass,
+		injectCommandsInNodesPass,
 		failOnDeclarationWithNoResultPass,
 		processAndValidateParamsPass,
 		checkInvalidReferenceDeclarationsPass,
@@ -25,7 +25,7 @@ var (
 	}
 
 	NewRunnerCompileMode = []compileFunc{
-		verifyCommandsDefinedPass,
+		injectCommandsInNodesPass,
 		failOnDeclarationWithNoResultPass,
 		processAndValidateParamsPass,
 		checkInvalidReferenceDeclarationsPass,
@@ -37,7 +37,6 @@ var (
 		failOnUnresolvedAliasPass,
 		convertParamsPass,
 		validateCommandsPass,
-		injectCommandsPass,
 	}
 )
 
@@ -76,16 +75,21 @@ func (p *multiPass) compile(tpl *Template, cenv env.Compiling) (newTpl *Template
 	return
 }
 
-func verifyCommandsDefinedPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
+func injectCommandsInNodesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	if cenv.LookupCommandFunc() == nil {
 		return tpl, cenv, fmt.Errorf("command lookuper is undefined")
 	}
 
 	for _, node := range tpl.CommandNodesIterator() {
 		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
-		if cmd := cenv.LookupCommandFunc()(key); cmd == nil {
-			return tpl, cenv, fmt.Errorf("cannot find command for '%s'", key)
+		cmd, ok := cenv.LookupCommandFunc()(key).(ast.Command)
+		if !ok {
+			return tpl, cenv, fmt.Errorf("cast: %v is not a command", cmd)
 		}
+		if cmd == nil {
+			return tpl, cenv, fmt.Errorf("command for '%s' is nil", key)
+		}
+		node.Command = cmd
 	}
 	return tpl, cenv, nil
 }
@@ -120,24 +124,14 @@ func failOnDeclarationWithNoResultPass(tpl *Template, cenv env.Compiling) (*Temp
 
 func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	normalizeMissingRequiredParamsAsHoleAndValidate := func(node *ast.CommandNode) error {
-		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
-		cmd := cenv.LookupCommandFunc()(key)
-		if cmd == nil {
-			return fmt.Errorf("process params: cannot find command for '%s'", key)
-		}
-		type PR interface {
-			Params() params.Spec
-		}
-		pspec, ok := cmd.(PR)
-		if !ok {
-			return cmdErr(node, "command does not implement param rules")
-		}
-		missing := pspec.Params().Rule().Missing(node.Keys())
+		rule := node.ParamsSpec().Rule()
+
+		missing := rule.Missing(node.Keys())
 		for _, e := range missing {
 			normalized := fmt.Sprintf("%s.%s", node.Entity, e)
 			node.Params[e] = ast.NewHoleValue(normalized)
 		}
-		if err := params.Run(pspec.Params().Rule(), node.Keys()); err != nil {
+		if err := params.Run(rule, node.Keys()); err != nil {
 			return cmdErr(node, err)
 		}
 		return nil
@@ -149,32 +143,15 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 
 func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	convert := func(node *ast.CommandNode) error {
-		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
-		cmd := cenv.LookupCommandFunc()(key)
-		if cmd == nil {
-			return fmt.Errorf("convert: cannot find command for '%s'", key)
-		}
-
-		type C interface {
-			ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error))
-		}
-		if v, ok := cmd.(C); ok {
-			keys, convFunc := v.ConvertParams()
-			values := make(map[string]interface{})
-			params := node.ToDriverParams()
-			for _, k := range keys {
-				if vv, ok := params[k]; ok {
-					values[k] = vv
-				}
-			}
-			converted, err := convFunc(values)
+		for _, reducer := range node.ParamsSpec().Reducers() {
+			out, err := reducer.Reduce(node.ToDriverParams())
 			if err != nil {
 				return cmdErr(node, err)
 			}
-			for _, k := range keys {
+			for _, k := range reducer.Keys() {
 				delete(node.Params, k)
 			}
-			for k, v := range converted {
+			for k, v := range out {
 				node.Params[k] = ast.NewInterfaceValue(v)
 			}
 		}
@@ -186,36 +163,13 @@ func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compil
 
 func validateCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	collectValidationErrs := func(node *ast.CommandNode) error {
-		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
-		cmd := cenv.LookupCommandFunc()(key)
-		if cmd == nil {
-			return fmt.Errorf("validate: cannot find command for '%s'", key)
-		}
-		type PR interface {
-			Params() params.Spec
-		}
-		spec, ok := cmd.(PR)
-		if !ok {
-			return cmdErr(node, "command does not implement param rules")
-		}
-		if err := params.Validate(spec.Params().Validators(), node.ToDriverParamsExcludingRefs()); err != nil {
+		if err := params.Validate(node.ParamsSpec().Validators(), node.ToDriverParamsExcludingRefs()); err != nil {
 			return cmdErr(node, err)
 		}
 		return nil
 	}
 	err := tpl.visitCommandNodesE(collectValidationErrs)
 	return tpl, cenv, err
-}
-
-func injectCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	for _, node := range tpl.CommandNodesIterator() {
-		key := fmt.Sprintf("%s%s", node.Action, node.Entity)
-		node.Command = cenv.LookupCommandFunc()(key).(ast.Command)
-		if node.Command == nil {
-			return tpl, cenv, fmt.Errorf("inject: cannot find command for '%s'", key)
-		}
-	}
-	return tpl, cenv, nil
 }
 
 func checkInvalidReferenceDeclarationsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {

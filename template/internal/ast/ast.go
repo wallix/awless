@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/wallix/awless/template/env"
+	"github.com/wallix/awless/template/params"
 )
 
 type Node interface {
@@ -60,6 +61,7 @@ type WithHoles interface {
 }
 
 type Command interface {
+	ParamsSpec() params.Spec
 	Run(env.Running, map[string]interface{}) (interface{}, error)
 }
 

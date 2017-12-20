@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/wallix/awless/template/env"
+	"github.com/wallix/awless/template/params"
 )
 
 func TestCloneAST(t *testing.T) {
@@ -84,6 +85,5 @@ func TestIsQuoted(t *testing.T) {
 
 type fakeCmd struct{}
 
-func (*fakeCmd) Run(env.Running, map[string]interface{}) (interface{}, error) {
-	return nil, nil
-}
+func (*fakeCmd) ParamsSpec() params.Spec                                      { return nil }
+func (*fakeCmd) Run(env.Running, map[string]interface{}) (interface{}, error) { return nil, nil }

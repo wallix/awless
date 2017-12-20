@@ -51,7 +51,7 @@ type CreateAlarm struct {
 	Unit                    *string   `awsName:"Unit" awsType:"awsstr" templateName:"unit"`
 }
 
-func (cmd *CreateAlarm) Params() params.Spec {
+func (cmd *CreateAlarm) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("evaluation-periods"), params.Key("metric"), params.Key("name"), params.Key("namespace"), params.Key("operator"), params.Key("period"), params.Key("statistic-function"), params.Key("threshold"),
 			params.Opt("alarm-actions", "description", "dimensions", "enabled", "insufficientdata-actions", "ok-actions", "unit"),
@@ -73,7 +73,7 @@ type DeleteAlarm struct {
 	Name   []*string `awsName:"AlarmNames" awsType:"awsstringslice" templateName:"name"`
 }
 
-func (cmd *DeleteAlarm) Params() params.Spec {
+func (cmd *DeleteAlarm) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
@@ -85,7 +85,7 @@ type StartAlarm struct {
 	Names  []*string `awsName:"AlarmNames" awsType:"awsstringslice" templateName:"names"`
 }
 
-func (cmd *StartAlarm) Params() params.Spec {
+func (cmd *StartAlarm) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("names")))
 }
 
@@ -97,7 +97,7 @@ type StopAlarm struct {
 	Names  []*string `awsName:"AlarmNames" awsType:"awsstringslice" templateName:"names"`
 }
 
-func (cmd *StopAlarm) Params() params.Spec {
+func (cmd *StopAlarm) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("names")))
 }
 
@@ -110,7 +110,7 @@ type AttachAlarm struct {
 	ActionArn *string `templateName:"action-arn"`
 }
 
-func (cmd *AttachAlarm) Params() params.Spec {
+func (cmd *AttachAlarm) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("action-arn"), params.Key("name")))
 }
 
@@ -152,7 +152,7 @@ type DetachAlarm struct {
 	ActionArn *string `templateName:"action-arn"`
 }
 
-func (cmd *DetachAlarm) Params() params.Spec {
+func (cmd *DetachAlarm) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("action-arn"), params.Key("name")))
 }
 

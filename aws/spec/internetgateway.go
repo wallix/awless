@@ -31,7 +31,7 @@ type CreateInternetgateway struct {
 	api    ec2iface.EC2API
 }
 
-func (cmd *CreateInternetgateway) Params() params.Spec {
+func (cmd *CreateInternetgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(params.None())
 }
 
@@ -47,7 +47,7 @@ type DeleteInternetgateway struct {
 	Id     *string `awsName:"InternetGatewayId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteInternetgateway) Params() params.Spec {
+func (cmd *DeleteInternetgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -60,7 +60,7 @@ type AttachInternetgateway struct {
 	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 }
 
-func (cmd *AttachInternetgateway) Params() params.Spec {
+func (cmd *AttachInternetgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("vpc")))
 }
 
@@ -73,6 +73,6 @@ type DetachInternetgateway struct {
 	Vpc    *string `awsName:"VpcId" awsType:"awsstr" templateName:"vpc"`
 }
 
-func (cmd *DetachInternetgateway) Params() params.Spec {
+func (cmd *DetachInternetgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("vpc")))
 }

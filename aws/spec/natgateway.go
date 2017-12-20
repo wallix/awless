@@ -39,7 +39,7 @@ type CreateNatgateway struct {
 	Subnet      *string `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 }
 
-func (cmd *CreateNatgateway) Params() params.Spec {
+func (cmd *CreateNatgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("elasticip-id"), params.Key("subnet")))
 }
 
@@ -55,7 +55,7 @@ type DeleteNatgateway struct {
 	Id     *string `awsName:"NatGatewayId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteNatgateway) Params() params.Spec {
+func (cmd *DeleteNatgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -69,7 +69,7 @@ type CheckNatgateway struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckNatgateway) Params() params.Spec {
+func (cmd *CheckNatgateway) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{

@@ -37,7 +37,7 @@ type CreateSubnet struct {
 	Name             *string `templateName:"name"`
 }
 
-func (cmd *CreateSubnet) Params() params.Spec {
+func (cmd *CreateSubnet) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("cidr"), params.Key("vpc"), params.Opt("availabilityzone", "public", "name")),
 		params.Validators{"cidr": params.IsCIDR})
@@ -74,7 +74,7 @@ type UpdateSubnet struct {
 	Public *bool   `awsName:"MapPublicIpOnLaunch" awsType:"awsboolattribute" templateName:"public"`
 }
 
-func (cmd *UpdateSubnet) Params() params.Spec {
+func (cmd *UpdateSubnet) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Opt("public")))
 }
 
@@ -86,6 +86,6 @@ type DeleteSubnet struct {
 	Id     *string `awsName:"SubnetId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSubnet) Params() params.Spec {
+func (cmd *DeleteSubnet) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }

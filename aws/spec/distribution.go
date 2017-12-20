@@ -54,7 +54,7 @@ type CreateDistribution struct {
 	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
-func (cmd *CreateDistribution) Params() params.Spec {
+func (cmd *CreateDistribution) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("origin-domain"),
 		params.Opt("certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-path", "price-class"),
 	))
@@ -156,7 +156,7 @@ type CheckDistribution struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckDistribution) Params() params.Spec {
+func (cmd *CheckDistribution) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{
@@ -214,7 +214,7 @@ type UpdateDistribution struct {
 	MinTtl         *int64    `templateName:"min-ttl"`
 }
 
-func (cmd *UpdateDistribution) Params() params.Spec {
+func (cmd *UpdateDistribution) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("certificate", "comment", "default-file", "domain-aliases", "enable", "forward-cookies", "forward-queries", "https-behaviour", "min-ttl", "origin-domain", "origin-path", "price-class"),
 	))
@@ -359,7 +359,7 @@ type DeleteDistribution struct {
 	Id     *string `awsName:"Id" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteDistribution) Params() params.Spec {
+func (cmd *DeleteDistribution) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -370,7 +370,7 @@ func (cmd *DeleteDistribution) ManualRun(renv env.Running) (interface{}, error) 
 		"id":     cmd.Id,
 		"enable": false,
 	}
-	if err := params.Validate(updateDistribution.Params().Validators(), entries); err != nil {
+	if err := params.Validate(updateDistribution.ParamsSpec().Validators(), entries); err != nil {
 		return nil, err
 	}
 
@@ -388,7 +388,7 @@ func (cmd *DeleteDistribution) ManualRun(renv env.Running) (interface{}, error) 
 		"state":   "Deployed",
 		"timeout": 900,
 	}
-	if err := params.Validate(checkDistribution.Params().Validators(), entries); err != nil {
+	if err := params.Validate(checkDistribution.ParamsSpec().Validators(), entries); err != nil {
 		return nil, err
 	}
 

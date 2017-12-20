@@ -42,7 +42,7 @@ type CreateImage struct {
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateImage) Params() params.Spec {
+func (cmd *CreateImage) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("instance"), params.Key("name"), params.Opt("description", "reboot")),
 		params.Validators{
@@ -76,7 +76,7 @@ type UpdateImage struct {
 	Description  *string   `awsName:"Description" awsType:"awsstringattribute" templateName:"description"`
 }
 
-func (cmd *UpdateImage) Params() params.Spec {
+func (cmd *UpdateImage) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("accounts", "description", "groups", "operation", "product-codes"),
 	))
@@ -152,7 +152,7 @@ type CopyImage struct {
 	Description  *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CopyImage) Params() params.Spec {
+func (cmd *CopyImage) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("source-id"), params.Key("source-region"),
 		params.Opt("description", "encrypted"),
 	))
@@ -178,7 +178,7 @@ type ImportImage struct {
 	S3object     *string `awsName:"DiskContainers[0]UserBucket.S3Key" awsType:"awsslicestruct" templateName:"s3object"`
 }
 
-func (cmd *ImportImage) Params() params.Spec {
+func (cmd *ImportImage) ParamsSpec() params.Spec {
 	return params.NewSpec(params.OnlyOneOf(
 		params.Key("snapshot"), params.Key("url"),
 		params.AllOf(params.Key("bucket"), params.Key("s3object")),
@@ -199,7 +199,7 @@ type DeleteImage struct {
 	DeleteSnapshots *bool   `templateName:"delete-snapshots"`
 }
 
-func (cmd *DeleteImage) Params() params.Spec {
+func (cmd *DeleteImage) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"),
 		params.Opt("delete-snapshots"),
 	))
@@ -268,7 +268,7 @@ func (cmd *DeleteImage) ManualRun(renv env.Running) (interface{}, error) {
 			entries := map[string]interface{}{
 				"id": snap,
 			}
-			if err := params.Validate(deleteSnapshot.Params().Validators(), entries); err != nil {
+			if err := params.Validate(deleteSnapshot.ParamsSpec().Validators(), entries); err != nil {
 				return nil, err
 			}
 			if _, err := deleteSnapshot.Run(renv, entries); err != nil {

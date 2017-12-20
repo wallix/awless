@@ -2,7 +2,6 @@ package template
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -12,18 +11,6 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 	"github.com/wallix/awless/template/params"
 )
-
-func (c *mockCommand) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	return []string{"param1", "param2"},
-		func(values map[string]interface{}) (map[string]interface{}, error) {
-			_, hasParam1 := values["param1"]
-			_, hasParam2 := values["param2"]
-			if hasParam1 && hasParam2 {
-				return map[string]interface{}{"new": fmt.Sprint(values["param1"], values["param2"])}, nil
-			}
-			return values, nil
-		}
-}
 
 func TestCommandsPasses(t *testing.T) {
 	cmd1, cmd2, cmd3 := &mockCommand{"1"}, &mockCommand{"2"}, &mockCommand{"3"}
@@ -45,51 +32,9 @@ func TestCommandsPasses(t *testing.T) {
 	t.Run("verify commands exist", func(t *testing.T) {
 		tpl := MustParse("create instance\nsub = create subnet\ncreate instance")
 		count = 0
-		_, _, err := verifyCommandsDefinedPass(tpl, env)
+		_, _, err := injectCommandsInNodesPass(tpl, env)
 		if err != nil {
 			t.Fatal(err)
-		}
-	})
-
-	t.Run("convert params", func(t *testing.T) {
-		tpl := MustParse("create instance\nsub = create subnet param1=anything param2=other\ncreate instance param1=anything")
-		count = 0
-		compiled, _, err := convertParamsPass(tpl, env)
-		if err != nil {
-			t.Fatal(err)
-		}
-		exp := map[string]interface{}{"new": "anythingother"}
-		if got, want := compiled.CommandNodesIterator()[1].ToDriverParams(), exp; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %#v, want %#v", got, want)
-		}
-		exp = map[string]interface{}{"param1": "anything"}
-		if got, want := compiled.CommandNodesIterator()[2].ToDriverParams(), exp; !reflect.DeepEqual(got, want) {
-			t.Fatalf("got %#v, want %#v", got, want)
-		}
-	})
-
-	t.Run("inject command", func(t *testing.T) {
-		count = 0
-		tpl := MustParse("create instance\nsub = create subnet\ncreate instance")
-
-		compiled, _, err := injectCommandsPass(tpl, env)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		cmds := compiled.CommandNodesIterator()
-
-		sameObject := func(got, want interface{}) bool {
-			return reflect.ValueOf(got).Pointer() == reflect.ValueOf(want).Pointer()
-		}
-		if got, want := cmds[0].Command, cmd1; !sameObject(got, want) {
-			t.Fatalf("different object: got %#v, want %#v", got, want)
-		}
-		if got, want := cmds[1].Command, cmd2; !sameObject(got, want) {
-			t.Fatalf("different object: got %#v, want %#v", got, want)
-		}
-		if got, want := cmds[2].Command, cmd3; !sameObject(got, want) {
-			t.Fatalf("different object: got %#v, want %#v", got, want)
 		}
 	})
 }
@@ -372,7 +317,7 @@ func TestCmdErr(t *testing.T) {
 type mockCommand struct{ id string }
 
 func (c *mockCommand) Run(env.Running, map[string]interface{}) (interface{}, error) { return nil, nil }
-func (c *mockCommand) Params() params.Spec                                          { return params.NewSpec(nil) }
+func (c *mockCommand) ParamsSpec() params.Spec                                      { return params.NewSpec(nil) }
 
 type parameters map[string]interface{}
 type holesKeys map[string][]string

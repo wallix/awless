@@ -43,7 +43,7 @@ type CreateNetworkinterface struct {
 	Privateip      *string   `awsName:"PrivateIpAddress" awsType:"awsstr" templateName:"privateip"`
 }
 
-func (cmd *CreateNetworkinterface) Params() params.Spec {
+func (cmd *CreateNetworkinterface) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("subnet"), params.Opt("description", "privateip", "securitygroups")),
 		params.Validators{"privateip": params.IsIP},
@@ -62,7 +62,7 @@ type DeleteNetworkinterface struct {
 	Id     *string `awsName:"NetworkInterfaceId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteNetworkinterface) Params() params.Spec {
+func (cmd *DeleteNetworkinterface) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -76,7 +76,7 @@ type AttachNetworkinterface struct {
 	DeviceIndex *int64  `awsName:"DeviceIndex" awsType:"awsint64" templateName:"device-index"`
 }
 
-func (cmd *AttachNetworkinterface) Params() params.Spec {
+func (cmd *AttachNetworkinterface) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("device-index"), params.Key("id"), params.Key("instance")))
 }
 
@@ -95,7 +95,7 @@ type DetachNetworkinterface struct {
 	Force      *bool   `awsName:"Force" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DetachNetworkinterface) Params() params.Spec {
+func (cmd *DetachNetworkinterface) ParamsSpec() params.Spec {
 	return params.NewSpec(params.OnlyOneOf(
 		params.AllOf(params.Key("instance"), params.Key("id")),
 		params.Key("attachment"),
@@ -185,7 +185,7 @@ type CheckNetworkinterface struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckNetworkinterface) Params() params.Spec {
+func (cmd *CheckNetworkinterface) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Key("state"), params.Key("timeout")),
 		params.Validators{

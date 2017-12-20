@@ -39,15 +39,15 @@ type CreateLaunchconfiguration struct {
 	DistroQuery    *string   `awsType:"awsstr" templateName:"distro"`
 }
 
-func (cmd *CreateLaunchconfiguration) Params() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("image"), params.Key("name"), params.Key("type"),
+func (cmd *CreateLaunchconfiguration) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.AllOf(params.Key("image"), params.Key("name"), params.Key("type"),
 		params.Opt("distro", "keypair", "public", "role", "securitygroups", "spotprice", "userdata"),
 	))
-}
-
-func (cmd *CreateLaunchconfiguration) ConvertParams() ([]string, func(values map[string]interface{}) (map[string]interface{}, error)) {
-	createInstance := CommandFactory.Build("createinstance")().(*CreateInstance)
-	return []string{"distro"}, createInstance.convertDistroToAMI
+	builder.AddReducer(func(values map[string]interface{}) (map[string]interface{}, error) {
+		fn := CommandFactory.Build("createinstance")().(*CreateInstance).convertDistroToAMI
+		return fn(values)
+	}, "distro")
+	return builder.Done()
 }
 
 func (cmd *CreateLaunchconfiguration) ExtractResult(i interface{}) string {
@@ -62,6 +62,6 @@ type DeleteLaunchconfiguration struct {
 	Name   *string `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteLaunchconfiguration) Params() params.Spec {
+func (cmd *DeleteLaunchconfiguration) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }

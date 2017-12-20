@@ -33,7 +33,7 @@ type CreateSnapshot struct {
 	Description *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CreateSnapshot) Params() params.Spec {
+func (cmd *CreateSnapshot) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("volume"),
 		params.Opt("description"),
 	))
@@ -51,7 +51,7 @@ type DeleteSnapshot struct {
 	Id     *string `awsName:"SnapshotId" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteSnapshot) Params() params.Spec {
+func (cmd *DeleteSnapshot) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -66,7 +66,7 @@ type CopySnapshot struct {
 	Description  *string `awsName:"Description" awsType:"awsstr" templateName:"description"`
 }
 
-func (cmd *CopySnapshot) Params() params.Spec {
+func (cmd *CopySnapshot) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("source-id"), params.Key("source-region"),
 		params.Opt("description", "encrypted"),
 	))

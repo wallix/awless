@@ -39,7 +39,7 @@ type CreateInstanceprofile struct {
 	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *CreateInstanceprofile) Params() params.Spec {
+func (cmd *CreateInstanceprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
@@ -51,7 +51,7 @@ type DeleteInstanceprofile struct {
 	Name   *string `awsName:"InstanceProfileName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteInstanceprofile) Params() params.Spec {
+func (cmd *DeleteInstanceprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
@@ -65,7 +65,7 @@ type AttachInstanceprofile struct {
 	Replace  *bool   `templateName:"replace"`
 }
 
-func (cmd *AttachInstanceprofile) Params() params.Spec {
+func (cmd *AttachInstanceprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("instance"), params.Key("name"),
 		params.Opt("replace"),
 	))
@@ -160,7 +160,7 @@ type DetachInstanceprofile struct {
 	Name     *string `templateName:"name"`
 }
 
-func (cmd *DetachInstanceprofile) Params() params.Spec {
+func (cmd *DetachInstanceprofile) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("instance"), params.Key("name")))
 }
 

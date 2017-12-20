@@ -40,7 +40,7 @@ type CreateRecord struct {
 	Comment *string `templateName:"comment"`
 }
 
-func (cmd *CreateRecord) Params() params.Spec {
+func (cmd *CreateRecord) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone"),
 		params.Opt("comment"),
 	))
@@ -69,7 +69,7 @@ type UpdateRecord struct {
 	Ttl    *int64  `templateName:"ttl"`
 }
 
-func (cmd *UpdateRecord) Params() params.Spec {
+func (cmd *UpdateRecord) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone")))
 }
 
@@ -96,7 +96,7 @@ type DeleteRecord struct {
 	Ttl    *int64  `templateName:"ttl"`
 }
 
-func (cmd *DeleteRecord) Params() params.Spec {
+func (cmd *DeleteRecord) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"), params.Key("ttl"), params.Key("type"), params.Key("value"), params.Key("zone")))
 }
 

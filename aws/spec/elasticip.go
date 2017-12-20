@@ -32,7 +32,7 @@ type CreateElasticip struct {
 	Domain *string `awsName:"Domain" awsType:"awsstr" templateName:"domain"`
 }
 
-func (cmd *CreateElasticip) Params() params.Spec {
+func (cmd *CreateElasticip) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("domain")))
 }
 
@@ -49,7 +49,7 @@ type DeleteElasticip struct {
 	Ip     *string `awsName:"PublicIp" awsType:"awsstr" templateName:"ip"`
 }
 
-func (cmd *DeleteElasticip) Params() params.Spec {
+func (cmd *DeleteElasticip) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.OnlyOneOf(params.Key("id"), params.Key("ip")),
 		params.Validators{"ip": params.IsIP},
@@ -68,7 +68,7 @@ type AttachElasticip struct {
 	AllowReassociation *bool   `awsName:"AllowReassociation" awsType:"awsbool" templateName:"allow-reassociation"`
 }
 
-func (cmd *AttachElasticip) Params() params.Spec {
+func (cmd *AttachElasticip) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("id"), params.Opt("allow-reassociation", "instance", "networkinterface", "privateip")),
 		params.Validators{"privateip": params.IsIP},
@@ -87,6 +87,6 @@ type DetachElasticip struct {
 	Association *string `awsName:"AssociationId" awsType:"awsstr" templateName:"association"`
 }
 
-func (cmd *DetachElasticip) Params() params.Spec {
+func (cmd *DetachElasticip) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("association")))
 }

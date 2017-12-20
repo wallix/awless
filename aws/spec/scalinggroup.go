@@ -46,7 +46,7 @@ type CreateScalinggroup struct {
 	Targetgroups           []*string `awsName:"TargetGroupARNs" awsType:"awsstringslice" templateName:"targetgroups"`
 }
 
-func (cmd *CreateScalinggroup) Params() params.Spec {
+func (cmd *CreateScalinggroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("launchconfiguration"), params.Key("max-size"), params.Key("min-size"), params.Key("name"), params.Key("subnets"),
 		params.Opt("cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "new-instances-protected", "targetgroups"),
 	))
@@ -73,7 +73,7 @@ type UpdateScalinggroup struct {
 	Subnets                []*string `awsName:"VPCZoneIdentifier" awsType:"awscsvstr" templateName:"subnets"`
 }
 
-func (cmd *UpdateScalinggroup) Params() params.Spec {
+func (cmd *UpdateScalinggroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("cooldown", "desired-capacity", "healthcheck-grace-period", "healthcheck-type", "launchconfiguration", "max-size", "min-size", "new-instances-protected", "subnets"),
 	))
@@ -88,7 +88,7 @@ type DeleteScalinggroup struct {
 	Force  *bool   `awsName:"ForceDelete" awsType:"awsbool" templateName:"force"`
 }
 
-func (cmd *DeleteScalinggroup) Params() params.Spec {
+func (cmd *DeleteScalinggroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
 		params.Opt("force"),
 	))
@@ -104,7 +104,7 @@ type CheckScalinggroup struct {
 	Timeout *int64  `templateName:"timeout"`
 }
 
-func (cmd *CheckScalinggroup) Params() params.Spec {
+func (cmd *CheckScalinggroup) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("count"), params.Key("name"), params.Key("timeout")))
 }
 

@@ -44,7 +44,7 @@ type CreateKeypair struct {
 	PublicKeyMaterial []byte  `awsName:"PublicKeyMaterial" awsType:"awsbyteslice"`
 }
 
-func (cmd *CreateKeypair) Params() params.Spec {
+func (cmd *CreateKeypair) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("name"), params.Opt("encrypted")),
 		params.Validators{
@@ -103,6 +103,6 @@ type DeleteKeypair struct {
 	Name   *string `awsName:"KeyName" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteKeypair) Params() params.Spec {
+func (cmd *DeleteKeypair) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }

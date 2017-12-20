@@ -46,7 +46,7 @@ type CreateMfadevice struct {
 	Name   *string `templateName:"name"`
 }
 
-func (cmd *CreateMfadevice) Params() params.Spec {
+func (cmd *CreateMfadevice) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name")))
 }
 
@@ -95,7 +95,7 @@ type DeleteMfadevice struct {
 	Id     *string `awsName:"SerialNumber" awsType:"awsstr" templateName:"id"`
 }
 
-func (cmd *DeleteMfadevice) Params() params.Spec {
+func (cmd *DeleteMfadevice) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
 
@@ -115,7 +115,7 @@ type AttachMfadevice struct {
 	NoPrompt *bool   `templateName:"no-prompt"`
 }
 
-func (cmd *AttachMfadevice) Params() params.Spec {
+func (cmd *AttachMfadevice) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("mfa-code-1"), params.Key("mfa-code-2"), params.Key("user"),
 		params.Opt("no-prompt"),
 	))
@@ -170,7 +170,7 @@ type DetachMfadevice struct {
 	User   *string `awsName:"UserName" awsType:"awsstr" templateName:"user"`
 }
 
-func (cmd *DetachMfadevice) Params() params.Spec {
+func (cmd *DetachMfadevice) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("user")))
 }
 

@@ -35,7 +35,7 @@ type CreateAppscalingtarget struct {
 	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
 }
 
-func (cmd *CreateAppscalingtarget) Params() params.Spec {
+func (cmd *CreateAppscalingtarget) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("dimension"), params.Key("max-capacity"), params.Key("min-capacity"), params.Key("resource"), params.Key("role"), params.Key("service-namespace")))
 }
 
@@ -49,6 +49,6 @@ type DeleteAppscalingtarget struct {
 	ServiceNamespace *string `awsName:"ServiceNamespace" awsType:"awsstr" templateName:"service-namespace"`
 }
 
-func (cmd *DeleteAppscalingtarget) Params() params.Spec {
+func (cmd *DeleteAppscalingtarget) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("dimension"), params.Key("resource"), params.Key("service-namespace")))
 }

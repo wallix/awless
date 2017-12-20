@@ -42,7 +42,7 @@ type CreateS3object struct {
 	Acl    *string `awsName:"ACL" awsType:"awsstr" templateName:"acl"`
 }
 
-func (cmd *CreateS3object) Params() params.Spec {
+func (cmd *CreateS3object) ParamsSpec() params.Spec {
 	return params.NewSpec(
 		params.AllOf(params.Key("bucket"), params.Key("file"), params.Opt("acl", "name")),
 		params.Validators{"file": params.IsFilepath},
@@ -112,7 +112,7 @@ type UpdateS3object struct {
 	Version *string `awsName:"VersionId" awsType:"awsstr" templateName:"version"`
 }
 
-func (cmd *UpdateS3object) Params() params.Spec {
+func (cmd *UpdateS3object) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("acl"), params.Key("bucket"), params.Key("name"),
 		params.Opt("version"),
 	))
@@ -127,7 +127,7 @@ type DeleteS3object struct {
 	Name   *string `awsName:"Key" awsType:"awsstr" templateName:"name"`
 }
 
-func (cmd *DeleteS3object) Params() params.Spec {
+func (cmd *DeleteS3object) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("bucket"), params.Key("name")))
 }
 
