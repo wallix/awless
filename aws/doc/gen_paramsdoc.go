@@ -18,81 +18,81 @@ limitations under the License.
 package awsdoc
 
 var generatedParamsDoc = map[string]map[string]string{
-	"attachalarm":         {},
-	"attachcontainertask": {},
-	"attachelasticip": {
+	"attach.alarm":         {},
+	"attach.containertask": {},
+	"attach.elasticip": {
 		"allow-reassociation": "For a VPC in an EC2-Classic account, specify true to allow an Elastic IP address that is already associated with an instance or network interface to be reassociated with the specified instance or network interface",
 		"id":               "The allocation ID",
 		"instance":         "The ID of the instance",
 		"networkinterface": "The ID of the network interface",
 		"privateip":        "The primary or secondary private IP address to associate with the Elastic IP address",
 	},
-	"attachinstance": {
+	"attach.instance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
-	"attachinstanceprofile": {},
-	"attachinternetgateway": {
+	"attach.instanceprofile": {},
+	"attach.internetgateway": {
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
 	},
-	"attachmfadevice": {
+	"attach.mfadevice": {
 		"id":         "The serial number that uniquely identifies the MFA device",
 		"mfa-code-1": "An authentication code emitted by the device",
 		"mfa-code-2": "A subsequent authentication code emitted by the device",
 		"user":       "The name of the IAM user for whom you want to enable the MFA device",
 	},
-	"attachnetworkinterface": {
+	"attach.networkinterface": {
 		"device-index": "The index of the device for the network interface attachment",
 		"id":           "The ID of the network interface",
 		"instance":     "The ID of the instance",
 	},
-	"attachpolicy": {},
-	"attachrole": {
+	"attach.policy": {},
+	"attach.role": {
 		"instanceprofile": "The name of the instance profile to update",
 		"name":            "The name of the role to add",
 	},
-	"attachroutetable": {
+	"attach.routetable": {
 		"id":     "The ID of the route table",
 		"subnet": "The ID of the subnet",
 	},
-	"attachsecuritygroup": {},
-	"attachuser": {
+	"attach.securitygroup": {},
+	"attach.user": {
 		"group": "The name of the group to update",
 		"name":  "The name of the user to add",
 	},
-	"attachvolume": {
+	"attach.volume": {
 		"device":   "The device name to expose to the instance (for example, /dev/sdh or xvdh)",
 		"id":       "The ID of the EBS volume",
 		"instance": "The ID of the instance",
 	},
-	"authenticateregistry":  {},
-	"checkcertificate":      {},
-	"checkdatabase":         {},
-	"checkdistribution":     {},
-	"checkinstance":         {},
-	"checkloadbalancer":     {},
-	"checknatgateway":       {},
-	"checknetworkinterface": {},
-	"checkscalinggroup":     {},
-	"checksecuritygroup":    {},
-	"checkvolume":           {},
-	"copyimage": {
+	"authenticate.registry":  {},
+	"check.certificate":      {},
+	"check.database":         {},
+	"check.distribution":     {},
+	"check.instance":         {},
+	"check.loadbalancer":     {},
+	"check.natgateway":       {},
+	"check.networkinterface": {},
+	"check.scalinggroup":     {},
+	"check.securitygroup":    {},
+	"check.volume":           {},
+	"copy.image": {
 		"description":   "A description for the new AMI in the destination region",
 		"encrypted":     "Specifies whether the destination snapshots of the copied image should be encrypted",
 		"name":          "The name of the new AMI in the destination region",
 		"source-id":     "The ID of the AMI to copy",
 		"source-region": "The name of the region that contains the AMI to copy",
 	},
-	"copysnapshot": {
+	"copy.snapshot": {
 		"description":   "A description for the EBS snapshot",
 		"encrypted":     "Specifies whether the destination snapshot should be encrypted",
 		"source-id":     "The ID of the EBS snapshot to copy",
 		"source-region": "The ID of the region that contains the snapshot to be copied",
 	},
-	"createaccesskey": {
+	"create.accesskey": {
 		"user": "The name of the IAM user that the new key will belong to",
 	},
-	"createalarm": {
+	"create.alarm": {
 		"alarm-actions":            "The actions to execute when this alarm transitions to the ALARM state from any other state",
 		"description":              "The description for the alarm",
 		"dimensions":               "The dimensions for the metric associated with the alarm",
@@ -109,14 +109,14 @@ var generatedParamsDoc = map[string]map[string]string{
 		"threshold":                "The value against which the specified statistic is compared",
 		"unit":                     "The unit of measure for the statistic",
 	},
-	"createappscalingpolicy": {
+	"create.appscalingpolicy": {
 		"dimension":         "The scalable dimension",
 		"name":              "The name of the scaling policy",
 		"resource":          "The identifier of the resource associated with the scaling policy",
 		"service-namespace": "The namespace of the AWS service",
 		"type":              "The policy type",
 	},
-	"createappscalingtarget": {
+	"create.appscalingtarget": {
 		"dimension":         "The scalable dimension associated with the scalable target",
 		"max-capacity":      "The maximum value to scale to in response to a scale out event",
 		"min-capacity":      "The minimum value to scale to in response to a scale in event",
@@ -124,21 +124,21 @@ var generatedParamsDoc = map[string]map[string]string{
 		"role":              "The ARN of an IAM role that allows Application Auto Scaling to modify the scalable target on your behalf",
 		"service-namespace": "The namespace of the AWS service",
 	},
-	"createbucket": {
+	"create.bucket": {
 		"acl":  "The canned ACL to apply to the bucket",
 		"name": "",
 	},
-	"createcertificate": {},
-	"createcontainercluster": {
+	"create.certificate": {},
+	"create.containercluster": {
 		"name": "The name of your cluster",
 	},
-	"createdatabase":      {},
-	"createdbsubnetgroup": {},
-	"createdistribution":  {},
-	"createelasticip": {
+	"create.database":      {},
+	"create.dbsubnetgroup": {},
+	"create.distribution":  {},
+	"create.elasticip": {
 		"domain": "Set to vpc to allocate the address for use with instances in a VPC",
 	},
-	"createfunction": {
+	"create.function": {
 		"description": "A short, user-defined function description",
 		"handler":     "The function within your code that Lambda calls to begin execution",
 		"memory":      "The amount of memory, in MB, your Lambda function is given",
@@ -148,16 +148,16 @@ var generatedParamsDoc = map[string]map[string]string{
 		"runtime":     "The runtime environment for the Lambda function you are uploading",
 		"timeout":     "The function execution time at which Lambda should terminate the function",
 	},
-	"creategroup": {
+	"create.group": {
 		"name": "The name of the group to create",
 	},
-	"createimage": {
+	"create.image": {
 		"description": "A description for the new image",
 		"instance":    "The ID of the instance",
 		"name":        "A name for the new image",
 		"reboot":      "By default, Amazon EC2 attempts to shut down and reboot the instance before creating the image",
 	},
-	"createinstance": {
+	"create.instance": {
 		"image":         "The ID of the AMI, which you can get by calling DescribeImages",
 		"ip":            "The primary IPv4 address",
 		"keypair":       "The name of the key pair",
@@ -167,14 +167,14 @@ var generatedParamsDoc = map[string]map[string]string{
 		"type":          "The instance type",
 		"userdata":      "The user data to make available to the instance",
 	},
-	"createinstanceprofile": {
+	"create.instanceprofile": {
 		"name": "The name of the instance profile to create",
 	},
-	"createinternetgateway": {},
-	"createkeypair": {
+	"create.internetgateway": {},
+	"create.keypair": {
 		"name": "A unique name for the key pair",
 	},
-	"createlaunchconfiguration": {
+	"create.launchconfiguration": {
 		"image":          "The ID of the Amazon Machine Image (AMI) to use to launch your EC2 instances",
 		"keypair":        "The name of the key pair",
 		"name":           "The name of the launch configuration",
@@ -185,13 +185,13 @@ var generatedParamsDoc = map[string]map[string]string{
 		"type":           "The instance type of the EC2 instance",
 		"userdata":       "The user data to make available to the launched EC2 instances",
 	},
-	"createlistener": {
+	"create.listener": {
 		"loadbalancer": "The Amazon Resource Name (ARN) of the load balancer",
 		"port":         "The port on which the load balancer is listening",
 		"protocol":     "The protocol for connections from clients to the load balancer",
 		"sslpolicy":    "[HTTPS listeners] The security policy that defines which ciphers and protocols are supported",
 	},
-	"createloadbalancer": {
+	"create.loadbalancer": {
 		"iptype":          "[Application Load Balancers] The type of IP addresses used by the subnets for your load balancer",
 		"name":            "The name of the load balancer",
 		"scheme":          "The nodes of an Internet-facing load balancer have public IP addresses",
@@ -200,44 +200,44 @@ var generatedParamsDoc = map[string]map[string]string{
 		"subnets":         "The IDs of the subnets to attach to the load balancer",
 		"type":            "The type of load balancer to create",
 	},
-	"createloginprofile": {
+	"create.loginprofile": {
 		"password":       "The new password for the user",
 		"password-reset": "Specifies whether the user is required to set a new password on next sign-in",
 		"username":       "The name of the IAM user to create a password for",
 	},
-	"createmfadevice": {},
-	"createnatgateway": {
+	"create.mfadevice": {},
+	"create.natgateway": {
 		"elasticip-id": "The allocation ID of an Elastic IP address to associate with the NAT gateway",
 		"subnet":       "The subnet in which to create the NAT gateway",
 	},
-	"createnetworkinterface": {
+	"create.networkinterface": {
 		"description":    "A description for the network interface",
 		"privateip":      "The primary private IPv4 address of the network interface",
 		"securitygroups": "The IDs of one or more security groups",
 		"subnet":         "The ID of the subnet to associate with the network interface",
 	},
-	"createpolicy": {
+	"create.policy": {
 		"description": "A friendly description of the policy",
 		"name":        "The friendly name of the policy",
 	},
-	"createqueue": {
+	"create.queue": {
 		"name": "The name of the new queue",
 	},
-	"createrecord": {},
-	"createrepository": {
+	"create.record": {},
+	"create.repository": {
 		"name": "The name to use for the repository",
 	},
-	"createrole": {},
-	"createroute": {
+	"create.role": {},
+	"create.route": {
 		"cidr":    "The IPv4 CIDR address block used for the destination match",
 		"gateway": "The ID of an Internet gateway or virtual private gateway attached to your VPC",
 		"table":   "The ID of the route table for the route",
 	},
-	"createroutetable": {
+	"create.routetable": {
 		"vpc": "The ID of the VPC",
 	},
-	"creates3object": {},
-	"createscalinggroup": {
+	"create.s3object": {},
+	"create.scalinggroup": {
 		"cooldown":                 "The amount of time, in seconds, after a scaling activity completes before another scaling activity can start",
 		"desired-capacity":         "The number of EC2 instances that should be running in the group",
 		"healthcheck-grace-period": "The amount of time, in seconds, that Auto Scaling waits before checking the health status of an EC2 instance that has come into service",
@@ -250,7 +250,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"subnets":                 "A comma-separated list of subnet identifiers for your virtual private cloud (VPC)",
 		"targetgroups":            "The Amazon Resource Names (ARN) of the target groups",
 	},
-	"createscalingpolicy": {
+	"create.scalingpolicy": {
 		"adjustment-magnitude": "The minimum number of instances to scale",
 		"adjustment-scaling":   "The amount by which to scale, based on the specified adjustment type",
 		"adjustment-type":      "The adjustment type",
@@ -258,16 +258,16 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":                 "The name of the scaling policy",
 		"scalinggroup":         "The name or ARN of the group",
 	},
-	"createsecuritygroup": {
+	"create.securitygroup": {
 		"description": "A description for the security group",
 		"name":        "The name of the security group",
 		"vpc":         "The ID of the VPC",
 	},
-	"createsnapshot": {
+	"create.snapshot": {
 		"description": "A description for the snapshot",
 		"volume":      "The ID of the EBS volume",
 	},
-	"createstack": {
+	"create.stack": {
 		"capabilities":     "A list of values that you must specify before AWS CloudFormation can create certain stacks",
 		"disable-rollback": "Set to true to disable rollback of the stack if stack creation failed",
 		"name":             "The name that is associated with the stack",
@@ -281,18 +281,18 @@ var generatedParamsDoc = map[string]map[string]string{
 		"template-file":    "Structure containing the template body with a minimum length of 1 byte and a maximum length of 51,200 bytes",
 		"timeout":          "The amount of time that can pass before the stack status becomes CREATE_FAILED; if DisableRollback is not set or is set to false, the stack will be rolled back",
 	},
-	"createsubnet": {
+	"create.subnet": {
 		"availabilityzone": "The Availability Zone for the subnet",
 		"cidr":             "The IPv4 network range for the subnet, in CIDR notation",
 		"vpc":              "The ID of the VPC",
 	},
-	"createsubscription": {
+	"create.subscription": {
 		"endpoint": "The endpoint that you want to receive notifications",
 		"protocol": "The protocol you want to use",
 		"topic":    "The ARN of the topic you want to subscribe to",
 	},
-	"createtag": {},
-	"createtargetgroup": {
+	"create.tag": {},
+	"create.targetgroup": {
 		"healthcheckinterval": "The approximate amount of time, in seconds, between health checks of an individual target",
 		"healthcheckpath":     "[HTTP/HTTPS health checks] The ping path that is the destination on the targets for health checks",
 		"healthcheckport":     "The port the load balancer uses when performing health checks on targets",
@@ -305,259 +305,259 @@ var generatedParamsDoc = map[string]map[string]string{
 		"unhealthythreshold":  "The number of consecutive health check failures required before considering a target unhealthy",
 		"vpc":                 "The identifier of the virtual private cloud (VPC)",
 	},
-	"createtopic": {
+	"create.topic": {
 		"name": "The name of the topic you want to create",
 	},
-	"createuser": {
+	"create.user": {
 		"name": "The name of the user to create",
 	},
-	"createvolume": {
+	"create.volume": {
 		"availabilityzone": "The Availability Zone in which to create the volume",
 		"size":             "The size of the volume, in GiBs",
 	},
-	"createvpc": {
+	"create.vpc": {
 		"cidr": "The IPv4 network range for the VPC, in CIDR notation",
 	},
-	"createzone": {
+	"create.zone": {
 		"callerreference": "A unique string that identifies the request and that allows failed CreateHostedZone requests to be retried without the risk of executing the operation twice",
 		"delegationsetid": "If you want to associate a reusable delegation set with this hosted zone, the ID that Amazon Route 53 assigned to the reusable delegation set when you created it",
 		"name":            "The name of the domain",
 	},
-	"deleteaccesskey": {
+	"delete.accesskey": {
 		"id":   "The access key ID for the access key ID and secret access key you want to delete",
 		"user": "The name of the user whose access key pair you want to delete",
 	},
-	"deletealarm": {
+	"delete.alarm": {
 		"name": "The alarms to be deleted",
 	},
-	"deleteappscalingpolicy": {
+	"delete.appscalingpolicy": {
 		"dimension":         "The scalable dimension",
 		"name":              "The name of the scaling policy",
 		"resource":          "The identifier of the resource associated with the scalable target",
 		"service-namespace": "The namespace of the AWS service",
 	},
-	"deleteappscalingtarget": {
+	"delete.appscalingtarget": {
 		"dimension":         "The scalable dimension associated with the scalable target",
 		"resource":          "The identifier of the resource associated with the scalable target",
 		"service-namespace": "The namespace of the AWS service",
 	},
-	"deletebucket": {
+	"delete.bucket": {
 		"name": "",
 	},
-	"deletecertificate": {
+	"delete.certificate": {
 		"arn": "String that contains the ARN of the ACM Certificate to be deleted",
 	},
-	"deletecontainercluster": {
+	"delete.containercluster": {
 		"id": "The short name or full Amazon Resource Name (ARN) of the cluster to delete",
 	},
-	"deletecontainertask": {},
-	"deletedatabase": {
+	"delete.containertask": {},
+	"delete.database": {
 		"id": "Contains a user-supplied database identifier",
 	},
-	"deletedbsubnetgroup": {},
-	"deletedistribution":  {},
-	"deleteelasticip": {
+	"delete.dbsubnetgroup": {},
+	"delete.distribution":  {},
+	"delete.elasticip": {
 		"id": "The allocation ID",
 		"ip": "The Elastic IP address",
 	},
-	"deletefunction": {
+	"delete.function": {
 		"id":      "The Lambda function to delete",
 		"version": "Using this optional parameter you can specify a function version (but not the $LATEST version) to direct AWS Lambda to delete a specific function version",
 	},
-	"deletegroup": {
+	"delete.group": {
 		"name": "The name of the IAM group to delete",
 	},
-	"deleteimage": {},
-	"deleteinstance": {
+	"delete.image": {},
+	"delete.instance": {
 		"ids": "One or more instance IDs",
 	},
-	"deleteinstanceprofile": {
+	"delete.instanceprofile": {
 		"name": "The name of the instance profile to delete",
 	},
-	"deleteinternetgateway": {
+	"delete.internetgateway": {
 		"id": "The ID of the Internet gateway",
 	},
-	"deletekeypair": {
+	"delete.keypair": {
 		"name": "The name of the key pair",
 	},
-	"deletelaunchconfiguration": {},
-	"deletelistener": {
+	"delete.launchconfiguration": {},
+	"delete.listener": {
 		"id": "The Amazon Resource Name (ARN) of the listener",
 	},
-	"deleteloadbalancer": {
+	"delete.loadbalancer": {
 		"id": "The Amazon Resource Name (ARN) of the load balancer",
 	},
-	"deleteloginprofile": {
+	"delete.loginprofile": {
 		"username": "The name of the user whose password you want to delete",
 	},
-	"deletemfadevice": {
+	"delete.mfadevice": {
 		"id": "The serial number that uniquely identifies the MFA device",
 	},
-	"deletenatgateway": {
+	"delete.natgateway": {
 		"id": "The ID of the NAT gateway",
 	},
-	"deletenetworkinterface": {
+	"delete.networkinterface": {
 		"id": "The ID of the network interface",
 	},
-	"deletepolicy": {
+	"delete.policy": {
 		"arn": "The Amazon Resource Name (ARN) of the IAM policy you want to delete",
 	},
-	"deletequeue": {
+	"delete.queue": {
 		"url": "The URL of the Amazon SQS queue to delete",
 	},
-	"deleterecord": {},
-	"deleterepository": {
+	"delete.record": {},
+	"delete.repository": {
 		"account": "The AWS account ID associated with the registry that contains the repository to delete",
 		"force":   "Force the deletion of the repository if it contains images",
 		"name":    "The name of the repository to delete",
 	},
-	"deleterole": {},
-	"deleteroute": {
+	"delete.role": {},
+	"delete.route": {
 		"cidr":  "The IPv4 CIDR range for the route",
 		"table": "The ID of the route table",
 	},
-	"deleteroutetable": {
+	"delete.routetable": {
 		"id": "The ID of the route table",
 	},
-	"deletes3object": {
+	"delete.s3object": {
 		"bucket": "",
 		"name":   "",
 	},
-	"deletescalinggroup": {
+	"delete.scalinggroup": {
 		"force": "Specifies that the group will be deleted along with all instances associated with the group, without waiting for all instances to be terminated",
 		"name":  "The name of the group to delete",
 	},
-	"deletescalingpolicy": {
+	"delete.scalingpolicy": {
 		"id": "The name or Amazon Resource Name (ARN) of the policy",
 	},
-	"deletesecuritygroup": {
+	"delete.securitygroup": {
 		"id": "The ID of the security group",
 	},
-	"deletesnapshot": {
+	"delete.snapshot": {
 		"id": "The ID of the EBS snapshot",
 	},
-	"deletestack": {
+	"delete.stack": {
 		"name":             "The name or the unique stack ID that is associated with the stack",
 		"retain-resources": "For stacks in the DELETE_FAILED state, a list of resource logical IDs that are associated with the resources you want to retain",
 	},
-	"deletesubnet": {
+	"delete.subnet": {
 		"id": "The ID of the subnet",
 	},
-	"deletesubscription": {
+	"delete.subscription": {
 		"id": "The ARN of the subscription to be deleted",
 	},
-	"deletetag": {},
-	"deletetargetgroup": {
+	"delete.tag": {},
+	"delete.targetgroup": {
 		"id": "The Amazon Resource Name (ARN) of the target group",
 	},
-	"deletetopic": {
+	"delete.topic": {
 		"id": "The ARN of the topic you want to delete",
 	},
-	"deleteuser": {
+	"delete.user": {
 		"name": "The name of the user to delete",
 	},
-	"deletevolume": {
+	"delete.volume": {
 		"id": "The ID of the volume",
 	},
-	"deletevpc": {
+	"delete.vpc": {
 		"id": "The ID of the VPC",
 	},
-	"deletezone": {
+	"delete.zone": {
 		"id": "The ID of the hosted zone you want to delete",
 	},
-	"detachalarm":         {},
-	"detachcontainertask": {},
-	"detachelasticip": {
+	"detach.alarm":         {},
+	"detach.containertask": {},
+	"detach.elasticip": {
 		"association": "The association ID",
 	},
-	"detachinstance": {
+	"detach.instance": {
 		"targetgroup": "The Amazon Resource Name (ARN) of the target group",
 	},
-	"detachinstanceprofile": {},
-	"detachinternetgateway": {
+	"detach.instanceprofile": {},
+	"detach.internetgateway": {
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
 	},
-	"detachmfadevice": {
+	"detach.mfadevice": {
 		"id":   "The serial number that uniquely identifies the MFA device",
 		"user": "The name of the user whose MFA device you want to deactivate",
 	},
-	"detachnetworkinterface": {},
-	"detachpolicy":           {},
-	"detachrole": {
+	"detach.networkinterface": {},
+	"detach.policy":           {},
+	"detach.role": {
 		"instanceprofile": "The name of the instance profile to update",
 		"name":            "The name of the role to remove",
 	},
-	"detachroutetable": {
+	"detach.routetable": {
 		"association": "The association ID representing the current association between the route table and subnet",
 	},
-	"detachsecuritygroup": {},
-	"detachuser": {
+	"detach.securitygroup": {},
+	"detach.user": {
 		"group": "The name of the group to update",
 		"name":  "The name of the user to remove",
 	},
-	"detachvolume": {
+	"detach.volume": {
 		"device":   "The device name",
 		"force":    "Forces detachment if the previous detachment attempt did not occur cleanly (for example, logging into an instance, unmounting the volume, and detaching normally)",
 		"id":       "The ID of the volume",
 		"instance": "The ID of the instance",
 	},
-	"importimage": {
+	"import.image": {
 		"architecture": "The architecture of the virtual machine",
 		"description":  "A description string for the import image task",
 		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing",
 		"platform":     "The operating system of the virtual machine",
 		"role":         "The name of the role to use when not using the default role, 'vmimport'",
 	},
-	"startalarm": {
+	"start.alarm": {
 		"names": "The names of the alarms",
 	},
-	"startcontainertask": {},
-	"startdatabase": {
+	"start.containertask": {},
+	"start.database": {
 		"id": "Contains a user-supplied database identifier",
 	},
-	"startinstance": {
+	"start.instance": {
 		"id": "One or more instance IDs",
 	},
-	"stopalarm": {
+	"stop.alarm": {
 		"names": "The names of the alarms",
 	},
-	"stopcontainertask": {},
-	"stopdatabase": {
+	"stop.containertask": {},
+	"stop.database": {
 		"id": "Contains a user-supplied database identifier",
 	},
-	"stopinstance": {
+	"stop.instance": {
 		"id": "One or more instance IDs",
 	},
-	"updatebucket": {},
-	"updatecontainertask": {
+	"update.bucket": {},
+	"update.containertask": {
 		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster that your service is running on",
 		"deployment-name": "The name of the service to update",
 		"desired-count":   "The number of instantiations of the task to place and keep running in your service",
 		"name":            "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run in your service",
 	},
-	"updatedistribution": {},
-	"updateimage":        {},
-	"updateinstance": {
+	"update.distribution": {},
+	"update.image":        {},
+	"update.instance": {
 		"id":   "The ID of the instance",
 		"lock": "If the value is true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can",
 	},
-	"updateloginprofile": {
+	"update.loginprofile": {
 		"password":       "The new password for the specified IAM user",
 		"password-reset": "Allows this new password to be used only once by requiring the specified IAM user to set a new password on next sign-in",
 		"username":       "The name of the user whose password you want to update",
 	},
-	"updatepolicy": {
+	"update.policy": {
 		"arn": "The Amazon Resource Name (ARN) of the IAM policy to which you want to add a new version",
 	},
-	"updaterecord": {},
-	"updates3object": {
+	"update.record": {},
+	"update.s3object": {
 		"acl":     "The canned ACL to apply to the object",
 		"bucket":  "",
 		"name":    "",
 		"version": "VersionId used to reference a specific version of the object",
 	},
-	"updatescalinggroup": {
+	"update.scalinggroup": {
 		"cooldown":                 "The amount of time, in seconds, after a scaling activity completes before another scaling activity can start",
 		"desired-capacity":         "The number of EC2 instances that should be running in the Auto Scaling group",
 		"healthcheck-grace-period": "The amount of time, in seconds, that Auto Scaling waits before checking the health status of an EC2 instance that has come into service",
@@ -569,8 +569,8 @@ var generatedParamsDoc = map[string]map[string]string{
 		"new-instances-protected": "Indicates whether newly launched instances are protected from termination by Auto Scaling when scaling in",
 		"subnets":                 "The ID of the subnet, if you are launching into a VPC",
 	},
-	"updatesecuritygroup": {},
-	"updatestack": {
+	"update.securitygroup": {},
+	"update.stack": {
 		"capabilities":          "A list of values that you must specify before AWS CloudFormation can update certain stacks",
 		"name":                  "The name or unique stack ID of the stack to update",
 		"notifications":         "Amazon Simple Notification Service topic Amazon Resource Names (ARNs) that AWS CloudFormation associates with the stack",
@@ -583,9 +583,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"template-file":         "Structure containing the template body with a minimum length of 1 byte and a maximum length of 51,200 bytes",
 		"use-previous-template": "Reuse the existing template that is associated with the stack that you are updating",
 	},
-	"updatesubnet": {
+	"update.subnet": {
 		"id":     "The ID of the subnet",
 		"public": "Specify true to indicate that network interfaces created in the specified subnet should be assigned a public IPv4 address",
 	},
-	"updatetargetgroup": {},
+	"update.targetgroup": {},
 }

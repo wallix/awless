@@ -6,7 +6,7 @@ import (
 )
 
 func AwlessExamplesDoc(action, entity string) string {
-	return exampleDoc(action + entity)
+	return exampleDoc(action + "." + entity)
 }
 
 func exampleDoc(key string) string {

@@ -141,7 +141,7 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 			if len(splits) != 3 {
 				continue
 			}
-			if doc, hasDoc := awsdoc.TemplateParamsDoc(splits[0]+splits[1], splits[2]); hasDoc {
+			if doc, hasDoc := awsdoc.TemplateParamsDoc(splits[0], splits[1], splits[2]); hasDoc {
 				docs = append(docs, doc)
 			}
 			if enum, hasEnum := awsdoc.EnumDoc[param]; hasEnum {
@@ -304,13 +304,13 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		allParams, optParams := params.List(templDef.Params)
 		for _, p := range allParams {
 			paramsStr.WriteString(fmt.Sprintf("\n  %s", p))
-			if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
+			if d, ok := awsdoc.TemplateParamsDocWithEnums(templDef.Action, templDef.Entity, p); ok {
 				paramsStr.WriteString(fmt.Sprintf(": %s", d))
 			}
 		}
 		for _, p := range optParams {
 			paramsStr.WriteString(fmt.Sprintf("\n  [%s]", p))
-			if d, ok := awsdoc.TemplateParamsDoc(templDef.Action+templDef.Entity, p); ok {
+			if d, ok := awsdoc.TemplateParamsDocWithEnums(templDef.Action, templDef.Entity, p); ok {
 				paramsStr.WriteString(fmt.Sprintf(": %s", d))
 			}
 		}

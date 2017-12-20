@@ -40,7 +40,7 @@ func generateParamsDocLookup() {
 
 	doc := make(map[string]map[string]string)
 	for _, cmd := range cmdsData {
-		key := fmt.Sprintf("%s%s", cmd.Action, cmd.Entity)
+		key := fmt.Sprintf("%s.%s", cmd.Action, cmd.Entity)
 		if doc[key] == nil {
 			doc[key] = make(map[string]string)
 		}

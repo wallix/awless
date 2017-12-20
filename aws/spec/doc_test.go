@@ -19,7 +19,7 @@ func TestDocForEachParam(t *testing.T) {
 	for name, def := range AWSTemplatesDefinitions {
 		params, opts := params.List(def.Params)
 		for _, param := range append(params, opts...) {
-			if doc, ok := awsdoc.TemplateParamsDoc(name, param); !ok || doc == "" {
+			if doc, ok := awsdoc.TemplateParamsDoc(def.Action, def.Entity, param); !ok || doc == "" {
 				t.Fatalf("missing documentation for param '%s' for '%s'", param, name)
 			}
 		}
