@@ -72,22 +72,22 @@ func (cmd *CreateKeypair) BeforeRun(renv env.Running) error {
 		encryptedMsg = " encrypted"
 	}
 
-	cmd.logger.Infof("Generating locally a%s RSA 4096 bits keypair...", encryptedMsg)
+	privKeyPath := filepath.Join(os.Getenv(keyDirEnv), StringValue(cmd.Name)+".pem")
+	if _, err := os.Stat(privKeyPath); err == nil {
+		return fmt.Errorf("saving private key: file already exists at path: %s", privKeyPath)
+	}
+
+	cmd.logger.Infof("Generating locally%s 4096 RSA at %s", encryptedMsg, privKeyPath)
 	start := time.Now()
 	pub, priv, err := console.GenerateSSHKeyPair(4096, encrypted)
 	cmd.logger.ExtraVerbosef("4096 bits key generation took %s", time.Since(start))
 	if err != nil {
 		return fmt.Errorf("generating key: %s", err)
 	}
-	privKeyPath := filepath.Join(os.Getenv(keyDirEnv), StringValue(cmd.Name)+".pem")
-	if _, err = os.Stat(privKeyPath); err == nil {
-		return fmt.Errorf("saving private key: file already exists at path: %s", privKeyPath)
-	}
 	if err = ioutil.WriteFile(privKeyPath, priv, 0400); err != nil {
 		return fmt.Errorf("saving private key: %s", err)
 	}
 	cmd.PublicKeyMaterial = pub
-	cmd.logger.Infof("4096 RSA keypair generated locally and stored%s in '%s'", encryptedMsg, privKeyPath)
 	return nil
 }
 
