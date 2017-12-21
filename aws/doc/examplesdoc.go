@@ -25,110 +25,110 @@ func exampleDoc(key string) string {
 }
 
 var cliExamplesDoc = map[string][]string{
-	"attachalarm":         {},
-	"attachcontainertask": {},
-	"attachelasticip": {
-		"attach elasticip id=eipalloc-1c517b26 instance=@redis",
+	"attach.alarm":         {},
+	"attach.containertask": {},
+	"attach.elasticip": {
+		"awless attach elasticip id=eipalloc-1c517b26 instance=@redis",
 	},
-	"attachinstance": {},
-	"attachinstanceprofile": {
-		"attach instanceprofile instance=@redis name=MyProfile replace=true",
+	"attach.instance": {},
+	"attach.instanceprofile": {
+		"awless attach instanceprofile instance=@redis name=MyProfile replace=true",
 	},
-	"attachinternetgateway": {
-		"attach internetgateway id=igw-636c0504 vpc=vpc-1aba387c",
+	"attach.internetgateway": {
+		"awless attach internetgateway id=igw-636c0504 vpc=vpc-1aba387c",
 	},
-	"attachpolicy": {
+	"attach.policy": {
 		"awless attach policy role=MyNewRole service=ec2 access=readonly",
 		"awless attach policy user=jsmith service=s3 access=readonly",
 	},
-	"attachrole": {
-		"attach role instanceprofile=MyProfile name=MyRole",
+	"attach.role": {
+		"awless attach role instanceprofile=MyProfile name=MyRole",
 	},
-	"attachroutetable": {
-		"attach routetable id=rtb-306da254 subnet=@my-subnet",
+	"attach.routetable": {
+		"awless attach routetable id=rtb-306da254 subnet=@my-subnet",
 	},
-	"attachsecuritygroup": {
-		"attach securitygroup id=sg-0714247d instance=@redis",
+	"attach.securitygroup": {
+		"awless attach securitygroup id=sg-0714247d instance=@redis",
 	},
-	"attachuser": {
-		"attach user name=jsmith group=AdminGroup",
+	"attach.user": {
+		"awless attach user name=jsmith group=AdminGroup",
 	},
-	"attachvolume": {
-		"attach volume id=vol-123oefwejf device=/dev/sdh instance=@redis",
+	"attach.volume": {
+		"awless attach volume id=vol-123oefwejf device=/dev/sdh instance=@redis",
 	},
-	"authenticateregistry": {
+	"authenticate.registry": {
 		"awless authenticate registry",
 	},
-	"checkdatabase": {
+	"check.database": {
 		"awless check database id=@mydb state=available timeout=180",
 	},
-	"checkdistribution": {
+	"check.distribution": {
 		"awless check distribution id=@mydistr state=Deployed timeout=180",
 	},
-	"checkinstance": {
+	"check.instance": {
 		"awless check instance id=@redis state=running timeout=180",
 	},
-	"checkloadbalancer": {
+	"check.loadbalancer": {
 		"awless check loadbalancer id=@myloadb state=active timeout=180",
 	},
-	"checknatgateway": {
+	"check.natgateway": {
 		"awless check natgateway id=@mynat state=active timeout=180",
 	},
-	"checkscalinggroup": {
+	"check.scalinggroup": {
 		"awless check scalinggroup name=MyAutoScalingGroup count=3 timeout=180",
 	},
-	"checksecuritygroup": {
+	"check.securitygroup": {
 		"awless check securitygroup id=@mysshsecgroup state=unused timeout=180",
 	},
-	"checkvolume": {
+	"check.volume": {
 		"awless check volume id=vol-12r1o3rp state=available timeout=180",
 	},
-	"copyimage": {
+	"copy.image": {
 		"awless copy image name=my-ami-name source-id=ami-23or2or source-region=us-west-2",
 	},
-	"copysnapshot": {
+	"copy.snapshot": {
 		"awless copy snapshot source-id=efwqwdr2or source-region=us-west-2",
 	},
-	"createaccesskey": {
+	"create.accesskey": {
 		"awless create accesskey user=jsmith no-prompt=true",
 	},
-	"createalarm": {
+	"create.alarm": {
 		" awless create alarm namespace=AWS/EC2 dimensions=AutoScalingGroupName:instancesScalingGroup evaluation-periods=2 metric=CPUUtilization name=scaleinAlarm operator=GreaterThanOrEqualToThreshold period=300 statistic-function=Average threshold=75",
 	},
-	"createappscalingpolicy": {
+	"create.appscalingpolicy": {
 		" awless create appscalingpolicy dimension=ecs:service:DesiredCount name=ScaleOutPolicy resource=service/my-ecs-cluster/my-service-deployment-name service-namespace=ecs stepscaling-adjustment-type=ChangeInCapacity stepscaling-adjustments=0::+1 type=StepScaling stepscaling-aggregation-type=Average stepscaling-cooldown=60",
 	},
-	"createappscalingtarget": {
+	"create.appscalingtarget": {
 		"awless create appscalingtarget dimension=ecs:service:DesiredCount min-capacity=2 max-capacity=10 resource=service/my-ecs-cluster/my-service-deployment-nameource role=arn:aws:iam::519101889238:role/ecsAutoscaleRole service-namespace=ecs",
 	},
-	"createbucket": {
+	"create.bucket": {
 		"awless create bucket name=my-bucket-name acl=public-read",
 	},
-	"createcontainercluster": {
+	"create.containercluster": {
 		"awless create containercluster name=mycluster",
 	},
-	"createdatabase": {
+	"create.database": {
 		"awless create database engine=postgres id=mystartup-prod-db subnetgroup=@my-dbsubnetgroup password=notsafe dbname=mydb size=5 type=db.t2.small username=admin vpcsecuritygroups=@postgres_sg",
 	},
-	"createdbsubnetgroup": {
+	"create.dbsubnetgroup": {
 		"awless create dbsubnetgroup name=mydbsubnetgroup description=\"subnets for peps db\" subnets=[@my-firstsubnet, @my-secondsubnet]",
 	},
-	"createdistribution": {
+	"create.distribution": {
 		"awless create distribution origin-domain=mybucket.s3.amazonaws.com",
 	},
-	"createelasticip": {
+	"create.elasticip": {
 		"awless create elasticip domain=vpc",
 	},
-	"createfunction": {},
-	"creategroup": {
+	"create.function": {},
+	"create.group": {
 		"awless create name=admins",
 	},
-	"createimage": {
+	"create.image": {
 		"awless create image instance=@my-instance-name name=redis-image description='redis prod image'",
 		"awless create image instance=i-0ee436a45561c04df name=redis-image reboot=true",
 		"awless create image instance=@redis-prod name=redis-prod-image",
 	},
-	"createinstance": {
+	"create.instance": {
 		"awless create instance keypair=jsmith type=t2.micro subnet=@my-subnet",
 		"awless create instance image=ami-123456 keypair=jsmith",
 		"awless create instance name=redis type=t2.nano keypair=jsmith userdata=/home/jsmith/data.sh",
@@ -140,124 +140,126 @@ var cliExamplesDoc = map[string][]string{
 		"awless create instance distro=amazonlinux securitygroup=@my-ssh-secgroup",
 		"awless create instance distro=amazonlinux:::::instance-store",
 	},
-	"createinstanceprofile":     {},
-	"createinternetgateway":     {},
-	"createkeypair":             {},
-	"createlaunchconfiguration": {},
-	"createlistener":            {},
-	"createloadbalancer":        {},
-	"createloginprofile":        {},
-	"createnatgateway":          {},
-	"createpolicy":              {},
-	"createqueue":               {},
-	"createrecord":              {},
-	"createrepository":          {},
-	"createrole":                {},
-	"createroute":               {},
-	"createroutetable":          {},
-	"creates3object":            {},
-	"createscalinggroup":        {},
-	"createscalingpolicy":       {},
-	"createsecuritygroup": {
+	"create.instanceprofile":     {},
+	"create.internetgateway":     {},
+	"create.keypair":             {},
+	"create.launchconfiguration": {},
+	"create.listener":            {},
+	"create.loadbalancer":        {},
+	"create.loginprofile":        {},
+	"create.natgateway":          {},
+	"create.policy":              {},
+	"create.queue":               {},
+	"create.record":              {},
+	"create.repository":          {},
+	"create.role":                {},
+	"create.route":               {},
+	"create.routetable":          {},
+	"create.s3object":            {},
+	"create.scalinggroup":        {},
+	"create.scalingpolicy":       {},
+	"create.securitygroup": {
 		"awless create securitygroup vpc=@myvpc name=ssh-only description=ssh-access",
 		"(... see more params at `awless update securitygroup -h`)",
 	},
-	"createsnapshot":            {},
-	"createstack":               {},
-	"createsubnet":              {},
-	"createsubscription":        {},
-	"createtag":                 {},
-	"createtargetgroup":         {},
-	"createtopic":               {},
-	"createuser":                {},
-	"createvolume":              {},
-	"createvpc":                 {},
-	"createzone":                {},
-	"deleteaccesskey":           {},
-	"deletealarm":               {},
-	"deleteappscalingpolicy":    {},
-	"deleteappscalingtarget":    {},
-	"deletebucket":              {},
-	"deletecontainercluster":    {},
-	"deletecontainertask":       {},
-	"deletedatabase":            {},
-	"deletedbsubnetgroup":       {},
-	"deletedistribution":        {},
-	"deleteelasticip":           {},
-	"deletefunction":            {},
-	"deletegroup":               {},
-	"deleteimage":               {},
-	"deleteinstance":            {},
-	"deleteinstanceprofile":     {},
-	"deleteinternetgateway":     {},
-	"deletekeypair":             {},
-	"deletelaunchconfiguration": {},
-	"deletelistener":            {},
-	"deleteloadbalancer":        {},
-	"deleteloginprofile":        {},
-	"deletenatgateway":          {},
-	"deletepolicy":              {},
-	"deletequeue":               {},
-	"deleterecord":              {},
-	"deleterepository":          {},
-	"deleterole":                {},
-	"deleteroute":               {},
-	"deleteroutetable":          {},
-	"deletes3object":            {},
-	"deletescalinggroup":        {},
-	"deletescalingpolicy":       {},
-	"deletesecuritygroup":       {},
-	"deletesnapshot":            {},
-	"deletestack":               {},
-	"deletesubnet":              {},
-	"deletesubscription":        {},
-	"deletetag":                 {},
-	"deletetargetgroup":         {},
-	"deletetopic":               {},
-	"deleteuser":                {},
-	"deletevolume":              {},
-	"deletevpc":                 {},
-	"deletezone":                {},
-	"detachalarm":               {},
-	"detachcontainertask":       {},
-	"detachelasticip":           {},
-	"detachinstance":            {},
-	"detachinstanceprofile":     {},
-	"detachinternetgateway":     {},
-	"detachpolicy":              {},
-	"detachrole":                {},
-	"detachroutetable":          {},
-	"detachsecuritygroup":       {},
-	"detachuser":                {},
-	"detachvolume":              {},
-	"importimage":               {},
-	"startalarm":                {},
-	"startcontainertask":        {},
-	"startinstance":             {},
-	"stopalarm":                 {},
-	"stopcontainertask":         {},
-	"stopinstance":              {},
-	"updatebucket":              {},
-	"updatecontainertask":       {},
-	"updatedistribution":        {},
-	"updateinstance":            {},
-	"updateimage": {
+	"create.snapshot":            {},
+	"create.stack":               {},
+	"create.subnet":              {},
+	"create.subscription":        {},
+	"create.tag":                 {},
+	"create.targetgroup":         {},
+	"create.topic":               {},
+	"create.user":                {},
+	"create.volume":              {},
+	"create.vpc":                 {},
+	"create.zone":                {},
+	"delete.accesskey":           {},
+	"delete.alarm":               {},
+	"delete.appscalingpolicy":    {},
+	"delete.appscalingtarget":    {},
+	"delete.bucket":              {},
+	"delete.containercluster":    {},
+	"delete.containertask":       {},
+	"delete.database":            {},
+	"delete.dbsubnetgroup":       {},
+	"delete.distribution":        {},
+	"delete.elasticip":           {},
+	"delete.function":            {},
+	"delete.group":               {},
+	"delete.image":               {},
+	"delete.instance":            {},
+	"delete.instanceprofile":     {},
+	"delete.internetgateway":     {},
+	"delete.keypair":             {},
+	"delete.launchconfiguration": {},
+	"delete.listener":            {},
+	"delete.loadbalancer":        {},
+	"delete.loginprofile":        {},
+	"delete.natgateway":          {},
+	"delete.policy":              {},
+	"delete.queue":               {},
+	"delete.record":              {},
+	"delete.repository":          {},
+	"delete.role":                {},
+	"delete.route":               {},
+	"delete.routetable":          {},
+	"delete.s3object":            {},
+	"delete.scalinggroup":        {},
+	"delete.scalingpolicy":       {},
+	"delete.securitygroup":       {},
+	"delete.snapshot":            {},
+	"delete.stack":               {},
+	"delete.subnet":              {},
+	"delete.subscription":        {},
+	"delete.tag":                 {},
+	"delete.targetgroup":         {},
+	"delete.topic":               {},
+	"delete.user": {
+		"awless delete user name=john",
+	},
+	"delete.volume":          {},
+	"delete.vpc":             {},
+	"delete.zone":            {},
+	"detach.alarm":           {},
+	"detach.containertask":   {},
+	"detach.elasticip":       {},
+	"detach.instance":        {},
+	"detach.instanceprofile": {},
+	"detach.internetgateway": {},
+	"detach.policy":          {},
+	"detach.role":            {},
+	"detach.routetable":      {},
+	"detach.securitygroup":   {},
+	"detach.user":            {},
+	"detach.volume":          {},
+	"import.image":           {},
+	"start.alarm":            {},
+	"start.containertask":    {},
+	"start.instance":         {},
+	"stop.alarm":             {},
+	"stop.containertask":     {},
+	"stop.instance":          {},
+	"update.bucket":          {},
+	"update.containertask":   {},
+	"update.distribution":    {},
+	"update.instance":        {},
+	"update.image": {
 		"awless update image id=@my-image description=new-description # Make an AMI public",
 		"awless update image id=ami-bd6bb2c5 groups=all operation=add # Make an AMI private",
 		"awless update image id=ami-bd6bb2c5 groups=all operation=remove # Grants launch permission to an AWS account",
 		"awless update image id=@my-image accounts=3456728198326 operation=add # Remove launch permission to multiple AWS accounts",
 		"awless update image id=@my-image accounts=[3456728198326,546371829387] operation=remove",
 	},
-	"updateloginprofile": {},
-	"updatepolicy":       {},
-	"updaterecord":       {},
-	"updates3object":     {},
-	"updatescalinggroup": {},
-	"updatesecuritygroup": {
+	"update.loginprofile": {},
+	"update.policy":       {},
+	"update.record":       {},
+	"update.s3object":     {},
+	"update.scalinggroup": {},
+	"update.securitygroup": {
 		"awless update securitygroup id=@ssh-only inbound=authorize protocol=tcp cidr=0.0.0.0/0 portrange=26257",
 		"awless update securitygroup id=@ssh-only inbound=authorize protocol=tcp securitygroup=sg-123457 portrange=8080",
 	},
-	"updatestack":       {},
-	"updatesubnet":      {},
-	"updatetargetgroup": {},
+	"update.stack":       {},
+	"update.subnet":      {},
+	"update.targetgroup": {},
 }
