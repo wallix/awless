@@ -23,6 +23,7 @@ import (
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -125,6 +126,12 @@ func (s *sessionResolver) resolve() (*session.Session, error) {
 	if s.enableRequestsFullLogging {
 		session.Config = session.Config.WithLogLevel(awssdk.LogDebugWithHTTPBody)
 	}
+
+	session.Handlers.Retry.PushFront(func(req *request.Request) {
+		if req.IsErrorThrottle() && s.logger != nil {
+			s.logger.Verbosef("retrying %s: %s: %s", req.Operation.Name, req.Error.(awserr.Error).Code(), req.Error.(awserr.Error).Message())
+		}
+	})
 
 	if s.enableNetworkMonitorRequestsHandlers {
 		session.Handlers.Send.PushFront(func(r *request.Request) {
