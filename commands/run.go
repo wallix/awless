@@ -302,18 +302,22 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 		var paramsStr bytes.Buffer
 		allParams, optParams := params.List(templDef.Params)
+		tab := tabwriter.NewWriter(&paramsStr, 0, 0, 3, '.', 0)
 		for _, p := range allParams {
-			paramsStr.WriteString(fmt.Sprintf("\n  %s", p))
+			fmt.Fprintf(tab, "  %s\t", p)
 			if d, ok := awsdoc.TemplateParamsDocWithEnums(templDef.Action, templDef.Entity, p); ok {
-				paramsStr.WriteString(fmt.Sprintf(": %s", d))
+				fmt.Fprintf(tab, " %s", d)
 			}
+			fmt.Fprintln(tab)
 		}
 		for _, p := range optParams {
-			paramsStr.WriteString(fmt.Sprintf("\n  [%s]", p))
+			fmt.Fprintf(tab, "  [%s]\t", p)
 			if d, ok := awsdoc.TemplateParamsDocWithEnums(templDef.Action, templDef.Entity, p); ok {
-				paramsStr.WriteString(fmt.Sprintf(": %s", d))
+				fmt.Fprintf(tab, " %s", d)
 			}
+			fmt.Fprintln(tab)
 		}
+		tab.Flush()
 
 		var validArgs []string
 		for _, param := range append(allParams, optParams...) {
@@ -324,7 +328,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 			PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 			Short:             fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity),
-			Long:              fmt.Sprintf("Params: %s\n\nParams patterns:\n  %s", paramsStr.String(), templDef.Params),
+			Long:              fmt.Sprintf("Params: \n%s\nParams patterns:\n  %s", paramsStr.String(), templDef.Params),
 			Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
 			RunE:              run(templDef),
 			ValidArgs:         validArgs,
