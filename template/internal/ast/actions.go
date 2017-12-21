@@ -12,8 +12,9 @@ const (
 
 	Check Action = "check"
 
-	Start Action = "start"
-	Stop  Action = "stop"
+	Start   Action = "start"
+	Restart Action = "restart"
+	Stop    Action = "stop"
 
 	Attach Action = "attach"
 	Detach Action = "detach"
@@ -31,6 +32,7 @@ var actions = map[Action]struct{}{
 	Update:       {},
 	Check:        {},
 	Start:        {},
+	Restart:      {},
 	Stop:         {},
 	Attach:       {},
 	Detach:       {},

@@ -433,6 +433,12 @@ var manualParamsDoc = map[string]map[string]string{
 		"license":      "The license type to be used for the Amazon Machine Image (AMI) after importing",
 		"platform":     "The operating system of the virtual machine",
 	},
+	"restart.instance": {
+		"id": "The ID of the instance to be restarted",
+	},
+	"restart.database": {
+		"with-failover": "When true, the reboot is conducted through a MultiAZ failover",
+	},
 	"start.containertask": {
 		"cluster":                     "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your task",
 		"type":                        "The type of task to launch",
@@ -444,11 +450,17 @@ var manualParamsDoc = map[string]map[string]string{
 		"deployment-name": "The deployment name of the service (e.g. prod, staging...)",
 		"role":            "The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon ECS to make calls to your load balancer on your behalf",
 	},
+	"start.instance": {
+		"id": "The ID of the instance to be started",
+	},
 	"stop.containertask": {
 		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster on which to run your task",
 		"type":            "The type of task to launch",
 		"deployment-name": "The deployment name of the service (e.g. prod, staging...)",
 		"run-arn":         "The ID or full Amazon Resource Name (ARN) entry of the run of the task to stop",
+	},
+	"stop.instance": {
+		"id": "The ID of the instance to be stopped",
 	},
 	"update.bucket": {
 		"name":              "The name of the bucket to update",

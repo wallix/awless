@@ -878,6 +878,18 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(ec2iface.EC2API))
 			return cmd
 		}
+	case "restartdatabase":
+		return func() interface{} {
+			cmd := awsspec.NewRestartDatabase(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(rdsiface.RDSAPI))
+			return cmd
+		}
+	case "restartinstance":
+		return func() interface{} {
+			cmd := awsspec.NewRestartInstance(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(ec2iface.EC2API))
+			return cmd
+		}
 	case "startalarm":
 		return func() interface{} {
 			cmd := awsspec.NewStartAlarm(nil, f.Graph, f.Logger)

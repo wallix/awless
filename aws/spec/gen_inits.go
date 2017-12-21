@@ -317,6 +317,10 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewDetachVolume(f.Sess, f.Graph, f.Log) }
 	case "importimage":
 		return func() interface{} { return NewImportImage(f.Sess, f.Graph, f.Log) }
+	case "restartdatabase":
+		return func() interface{} { return NewRestartDatabase(f.Sess, f.Graph, f.Log) }
+	case "restartinstance":
+		return func() interface{} { return NewRestartInstance(f.Sess, f.Graph, f.Log) }
 	case "startalarm":
 		return func() interface{} { return NewStartAlarm(f.Sess, f.Graph, f.Log) }
 	case "startcontainertask":
@@ -503,6 +507,8 @@ var (
 	_ command = &DetachUser{}
 	_ command = &DetachVolume{}
 	_ command = &ImportImage{}
+	_ command = &RestartDatabase{}
+	_ command = &RestartInstance{}
 	_ command = &StartAlarm{}
 	_ command = &StartContainertask{}
 	_ command = &StartDatabase{}

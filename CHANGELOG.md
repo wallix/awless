@@ -16,6 +16,10 @@
 - [#169](https://github.com/wallix/awless/issues/169): Start/Stop a RDS database:
     * `awless start database id=my-db-id`
     * `awless stop database id=@my-db-name`
+    * `awless restart database id=@my-db-name`
+- Restart an EC2 instance
+  * `awless restart instance id=id-1234`
+  * `awless restart instance ids=@redis-prod-1,@redis-prod-2`
 
 ## v0.1.8 [2017-11-29]
 

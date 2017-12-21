@@ -122,7 +122,7 @@ func TestInstance(t *testing.T) {
 		})
 
 		t.Run("multiple ids", func(t *testing.T) {
-			Template("start instance id=id-1234,id-2345").Mock(&ec2Mock{
+			Template("start instance ids=id-1234,id-2345").Mock(&ec2Mock{
 				StartInstancesFunc: func(param0 *ec2.StartInstancesInput) (*ec2.StartInstancesOutput, error) {
 					return &ec2.StartInstancesOutput{
 						StartingInstances: []*ec2.InstanceStateChange{{InstanceId: String("id-1234")}, {InstanceId: String("id-2345")}}}, nil
@@ -144,13 +144,33 @@ func TestInstance(t *testing.T) {
 		})
 
 		t.Run("multiple ids", func(t *testing.T) {
-			Template("stop instance id=id-1234,id-2345").Mock(&ec2Mock{
+			Template("stop instance ids=id-1234,id-2345").Mock(&ec2Mock{
 				StopInstancesFunc: func(param0 *ec2.StopInstancesInput) (*ec2.StopInstancesOutput, error) {
 					return &ec2.StopInstancesOutput{
 						StoppingInstances: []*ec2.InstanceStateChange{{InstanceId: String("id-1234")}, {InstanceId: String("id-2345")}}}, nil
 				},
 			}).ExpectInput("StopInstances", &ec2.StopInstancesInput{InstanceIds: []*string{String("id-1234"), String("id-2345")}}).
 				ExpectCalls("StopInstances").Run(t)
+		})
+	})
+
+	t.Run("restart", func(t *testing.T) {
+		t.Run("one id", func(t *testing.T) {
+			Template("restart instance id=id-1234").Mock(&ec2Mock{
+				RebootInstancesFunc: func(param0 *ec2.RebootInstancesInput) (*ec2.RebootInstancesOutput, error) {
+					return &ec2.RebootInstancesOutput{}, nil
+				},
+			}).ExpectInput("RebootInstances", &ec2.RebootInstancesInput{InstanceIds: []*string{String("id-1234")}}).
+				ExpectCalls("RebootInstances").Run(t)
+		})
+
+		t.Run("multiple ids", func(t *testing.T) {
+			Template("restart instance ids=id-1234,id-2345").Mock(&ec2Mock{
+				RebootInstancesFunc: func(param0 *ec2.RebootInstancesInput) (*ec2.RebootInstancesOutput, error) {
+					return &ec2.RebootInstancesOutput{}, nil
+				},
+			}).ExpectInput("RebootInstances", &ec2.RebootInstancesInput{InstanceIds: []*string{String("id-1234"), String("id-2345")}}).
+				ExpectCalls("RebootInstances").Run(t)
 		})
 	})
 

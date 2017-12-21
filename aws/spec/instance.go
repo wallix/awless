@@ -119,13 +119,7 @@ type DeleteInstance struct {
 
 func (cmd *DeleteInstance) ParamsSpec() params.Spec {
 	builder := params.SpecBuilder(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
-	builder.AddReducer(func(values map[string]interface{}) (map[string]interface{}, error) {
-		if id, hasID := values["id"]; hasID {
-			return map[string]interface{}{"ids": id}, nil
-		} else {
-			return nil, nil
-		}
-	}, "id")
+	builder.AddReducer(idToIds, "id")
 	return builder.Done()
 }
 
@@ -134,11 +128,13 @@ type StartInstance struct {
 	logger *logger.Logger
 	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
-	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
+	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"ids"`
 }
 
 func (cmd *StartInstance) ParamsSpec() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("id")))
+	builder := params.SpecBuilder(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
+	builder.AddReducer(idToIds, "id")
+	return builder.Done()
 }
 
 func (cmd *StartInstance) ExtractResult(i interface{}) string {
@@ -150,15 +146,31 @@ type StopInstance struct {
 	logger *logger.Logger
 	graph  cloud.GraphAPI
 	api    ec2iface.EC2API
-	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"id"`
+	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"ids"`
 }
 
 func (cmd *StopInstance) ParamsSpec() params.Spec {
-	return params.NewSpec(params.AllOf(params.Key("id")))
+	builder := params.SpecBuilder(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
+	builder.AddReducer(idToIds, "id")
+	return builder.Done()
 }
 
 func (cmd *StopInstance) ExtractResult(i interface{}) string {
 	return StringValue(i.(*ec2.StopInstancesOutput).StoppingInstances[0].InstanceId)
+}
+
+type RestartInstance struct {
+	_      string `action:"restart" entity:"instance" awsAPI:"ec2" awsCall:"RebootInstances" awsInput:"ec2.RebootInstancesInput" awsOutput:"ec2.RebootInstancesOutput" awsDryRun:""`
+	logger *logger.Logger
+	graph  cloud.GraphAPI
+	api    ec2iface.EC2API
+	Id     []*string `awsName:"InstanceIds" awsType:"awsstringslice" templateName:"ids"`
+}
+
+func (cmd *RestartInstance) ParamsSpec() params.Spec {
+	builder := params.SpecBuilder(params.OnlyOneOf(params.Key("ids"), params.Key("id")))
+	builder.AddReducer(idToIds, "id")
+	return builder.Done()
 }
 
 const (
@@ -249,4 +261,12 @@ type DetachInstance struct {
 
 func (cmd *DetachInstance) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id"), params.Key("targetgroup")))
+}
+
+func idToIds(values map[string]interface{}) (map[string]interface{}, error) {
+	if id, hasID := values["id"]; hasID {
+		return map[string]interface{}{"ids": id}, nil
+	} else {
+		return nil, nil
+	}
 }

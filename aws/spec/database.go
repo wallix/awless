@@ -274,3 +274,16 @@ type StopDatabase struct {
 func (cmd *StopDatabase) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("id")))
 }
+
+type RestartDatabase struct {
+	_            string `action:"restart" entity:"database" awsAPI:"rds" awsCall:"RebootDBInstance" awsInput:"rds.RebootDBInstanceInput" awsOutput:"rds.RebootDBInstanceOutput"`
+	logger       *logger.Logger
+	graph        cloud.GraphAPI
+	api          rdsiface.RDSAPI
+	Id           *string `awsName:"DBInstanceIdentifier" awsType:"awsstr" templateName:"id"`
+	WithFailover *bool   `awsName:"ForceFailover" awsType:"awsbool" templateName:"with-failover"`
+}
+
+func (cmd *RestartDatabase) ParamsSpec() params.Spec {
+	return params.NewSpec(params.AllOf(params.Key("id"), params.Opt("with-failover")))
+}

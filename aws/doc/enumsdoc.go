@@ -145,6 +145,8 @@ var EnumDoc = map[string][]string{
 	"import.image.license":      {"AWS", "BYOL"},
 	"import.image.platform":     {"Windows", "Linux"},
 
+	"restart.database.with-failover": boolean,
+
 	"start.containertask.type": {"task", "service"},
 
 	"stop.containertask.type": {"task", "service"},

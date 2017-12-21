@@ -11402,6 +11402,185 @@ func (cmd *ImportImage) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
+func NewRestartDatabase(sess *session.Session, g cloud.GraphAPI, l ...*logger.Logger) *RestartDatabase {
+	cmd := new(RestartDatabase)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = rds.New(sess)
+	}
+	cmd.graph = g
+	return cmd
+}
+
+func (cmd *RestartDatabase) SetApi(api rdsiface.RDSAPI) {
+	cmd.api = api
+}
+
+func (cmd *RestartDatabase) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *RestartDatabase) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(renv); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	input := &rds.RebootDBInstanceInput{}
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
+		return nil, fmt.Errorf("cannot inject in rds.RebootDBInstanceInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.RebootDBInstance(input)
+	cmd.logger.ExtraVerbosef("rds.RebootDBInstance call took %s", time.Since(start))
+	if err != nil {
+		return nil, err
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			cmd.logger.Warning("restart database: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		cmd.logger.Verbosef("restart database '%s' done", extracted)
+	} else {
+		cmd.logger.Verbose("restart database done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *RestartDatabase) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	return fakeDryRunId("database"), nil
+}
+
+func (cmd *RestartDatabase) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
+func NewRestartInstance(sess *session.Session, g cloud.GraphAPI, l ...*logger.Logger) *RestartInstance {
+	cmd := new(RestartInstance)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = ec2.New(sess)
+	}
+	cmd.graph = g
+	return cmd
+}
+
+func (cmd *RestartInstance) SetApi(api ec2iface.EC2API) {
+	cmd.api = api
+}
+
+func (cmd *RestartInstance) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *RestartInstance) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(renv); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	input := &ec2.RebootInstancesInput{}
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
+		return nil, fmt.Errorf("cannot inject in ec2.RebootInstancesInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.RebootInstances(input)
+	cmd.logger.ExtraVerbosef("ec2.RebootInstances call took %s", time.Since(start))
+	if err != nil {
+		return nil, err
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			cmd.logger.Warning("restart instance: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		cmd.logger.Verbosef("restart instance '%s' done", extracted)
+	} else {
+		cmd.logger.Verbose("restart instance done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *RestartInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+	}
+
+	input := &ec2.RebootInstancesInput{}
+	input.SetDryRun(true)
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
+		return nil, fmt.Errorf("dry run: cannot inject in ec2.RebootInstancesInput: %s", err)
+	}
+
+	start := time.Now()
+	_, err := cmd.api.RebootInstances(input)
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch code := awsErr.Code(); {
+		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
+			cmd.logger.ExtraVerbosef("dry run: ec2.RebootInstances call took %s", time.Since(start))
+			cmd.logger.Verbose("dry run: restart instance ok")
+			return fakeDryRunId("instance"), nil
+		}
+	}
+
+	return nil, fmt.Errorf("dry run: %s", err)
+}
+
+func (cmd *RestartInstance) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
 func NewStartAlarm(sess *session.Session, g cloud.GraphAPI, l ...*logger.Logger) *StartAlarm {
 	cmd := new(StartAlarm)
 	if len(l) > 0 {

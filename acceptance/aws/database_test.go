@@ -116,4 +116,16 @@ func TestDatabase(t *testing.T) {
 			DBInstanceIdentifier: String("db-1234"),
 		}).ExpectCalls("StopDBInstance").Run(t)
 	})
+
+	t.Run("restart", func(t *testing.T) {
+		Template("restart database id=db-1234 with-failover=true").
+			Mock(&rdsMock{
+				RebootDBInstanceFunc: func(param0 *rds.RebootDBInstanceInput) (*rds.RebootDBInstanceOutput, error) {
+					return nil, nil
+				},
+			}).ExpectInput("RebootDBInstance", &rds.RebootDBInstanceInput{
+			DBInstanceIdentifier: String("db-1234"),
+			ForceFailover:        Bool(true),
+		}).ExpectCalls("RebootDBInstance").Run(t)
+	})
 }

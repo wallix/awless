@@ -509,6 +509,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"platform":     "The operating system of the virtual machine",
 		"role":         "The name of the role to use when not using the default role, 'vmimport'",
 	},
+	"restart.database": {
+		"id": "Contains a user-supplied database identifier",
+	},
+	"restart.instance": {
+		"ids": "One or more instance IDs",
+	},
 	"start.alarm": {
 		"names": "The names of the alarms",
 	},
@@ -517,7 +523,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id": "Contains a user-supplied database identifier",
 	},
 	"start.instance": {
-		"id": "One or more instance IDs",
+		"ids": "One or more instance IDs",
 	},
 	"stop.alarm": {
 		"names": "The names of the alarms",
@@ -527,7 +533,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id": "Contains a user-supplied database identifier",
 	},
 	"stop.instance": {
-		"id": "One or more instance IDs",
+		"ids": "One or more instance IDs",
 	},
 	"update.bucket": {},
 	"update.containertask": {
