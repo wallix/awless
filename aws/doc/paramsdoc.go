@@ -414,7 +414,7 @@ var manualParamsDoc = map[string]map[string]string{
 
 	"detach.policy": {
 		"access":  "Type of access to retrieve an AWS policy",
-		"service": "Service string to retrieve an AWS policy. Ex: 'ec2', 'cloudfront', 'rds'",
+		"service": "Service string to retrieve an AWS policy",
 		"arn":     "The Amazon Resource Name (ARN) of the IAM policy you want to detach",
 		"user":    "The name (friendly name, not ARN) of the IAM user to detach the policy to",
 		"group":   "The name (friendly name, not ARN) of the IAM group to detach the policy to",
