@@ -30,21 +30,22 @@ func init() {
 }
 
 var switchCmd = &cobra.Command{
-	Use:     "switch REGION/PROFILE",
+	Use:     "switch [REGION] [PROFILE]",
 	Aliases: []string{"sw"},
-	Short:   "Quick way to switch to profiles and regions",
-	Example: `  awless switch eu-west-2         # equivalent to 'awless config set aws.region eu-west-2'
-  awless switch mfa               # equivalent to 'awless config set aws.profile mfa', if mfa is a valid profile in ~/.aws/{config,credentials}
-  awless sw default us-west-1     # switch in region 'us-west-1', with profile 'default'`,
+	Short:   "Quick way to switch awless config to given profile and/or region",
+	Example: `  awless switch eu-west-2           # now using region eu-west-2'
+  awless switch mfa                 # now using profile mfa (with mfa a valid profile in ~/.aws/{config,credentials})
+  awless switch default us-west-1   # now using region us-west-1 and the default profile
+  awless sw eu-west-3 admin         # now using profile admin in region eu-west-3`,
 	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook),
 	PersistentPostRun: applyHooks(includeHookIf(&config.TriggerSyncOnConfigUpdate, initCloudServicesHook)),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("REGION or PROFILE required. See examples.")
+			return errors.New("REGION and/or PROFILE required. See examples.")
 		}
 		if len(args) > 2 {
-			return errors.New("two many arguments provided, expected REGION or PROFILE. See examples.")
+			return errors.New("too many arguments provided, expected REGION and/or PROFILE. See examples.")
 		}
 		for _, arg := range args {
 			if awsconfig.IsValidRegion(arg) {

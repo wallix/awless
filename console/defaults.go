@@ -247,6 +247,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.ID},
 		StringColumnDefinition{Prop: properties.Name},
 		StringColumnDefinition{Prop: properties.AvailabilityZone, Friendly: "Zone"},
+		StringColumnDefinition{Prop: properties.Zone, Friendly: "HostedZone"},
 		StringColumnDefinition{Prop: properties.Class},
 		ColoredValueColumnDefinition{
 			StringColumnDefinition: StringColumnDefinition{Prop: properties.State},
