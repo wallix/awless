@@ -43,6 +43,7 @@ import (
 	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/match"
+	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
@@ -245,7 +246,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 			invalidEntityErr := fmt.Errorf("invalid entity '%s'", args[0])
 
-			_, resources := resolveResourceFromRefInCurrentRegion(args[0])
+			_, resources, matchingProperty := resolveResourceFromRefInCurrentRegion(args[0])
 			if len(resources) != 1 {
 				return invalidEntityErr
 			}
@@ -254,7 +255,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			if !ok {
 				return invalidEntityErr
 			}
-			templ, err := suggestFixParsingError(templDef, args, invalidEntityErr)
+			templ, err := suggestFixParsingError(templDef, args, matchingProperty, invalidEntityErr)
 			exitOn(err)
 
 			tplExec := &template.TemplateExecution{
@@ -280,7 +281,11 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 
 				templ, err := template.Parse(text)
 				if err != nil {
-					templ, err = suggestFixParsingError(def, args, err)
+					_, resources, matchingProperty := resolveResourceFromRefInCurrentRegion(args[0])
+					if len(resources) != 1 {
+						exitOn(err)
+					}
+					templ, err = suggestFixParsingError(def, args, matchingProperty, err)
 					exitOn(err)
 				}
 
@@ -569,12 +574,17 @@ func scheduleTemplate(t *template.Template, runIn, revertIn string) error {
 	return nil
 }
 
-func suggestFixParsingError(def awsspec.Definition, args []string, defaultErr error) (*template.Template, error) {
+func suggestFixParsingError(def awsspec.Definition, args []string, matchingProperty string, defaultErr error) (*template.Template, error) {
 	if len(def.Params.Required()) != 1 || len(args) != 1 {
 		return nil, defaultErr
 	}
+	propKey := def.Params.Required()[0]
+	propValue := args[0]
+	if matchingProperty == properties.Name && !strings.HasPrefix(propValue, "@") && !strings.HasSuffix(propKey, "name") {
+		propValue = "@" + propValue
+	}
 
-	suggestText := fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, def.Params.Required()[0], args[0])
+	suggestText := fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, propKey, propValue)
 
 	if !promptConfirmDefaultYes("Did you mean `awless %s` ? ", suggestText) {
 		return nil, defaultErr

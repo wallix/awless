@@ -236,7 +236,7 @@ func runFullSync() {
 }
 
 func findResourceInLocalGraphs(ref string) (cloud.Resource, cloud.GraphAPI) {
-	g, resources := resolveResourceFromRefInCurrentRegion(ref)
+	g, resources, _ := resolveResourceFromRefInCurrentRegion(ref)
 	switch len(resources) {
 	case 0:
 		return nil, nil
@@ -259,45 +259,45 @@ func findResourceInLocalGraphs(ref string) (cloud.Resource, cloud.GraphAPI) {
 	return nil, nil
 }
 
-func resolveResourceFromRefInCurrentRegion(ref string) (cloud.GraphAPI, []cloud.Resource) {
+func resolveResourceFromRefInCurrentRegion(ref string) (cloud.GraphAPI, []cloud.Resource, string) {
 	g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
 	exitOn(err)
 	return resolveResourceFromRef(g, ref)
 }
 
-func resolveResourceFromRefInAllLocalRegion(ref string) (cloud.GraphAPI, []cloud.Resource) {
+func resolveResourceFromRefInAllLocalRegion(ref string) (cloud.GraphAPI, []cloud.Resource, string) {
 	g, err := sync.LoadAllLocalGraphs()
 	exitOn(err)
 	return resolveResourceFromRef(g, ref)
 }
 
-func resolveResourceFromRef(g cloud.GraphAPI, ref string) (cloud.GraphAPI, []cloud.Resource) {
+func resolveResourceFromRef(g cloud.GraphAPI, ref string) (cloud.GraphAPI, []cloud.Resource, string) {
 	name := deprefix(ref)
 
 	if strings.HasPrefix(ref, "@") {
 		logger.Verbosef("prefixed with @: forcing research by name '%s'", name)
 		rs, err := g.FindWithProperties(map[string]interface{}{properties.Name: name})
 		exitOn(err)
-		return g, rs
+		return g, rs, properties.Name
 	}
 	rs, err := g.FindWithProperties(map[string]interface{}{properties.ID: name})
 	exitOn(err)
 
 	if len(rs) > 0 {
-		return g, rs
+		return g, rs, properties.ID
 	}
 
 	rs, err = g.FindWithProperties(map[string]interface{}{properties.Arn: name})
 	exitOn(err)
 
 	if len(rs) > 0 {
-		return g, rs
+		return g, rs, properties.Arn
 	}
 
 	rs, err = g.FindWithProperties(map[string]interface{}{properties.Name: name})
 	exitOn(err)
 
-	return g, rs
+	return g, rs, properties.Name
 }
 
 func deprefix(s string) string {
@@ -306,7 +306,7 @@ func deprefix(s string) string {
 
 func decorateWithSuggestion(err error, ref string) error {
 	buf := bytes.NewBufferString(fmt.Sprintf("%s in region %s", err.Error(), config.GetAWSRegion()))
-	g, resources := resolveResourceFromRefInAllLocalRegion(ref)
+	g, resources, _ := resolveResourceFromRefInAllLocalRegion(ref)
 	for _, res := range resources {
 		parents, err := g.ResourceRelations(res, rdf.ParentOf, true)
 		if err != nil {
