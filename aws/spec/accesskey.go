@@ -122,12 +122,10 @@ type DeleteAccesskey struct {
 }
 
 func (cmd *DeleteAccesskey) ParamsSpec() params.Spec {
-	builder := params.SpecBuilder(params.AllOf(params.Key("id"),
-		params.Opt("user"),
-	))
+	builder := params.SpecBuilder(params.AtLeastOneOf(params.Key("id"), params.Key("user")))
 	builder.AddReducer(
 		func(values map[string]interface{}) (map[string]interface{}, error) {
-			_, hasUser := values["user"].(string)
+			user, hasUser := values["user"].(string)
 			id, hasId := values["id"].(string)
 			if !hasUser && hasId {
 				r, err := cmd.graph.FindOne(cloud.NewQuery(cloud.AccessKey).Match(match.Property(properties.ID, id)))
@@ -137,6 +135,26 @@ func (cmd *DeleteAccesskey) ParamsSpec() params.Spec {
 				if keyUser, ok := r.Property(properties.Username); ok {
 					values["user"] = keyUser
 				}
+			} else if hasUser && !hasId {
+				keys, err := cmd.api.ListAccessKeys(&iam.ListAccessKeysInput{
+					UserName: String(user),
+				})
+				if err != nil {
+					return values, fmt.Errorf("can not find access key for %s: %s", user, err)
+				}
+				switch len(keys.AccessKeyMetadata) {
+				case 0:
+					return values, fmt.Errorf("no access key found for %s:", user)
+				case 1:
+					values["id"] = StringValue(keys.AccessKeyMetadata[0].AccessKeyId)
+				default:
+					var keysStr []string
+					for _, k := range keys.AccessKeyMetadata {
+						keysStr = append(keysStr, fmt.Sprintf("%s (created on %s)", StringValue(k.AccessKeyId), aws.TimeValue(k.CreateDate).Format("2006/01/02 15:04:05")))
+					}
+					return values, fmt.Errorf("multiple access keys found for %s: %s", user, strings.Join(keysStr, ", "))
+				}
+
 			}
 			return values, nil
 		},

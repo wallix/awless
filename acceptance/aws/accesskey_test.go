@@ -97,6 +97,22 @@ aws_secret_access_key = MYSECRETKEY
 				AccessKeyId: String("ACCESSKEYID"),
 			}).ExpectCalls("DeleteAccessKey").Run(t)
 		})
+		t.Run("with user without id", func(t *testing.T) {
+			Template("delete accesskey user=myusername").
+				Mock(&iamMock{
+					DeleteAccessKeyFunc: func(param0 *iam.DeleteAccessKeyInput) (*iam.DeleteAccessKeyOutput, error) {
+						return nil, nil
+					},
+					ListAccessKeysFunc: func(param0 *iam.ListAccessKeysInput) (*iam.ListAccessKeysOutput, error) {
+						return &iam.ListAccessKeysOutput{AccessKeyMetadata: []*iam.AccessKeyMetadata{{AccessKeyId: String("ACCESSKEYID")}}}, nil
+					},
+				}).ExpectInput("DeleteAccessKey", &iam.DeleteAccessKeyInput{
+				UserName:    String("myusername"),
+				AccessKeyId: String("ACCESSKEYID"),
+			}).ExpectInput("ListAccessKeys", &iam.ListAccessKeysInput{
+				UserName: String("myusername"),
+			}).ExpectCalls("ListAccessKeys", "DeleteAccessKey").Run(t)
+		})
 	})
 }
 
