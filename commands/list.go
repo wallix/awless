@@ -28,6 +28,7 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/console"
+	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 )
 
@@ -91,6 +92,21 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 		Short: fmt.Sprintf("[%s] List %s %s", awsservices.ServicePerResourceType[resType], strings.ToUpper(awsservices.APIPerResourceType[resType]), cloud.PluralizeResource(resType)),
 
 		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) > 0 {
+				var plural string
+				if len(args) > 1 {
+					plural = "s"
+				}
+				logger.Errorf("invalid parameter%s '%s'", plural, strings.Join(args, " "))
+				if strings.Contains(args[0], "=") {
+					if !promptConfirmDefaultYes("Did you mean `awless list %s --filter %s`? ", cloud.PluralizeResource(resType), strings.Join(args, " ")) {
+						os.Exit(1)
+					}
+					listingFiltersFlag = append(listingFiltersFlag, args...)
+				} else {
+					os.Exit(1)
+				}
+			}
 			var g cloud.GraphAPI
 
 			if localGlobalFlag {

@@ -576,14 +576,7 @@ func suggestFixParsingError(def awsspec.Definition, args []string, defaultErr er
 
 	suggestText := fmt.Sprintf("%s %s %s=%s", def.Action, def.Entity, def.Params.Required()[0], args[0])
 
-	fmt.Printf("Did you mean `awless %s` (y/n)? ", suggestText)
-	var yesorno string
-	_, err := fmt.Scanln(&yesorno)
-	if err != nil {
-		return nil, defaultErr
-	}
-
-	if yesorno = strings.ToLower(strings.TrimSpace(yesorno)); !(yesorno == "y" || yesorno == "yes") {
+	if !promptConfirmDefaultYes("Did you mean `awless %s` ? ", suggestText) {
 		return nil, defaultErr
 	}
 
@@ -640,3 +633,13 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 `
+
+func promptConfirmDefaultYes(msg string, a ...interface{}) bool {
+	var yesorno string
+	fmt.Fprintf(os.Stderr, "%s [Y/n] ", fmt.Sprintf(msg, a...))
+	fmt.Scanln(&yesorno)
+	if y := strings.TrimSpace(strings.ToLower(yesorno)); y == "y" || y == "yes" || y == "" {
+		return true
+	}
+	return false
+}
