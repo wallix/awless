@@ -57,8 +57,9 @@ type compileEnv struct {
 	*dataMap
 	lookupCommandFunc func(...string) interface{}
 	aliasFunc         func(entity, key, alias string) string
-	missingHolesFunc  func(string, []string) interface{}
+	missingHolesFunc  func(string, []string, bool) interface{}
 	log               *logger.Logger
+	paramsSuggested   int
 }
 
 func (e *compileEnv) LookupCommandFunc() func(...string) interface{} {
@@ -69,8 +70,12 @@ func (e *compileEnv) AliasFunc() func(entity, key, alias string) string {
 	return e.aliasFunc
 }
 
-func (e *compileEnv) MissingHolesFunc() func(string, []string) interface{} {
+func (e *compileEnv) MissingHolesFunc() func(string, []string, bool) interface{} {
 	return e.missingHolesFunc
+}
+
+func (e *compileEnv) ParamsSuggested() int {
+	return e.paramsSuggested
 }
 
 func (e *compileEnv) Log() *logger.Logger {
@@ -128,7 +133,7 @@ func (b *envBuilder) WithAliasFunc(fn func(entity, key, alias string) string) *e
 	return b
 }
 
-func (b *envBuilder) WithMissingHolesFunc(fn func(string, []string) interface{}) *envBuilder {
+func (b *envBuilder) WithMissingHolesFunc(fn func(string, []string, bool) interface{}) *envBuilder {
 	b.E.missingHolesFunc = fn
 	return b
 }
@@ -140,6 +145,11 @@ func (b *envBuilder) WithLookupCommandFunc(fn func(...string) interface{}) *envB
 
 func (b *envBuilder) WithLog(l *logger.Logger) *envBuilder {
 	b.E.log = l
+	return b
+}
+
+func (b *envBuilder) WithParamsSuggested(paramsSuggested int) *envBuilder {
+	b.E.paramsSuggested = paramsSuggested
 	return b
 }
 

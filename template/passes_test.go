@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wallix/awless/aws/spec"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/internal/ast"
 	"github.com/wallix/awless/template/params"
@@ -155,7 +156,7 @@ func TestResolveMissingHolesPass(t *testing.T) {
 	create instance name={redis.prod} id={redis.prod} count=3`)
 
 	var count int
-	cenv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string) interface{} {
+	cenv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) interface{} {
 		count++
 		switch in {
 		case "instance.subnet":
@@ -205,6 +206,77 @@ func TestResolveMissingHolesPass(t *testing.T) {
 		map[string]interface{}{"cidr": "10.0.0.0/24"},
 		map[string]interface{}{"id": "redis-124.32.34.54", "name": "redis-124.32.34.54", "count": 3},
 	)
+}
+
+func TestResolveMissingSuggestedPass(t *testing.T) {
+	var count int
+	tpl := `create instance subnet=sub-1234 image=ami-1a17137a type=t2.nano name=my-instance securitygroup=@my-sec-group`
+	buildingEnv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) interface{} {
+		count++
+		if !optional {
+			return nil
+		}
+		switch in {
+		case "create.instance.ip":
+			return "1.2.3.4"
+		case "create.instance.keypair":
+			return "mykeypair"
+		case "create.instance.lock":
+			return "true"
+		case "create.instance.role":
+			return "arole"
+		case "create.instance.userdata":
+			return "/path/to/my/file"
+		default:
+			t.Fatalf("unexepected parameter %s", in)
+			return nil
+		}
+	}).WithLookupCommandFunc(func(tokens ...string) interface{} {
+		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
+	})
+	cenv := buildingEnv.Build()
+
+	pass := newMultiPass(injectCommandsInNodesPass, askSuggestedParamsPass)
+
+	compiled, _, err := pass.compile(MustParse(tpl), cenv)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := count, 1; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := compiled.String(), "create instance image=ami-1a17137a keypair=mykeypair name=my-instance securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano"; got != want {
+		t.Fatalf("got \n%s, want \n%s", got, want)
+	}
+
+	count = 0
+	cenv = buildingEnv.WithParamsSuggested(env.NO_SUGGESTED).Build()
+	compiled, _, err = pass.compile(MustParse(tpl), cenv)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := count, 0; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := compiled.String(), "create instance image=ami-1a17137a name=my-instance securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano"; got != want {
+		t.Fatalf("got \n%s, want \n%s", got, want)
+	}
+
+	count = 0
+	cenv = buildingEnv.WithParamsSuggested(env.ALL_SUGGESTED).Build()
+	compiled, _, err = pass.compile(MustParse(tpl), cenv)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := count, 5; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := compiled.String(), "create instance image=ami-1a17137a ip=1.2.3.4 keypair=mykeypair lock=true name=my-instance role=arole securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano userdata=/path/to/my/file"; got != want {
+		t.Fatalf("got \n%s, want \n%s", got, want)
+	}
 }
 
 func TestResolveAliasPass(t *testing.T) {

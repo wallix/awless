@@ -2,6 +2,7 @@
 
 ### Features
 
+- Add suggested params: optional but very common params that are prompted by default. Can be disabled with `--only-required` or forced with `--interactive` to leverage smart completion for optional params
 - Automatically complete the username when deleting an access key by its ID, if it is contained in the local graph model:
     * `awless delete accesskey id=ACCESSKEYID`
 - Better completion for template parameters independently of their display name

@@ -15,9 +15,10 @@ type Runner struct {
 	Log                                    *logger.Logger
 	Fillers                                []map[string]interface{}
 	AliasFunc                              func(entity, key, alias string) string
-	MissingHolesFunc                       func(string, []string) interface{}
+	MissingHolesFunc                       func(string, []string, bool) interface{}
 	CmdLookuper                            func(tokens ...string) interface{}
 	Validators                             []Validator
+	ParamsSuggested                        int
 
 	BeforeRun func(*TemplateExecution) (bool, error)
 	AfterRun  func(*TemplateExecution) error
@@ -34,7 +35,7 @@ func (ru *Runner) Run() error {
 	tplExec.SetMessage(ru.Message)
 
 	cenv := NewEnv().WithAliasFunc(ru.AliasFunc).WithMissingHolesFunc(ru.MissingHolesFunc).
-		WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).Build()
+		WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).WithParamsSuggested(ru.ParamsSuggested).Build()
 	cenv.Push(env.FILLERS, ru.Fillers...)
 
 	var err error

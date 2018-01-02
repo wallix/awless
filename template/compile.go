@@ -20,6 +20,7 @@ var (
 		checkInvalidReferenceDeclarationsPass,
 		resolveHolesPass,
 		resolveMissingHolesPass,
+		askSuggestedParamsPass,
 		resolveAliasPass,
 		inlineVariableValuePass,
 	}
@@ -31,6 +32,7 @@ var (
 		checkInvalidReferenceDeclarationsPass,
 		resolveHolesPass,
 		resolveMissingHolesPass,
+		askSuggestedParamsPass,
 		resolveAliasPass,
 		inlineVariableValuePass,
 		failOnUnresolvedHolesPass,
@@ -253,6 +255,34 @@ func resolveHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compili
 	return tpl, cenv, nil
 }
 
+func askSuggestedParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
+	type suggestedWithNode struct {
+		key       string
+		paramName string
+		node      *ast.CommandNode
+	}
+	var suggested []suggestedWithNode
+	collectSuggestedParams := func(node *ast.CommandNode) {
+		missingSuggested := node.ParamsSpec().Rule().Suggested(node.Keys(), cenv.ParamsSuggested())
+		for _, e := range missingSuggested {
+			normalized := fmt.Sprintf("%s.%s.%s", node.Action, node.Entity, e)
+			suggested = append(suggested, suggestedWithNode{key: normalized, node: node, paramName: e})
+		}
+	}
+	tpl.visitCommandNodes(collectSuggestedParams)
+	sort.Slice(suggested, func(i int, j int) bool {
+		return suggested[i].key <= suggested[j].key
+	})
+
+	for _, sug := range suggested {
+		if cenv.MissingHolesFunc() != nil {
+			if actual := cenv.MissingHolesFunc()(sug.key, []string{sug.key}, true); actual != nil {
+				sug.node.Params[sug.paramName] = ast.NewInterfaceValue(actual)
+			}
+		}
+	}
+	return tpl, cenv, nil
+}
 func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	uniqueHoles := make(map[string][]string)
 	tpl.visitHoles(func(h ast.WithHoles) {
@@ -273,7 +303,7 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 
 	for _, k := range sortedHoles {
 		if cenv.MissingHolesFunc() != nil {
-			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k])
+			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k], false)
 			cenv.Push(env.FILLERS, map[string]interface{}{k: actual})
 		}
 	}

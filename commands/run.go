@@ -56,6 +56,8 @@ var (
 	scheduleRevertInFlag    string
 	runLogMessage           string
 	listRemoteTemplatesFlag bool
+	noSuggestedParamsFlag   bool
+	allSuggestedParamsFlag  bool
 )
 
 func init() {
@@ -129,11 +131,11 @@ var runCmd = &cobra.Command{
 	},
 }
 
-func missingHolesStdinFunc() func(string, []string) interface{} {
+func missingHolesStdinFunc() func(string, []string, bool) interface{} {
 	var count int
-	return func(hole string, paramPaths []string) (response interface{}) {
+	return func(hole string, paramPaths []string, optional bool) (response interface{}) {
 		if count < 1 {
-			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion):")
+			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion, ↵ to skip optional):")
 		}
 		var docs, enums []string
 		var typedParam *awsdoc.ParamType
@@ -153,6 +155,9 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 			}
 		}
 		if len(docs) > 0 {
+			if optional {
+				fmt.Fprint(os.Stderr, "[Optional: ↵ to skip] ")
+			}
 			fmt.Fprintln(os.Stderr, strings.Join(docs, "; ")+":")
 		}
 
@@ -167,6 +172,9 @@ func missingHolesStdinFunc() func(string, []string) interface{} {
 
 		var err error
 		for response, err = askHole(hole, autocomplete); err != nil; response, err = askHole(hole, autocomplete) {
+			if optional {
+				return nil
+			}
 			logger.Errorf("invalid value: %s", err)
 		}
 		count++
@@ -341,6 +349,9 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		currentCmd.SetUsageTemplate(customCommandUsageTemplate)
 		currentCmd.SetHelpTemplate(`{{with .Short}}{{. | trimTrailingWhitespaces}}
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
+		currentCmd.Flags().BoolVar(&noSuggestedParamsFlag, "only-required", false, "Disable prompt of non-required suggested parameters")
+		currentCmd.Flags().BoolVarP(&allSuggestedParamsFlag, "interactive", "i", false, "Prompt all non-provided parameters")
+
 		actionCmd.AddCommand(currentCmd)
 	}
 

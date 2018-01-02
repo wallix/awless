@@ -53,7 +53,8 @@ func (cmd *CreateInstance) ParamsSpec() params.Spec {
 	builder := params.SpecBuilder(
 		params.AllOf(params.OnlyOneOf(params.Key("distro"), params.Key("image")),
 			params.Key("count"), params.Key("type"), params.Key("name"), params.Key("subnet"),
-			params.Opt("keypair", "ip", "userdata", "securitygroup", "lock", "role"),
+			params.Opt("ip", "userdata", "lock", "role"),
+			params.Suggested("keypair", "securitygroup"),
 		),
 		params.Validators{"ip": params.IsIP},
 	)

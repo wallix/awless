@@ -10,6 +10,12 @@ const (
 	RESOLVED_VARS
 )
 
+const (
+	DEFAULTS_SUGGESTED = iota
+	NO_SUGGESTED
+	ALL_SUGGESTED
+)
+
 type log interface {
 	Log() *logger.Logger
 }
@@ -25,7 +31,8 @@ type Compiling interface {
 	log
 	LookupCommandFunc() func(...string) interface{}
 	AliasFunc() func(entity, key, alias string) string
-	MissingHolesFunc() func(string, []string) interface{}
+	MissingHolesFunc() func(string, []string, bool) interface{}
+	ParamsSuggested() int
 	Push(int, ...map[string]interface{})
 	Get(int) map[string]interface{}
 }

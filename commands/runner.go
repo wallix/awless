@@ -13,6 +13,7 @@ import (
 	"github.com/wallix/awless/logger"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/template"
+	"github.com/wallix/awless/template/env"
 )
 
 func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[string]interface{}) *template.Runner {
@@ -27,6 +28,12 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 	runner.Fillers = fillers
 	runner.AliasFunc = resolveAliasFunc
 	runner.MissingHolesFunc = missingHolesStdinFunc()
+	if allSuggestedParamsFlag {
+		runner.ParamsSuggested = env.ALL_SUGGESTED
+	}
+	if noSuggestedParamsFlag {
+		runner.ParamsSuggested = env.NO_SUGGESTED
+	}
 
 	runner.Validators = []template.Validator{
 		&template.UniqueNameValidator{LookupGraph: func(key string) (cloud.GraphAPI, bool) {
