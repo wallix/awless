@@ -31,7 +31,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/fxaguessy/readline"
+  name = "github.com/chzyer/readline"
  
 [[constraint]]
   name = "github.com/fatih/color"
@@ -71,7 +71,7 @@
 
 [[constraint]]
   name = "gopkg.in/src-d/go-git.v4"
-  version = "4.0.0-rc13"
+  version = "=4.0.0-rc13"
 
 [[constraint]]
   branch = "master"

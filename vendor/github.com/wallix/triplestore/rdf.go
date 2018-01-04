@@ -1,7 +1,7 @@
 // Package triplestore provides APIs to manage, store and query triples, sources and RDFGraphs
 package triplestore
 
-// A triple consists of a subject, a predicate and a object
+// Triple consists of a subject, a predicate and a object
 type Triple interface {
 	Subject() string
 	Predicate() string
@@ -9,27 +9,23 @@ type Triple interface {
 	Equal(Triple) bool
 }
 
-// An object is a resource (i.e. IRI) or a literal. Note that blank node are not supported.
+// Object is a resource (i.e. IRI) or a literal. Note that blank node are not supported.
 type Object interface {
 	Literal() (Literal, bool)
 	Resource() (string, bool)
 	Equal(Object) bool
 }
 
-// A literal is a unicode string associated with a datatype (ex: string, integer, ...).
+// Literal is a unicode string associated with a datatype (ex: string, integer, ...).
 type Literal interface {
 	Type() XsdType
 	Value() string
 	Lang() string
 }
 
-type subject string
-type predicate string
-
 type triple struct {
-	sub        subject
+	sub, pred  string
 	isSubBnode bool
-	pred       predicate
 	obj        object
 	triKey     string
 }
@@ -39,22 +35,22 @@ func (t *triple) Object() Object {
 }
 
 func (t *triple) Subject() string {
-	return string(t.sub)
+	return t.sub
 }
 
 func (t *triple) Predicate() string {
-	return string(t.pred)
+	return t.pred
 }
 
 func (t *triple) key() string {
 	if t.triKey == "" {
 		var sub string
 		if t.isSubBnode {
-			sub = "_:" + string(t.sub)
+			sub = "_:" + t.sub
 		} else {
-			sub = "<" + string(t.sub) + ">"
+			sub = "<" + t.sub + ">"
 		}
-		t.triKey = sub + "<" + string(t.pred) + ">" + t.obj.key()
+		t.triKey = sub + "<" + t.pred + ">" + t.obj.key()
 		return t.triKey
 	}
 	return t.triKey
@@ -85,8 +81,7 @@ func (t *triple) Equal(other Triple) bool {
 }
 
 type object struct {
-	isLit           bool
-	isBnode         bool
+	isLit, isBnode  bool
 	resource, bnode string
 	lit             literal
 }

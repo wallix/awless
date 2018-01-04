@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -28,19 +29,22 @@ func (r *routeRegexp) GoString() string {
 }
 
 type routeTest struct {
-	title          string            // title of the test
-	route          *Route            // the route being tested
-	request        *http.Request     // a request to test the route
-	vars           map[string]string // the expected vars of the match
-	scheme         string            // the expected scheme of the built URL
-	host           string            // the expected host of the built URL
-	path           string            // the expected path of the built URL
-	pathTemplate   string            // the expected path template of the route
-	hostTemplate   string            // the expected host template of the route
-	methods        []string          // the expected route methods
-	pathRegexp     string            // the expected path regexp
-	shouldMatch    bool              // whether the request is expected to match the route at all
-	shouldRedirect bool              // whether the request should result in a redirect
+	title           string            // title of the test
+	route           *Route            // the route being tested
+	request         *http.Request     // a request to test the route
+	vars            map[string]string // the expected vars of the match
+	scheme          string            // the expected scheme of the built URL
+	host            string            // the expected host of the built URL
+	path            string            // the expected path of the built URL
+	query           string            // the expected query string of the built URL
+	pathTemplate    string            // the expected path template of the route
+	hostTemplate    string            // the expected host template of the route
+	queriesTemplate string            // the expected query template of the route
+	methods         []string          // the expected route methods
+	pathRegexp      string            // the expected path regexp
+	queriesRegexp   string            // the expected query regexp
+	shouldMatch     bool              // whether the request is expected to match the route at all
+	shouldRedirect  bool              // whether the request should result in a redirect
 }
 
 func TestHost(t *testing.T) {
@@ -737,231 +741,309 @@ func TestMethods(t *testing.T) {
 func TestQueries(t *testing.T) {
 	tests := []routeTest{
 		{
-			title:       "Queries route, match",
-			route:       new(Route).Queries("foo", "bar", "baz", "ding"),
-			request:     newRequest("GET", "http://localhost?foo=bar&baz=ding"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route, match",
+			route:           new(Route).Queries("foo", "bar", "baz", "ding"),
+			request:         newRequest("GET", "http://localhost?foo=bar&baz=ding"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			query:           "foo=bar&baz=ding",
+			queriesTemplate: "foo=bar,baz=ding",
+			queriesRegexp:   "^foo=bar$,^baz=ding$",
+			shouldMatch:     true,
 		},
 		{
-			title:        "Queries route, match with a query string",
-			route:        new(Route).Host("www.example.com").Path("/api").Queries("foo", "bar", "baz", "ding"),
-			request:      newRequest("GET", "http://www.example.com/api?foo=bar&baz=ding"),
-			vars:         map[string]string{},
-			host:         "",
-			path:         "",
-			pathTemplate: `/api`,
-			hostTemplate: `www.example.com`,
-			shouldMatch:  true,
+			title:           "Queries route, match with a query string",
+			route:           new(Route).Host("www.example.com").Path("/api").Queries("foo", "bar", "baz", "ding"),
+			request:         newRequest("GET", "http://www.example.com/api?foo=bar&baz=ding"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			query:           "foo=bar&baz=ding",
+			pathTemplate:    `/api`,
+			hostTemplate:    `www.example.com`,
+			queriesTemplate: "foo=bar,baz=ding",
+			queriesRegexp:   "^foo=bar$,^baz=ding$",
+			shouldMatch:     true,
 		},
 		{
-			title:        "Queries route, match with a query string out of order",
-			route:        new(Route).Host("www.example.com").Path("/api").Queries("foo", "bar", "baz", "ding"),
-			request:      newRequest("GET", "http://www.example.com/api?baz=ding&foo=bar"),
-			vars:         map[string]string{},
-			host:         "",
-			path:         "",
-			pathTemplate: `/api`,
-			hostTemplate: `www.example.com`,
-			shouldMatch:  true,
+			title:           "Queries route, match with a query string out of order",
+			route:           new(Route).Host("www.example.com").Path("/api").Queries("foo", "bar", "baz", "ding"),
+			request:         newRequest("GET", "http://www.example.com/api?baz=ding&foo=bar"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			query:           "foo=bar&baz=ding",
+			pathTemplate:    `/api`,
+			hostTemplate:    `www.example.com`,
+			queriesTemplate: "foo=bar,baz=ding",
+			queriesRegexp:   "^foo=bar$,^baz=ding$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route, bad query",
-			route:       new(Route).Queries("foo", "bar", "baz", "ding"),
-			request:     newRequest("GET", "http://localhost?foo=bar&baz=dong"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route, bad query",
+			route:           new(Route).Queries("foo", "bar", "baz", "ding"),
+			request:         newRequest("GET", "http://localhost?foo=bar&baz=dong"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo=bar,baz=ding",
+			queriesRegexp:   "^foo=bar$,^baz=ding$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with pattern, match",
-			route:       new(Route).Queries("foo", "{v1}"),
-			request:     newRequest("GET", "http://localhost?foo=bar"),
-			vars:        map[string]string{"v1": "bar"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with pattern, match",
+			route:           new(Route).Queries("foo", "{v1}"),
+			request:         newRequest("GET", "http://localhost?foo=bar"),
+			vars:            map[string]string{"v1": "bar"},
+			host:            "",
+			path:            "",
+			query:           "foo=bar",
+			queriesTemplate: "foo={v1}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with multiple patterns, match",
-			route:       new(Route).Queries("foo", "{v1}", "baz", "{v2}"),
-			request:     newRequest("GET", "http://localhost?foo=bar&baz=ding"),
-			vars:        map[string]string{"v1": "bar", "v2": "ding"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with multiple patterns, match",
+			route:           new(Route).Queries("foo", "{v1}", "baz", "{v2}"),
+			request:         newRequest("GET", "http://localhost?foo=bar&baz=ding"),
+			vars:            map[string]string{"v1": "bar", "v2": "ding"},
+			host:            "",
+			path:            "",
+			query:           "foo=bar&baz=ding",
+			queriesTemplate: "foo={v1},baz={v2}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$,^baz=(?P<v0>.*)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with regexp pattern, match",
-			route:       new(Route).Queries("foo", "{v1:[0-9]+}"),
-			request:     newRequest("GET", "http://localhost?foo=10"),
-			vars:        map[string]string{"v1": "10"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with regexp pattern, match",
+			route:           new(Route).Queries("foo", "{v1:[0-9]+}"),
+			request:         newRequest("GET", "http://localhost?foo=10"),
+			vars:            map[string]string{"v1": "10"},
+			host:            "",
+			path:            "",
+			query:           "foo=10",
+			queriesTemplate: "foo={v1:[0-9]+}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]+)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with regexp pattern, regexp does not match",
-			route:       new(Route).Queries("foo", "{v1:[0-9]+}"),
-			request:     newRequest("GET", "http://localhost?foo=a"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route with regexp pattern, regexp does not match",
+			route:           new(Route).Queries("foo", "{v1:[0-9]+}"),
+			request:         newRequest("GET", "http://localhost?foo=a"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo={v1:[0-9]+}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]+)$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with regexp pattern with quantifier, match",
-			route:       new(Route).Queries("foo", "{v1:[0-9]{1}}"),
-			request:     newRequest("GET", "http://localhost?foo=1"),
-			vars:        map[string]string{"v1": "1"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with regexp pattern with quantifier, match",
+			route:           new(Route).Queries("foo", "{v1:[0-9]{1}}"),
+			request:         newRequest("GET", "http://localhost?foo=1"),
+			vars:            map[string]string{"v1": "1"},
+			host:            "",
+			path:            "",
+			query:           "foo=1",
+			queriesTemplate: "foo={v1:[0-9]{1}}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]{1})$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with regexp pattern with quantifier, additional variable in query string, match",
-			route:       new(Route).Queries("foo", "{v1:[0-9]{1}}"),
-			request:     newRequest("GET", "http://localhost?bar=2&foo=1"),
-			vars:        map[string]string{"v1": "1"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with regexp pattern with quantifier, additional variable in query string, match",
+			route:           new(Route).Queries("foo", "{v1:[0-9]{1}}"),
+			request:         newRequest("GET", "http://localhost?bar=2&foo=1"),
+			vars:            map[string]string{"v1": "1"},
+			host:            "",
+			path:            "",
+			query:           "foo=1",
+			queriesTemplate: "foo={v1:[0-9]{1}}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]{1})$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with regexp pattern with quantifier, regexp does not match",
-			route:       new(Route).Queries("foo", "{v1:[0-9]{1}}"),
-			request:     newRequest("GET", "http://localhost?foo=12"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route with regexp pattern with quantifier, regexp does not match",
+			route:           new(Route).Queries("foo", "{v1:[0-9]{1}}"),
+			request:         newRequest("GET", "http://localhost?foo=12"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo={v1:[0-9]{1}}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]{1})$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with regexp pattern with quantifier, additional capturing group",
-			route:       new(Route).Queries("foo", "{v1:[0-9]{1}(?:a|b)}"),
-			request:     newRequest("GET", "http://localhost?foo=1a"),
-			vars:        map[string]string{"v1": "1a"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with regexp pattern with quantifier, additional capturing group",
+			route:           new(Route).Queries("foo", "{v1:[0-9]{1}(?:a|b)}"),
+			request:         newRequest("GET", "http://localhost?foo=1a"),
+			vars:            map[string]string{"v1": "1a"},
+			host:            "",
+			path:            "",
+			query:           "foo=1a",
+			queriesTemplate: "foo={v1:[0-9]{1}(?:a|b)}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]{1}(?:a|b))$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with regexp pattern with quantifier, additional variable in query string, regexp does not match",
-			route:       new(Route).Queries("foo", "{v1:[0-9]{1}}"),
-			request:     newRequest("GET", "http://localhost?foo=12"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route with regexp pattern with quantifier, additional variable in query string, regexp does not match",
+			route:           new(Route).Queries("foo", "{v1:[0-9]{1}}"),
+			request:         newRequest("GET", "http://localhost?foo=12"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo={v1:[0-9]{1}}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]{1})$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with hyphenated name, match",
-			route:       new(Route).Queries("foo", "{v-1}"),
-			request:     newRequest("GET", "http://localhost?foo=bar"),
-			vars:        map[string]string{"v-1": "bar"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with hyphenated name, match",
+			route:           new(Route).Queries("foo", "{v-1}"),
+			request:         newRequest("GET", "http://localhost?foo=bar"),
+			vars:            map[string]string{"v-1": "bar"},
+			host:            "",
+			path:            "",
+			query:           "foo=bar",
+			queriesTemplate: "foo={v-1}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with multiple hyphenated names, match",
-			route:       new(Route).Queries("foo", "{v-1}", "baz", "{v-2}"),
-			request:     newRequest("GET", "http://localhost?foo=bar&baz=ding"),
-			vars:        map[string]string{"v-1": "bar", "v-2": "ding"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with multiple hyphenated names, match",
+			route:           new(Route).Queries("foo", "{v-1}", "baz", "{v-2}"),
+			request:         newRequest("GET", "http://localhost?foo=bar&baz=ding"),
+			vars:            map[string]string{"v-1": "bar", "v-2": "ding"},
+			host:            "",
+			path:            "",
+			query:           "foo=bar&baz=ding",
+			queriesTemplate: "foo={v-1},baz={v-2}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$,^baz=(?P<v0>.*)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with hyphenate name and pattern, match",
-			route:       new(Route).Queries("foo", "{v-1:[0-9]+}"),
-			request:     newRequest("GET", "http://localhost?foo=10"),
-			vars:        map[string]string{"v-1": "10"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with hyphenate name and pattern, match",
+			route:           new(Route).Queries("foo", "{v-1:[0-9]+}"),
+			request:         newRequest("GET", "http://localhost?foo=10"),
+			vars:            map[string]string{"v-1": "10"},
+			host:            "",
+			path:            "",
+			query:           "foo=10",
+			queriesTemplate: "foo={v-1:[0-9]+}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]+)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with hyphenated name and pattern with quantifier, additional capturing group",
-			route:       new(Route).Queries("foo", "{v-1:[0-9]{1}(?:a|b)}"),
-			request:     newRequest("GET", "http://localhost?foo=1a"),
-			vars:        map[string]string{"v-1": "1a"},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with hyphenated name and pattern with quantifier, additional capturing group",
+			route:           new(Route).Queries("foo", "{v-1:[0-9]{1}(?:a|b)}"),
+			request:         newRequest("GET", "http://localhost?foo=1a"),
+			vars:            map[string]string{"v-1": "1a"},
+			host:            "",
+			path:            "",
+			query:           "foo=1a",
+			queriesTemplate: "foo={v-1:[0-9]{1}(?:a|b)}",
+			queriesRegexp:   "^foo=(?P<v0>[0-9]{1}(?:a|b))$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with empty value, should match",
-			route:       new(Route).Queries("foo", ""),
-			request:     newRequest("GET", "http://localhost?foo=bar"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with empty value, should match",
+			route:           new(Route).Queries("foo", ""),
+			request:         newRequest("GET", "http://localhost?foo=bar"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			query:           "foo=",
+			queriesTemplate: "foo=",
+			queriesRegexp:   "^foo=.*$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with empty value and no parameter in request, should not match",
-			route:       new(Route).Queries("foo", ""),
-			request:     newRequest("GET", "http://localhost"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route with empty value and no parameter in request, should not match",
+			route:           new(Route).Queries("foo", ""),
+			request:         newRequest("GET", "http://localhost"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo=",
+			queriesRegexp:   "^foo=.*$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with empty value and empty parameter in request, should match",
-			route:       new(Route).Queries("foo", ""),
-			request:     newRequest("GET", "http://localhost?foo="),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with empty value and empty parameter in request, should match",
+			route:           new(Route).Queries("foo", ""),
+			request:         newRequest("GET", "http://localhost?foo="),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			query:           "foo=",
+			queriesTemplate: "foo=",
+			queriesRegexp:   "^foo=.*$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route with overlapping value, should not match",
-			route:       new(Route).Queries("foo", "bar"),
-			request:     newRequest("GET", "http://localhost?foo=barfoo"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route with overlapping value, should not match",
+			route:           new(Route).Queries("foo", "bar"),
+			request:         newRequest("GET", "http://localhost?foo=barfoo"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo=bar",
+			queriesRegexp:   "^foo=bar$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with no parameter in request, should not match",
-			route:       new(Route).Queries("foo", "{bar}"),
-			request:     newRequest("GET", "http://localhost"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route with no parameter in request, should not match",
+			route:           new(Route).Queries("foo", "{bar}"),
+			request:         newRequest("GET", "http://localhost"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo={bar}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$",
+			shouldMatch:     false,
 		},
 		{
-			title:       "Queries route with empty parameter in request, should match",
-			route:       new(Route).Queries("foo", "{bar}"),
-			request:     newRequest("GET", "http://localhost?foo="),
-			vars:        map[string]string{"foo": ""},
-			host:        "",
-			path:        "",
-			shouldMatch: true,
+			title:           "Queries route with empty parameter in request, should match",
+			route:           new(Route).Queries("foo", "{bar}"),
+			request:         newRequest("GET", "http://localhost?foo="),
+			vars:            map[string]string{"foo": ""},
+			host:            "",
+			path:            "",
+			query:           "foo=",
+			queriesTemplate: "foo={bar}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$",
+			shouldMatch:     true,
 		},
 		{
-			title:       "Queries route, bad submatch",
-			route:       new(Route).Queries("foo", "bar", "baz", "ding"),
-			request:     newRequest("GET", "http://localhost?fffoo=bar&baz=dingggg"),
-			vars:        map[string]string{},
-			host:        "",
-			path:        "",
-			shouldMatch: false,
+			title:           "Queries route, bad submatch",
+			route:           new(Route).Queries("foo", "bar", "baz", "ding"),
+			request:         newRequest("GET", "http://localhost?fffoo=bar&baz=dingggg"),
+			vars:            map[string]string{},
+			host:            "",
+			path:            "",
+			queriesTemplate: "foo=bar,baz=ding",
+			queriesRegexp:   "^foo=bar$,^baz=ding$",
+			shouldMatch:     false,
+		},
+		{
+			title:           "Queries route with pattern, match, escaped value",
+			route:           new(Route).Queries("foo", "{v1}"),
+			request:         newRequest("GET", "http://localhost?foo=%25bar%26%20%2F%3D%3F"),
+			vars:            map[string]string{"v1": "%bar& /=?"},
+			host:            "",
+			path:            "",
+			query:           "foo=%25bar%26+%2F%3D%3F",
+			queriesTemplate: "foo={v1}",
+			queriesRegexp:   "^foo=(?P<v0>.*)$",
+			shouldMatch:     true,
 		},
 	}
 
 	for _, test := range tests {
 		testRoute(t, test)
 		testTemplate(t, test)
+		testQueriesTemplates(t, test)
 		testUseEscapedRoute(t, test)
+		testQueriesRegexp(t, test)
 	}
 }
 
@@ -1187,6 +1269,28 @@ func TestSubRouter(t *testing.T) {
 			pathTemplate: `/{category}`,
 			shouldMatch:  true,
 		},
+		{
+			title:        "Build with scheme on parent router",
+			route:        new(Route).Schemes("ftp").Host("google.com").Subrouter().Path("/"),
+			request:      newRequest("GET", "ftp://google.com/"),
+			scheme:       "ftp",
+			host:         "google.com",
+			path:         "/",
+			pathTemplate: `/`,
+			hostTemplate: `google.com`,
+			shouldMatch:  true,
+		},
+		{
+			title:        "Prefer scheme on child route when building URLs",
+			route:        new(Route).Schemes("https", "ftp").Host("google.com").Subrouter().Schemes("ftp").Path("/"),
+			request:      newRequest("GET", "ftp://google.com/"),
+			scheme:       "ftp",
+			host:         "google.com",
+			path:         "/",
+			pathTemplate: `/`,
+			hostTemplate: `google.com`,
+			shouldMatch:  true,
+		},
 	}
 
 	for _, test := range tests {
@@ -1382,11 +1486,55 @@ func TestWalkNested(t *testing.T) {
 	l2 := l1.PathPrefix("/l").Subrouter()
 	l2.Path("/a")
 
-	paths := []string{"/g", "/g/o", "/g/o/r", "/g/o/r/i", "/g/o/r/i/l", "/g/o/r/i/l/l", "/g/o/r/i/l/l/a"}
+	testCases := []struct {
+		path      string
+		ancestors []*Route
+	}{
+		{"/g", []*Route{}},
+		{"/g/o", []*Route{g.parent.(*Route)}},
+		{"/g/o/r", []*Route{g.parent.(*Route), o.parent.(*Route)}},
+		{"/g/o/r/i", []*Route{g.parent.(*Route), o.parent.(*Route), r.parent.(*Route)}},
+		{"/g/o/r/i/l", []*Route{g.parent.(*Route), o.parent.(*Route), r.parent.(*Route), i.parent.(*Route)}},
+		{"/g/o/r/i/l/l", []*Route{g.parent.(*Route), o.parent.(*Route), r.parent.(*Route), i.parent.(*Route), l1.parent.(*Route)}},
+		{"/g/o/r/i/l/l/a", []*Route{g.parent.(*Route), o.parent.(*Route), r.parent.(*Route), i.parent.(*Route), l1.parent.(*Route), l2.parent.(*Route)}},
+	}
+
+	idx := 0
+	err := router.Walk(func(route *Route, router *Router, ancestors []*Route) error {
+		path := testCases[idx].path
+		tpl := route.regexp.path.template
+		if tpl != path {
+			t.Errorf(`Expected %s got %s`, path, tpl)
+		}
+		currWantAncestors := testCases[idx].ancestors
+		if !reflect.DeepEqual(currWantAncestors, ancestors) {
+			t.Errorf(`Expected %+v got %+v`, currWantAncestors, ancestors)
+		}
+		idx++
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	if idx != len(testCases) {
+		t.Errorf("Expected %d routes, found %d", len(testCases), idx)
+	}
+}
+
+func TestWalkSubrouters(t *testing.T) {
+	router := NewRouter()
+
+	g := router.Path("/g").Subrouter()
+	o := g.PathPrefix("/o").Subrouter()
+	o.Methods("GET")
+	o.Methods("PUT")
+
+	// all 4 routes should be matched, but final 2 routes do not have path templates
+	paths := []string{"/g", "/g/o", "", ""}
 	idx := 0
 	err := router.Walk(func(route *Route, router *Router, ancestors []*Route) error {
 		path := paths[idx]
-		tpl := route.regexp.path.template
+		tpl, _ := route.GetPathTemplate()
 		if tpl != path {
 			t.Errorf(`Expected %s got %s`, path, tpl)
 		}
@@ -1492,6 +1640,7 @@ func testRoute(t *testing.T, test routeTest) {
 	route := test.route
 	vars := test.vars
 	shouldMatch := test.shouldMatch
+	query := test.query
 	shouldRedirect := test.shouldRedirect
 	uri := url.URL{
 		Scheme: test.scheme,
@@ -1561,6 +1710,13 @@ func testRoute(t *testing.T, test routeTest) {
 				return
 			}
 		}
+		if query != "" {
+			u, _ := route.URL(mapToPairs(match.Vars)...)
+			if query != u.RawQuery {
+				t.Errorf("(%v) URL query not equal: expected %v, got %v", test.title, query, u.RawQuery)
+				return
+			}
+		}
 		if shouldRedirect && match.Handler == nil {
 			t.Errorf("(%v) Did not redirect", test.title)
 			return
@@ -1615,20 +1771,38 @@ func testRegexp(t *testing.T, test routeTest) {
 	}
 }
 
+func testQueriesRegexp(t *testing.T, test routeTest) {
+	route := test.route
+	queries, queriesErr := route.GetQueriesRegexp()
+	gotQueries := strings.Join(queries, ",")
+	if test.queriesRegexp != "" && queriesErr == nil && gotQueries != test.queriesRegexp {
+		t.Errorf("(%v) GetQueriesRegexp not equal: expected %v, got %v", test.title, test.queriesRegexp, gotQueries)
+	}
+}
+
+func testQueriesTemplates(t *testing.T, test routeTest) {
+	route := test.route
+	queries, queriesErr := route.GetQueriesTemplates()
+	gotQueries := strings.Join(queries, ",")
+	if test.queriesTemplate != "" && queriesErr == nil && gotQueries != test.queriesTemplate {
+		t.Errorf("(%v) GetQueriesTemplates not equal: expected %v, got %v", test.title, test.queriesTemplate, gotQueries)
+	}
+}
+
 type TestA301ResponseWriter struct {
 	hh     http.Header
 	status int
 }
 
-func (ho TestA301ResponseWriter) Header() http.Header {
+func (ho *TestA301ResponseWriter) Header() http.Header {
 	return http.Header(ho.hh)
 }
 
-func (ho TestA301ResponseWriter) Write(b []byte) (int, error) {
+func (ho *TestA301ResponseWriter) Write(b []byte) (int, error) {
 	return 0, nil
 }
 
-func (ho TestA301ResponseWriter) WriteHeader(code int) {
+func (ho *TestA301ResponseWriter) WriteHeader(code int) {
 	ho.status = code
 }
 
@@ -1700,6 +1874,96 @@ func TestSubrouterHeader(t *testing.T) {
 	match.Handler.ServeHTTP(resp, req)
 	if resp.Body.String() != expected {
 		t.Errorf("Expecting %q", expected)
+	}
+}
+
+func TestNoMatchMethodErrorHandler(t *testing.T) {
+	func1 := func(w http.ResponseWriter, r *http.Request) {}
+
+	r := NewRouter()
+	r.HandleFunc("/", func1).Methods("GET", "POST")
+
+	req, _ := http.NewRequest("PUT", "http://localhost/", nil)
+	match := new(RouteMatch)
+	matched := r.Match(req, match)
+
+	if matched {
+		t.Error("Should not have matched route for methods")
+	}
+
+	if match.MatchErr != ErrMethodMismatch {
+		t.Error("Should get ErrMethodMismatch error")
+	}
+
+	resp := NewRecorder()
+	r.ServeHTTP(resp, req)
+	if resp.Code != 405 {
+		t.Errorf("Expecting code %v", 405)
+	}
+
+	// Add matching route
+	r.HandleFunc("/", func1).Methods("PUT")
+
+	match = new(RouteMatch)
+	matched = r.Match(req, match)
+
+	if !matched {
+		t.Error("Should have matched route for methods")
+	}
+
+	if match.MatchErr != nil {
+		t.Error("Should not have any matching error. Found:", match.MatchErr)
+	}
+}
+
+func TestErrMatchNotFound(t *testing.T) {
+	emptyHandler := func(w http.ResponseWriter, r *http.Request) {}
+
+	r := NewRouter()
+	r.HandleFunc("/", emptyHandler)
+	s := r.PathPrefix("/sub/").Subrouter()
+	s.HandleFunc("/", emptyHandler)
+
+	// Regular 404 not found
+	req, _ := http.NewRequest("GET", "/sub/whatever", nil)
+	match := new(RouteMatch)
+	matched := r.Match(req, match)
+
+	if matched {
+		t.Errorf("Subrouter should not have matched that, got %v", match.Route)
+	}
+	// Even without a custom handler, MatchErr is set to ErrNotFound
+	if match.MatchErr != ErrNotFound {
+		t.Errorf("Expected ErrNotFound MatchErr, but was %v", match.MatchErr)
+	}
+
+	// Now lets add a 404 handler to subrouter
+	s.NotFoundHandler = http.NotFoundHandler()
+	req, _ = http.NewRequest("GET", "/sub/whatever", nil)
+
+	// Test the subrouter first
+	match = new(RouteMatch)
+	matched = s.Match(req, match)
+	// Now we should get a match
+	if !matched {
+		t.Errorf("Subrouter should have matched %s", req.RequestURI)
+	}
+	// But MatchErr should be set to ErrNotFound anyway
+	if match.MatchErr != ErrNotFound {
+		t.Errorf("Expected ErrNotFound MatchErr, but was %v", match.MatchErr)
+	}
+
+	// Now test the parent (MatchErr should propagate)
+	match = new(RouteMatch)
+	matched = r.Match(req, match)
+
+	// Now we should get a match
+	if !matched {
+		t.Errorf("Router should have matched %s via subrouter", req.RequestURI)
+	}
+	// But MatchErr should be set to ErrNotFound anyway
+	if match.MatchErr != ErrNotFound {
+		t.Errorf("Expected ErrNotFound MatchErr, but was %v", match.MatchErr)
 	}
 }
 

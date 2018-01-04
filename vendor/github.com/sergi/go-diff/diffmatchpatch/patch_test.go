@@ -26,10 +26,10 @@ func TestPatchString(t *testing.T) {
 	for i, tc := range []TestCase{
 		{
 			Patch: Patch{
-				start1:  20,
-				start2:  21,
-				length1: 18,
-				length2: 17,
+				Start1:  20,
+				Start2:  21,
+				Length1: 18,
+				Length2: 17,
 
 				diffs: []Diff{
 					{DiffEqual, "jump"},
