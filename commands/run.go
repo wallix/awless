@@ -131,9 +131,9 @@ var runCmd = &cobra.Command{
 	},
 }
 
-func missingHolesStdinFunc() func(string, []string, bool) interface{} {
+func missingHolesStdinFunc() func(string, []string, bool) string {
 	var count int
-	return func(hole string, paramPaths []string, optional bool) (response interface{}) {
+	return func(hole string, paramPaths []string, optional bool) (response string) {
 		if count < 1 {
 			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion, ↵ to skip optional):")
 		}
@@ -173,7 +173,7 @@ func missingHolesStdinFunc() func(string, []string, bool) interface{} {
 		var err error
 		for response, err = askHole(hole, autocomplete); err != nil; response, err = askHole(hole, autocomplete) {
 			if optional {
-				return nil
+				return ""
 			}
 			logger.Errorf("invalid value: %s", err)
 		}
@@ -182,7 +182,7 @@ func missingHolesStdinFunc() func(string, []string, bool) interface{} {
 	}
 }
 
-func askHole(hole string, autocomplete readline.AutoCompleter) (interface{}, error) {
+func askHole(hole string, autocomplete readline.AutoCompleter) (string, error) {
 	l, err := readline.NewEx(&readline.Config{
 		Prompt:          renderCyanBoldFn(hole + "? "),
 		AutoComplete:    autocomplete,
@@ -207,20 +207,12 @@ func askHole(hole string, autocomplete readline.AutoCompleter) (interface{}, err
 		}
 
 		line = strings.TrimSpace(line)
-		switch {
-		case line == "":
-			return nil, errors.New("empty")
-		case !isQuoted(line) && !isCSV(line) && !template.MatchStringParamValue(line):
-			return nil, errors.New("string contains spaces or special characters: surround it with quotes")
-		default:
-			params, err := template.ParseParams(fmt.Sprintf("%s=%s", hole, line))
-			if err != nil {
-				return nil, err
-			}
-			return params[hole], nil
+		if line != "" {
+			return line, nil
 		}
+		return "", errors.New("empty")
 	}
-	return nil, nil
+	return "", errors.New("empty")
 }
 
 type onceLoader struct {

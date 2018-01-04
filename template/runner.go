@@ -15,7 +15,7 @@ type Runner struct {
 	Log                                    *logger.Logger
 	Fillers                                []map[string]interface{}
 	AliasFunc                              func(entity, key, alias string) string
-	MissingHolesFunc                       func(string, []string, bool) interface{}
+	MissingHolesFunc                       func(string, []string, bool) string
 	CmdLookuper                            func(tokens ...string) interface{}
 	Validators                             []Validator
 	ParamsSuggested                        int

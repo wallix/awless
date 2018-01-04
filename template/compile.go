@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/internal/ast"
@@ -276,8 +277,14 @@ func askSuggestedParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.C
 
 	for _, sug := range suggested {
 		if cenv.MissingHolesFunc() != nil {
-			if actual := cenv.MissingHolesFunc()(sug.key, []string{sug.key}, true); actual != nil {
-				sug.node.Params[sug.paramName] = ast.NewInterfaceValue(actual)
+			if actual := cenv.MissingHolesFunc()(sug.key, []string{sug.key}, true); actual != "" {
+				params, err := parseParamsAsCompositeValues(sug.paramName + "=" + actual)
+				if err != nil {
+					if params, err = parseParamsAsCompositeValues(sug.paramName + "=" + quoteString(actual)); err != nil {
+						return tpl, cenv, err
+					}
+				}
+				sug.node.Params[sug.paramName] = params[sug.paramName]
 			}
 		}
 	}
@@ -304,7 +311,13 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 	for _, k := range sortedHoles {
 		if cenv.MissingHolesFunc() != nil {
 			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k], false)
-			cenv.Push(env.FILLERS, map[string]interface{}{k: actual})
+			params, err := ParseParams(fmt.Sprintf("%s=%s", k, actual))
+			if err != nil {
+				if params, err = ParseParams(fmt.Sprintf("%s=%s", k, quoteString(actual))); err != nil {
+					return tpl, cenv, err
+				}
+			}
+			cenv.Push(env.FILLERS, map[string]interface{}{k: params[k]})
 		}
 	}
 
@@ -435,4 +448,12 @@ func contains(arr []string, s string) bool {
 		}
 	}
 	return false
+}
+
+func quoteString(str string) string {
+	if strings.ContainsRune(str, '\'') {
+		return "\"" + str + "\""
+	} else {
+		return "'" + str + "'"
+	}
 }

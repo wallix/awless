@@ -156,7 +156,7 @@ func TestResolveMissingHolesPass(t *testing.T) {
 	create instance name={redis.prod} id={redis.prod} count=3`)
 
 	var count int
-	cenv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) interface{} {
+	cenv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) string {
 		count++
 		switch in {
 		case "instance.subnet":
@@ -211,10 +211,10 @@ func TestResolveMissingHolesPass(t *testing.T) {
 func TestResolveMissingSuggestedPass(t *testing.T) {
 	var count int
 	tpl := `create instance subnet=sub-1234 image=ami-1a17137a type=t2.nano name=my-instance securitygroup=@my-sec-group`
-	buildingEnv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) interface{} {
+	buildingEnv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) string {
 		count++
 		if !optional {
-			return nil
+			return ""
 		}
 		switch in {
 		case "create.instance.ip":
@@ -229,7 +229,7 @@ func TestResolveMissingSuggestedPass(t *testing.T) {
 			return "/path/to/my/file"
 		default:
 			t.Fatalf("unexepected parameter %s", in)
-			return nil
+			return ""
 		}
 	}).WithLookupCommandFunc(func(tokens ...string) interface{} {
 		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()

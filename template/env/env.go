@@ -31,7 +31,7 @@ type Compiling interface {
 	log
 	LookupCommandFunc() func(...string) interface{}
 	AliasFunc() func(entity, key, alias string) string
-	MissingHolesFunc() func(string, []string, bool) interface{}
+	MissingHolesFunc() func(string, []string, bool) string
 	ParamsSuggested() int
 	Push(int, ...map[string]interface{})
 	Get(int) map[string]interface{}

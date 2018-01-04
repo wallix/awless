@@ -57,7 +57,7 @@ type compileEnv struct {
 	*dataMap
 	lookupCommandFunc func(...string) interface{}
 	aliasFunc         func(entity, key, alias string) string
-	missingHolesFunc  func(string, []string, bool) interface{}
+	missingHolesFunc  func(string, []string, bool) string
 	log               *logger.Logger
 	paramsSuggested   int
 }
@@ -70,7 +70,7 @@ func (e *compileEnv) AliasFunc() func(entity, key, alias string) string {
 	return e.aliasFunc
 }
 
-func (e *compileEnv) MissingHolesFunc() func(string, []string, bool) interface{} {
+func (e *compileEnv) MissingHolesFunc() func(string, []string, bool) string {
 	return e.missingHolesFunc
 }
 
@@ -133,7 +133,7 @@ func (b *envBuilder) WithAliasFunc(fn func(entity, key, alias string) string) *e
 	return b
 }
 
-func (b *envBuilder) WithMissingHolesFunc(fn func(string, []string, bool) interface{}) *envBuilder {
+func (b *envBuilder) WithMissingHolesFunc(fn func(string, []string, bool) string) *envBuilder {
 	b.E.missingHolesFunc = fn
 	return b
 }

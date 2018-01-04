@@ -82,6 +82,21 @@ func ParseParams(text string) (map[string]interface{}, error) {
 	}
 }
 
+func parseParamsAsCompositeValues(text string) (map[string]ast.CompositeValue, error) {
+	full := fmt.Sprintf("none none %s", text)
+	n, err := parseStatement(full)
+	if err != nil {
+		return nil, fmt.Errorf("parse params: %s", err)
+	}
+
+	switch n.(type) {
+	case *ast.CommandNode:
+		return (n.(*ast.CommandNode)).Params, nil
+	default:
+		return nil, fmt.Errorf("parse params: expected a command node")
+	}
+}
+
 func parseStatement(text string) (ast.Node, error) {
 	templ, err := Parse(text)
 	if err != nil {
