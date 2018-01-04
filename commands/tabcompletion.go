@@ -14,6 +14,9 @@ import (
 )
 
 func enumCompletionFunc(enum []string) readline.AutoCompleter {
+	if len(enum) == 1 && enum[0] == "" {
+		return readline.NewPrefixCompleter()
+	}
 	var items []readline.PrefixCompleterInterface
 	for _, e := range enum {
 		items = append(items, readline.PcItem(e))
