@@ -17,7 +17,7 @@ func Fuzz(data []byte) int {
 			fillers[param] = "default"
 		}
 
-		cenv := template.NewEnv().WithAliasFunc(func(e, k, v string) string { return "" }).
+		cenv := template.NewEnv().WithAliasFunc(func(p, v string) string { return "" }).
 			WithLookupCommandFunc(func(tokens ...string) interface{} {
 				return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
 			}).Build()

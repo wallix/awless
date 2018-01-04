@@ -153,7 +153,7 @@ create loadbalancer name=mylb subnets=subnet-1, subnet-2
 	}
 
 	for i, tcase := range tcases {
-		cenv := template.NewEnv().WithAliasFunc(func(e, k, v string) string {
+		cenv := template.NewEnv().WithAliasFunc(func(p, v string) string {
 			vals := map[string]string{
 				"vpc":      "vpc-1234",
 				"subalias": "sub-1111",
@@ -239,7 +239,7 @@ func TestExternallyProvidedParams(t *testing.T) {
 		}
 		cenv := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 			return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
-		}).WithAliasFunc(func(e, k, v string) string {
+		}).WithAliasFunc(func(p, v string) string {
 			vals := map[string]string{
 				"subalias": "subnet-111",
 				"sub1":     "subnet-123",

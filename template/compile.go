@@ -331,12 +331,13 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 
 func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	var emptyResolv []string
-	resolvAliasFunc := func(entity string, key string) func(string) (string, bool) {
+	resolvAliasFunc := func(action, entity string, key string) func(string) (string, bool) {
 		return func(alias string) (string, bool) {
 			if cenv.AliasFunc() == nil {
 				return "", false
 			}
-			actual := cenv.AliasFunc()(entity, key, alias)
+			normalized := fmt.Sprintf("%s.%s.%s", action, entity, key)
+			actual := cenv.AliasFunc()(normalized, alias)
 			if actual == "" {
 				emptyResolv = append(emptyResolv, alias)
 				return "", false
@@ -352,12 +353,12 @@ func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compili
 		case *ast.CommandNode:
 			for k, v := range ee.Params {
 				if vv, ok := v.(ast.WithAlias); ok {
-					vv.ResolveAlias(resolvAliasFunc(ee.Entity, k))
+					vv.ResolveAlias(resolvAliasFunc(ee.Action, ee.Entity, k))
 				}
 			}
 		case *ast.ValueNode:
 			if vv, ok := ee.Value.(ast.WithAlias); ok {
-				vv.ResolveAlias(resolvAliasFunc("", ""))
+				vv.ResolveAlias(resolvAliasFunc("", "", ""))
 			}
 		}
 	}

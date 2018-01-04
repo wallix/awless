@@ -374,35 +374,59 @@ func runSyncFor(tplExec *template.TemplateExecution) {
 	}
 }
 
-func resolveAliasFunc(entity, key, alias string) string {
+func resolveAliasFunc(paramPath, alias string) string {
+	splits := strings.Split(paramPath, ".")
+	if len(splits) != 3 {
+		logger.Errorf("resolve alias: invalid param path: %s", paramPath)
+		return ""
+	}
+	entity, key := splits[1], splits[2]
+	var typedParam *awsdoc.ParamType
+	if tparam, has := awsdoc.ParamTypeDoc[paramPath]; has {
+		typedParam = tparam
+	}
+
 	gph, err := sync.LoadLocalGraphs(config.GetAWSRegion())
 	if err != nil {
 		fmt.Printf("resolve alias '%s': cannot load local graphs for region %s: %s\n", alias, config.GetAWSRegion(), err)
 		return ""
 	}
 	resType := key
-	if strings.Contains(key, "id") {
-		resType = entity
+	if typedParam != nil {
+		resType = typedParam.ResourceType
+	} else {
+		if strings.Contains(key, "id") {
+			resType = entity
+		}
 	}
 
 	resources, err := gph.Find(cloud.NewQuery(resType).Match(match.And(match.Property("Name", alias))))
 	if err != nil {
 		return ""
 	}
+	var matchingResource cloud.Resource
 	switch len(resources) {
 	case 1:
-		return resources[0].Id()
+		matchingResource = resources[0]
 	default:
 		resources, err := gph.FindWithProperties(map[string]interface{}{"Name": alias})
 		if err != nil {
 			return ""
 		}
 		if len(resources) > 0 {
-			return resources[0].Id()
+			matchingResource = resources[0]
+		}
+	}
+	if matchingResource == nil {
+		return ""
+	}
+	if typedParam != nil {
+		if prop, ok := matchingResource.Properties()[typedParam.PropertyName].(string); ok {
+			return prop
 		}
 	}
 
-	return ""
+	return matchingResource.Id()
 }
 
 func oneLinerShortDesc(action string, entities []string) string {

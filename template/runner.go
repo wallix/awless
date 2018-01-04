@@ -14,7 +14,7 @@ type Runner struct {
 	Locale, Profile, Message, TemplatePath string
 	Log                                    *logger.Logger
 	Fillers                                []map[string]interface{}
-	AliasFunc                              func(entity, key, alias string) string
+	AliasFunc                              func(paramPath, alias string) string
 	MissingHolesFunc                       func(string, []string, bool) string
 	CmdLookuper                            func(tokens ...string) interface{}
 	Validators                             []Validator

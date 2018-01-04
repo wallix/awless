@@ -56,7 +56,7 @@ func (e *runEnv) Log() *logger.Logger {
 type compileEnv struct {
 	*dataMap
 	lookupCommandFunc func(...string) interface{}
-	aliasFunc         func(entity, key, alias string) string
+	aliasFunc         func(paramPath, alias string) string
 	missingHolesFunc  func(string, []string, bool) string
 	log               *logger.Logger
 	paramsSuggested   int
@@ -66,7 +66,7 @@ func (e *compileEnv) LookupCommandFunc() func(...string) interface{} {
 	return e.lookupCommandFunc
 }
 
-func (e *compileEnv) AliasFunc() func(entity, key, alias string) string {
+func (e *compileEnv) AliasFunc() func(paramPath, alias string) string {
 	return e.aliasFunc
 }
 
@@ -128,7 +128,7 @@ type envBuilder struct {
 	E *compileEnv
 }
 
-func (b *envBuilder) WithAliasFunc(fn func(entity, key, alias string) string) *envBuilder {
+func (b *envBuilder) WithAliasFunc(fn func(paramPath, alias string) string) *envBuilder {
 	b.E.aliasFunc = fn
 	return b
 }

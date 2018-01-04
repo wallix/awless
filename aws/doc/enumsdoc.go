@@ -189,13 +189,27 @@ type ParamType struct {
 }
 
 var ParamTypeDoc = map[string]*ParamType{
-	"attach.policy.group":       {ResourceType: cloud.Group, PropertyName: properties.Name},
-	"attach.policy.role":        {ResourceType: cloud.Role, PropertyName: properties.Name},
-	"attach.policy.user":        {ResourceType: cloud.User, PropertyName: properties.Name},
-	"create.accesskey.user":     {ResourceType: cloud.User, PropertyName: properties.Name},
-	"create.instance.role":      {ResourceType: cloud.Role, PropertyName: properties.Name},
-	"detach.policy.group":       {ResourceType: cloud.Group, PropertyName: properties.Name},
-	"detach.policy.role":        {ResourceType: cloud.Role, PropertyName: properties.Name},
-	"detach.policy.user":        {ResourceType: cloud.User, PropertyName: properties.Name},
+
+	"attach.policy.group": {ResourceType: cloud.Group, PropertyName: properties.Name},
+	"attach.policy.role":  {ResourceType: cloud.Role, PropertyName: properties.Name},
+	"attach.policy.user":  {ResourceType: cloud.User, PropertyName: properties.Name},
+	"attach.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},
+
+	"attach.role.instanceprofile": {ResourceType: cloud.InstanceProfile, PropertyName: properties.Name},
+
+	"create.accesskey.user": {ResourceType: cloud.User, PropertyName: properties.Name},
+
+	"create.instance.role": {ResourceType: cloud.Role, PropertyName: properties.Name},
+
+	"delete.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},
+	"detach.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},
+	"detach.policy.group": {ResourceType: cloud.Group, PropertyName: properties.Name},
+	"detach.policy.role":  {ResourceType: cloud.Role, PropertyName: properties.Name},
+	"detach.policy.user":  {ResourceType: cloud.User, PropertyName: properties.Name},
+
+	"detach.role.instanceprofile": {ResourceType: cloud.InstanceProfile, PropertyName: properties.Name},
+
+	"update.policy.arn": {ResourceType: cloud.Policy, PropertyName: properties.Arn},
+
 	"update.securitygroup.cidr": {ResourceType: cloud.Subnet, PropertyName: properties.CIDR},
 }

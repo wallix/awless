@@ -30,7 +30,7 @@ type Running interface {
 type Compiling interface {
 	log
 	LookupCommandFunc() func(...string) interface{}
-	AliasFunc() func(entity, key, alias string) string
+	AliasFunc() func(paramPath, alias string) string
 	MissingHolesFunc() func(string, []string, bool) string
 	ParamsSuggested() int
 	Push(int, ...map[string]interface{})
