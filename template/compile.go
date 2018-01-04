@@ -350,7 +350,7 @@ func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compili
 	}
 
 	if len(emptyResolv) > 0 {
-		return tpl, cenv, fmt.Errorf("cannot resolve aliases: %q. Maybe you need to update your local model with `awless sync` ?", emptyResolv)
+		return tpl, cenv, fmt.Errorf("cannot resolve aliases: %q. Does they pre-exist? Maybe you need to update your local model with `awless sync` ?", emptyResolv)
 	}
 
 	return tpl, cenv, nil
