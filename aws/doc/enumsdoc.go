@@ -170,9 +170,10 @@ var EnumDoc = map[string][]string{
 
 	"update.s3object.acl": s3ACLs,
 
-	"update.securitygroup.inbound":  {"revoke", "authorize"},
-	"update.securitygroup.outbound": {"revoke", "authorize"},
-	"update.securitygroup.protocol": {"tcp", "udp", "icmp", "any"},
+	"update.securitygroup.inbound":   {"revoke", "authorize"},
+	"update.securitygroup.outbound":  {"revoke", "authorize"},
+	"update.securitygroup.protocol":  {"tcp", "udp", "icmp", "any"},
+	"update.securitygroup.portrange": {""},
 
 	"update.stack.capabilities": {"CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"},
 
@@ -193,5 +194,8 @@ var ParamTypeDoc = map[string]*ParamType{
 	"attach.policy.user":        {ResourceType: cloud.User, PropertyName: properties.Name},
 	"create.accesskey.user":     {ResourceType: cloud.User, PropertyName: properties.Name},
 	"create.instance.role":      {ResourceType: cloud.Role, PropertyName: properties.Name},
+	"detach.policy.group":       {ResourceType: cloud.Group, PropertyName: properties.Name},
+	"detach.policy.role":        {ResourceType: cloud.Role, PropertyName: properties.Name},
+	"detach.policy.user":        {ResourceType: cloud.User, PropertyName: properties.Name},
 	"update.securitygroup.cidr": {ResourceType: cloud.Subnet, PropertyName: properties.CIDR},
 }
