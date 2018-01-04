@@ -188,7 +188,10 @@ type ParamType struct {
 }
 
 var ParamTypeDoc = map[string]*ParamType{
+	"attach.policy.group":       {ResourceType: cloud.Group, PropertyName: properties.Name},
+	"attach.policy.role":        {ResourceType: cloud.Role, PropertyName: properties.Name},
+	"attach.policy.user":        {ResourceType: cloud.User, PropertyName: properties.Name},
 	"create.accesskey.user":     {ResourceType: cloud.User, PropertyName: properties.Name},
-	"update.securitygroup.cidr": {ResourceType: cloud.Subnet, PropertyName: properties.CIDR},
 	"create.instance.role":      {ResourceType: cloud.Role, PropertyName: properties.Name},
+	"update.securitygroup.cidr": {ResourceType: cloud.Subnet, PropertyName: properties.CIDR},
 }
