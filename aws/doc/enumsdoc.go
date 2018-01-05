@@ -200,7 +200,7 @@ var ParamTypeDoc = map[string]*ParamType{
 
 	"create.instance.role": {ResourceType: cloud.Role, PropertyName: properties.Name},
 
-	"create.record.value": {ResourceType: cloud.Record, PropertyName: properties.Records},
+	"create.record.values": {ResourceType: cloud.Record, PropertyName: properties.Records},
 
 	"delete.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},
 	"detach.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},

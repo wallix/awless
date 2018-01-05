@@ -26,7 +26,7 @@ type GraphAPI interface {
 	FilterGraph(Query) (GraphAPI, error)
 	FindOne(Query) (Resource, error)
 	MarshalTo(w io.Writer) error
-	ResourceRelations(Resource, string, bool) ([]Resource, error)
+	ResourceRelations(r Resource, relation string, recursive bool) ([]Resource, error)
 	VisitRelations(Resource, string, bool, func(Resource, int) error) error
 	ResourceSiblings(Resource) ([]Resource, error)
 	Merge(GraphAPI) error

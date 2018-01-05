@@ -22,6 +22,9 @@
 - Restart an EC2 instance
   * `awless restart instance id=id-1234`
   * `awless restart instance ids=@redis-prod-1,@redis-prod-2`
+- [#176](https://github.com/wallix/awless/issues/176): Delete a DNS record only by its awless ID (see `awless ls records`) or by its name:
+    * `awless delete record id=awls-39ec0618`
+    * `awless delete record id=@my.sub.domain.com`
 
 ## v0.1.8 [2017-11-29]
 

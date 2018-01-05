@@ -26,21 +26,12 @@ func TestTypedParamCompletionFunc(t *testing.T) {
 	g.AddResource(resourcetest.Instance("4").Prop(p.Records, []string{"rec1", "rec2"}).Build())
 
 	list, _ := typedParamCompletionFunc(g, "instance", p.Name).Do([]rune{'b'}, 1)
-	sort.Slice(list, func(i int, j int) bool {
-		for k := 0; k < len(list[i]); k++ {
-			if k > len(list[j]) {
-				return false
-			}
-			if list[i][k] != list[j][k] {
-				return list[i][k] < list[j][k]
-			}
-		}
-		return true
-	})
+	sort.Slice(list, func(i, j int) bool { return string(list[i]) <= string(list[j]) })
 	if got, want := list, toRune("roker_1 ", "roker_2 "); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %q, want %q", got, want)
 	}
 	list, _ = typedParamCompletionFunc(g, "instance", p.Records).Do([]rune{'r', 'e'}, 2)
+	sort.Slice(list, func(i, j int) bool { return string(list[i]) <= string(list[j]) })
 	if got, want := list, toRune("c1 ", "c2 "); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %q, want %q", got, want)
 	}
