@@ -61,7 +61,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name":  "The name of the user to add",
 	},
 	"attach.volume": {
-		"device":   "The device name to expose to the instance (for example, /dev/sdh or xvdh)",
+		"device":   "The device name (for example, /dev/sdh or xvdh)",
 		"id":       "The ID of the EBS volume",
 		"instance": "The ID of the instance",
 	},
@@ -245,7 +245,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"launchconfiguration":      "The name of the launch configuration",
 		"max-size":                 "The maximum size of the group",
 		"min-size":                 "The minimum size of the group",
-		"name":                     "The name of the group",
+		"name":                     "The name of the Auto Scaling group",
 		"new-instances-protected": "Indicates whether newly launched instances are protected from termination by Auto Scaling when scaling in",
 		"subnets":                 "A comma-separated list of subnet identifiers for your virtual private cloud (VPC)",
 		"targetgroups":            "The Amazon Resource Names (ARN) of the target groups",
@@ -256,7 +256,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"adjustment-type":      "The adjustment type",
 		"cooldown":             "The amount of time, in seconds, after a scaling activity completes and before the next scaling activity can start",
 		"name":                 "The name of the scaling policy",
-		"scalinggroup":         "The name or ARN of the group",
+		"scalinggroup":         "The name of the Auto Scaling group",
 	},
 	"create.securitygroup": {
 		"description": "A description for the security group",
@@ -408,7 +408,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"delete.record": {},
 	"delete.repository": {
 		"account": "The AWS account ID associated with the registry that contains the repository to delete",
-		"force":   "Force the deletion of the repository if it contains images",
+		"force":   "If a repository contains images, forces the deletion",
 		"name":    "The name of the repository to delete",
 	},
 	"delete.role": {},
@@ -425,7 +425,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	},
 	"delete.scalinggroup": {
 		"force": "Specifies that the group will be deleted along with all instances associated with the group, without waiting for all instances to be terminated",
-		"name":  "The name of the group to delete",
+		"name":  "The name of the Auto Scaling group",
 	},
 	"delete.scalingpolicy": {
 		"id": "The name or Amazon Resource Name (ARN) of the policy",
@@ -540,7 +540,7 @@ var generatedParamsDoc = map[string]map[string]string{
 		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster that your service is running on",
 		"deployment-name": "The name of the service to update",
 		"desired-count":   "The number of instantiations of the task to place and keep running in your service",
-		"name":            "The family and revision (family:revision) or full Amazon Resource Name (ARN) of the task definition to run in your service",
+		"name":            "The family and revision (family:revision) or full ARN of the task definition to run in your service",
 	},
 	"update.distribution": {},
 	"update.image":        {},

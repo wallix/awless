@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
@@ -214,4 +215,11 @@ func BoolValue(v *bool) bool {
 		return *v
 	}
 	return false
+}
+
+func decorateAWSError(err error) error {
+	if aerr, ok := err.(awserr.Error); ok {
+		return fmt.Errorf("%s: %s", aerr.Code(), aerr.Message())
+	}
+	return err
 }

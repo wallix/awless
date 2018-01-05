@@ -189,7 +189,6 @@ type ParamType struct {
 }
 
 var ParamTypeDoc = map[string]*ParamType{
-
 	"attach.policy.group": {ResourceType: cloud.Group, PropertyName: properties.Name},
 	"attach.policy.role":  {ResourceType: cloud.Role, PropertyName: properties.Name},
 	"attach.policy.user":  {ResourceType: cloud.User, PropertyName: properties.Name},
@@ -200,6 +199,8 @@ var ParamTypeDoc = map[string]*ParamType{
 	"create.accesskey.user": {ResourceType: cloud.User, PropertyName: properties.Name},
 
 	"create.instance.role": {ResourceType: cloud.Role, PropertyName: properties.Name},
+
+	"create.record.value": {ResourceType: cloud.Record, PropertyName: properties.Records},
 
 	"delete.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},
 	"detach.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},

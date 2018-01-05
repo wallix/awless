@@ -105,7 +105,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 func (l *Logger) MultiLineError(err error) {
 	if err != nil {
 		for _, msg := range formatMultiLineErrMsg(err.Error()) {
-			l.out.Println(color.New(color.FgRed).Sprintf("\t%s", msg))
+			l.out.Println(color.New(color.FgRed).Sprint(msg))
 		}
 	}
 }
@@ -182,7 +182,7 @@ func formatMultiLineErrMsg(msg string) []string {
 	notabs := strings.Replace(msg, "\t", "", -1)
 	var indented []string
 	for _, line := range strings.Split(notabs, "\n") {
-		indented = append(indented, fmt.Sprintf("    %s", line))
+		indented = append(indented, fmt.Sprintf("          %s", line))
 	}
 	return indented
 }

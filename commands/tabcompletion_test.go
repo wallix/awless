@@ -23,6 +23,7 @@ func TestTypedParamCompletionFunc(t *testing.T) {
 	g.AddResource(resourcetest.Instance("1").Prop(p.Name, "broker_1").Build())
 	g.AddResource(resourcetest.Instance("2").Prop(p.Name, "broker_2").Build())
 	g.AddResource(resourcetest.Instance("3").Prop(p.Name, "redis").Build())
+	g.AddResource(resourcetest.Instance("4").Prop(p.Records, []string{"rec1", "rec2"}).Build())
 
 	list, _ := typedParamCompletionFunc(g, "instance", p.Name).Do([]rune{'b'}, 1)
 	sort.Slice(list, func(i int, j int) bool {
@@ -37,6 +38,10 @@ func TestTypedParamCompletionFunc(t *testing.T) {
 		return true
 	})
 	if got, want := list, toRune("roker_1 ", "roker_2 "); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %q, want %q", got, want)
+	}
+	list, _ = typedParamCompletionFunc(g, "instance", p.Records).Do([]rune{'r', 'e'}, 2)
+	if got, want := list, toRune("c1 ", "c2 "); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %q, want %q", got, want)
 	}
 }

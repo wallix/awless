@@ -277,6 +277,9 @@ type applicationautoscalingMock struct {
 	DeleteScalingPolicyFunc                  func(param0 *applicationautoscaling.DeleteScalingPolicyInput) (*applicationautoscaling.DeleteScalingPolicyOutput, error)
 	DeleteScalingPolicyRequestFunc           func(param0 *applicationautoscaling.DeleteScalingPolicyInput) (*request.Request, *applicationautoscaling.DeleteScalingPolicyOutput)
 	DeleteScalingPolicyWithContextFunc       func(param0 aws.Context, param1 *applicationautoscaling.DeleteScalingPolicyInput, param2 ...request.Option) (*applicationautoscaling.DeleteScalingPolicyOutput, error)
+	DeleteScheduledActionFunc                func(param0 *applicationautoscaling.DeleteScheduledActionInput) (*applicationautoscaling.DeleteScheduledActionOutput, error)
+	DeleteScheduledActionRequestFunc         func(param0 *applicationautoscaling.DeleteScheduledActionInput) (*request.Request, *applicationautoscaling.DeleteScheduledActionOutput)
+	DeleteScheduledActionWithContextFunc     func(param0 aws.Context, param1 *applicationautoscaling.DeleteScheduledActionInput, param2 ...request.Option) (*applicationautoscaling.DeleteScheduledActionOutput, error)
 	DeregisterScalableTargetFunc             func(param0 *applicationautoscaling.DeregisterScalableTargetInput) (*applicationautoscaling.DeregisterScalableTargetOutput, error)
 	DeregisterScalableTargetRequestFunc      func(param0 *applicationautoscaling.DeregisterScalableTargetInput) (*request.Request, *applicationautoscaling.DeregisterScalableTargetOutput)
 	DeregisterScalableTargetWithContextFunc  func(param0 aws.Context, param1 *applicationautoscaling.DeregisterScalableTargetInput, param2 ...request.Option) (*applicationautoscaling.DeregisterScalableTargetOutput, error)
@@ -289,9 +292,15 @@ type applicationautoscalingMock struct {
 	DescribeScalingPoliciesFunc              func(param0 *applicationautoscaling.DescribeScalingPoliciesInput) (*applicationautoscaling.DescribeScalingPoliciesOutput, error)
 	DescribeScalingPoliciesRequestFunc       func(param0 *applicationautoscaling.DescribeScalingPoliciesInput) (*request.Request, *applicationautoscaling.DescribeScalingPoliciesOutput)
 	DescribeScalingPoliciesWithContextFunc   func(param0 aws.Context, param1 *applicationautoscaling.DescribeScalingPoliciesInput, param2 ...request.Option) (*applicationautoscaling.DescribeScalingPoliciesOutput, error)
+	DescribeScheduledActionsFunc             func(param0 *applicationautoscaling.DescribeScheduledActionsInput) (*applicationautoscaling.DescribeScheduledActionsOutput, error)
+	DescribeScheduledActionsRequestFunc      func(param0 *applicationautoscaling.DescribeScheduledActionsInput) (*request.Request, *applicationautoscaling.DescribeScheduledActionsOutput)
+	DescribeScheduledActionsWithContextFunc  func(param0 aws.Context, param1 *applicationautoscaling.DescribeScheduledActionsInput, param2 ...request.Option) (*applicationautoscaling.DescribeScheduledActionsOutput, error)
 	PutScalingPolicyFunc                     func(param0 *applicationautoscaling.PutScalingPolicyInput) (*applicationautoscaling.PutScalingPolicyOutput, error)
 	PutScalingPolicyRequestFunc              func(param0 *applicationautoscaling.PutScalingPolicyInput) (*request.Request, *applicationautoscaling.PutScalingPolicyOutput)
 	PutScalingPolicyWithContextFunc          func(param0 aws.Context, param1 *applicationautoscaling.PutScalingPolicyInput, param2 ...request.Option) (*applicationautoscaling.PutScalingPolicyOutput, error)
+	PutScheduledActionFunc                   func(param0 *applicationautoscaling.PutScheduledActionInput) (*applicationautoscaling.PutScheduledActionOutput, error)
+	PutScheduledActionRequestFunc            func(param0 *applicationautoscaling.PutScheduledActionInput) (*request.Request, *applicationautoscaling.PutScheduledActionOutput)
+	PutScheduledActionWithContextFunc        func(param0 aws.Context, param1 *applicationautoscaling.PutScheduledActionInput, param2 ...request.Option) (*applicationautoscaling.PutScheduledActionOutput, error)
 	RegisterScalableTargetFunc               func(param0 *applicationautoscaling.RegisterScalableTargetInput) (*applicationautoscaling.RegisterScalableTargetOutput, error)
 	RegisterScalableTargetRequestFunc        func(param0 *applicationautoscaling.RegisterScalableTargetInput) (*request.Request, *applicationautoscaling.RegisterScalableTargetOutput)
 	RegisterScalableTargetWithContextFunc    func(param0 aws.Context, param1 *applicationautoscaling.RegisterScalableTargetInput, param2 ...request.Option) (*applicationautoscaling.RegisterScalableTargetOutput, error)
@@ -313,6 +322,24 @@ func (m *applicationautoscalingMock) DeleteScalingPolicyWithContext(param0 aws.C
 	m.addCall("DeleteScalingPolicyWithContext")
 	m.verifyInput("DeleteScalingPolicyWithContext", param0)
 	return m.DeleteScalingPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *applicationautoscalingMock) DeleteScheduledAction(param0 *applicationautoscaling.DeleteScheduledActionInput) (*applicationautoscaling.DeleteScheduledActionOutput, error) {
+	m.addCall("DeleteScheduledAction")
+	m.verifyInput("DeleteScheduledAction", param0)
+	return m.DeleteScheduledActionFunc(param0)
+}
+
+func (m *applicationautoscalingMock) DeleteScheduledActionRequest(param0 *applicationautoscaling.DeleteScheduledActionInput) (*request.Request, *applicationautoscaling.DeleteScheduledActionOutput) {
+	m.addCall("DeleteScheduledActionRequest")
+	m.verifyInput("DeleteScheduledActionRequest", param0)
+	return m.DeleteScheduledActionRequestFunc(param0)
+}
+
+func (m *applicationautoscalingMock) DeleteScheduledActionWithContext(param0 aws.Context, param1 *applicationautoscaling.DeleteScheduledActionInput, param2 ...request.Option) (*applicationautoscaling.DeleteScheduledActionOutput, error) {
+	m.addCall("DeleteScheduledActionWithContext")
+	m.verifyInput("DeleteScheduledActionWithContext", param0)
+	return m.DeleteScheduledActionWithContextFunc(param0, param1, param2...)
 }
 
 func (m *applicationautoscalingMock) DeregisterScalableTarget(param0 *applicationautoscaling.DeregisterScalableTargetInput) (*applicationautoscaling.DeregisterScalableTargetOutput, error) {
@@ -387,6 +414,24 @@ func (m *applicationautoscalingMock) DescribeScalingPoliciesWithContext(param0 a
 	return m.DescribeScalingPoliciesWithContextFunc(param0, param1, param2...)
 }
 
+func (m *applicationautoscalingMock) DescribeScheduledActions(param0 *applicationautoscaling.DescribeScheduledActionsInput) (*applicationautoscaling.DescribeScheduledActionsOutput, error) {
+	m.addCall("DescribeScheduledActions")
+	m.verifyInput("DescribeScheduledActions", param0)
+	return m.DescribeScheduledActionsFunc(param0)
+}
+
+func (m *applicationautoscalingMock) DescribeScheduledActionsRequest(param0 *applicationautoscaling.DescribeScheduledActionsInput) (*request.Request, *applicationautoscaling.DescribeScheduledActionsOutput) {
+	m.addCall("DescribeScheduledActionsRequest")
+	m.verifyInput("DescribeScheduledActionsRequest", param0)
+	return m.DescribeScheduledActionsRequestFunc(param0)
+}
+
+func (m *applicationautoscalingMock) DescribeScheduledActionsWithContext(param0 aws.Context, param1 *applicationautoscaling.DescribeScheduledActionsInput, param2 ...request.Option) (*applicationautoscaling.DescribeScheduledActionsOutput, error) {
+	m.addCall("DescribeScheduledActionsWithContext")
+	m.verifyInput("DescribeScheduledActionsWithContext", param0)
+	return m.DescribeScheduledActionsWithContextFunc(param0, param1, param2...)
+}
+
 func (m *applicationautoscalingMock) PutScalingPolicy(param0 *applicationautoscaling.PutScalingPolicyInput) (*applicationautoscaling.PutScalingPolicyOutput, error) {
 	m.addCall("PutScalingPolicy")
 	m.verifyInput("PutScalingPolicy", param0)
@@ -403,6 +448,24 @@ func (m *applicationautoscalingMock) PutScalingPolicyWithContext(param0 aws.Cont
 	m.addCall("PutScalingPolicyWithContext")
 	m.verifyInput("PutScalingPolicyWithContext", param0)
 	return m.PutScalingPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *applicationautoscalingMock) PutScheduledAction(param0 *applicationautoscaling.PutScheduledActionInput) (*applicationautoscaling.PutScheduledActionOutput, error) {
+	m.addCall("PutScheduledAction")
+	m.verifyInput("PutScheduledAction", param0)
+	return m.PutScheduledActionFunc(param0)
+}
+
+func (m *applicationautoscalingMock) PutScheduledActionRequest(param0 *applicationautoscaling.PutScheduledActionInput) (*request.Request, *applicationautoscaling.PutScheduledActionOutput) {
+	m.addCall("PutScheduledActionRequest")
+	m.verifyInput("PutScheduledActionRequest", param0)
+	return m.PutScheduledActionRequestFunc(param0)
+}
+
+func (m *applicationautoscalingMock) PutScheduledActionWithContext(param0 aws.Context, param1 *applicationautoscaling.PutScheduledActionInput, param2 ...request.Option) (*applicationautoscaling.PutScheduledActionOutput, error) {
+	m.addCall("PutScheduledActionWithContext")
+	m.verifyInput("PutScheduledActionWithContext", param0)
+	return m.PutScheduledActionWithContextFunc(param0, param1, param2...)
 }
 
 func (m *applicationautoscalingMock) RegisterScalableTarget(param0 *applicationautoscaling.RegisterScalableTargetInput) (*applicationautoscaling.RegisterScalableTargetOutput, error) {
@@ -1674,11 +1737,17 @@ type cloudformationMock struct {
 	StopStackSetOperationRequestFunc                func(param0 *cloudformation.StopStackSetOperationInput) (*request.Request, *cloudformation.StopStackSetOperationOutput)
 	StopStackSetOperationWithContextFunc            func(param0 aws.Context, param1 *cloudformation.StopStackSetOperationInput, param2 ...request.Option) (*cloudformation.StopStackSetOperationOutput, error)
 	UpdateStackFunc                                 func(param0 *cloudformation.UpdateStackInput) (*cloudformation.UpdateStackOutput, error)
+	UpdateStackInstancesFunc                        func(param0 *cloudformation.UpdateStackInstancesInput) (*cloudformation.UpdateStackInstancesOutput, error)
+	UpdateStackInstancesRequestFunc                 func(param0 *cloudformation.UpdateStackInstancesInput) (*request.Request, *cloudformation.UpdateStackInstancesOutput)
+	UpdateStackInstancesWithContextFunc             func(param0 aws.Context, param1 *cloudformation.UpdateStackInstancesInput, param2 ...request.Option) (*cloudformation.UpdateStackInstancesOutput, error)
 	UpdateStackRequestFunc                          func(param0 *cloudformation.UpdateStackInput) (*request.Request, *cloudformation.UpdateStackOutput)
 	UpdateStackSetFunc                              func(param0 *cloudformation.UpdateStackSetInput) (*cloudformation.UpdateStackSetOutput, error)
 	UpdateStackSetRequestFunc                       func(param0 *cloudformation.UpdateStackSetInput) (*request.Request, *cloudformation.UpdateStackSetOutput)
 	UpdateStackSetWithContextFunc                   func(param0 aws.Context, param1 *cloudformation.UpdateStackSetInput, param2 ...request.Option) (*cloudformation.UpdateStackSetOutput, error)
 	UpdateStackWithContextFunc                      func(param0 aws.Context, param1 *cloudformation.UpdateStackInput, param2 ...request.Option) (*cloudformation.UpdateStackOutput, error)
+	UpdateTerminationProtectionFunc                 func(param0 *cloudformation.UpdateTerminationProtectionInput) (*cloudformation.UpdateTerminationProtectionOutput, error)
+	UpdateTerminationProtectionRequestFunc          func(param0 *cloudformation.UpdateTerminationProtectionInput) (*request.Request, *cloudformation.UpdateTerminationProtectionOutput)
+	UpdateTerminationProtectionWithContextFunc      func(param0 aws.Context, param1 *cloudformation.UpdateTerminationProtectionInput, param2 ...request.Option) (*cloudformation.UpdateTerminationProtectionOutput, error)
 	ValidateTemplateFunc                            func(param0 *cloudformation.ValidateTemplateInput) (*cloudformation.ValidateTemplateOutput, error)
 	ValidateTemplateRequestFunc                     func(param0 *cloudformation.ValidateTemplateInput) (*request.Request, *cloudformation.ValidateTemplateOutput)
 	ValidateTemplateWithContextFunc                 func(param0 aws.Context, param1 *cloudformation.ValidateTemplateInput, param2 ...request.Option) (*cloudformation.ValidateTemplateOutput, error)
@@ -2348,6 +2417,24 @@ func (m *cloudformationMock) UpdateStack(param0 *cloudformation.UpdateStackInput
 	return m.UpdateStackFunc(param0)
 }
 
+func (m *cloudformationMock) UpdateStackInstances(param0 *cloudformation.UpdateStackInstancesInput) (*cloudformation.UpdateStackInstancesOutput, error) {
+	m.addCall("UpdateStackInstances")
+	m.verifyInput("UpdateStackInstances", param0)
+	return m.UpdateStackInstancesFunc(param0)
+}
+
+func (m *cloudformationMock) UpdateStackInstancesRequest(param0 *cloudformation.UpdateStackInstancesInput) (*request.Request, *cloudformation.UpdateStackInstancesOutput) {
+	m.addCall("UpdateStackInstancesRequest")
+	m.verifyInput("UpdateStackInstancesRequest", param0)
+	return m.UpdateStackInstancesRequestFunc(param0)
+}
+
+func (m *cloudformationMock) UpdateStackInstancesWithContext(param0 aws.Context, param1 *cloudformation.UpdateStackInstancesInput, param2 ...request.Option) (*cloudformation.UpdateStackInstancesOutput, error) {
+	m.addCall("UpdateStackInstancesWithContext")
+	m.verifyInput("UpdateStackInstancesWithContext", param0)
+	return m.UpdateStackInstancesWithContextFunc(param0, param1, param2...)
+}
+
 func (m *cloudformationMock) UpdateStackRequest(param0 *cloudformation.UpdateStackInput) (*request.Request, *cloudformation.UpdateStackOutput) {
 	m.addCall("UpdateStackRequest")
 	m.verifyInput("UpdateStackRequest", param0)
@@ -2376,6 +2463,24 @@ func (m *cloudformationMock) UpdateStackWithContext(param0 aws.Context, param1 *
 	m.addCall("UpdateStackWithContext")
 	m.verifyInput("UpdateStackWithContext", param0)
 	return m.UpdateStackWithContextFunc(param0, param1, param2...)
+}
+
+func (m *cloudformationMock) UpdateTerminationProtection(param0 *cloudformation.UpdateTerminationProtectionInput) (*cloudformation.UpdateTerminationProtectionOutput, error) {
+	m.addCall("UpdateTerminationProtection")
+	m.verifyInput("UpdateTerminationProtection", param0)
+	return m.UpdateTerminationProtectionFunc(param0)
+}
+
+func (m *cloudformationMock) UpdateTerminationProtectionRequest(param0 *cloudformation.UpdateTerminationProtectionInput) (*request.Request, *cloudformation.UpdateTerminationProtectionOutput) {
+	m.addCall("UpdateTerminationProtectionRequest")
+	m.verifyInput("UpdateTerminationProtectionRequest", param0)
+	return m.UpdateTerminationProtectionRequestFunc(param0)
+}
+
+func (m *cloudformationMock) UpdateTerminationProtectionWithContext(param0 aws.Context, param1 *cloudformation.UpdateTerminationProtectionInput, param2 ...request.Option) (*cloudformation.UpdateTerminationProtectionOutput, error) {
+	m.addCall("UpdateTerminationProtectionWithContext")
+	m.verifyInput("UpdateTerminationProtectionWithContext", param0)
+	return m.UpdateTerminationProtectionWithContextFunc(param0, param1, param2...)
 }
 
 func (m *cloudformationMock) ValidateTemplate(param0 *cloudformation.ValidateTemplateInput) (*cloudformation.ValidateTemplateOutput, error) {
@@ -2483,6 +2588,9 @@ type cloudfrontMock struct {
 	DeleteDistributionFunc                                 func(param0 *cloudfront.DeleteDistributionInput) (*cloudfront.DeleteDistributionOutput, error)
 	DeleteDistributionRequestFunc                          func(param0 *cloudfront.DeleteDistributionInput) (*request.Request, *cloudfront.DeleteDistributionOutput)
 	DeleteDistributionWithContextFunc                      func(param0 aws.Context, param1 *cloudfront.DeleteDistributionInput, param2 ...request.Option) (*cloudfront.DeleteDistributionOutput, error)
+	DeleteServiceLinkedRoleFunc                            func(param0 *cloudfront.DeleteServiceLinkedRoleInput) (*cloudfront.DeleteServiceLinkedRoleOutput, error)
+	DeleteServiceLinkedRoleRequestFunc                     func(param0 *cloudfront.DeleteServiceLinkedRoleInput) (*request.Request, *cloudfront.DeleteServiceLinkedRoleOutput)
+	DeleteServiceLinkedRoleWithContextFunc                 func(param0 aws.Context, param1 *cloudfront.DeleteServiceLinkedRoleInput, param2 ...request.Option) (*cloudfront.DeleteServiceLinkedRoleOutput, error)
 	DeleteStreamingDistributionFunc                        func(param0 *cloudfront.DeleteStreamingDistributionInput) (*cloudfront.DeleteStreamingDistributionOutput, error)
 	DeleteStreamingDistributionRequestFunc                 func(param0 *cloudfront.DeleteStreamingDistributionInput) (*request.Request, *cloudfront.DeleteStreamingDistributionOutput)
 	DeleteStreamingDistributionWithContextFunc             func(param0 aws.Context, param1 *cloudfront.DeleteStreamingDistributionInput, param2 ...request.Option) (*cloudfront.DeleteStreamingDistributionOutput, error)
@@ -2690,6 +2798,24 @@ func (m *cloudfrontMock) DeleteDistributionWithContext(param0 aws.Context, param
 	m.addCall("DeleteDistributionWithContext")
 	m.verifyInput("DeleteDistributionWithContext", param0)
 	return m.DeleteDistributionWithContextFunc(param0, param1, param2...)
+}
+
+func (m *cloudfrontMock) DeleteServiceLinkedRole(param0 *cloudfront.DeleteServiceLinkedRoleInput) (*cloudfront.DeleteServiceLinkedRoleOutput, error) {
+	m.addCall("DeleteServiceLinkedRole")
+	m.verifyInput("DeleteServiceLinkedRole", param0)
+	return m.DeleteServiceLinkedRoleFunc(param0)
+}
+
+func (m *cloudfrontMock) DeleteServiceLinkedRoleRequest(param0 *cloudfront.DeleteServiceLinkedRoleInput) (*request.Request, *cloudfront.DeleteServiceLinkedRoleOutput) {
+	m.addCall("DeleteServiceLinkedRoleRequest")
+	m.verifyInput("DeleteServiceLinkedRoleRequest", param0)
+	return m.DeleteServiceLinkedRoleRequestFunc(param0)
+}
+
+func (m *cloudfrontMock) DeleteServiceLinkedRoleWithContext(param0 aws.Context, param1 *cloudfront.DeleteServiceLinkedRoleInput, param2 ...request.Option) (*cloudfront.DeleteServiceLinkedRoleOutput, error) {
+	m.addCall("DeleteServiceLinkedRoleWithContext")
+	m.verifyInput("DeleteServiceLinkedRoleWithContext", param0)
+	return m.DeleteServiceLinkedRoleWithContextFunc(param0, param1, param2...)
 }
 
 func (m *cloudfrontMock) DeleteStreamingDistribution(param0 *cloudfront.DeleteStreamingDistributionInput) (*cloudfront.DeleteStreamingDistributionOutput, error) {
@@ -3410,6 +3536,9 @@ type ec2Mock struct {
 	AcceptReservedInstancesExchangeQuoteFunc                  func(param0 *ec2.AcceptReservedInstancesExchangeQuoteInput) (*ec2.AcceptReservedInstancesExchangeQuoteOutput, error)
 	AcceptReservedInstancesExchangeQuoteRequestFunc           func(param0 *ec2.AcceptReservedInstancesExchangeQuoteInput) (*request.Request, *ec2.AcceptReservedInstancesExchangeQuoteOutput)
 	AcceptReservedInstancesExchangeQuoteWithContextFunc       func(param0 aws.Context, param1 *ec2.AcceptReservedInstancesExchangeQuoteInput, param2 ...request.Option) (*ec2.AcceptReservedInstancesExchangeQuoteOutput, error)
+	AcceptVpcEndpointConnectionsFunc                          func(param0 *ec2.AcceptVpcEndpointConnectionsInput) (*ec2.AcceptVpcEndpointConnectionsOutput, error)
+	AcceptVpcEndpointConnectionsRequestFunc                   func(param0 *ec2.AcceptVpcEndpointConnectionsInput) (*request.Request, *ec2.AcceptVpcEndpointConnectionsOutput)
+	AcceptVpcEndpointConnectionsWithContextFunc               func(param0 aws.Context, param1 *ec2.AcceptVpcEndpointConnectionsInput, param2 ...request.Option) (*ec2.AcceptVpcEndpointConnectionsOutput, error)
 	AcceptVpcPeeringConnectionFunc                            func(param0 *ec2.AcceptVpcPeeringConnectionInput) (*ec2.AcceptVpcPeeringConnectionOutput, error)
 	AcceptVpcPeeringConnectionRequestFunc                     func(param0 *ec2.AcceptVpcPeeringConnectionInput) (*request.Request, *ec2.AcceptVpcPeeringConnectionOutput)
 	AcceptVpcPeeringConnectionWithContextFunc                 func(param0 aws.Context, param1 *ec2.AcceptVpcPeeringConnectionInput, param2 ...request.Option) (*ec2.AcceptVpcPeeringConnectionOutput, error)
@@ -3503,6 +3632,9 @@ type ec2Mock struct {
 	CreateCustomerGatewayFunc                                 func(param0 *ec2.CreateCustomerGatewayInput) (*ec2.CreateCustomerGatewayOutput, error)
 	CreateCustomerGatewayRequestFunc                          func(param0 *ec2.CreateCustomerGatewayInput) (*request.Request, *ec2.CreateCustomerGatewayOutput)
 	CreateCustomerGatewayWithContextFunc                      func(param0 aws.Context, param1 *ec2.CreateCustomerGatewayInput, param2 ...request.Option) (*ec2.CreateCustomerGatewayOutput, error)
+	CreateDefaultSubnetFunc                                   func(param0 *ec2.CreateDefaultSubnetInput) (*ec2.CreateDefaultSubnetOutput, error)
+	CreateDefaultSubnetRequestFunc                            func(param0 *ec2.CreateDefaultSubnetInput) (*request.Request, *ec2.CreateDefaultSubnetOutput)
+	CreateDefaultSubnetWithContextFunc                        func(param0 aws.Context, param1 *ec2.CreateDefaultSubnetInput, param2 ...request.Option) (*ec2.CreateDefaultSubnetOutput, error)
 	CreateDefaultVpcFunc                                      func(param0 *ec2.CreateDefaultVpcInput) (*ec2.CreateDefaultVpcOutput, error)
 	CreateDefaultVpcRequestFunc                               func(param0 *ec2.CreateDefaultVpcInput) (*request.Request, *ec2.CreateDefaultVpcOutput)
 	CreateDefaultVpcWithContextFunc                           func(param0 aws.Context, param1 *ec2.CreateDefaultVpcInput, param2 ...request.Option) (*ec2.CreateDefaultVpcOutput, error)
@@ -3530,6 +3662,12 @@ type ec2Mock struct {
 	CreateKeyPairFunc                                         func(param0 *ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error)
 	CreateKeyPairRequestFunc                                  func(param0 *ec2.CreateKeyPairInput) (*request.Request, *ec2.CreateKeyPairOutput)
 	CreateKeyPairWithContextFunc                              func(param0 aws.Context, param1 *ec2.CreateKeyPairInput, param2 ...request.Option) (*ec2.CreateKeyPairOutput, error)
+	CreateLaunchTemplateFunc                                  func(param0 *ec2.CreateLaunchTemplateInput) (*ec2.CreateLaunchTemplateOutput, error)
+	CreateLaunchTemplateRequestFunc                           func(param0 *ec2.CreateLaunchTemplateInput) (*request.Request, *ec2.CreateLaunchTemplateOutput)
+	CreateLaunchTemplateVersionFunc                           func(param0 *ec2.CreateLaunchTemplateVersionInput) (*ec2.CreateLaunchTemplateVersionOutput, error)
+	CreateLaunchTemplateVersionRequestFunc                    func(param0 *ec2.CreateLaunchTemplateVersionInput) (*request.Request, *ec2.CreateLaunchTemplateVersionOutput)
+	CreateLaunchTemplateVersionWithContextFunc                func(param0 aws.Context, param1 *ec2.CreateLaunchTemplateVersionInput, param2 ...request.Option) (*ec2.CreateLaunchTemplateVersionOutput, error)
+	CreateLaunchTemplateWithContextFunc                       func(param0 aws.Context, param1 *ec2.CreateLaunchTemplateInput, param2 ...request.Option) (*ec2.CreateLaunchTemplateOutput, error)
 	CreateNatGatewayFunc                                      func(param0 *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error)
 	CreateNatGatewayRequestFunc                               func(param0 *ec2.CreateNatGatewayInput) (*request.Request, *ec2.CreateNatGatewayOutput)
 	CreateNatGatewayWithContextFunc                           func(param0 aws.Context, param1 *ec2.CreateNatGatewayInput, param2 ...request.Option) (*ec2.CreateNatGatewayOutput, error)
@@ -3577,7 +3715,13 @@ type ec2Mock struct {
 	CreateVolumeWithContextFunc                               func(param0 aws.Context, param1 *ec2.CreateVolumeInput, param2 ...request.Option) (*ec2.Volume, error)
 	CreateVpcFunc                                             func(param0 *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error)
 	CreateVpcEndpointFunc                                     func(param0 *ec2.CreateVpcEndpointInput) (*ec2.CreateVpcEndpointOutput, error)
+	CreateVpcEndpointConnectionNotificationFunc               func(param0 *ec2.CreateVpcEndpointConnectionNotificationInput) (*ec2.CreateVpcEndpointConnectionNotificationOutput, error)
+	CreateVpcEndpointConnectionNotificationRequestFunc        func(param0 *ec2.CreateVpcEndpointConnectionNotificationInput) (*request.Request, *ec2.CreateVpcEndpointConnectionNotificationOutput)
+	CreateVpcEndpointConnectionNotificationWithContextFunc    func(param0 aws.Context, param1 *ec2.CreateVpcEndpointConnectionNotificationInput, param2 ...request.Option) (*ec2.CreateVpcEndpointConnectionNotificationOutput, error)
 	CreateVpcEndpointRequestFunc                              func(param0 *ec2.CreateVpcEndpointInput) (*request.Request, *ec2.CreateVpcEndpointOutput)
+	CreateVpcEndpointServiceConfigurationFunc                 func(param0 *ec2.CreateVpcEndpointServiceConfigurationInput) (*ec2.CreateVpcEndpointServiceConfigurationOutput, error)
+	CreateVpcEndpointServiceConfigurationRequestFunc          func(param0 *ec2.CreateVpcEndpointServiceConfigurationInput) (*request.Request, *ec2.CreateVpcEndpointServiceConfigurationOutput)
+	CreateVpcEndpointServiceConfigurationWithContextFunc      func(param0 aws.Context, param1 *ec2.CreateVpcEndpointServiceConfigurationInput, param2 ...request.Option) (*ec2.CreateVpcEndpointServiceConfigurationOutput, error)
 	CreateVpcEndpointWithContextFunc                          func(param0 aws.Context, param1 *ec2.CreateVpcEndpointInput, param2 ...request.Option) (*ec2.CreateVpcEndpointOutput, error)
 	CreateVpcPeeringConnectionFunc                            func(param0 *ec2.CreateVpcPeeringConnectionInput) (*ec2.CreateVpcPeeringConnectionOutput, error)
 	CreateVpcPeeringConnectionRequestFunc                     func(param0 *ec2.CreateVpcPeeringConnectionInput) (*request.Request, *ec2.CreateVpcPeeringConnectionOutput)
@@ -3614,6 +3758,12 @@ type ec2Mock struct {
 	DeleteKeyPairFunc                                         func(param0 *ec2.DeleteKeyPairInput) (*ec2.DeleteKeyPairOutput, error)
 	DeleteKeyPairRequestFunc                                  func(param0 *ec2.DeleteKeyPairInput) (*request.Request, *ec2.DeleteKeyPairOutput)
 	DeleteKeyPairWithContextFunc                              func(param0 aws.Context, param1 *ec2.DeleteKeyPairInput, param2 ...request.Option) (*ec2.DeleteKeyPairOutput, error)
+	DeleteLaunchTemplateFunc                                  func(param0 *ec2.DeleteLaunchTemplateInput) (*ec2.DeleteLaunchTemplateOutput, error)
+	DeleteLaunchTemplateRequestFunc                           func(param0 *ec2.DeleteLaunchTemplateInput) (*request.Request, *ec2.DeleteLaunchTemplateOutput)
+	DeleteLaunchTemplateVersionsFunc                          func(param0 *ec2.DeleteLaunchTemplateVersionsInput) (*ec2.DeleteLaunchTemplateVersionsOutput, error)
+	DeleteLaunchTemplateVersionsRequestFunc                   func(param0 *ec2.DeleteLaunchTemplateVersionsInput) (*request.Request, *ec2.DeleteLaunchTemplateVersionsOutput)
+	DeleteLaunchTemplateVersionsWithContextFunc               func(param0 aws.Context, param1 *ec2.DeleteLaunchTemplateVersionsInput, param2 ...request.Option) (*ec2.DeleteLaunchTemplateVersionsOutput, error)
+	DeleteLaunchTemplateWithContextFunc                       func(param0 aws.Context, param1 *ec2.DeleteLaunchTemplateInput, param2 ...request.Option) (*ec2.DeleteLaunchTemplateOutput, error)
 	DeleteNatGatewayFunc                                      func(param0 *ec2.DeleteNatGatewayInput) (*ec2.DeleteNatGatewayOutput, error)
 	DeleteNatGatewayRequestFunc                               func(param0 *ec2.DeleteNatGatewayInput) (*request.Request, *ec2.DeleteNatGatewayOutput)
 	DeleteNatGatewayWithContextFunc                           func(param0 aws.Context, param1 *ec2.DeleteNatGatewayInput, param2 ...request.Option) (*ec2.DeleteNatGatewayOutput, error)
@@ -3657,6 +3807,12 @@ type ec2Mock struct {
 	DeleteVolumeRequestFunc                                   func(param0 *ec2.DeleteVolumeInput) (*request.Request, *ec2.DeleteVolumeOutput)
 	DeleteVolumeWithContextFunc                               func(param0 aws.Context, param1 *ec2.DeleteVolumeInput, param2 ...request.Option) (*ec2.DeleteVolumeOutput, error)
 	DeleteVpcFunc                                             func(param0 *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, error)
+	DeleteVpcEndpointConnectionNotificationsFunc              func(param0 *ec2.DeleteVpcEndpointConnectionNotificationsInput) (*ec2.DeleteVpcEndpointConnectionNotificationsOutput, error)
+	DeleteVpcEndpointConnectionNotificationsRequestFunc       func(param0 *ec2.DeleteVpcEndpointConnectionNotificationsInput) (*request.Request, *ec2.DeleteVpcEndpointConnectionNotificationsOutput)
+	DeleteVpcEndpointConnectionNotificationsWithContextFunc   func(param0 aws.Context, param1 *ec2.DeleteVpcEndpointConnectionNotificationsInput, param2 ...request.Option) (*ec2.DeleteVpcEndpointConnectionNotificationsOutput, error)
+	DeleteVpcEndpointServiceConfigurationsFunc                func(param0 *ec2.DeleteVpcEndpointServiceConfigurationsInput) (*ec2.DeleteVpcEndpointServiceConfigurationsOutput, error)
+	DeleteVpcEndpointServiceConfigurationsRequestFunc         func(param0 *ec2.DeleteVpcEndpointServiceConfigurationsInput) (*request.Request, *ec2.DeleteVpcEndpointServiceConfigurationsOutput)
+	DeleteVpcEndpointServiceConfigurationsWithContextFunc     func(param0 aws.Context, param1 *ec2.DeleteVpcEndpointServiceConfigurationsInput, param2 ...request.Option) (*ec2.DeleteVpcEndpointServiceConfigurationsOutput, error)
 	DeleteVpcEndpointsFunc                                    func(param0 *ec2.DeleteVpcEndpointsInput) (*ec2.DeleteVpcEndpointsOutput, error)
 	DeleteVpcEndpointsRequestFunc                             func(param0 *ec2.DeleteVpcEndpointsInput) (*request.Request, *ec2.DeleteVpcEndpointsOutput)
 	DeleteVpcEndpointsWithContextFunc                         func(param0 aws.Context, param1 *ec2.DeleteVpcEndpointsInput, param2 ...request.Option) (*ec2.DeleteVpcEndpointsOutput, error)
@@ -3752,6 +3908,9 @@ type ec2Mock struct {
 	DescribeInstanceAttributeFunc                             func(param0 *ec2.DescribeInstanceAttributeInput) (*ec2.DescribeInstanceAttributeOutput, error)
 	DescribeInstanceAttributeRequestFunc                      func(param0 *ec2.DescribeInstanceAttributeInput) (*request.Request, *ec2.DescribeInstanceAttributeOutput)
 	DescribeInstanceAttributeWithContextFunc                  func(param0 aws.Context, param1 *ec2.DescribeInstanceAttributeInput, param2 ...request.Option) (*ec2.DescribeInstanceAttributeOutput, error)
+	DescribeInstanceCreditSpecificationsFunc                  func(param0 *ec2.DescribeInstanceCreditSpecificationsInput) (*ec2.DescribeInstanceCreditSpecificationsOutput, error)
+	DescribeInstanceCreditSpecificationsRequestFunc           func(param0 *ec2.DescribeInstanceCreditSpecificationsInput) (*request.Request, *ec2.DescribeInstanceCreditSpecificationsOutput)
+	DescribeInstanceCreditSpecificationsWithContextFunc       func(param0 aws.Context, param1 *ec2.DescribeInstanceCreditSpecificationsInput, param2 ...request.Option) (*ec2.DescribeInstanceCreditSpecificationsOutput, error)
 	DescribeInstanceStatusFunc                                func(param0 *ec2.DescribeInstanceStatusInput) (*ec2.DescribeInstanceStatusOutput, error)
 	DescribeInstanceStatusRequestFunc                         func(param0 *ec2.DescribeInstanceStatusInput) (*request.Request, *ec2.DescribeInstanceStatusOutput)
 	DescribeInstanceStatusWithContextFunc                     func(param0 aws.Context, param1 *ec2.DescribeInstanceStatusInput, param2 ...request.Option) (*ec2.DescribeInstanceStatusOutput, error)
@@ -3764,6 +3923,12 @@ type ec2Mock struct {
 	DescribeKeyPairsFunc                                      func(param0 *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error)
 	DescribeKeyPairsRequestFunc                               func(param0 *ec2.DescribeKeyPairsInput) (*request.Request, *ec2.DescribeKeyPairsOutput)
 	DescribeKeyPairsWithContextFunc                           func(param0 aws.Context, param1 *ec2.DescribeKeyPairsInput, param2 ...request.Option) (*ec2.DescribeKeyPairsOutput, error)
+	DescribeLaunchTemplateVersionsFunc                        func(param0 *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
+	DescribeLaunchTemplateVersionsRequestFunc                 func(param0 *ec2.DescribeLaunchTemplateVersionsInput) (*request.Request, *ec2.DescribeLaunchTemplateVersionsOutput)
+	DescribeLaunchTemplateVersionsWithContextFunc             func(param0 aws.Context, param1 *ec2.DescribeLaunchTemplateVersionsInput, param2 ...request.Option) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
+	DescribeLaunchTemplatesFunc                               func(param0 *ec2.DescribeLaunchTemplatesInput) (*ec2.DescribeLaunchTemplatesOutput, error)
+	DescribeLaunchTemplatesRequestFunc                        func(param0 *ec2.DescribeLaunchTemplatesInput) (*request.Request, *ec2.DescribeLaunchTemplatesOutput)
+	DescribeLaunchTemplatesWithContextFunc                    func(param0 aws.Context, param1 *ec2.DescribeLaunchTemplatesInput, param2 ...request.Option) (*ec2.DescribeLaunchTemplatesOutput, error)
 	DescribeMovingAddressesFunc                               func(param0 *ec2.DescribeMovingAddressesInput) (*ec2.DescribeMovingAddressesOutput, error)
 	DescribeMovingAddressesRequestFunc                        func(param0 *ec2.DescribeMovingAddressesInput) (*request.Request, *ec2.DescribeMovingAddressesOutput)
 	DescribeMovingAddressesWithContextFunc                    func(param0 aws.Context, param1 *ec2.DescribeMovingAddressesInput, param2 ...request.Option) (*ec2.DescribeMovingAddressesOutput, error)
@@ -3872,6 +4037,18 @@ type ec2Mock struct {
 	DescribeVpcClassicLinkDnsSupportWithContextFunc           func(param0 aws.Context, param1 *ec2.DescribeVpcClassicLinkDnsSupportInput, param2 ...request.Option) (*ec2.DescribeVpcClassicLinkDnsSupportOutput, error)
 	DescribeVpcClassicLinkRequestFunc                         func(param0 *ec2.DescribeVpcClassicLinkInput) (*request.Request, *ec2.DescribeVpcClassicLinkOutput)
 	DescribeVpcClassicLinkWithContextFunc                     func(param0 aws.Context, param1 *ec2.DescribeVpcClassicLinkInput, param2 ...request.Option) (*ec2.DescribeVpcClassicLinkOutput, error)
+	DescribeVpcEndpointConnectionNotificationsFunc            func(param0 *ec2.DescribeVpcEndpointConnectionNotificationsInput) (*ec2.DescribeVpcEndpointConnectionNotificationsOutput, error)
+	DescribeVpcEndpointConnectionNotificationsRequestFunc     func(param0 *ec2.DescribeVpcEndpointConnectionNotificationsInput) (*request.Request, *ec2.DescribeVpcEndpointConnectionNotificationsOutput)
+	DescribeVpcEndpointConnectionNotificationsWithContextFunc func(param0 aws.Context, param1 *ec2.DescribeVpcEndpointConnectionNotificationsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointConnectionNotificationsOutput, error)
+	DescribeVpcEndpointConnectionsFunc                        func(param0 *ec2.DescribeVpcEndpointConnectionsInput) (*ec2.DescribeVpcEndpointConnectionsOutput, error)
+	DescribeVpcEndpointConnectionsRequestFunc                 func(param0 *ec2.DescribeVpcEndpointConnectionsInput) (*request.Request, *ec2.DescribeVpcEndpointConnectionsOutput)
+	DescribeVpcEndpointConnectionsWithContextFunc             func(param0 aws.Context, param1 *ec2.DescribeVpcEndpointConnectionsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointConnectionsOutput, error)
+	DescribeVpcEndpointServiceConfigurationsFunc              func(param0 *ec2.DescribeVpcEndpointServiceConfigurationsInput) (*ec2.DescribeVpcEndpointServiceConfigurationsOutput, error)
+	DescribeVpcEndpointServiceConfigurationsRequestFunc       func(param0 *ec2.DescribeVpcEndpointServiceConfigurationsInput) (*request.Request, *ec2.DescribeVpcEndpointServiceConfigurationsOutput)
+	DescribeVpcEndpointServiceConfigurationsWithContextFunc   func(param0 aws.Context, param1 *ec2.DescribeVpcEndpointServiceConfigurationsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointServiceConfigurationsOutput, error)
+	DescribeVpcEndpointServicePermissionsFunc                 func(param0 *ec2.DescribeVpcEndpointServicePermissionsInput) (*ec2.DescribeVpcEndpointServicePermissionsOutput, error)
+	DescribeVpcEndpointServicePermissionsRequestFunc          func(param0 *ec2.DescribeVpcEndpointServicePermissionsInput) (*request.Request, *ec2.DescribeVpcEndpointServicePermissionsOutput)
+	DescribeVpcEndpointServicePermissionsWithContextFunc      func(param0 aws.Context, param1 *ec2.DescribeVpcEndpointServicePermissionsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointServicePermissionsOutput, error)
 	DescribeVpcEndpointServicesFunc                           func(param0 *ec2.DescribeVpcEndpointServicesInput) (*ec2.DescribeVpcEndpointServicesOutput, error)
 	DescribeVpcEndpointServicesRequestFunc                    func(param0 *ec2.DescribeVpcEndpointServicesInput) (*request.Request, *ec2.DescribeVpcEndpointServicesOutput)
 	DescribeVpcEndpointServicesWithContextFunc                func(param0 aws.Context, param1 *ec2.DescribeVpcEndpointServicesInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointServicesOutput, error)
@@ -3950,6 +4127,9 @@ type ec2Mock struct {
 	GetHostReservationPurchasePreviewFunc                     func(param0 *ec2.GetHostReservationPurchasePreviewInput) (*ec2.GetHostReservationPurchasePreviewOutput, error)
 	GetHostReservationPurchasePreviewRequestFunc              func(param0 *ec2.GetHostReservationPurchasePreviewInput) (*request.Request, *ec2.GetHostReservationPurchasePreviewOutput)
 	GetHostReservationPurchasePreviewWithContextFunc          func(param0 aws.Context, param1 *ec2.GetHostReservationPurchasePreviewInput, param2 ...request.Option) (*ec2.GetHostReservationPurchasePreviewOutput, error)
+	GetLaunchTemplateDataFunc                                 func(param0 *ec2.GetLaunchTemplateDataInput) (*ec2.GetLaunchTemplateDataOutput, error)
+	GetLaunchTemplateDataRequestFunc                          func(param0 *ec2.GetLaunchTemplateDataInput) (*request.Request, *ec2.GetLaunchTemplateDataOutput)
+	GetLaunchTemplateDataWithContextFunc                      func(param0 aws.Context, param1 *ec2.GetLaunchTemplateDataInput, param2 ...request.Option) (*ec2.GetLaunchTemplateDataOutput, error)
 	GetPasswordDataFunc                                       func(param0 *ec2.GetPasswordDataInput) (*ec2.GetPasswordDataOutput, error)
 	GetPasswordDataRequestFunc                                func(param0 *ec2.GetPasswordDataInput) (*request.Request, *ec2.GetPasswordDataOutput)
 	GetPasswordDataWithContextFunc                            func(param0 aws.Context, param1 *ec2.GetPasswordDataInput, param2 ...request.Option) (*ec2.GetPasswordDataOutput, error)
@@ -3989,9 +4169,15 @@ type ec2Mock struct {
 	ModifyInstanceAttributeFunc                               func(param0 *ec2.ModifyInstanceAttributeInput) (*ec2.ModifyInstanceAttributeOutput, error)
 	ModifyInstanceAttributeRequestFunc                        func(param0 *ec2.ModifyInstanceAttributeInput) (*request.Request, *ec2.ModifyInstanceAttributeOutput)
 	ModifyInstanceAttributeWithContextFunc                    func(param0 aws.Context, param1 *ec2.ModifyInstanceAttributeInput, param2 ...request.Option) (*ec2.ModifyInstanceAttributeOutput, error)
+	ModifyInstanceCreditSpecificationFunc                     func(param0 *ec2.ModifyInstanceCreditSpecificationInput) (*ec2.ModifyInstanceCreditSpecificationOutput, error)
+	ModifyInstanceCreditSpecificationRequestFunc              func(param0 *ec2.ModifyInstanceCreditSpecificationInput) (*request.Request, *ec2.ModifyInstanceCreditSpecificationOutput)
+	ModifyInstanceCreditSpecificationWithContextFunc          func(param0 aws.Context, param1 *ec2.ModifyInstanceCreditSpecificationInput, param2 ...request.Option) (*ec2.ModifyInstanceCreditSpecificationOutput, error)
 	ModifyInstancePlacementFunc                               func(param0 *ec2.ModifyInstancePlacementInput) (*ec2.ModifyInstancePlacementOutput, error)
 	ModifyInstancePlacementRequestFunc                        func(param0 *ec2.ModifyInstancePlacementInput) (*request.Request, *ec2.ModifyInstancePlacementOutput)
 	ModifyInstancePlacementWithContextFunc                    func(param0 aws.Context, param1 *ec2.ModifyInstancePlacementInput, param2 ...request.Option) (*ec2.ModifyInstancePlacementOutput, error)
+	ModifyLaunchTemplateFunc                                  func(param0 *ec2.ModifyLaunchTemplateInput) (*ec2.ModifyLaunchTemplateOutput, error)
+	ModifyLaunchTemplateRequestFunc                           func(param0 *ec2.ModifyLaunchTemplateInput) (*request.Request, *ec2.ModifyLaunchTemplateOutput)
+	ModifyLaunchTemplateWithContextFunc                       func(param0 aws.Context, param1 *ec2.ModifyLaunchTemplateInput, param2 ...request.Option) (*ec2.ModifyLaunchTemplateOutput, error)
 	ModifyNetworkInterfaceAttributeFunc                       func(param0 *ec2.ModifyNetworkInterfaceAttributeInput) (*ec2.ModifyNetworkInterfaceAttributeOutput, error)
 	ModifyNetworkInterfaceAttributeRequestFunc                func(param0 *ec2.ModifyNetworkInterfaceAttributeInput) (*request.Request, *ec2.ModifyNetworkInterfaceAttributeOutput)
 	ModifyNetworkInterfaceAttributeWithContextFunc            func(param0 aws.Context, param1 *ec2.ModifyNetworkInterfaceAttributeInput, param2 ...request.Option) (*ec2.ModifyNetworkInterfaceAttributeOutput, error)
@@ -4017,11 +4203,23 @@ type ec2Mock struct {
 	ModifyVpcAttributeRequestFunc                             func(param0 *ec2.ModifyVpcAttributeInput) (*request.Request, *ec2.ModifyVpcAttributeOutput)
 	ModifyVpcAttributeWithContextFunc                         func(param0 aws.Context, param1 *ec2.ModifyVpcAttributeInput, param2 ...request.Option) (*ec2.ModifyVpcAttributeOutput, error)
 	ModifyVpcEndpointFunc                                     func(param0 *ec2.ModifyVpcEndpointInput) (*ec2.ModifyVpcEndpointOutput, error)
+	ModifyVpcEndpointConnectionNotificationFunc               func(param0 *ec2.ModifyVpcEndpointConnectionNotificationInput) (*ec2.ModifyVpcEndpointConnectionNotificationOutput, error)
+	ModifyVpcEndpointConnectionNotificationRequestFunc        func(param0 *ec2.ModifyVpcEndpointConnectionNotificationInput) (*request.Request, *ec2.ModifyVpcEndpointConnectionNotificationOutput)
+	ModifyVpcEndpointConnectionNotificationWithContextFunc    func(param0 aws.Context, param1 *ec2.ModifyVpcEndpointConnectionNotificationInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointConnectionNotificationOutput, error)
 	ModifyVpcEndpointRequestFunc                              func(param0 *ec2.ModifyVpcEndpointInput) (*request.Request, *ec2.ModifyVpcEndpointOutput)
+	ModifyVpcEndpointServiceConfigurationFunc                 func(param0 *ec2.ModifyVpcEndpointServiceConfigurationInput) (*ec2.ModifyVpcEndpointServiceConfigurationOutput, error)
+	ModifyVpcEndpointServiceConfigurationRequestFunc          func(param0 *ec2.ModifyVpcEndpointServiceConfigurationInput) (*request.Request, *ec2.ModifyVpcEndpointServiceConfigurationOutput)
+	ModifyVpcEndpointServiceConfigurationWithContextFunc      func(param0 aws.Context, param1 *ec2.ModifyVpcEndpointServiceConfigurationInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointServiceConfigurationOutput, error)
+	ModifyVpcEndpointServicePermissionsFunc                   func(param0 *ec2.ModifyVpcEndpointServicePermissionsInput) (*ec2.ModifyVpcEndpointServicePermissionsOutput, error)
+	ModifyVpcEndpointServicePermissionsRequestFunc            func(param0 *ec2.ModifyVpcEndpointServicePermissionsInput) (*request.Request, *ec2.ModifyVpcEndpointServicePermissionsOutput)
+	ModifyVpcEndpointServicePermissionsWithContextFunc        func(param0 aws.Context, param1 *ec2.ModifyVpcEndpointServicePermissionsInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointServicePermissionsOutput, error)
 	ModifyVpcEndpointWithContextFunc                          func(param0 aws.Context, param1 *ec2.ModifyVpcEndpointInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointOutput, error)
 	ModifyVpcPeeringConnectionOptionsFunc                     func(param0 *ec2.ModifyVpcPeeringConnectionOptionsInput) (*ec2.ModifyVpcPeeringConnectionOptionsOutput, error)
 	ModifyVpcPeeringConnectionOptionsRequestFunc              func(param0 *ec2.ModifyVpcPeeringConnectionOptionsInput) (*request.Request, *ec2.ModifyVpcPeeringConnectionOptionsOutput)
 	ModifyVpcPeeringConnectionOptionsWithContextFunc          func(param0 aws.Context, param1 *ec2.ModifyVpcPeeringConnectionOptionsInput, param2 ...request.Option) (*ec2.ModifyVpcPeeringConnectionOptionsOutput, error)
+	ModifyVpcTenancyFunc                                      func(param0 *ec2.ModifyVpcTenancyInput) (*ec2.ModifyVpcTenancyOutput, error)
+	ModifyVpcTenancyRequestFunc                               func(param0 *ec2.ModifyVpcTenancyInput) (*request.Request, *ec2.ModifyVpcTenancyOutput)
+	ModifyVpcTenancyWithContextFunc                           func(param0 aws.Context, param1 *ec2.ModifyVpcTenancyInput, param2 ...request.Option) (*ec2.ModifyVpcTenancyOutput, error)
 	MonitorInstancesFunc                                      func(param0 *ec2.MonitorInstancesInput) (*ec2.MonitorInstancesOutput, error)
 	MonitorInstancesRequestFunc                               func(param0 *ec2.MonitorInstancesInput) (*request.Request, *ec2.MonitorInstancesOutput)
 	MonitorInstancesWithContextFunc                           func(param0 aws.Context, param1 *ec2.MonitorInstancesInput, param2 ...request.Option) (*ec2.MonitorInstancesOutput, error)
@@ -4043,6 +4241,9 @@ type ec2Mock struct {
 	RegisterImageFunc                                         func(param0 *ec2.RegisterImageInput) (*ec2.RegisterImageOutput, error)
 	RegisterImageRequestFunc                                  func(param0 *ec2.RegisterImageInput) (*request.Request, *ec2.RegisterImageOutput)
 	RegisterImageWithContextFunc                              func(param0 aws.Context, param1 *ec2.RegisterImageInput, param2 ...request.Option) (*ec2.RegisterImageOutput, error)
+	RejectVpcEndpointConnectionsFunc                          func(param0 *ec2.RejectVpcEndpointConnectionsInput) (*ec2.RejectVpcEndpointConnectionsOutput, error)
+	RejectVpcEndpointConnectionsRequestFunc                   func(param0 *ec2.RejectVpcEndpointConnectionsInput) (*request.Request, *ec2.RejectVpcEndpointConnectionsOutput)
+	RejectVpcEndpointConnectionsWithContextFunc               func(param0 aws.Context, param1 *ec2.RejectVpcEndpointConnectionsInput, param2 ...request.Option) (*ec2.RejectVpcEndpointConnectionsOutput, error)
 	RejectVpcPeeringConnectionFunc                            func(param0 *ec2.RejectVpcPeeringConnectionInput) (*ec2.RejectVpcPeeringConnectionOutput, error)
 	RejectVpcPeeringConnectionRequestFunc                     func(param0 *ec2.RejectVpcPeeringConnectionInput) (*request.Request, *ec2.RejectVpcPeeringConnectionOutput)
 	RejectVpcPeeringConnectionWithContextFunc                 func(param0 aws.Context, param1 *ec2.RejectVpcPeeringConnectionInput, param2 ...request.Option) (*ec2.RejectVpcPeeringConnectionOutput, error)
@@ -4210,6 +4411,24 @@ func (m *ec2Mock) AcceptReservedInstancesExchangeQuoteWithContext(param0 aws.Con
 	m.addCall("AcceptReservedInstancesExchangeQuoteWithContext")
 	m.verifyInput("AcceptReservedInstancesExchangeQuoteWithContext", param0)
 	return m.AcceptReservedInstancesExchangeQuoteWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) AcceptVpcEndpointConnections(param0 *ec2.AcceptVpcEndpointConnectionsInput) (*ec2.AcceptVpcEndpointConnectionsOutput, error) {
+	m.addCall("AcceptVpcEndpointConnections")
+	m.verifyInput("AcceptVpcEndpointConnections", param0)
+	return m.AcceptVpcEndpointConnectionsFunc(param0)
+}
+
+func (m *ec2Mock) AcceptVpcEndpointConnectionsRequest(param0 *ec2.AcceptVpcEndpointConnectionsInput) (*request.Request, *ec2.AcceptVpcEndpointConnectionsOutput) {
+	m.addCall("AcceptVpcEndpointConnectionsRequest")
+	m.verifyInput("AcceptVpcEndpointConnectionsRequest", param0)
+	return m.AcceptVpcEndpointConnectionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) AcceptVpcEndpointConnectionsWithContext(param0 aws.Context, param1 *ec2.AcceptVpcEndpointConnectionsInput, param2 ...request.Option) (*ec2.AcceptVpcEndpointConnectionsOutput, error) {
+	m.addCall("AcceptVpcEndpointConnectionsWithContext")
+	m.verifyInput("AcceptVpcEndpointConnectionsWithContext", param0)
+	return m.AcceptVpcEndpointConnectionsWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) AcceptVpcPeeringConnection(param0 *ec2.AcceptVpcPeeringConnectionInput) (*ec2.AcceptVpcPeeringConnectionOutput, error) {
@@ -4770,6 +4989,24 @@ func (m *ec2Mock) CreateCustomerGatewayWithContext(param0 aws.Context, param1 *e
 	return m.CreateCustomerGatewayWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ec2Mock) CreateDefaultSubnet(param0 *ec2.CreateDefaultSubnetInput) (*ec2.CreateDefaultSubnetOutput, error) {
+	m.addCall("CreateDefaultSubnet")
+	m.verifyInput("CreateDefaultSubnet", param0)
+	return m.CreateDefaultSubnetFunc(param0)
+}
+
+func (m *ec2Mock) CreateDefaultSubnetRequest(param0 *ec2.CreateDefaultSubnetInput) (*request.Request, *ec2.CreateDefaultSubnetOutput) {
+	m.addCall("CreateDefaultSubnetRequest")
+	m.verifyInput("CreateDefaultSubnetRequest", param0)
+	return m.CreateDefaultSubnetRequestFunc(param0)
+}
+
+func (m *ec2Mock) CreateDefaultSubnetWithContext(param0 aws.Context, param1 *ec2.CreateDefaultSubnetInput, param2 ...request.Option) (*ec2.CreateDefaultSubnetOutput, error) {
+	m.addCall("CreateDefaultSubnetWithContext")
+	m.verifyInput("CreateDefaultSubnetWithContext", param0)
+	return m.CreateDefaultSubnetWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) CreateDefaultVpc(param0 *ec2.CreateDefaultVpcInput) (*ec2.CreateDefaultVpcOutput, error) {
 	m.addCall("CreateDefaultVpc")
 	m.verifyInput("CreateDefaultVpc", param0)
@@ -4930,6 +5167,42 @@ func (m *ec2Mock) CreateKeyPairWithContext(param0 aws.Context, param1 *ec2.Creat
 	m.addCall("CreateKeyPairWithContext")
 	m.verifyInput("CreateKeyPairWithContext", param0)
 	return m.CreateKeyPairWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) CreateLaunchTemplate(param0 *ec2.CreateLaunchTemplateInput) (*ec2.CreateLaunchTemplateOutput, error) {
+	m.addCall("CreateLaunchTemplate")
+	m.verifyInput("CreateLaunchTemplate", param0)
+	return m.CreateLaunchTemplateFunc(param0)
+}
+
+func (m *ec2Mock) CreateLaunchTemplateRequest(param0 *ec2.CreateLaunchTemplateInput) (*request.Request, *ec2.CreateLaunchTemplateOutput) {
+	m.addCall("CreateLaunchTemplateRequest")
+	m.verifyInput("CreateLaunchTemplateRequest", param0)
+	return m.CreateLaunchTemplateRequestFunc(param0)
+}
+
+func (m *ec2Mock) CreateLaunchTemplateVersion(param0 *ec2.CreateLaunchTemplateVersionInput) (*ec2.CreateLaunchTemplateVersionOutput, error) {
+	m.addCall("CreateLaunchTemplateVersion")
+	m.verifyInput("CreateLaunchTemplateVersion", param0)
+	return m.CreateLaunchTemplateVersionFunc(param0)
+}
+
+func (m *ec2Mock) CreateLaunchTemplateVersionRequest(param0 *ec2.CreateLaunchTemplateVersionInput) (*request.Request, *ec2.CreateLaunchTemplateVersionOutput) {
+	m.addCall("CreateLaunchTemplateVersionRequest")
+	m.verifyInput("CreateLaunchTemplateVersionRequest", param0)
+	return m.CreateLaunchTemplateVersionRequestFunc(param0)
+}
+
+func (m *ec2Mock) CreateLaunchTemplateVersionWithContext(param0 aws.Context, param1 *ec2.CreateLaunchTemplateVersionInput, param2 ...request.Option) (*ec2.CreateLaunchTemplateVersionOutput, error) {
+	m.addCall("CreateLaunchTemplateVersionWithContext")
+	m.verifyInput("CreateLaunchTemplateVersionWithContext", param0)
+	return m.CreateLaunchTemplateVersionWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) CreateLaunchTemplateWithContext(param0 aws.Context, param1 *ec2.CreateLaunchTemplateInput, param2 ...request.Option) (*ec2.CreateLaunchTemplateOutput, error) {
+	m.addCall("CreateLaunchTemplateWithContext")
+	m.verifyInput("CreateLaunchTemplateWithContext", param0)
+	return m.CreateLaunchTemplateWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) CreateNatGateway(param0 *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
@@ -5214,10 +5487,46 @@ func (m *ec2Mock) CreateVpcEndpoint(param0 *ec2.CreateVpcEndpointInput) (*ec2.Cr
 	return m.CreateVpcEndpointFunc(param0)
 }
 
+func (m *ec2Mock) CreateVpcEndpointConnectionNotification(param0 *ec2.CreateVpcEndpointConnectionNotificationInput) (*ec2.CreateVpcEndpointConnectionNotificationOutput, error) {
+	m.addCall("CreateVpcEndpointConnectionNotification")
+	m.verifyInput("CreateVpcEndpointConnectionNotification", param0)
+	return m.CreateVpcEndpointConnectionNotificationFunc(param0)
+}
+
+func (m *ec2Mock) CreateVpcEndpointConnectionNotificationRequest(param0 *ec2.CreateVpcEndpointConnectionNotificationInput) (*request.Request, *ec2.CreateVpcEndpointConnectionNotificationOutput) {
+	m.addCall("CreateVpcEndpointConnectionNotificationRequest")
+	m.verifyInput("CreateVpcEndpointConnectionNotificationRequest", param0)
+	return m.CreateVpcEndpointConnectionNotificationRequestFunc(param0)
+}
+
+func (m *ec2Mock) CreateVpcEndpointConnectionNotificationWithContext(param0 aws.Context, param1 *ec2.CreateVpcEndpointConnectionNotificationInput, param2 ...request.Option) (*ec2.CreateVpcEndpointConnectionNotificationOutput, error) {
+	m.addCall("CreateVpcEndpointConnectionNotificationWithContext")
+	m.verifyInput("CreateVpcEndpointConnectionNotificationWithContext", param0)
+	return m.CreateVpcEndpointConnectionNotificationWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) CreateVpcEndpointRequest(param0 *ec2.CreateVpcEndpointInput) (*request.Request, *ec2.CreateVpcEndpointOutput) {
 	m.addCall("CreateVpcEndpointRequest")
 	m.verifyInput("CreateVpcEndpointRequest", param0)
 	return m.CreateVpcEndpointRequestFunc(param0)
+}
+
+func (m *ec2Mock) CreateVpcEndpointServiceConfiguration(param0 *ec2.CreateVpcEndpointServiceConfigurationInput) (*ec2.CreateVpcEndpointServiceConfigurationOutput, error) {
+	m.addCall("CreateVpcEndpointServiceConfiguration")
+	m.verifyInput("CreateVpcEndpointServiceConfiguration", param0)
+	return m.CreateVpcEndpointServiceConfigurationFunc(param0)
+}
+
+func (m *ec2Mock) CreateVpcEndpointServiceConfigurationRequest(param0 *ec2.CreateVpcEndpointServiceConfigurationInput) (*request.Request, *ec2.CreateVpcEndpointServiceConfigurationOutput) {
+	m.addCall("CreateVpcEndpointServiceConfigurationRequest")
+	m.verifyInput("CreateVpcEndpointServiceConfigurationRequest", param0)
+	return m.CreateVpcEndpointServiceConfigurationRequestFunc(param0)
+}
+
+func (m *ec2Mock) CreateVpcEndpointServiceConfigurationWithContext(param0 aws.Context, param1 *ec2.CreateVpcEndpointServiceConfigurationInput, param2 ...request.Option) (*ec2.CreateVpcEndpointServiceConfigurationOutput, error) {
+	m.addCall("CreateVpcEndpointServiceConfigurationWithContext")
+	m.verifyInput("CreateVpcEndpointServiceConfigurationWithContext", param0)
+	return m.CreateVpcEndpointServiceConfigurationWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) CreateVpcEndpointWithContext(param0 aws.Context, param1 *ec2.CreateVpcEndpointInput, param2 ...request.Option) (*ec2.CreateVpcEndpointOutput, error) {
@@ -5434,6 +5743,42 @@ func (m *ec2Mock) DeleteKeyPairWithContext(param0 aws.Context, param1 *ec2.Delet
 	m.addCall("DeleteKeyPairWithContext")
 	m.verifyInput("DeleteKeyPairWithContext", param0)
 	return m.DeleteKeyPairWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DeleteLaunchTemplate(param0 *ec2.DeleteLaunchTemplateInput) (*ec2.DeleteLaunchTemplateOutput, error) {
+	m.addCall("DeleteLaunchTemplate")
+	m.verifyInput("DeleteLaunchTemplate", param0)
+	return m.DeleteLaunchTemplateFunc(param0)
+}
+
+func (m *ec2Mock) DeleteLaunchTemplateRequest(param0 *ec2.DeleteLaunchTemplateInput) (*request.Request, *ec2.DeleteLaunchTemplateOutput) {
+	m.addCall("DeleteLaunchTemplateRequest")
+	m.verifyInput("DeleteLaunchTemplateRequest", param0)
+	return m.DeleteLaunchTemplateRequestFunc(param0)
+}
+
+func (m *ec2Mock) DeleteLaunchTemplateVersions(param0 *ec2.DeleteLaunchTemplateVersionsInput) (*ec2.DeleteLaunchTemplateVersionsOutput, error) {
+	m.addCall("DeleteLaunchTemplateVersions")
+	m.verifyInput("DeleteLaunchTemplateVersions", param0)
+	return m.DeleteLaunchTemplateVersionsFunc(param0)
+}
+
+func (m *ec2Mock) DeleteLaunchTemplateVersionsRequest(param0 *ec2.DeleteLaunchTemplateVersionsInput) (*request.Request, *ec2.DeleteLaunchTemplateVersionsOutput) {
+	m.addCall("DeleteLaunchTemplateVersionsRequest")
+	m.verifyInput("DeleteLaunchTemplateVersionsRequest", param0)
+	return m.DeleteLaunchTemplateVersionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DeleteLaunchTemplateVersionsWithContext(param0 aws.Context, param1 *ec2.DeleteLaunchTemplateVersionsInput, param2 ...request.Option) (*ec2.DeleteLaunchTemplateVersionsOutput, error) {
+	m.addCall("DeleteLaunchTemplateVersionsWithContext")
+	m.verifyInput("DeleteLaunchTemplateVersionsWithContext", param0)
+	return m.DeleteLaunchTemplateVersionsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DeleteLaunchTemplateWithContext(param0 aws.Context, param1 *ec2.DeleteLaunchTemplateInput, param2 ...request.Option) (*ec2.DeleteLaunchTemplateOutput, error) {
+	m.addCall("DeleteLaunchTemplateWithContext")
+	m.verifyInput("DeleteLaunchTemplateWithContext", param0)
+	return m.DeleteLaunchTemplateWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) DeleteNatGateway(param0 *ec2.DeleteNatGatewayInput) (*ec2.DeleteNatGatewayOutput, error) {
@@ -5692,6 +6037,42 @@ func (m *ec2Mock) DeleteVpc(param0 *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, e
 	m.addCall("DeleteVpc")
 	m.verifyInput("DeleteVpc", param0)
 	return m.DeleteVpcFunc(param0)
+}
+
+func (m *ec2Mock) DeleteVpcEndpointConnectionNotifications(param0 *ec2.DeleteVpcEndpointConnectionNotificationsInput) (*ec2.DeleteVpcEndpointConnectionNotificationsOutput, error) {
+	m.addCall("DeleteVpcEndpointConnectionNotifications")
+	m.verifyInput("DeleteVpcEndpointConnectionNotifications", param0)
+	return m.DeleteVpcEndpointConnectionNotificationsFunc(param0)
+}
+
+func (m *ec2Mock) DeleteVpcEndpointConnectionNotificationsRequest(param0 *ec2.DeleteVpcEndpointConnectionNotificationsInput) (*request.Request, *ec2.DeleteVpcEndpointConnectionNotificationsOutput) {
+	m.addCall("DeleteVpcEndpointConnectionNotificationsRequest")
+	m.verifyInput("DeleteVpcEndpointConnectionNotificationsRequest", param0)
+	return m.DeleteVpcEndpointConnectionNotificationsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DeleteVpcEndpointConnectionNotificationsWithContext(param0 aws.Context, param1 *ec2.DeleteVpcEndpointConnectionNotificationsInput, param2 ...request.Option) (*ec2.DeleteVpcEndpointConnectionNotificationsOutput, error) {
+	m.addCall("DeleteVpcEndpointConnectionNotificationsWithContext")
+	m.verifyInput("DeleteVpcEndpointConnectionNotificationsWithContext", param0)
+	return m.DeleteVpcEndpointConnectionNotificationsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DeleteVpcEndpointServiceConfigurations(param0 *ec2.DeleteVpcEndpointServiceConfigurationsInput) (*ec2.DeleteVpcEndpointServiceConfigurationsOutput, error) {
+	m.addCall("DeleteVpcEndpointServiceConfigurations")
+	m.verifyInput("DeleteVpcEndpointServiceConfigurations", param0)
+	return m.DeleteVpcEndpointServiceConfigurationsFunc(param0)
+}
+
+func (m *ec2Mock) DeleteVpcEndpointServiceConfigurationsRequest(param0 *ec2.DeleteVpcEndpointServiceConfigurationsInput) (*request.Request, *ec2.DeleteVpcEndpointServiceConfigurationsOutput) {
+	m.addCall("DeleteVpcEndpointServiceConfigurationsRequest")
+	m.verifyInput("DeleteVpcEndpointServiceConfigurationsRequest", param0)
+	return m.DeleteVpcEndpointServiceConfigurationsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DeleteVpcEndpointServiceConfigurationsWithContext(param0 aws.Context, param1 *ec2.DeleteVpcEndpointServiceConfigurationsInput, param2 ...request.Option) (*ec2.DeleteVpcEndpointServiceConfigurationsOutput, error) {
+	m.addCall("DeleteVpcEndpointServiceConfigurationsWithContext")
+	m.verifyInput("DeleteVpcEndpointServiceConfigurationsWithContext", param0)
+	return m.DeleteVpcEndpointServiceConfigurationsWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) DeleteVpcEndpoints(param0 *ec2.DeleteVpcEndpointsInput) (*ec2.DeleteVpcEndpointsOutput, error) {
@@ -6264,6 +6645,24 @@ func (m *ec2Mock) DescribeInstanceAttributeWithContext(param0 aws.Context, param
 	return m.DescribeInstanceAttributeWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ec2Mock) DescribeInstanceCreditSpecifications(param0 *ec2.DescribeInstanceCreditSpecificationsInput) (*ec2.DescribeInstanceCreditSpecificationsOutput, error) {
+	m.addCall("DescribeInstanceCreditSpecifications")
+	m.verifyInput("DescribeInstanceCreditSpecifications", param0)
+	return m.DescribeInstanceCreditSpecificationsFunc(param0)
+}
+
+func (m *ec2Mock) DescribeInstanceCreditSpecificationsRequest(param0 *ec2.DescribeInstanceCreditSpecificationsInput) (*request.Request, *ec2.DescribeInstanceCreditSpecificationsOutput) {
+	m.addCall("DescribeInstanceCreditSpecificationsRequest")
+	m.verifyInput("DescribeInstanceCreditSpecificationsRequest", param0)
+	return m.DescribeInstanceCreditSpecificationsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeInstanceCreditSpecificationsWithContext(param0 aws.Context, param1 *ec2.DescribeInstanceCreditSpecificationsInput, param2 ...request.Option) (*ec2.DescribeInstanceCreditSpecificationsOutput, error) {
+	m.addCall("DescribeInstanceCreditSpecificationsWithContext")
+	m.verifyInput("DescribeInstanceCreditSpecificationsWithContext", param0)
+	return m.DescribeInstanceCreditSpecificationsWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) DescribeInstanceStatus(param0 *ec2.DescribeInstanceStatusInput) (*ec2.DescribeInstanceStatusOutput, error) {
 	m.addCall("DescribeInstanceStatus")
 	m.verifyInput("DescribeInstanceStatus", param0)
@@ -6334,6 +6733,42 @@ func (m *ec2Mock) DescribeKeyPairsWithContext(param0 aws.Context, param1 *ec2.De
 	m.addCall("DescribeKeyPairsWithContext")
 	m.verifyInput("DescribeKeyPairsWithContext", param0)
 	return m.DescribeKeyPairsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DescribeLaunchTemplateVersions(param0 *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	m.addCall("DescribeLaunchTemplateVersions")
+	m.verifyInput("DescribeLaunchTemplateVersions", param0)
+	return m.DescribeLaunchTemplateVersionsFunc(param0)
+}
+
+func (m *ec2Mock) DescribeLaunchTemplateVersionsRequest(param0 *ec2.DescribeLaunchTemplateVersionsInput) (*request.Request, *ec2.DescribeLaunchTemplateVersionsOutput) {
+	m.addCall("DescribeLaunchTemplateVersionsRequest")
+	m.verifyInput("DescribeLaunchTemplateVersionsRequest", param0)
+	return m.DescribeLaunchTemplateVersionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeLaunchTemplateVersionsWithContext(param0 aws.Context, param1 *ec2.DescribeLaunchTemplateVersionsInput, param2 ...request.Option) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	m.addCall("DescribeLaunchTemplateVersionsWithContext")
+	m.verifyInput("DescribeLaunchTemplateVersionsWithContext", param0)
+	return m.DescribeLaunchTemplateVersionsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DescribeLaunchTemplates(param0 *ec2.DescribeLaunchTemplatesInput) (*ec2.DescribeLaunchTemplatesOutput, error) {
+	m.addCall("DescribeLaunchTemplates")
+	m.verifyInput("DescribeLaunchTemplates", param0)
+	return m.DescribeLaunchTemplatesFunc(param0)
+}
+
+func (m *ec2Mock) DescribeLaunchTemplatesRequest(param0 *ec2.DescribeLaunchTemplatesInput) (*request.Request, *ec2.DescribeLaunchTemplatesOutput) {
+	m.addCall("DescribeLaunchTemplatesRequest")
+	m.verifyInput("DescribeLaunchTemplatesRequest", param0)
+	return m.DescribeLaunchTemplatesRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeLaunchTemplatesWithContext(param0 aws.Context, param1 *ec2.DescribeLaunchTemplatesInput, param2 ...request.Option) (*ec2.DescribeLaunchTemplatesOutput, error) {
+	m.addCall("DescribeLaunchTemplatesWithContext")
+	m.verifyInput("DescribeLaunchTemplatesWithContext", param0)
+	return m.DescribeLaunchTemplatesWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) DescribeMovingAddresses(param0 *ec2.DescribeMovingAddressesInput) (*ec2.DescribeMovingAddressesOutput, error) {
@@ -6984,6 +7419,78 @@ func (m *ec2Mock) DescribeVpcClassicLinkWithContext(param0 aws.Context, param1 *
 	return m.DescribeVpcClassicLinkWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ec2Mock) DescribeVpcEndpointConnectionNotifications(param0 *ec2.DescribeVpcEndpointConnectionNotificationsInput) (*ec2.DescribeVpcEndpointConnectionNotificationsOutput, error) {
+	m.addCall("DescribeVpcEndpointConnectionNotifications")
+	m.verifyInput("DescribeVpcEndpointConnectionNotifications", param0)
+	return m.DescribeVpcEndpointConnectionNotificationsFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointConnectionNotificationsRequest(param0 *ec2.DescribeVpcEndpointConnectionNotificationsInput) (*request.Request, *ec2.DescribeVpcEndpointConnectionNotificationsOutput) {
+	m.addCall("DescribeVpcEndpointConnectionNotificationsRequest")
+	m.verifyInput("DescribeVpcEndpointConnectionNotificationsRequest", param0)
+	return m.DescribeVpcEndpointConnectionNotificationsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointConnectionNotificationsWithContext(param0 aws.Context, param1 *ec2.DescribeVpcEndpointConnectionNotificationsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointConnectionNotificationsOutput, error) {
+	m.addCall("DescribeVpcEndpointConnectionNotificationsWithContext")
+	m.verifyInput("DescribeVpcEndpointConnectionNotificationsWithContext", param0)
+	return m.DescribeVpcEndpointConnectionNotificationsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointConnections(param0 *ec2.DescribeVpcEndpointConnectionsInput) (*ec2.DescribeVpcEndpointConnectionsOutput, error) {
+	m.addCall("DescribeVpcEndpointConnections")
+	m.verifyInput("DescribeVpcEndpointConnections", param0)
+	return m.DescribeVpcEndpointConnectionsFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointConnectionsRequest(param0 *ec2.DescribeVpcEndpointConnectionsInput) (*request.Request, *ec2.DescribeVpcEndpointConnectionsOutput) {
+	m.addCall("DescribeVpcEndpointConnectionsRequest")
+	m.verifyInput("DescribeVpcEndpointConnectionsRequest", param0)
+	return m.DescribeVpcEndpointConnectionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointConnectionsWithContext(param0 aws.Context, param1 *ec2.DescribeVpcEndpointConnectionsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointConnectionsOutput, error) {
+	m.addCall("DescribeVpcEndpointConnectionsWithContext")
+	m.verifyInput("DescribeVpcEndpointConnectionsWithContext", param0)
+	return m.DescribeVpcEndpointConnectionsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointServiceConfigurations(param0 *ec2.DescribeVpcEndpointServiceConfigurationsInput) (*ec2.DescribeVpcEndpointServiceConfigurationsOutput, error) {
+	m.addCall("DescribeVpcEndpointServiceConfigurations")
+	m.verifyInput("DescribeVpcEndpointServiceConfigurations", param0)
+	return m.DescribeVpcEndpointServiceConfigurationsFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointServiceConfigurationsRequest(param0 *ec2.DescribeVpcEndpointServiceConfigurationsInput) (*request.Request, *ec2.DescribeVpcEndpointServiceConfigurationsOutput) {
+	m.addCall("DescribeVpcEndpointServiceConfigurationsRequest")
+	m.verifyInput("DescribeVpcEndpointServiceConfigurationsRequest", param0)
+	return m.DescribeVpcEndpointServiceConfigurationsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointServiceConfigurationsWithContext(param0 aws.Context, param1 *ec2.DescribeVpcEndpointServiceConfigurationsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointServiceConfigurationsOutput, error) {
+	m.addCall("DescribeVpcEndpointServiceConfigurationsWithContext")
+	m.verifyInput("DescribeVpcEndpointServiceConfigurationsWithContext", param0)
+	return m.DescribeVpcEndpointServiceConfigurationsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointServicePermissions(param0 *ec2.DescribeVpcEndpointServicePermissionsInput) (*ec2.DescribeVpcEndpointServicePermissionsOutput, error) {
+	m.addCall("DescribeVpcEndpointServicePermissions")
+	m.verifyInput("DescribeVpcEndpointServicePermissions", param0)
+	return m.DescribeVpcEndpointServicePermissionsFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointServicePermissionsRequest(param0 *ec2.DescribeVpcEndpointServicePermissionsInput) (*request.Request, *ec2.DescribeVpcEndpointServicePermissionsOutput) {
+	m.addCall("DescribeVpcEndpointServicePermissionsRequest")
+	m.verifyInput("DescribeVpcEndpointServicePermissionsRequest", param0)
+	return m.DescribeVpcEndpointServicePermissionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) DescribeVpcEndpointServicePermissionsWithContext(param0 aws.Context, param1 *ec2.DescribeVpcEndpointServicePermissionsInput, param2 ...request.Option) (*ec2.DescribeVpcEndpointServicePermissionsOutput, error) {
+	m.addCall("DescribeVpcEndpointServicePermissionsWithContext")
+	m.verifyInput("DescribeVpcEndpointServicePermissionsWithContext", param0)
+	return m.DescribeVpcEndpointServicePermissionsWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) DescribeVpcEndpointServices(param0 *ec2.DescribeVpcEndpointServicesInput) (*ec2.DescribeVpcEndpointServicesOutput, error) {
 	m.addCall("DescribeVpcEndpointServices")
 	m.verifyInput("DescribeVpcEndpointServices", param0)
@@ -7452,6 +7959,24 @@ func (m *ec2Mock) GetHostReservationPurchasePreviewWithContext(param0 aws.Contex
 	return m.GetHostReservationPurchasePreviewWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ec2Mock) GetLaunchTemplateData(param0 *ec2.GetLaunchTemplateDataInput) (*ec2.GetLaunchTemplateDataOutput, error) {
+	m.addCall("GetLaunchTemplateData")
+	m.verifyInput("GetLaunchTemplateData", param0)
+	return m.GetLaunchTemplateDataFunc(param0)
+}
+
+func (m *ec2Mock) GetLaunchTemplateDataRequest(param0 *ec2.GetLaunchTemplateDataInput) (*request.Request, *ec2.GetLaunchTemplateDataOutput) {
+	m.addCall("GetLaunchTemplateDataRequest")
+	m.verifyInput("GetLaunchTemplateDataRequest", param0)
+	return m.GetLaunchTemplateDataRequestFunc(param0)
+}
+
+func (m *ec2Mock) GetLaunchTemplateDataWithContext(param0 aws.Context, param1 *ec2.GetLaunchTemplateDataInput, param2 ...request.Option) (*ec2.GetLaunchTemplateDataOutput, error) {
+	m.addCall("GetLaunchTemplateDataWithContext")
+	m.verifyInput("GetLaunchTemplateDataWithContext", param0)
+	return m.GetLaunchTemplateDataWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) GetPasswordData(param0 *ec2.GetPasswordDataInput) (*ec2.GetPasswordDataOutput, error) {
 	m.addCall("GetPasswordData")
 	m.verifyInput("GetPasswordData", param0)
@@ -7686,6 +8211,24 @@ func (m *ec2Mock) ModifyInstanceAttributeWithContext(param0 aws.Context, param1 
 	return m.ModifyInstanceAttributeWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ec2Mock) ModifyInstanceCreditSpecification(param0 *ec2.ModifyInstanceCreditSpecificationInput) (*ec2.ModifyInstanceCreditSpecificationOutput, error) {
+	m.addCall("ModifyInstanceCreditSpecification")
+	m.verifyInput("ModifyInstanceCreditSpecification", param0)
+	return m.ModifyInstanceCreditSpecificationFunc(param0)
+}
+
+func (m *ec2Mock) ModifyInstanceCreditSpecificationRequest(param0 *ec2.ModifyInstanceCreditSpecificationInput) (*request.Request, *ec2.ModifyInstanceCreditSpecificationOutput) {
+	m.addCall("ModifyInstanceCreditSpecificationRequest")
+	m.verifyInput("ModifyInstanceCreditSpecificationRequest", param0)
+	return m.ModifyInstanceCreditSpecificationRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyInstanceCreditSpecificationWithContext(param0 aws.Context, param1 *ec2.ModifyInstanceCreditSpecificationInput, param2 ...request.Option) (*ec2.ModifyInstanceCreditSpecificationOutput, error) {
+	m.addCall("ModifyInstanceCreditSpecificationWithContext")
+	m.verifyInput("ModifyInstanceCreditSpecificationWithContext", param0)
+	return m.ModifyInstanceCreditSpecificationWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) ModifyInstancePlacement(param0 *ec2.ModifyInstancePlacementInput) (*ec2.ModifyInstancePlacementOutput, error) {
 	m.addCall("ModifyInstancePlacement")
 	m.verifyInput("ModifyInstancePlacement", param0)
@@ -7702,6 +8245,24 @@ func (m *ec2Mock) ModifyInstancePlacementWithContext(param0 aws.Context, param1 
 	m.addCall("ModifyInstancePlacementWithContext")
 	m.verifyInput("ModifyInstancePlacementWithContext", param0)
 	return m.ModifyInstancePlacementWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) ModifyLaunchTemplate(param0 *ec2.ModifyLaunchTemplateInput) (*ec2.ModifyLaunchTemplateOutput, error) {
+	m.addCall("ModifyLaunchTemplate")
+	m.verifyInput("ModifyLaunchTemplate", param0)
+	return m.ModifyLaunchTemplateFunc(param0)
+}
+
+func (m *ec2Mock) ModifyLaunchTemplateRequest(param0 *ec2.ModifyLaunchTemplateInput) (*request.Request, *ec2.ModifyLaunchTemplateOutput) {
+	m.addCall("ModifyLaunchTemplateRequest")
+	m.verifyInput("ModifyLaunchTemplateRequest", param0)
+	return m.ModifyLaunchTemplateRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyLaunchTemplateWithContext(param0 aws.Context, param1 *ec2.ModifyLaunchTemplateInput, param2 ...request.Option) (*ec2.ModifyLaunchTemplateOutput, error) {
+	m.addCall("ModifyLaunchTemplateWithContext")
+	m.verifyInput("ModifyLaunchTemplateWithContext", param0)
+	return m.ModifyLaunchTemplateWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) ModifyNetworkInterfaceAttribute(param0 *ec2.ModifyNetworkInterfaceAttributeInput) (*ec2.ModifyNetworkInterfaceAttributeOutput, error) {
@@ -7854,10 +8415,64 @@ func (m *ec2Mock) ModifyVpcEndpoint(param0 *ec2.ModifyVpcEndpointInput) (*ec2.Mo
 	return m.ModifyVpcEndpointFunc(param0)
 }
 
+func (m *ec2Mock) ModifyVpcEndpointConnectionNotification(param0 *ec2.ModifyVpcEndpointConnectionNotificationInput) (*ec2.ModifyVpcEndpointConnectionNotificationOutput, error) {
+	m.addCall("ModifyVpcEndpointConnectionNotification")
+	m.verifyInput("ModifyVpcEndpointConnectionNotification", param0)
+	return m.ModifyVpcEndpointConnectionNotificationFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointConnectionNotificationRequest(param0 *ec2.ModifyVpcEndpointConnectionNotificationInput) (*request.Request, *ec2.ModifyVpcEndpointConnectionNotificationOutput) {
+	m.addCall("ModifyVpcEndpointConnectionNotificationRequest")
+	m.verifyInput("ModifyVpcEndpointConnectionNotificationRequest", param0)
+	return m.ModifyVpcEndpointConnectionNotificationRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointConnectionNotificationWithContext(param0 aws.Context, param1 *ec2.ModifyVpcEndpointConnectionNotificationInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointConnectionNotificationOutput, error) {
+	m.addCall("ModifyVpcEndpointConnectionNotificationWithContext")
+	m.verifyInput("ModifyVpcEndpointConnectionNotificationWithContext", param0)
+	return m.ModifyVpcEndpointConnectionNotificationWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ec2Mock) ModifyVpcEndpointRequest(param0 *ec2.ModifyVpcEndpointInput) (*request.Request, *ec2.ModifyVpcEndpointOutput) {
 	m.addCall("ModifyVpcEndpointRequest")
 	m.verifyInput("ModifyVpcEndpointRequest", param0)
 	return m.ModifyVpcEndpointRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointServiceConfiguration(param0 *ec2.ModifyVpcEndpointServiceConfigurationInput) (*ec2.ModifyVpcEndpointServiceConfigurationOutput, error) {
+	m.addCall("ModifyVpcEndpointServiceConfiguration")
+	m.verifyInput("ModifyVpcEndpointServiceConfiguration", param0)
+	return m.ModifyVpcEndpointServiceConfigurationFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointServiceConfigurationRequest(param0 *ec2.ModifyVpcEndpointServiceConfigurationInput) (*request.Request, *ec2.ModifyVpcEndpointServiceConfigurationOutput) {
+	m.addCall("ModifyVpcEndpointServiceConfigurationRequest")
+	m.verifyInput("ModifyVpcEndpointServiceConfigurationRequest", param0)
+	return m.ModifyVpcEndpointServiceConfigurationRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointServiceConfigurationWithContext(param0 aws.Context, param1 *ec2.ModifyVpcEndpointServiceConfigurationInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointServiceConfigurationOutput, error) {
+	m.addCall("ModifyVpcEndpointServiceConfigurationWithContext")
+	m.verifyInput("ModifyVpcEndpointServiceConfigurationWithContext", param0)
+	return m.ModifyVpcEndpointServiceConfigurationWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointServicePermissions(param0 *ec2.ModifyVpcEndpointServicePermissionsInput) (*ec2.ModifyVpcEndpointServicePermissionsOutput, error) {
+	m.addCall("ModifyVpcEndpointServicePermissions")
+	m.verifyInput("ModifyVpcEndpointServicePermissions", param0)
+	return m.ModifyVpcEndpointServicePermissionsFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointServicePermissionsRequest(param0 *ec2.ModifyVpcEndpointServicePermissionsInput) (*request.Request, *ec2.ModifyVpcEndpointServicePermissionsOutput) {
+	m.addCall("ModifyVpcEndpointServicePermissionsRequest")
+	m.verifyInput("ModifyVpcEndpointServicePermissionsRequest", param0)
+	return m.ModifyVpcEndpointServicePermissionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcEndpointServicePermissionsWithContext(param0 aws.Context, param1 *ec2.ModifyVpcEndpointServicePermissionsInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointServicePermissionsOutput, error) {
+	m.addCall("ModifyVpcEndpointServicePermissionsWithContext")
+	m.verifyInput("ModifyVpcEndpointServicePermissionsWithContext", param0)
+	return m.ModifyVpcEndpointServicePermissionsWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) ModifyVpcEndpointWithContext(param0 aws.Context, param1 *ec2.ModifyVpcEndpointInput, param2 ...request.Option) (*ec2.ModifyVpcEndpointOutput, error) {
@@ -7882,6 +8497,24 @@ func (m *ec2Mock) ModifyVpcPeeringConnectionOptionsWithContext(param0 aws.Contex
 	m.addCall("ModifyVpcPeeringConnectionOptionsWithContext")
 	m.verifyInput("ModifyVpcPeeringConnectionOptionsWithContext", param0)
 	return m.ModifyVpcPeeringConnectionOptionsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) ModifyVpcTenancy(param0 *ec2.ModifyVpcTenancyInput) (*ec2.ModifyVpcTenancyOutput, error) {
+	m.addCall("ModifyVpcTenancy")
+	m.verifyInput("ModifyVpcTenancy", param0)
+	return m.ModifyVpcTenancyFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcTenancyRequest(param0 *ec2.ModifyVpcTenancyInput) (*request.Request, *ec2.ModifyVpcTenancyOutput) {
+	m.addCall("ModifyVpcTenancyRequest")
+	m.verifyInput("ModifyVpcTenancyRequest", param0)
+	return m.ModifyVpcTenancyRequestFunc(param0)
+}
+
+func (m *ec2Mock) ModifyVpcTenancyWithContext(param0 aws.Context, param1 *ec2.ModifyVpcTenancyInput, param2 ...request.Option) (*ec2.ModifyVpcTenancyOutput, error) {
+	m.addCall("ModifyVpcTenancyWithContext")
+	m.verifyInput("ModifyVpcTenancyWithContext", param0)
+	return m.ModifyVpcTenancyWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) MonitorInstances(param0 *ec2.MonitorInstancesInput) (*ec2.MonitorInstancesOutput, error) {
@@ -8008,6 +8641,24 @@ func (m *ec2Mock) RegisterImageWithContext(param0 aws.Context, param1 *ec2.Regis
 	m.addCall("RegisterImageWithContext")
 	m.verifyInput("RegisterImageWithContext", param0)
 	return m.RegisterImageWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ec2Mock) RejectVpcEndpointConnections(param0 *ec2.RejectVpcEndpointConnectionsInput) (*ec2.RejectVpcEndpointConnectionsOutput, error) {
+	m.addCall("RejectVpcEndpointConnections")
+	m.verifyInput("RejectVpcEndpointConnections", param0)
+	return m.RejectVpcEndpointConnectionsFunc(param0)
+}
+
+func (m *ec2Mock) RejectVpcEndpointConnectionsRequest(param0 *ec2.RejectVpcEndpointConnectionsInput) (*request.Request, *ec2.RejectVpcEndpointConnectionsOutput) {
+	m.addCall("RejectVpcEndpointConnectionsRequest")
+	m.verifyInput("RejectVpcEndpointConnectionsRequest", param0)
+	return m.RejectVpcEndpointConnectionsRequestFunc(param0)
+}
+
+func (m *ec2Mock) RejectVpcEndpointConnectionsWithContext(param0 aws.Context, param1 *ec2.RejectVpcEndpointConnectionsInput, param2 ...request.Option) (*ec2.RejectVpcEndpointConnectionsOutput, error) {
+	m.addCall("RejectVpcEndpointConnectionsWithContext")
+	m.verifyInput("RejectVpcEndpointConnectionsWithContext", param0)
+	return m.RejectVpcEndpointConnectionsWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ec2Mock) RejectVpcPeeringConnection(param0 *ec2.RejectVpcPeeringConnectionInput) (*ec2.RejectVpcPeeringConnectionOutput, error) {
@@ -8922,6 +9573,9 @@ type ecrMock struct {
 	CreateRepositoryFunc                       func(param0 *ecr.CreateRepositoryInput) (*ecr.CreateRepositoryOutput, error)
 	CreateRepositoryRequestFunc                func(param0 *ecr.CreateRepositoryInput) (*request.Request, *ecr.CreateRepositoryOutput)
 	CreateRepositoryWithContextFunc            func(param0 aws.Context, param1 *ecr.CreateRepositoryInput, param2 ...request.Option) (*ecr.CreateRepositoryOutput, error)
+	DeleteLifecyclePolicyFunc                  func(param0 *ecr.DeleteLifecyclePolicyInput) (*ecr.DeleteLifecyclePolicyOutput, error)
+	DeleteLifecyclePolicyRequestFunc           func(param0 *ecr.DeleteLifecyclePolicyInput) (*request.Request, *ecr.DeleteLifecyclePolicyOutput)
+	DeleteLifecyclePolicyWithContextFunc       func(param0 aws.Context, param1 *ecr.DeleteLifecyclePolicyInput, param2 ...request.Option) (*ecr.DeleteLifecyclePolicyOutput, error)
 	DeleteRepositoryFunc                       func(param0 *ecr.DeleteRepositoryInput) (*ecr.DeleteRepositoryOutput, error)
 	DeleteRepositoryPolicyFunc                 func(param0 *ecr.DeleteRepositoryPolicyInput) (*ecr.DeleteRepositoryPolicyOutput, error)
 	DeleteRepositoryPolicyRequestFunc          func(param0 *ecr.DeleteRepositoryPolicyInput) (*request.Request, *ecr.DeleteRepositoryPolicyOutput)
@@ -8940,6 +9594,12 @@ type ecrMock struct {
 	GetDownloadUrlForLayerFunc                 func(param0 *ecr.GetDownloadUrlForLayerInput) (*ecr.GetDownloadUrlForLayerOutput, error)
 	GetDownloadUrlForLayerRequestFunc          func(param0 *ecr.GetDownloadUrlForLayerInput) (*request.Request, *ecr.GetDownloadUrlForLayerOutput)
 	GetDownloadUrlForLayerWithContextFunc      func(param0 aws.Context, param1 *ecr.GetDownloadUrlForLayerInput, param2 ...request.Option) (*ecr.GetDownloadUrlForLayerOutput, error)
+	GetLifecyclePolicyFunc                     func(param0 *ecr.GetLifecyclePolicyInput) (*ecr.GetLifecyclePolicyOutput, error)
+	GetLifecyclePolicyPreviewFunc              func(param0 *ecr.GetLifecyclePolicyPreviewInput) (*ecr.GetLifecyclePolicyPreviewOutput, error)
+	GetLifecyclePolicyPreviewRequestFunc       func(param0 *ecr.GetLifecyclePolicyPreviewInput) (*request.Request, *ecr.GetLifecyclePolicyPreviewOutput)
+	GetLifecyclePolicyPreviewWithContextFunc   func(param0 aws.Context, param1 *ecr.GetLifecyclePolicyPreviewInput, param2 ...request.Option) (*ecr.GetLifecyclePolicyPreviewOutput, error)
+	GetLifecyclePolicyRequestFunc              func(param0 *ecr.GetLifecyclePolicyInput) (*request.Request, *ecr.GetLifecyclePolicyOutput)
+	GetLifecyclePolicyWithContextFunc          func(param0 aws.Context, param1 *ecr.GetLifecyclePolicyInput, param2 ...request.Option) (*ecr.GetLifecyclePolicyOutput, error)
 	GetRepositoryPolicyFunc                    func(param0 *ecr.GetRepositoryPolicyInput) (*ecr.GetRepositoryPolicyOutput, error)
 	GetRepositoryPolicyRequestFunc             func(param0 *ecr.GetRepositoryPolicyInput) (*request.Request, *ecr.GetRepositoryPolicyOutput)
 	GetRepositoryPolicyWithContextFunc         func(param0 aws.Context, param1 *ecr.GetRepositoryPolicyInput, param2 ...request.Option) (*ecr.GetRepositoryPolicyOutput, error)
@@ -8952,9 +9612,15 @@ type ecrMock struct {
 	PutImageFunc                               func(param0 *ecr.PutImageInput) (*ecr.PutImageOutput, error)
 	PutImageRequestFunc                        func(param0 *ecr.PutImageInput) (*request.Request, *ecr.PutImageOutput)
 	PutImageWithContextFunc                    func(param0 aws.Context, param1 *ecr.PutImageInput, param2 ...request.Option) (*ecr.PutImageOutput, error)
+	PutLifecyclePolicyFunc                     func(param0 *ecr.PutLifecyclePolicyInput) (*ecr.PutLifecyclePolicyOutput, error)
+	PutLifecyclePolicyRequestFunc              func(param0 *ecr.PutLifecyclePolicyInput) (*request.Request, *ecr.PutLifecyclePolicyOutput)
+	PutLifecyclePolicyWithContextFunc          func(param0 aws.Context, param1 *ecr.PutLifecyclePolicyInput, param2 ...request.Option) (*ecr.PutLifecyclePolicyOutput, error)
 	SetRepositoryPolicyFunc                    func(param0 *ecr.SetRepositoryPolicyInput) (*ecr.SetRepositoryPolicyOutput, error)
 	SetRepositoryPolicyRequestFunc             func(param0 *ecr.SetRepositoryPolicyInput) (*request.Request, *ecr.SetRepositoryPolicyOutput)
 	SetRepositoryPolicyWithContextFunc         func(param0 aws.Context, param1 *ecr.SetRepositoryPolicyInput, param2 ...request.Option) (*ecr.SetRepositoryPolicyOutput, error)
+	StartLifecyclePolicyPreviewFunc            func(param0 *ecr.StartLifecyclePolicyPreviewInput) (*ecr.StartLifecyclePolicyPreviewOutput, error)
+	StartLifecyclePolicyPreviewRequestFunc     func(param0 *ecr.StartLifecyclePolicyPreviewInput) (*request.Request, *ecr.StartLifecyclePolicyPreviewOutput)
+	StartLifecyclePolicyPreviewWithContextFunc func(param0 aws.Context, param1 *ecr.StartLifecyclePolicyPreviewInput, param2 ...request.Option) (*ecr.StartLifecyclePolicyPreviewOutput, error)
 	UploadLayerPartFunc                        func(param0 *ecr.UploadLayerPartInput) (*ecr.UploadLayerPartOutput, error)
 	UploadLayerPartRequestFunc                 func(param0 *ecr.UploadLayerPartInput) (*request.Request, *ecr.UploadLayerPartOutput)
 	UploadLayerPartWithContextFunc             func(param0 aws.Context, param1 *ecr.UploadLayerPartInput, param2 ...request.Option) (*ecr.UploadLayerPartOutput, error)
@@ -9048,6 +9714,24 @@ func (m *ecrMock) CreateRepositoryWithContext(param0 aws.Context, param1 *ecr.Cr
 	m.addCall("CreateRepositoryWithContext")
 	m.verifyInput("CreateRepositoryWithContext", param0)
 	return m.CreateRepositoryWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ecrMock) DeleteLifecyclePolicy(param0 *ecr.DeleteLifecyclePolicyInput) (*ecr.DeleteLifecyclePolicyOutput, error) {
+	m.addCall("DeleteLifecyclePolicy")
+	m.verifyInput("DeleteLifecyclePolicy", param0)
+	return m.DeleteLifecyclePolicyFunc(param0)
+}
+
+func (m *ecrMock) DeleteLifecyclePolicyRequest(param0 *ecr.DeleteLifecyclePolicyInput) (*request.Request, *ecr.DeleteLifecyclePolicyOutput) {
+	m.addCall("DeleteLifecyclePolicyRequest")
+	m.verifyInput("DeleteLifecyclePolicyRequest", param0)
+	return m.DeleteLifecyclePolicyRequestFunc(param0)
+}
+
+func (m *ecrMock) DeleteLifecyclePolicyWithContext(param0 aws.Context, param1 *ecr.DeleteLifecyclePolicyInput, param2 ...request.Option) (*ecr.DeleteLifecyclePolicyOutput, error) {
+	m.addCall("DeleteLifecyclePolicyWithContext")
+	m.verifyInput("DeleteLifecyclePolicyWithContext", param0)
+	return m.DeleteLifecyclePolicyWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ecrMock) DeleteRepository(param0 *ecr.DeleteRepositoryInput) (*ecr.DeleteRepositoryOutput, error) {
@@ -9158,6 +9842,42 @@ func (m *ecrMock) GetDownloadUrlForLayerWithContext(param0 aws.Context, param1 *
 	return m.GetDownloadUrlForLayerWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ecrMock) GetLifecyclePolicy(param0 *ecr.GetLifecyclePolicyInput) (*ecr.GetLifecyclePolicyOutput, error) {
+	m.addCall("GetLifecyclePolicy")
+	m.verifyInput("GetLifecyclePolicy", param0)
+	return m.GetLifecyclePolicyFunc(param0)
+}
+
+func (m *ecrMock) GetLifecyclePolicyPreview(param0 *ecr.GetLifecyclePolicyPreviewInput) (*ecr.GetLifecyclePolicyPreviewOutput, error) {
+	m.addCall("GetLifecyclePolicyPreview")
+	m.verifyInput("GetLifecyclePolicyPreview", param0)
+	return m.GetLifecyclePolicyPreviewFunc(param0)
+}
+
+func (m *ecrMock) GetLifecyclePolicyPreviewRequest(param0 *ecr.GetLifecyclePolicyPreviewInput) (*request.Request, *ecr.GetLifecyclePolicyPreviewOutput) {
+	m.addCall("GetLifecyclePolicyPreviewRequest")
+	m.verifyInput("GetLifecyclePolicyPreviewRequest", param0)
+	return m.GetLifecyclePolicyPreviewRequestFunc(param0)
+}
+
+func (m *ecrMock) GetLifecyclePolicyPreviewWithContext(param0 aws.Context, param1 *ecr.GetLifecyclePolicyPreviewInput, param2 ...request.Option) (*ecr.GetLifecyclePolicyPreviewOutput, error) {
+	m.addCall("GetLifecyclePolicyPreviewWithContext")
+	m.verifyInput("GetLifecyclePolicyPreviewWithContext", param0)
+	return m.GetLifecyclePolicyPreviewWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ecrMock) GetLifecyclePolicyRequest(param0 *ecr.GetLifecyclePolicyInput) (*request.Request, *ecr.GetLifecyclePolicyOutput) {
+	m.addCall("GetLifecyclePolicyRequest")
+	m.verifyInput("GetLifecyclePolicyRequest", param0)
+	return m.GetLifecyclePolicyRequestFunc(param0)
+}
+
+func (m *ecrMock) GetLifecyclePolicyWithContext(param0 aws.Context, param1 *ecr.GetLifecyclePolicyInput, param2 ...request.Option) (*ecr.GetLifecyclePolicyOutput, error) {
+	m.addCall("GetLifecyclePolicyWithContext")
+	m.verifyInput("GetLifecyclePolicyWithContext", param0)
+	return m.GetLifecyclePolicyWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ecrMock) GetRepositoryPolicy(param0 *ecr.GetRepositoryPolicyInput) (*ecr.GetRepositoryPolicyOutput, error) {
 	m.addCall("GetRepositoryPolicy")
 	m.verifyInput("GetRepositoryPolicy", param0)
@@ -9230,6 +9950,24 @@ func (m *ecrMock) PutImageWithContext(param0 aws.Context, param1 *ecr.PutImageIn
 	return m.PutImageWithContextFunc(param0, param1, param2...)
 }
 
+func (m *ecrMock) PutLifecyclePolicy(param0 *ecr.PutLifecyclePolicyInput) (*ecr.PutLifecyclePolicyOutput, error) {
+	m.addCall("PutLifecyclePolicy")
+	m.verifyInput("PutLifecyclePolicy", param0)
+	return m.PutLifecyclePolicyFunc(param0)
+}
+
+func (m *ecrMock) PutLifecyclePolicyRequest(param0 *ecr.PutLifecyclePolicyInput) (*request.Request, *ecr.PutLifecyclePolicyOutput) {
+	m.addCall("PutLifecyclePolicyRequest")
+	m.verifyInput("PutLifecyclePolicyRequest", param0)
+	return m.PutLifecyclePolicyRequestFunc(param0)
+}
+
+func (m *ecrMock) PutLifecyclePolicyWithContext(param0 aws.Context, param1 *ecr.PutLifecyclePolicyInput, param2 ...request.Option) (*ecr.PutLifecyclePolicyOutput, error) {
+	m.addCall("PutLifecyclePolicyWithContext")
+	m.verifyInput("PutLifecyclePolicyWithContext", param0)
+	return m.PutLifecyclePolicyWithContextFunc(param0, param1, param2...)
+}
+
 func (m *ecrMock) SetRepositoryPolicy(param0 *ecr.SetRepositoryPolicyInput) (*ecr.SetRepositoryPolicyOutput, error) {
 	m.addCall("SetRepositoryPolicy")
 	m.verifyInput("SetRepositoryPolicy", param0)
@@ -9246,6 +9984,24 @@ func (m *ecrMock) SetRepositoryPolicyWithContext(param0 aws.Context, param1 *ecr
 	m.addCall("SetRepositoryPolicyWithContext")
 	m.verifyInput("SetRepositoryPolicyWithContext", param0)
 	return m.SetRepositoryPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *ecrMock) StartLifecyclePolicyPreview(param0 *ecr.StartLifecyclePolicyPreviewInput) (*ecr.StartLifecyclePolicyPreviewOutput, error) {
+	m.addCall("StartLifecyclePolicyPreview")
+	m.verifyInput("StartLifecyclePolicyPreview", param0)
+	return m.StartLifecyclePolicyPreviewFunc(param0)
+}
+
+func (m *ecrMock) StartLifecyclePolicyPreviewRequest(param0 *ecr.StartLifecyclePolicyPreviewInput) (*request.Request, *ecr.StartLifecyclePolicyPreviewOutput) {
+	m.addCall("StartLifecyclePolicyPreviewRequest")
+	m.verifyInput("StartLifecyclePolicyPreviewRequest", param0)
+	return m.StartLifecyclePolicyPreviewRequestFunc(param0)
+}
+
+func (m *ecrMock) StartLifecyclePolicyPreviewWithContext(param0 aws.Context, param1 *ecr.StartLifecyclePolicyPreviewInput, param2 ...request.Option) (*ecr.StartLifecyclePolicyPreviewOutput, error) {
+	m.addCall("StartLifecyclePolicyPreviewWithContext")
+	m.verifyInput("StartLifecyclePolicyPreviewWithContext", param0)
+	return m.StartLifecyclePolicyPreviewWithContextFunc(param0, param1, param2...)
 }
 
 func (m *ecrMock) UploadLayerPart(param0 *ecr.UploadLayerPartInput) (*ecr.UploadLayerPartOutput, error) {
@@ -9981,6 +10737,9 @@ func (m *ecsMock) WaitUntilTasksStoppedWithContext(param0 aws.Context, param1 *e
 type elbv2Mock struct {
 	basicMock
 	elbv2iface.ELBV2API
+	AddListenerCertificatesFunc                   func(param0 *elbv2.AddListenerCertificatesInput) (*elbv2.AddListenerCertificatesOutput, error)
+	AddListenerCertificatesRequestFunc            func(param0 *elbv2.AddListenerCertificatesInput) (*request.Request, *elbv2.AddListenerCertificatesOutput)
+	AddListenerCertificatesWithContextFunc        func(param0 aws.Context, param1 *elbv2.AddListenerCertificatesInput, param2 ...request.Option) (*elbv2.AddListenerCertificatesOutput, error)
 	AddTagsFunc                                   func(param0 *elbv2.AddTagsInput) (*elbv2.AddTagsOutput, error)
 	AddTagsRequestFunc                            func(param0 *elbv2.AddTagsInput) (*request.Request, *elbv2.AddTagsOutput)
 	AddTagsWithContextFunc                        func(param0 aws.Context, param1 *elbv2.AddTagsInput, param2 ...request.Option) (*elbv2.AddTagsOutput, error)
@@ -10014,6 +10773,9 @@ type elbv2Mock struct {
 	DescribeAccountLimitsFunc                     func(param0 *elbv2.DescribeAccountLimitsInput) (*elbv2.DescribeAccountLimitsOutput, error)
 	DescribeAccountLimitsRequestFunc              func(param0 *elbv2.DescribeAccountLimitsInput) (*request.Request, *elbv2.DescribeAccountLimitsOutput)
 	DescribeAccountLimitsWithContextFunc          func(param0 aws.Context, param1 *elbv2.DescribeAccountLimitsInput, param2 ...request.Option) (*elbv2.DescribeAccountLimitsOutput, error)
+	DescribeListenerCertificatesFunc              func(param0 *elbv2.DescribeListenerCertificatesInput) (*elbv2.DescribeListenerCertificatesOutput, error)
+	DescribeListenerCertificatesRequestFunc       func(param0 *elbv2.DescribeListenerCertificatesInput) (*request.Request, *elbv2.DescribeListenerCertificatesOutput)
+	DescribeListenerCertificatesWithContextFunc   func(param0 aws.Context, param1 *elbv2.DescribeListenerCertificatesInput, param2 ...request.Option) (*elbv2.DescribeListenerCertificatesOutput, error)
 	DescribeListenersFunc                         func(param0 *elbv2.DescribeListenersInput) (*elbv2.DescribeListenersOutput, error)
 	DescribeListenersRequestFunc                  func(param0 *elbv2.DescribeListenersInput) (*request.Request, *elbv2.DescribeListenersOutput)
 	DescribeListenersWithContextFunc              func(param0 aws.Context, param1 *elbv2.DescribeListenersInput, param2 ...request.Option) (*elbv2.DescribeListenersOutput, error)
@@ -10059,6 +10821,9 @@ type elbv2Mock struct {
 	RegisterTargetsFunc                           func(param0 *elbv2.RegisterTargetsInput) (*elbv2.RegisterTargetsOutput, error)
 	RegisterTargetsRequestFunc                    func(param0 *elbv2.RegisterTargetsInput) (*request.Request, *elbv2.RegisterTargetsOutput)
 	RegisterTargetsWithContextFunc                func(param0 aws.Context, param1 *elbv2.RegisterTargetsInput, param2 ...request.Option) (*elbv2.RegisterTargetsOutput, error)
+	RemoveListenerCertificatesFunc                func(param0 *elbv2.RemoveListenerCertificatesInput) (*elbv2.RemoveListenerCertificatesOutput, error)
+	RemoveListenerCertificatesRequestFunc         func(param0 *elbv2.RemoveListenerCertificatesInput) (*request.Request, *elbv2.RemoveListenerCertificatesOutput)
+	RemoveListenerCertificatesWithContextFunc     func(param0 aws.Context, param1 *elbv2.RemoveListenerCertificatesInput, param2 ...request.Option) (*elbv2.RemoveListenerCertificatesOutput, error)
 	RemoveTagsFunc                                func(param0 *elbv2.RemoveTagsInput) (*elbv2.RemoveTagsOutput, error)
 	RemoveTagsRequestFunc                         func(param0 *elbv2.RemoveTagsInput) (*request.Request, *elbv2.RemoveTagsOutput)
 	RemoveTagsWithContextFunc                     func(param0 aws.Context, param1 *elbv2.RemoveTagsInput, param2 ...request.Option) (*elbv2.RemoveTagsOutput, error)
@@ -10084,6 +10849,24 @@ type elbv2Mock struct {
 	WaitUntilTargetDeregisteredWithContextFunc    func(param0 aws.Context, param1 *elbv2.DescribeTargetHealthInput, param2 ...request.WaiterOption) error
 	WaitUntilTargetInServiceFunc                  func(param0 *elbv2.DescribeTargetHealthInput) error
 	WaitUntilTargetInServiceWithContextFunc       func(param0 aws.Context, param1 *elbv2.DescribeTargetHealthInput, param2 ...request.WaiterOption) error
+}
+
+func (m *elbv2Mock) AddListenerCertificates(param0 *elbv2.AddListenerCertificatesInput) (*elbv2.AddListenerCertificatesOutput, error) {
+	m.addCall("AddListenerCertificates")
+	m.verifyInput("AddListenerCertificates", param0)
+	return m.AddListenerCertificatesFunc(param0)
+}
+
+func (m *elbv2Mock) AddListenerCertificatesRequest(param0 *elbv2.AddListenerCertificatesInput) (*request.Request, *elbv2.AddListenerCertificatesOutput) {
+	m.addCall("AddListenerCertificatesRequest")
+	m.verifyInput("AddListenerCertificatesRequest", param0)
+	return m.AddListenerCertificatesRequestFunc(param0)
+}
+
+func (m *elbv2Mock) AddListenerCertificatesWithContext(param0 aws.Context, param1 *elbv2.AddListenerCertificatesInput, param2 ...request.Option) (*elbv2.AddListenerCertificatesOutput, error) {
+	m.addCall("AddListenerCertificatesWithContext")
+	m.verifyInput("AddListenerCertificatesWithContext", param0)
+	return m.AddListenerCertificatesWithContextFunc(param0, param1, param2...)
 }
 
 func (m *elbv2Mock) AddTags(param0 *elbv2.AddTagsInput) (*elbv2.AddTagsOutput, error) {
@@ -10282,6 +11065,24 @@ func (m *elbv2Mock) DescribeAccountLimitsWithContext(param0 aws.Context, param1 
 	m.addCall("DescribeAccountLimitsWithContext")
 	m.verifyInput("DescribeAccountLimitsWithContext", param0)
 	return m.DescribeAccountLimitsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbv2Mock) DescribeListenerCertificates(param0 *elbv2.DescribeListenerCertificatesInput) (*elbv2.DescribeListenerCertificatesOutput, error) {
+	m.addCall("DescribeListenerCertificates")
+	m.verifyInput("DescribeListenerCertificates", param0)
+	return m.DescribeListenerCertificatesFunc(param0)
+}
+
+func (m *elbv2Mock) DescribeListenerCertificatesRequest(param0 *elbv2.DescribeListenerCertificatesInput) (*request.Request, *elbv2.DescribeListenerCertificatesOutput) {
+	m.addCall("DescribeListenerCertificatesRequest")
+	m.verifyInput("DescribeListenerCertificatesRequest", param0)
+	return m.DescribeListenerCertificatesRequestFunc(param0)
+}
+
+func (m *elbv2Mock) DescribeListenerCertificatesWithContext(param0 aws.Context, param1 *elbv2.DescribeListenerCertificatesInput, param2 ...request.Option) (*elbv2.DescribeListenerCertificatesOutput, error) {
+	m.addCall("DescribeListenerCertificatesWithContext")
+	m.verifyInput("DescribeListenerCertificatesWithContext", param0)
+	return m.DescribeListenerCertificatesWithContextFunc(param0, param1, param2...)
 }
 
 func (m *elbv2Mock) DescribeListeners(param0 *elbv2.DescribeListenersInput) (*elbv2.DescribeListenersOutput, error) {
@@ -10552,6 +11353,24 @@ func (m *elbv2Mock) RegisterTargetsWithContext(param0 aws.Context, param1 *elbv2
 	m.addCall("RegisterTargetsWithContext")
 	m.verifyInput("RegisterTargetsWithContext", param0)
 	return m.RegisterTargetsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbv2Mock) RemoveListenerCertificates(param0 *elbv2.RemoveListenerCertificatesInput) (*elbv2.RemoveListenerCertificatesOutput, error) {
+	m.addCall("RemoveListenerCertificates")
+	m.verifyInput("RemoveListenerCertificates", param0)
+	return m.RemoveListenerCertificatesFunc(param0)
+}
+
+func (m *elbv2Mock) RemoveListenerCertificatesRequest(param0 *elbv2.RemoveListenerCertificatesInput) (*request.Request, *elbv2.RemoveListenerCertificatesOutput) {
+	m.addCall("RemoveListenerCertificatesRequest")
+	m.verifyInput("RemoveListenerCertificatesRequest", param0)
+	return m.RemoveListenerCertificatesRequestFunc(param0)
+}
+
+func (m *elbv2Mock) RemoveListenerCertificatesWithContext(param0 aws.Context, param1 *elbv2.RemoveListenerCertificatesInput, param2 ...request.Option) (*elbv2.RemoveListenerCertificatesOutput, error) {
+	m.addCall("RemoveListenerCertificatesWithContext")
+	m.verifyInput("RemoveListenerCertificatesWithContext", param0)
+	return m.RemoveListenerCertificatesWithContextFunc(param0, param1, param2...)
 }
 
 func (m *elbv2Mock) RemoveTags(param0 *elbv2.RemoveTagsInput) (*elbv2.RemoveTagsOutput, error) {
@@ -13321,6 +14140,9 @@ type lambdaMock struct {
 	DeleteEventSourceMappingRequestFunc        func(param0 *lambda.DeleteEventSourceMappingInput) (*request.Request, *lambda.EventSourceMappingConfiguration)
 	DeleteEventSourceMappingWithContextFunc    func(param0 aws.Context, param1 *lambda.DeleteEventSourceMappingInput, param2 ...request.Option) (*lambda.EventSourceMappingConfiguration, error)
 	DeleteFunctionFunc                         func(param0 *lambda.DeleteFunctionInput) (*lambda.DeleteFunctionOutput, error)
+	DeleteFunctionConcurrencyFunc              func(param0 *lambda.DeleteFunctionConcurrencyInput) (*lambda.DeleteFunctionConcurrencyOutput, error)
+	DeleteFunctionConcurrencyRequestFunc       func(param0 *lambda.DeleteFunctionConcurrencyInput) (*request.Request, *lambda.DeleteFunctionConcurrencyOutput)
+	DeleteFunctionConcurrencyWithContextFunc   func(param0 aws.Context, param1 *lambda.DeleteFunctionConcurrencyInput, param2 ...request.Option) (*lambda.DeleteFunctionConcurrencyOutput, error)
 	DeleteFunctionRequestFunc                  func(param0 *lambda.DeleteFunctionInput) (*request.Request, *lambda.DeleteFunctionOutput)
 	DeleteFunctionWithContextFunc              func(param0 aws.Context, param1 *lambda.DeleteFunctionInput, param2 ...request.Option) (*lambda.DeleteFunctionOutput, error)
 	GetAccountSettingsFunc                     func(param0 *lambda.GetAccountSettingsInput) (*lambda.GetAccountSettingsOutput, error)
@@ -13365,6 +14187,9 @@ type lambdaMock struct {
 	PublishVersionFunc                         func(param0 *lambda.PublishVersionInput) (*lambda.FunctionConfiguration, error)
 	PublishVersionRequestFunc                  func(param0 *lambda.PublishVersionInput) (*request.Request, *lambda.FunctionConfiguration)
 	PublishVersionWithContextFunc              func(param0 aws.Context, param1 *lambda.PublishVersionInput, param2 ...request.Option) (*lambda.FunctionConfiguration, error)
+	PutFunctionConcurrencyFunc                 func(param0 *lambda.PutFunctionConcurrencyInput) (*lambda.PutFunctionConcurrencyOutput, error)
+	PutFunctionConcurrencyRequestFunc          func(param0 *lambda.PutFunctionConcurrencyInput) (*request.Request, *lambda.PutFunctionConcurrencyOutput)
+	PutFunctionConcurrencyWithContextFunc      func(param0 aws.Context, param1 *lambda.PutFunctionConcurrencyInput, param2 ...request.Option) (*lambda.PutFunctionConcurrencyOutput, error)
 	RemovePermissionFunc                       func(param0 *lambda.RemovePermissionInput) (*lambda.RemovePermissionOutput, error)
 	RemovePermissionRequestFunc                func(param0 *lambda.RemovePermissionInput) (*request.Request, *lambda.RemovePermissionOutput)
 	RemovePermissionWithContextFunc            func(param0 aws.Context, param1 *lambda.RemovePermissionInput, param2 ...request.Option) (*lambda.RemovePermissionOutput, error)
@@ -13500,6 +14325,24 @@ func (m *lambdaMock) DeleteFunction(param0 *lambda.DeleteFunctionInput) (*lambda
 	m.addCall("DeleteFunction")
 	m.verifyInput("DeleteFunction", param0)
 	return m.DeleteFunctionFunc(param0)
+}
+
+func (m *lambdaMock) DeleteFunctionConcurrency(param0 *lambda.DeleteFunctionConcurrencyInput) (*lambda.DeleteFunctionConcurrencyOutput, error) {
+	m.addCall("DeleteFunctionConcurrency")
+	m.verifyInput("DeleteFunctionConcurrency", param0)
+	return m.DeleteFunctionConcurrencyFunc(param0)
+}
+
+func (m *lambdaMock) DeleteFunctionConcurrencyRequest(param0 *lambda.DeleteFunctionConcurrencyInput) (*request.Request, *lambda.DeleteFunctionConcurrencyOutput) {
+	m.addCall("DeleteFunctionConcurrencyRequest")
+	m.verifyInput("DeleteFunctionConcurrencyRequest", param0)
+	return m.DeleteFunctionConcurrencyRequestFunc(param0)
+}
+
+func (m *lambdaMock) DeleteFunctionConcurrencyWithContext(param0 aws.Context, param1 *lambda.DeleteFunctionConcurrencyInput, param2 ...request.Option) (*lambda.DeleteFunctionConcurrencyOutput, error) {
+	m.addCall("DeleteFunctionConcurrencyWithContext")
+	m.verifyInput("DeleteFunctionConcurrencyWithContext", param0)
+	return m.DeleteFunctionConcurrencyWithContextFunc(param0, param1, param2...)
 }
 
 func (m *lambdaMock) DeleteFunctionRequest(param0 *lambda.DeleteFunctionInput) (*request.Request, *lambda.DeleteFunctionOutput) {
@@ -13764,6 +14607,24 @@ func (m *lambdaMock) PublishVersionWithContext(param0 aws.Context, param1 *lambd
 	m.addCall("PublishVersionWithContext")
 	m.verifyInput("PublishVersionWithContext", param0)
 	return m.PublishVersionWithContextFunc(param0, param1, param2...)
+}
+
+func (m *lambdaMock) PutFunctionConcurrency(param0 *lambda.PutFunctionConcurrencyInput) (*lambda.PutFunctionConcurrencyOutput, error) {
+	m.addCall("PutFunctionConcurrency")
+	m.verifyInput("PutFunctionConcurrency", param0)
+	return m.PutFunctionConcurrencyFunc(param0)
+}
+
+func (m *lambdaMock) PutFunctionConcurrencyRequest(param0 *lambda.PutFunctionConcurrencyInput) (*request.Request, *lambda.PutFunctionConcurrencyOutput) {
+	m.addCall("PutFunctionConcurrencyRequest")
+	m.verifyInput("PutFunctionConcurrencyRequest", param0)
+	return m.PutFunctionConcurrencyRequestFunc(param0)
+}
+
+func (m *lambdaMock) PutFunctionConcurrencyWithContext(param0 aws.Context, param1 *lambda.PutFunctionConcurrencyInput, param2 ...request.Option) (*lambda.PutFunctionConcurrencyOutput, error) {
+	m.addCall("PutFunctionConcurrencyWithContext")
+	m.verifyInput("PutFunctionConcurrencyWithContext", param0)
+	return m.PutFunctionConcurrencyWithContextFunc(param0, param1, param2...)
 }
 
 func (m *lambdaMock) RemovePermission(param0 *lambda.RemovePermissionInput) (*lambda.RemovePermissionOutput, error) {
@@ -14072,6 +14933,9 @@ type rdsMock struct {
 	DescribeSourceRegionsFunc                             func(param0 *rds.DescribeSourceRegionsInput) (*rds.DescribeSourceRegionsOutput, error)
 	DescribeSourceRegionsRequestFunc                      func(param0 *rds.DescribeSourceRegionsInput) (*request.Request, *rds.DescribeSourceRegionsOutput)
 	DescribeSourceRegionsWithContextFunc                  func(param0 aws.Context, param1 *rds.DescribeSourceRegionsInput, param2 ...request.Option) (*rds.DescribeSourceRegionsOutput, error)
+	DescribeValidDBInstanceModificationsFunc              func(param0 *rds.DescribeValidDBInstanceModificationsInput) (*rds.DescribeValidDBInstanceModificationsOutput, error)
+	DescribeValidDBInstanceModificationsRequestFunc       func(param0 *rds.DescribeValidDBInstanceModificationsInput) (*request.Request, *rds.DescribeValidDBInstanceModificationsOutput)
+	DescribeValidDBInstanceModificationsWithContextFunc   func(param0 aws.Context, param1 *rds.DescribeValidDBInstanceModificationsInput, param2 ...request.Option) (*rds.DescribeValidDBInstanceModificationsOutput, error)
 	DownloadDBLogFilePortionFunc                          func(param0 *rds.DownloadDBLogFilePortionInput) (*rds.DownloadDBLogFilePortionOutput, error)
 	DownloadDBLogFilePortionRequestFunc                   func(param0 *rds.DownloadDBLogFilePortionInput) (*request.Request, *rds.DownloadDBLogFilePortionOutput)
 	DownloadDBLogFilePortionWithContextFunc               func(param0 aws.Context, param1 *rds.DownloadDBLogFilePortionInput, param2 ...request.Option) (*rds.DownloadDBLogFilePortionOutput, error)
@@ -14150,6 +15014,9 @@ type rdsMock struct {
 	RestoreDBInstanceFromDBSnapshotFunc                   func(param0 *rds.RestoreDBInstanceFromDBSnapshotInput) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
 	RestoreDBInstanceFromDBSnapshotRequestFunc            func(param0 *rds.RestoreDBInstanceFromDBSnapshotInput) (*request.Request, *rds.RestoreDBInstanceFromDBSnapshotOutput)
 	RestoreDBInstanceFromDBSnapshotWithContextFunc        func(param0 aws.Context, param1 *rds.RestoreDBInstanceFromDBSnapshotInput, param2 ...request.Option) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
+	RestoreDBInstanceFromS3Func                           func(param0 *rds.RestoreDBInstanceFromS3Input) (*rds.RestoreDBInstanceFromS3Output, error)
+	RestoreDBInstanceFromS3RequestFunc                    func(param0 *rds.RestoreDBInstanceFromS3Input) (*request.Request, *rds.RestoreDBInstanceFromS3Output)
+	RestoreDBInstanceFromS3WithContextFunc                func(param0 aws.Context, param1 *rds.RestoreDBInstanceFromS3Input, param2 ...request.Option) (*rds.RestoreDBInstanceFromS3Output, error)
 	RestoreDBInstanceToPointInTimeFunc                    func(param0 *rds.RestoreDBInstanceToPointInTimeInput) (*rds.RestoreDBInstanceToPointInTimeOutput, error)
 	RestoreDBInstanceToPointInTimeRequestFunc             func(param0 *rds.RestoreDBInstanceToPointInTimeInput) (*request.Request, *rds.RestoreDBInstanceToPointInTimeOutput)
 	RestoreDBInstanceToPointInTimeWithContextFunc         func(param0 aws.Context, param1 *rds.RestoreDBInstanceToPointInTimeInput, param2 ...request.Option) (*rds.RestoreDBInstanceToPointInTimeOutput, error)
@@ -14166,6 +15033,10 @@ type rdsMock struct {
 	WaitUntilDBInstanceAvailableWithContextFunc           func(param0 aws.Context, param1 *rds.DescribeDBInstancesInput, param2 ...request.WaiterOption) error
 	WaitUntilDBInstanceDeletedFunc                        func(param0 *rds.DescribeDBInstancesInput) error
 	WaitUntilDBInstanceDeletedWithContextFunc             func(param0 aws.Context, param1 *rds.DescribeDBInstancesInput, param2 ...request.WaiterOption) error
+	WaitUntilDBSnapshotAvailableFunc                      func(param0 *rds.DescribeDBSnapshotsInput) error
+	WaitUntilDBSnapshotAvailableWithContextFunc           func(param0 aws.Context, param1 *rds.DescribeDBSnapshotsInput, param2 ...request.WaiterOption) error
+	WaitUntilDBSnapshotDeletedFunc                        func(param0 *rds.DescribeDBSnapshotsInput) error
+	WaitUntilDBSnapshotDeletedWithContextFunc             func(param0 aws.Context, param1 *rds.DescribeDBSnapshotsInput, param2 ...request.WaiterOption) error
 }
 
 func (m *rdsMock) AddRoleToDBCluster(param0 *rds.AddRoleToDBClusterInput) (*rds.AddRoleToDBClusterOutput, error) {
@@ -15230,6 +16101,24 @@ func (m *rdsMock) DescribeSourceRegionsWithContext(param0 aws.Context, param1 *r
 	return m.DescribeSourceRegionsWithContextFunc(param0, param1, param2...)
 }
 
+func (m *rdsMock) DescribeValidDBInstanceModifications(param0 *rds.DescribeValidDBInstanceModificationsInput) (*rds.DescribeValidDBInstanceModificationsOutput, error) {
+	m.addCall("DescribeValidDBInstanceModifications")
+	m.verifyInput("DescribeValidDBInstanceModifications", param0)
+	return m.DescribeValidDBInstanceModificationsFunc(param0)
+}
+
+func (m *rdsMock) DescribeValidDBInstanceModificationsRequest(param0 *rds.DescribeValidDBInstanceModificationsInput) (*request.Request, *rds.DescribeValidDBInstanceModificationsOutput) {
+	m.addCall("DescribeValidDBInstanceModificationsRequest")
+	m.verifyInput("DescribeValidDBInstanceModificationsRequest", param0)
+	return m.DescribeValidDBInstanceModificationsRequestFunc(param0)
+}
+
+func (m *rdsMock) DescribeValidDBInstanceModificationsWithContext(param0 aws.Context, param1 *rds.DescribeValidDBInstanceModificationsInput, param2 ...request.Option) (*rds.DescribeValidDBInstanceModificationsOutput, error) {
+	m.addCall("DescribeValidDBInstanceModificationsWithContext")
+	m.verifyInput("DescribeValidDBInstanceModificationsWithContext", param0)
+	return m.DescribeValidDBInstanceModificationsWithContextFunc(param0, param1, param2...)
+}
+
 func (m *rdsMock) DownloadDBLogFilePortion(param0 *rds.DownloadDBLogFilePortionInput) (*rds.DownloadDBLogFilePortionOutput, error) {
 	m.addCall("DownloadDBLogFilePortion")
 	m.verifyInput("DownloadDBLogFilePortion", param0)
@@ -15698,6 +16587,24 @@ func (m *rdsMock) RestoreDBInstanceFromDBSnapshotWithContext(param0 aws.Context,
 	return m.RestoreDBInstanceFromDBSnapshotWithContextFunc(param0, param1, param2...)
 }
 
+func (m *rdsMock) RestoreDBInstanceFromS3(param0 *rds.RestoreDBInstanceFromS3Input) (*rds.RestoreDBInstanceFromS3Output, error) {
+	m.addCall("RestoreDBInstanceFromS3")
+	m.verifyInput("RestoreDBInstanceFromS3", param0)
+	return m.RestoreDBInstanceFromS3Func(param0)
+}
+
+func (m *rdsMock) RestoreDBInstanceFromS3Request(param0 *rds.RestoreDBInstanceFromS3Input) (*request.Request, *rds.RestoreDBInstanceFromS3Output) {
+	m.addCall("RestoreDBInstanceFromS3Request")
+	m.verifyInput("RestoreDBInstanceFromS3Request", param0)
+	return m.RestoreDBInstanceFromS3RequestFunc(param0)
+}
+
+func (m *rdsMock) RestoreDBInstanceFromS3WithContext(param0 aws.Context, param1 *rds.RestoreDBInstanceFromS3Input, param2 ...request.Option) (*rds.RestoreDBInstanceFromS3Output, error) {
+	m.addCall("RestoreDBInstanceFromS3WithContext")
+	m.verifyInput("RestoreDBInstanceFromS3WithContext", param0)
+	return m.RestoreDBInstanceFromS3WithContextFunc(param0, param1, param2...)
+}
+
 func (m *rdsMock) RestoreDBInstanceToPointInTime(param0 *rds.RestoreDBInstanceToPointInTimeInput) (*rds.RestoreDBInstanceToPointInTimeOutput, error) {
 	m.addCall("RestoreDBInstanceToPointInTime")
 	m.verifyInput("RestoreDBInstanceToPointInTime", param0)
@@ -15794,6 +16701,30 @@ func (m *rdsMock) WaitUntilDBInstanceDeletedWithContext(param0 aws.Context, para
 	return m.WaitUntilDBInstanceDeletedWithContextFunc(param0, param1, param2...)
 }
 
+func (m *rdsMock) WaitUntilDBSnapshotAvailable(param0 *rds.DescribeDBSnapshotsInput) error {
+	m.addCall("WaitUntilDBSnapshotAvailable")
+	m.verifyInput("WaitUntilDBSnapshotAvailable", param0)
+	return m.WaitUntilDBSnapshotAvailableFunc(param0)
+}
+
+func (m *rdsMock) WaitUntilDBSnapshotAvailableWithContext(param0 aws.Context, param1 *rds.DescribeDBSnapshotsInput, param2 ...request.WaiterOption) error {
+	m.addCall("WaitUntilDBSnapshotAvailableWithContext")
+	m.verifyInput("WaitUntilDBSnapshotAvailableWithContext", param0)
+	return m.WaitUntilDBSnapshotAvailableWithContextFunc(param0, param1, param2...)
+}
+
+func (m *rdsMock) WaitUntilDBSnapshotDeleted(param0 *rds.DescribeDBSnapshotsInput) error {
+	m.addCall("WaitUntilDBSnapshotDeleted")
+	m.verifyInput("WaitUntilDBSnapshotDeleted", param0)
+	return m.WaitUntilDBSnapshotDeletedFunc(param0)
+}
+
+func (m *rdsMock) WaitUntilDBSnapshotDeletedWithContext(param0 aws.Context, param1 *rds.DescribeDBSnapshotsInput, param2 ...request.WaiterOption) error {
+	m.addCall("WaitUntilDBSnapshotDeletedWithContext")
+	m.verifyInput("WaitUntilDBSnapshotDeletedWithContext", param0)
+	return m.WaitUntilDBSnapshotDeletedWithContextFunc(param0, param1, param2...)
+}
+
 type route53Mock struct {
 	basicMock
 	route53iface.Route53API
@@ -15854,6 +16785,9 @@ type route53Mock struct {
 	DisassociateVPCFromHostedZoneFunc                     func(param0 *route53.DisassociateVPCFromHostedZoneInput) (*route53.DisassociateVPCFromHostedZoneOutput, error)
 	DisassociateVPCFromHostedZoneRequestFunc              func(param0 *route53.DisassociateVPCFromHostedZoneInput) (*request.Request, *route53.DisassociateVPCFromHostedZoneOutput)
 	DisassociateVPCFromHostedZoneWithContextFunc          func(param0 aws.Context, param1 *route53.DisassociateVPCFromHostedZoneInput, param2 ...request.Option) (*route53.DisassociateVPCFromHostedZoneOutput, error)
+	GetAccountLimitFunc                                   func(param0 *route53.GetAccountLimitInput) (*route53.GetAccountLimitOutput, error)
+	GetAccountLimitRequestFunc                            func(param0 *route53.GetAccountLimitInput) (*request.Request, *route53.GetAccountLimitOutput)
+	GetAccountLimitWithContextFunc                        func(param0 aws.Context, param1 *route53.GetAccountLimitInput, param2 ...request.Option) (*route53.GetAccountLimitOutput, error)
 	GetChangeFunc                                         func(param0 *route53.GetChangeInput) (*route53.GetChangeOutput, error)
 	GetChangeRequestFunc                                  func(param0 *route53.GetChangeInput) (*request.Request, *route53.GetChangeOutput)
 	GetChangeWithContextFunc                              func(param0 aws.Context, param1 *route53.GetChangeInput, param2 ...request.Option) (*route53.GetChangeOutput, error)
@@ -15879,12 +16813,18 @@ type route53Mock struct {
 	GetHostedZoneCountFunc                                func(param0 *route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error)
 	GetHostedZoneCountRequestFunc                         func(param0 *route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput)
 	GetHostedZoneCountWithContextFunc                     func(param0 aws.Context, param1 *route53.GetHostedZoneCountInput, param2 ...request.Option) (*route53.GetHostedZoneCountOutput, error)
+	GetHostedZoneLimitFunc                                func(param0 *route53.GetHostedZoneLimitInput) (*route53.GetHostedZoneLimitOutput, error)
+	GetHostedZoneLimitRequestFunc                         func(param0 *route53.GetHostedZoneLimitInput) (*request.Request, *route53.GetHostedZoneLimitOutput)
+	GetHostedZoneLimitWithContextFunc                     func(param0 aws.Context, param1 *route53.GetHostedZoneLimitInput, param2 ...request.Option) (*route53.GetHostedZoneLimitOutput, error)
 	GetHostedZoneRequestFunc                              func(param0 *route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput)
 	GetHostedZoneWithContextFunc                          func(param0 aws.Context, param1 *route53.GetHostedZoneInput, param2 ...request.Option) (*route53.GetHostedZoneOutput, error)
 	GetQueryLoggingConfigFunc                             func(param0 *route53.GetQueryLoggingConfigInput) (*route53.GetQueryLoggingConfigOutput, error)
 	GetQueryLoggingConfigRequestFunc                      func(param0 *route53.GetQueryLoggingConfigInput) (*request.Request, *route53.GetQueryLoggingConfigOutput)
 	GetQueryLoggingConfigWithContextFunc                  func(param0 aws.Context, param1 *route53.GetQueryLoggingConfigInput, param2 ...request.Option) (*route53.GetQueryLoggingConfigOutput, error)
 	GetReusableDelegationSetFunc                          func(param0 *route53.GetReusableDelegationSetInput) (*route53.GetReusableDelegationSetOutput, error)
+	GetReusableDelegationSetLimitFunc                     func(param0 *route53.GetReusableDelegationSetLimitInput) (*route53.GetReusableDelegationSetLimitOutput, error)
+	GetReusableDelegationSetLimitRequestFunc              func(param0 *route53.GetReusableDelegationSetLimitInput) (*request.Request, *route53.GetReusableDelegationSetLimitOutput)
+	GetReusableDelegationSetLimitWithContextFunc          func(param0 aws.Context, param1 *route53.GetReusableDelegationSetLimitInput, param2 ...request.Option) (*route53.GetReusableDelegationSetLimitOutput, error)
 	GetReusableDelegationSetRequestFunc                   func(param0 *route53.GetReusableDelegationSetInput) (*request.Request, *route53.GetReusableDelegationSetOutput)
 	GetReusableDelegationSetWithContextFunc               func(param0 aws.Context, param1 *route53.GetReusableDelegationSetInput, param2 ...request.Option) (*route53.GetReusableDelegationSetOutput, error)
 	GetTrafficPolicyFunc                                  func(param0 *route53.GetTrafficPolicyInput) (*route53.GetTrafficPolicyOutput, error)
@@ -16302,6 +17242,24 @@ func (m *route53Mock) DisassociateVPCFromHostedZoneWithContext(param0 aws.Contex
 	return m.DisassociateVPCFromHostedZoneWithContextFunc(param0, param1, param2...)
 }
 
+func (m *route53Mock) GetAccountLimit(param0 *route53.GetAccountLimitInput) (*route53.GetAccountLimitOutput, error) {
+	m.addCall("GetAccountLimit")
+	m.verifyInput("GetAccountLimit", param0)
+	return m.GetAccountLimitFunc(param0)
+}
+
+func (m *route53Mock) GetAccountLimitRequest(param0 *route53.GetAccountLimitInput) (*request.Request, *route53.GetAccountLimitOutput) {
+	m.addCall("GetAccountLimitRequest")
+	m.verifyInput("GetAccountLimitRequest", param0)
+	return m.GetAccountLimitRequestFunc(param0)
+}
+
+func (m *route53Mock) GetAccountLimitWithContext(param0 aws.Context, param1 *route53.GetAccountLimitInput, param2 ...request.Option) (*route53.GetAccountLimitOutput, error) {
+	m.addCall("GetAccountLimitWithContext")
+	m.verifyInput("GetAccountLimitWithContext", param0)
+	return m.GetAccountLimitWithContextFunc(param0, param1, param2...)
+}
+
 func (m *route53Mock) GetChange(param0 *route53.GetChangeInput) (*route53.GetChangeOutput, error) {
 	m.addCall("GetChange")
 	m.verifyInput("GetChange", param0)
@@ -16452,6 +17410,24 @@ func (m *route53Mock) GetHostedZoneCountWithContext(param0 aws.Context, param1 *
 	return m.GetHostedZoneCountWithContextFunc(param0, param1, param2...)
 }
 
+func (m *route53Mock) GetHostedZoneLimit(param0 *route53.GetHostedZoneLimitInput) (*route53.GetHostedZoneLimitOutput, error) {
+	m.addCall("GetHostedZoneLimit")
+	m.verifyInput("GetHostedZoneLimit", param0)
+	return m.GetHostedZoneLimitFunc(param0)
+}
+
+func (m *route53Mock) GetHostedZoneLimitRequest(param0 *route53.GetHostedZoneLimitInput) (*request.Request, *route53.GetHostedZoneLimitOutput) {
+	m.addCall("GetHostedZoneLimitRequest")
+	m.verifyInput("GetHostedZoneLimitRequest", param0)
+	return m.GetHostedZoneLimitRequestFunc(param0)
+}
+
+func (m *route53Mock) GetHostedZoneLimitWithContext(param0 aws.Context, param1 *route53.GetHostedZoneLimitInput, param2 ...request.Option) (*route53.GetHostedZoneLimitOutput, error) {
+	m.addCall("GetHostedZoneLimitWithContext")
+	m.verifyInput("GetHostedZoneLimitWithContext", param0)
+	return m.GetHostedZoneLimitWithContextFunc(param0, param1, param2...)
+}
+
 func (m *route53Mock) GetHostedZoneRequest(param0 *route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput) {
 	m.addCall("GetHostedZoneRequest")
 	m.verifyInput("GetHostedZoneRequest", param0)
@@ -16486,6 +17462,24 @@ func (m *route53Mock) GetReusableDelegationSet(param0 *route53.GetReusableDelega
 	m.addCall("GetReusableDelegationSet")
 	m.verifyInput("GetReusableDelegationSet", param0)
 	return m.GetReusableDelegationSetFunc(param0)
+}
+
+func (m *route53Mock) GetReusableDelegationSetLimit(param0 *route53.GetReusableDelegationSetLimitInput) (*route53.GetReusableDelegationSetLimitOutput, error) {
+	m.addCall("GetReusableDelegationSetLimit")
+	m.verifyInput("GetReusableDelegationSetLimit", param0)
+	return m.GetReusableDelegationSetLimitFunc(param0)
+}
+
+func (m *route53Mock) GetReusableDelegationSetLimitRequest(param0 *route53.GetReusableDelegationSetLimitInput) (*request.Request, *route53.GetReusableDelegationSetLimitOutput) {
+	m.addCall("GetReusableDelegationSetLimitRequest")
+	m.verifyInput("GetReusableDelegationSetLimitRequest", param0)
+	return m.GetReusableDelegationSetLimitRequestFunc(param0)
+}
+
+func (m *route53Mock) GetReusableDelegationSetLimitWithContext(param0 aws.Context, param1 *route53.GetReusableDelegationSetLimitInput, param2 ...request.Option) (*route53.GetReusableDelegationSetLimitOutput, error) {
+	m.addCall("GetReusableDelegationSetLimitWithContext")
+	m.verifyInput("GetReusableDelegationSetLimitWithContext", param0)
+	return m.GetReusableDelegationSetLimitWithContextFunc(param0, param1, param2...)
 }
 
 func (m *route53Mock) GetReusableDelegationSetRequest(param0 *route53.GetReusableDelegationSetInput) (*request.Request, *route53.GetReusableDelegationSetOutput) {
@@ -16951,6 +17945,9 @@ type s3Mock struct {
 	DeleteBucketCorsFunc                              func(param0 *s3.DeleteBucketCorsInput) (*s3.DeleteBucketCorsOutput, error)
 	DeleteBucketCorsRequestFunc                       func(param0 *s3.DeleteBucketCorsInput) (*request.Request, *s3.DeleteBucketCorsOutput)
 	DeleteBucketCorsWithContextFunc                   func(param0 aws.Context, param1 *s3.DeleteBucketCorsInput, param2 ...request.Option) (*s3.DeleteBucketCorsOutput, error)
+	DeleteBucketEncryptionFunc                        func(param0 *s3.DeleteBucketEncryptionInput) (*s3.DeleteBucketEncryptionOutput, error)
+	DeleteBucketEncryptionRequestFunc                 func(param0 *s3.DeleteBucketEncryptionInput) (*request.Request, *s3.DeleteBucketEncryptionOutput)
+	DeleteBucketEncryptionWithContextFunc             func(param0 aws.Context, param1 *s3.DeleteBucketEncryptionInput, param2 ...request.Option) (*s3.DeleteBucketEncryptionOutput, error)
 	DeleteBucketInventoryConfigurationFunc            func(param0 *s3.DeleteBucketInventoryConfigurationInput) (*s3.DeleteBucketInventoryConfigurationOutput, error)
 	DeleteBucketInventoryConfigurationRequestFunc     func(param0 *s3.DeleteBucketInventoryConfigurationInput) (*request.Request, *s3.DeleteBucketInventoryConfigurationOutput)
 	DeleteBucketInventoryConfigurationWithContextFunc func(param0 aws.Context, param1 *s3.DeleteBucketInventoryConfigurationInput, param2 ...request.Option) (*s3.DeleteBucketInventoryConfigurationOutput, error)
@@ -16995,6 +17992,9 @@ type s3Mock struct {
 	GetBucketCorsFunc                                 func(param0 *s3.GetBucketCorsInput) (*s3.GetBucketCorsOutput, error)
 	GetBucketCorsRequestFunc                          func(param0 *s3.GetBucketCorsInput) (*request.Request, *s3.GetBucketCorsOutput)
 	GetBucketCorsWithContextFunc                      func(param0 aws.Context, param1 *s3.GetBucketCorsInput, param2 ...request.Option) (*s3.GetBucketCorsOutput, error)
+	GetBucketEncryptionFunc                           func(param0 *s3.GetBucketEncryptionInput) (*s3.GetBucketEncryptionOutput, error)
+	GetBucketEncryptionRequestFunc                    func(param0 *s3.GetBucketEncryptionInput) (*request.Request, *s3.GetBucketEncryptionOutput)
+	GetBucketEncryptionWithContextFunc                func(param0 aws.Context, param1 *s3.GetBucketEncryptionInput, param2 ...request.Option) (*s3.GetBucketEncryptionOutput, error)
 	GetBucketInventoryConfigurationFunc               func(param0 *s3.GetBucketInventoryConfigurationInput) (*s3.GetBucketInventoryConfigurationOutput, error)
 	GetBucketInventoryConfigurationRequestFunc        func(param0 *s3.GetBucketInventoryConfigurationInput) (*request.Request, *s3.GetBucketInventoryConfigurationOutput)
 	GetBucketInventoryConfigurationWithContextFunc    func(param0 aws.Context, param1 *s3.GetBucketInventoryConfigurationInput, param2 ...request.Option) (*s3.GetBucketInventoryConfigurationOutput, error)
@@ -17094,6 +18094,9 @@ type s3Mock struct {
 	PutBucketCorsFunc                                 func(param0 *s3.PutBucketCorsInput) (*s3.PutBucketCorsOutput, error)
 	PutBucketCorsRequestFunc                          func(param0 *s3.PutBucketCorsInput) (*request.Request, *s3.PutBucketCorsOutput)
 	PutBucketCorsWithContextFunc                      func(param0 aws.Context, param1 *s3.PutBucketCorsInput, param2 ...request.Option) (*s3.PutBucketCorsOutput, error)
+	PutBucketEncryptionFunc                           func(param0 *s3.PutBucketEncryptionInput) (*s3.PutBucketEncryptionOutput, error)
+	PutBucketEncryptionRequestFunc                    func(param0 *s3.PutBucketEncryptionInput) (*request.Request, *s3.PutBucketEncryptionOutput)
+	PutBucketEncryptionWithContextFunc                func(param0 aws.Context, param1 *s3.PutBucketEncryptionInput, param2 ...request.Option) (*s3.PutBucketEncryptionOutput, error)
 	PutBucketInventoryConfigurationFunc               func(param0 *s3.PutBucketInventoryConfigurationInput) (*s3.PutBucketInventoryConfigurationOutput, error)
 	PutBucketInventoryConfigurationRequestFunc        func(param0 *s3.PutBucketInventoryConfigurationInput) (*request.Request, *s3.PutBucketInventoryConfigurationOutput)
 	PutBucketInventoryConfigurationWithContextFunc    func(param0 aws.Context, param1 *s3.PutBucketInventoryConfigurationInput, param2 ...request.Option) (*s3.PutBucketInventoryConfigurationOutput, error)
@@ -17291,6 +18294,24 @@ func (m *s3Mock) DeleteBucketCorsWithContext(param0 aws.Context, param1 *s3.Dele
 	m.addCall("DeleteBucketCorsWithContext")
 	m.verifyInput("DeleteBucketCorsWithContext", param0)
 	return m.DeleteBucketCorsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *s3Mock) DeleteBucketEncryption(param0 *s3.DeleteBucketEncryptionInput) (*s3.DeleteBucketEncryptionOutput, error) {
+	m.addCall("DeleteBucketEncryption")
+	m.verifyInput("DeleteBucketEncryption", param0)
+	return m.DeleteBucketEncryptionFunc(param0)
+}
+
+func (m *s3Mock) DeleteBucketEncryptionRequest(param0 *s3.DeleteBucketEncryptionInput) (*request.Request, *s3.DeleteBucketEncryptionOutput) {
+	m.addCall("DeleteBucketEncryptionRequest")
+	m.verifyInput("DeleteBucketEncryptionRequest", param0)
+	return m.DeleteBucketEncryptionRequestFunc(param0)
+}
+
+func (m *s3Mock) DeleteBucketEncryptionWithContext(param0 aws.Context, param1 *s3.DeleteBucketEncryptionInput, param2 ...request.Option) (*s3.DeleteBucketEncryptionOutput, error) {
+	m.addCall("DeleteBucketEncryptionWithContext")
+	m.verifyInput("DeleteBucketEncryptionWithContext", param0)
+	return m.DeleteBucketEncryptionWithContextFunc(param0, param1, param2...)
 }
 
 func (m *s3Mock) DeleteBucketInventoryConfiguration(param0 *s3.DeleteBucketInventoryConfigurationInput) (*s3.DeleteBucketInventoryConfigurationOutput, error) {
@@ -17555,6 +18576,24 @@ func (m *s3Mock) GetBucketCorsWithContext(param0 aws.Context, param1 *s3.GetBuck
 	m.addCall("GetBucketCorsWithContext")
 	m.verifyInput("GetBucketCorsWithContext", param0)
 	return m.GetBucketCorsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *s3Mock) GetBucketEncryption(param0 *s3.GetBucketEncryptionInput) (*s3.GetBucketEncryptionOutput, error) {
+	m.addCall("GetBucketEncryption")
+	m.verifyInput("GetBucketEncryption", param0)
+	return m.GetBucketEncryptionFunc(param0)
+}
+
+func (m *s3Mock) GetBucketEncryptionRequest(param0 *s3.GetBucketEncryptionInput) (*request.Request, *s3.GetBucketEncryptionOutput) {
+	m.addCall("GetBucketEncryptionRequest")
+	m.verifyInput("GetBucketEncryptionRequest", param0)
+	return m.GetBucketEncryptionRequestFunc(param0)
+}
+
+func (m *s3Mock) GetBucketEncryptionWithContext(param0 aws.Context, param1 *s3.GetBucketEncryptionInput, param2 ...request.Option) (*s3.GetBucketEncryptionOutput, error) {
+	m.addCall("GetBucketEncryptionWithContext")
+	m.verifyInput("GetBucketEncryptionWithContext", param0)
+	return m.GetBucketEncryptionWithContextFunc(param0, param1, param2...)
 }
 
 func (m *s3Mock) GetBucketInventoryConfiguration(param0 *s3.GetBucketInventoryConfigurationInput) (*s3.GetBucketInventoryConfigurationOutput, error) {
@@ -18149,6 +19188,24 @@ func (m *s3Mock) PutBucketCorsWithContext(param0 aws.Context, param1 *s3.PutBuck
 	m.addCall("PutBucketCorsWithContext")
 	m.verifyInput("PutBucketCorsWithContext", param0)
 	return m.PutBucketCorsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *s3Mock) PutBucketEncryption(param0 *s3.PutBucketEncryptionInput) (*s3.PutBucketEncryptionOutput, error) {
+	m.addCall("PutBucketEncryption")
+	m.verifyInput("PutBucketEncryption", param0)
+	return m.PutBucketEncryptionFunc(param0)
+}
+
+func (m *s3Mock) PutBucketEncryptionRequest(param0 *s3.PutBucketEncryptionInput) (*request.Request, *s3.PutBucketEncryptionOutput) {
+	m.addCall("PutBucketEncryptionRequest")
+	m.verifyInput("PutBucketEncryptionRequest", param0)
+	return m.PutBucketEncryptionRequestFunc(param0)
+}
+
+func (m *s3Mock) PutBucketEncryptionWithContext(param0 aws.Context, param1 *s3.PutBucketEncryptionInput, param2 ...request.Option) (*s3.PutBucketEncryptionOutput, error) {
+	m.addCall("PutBucketEncryptionWithContext")
+	m.verifyInput("PutBucketEncryptionWithContext", param0)
+	return m.PutBucketEncryptionWithContextFunc(param0, param1, param2...)
 }
 
 func (m *s3Mock) PutBucketInventoryConfiguration(param0 *s3.PutBucketInventoryConfigurationInput) (*s3.PutBucketInventoryConfigurationOutput, error) {
@@ -19209,6 +20266,9 @@ type sqsMock struct {
 	ListDeadLetterSourceQueuesFunc              func(param0 *sqs.ListDeadLetterSourceQueuesInput) (*sqs.ListDeadLetterSourceQueuesOutput, error)
 	ListDeadLetterSourceQueuesRequestFunc       func(param0 *sqs.ListDeadLetterSourceQueuesInput) (*request.Request, *sqs.ListDeadLetterSourceQueuesOutput)
 	ListDeadLetterSourceQueuesWithContextFunc   func(param0 aws.Context, param1 *sqs.ListDeadLetterSourceQueuesInput, param2 ...request.Option) (*sqs.ListDeadLetterSourceQueuesOutput, error)
+	ListQueueTagsFunc                           func(param0 *sqs.ListQueueTagsInput) (*sqs.ListQueueTagsOutput, error)
+	ListQueueTagsRequestFunc                    func(param0 *sqs.ListQueueTagsInput) (*request.Request, *sqs.ListQueueTagsOutput)
+	ListQueueTagsWithContextFunc                func(param0 aws.Context, param1 *sqs.ListQueueTagsInput, param2 ...request.Option) (*sqs.ListQueueTagsOutput, error)
 	ListQueuesFunc                              func(param0 *sqs.ListQueuesInput) (*sqs.ListQueuesOutput, error)
 	ListQueuesRequestFunc                       func(param0 *sqs.ListQueuesInput) (*request.Request, *sqs.ListQueuesOutput)
 	ListQueuesWithContextFunc                   func(param0 aws.Context, param1 *sqs.ListQueuesInput, param2 ...request.Option) (*sqs.ListQueuesOutput, error)
@@ -19230,6 +20290,12 @@ type sqsMock struct {
 	SetQueueAttributesFunc                      func(param0 *sqs.SetQueueAttributesInput) (*sqs.SetQueueAttributesOutput, error)
 	SetQueueAttributesRequestFunc               func(param0 *sqs.SetQueueAttributesInput) (*request.Request, *sqs.SetQueueAttributesOutput)
 	SetQueueAttributesWithContextFunc           func(param0 aws.Context, param1 *sqs.SetQueueAttributesInput, param2 ...request.Option) (*sqs.SetQueueAttributesOutput, error)
+	TagQueueFunc                                func(param0 *sqs.TagQueueInput) (*sqs.TagQueueOutput, error)
+	TagQueueRequestFunc                         func(param0 *sqs.TagQueueInput) (*request.Request, *sqs.TagQueueOutput)
+	TagQueueWithContextFunc                     func(param0 aws.Context, param1 *sqs.TagQueueInput, param2 ...request.Option) (*sqs.TagQueueOutput, error)
+	UntagQueueFunc                              func(param0 *sqs.UntagQueueInput) (*sqs.UntagQueueOutput, error)
+	UntagQueueRequestFunc                       func(param0 *sqs.UntagQueueInput) (*request.Request, *sqs.UntagQueueOutput)
+	UntagQueueWithContextFunc                   func(param0 aws.Context, param1 *sqs.UntagQueueInput, param2 ...request.Option) (*sqs.UntagQueueOutput, error)
 }
 
 func (m *sqsMock) AddPermission(param0 *sqs.AddPermissionInput) (*sqs.AddPermissionOutput, error) {
@@ -19412,6 +20478,24 @@ func (m *sqsMock) ListDeadLetterSourceQueuesWithContext(param0 aws.Context, para
 	return m.ListDeadLetterSourceQueuesWithContextFunc(param0, param1, param2...)
 }
 
+func (m *sqsMock) ListQueueTags(param0 *sqs.ListQueueTagsInput) (*sqs.ListQueueTagsOutput, error) {
+	m.addCall("ListQueueTags")
+	m.verifyInput("ListQueueTags", param0)
+	return m.ListQueueTagsFunc(param0)
+}
+
+func (m *sqsMock) ListQueueTagsRequest(param0 *sqs.ListQueueTagsInput) (*request.Request, *sqs.ListQueueTagsOutput) {
+	m.addCall("ListQueueTagsRequest")
+	m.verifyInput("ListQueueTagsRequest", param0)
+	return m.ListQueueTagsRequestFunc(param0)
+}
+
+func (m *sqsMock) ListQueueTagsWithContext(param0 aws.Context, param1 *sqs.ListQueueTagsInput, param2 ...request.Option) (*sqs.ListQueueTagsOutput, error) {
+	m.addCall("ListQueueTagsWithContext")
+	m.verifyInput("ListQueueTagsWithContext", param0)
+	return m.ListQueueTagsWithContextFunc(param0, param1, param2...)
+}
+
 func (m *sqsMock) ListQueues(param0 *sqs.ListQueuesInput) (*sqs.ListQueuesOutput, error) {
 	m.addCall("ListQueues")
 	m.verifyInput("ListQueues", param0)
@@ -19536,4 +20620,40 @@ func (m *sqsMock) SetQueueAttributesWithContext(param0 aws.Context, param1 *sqs.
 	m.addCall("SetQueueAttributesWithContext")
 	m.verifyInput("SetQueueAttributesWithContext", param0)
 	return m.SetQueueAttributesWithContextFunc(param0, param1, param2...)
+}
+
+func (m *sqsMock) TagQueue(param0 *sqs.TagQueueInput) (*sqs.TagQueueOutput, error) {
+	m.addCall("TagQueue")
+	m.verifyInput("TagQueue", param0)
+	return m.TagQueueFunc(param0)
+}
+
+func (m *sqsMock) TagQueueRequest(param0 *sqs.TagQueueInput) (*request.Request, *sqs.TagQueueOutput) {
+	m.addCall("TagQueueRequest")
+	m.verifyInput("TagQueueRequest", param0)
+	return m.TagQueueRequestFunc(param0)
+}
+
+func (m *sqsMock) TagQueueWithContext(param0 aws.Context, param1 *sqs.TagQueueInput, param2 ...request.Option) (*sqs.TagQueueOutput, error) {
+	m.addCall("TagQueueWithContext")
+	m.verifyInput("TagQueueWithContext", param0)
+	return m.TagQueueWithContextFunc(param0, param1, param2...)
+}
+
+func (m *sqsMock) UntagQueue(param0 *sqs.UntagQueueInput) (*sqs.UntagQueueOutput, error) {
+	m.addCall("UntagQueue")
+	m.verifyInput("UntagQueue", param0)
+	return m.UntagQueueFunc(param0)
+}
+
+func (m *sqsMock) UntagQueueRequest(param0 *sqs.UntagQueueInput) (*request.Request, *sqs.UntagQueueOutput) {
+	m.addCall("UntagQueueRequest")
+	m.verifyInput("UntagQueueRequest", param0)
+	return m.UntagQueueRequestFunc(param0)
+}
+
+func (m *sqsMock) UntagQueueWithContext(param0 aws.Context, param1 *sqs.UntagQueueInput, param2 ...request.Option) (*sqs.UntagQueueOutput, error) {
+	m.addCall("UntagQueueWithContext")
+	m.verifyInput("UntagQueueWithContext", param0)
+	return m.UntagQueueWithContextFunc(param0, param1, param2...)
 }

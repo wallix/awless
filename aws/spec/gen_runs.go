@@ -101,7 +101,7 @@ func (cmd *AttachAlarm) run(renv env.Running, params map[string]interface{}) (in
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -174,7 +174,7 @@ func (cmd *AttachContainertask) run(renv env.Running, params map[string]interfac
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -253,7 +253,7 @@ func (cmd *AttachElasticip) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.AssociateAddress(input)
 	cmd.logger.ExtraVerbosef("ec2.AssociateAddress call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -353,7 +353,7 @@ func (cmd *AttachInstance) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.RegisterTargets(input)
 	cmd.logger.ExtraVerbosef("elbv2.RegisterTargets call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -426,7 +426,7 @@ func (cmd *AttachInstanceprofile) run(renv env.Running, params map[string]interf
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -501,7 +501,7 @@ func (cmd *AttachInternetgateway) run(renv env.Running, params map[string]interf
 	output, err := cmd.api.AttachInternetGateway(input)
 	cmd.logger.ExtraVerbosef("ec2.AttachInternetGateway call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -601,7 +601,7 @@ func (cmd *AttachMfadevice) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.EnableMFADevice(input)
 	cmd.logger.ExtraVerbosef("iam.EnableMFADevice call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -680,7 +680,7 @@ func (cmd *AttachNetworkinterface) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.AttachNetworkInterface(input)
 	cmd.logger.ExtraVerbosef("ec2.AttachNetworkInterface call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -774,7 +774,7 @@ func (cmd *AttachPolicy) run(renv env.Running, params map[string]interface{}) (i
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -853,7 +853,7 @@ func (cmd *AttachRole) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.AddRoleToInstanceProfile(input)
 	cmd.logger.ExtraVerbosef("iam.AddRoleToInstanceProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -932,7 +932,7 @@ func (cmd *AttachRoutetable) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.AssociateRouteTable(input)
 	cmd.logger.ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1026,7 +1026,7 @@ func (cmd *AttachSecuritygroup) run(renv env.Running, params map[string]interfac
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1105,7 +1105,7 @@ func (cmd *AttachUser) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.AddUserToGroup(input)
 	cmd.logger.ExtraVerbosef("iam.AddUserToGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1184,7 +1184,7 @@ func (cmd *AttachVolume) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.AttachVolume(input)
 	cmd.logger.ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1278,7 +1278,7 @@ func (cmd *AuthenticateRegistry) run(renv env.Running, params map[string]interfa
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1351,7 +1351,7 @@ func (cmd *CheckCertificate) run(renv env.Running, params map[string]interface{}
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1424,7 +1424,7 @@ func (cmd *CheckDatabase) run(renv env.Running, params map[string]interface{}) (
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1497,7 +1497,7 @@ func (cmd *CheckDistribution) run(renv env.Running, params map[string]interface{
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1570,7 +1570,7 @@ func (cmd *CheckInstance) run(renv env.Running, params map[string]interface{}) (
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1643,7 +1643,7 @@ func (cmd *CheckLoadbalancer) run(renv env.Running, params map[string]interface{
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1716,7 +1716,7 @@ func (cmd *CheckNatgateway) run(renv env.Running, params map[string]interface{})
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1789,7 +1789,7 @@ func (cmd *CheckNetworkinterface) run(renv env.Running, params map[string]interf
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1862,7 +1862,7 @@ func (cmd *CheckScalinggroup) run(renv env.Running, params map[string]interface{
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -1935,7 +1935,7 @@ func (cmd *CheckSecuritygroup) run(renv env.Running, params map[string]interface
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2008,7 +2008,7 @@ func (cmd *CheckVolume) run(renv env.Running, params map[string]interface{}) (in
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2087,7 +2087,7 @@ func (cmd *CopyImage) run(renv env.Running, params map[string]interface{}) (inte
 	output, err := cmd.api.CopyImage(input)
 	cmd.logger.ExtraVerbosef("ec2.CopyImage call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2187,7 +2187,7 @@ func (cmd *CopySnapshot) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.CopySnapshot(input)
 	cmd.logger.ExtraVerbosef("ec2.CopySnapshot call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2287,7 +2287,7 @@ func (cmd *CreateAccesskey) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.CreateAccessKey(input)
 	cmd.logger.ExtraVerbosef("iam.CreateAccessKey call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2366,7 +2366,7 @@ func (cmd *CreateAlarm) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.PutMetricAlarm(input)
 	cmd.logger.ExtraVerbosef("cloudwatch.PutMetricAlarm call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2445,7 +2445,7 @@ func (cmd *CreateAppscalingpolicy) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.PutScalingPolicy(input)
 	cmd.logger.ExtraVerbosef("applicationautoscaling.PutScalingPolicy call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2524,7 +2524,7 @@ func (cmd *CreateAppscalingtarget) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.RegisterScalableTarget(input)
 	cmd.logger.ExtraVerbosef("applicationautoscaling.RegisterScalableTarget call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2603,7 +2603,7 @@ func (cmd *CreateBucket) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.CreateBucket(input)
 	cmd.logger.ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2676,7 +2676,7 @@ func (cmd *CreateCertificate) run(renv env.Running, params map[string]interface{
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2755,7 +2755,7 @@ func (cmd *CreateContainercluster) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.CreateCluster(input)
 	cmd.logger.ExtraVerbosef("ecs.CreateCluster call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2828,7 +2828,7 @@ func (cmd *CreateDatabase) run(renv env.Running, params map[string]interface{}) 
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2907,7 +2907,7 @@ func (cmd *CreateDbsubnetgroup) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.CreateDBSubnetGroup(input)
 	cmd.logger.ExtraVerbosef("rds.CreateDBSubnetGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -2980,7 +2980,7 @@ func (cmd *CreateDistribution) run(renv env.Running, params map[string]interface
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3059,7 +3059,7 @@ func (cmd *CreateElasticip) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.AllocateAddress(input)
 	cmd.logger.ExtraVerbosef("ec2.AllocateAddress call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3159,7 +3159,7 @@ func (cmd *CreateFunction) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.CreateFunction(input)
 	cmd.logger.ExtraVerbosef("lambda.CreateFunction call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3238,7 +3238,7 @@ func (cmd *CreateGroup) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.CreateGroup(input)
 	cmd.logger.ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3317,7 +3317,7 @@ func (cmd *CreateImage) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.CreateImage(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateImage call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3417,7 +3417,7 @@ func (cmd *CreateInstance) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.RunInstances(input)
 	cmd.logger.ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3517,7 +3517,7 @@ func (cmd *CreateInstanceprofile) run(renv env.Running, params map[string]interf
 	output, err := cmd.api.CreateInstanceProfile(input)
 	cmd.logger.ExtraVerbosef("iam.CreateInstanceProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3596,7 +3596,7 @@ func (cmd *CreateInternetgateway) run(renv env.Running, params map[string]interf
 	output, err := cmd.api.CreateInternetGateway(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3696,7 +3696,7 @@ func (cmd *CreateKeypair) run(renv env.Running, params map[string]interface{}) (
 	output, err := cmd.api.ImportKeyPair(input)
 	cmd.logger.ExtraVerbosef("ec2.ImportKeyPair call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3775,7 +3775,7 @@ func (cmd *CreateLaunchconfiguration) run(renv env.Running, params map[string]in
 	output, err := cmd.api.CreateLaunchConfiguration(input)
 	cmd.logger.ExtraVerbosef("autoscaling.CreateLaunchConfiguration call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3854,7 +3854,7 @@ func (cmd *CreateListener) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.CreateListener(input)
 	cmd.logger.ExtraVerbosef("elbv2.CreateListener call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -3933,7 +3933,7 @@ func (cmd *CreateLoadbalancer) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.CreateLoadBalancer(input)
 	cmd.logger.ExtraVerbosef("elbv2.CreateLoadBalancer call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4012,7 +4012,7 @@ func (cmd *CreateLoginprofile) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.CreateLoginProfile(input)
 	cmd.logger.ExtraVerbosef("iam.CreateLoginProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4085,7 +4085,7 @@ func (cmd *CreateMfadevice) run(renv env.Running, params map[string]interface{})
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4164,7 +4164,7 @@ func (cmd *CreateNatgateway) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.CreateNatGateway(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateNatGateway call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4243,7 +4243,7 @@ func (cmd *CreateNetworkinterface) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.CreateNetworkInterface(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateNetworkInterface call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4343,7 +4343,7 @@ func (cmd *CreatePolicy) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.CreatePolicy(input)
 	cmd.logger.ExtraVerbosef("iam.CreatePolicy call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4422,7 +4422,7 @@ func (cmd *CreateQueue) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.CreateQueue(input)
 	cmd.logger.ExtraVerbosef("sqs.CreateQueue call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4495,7 +4495,7 @@ func (cmd *CreateRecord) run(renv env.Running, params map[string]interface{}) (i
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4574,7 +4574,7 @@ func (cmd *CreateRepository) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.CreateRepository(input)
 	cmd.logger.ExtraVerbosef("ecr.CreateRepository call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4647,7 +4647,7 @@ func (cmd *CreateRole) run(renv env.Running, params map[string]interface{}) (int
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4726,7 +4726,7 @@ func (cmd *CreateRoute) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.CreateRoute(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateRoute call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4826,7 +4826,7 @@ func (cmd *CreateRoutetable) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.CreateRouteTable(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4920,7 +4920,7 @@ func (cmd *CreateS3object) run(renv env.Running, params map[string]interface{}) 
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -4999,7 +4999,7 @@ func (cmd *CreateScalinggroup) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.CreateAutoScalingGroup(input)
 	cmd.logger.ExtraVerbosef("autoscaling.CreateAutoScalingGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5078,7 +5078,7 @@ func (cmd *CreateScalingpolicy) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.PutScalingPolicy(input)
 	cmd.logger.ExtraVerbosef("autoscaling.PutScalingPolicy call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5157,7 +5157,7 @@ func (cmd *CreateSecuritygroup) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.CreateSecurityGroup(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5257,7 +5257,7 @@ func (cmd *CreateSnapshot) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.CreateSnapshot(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateSnapshot call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5357,7 +5357,7 @@ func (cmd *CreateStack) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.CreateStack(input)
 	cmd.logger.ExtraVerbosef("cloudformation.CreateStack call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5436,7 +5436,7 @@ func (cmd *CreateSubnet) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.CreateSubnet(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateSubnet call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5536,7 +5536,7 @@ func (cmd *CreateSubscription) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.Subscribe(input)
 	cmd.logger.ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5609,7 +5609,7 @@ func (cmd *CreateTag) run(renv env.Running, params map[string]interface{}) (inte
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5684,7 +5684,7 @@ func (cmd *CreateTargetgroup) run(renv env.Running, params map[string]interface{
 	output, err := cmd.api.CreateTargetGroup(input)
 	cmd.logger.ExtraVerbosef("elbv2.CreateTargetGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5763,7 +5763,7 @@ func (cmd *CreateTopic) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.CreateTopic(input)
 	cmd.logger.ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5842,7 +5842,7 @@ func (cmd *CreateUser) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.CreateUser(input)
 	cmd.logger.ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -5921,7 +5921,7 @@ func (cmd *CreateVolume) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.CreateVolume(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6021,7 +6021,7 @@ func (cmd *CreateVpc) run(renv env.Running, params map[string]interface{}) (inte
 	output, err := cmd.api.CreateVpc(input)
 	cmd.logger.ExtraVerbosef("ec2.CreateVpc call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6121,7 +6121,7 @@ func (cmd *CreateZone) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.CreateHostedZone(input)
 	cmd.logger.ExtraVerbosef("route53.CreateHostedZone call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6200,7 +6200,7 @@ func (cmd *DeleteAccesskey) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.DeleteAccessKey(input)
 	cmd.logger.ExtraVerbosef("iam.DeleteAccessKey call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6279,7 +6279,7 @@ func (cmd *DeleteAlarm) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.DeleteAlarms(input)
 	cmd.logger.ExtraVerbosef("cloudwatch.DeleteAlarms call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6358,7 +6358,7 @@ func (cmd *DeleteAppscalingpolicy) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.DeleteScalingPolicy(input)
 	cmd.logger.ExtraVerbosef("applicationautoscaling.DeleteScalingPolicy call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6437,7 +6437,7 @@ func (cmd *DeleteAppscalingtarget) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.DeregisterScalableTarget(input)
 	cmd.logger.ExtraVerbosef("applicationautoscaling.DeregisterScalableTarget call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6516,7 +6516,7 @@ func (cmd *DeleteBucket) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.DeleteBucket(input)
 	cmd.logger.ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6595,7 +6595,7 @@ func (cmd *DeleteCertificate) run(renv env.Running, params map[string]interface{
 	output, err := cmd.api.DeleteCertificate(input)
 	cmd.logger.ExtraVerbosef("acm.DeleteCertificate call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6674,7 +6674,7 @@ func (cmd *DeleteContainercluster) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.DeleteCluster(input)
 	cmd.logger.ExtraVerbosef("ecs.DeleteCluster call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6747,7 +6747,7 @@ func (cmd *DeleteContainertask) run(renv env.Running, params map[string]interfac
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6822,7 +6822,7 @@ func (cmd *DeleteDatabase) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.DeleteDBInstance(input)
 	cmd.logger.ExtraVerbosef("rds.DeleteDBInstance call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6901,7 +6901,7 @@ func (cmd *DeleteDbsubnetgroup) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.DeleteDBSubnetGroup(input)
 	cmd.logger.ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -6974,7 +6974,7 @@ func (cmd *DeleteDistribution) run(renv env.Running, params map[string]interface
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7053,7 +7053,7 @@ func (cmd *DeleteElasticip) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.ReleaseAddress(input)
 	cmd.logger.ExtraVerbosef("ec2.ReleaseAddress call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7153,7 +7153,7 @@ func (cmd *DeleteFunction) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.DeleteFunction(input)
 	cmd.logger.ExtraVerbosef("lambda.DeleteFunction call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7232,7 +7232,7 @@ func (cmd *DeleteGroup) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.DeleteGroup(input)
 	cmd.logger.ExtraVerbosef("iam.DeleteGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7305,7 +7305,7 @@ func (cmd *DeleteImage) run(renv env.Running, params map[string]interface{}) (in
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7380,7 +7380,7 @@ func (cmd *DeleteInstance) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.TerminateInstances(input)
 	cmd.logger.ExtraVerbosef("ec2.TerminateInstances call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7480,7 +7480,7 @@ func (cmd *DeleteInstanceprofile) run(renv env.Running, params map[string]interf
 	output, err := cmd.api.DeleteInstanceProfile(input)
 	cmd.logger.ExtraVerbosef("iam.DeleteInstanceProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7559,7 +7559,7 @@ func (cmd *DeleteInternetgateway) run(renv env.Running, params map[string]interf
 	output, err := cmd.api.DeleteInternetGateway(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteInternetGateway call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7659,7 +7659,7 @@ func (cmd *DeleteKeypair) run(renv env.Running, params map[string]interface{}) (
 	output, err := cmd.api.DeleteKeyPair(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7759,7 +7759,7 @@ func (cmd *DeleteLaunchconfiguration) run(renv env.Running, params map[string]in
 	output, err := cmd.api.DeleteLaunchConfiguration(input)
 	cmd.logger.ExtraVerbosef("autoscaling.DeleteLaunchConfiguration call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7838,7 +7838,7 @@ func (cmd *DeleteListener) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.DeleteListener(input)
 	cmd.logger.ExtraVerbosef("elbv2.DeleteListener call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7917,7 +7917,7 @@ func (cmd *DeleteLoadbalancer) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.DeleteLoadBalancer(input)
 	cmd.logger.ExtraVerbosef("elbv2.DeleteLoadBalancer call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -7996,7 +7996,7 @@ func (cmd *DeleteLoginprofile) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.DeleteLoginProfile(input)
 	cmd.logger.ExtraVerbosef("iam.DeleteLoginProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8075,7 +8075,7 @@ func (cmd *DeleteMfadevice) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.DeleteVirtualMFADevice(input)
 	cmd.logger.ExtraVerbosef("iam.DeleteVirtualMFADevice call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8154,7 +8154,7 @@ func (cmd *DeleteNatgateway) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.DeleteNatGateway(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteNatGateway call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8233,7 +8233,7 @@ func (cmd *DeleteNetworkinterface) run(renv env.Running, params map[string]inter
 	output, err := cmd.api.DeleteNetworkInterface(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteNetworkInterface call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8333,7 +8333,7 @@ func (cmd *DeletePolicy) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.DeletePolicy(input)
 	cmd.logger.ExtraVerbosef("iam.DeletePolicy call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8412,7 +8412,7 @@ func (cmd *DeleteQueue) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.DeleteQueue(input)
 	cmd.logger.ExtraVerbosef("sqs.DeleteQueue call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8485,7 +8485,7 @@ func (cmd *DeleteRecord) run(renv env.Running, params map[string]interface{}) (i
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8564,7 +8564,7 @@ func (cmd *DeleteRepository) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.DeleteRepository(input)
 	cmd.logger.ExtraVerbosef("ecr.DeleteRepository call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8637,7 +8637,7 @@ func (cmd *DeleteRole) run(renv env.Running, params map[string]interface{}) (int
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8716,7 +8716,7 @@ func (cmd *DeleteRoute) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.DeleteRoute(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteRoute call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8816,7 +8816,7 @@ func (cmd *DeleteRoutetable) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.DeleteRouteTable(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteRouteTable call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8916,7 +8916,7 @@ func (cmd *DeleteS3object) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.DeleteObject(input)
 	cmd.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -8995,7 +8995,7 @@ func (cmd *DeleteScalinggroup) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.DeleteAutoScalingGroup(input)
 	cmd.logger.ExtraVerbosef("autoscaling.DeleteAutoScalingGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9074,7 +9074,7 @@ func (cmd *DeleteScalingpolicy) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.DeletePolicy(input)
 	cmd.logger.ExtraVerbosef("autoscaling.DeletePolicy call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9153,7 +9153,7 @@ func (cmd *DeleteSecuritygroup) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.DeleteSecurityGroup(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9253,7 +9253,7 @@ func (cmd *DeleteSnapshot) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.DeleteSnapshot(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteSnapshot call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9353,7 +9353,7 @@ func (cmd *DeleteStack) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.DeleteStack(input)
 	cmd.logger.ExtraVerbosef("cloudformation.DeleteStack call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9432,7 +9432,7 @@ func (cmd *DeleteSubnet) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.DeleteSubnet(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteSubnet call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9532,7 +9532,7 @@ func (cmd *DeleteSubscription) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.Unsubscribe(input)
 	cmd.logger.ExtraVerbosef("sns.Unsubscribe call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9605,7 +9605,7 @@ func (cmd *DeleteTag) run(renv env.Running, params map[string]interface{}) (inte
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9680,7 +9680,7 @@ func (cmd *DeleteTargetgroup) run(renv env.Running, params map[string]interface{
 	output, err := cmd.api.DeleteTargetGroup(input)
 	cmd.logger.ExtraVerbosef("elbv2.DeleteTargetGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9759,7 +9759,7 @@ func (cmd *DeleteTopic) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.DeleteTopic(input)
 	cmd.logger.ExtraVerbosef("sns.DeleteTopic call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9838,7 +9838,7 @@ func (cmd *DeleteUser) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.DeleteUser(input)
 	cmd.logger.ExtraVerbosef("iam.DeleteUser call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -9917,7 +9917,7 @@ func (cmd *DeleteVolume) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.DeleteVolume(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteVolume call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10017,7 +10017,7 @@ func (cmd *DeleteVpc) run(renv env.Running, params map[string]interface{}) (inte
 	output, err := cmd.api.DeleteVpc(input)
 	cmd.logger.ExtraVerbosef("ec2.DeleteVpc call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10117,7 +10117,7 @@ func (cmd *DeleteZone) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.DeleteHostedZone(input)
 	cmd.logger.ExtraVerbosef("route53.DeleteHostedZone call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10190,7 +10190,7 @@ func (cmd *DetachAlarm) run(renv env.Running, params map[string]interface{}) (in
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10263,7 +10263,7 @@ func (cmd *DetachContainertask) run(renv env.Running, params map[string]interfac
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10342,7 +10342,7 @@ func (cmd *DetachElasticip) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.DisassociateAddress(input)
 	cmd.logger.ExtraVerbosef("ec2.DisassociateAddress call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10442,7 +10442,7 @@ func (cmd *DetachInstance) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.DeregisterTargets(input)
 	cmd.logger.ExtraVerbosef("elbv2.DeregisterTargets call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10515,7 +10515,7 @@ func (cmd *DetachInstanceprofile) run(renv env.Running, params map[string]interf
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10594,7 +10594,7 @@ func (cmd *DetachInternetgateway) run(renv env.Running, params map[string]interf
 	output, err := cmd.api.DetachInternetGateway(input)
 	cmd.logger.ExtraVerbosef("ec2.DetachInternetGateway call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10694,7 +10694,7 @@ func (cmd *DetachMfadevice) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.DeactivateMFADevice(input)
 	cmd.logger.ExtraVerbosef("iam.DeactivateMFADevice call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10767,7 +10767,7 @@ func (cmd *DetachNetworkinterface) run(renv env.Running, params map[string]inter
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10836,7 +10836,7 @@ func (cmd *DetachPolicy) run(renv env.Running, params map[string]interface{}) (i
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10915,7 +10915,7 @@ func (cmd *DetachRole) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.RemoveRoleFromInstanceProfile(input)
 	cmd.logger.ExtraVerbosef("iam.RemoveRoleFromInstanceProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -10994,7 +10994,7 @@ func (cmd *DetachRoutetable) run(renv env.Running, params map[string]interface{}
 	output, err := cmd.api.DisassociateRouteTable(input)
 	cmd.logger.ExtraVerbosef("ec2.DisassociateRouteTable call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11088,7 +11088,7 @@ func (cmd *DetachSecuritygroup) run(renv env.Running, params map[string]interfac
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11167,7 +11167,7 @@ func (cmd *DetachUser) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.RemoveUserFromGroup(input)
 	cmd.logger.ExtraVerbosef("iam.RemoveUserFromGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11246,7 +11246,7 @@ func (cmd *DetachVolume) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.DetachVolume(input)
 	cmd.logger.ExtraVerbosef("ec2.DetachVolume call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11346,7 +11346,7 @@ func (cmd *ImportImage) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.ImportImage(input)
 	cmd.logger.ExtraVerbosef("ec2.ImportImage call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11446,7 +11446,7 @@ func (cmd *RestartDatabase) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.RebootDBInstance(input)
 	cmd.logger.ExtraVerbosef("rds.RebootDBInstance call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11525,7 +11525,7 @@ func (cmd *RestartInstance) run(renv env.Running, params map[string]interface{})
 	output, err := cmd.api.RebootInstances(input)
 	cmd.logger.ExtraVerbosef("ec2.RebootInstances call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11625,7 +11625,7 @@ func (cmd *StartAlarm) run(renv env.Running, params map[string]interface{}) (int
 	output, err := cmd.api.EnableAlarmActions(input)
 	cmd.logger.ExtraVerbosef("cloudwatch.EnableAlarmActions call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11698,7 +11698,7 @@ func (cmd *StartContainertask) run(renv env.Running, params map[string]interface
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11777,7 +11777,7 @@ func (cmd *StartDatabase) run(renv env.Running, params map[string]interface{}) (
 	output, err := cmd.api.StartDBInstance(input)
 	cmd.logger.ExtraVerbosef("rds.StartDBInstance call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11856,7 +11856,7 @@ func (cmd *StartInstance) run(renv env.Running, params map[string]interface{}) (
 	output, err := cmd.api.StartInstances(input)
 	cmd.logger.ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -11956,7 +11956,7 @@ func (cmd *StopAlarm) run(renv env.Running, params map[string]interface{}) (inte
 	output, err := cmd.api.DisableAlarmActions(input)
 	cmd.logger.ExtraVerbosef("cloudwatch.DisableAlarmActions call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12029,7 +12029,7 @@ func (cmd *StopContainertask) run(renv env.Running, params map[string]interface{
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12108,7 +12108,7 @@ func (cmd *StopDatabase) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.StopDBInstance(input)
 	cmd.logger.ExtraVerbosef("rds.StopDBInstance call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12187,7 +12187,7 @@ func (cmd *StopInstance) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.StopInstances(input)
 	cmd.logger.ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12281,7 +12281,7 @@ func (cmd *UpdateBucket) run(renv env.Running, params map[string]interface{}) (i
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12360,7 +12360,7 @@ func (cmd *UpdateContainertask) run(renv env.Running, params map[string]interfac
 	output, err := cmd.api.UpdateService(input)
 	cmd.logger.ExtraVerbosef("ecs.UpdateService call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12433,7 +12433,7 @@ func (cmd *UpdateDistribution) run(renv env.Running, params map[string]interface
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12506,7 +12506,7 @@ func (cmd *UpdateImage) run(renv env.Running, params map[string]interface{}) (in
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12581,7 +12581,7 @@ func (cmd *UpdateInstance) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.ModifyInstanceAttribute(input)
 	cmd.logger.ExtraVerbosef("ec2.ModifyInstanceAttribute call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12681,7 +12681,7 @@ func (cmd *UpdateLoginprofile) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.UpdateLoginProfile(input)
 	cmd.logger.ExtraVerbosef("iam.UpdateLoginProfile call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12760,7 +12760,7 @@ func (cmd *UpdatePolicy) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.CreatePolicyVersion(input)
 	cmd.logger.ExtraVerbosef("iam.CreatePolicyVersion call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12833,7 +12833,7 @@ func (cmd *UpdateRecord) run(renv env.Running, params map[string]interface{}) (i
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12912,7 +12912,7 @@ func (cmd *UpdateS3object) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.PutObjectAcl(input)
 	cmd.logger.ExtraVerbosef("s3.PutObjectAcl call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -12991,7 +12991,7 @@ func (cmd *UpdateScalinggroup) run(renv env.Running, params map[string]interface
 	output, err := cmd.api.UpdateAutoScalingGroup(input)
 	cmd.logger.ExtraVerbosef("autoscaling.UpdateAutoScalingGroup call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -13064,7 +13064,7 @@ func (cmd *UpdateSecuritygroup) run(renv env.Running, params map[string]interfac
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -13139,7 +13139,7 @@ func (cmd *UpdateStack) run(renv env.Running, params map[string]interface{}) (in
 	output, err := cmd.api.UpdateStack(input)
 	cmd.logger.ExtraVerbosef("cloudformation.UpdateStack call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -13218,7 +13218,7 @@ func (cmd *UpdateSubnet) run(renv env.Running, params map[string]interface{}) (i
 	output, err := cmd.api.ModifySubnetAttribute(input)
 	cmd.logger.ExtraVerbosef("ec2.ModifySubnetAttribute call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}
@@ -13291,7 +13291,7 @@ func (cmd *UpdateTargetgroup) run(renv env.Running, params map[string]interface{
 
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 
 	var extracted interface{}

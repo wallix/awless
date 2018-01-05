@@ -29,7 +29,14 @@ func typedParamCompletionFunc(g cloud.GraphAPI, resourceType, propName string) r
 	resources, _ := g.Find(cloud.NewQuery(resourceType))
 	for _, res := range resources {
 		if val, ok := res.Properties()[propName]; ok {
-			items = append(items, readline.PcItem(fmt.Sprint(val)))
+			switch vv := val.(type) {
+			case []string:
+				for _, s := range vv {
+					items = append(items, readline.PcItem(s))
+				}
+			default:
+				items = append(items, readline.PcItem(fmt.Sprint(val)))
+			}
 		}
 	}
 

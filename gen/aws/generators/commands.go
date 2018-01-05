@@ -301,13 +301,13 @@ func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) 
 	output, err := cmd.api.{{ $tag.Call }}(input)
 	cmd.logger.ExtraVerbosef("{{ $tag.API }}.{{ $tag.Call }} call took %s", time.Since(start))
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 	{{- else }}
 	
 	output, err := cmd.ManualRun(renv)
 	if err != nil {
-		return nil, err
+		return nil, decorateAWSError(err)
 	}
 	{{- end }}
 	
