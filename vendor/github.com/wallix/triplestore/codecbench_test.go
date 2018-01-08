@@ -28,11 +28,11 @@ func BenchmarkEncodingMemallocation(b *testing.B) {
 
 }
 
-//BenchmarkAllEncoding/binary-4         	            2000	    632976 ns/op	  295265 B/op	   11012 allocs/op
-//BenchmarkAllEncoding/binary_streaming-4         	    1000	   1131278 ns/op	  295271 B/op	   11012 allocs/op
-//BenchmarkAllEncoding/ntriples-4                 	    3000	    503207 ns/op	  529136 B/op	    4014 allocs/op
-//BenchmarkAllEncoding/ntriples_streaming-4       	    2000	    954791 ns/op	  529170 B/op	    4015 allocs/op
-//BenchmarkAllEncoding/ntriples_with_context-4    	    1000	   1156989 ns/op	  764845 B/op	    8015 allocs/op
+//BenchmarkAllEncoding/binary-4      	                2000	    609710 ns/op	  295264 B/op	   11012 allocs/op
+//BenchmarkAllEncoding/binary_streaming-4         	    2000	   1046498 ns/op	  295269 B/op	   11012 allocs/op
+//BenchmarkAllEncoding/ntriples-4                 	    3000	    530518 ns/op	  529136 B/op	    4014 allocs/op
+//BenchmarkAllEncoding/ntriples_streaming-4       	    2000	    988511 ns/op	  529170 B/op	    4015 allocs/op
+//BenchmarkAllEncoding/ntriples_with_context-4    	    1000	   1272959 ns/op	  764839 B/op	    8015 allocs/op
 func BenchmarkAllEncoding(b *testing.B) {
 	var triples []Triple
 
@@ -96,10 +96,10 @@ func BenchmarkAllEncoding(b *testing.B) {
 	})
 }
 
-//BenchmarkAllDecoding/binary-4         	         3000000	       487 ns/op	      72 B/op	       3 allocs/op
+//BenchmarkAllDecoding/binary-4                   	 3000000	       493 ns/op	      72 B/op	       3 allocs/op
 //BenchmarkAllDecoding/binary_streaming-4         	  300000	      4519 ns/op	     168 B/op	       4 allocs/op
-//BenchmarkAllDecoding/ntriples-4                 	 1000000	      1193 ns/op	    4272 B/op	       4 allocs/op
-//BenchmarkAllDecoding/ntriples_streaming-4       	  500000	      2003 ns/op	    4217 B/op	       3 allocs/op
+//BenchmarkAllDecoding/ntriples-4                 	 1000000	      1079 ns/op	    4112 B/op	       2 allocs/op
+//BenchmarkAllDecoding/ntriples_streaming-4       	 1000000	      1928 ns/op	    4212 B/op	       3 allocs/op
 func BenchmarkAllDecoding(b *testing.B) {
 	binaryFile, err := os.Open(filepath.Join("testdata", "bench", "decode_1.bin"))
 	if err != nil {

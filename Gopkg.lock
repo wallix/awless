@@ -136,7 +136,7 @@
   branch = "master"
   name = "github.com/wallix/triplestore"
   packages = ["."]
-  revision = "f5ce5c6c9bcc6c6adce04e7c5905080dbbd12824"
+  revision = "461130b4b99a2dd36f78000abf208bfcce46b07d"
 
 [[projects]]
   branch = "master"

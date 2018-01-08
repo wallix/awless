@@ -96,7 +96,10 @@ func (o object) Resource() (string, bool) {
 
 func (o object) key() string {
 	if o.isLit {
-		return "\"" + o.lit.val + "\"^^" + string(o.lit.typ)
+		if o.lit.langtag != "" {
+			return "\"" + o.lit.val + "\"@" + o.lit.langtag
+		}
+		return "\"" + o.lit.val + "\"^^<" + string(o.lit.typ) + ">"
 	}
 	if o.isBnode {
 		return "_:" + o.bnode

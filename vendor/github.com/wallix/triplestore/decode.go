@@ -59,7 +59,7 @@ type ntDecoder struct {
 }
 
 func (d *ntDecoder) Decode() ([]Triple, error) {
-	return newLenientNTParser(d.r).parse()
+	return newLenientNTParser(d.r).Parse()
 }
 
 func (d *ntDecoder) StreamDecode(ctx context.Context) <-chan DecodeResult {
@@ -75,7 +75,7 @@ func (d *ntDecoder) StreamDecode(ctx context.Context) <-chan DecodeResult {
 				return
 			default:
 				if scanner.Scan() {
-					tris, err := newLenientNTParser(strings.NewReader(scanner.Text())).parse()
+					tris, err := newLenientNTParser(strings.NewReader(scanner.Text())).Parse()
 					if err != nil {
 						decC <- DecodeResult{Err: err}
 					} else if len(tris) == 1 {
