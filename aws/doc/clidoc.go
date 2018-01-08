@@ -5,6 +5,17 @@ import (
 	"fmt"
 )
 
+func AwlessCommandDefinitionsDoc(action, entity, fallbackDef string) string {
+	if v, ok := commandDefinitionsDoc[action+"."+entity]; ok {
+		return v
+	}
+	return fallbackDef
+}
+
+var commandDefinitionsDoc = map[string]string{
+	"copy.image": "Copy an EC2 image from given source region to current awless region",
+}
+
 func AwlessExamplesDoc(action, entity string) string {
 	return exampleDoc(action + "." + entity)
 }
