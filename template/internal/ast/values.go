@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+var (
+	_ WithHoles = (*listValue)(nil)
+	_ WithHoles = (*holeValue)(nil)
+	_ WithHoles = (*concatenationValue)(nil)
+)
+
 type CompositeValue interface {
 	String() string
 	Value() interface{}
@@ -28,8 +34,8 @@ type listValue struct {
 	vals []CompositeValue
 }
 
-func (l *listValue) GetHoles() map[string][]string {
-	res := make(map[string][]string)
+func (l *listValue) GetHoles() map[string]*Hole {
+	res := make(map[string]*Hole)
 	for _, val := range l.vals {
 		if withHoles, ok := val.(WithHoles); ok {
 			for k, v := range withHoles.GetHoles() {
@@ -158,20 +164,24 @@ func (i *interfaceValue) Clone() CompositeValue {
 }
 
 type holeValue struct {
-	hole  string
+	hole  *Hole
 	val   interface{}
 	alias WithAlias
 }
 
 func NewHoleValue(hole string) CompositeValue {
-	return &holeValue{hole: hole}
+	return &holeValue{hole: &Hole{Name: hole}}
 }
 
-func (h *holeValue) GetHoles() map[string][]string {
+func NewOptionalHoleValue(hole string) CompositeValue {
+	return &holeValue{hole: &Hole{Name: hole, IsOptional: true}}
+}
+
+func (h *holeValue) GetHoles() map[string]*Hole {
 	if h.val == nil && h.alias == nil {
-		return map[string][]string{h.hole: nil}
+		return map[string]*Hole{h.hole.Name: h.hole}
 	}
-	return make(map[string][]string)
+	return make(map[string]*Hole)
 }
 
 func (h *holeValue) Value() interface{} {
@@ -183,7 +193,7 @@ func (h *holeValue) Value() interface{} {
 
 func (h *holeValue) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
 	processed := make(map[string]interface{})
-	if fill, ok := fills[h.hole]; ok {
+	if fill, ok := fills[h.hole.Name]; ok {
 		if withAlias, ok := fill.(WithAlias); ok {
 			h.alias = withAlias
 			switch vv := withAlias.(type) {
@@ -192,14 +202,14 @@ func (h *holeValue) ProcessHoles(fills map[string]interface{}) map[string]interf
 				for _, alias := range vv.vals {
 					processedAliases = append(processedAliases, alias.String())
 				}
-				processed[h.hole] = processedAliases
+				processed[h.hole.Name] = processedAliases
 			case *aliasValue:
-				processed[h.hole] = vv.String()
+				processed[h.hole.Name] = vv.String()
 			}
 
 		} else {
 			h.val = fill
-			processed[h.hole] = fill
+			processed[h.hole.Name] = fill
 		}
 	}
 	return processed
@@ -211,7 +221,7 @@ func (h *holeValue) String() string {
 	} else if h.alias != nil {
 		return fmt.Sprint(h.alias)
 	} else {
-		return fmt.Sprintf("{%s}", h.hole)
+		return fmt.Sprintf("{%s}", h.hole.Name)
 	}
 }
 
@@ -237,8 +247,8 @@ type concatenationValue struct {
 	vals []CompositeValue
 }
 
-func (c *concatenationValue) GetHoles() map[string][]string {
-	res := make(map[string][]string)
+func (c *concatenationValue) GetHoles() map[string]*Hole {
+	res := make(map[string]*Hole)
 	for _, val := range c.vals {
 		if withHoles, ok := val.(WithHoles); ok {
 			for k, v := range withHoles.GetHoles() {

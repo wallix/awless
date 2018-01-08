@@ -39,10 +39,10 @@ func TestCloneAST(t *testing.T) {
 		Expr: &CommandNode{
 			Command: cmd,
 			Action:  "create", Entity: "subnet",
-			Params: map[string]CompositeValue{"vpc": &holeValue{hole: "myvar"}},
+			Params: map[string]CompositeValue{"vpc": NewHoleValue("myvar")},
 		}}}, &Statement{Node: &CommandNode{
 		Action: "create", Entity: "instance",
-		Params: map[string]CompositeValue{"subnet": &holeValue{hole: "myothervar"}},
+		Params: map[string]CompositeValue{"subnet": NewHoleValue("myothervar")},
 	}},
 	)
 

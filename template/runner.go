@@ -35,7 +35,7 @@ func (ru *Runner) Run() error {
 	tplExec.SetMessage(ru.Message)
 
 	cenv := NewEnv().WithAliasFunc(ru.AliasFunc).WithMissingHolesFunc(ru.MissingHolesFunc).
-		WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).WithParamsSuggested(ru.ParamsSuggested).Build()
+		WithLookupCommandFunc(ru.CmdLookuper).WithLog(ru.Log).WithParamsMode(ru.ParamsSuggested).Build()
 	cenv.Push(env.FILLERS, ru.Fillers...)
 
 	var err error

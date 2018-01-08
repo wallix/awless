@@ -10,7 +10,7 @@ func TestCompositeValues(t *testing.T) {
 		val          CompositeValue
 		holesFillers map[string]interface{}
 		refsFillers  map[string]interface{}
-		expHoles     map[string][]string
+		expHoles     map[string]*Hole
 		expRefs      []string
 		expAliases   []string
 		expValue     interface{}
@@ -18,30 +18,30 @@ func TestCompositeValues(t *testing.T) {
 		{val: &interfaceValue{val: "test"}, expValue: "test"},
 		{val: &interfaceValue{val: "test with spe${cial ch'ars"}, expValue: "test with spe${cial ch'ars"},
 		{val: &interfaceValue{val: 10}, expValue: 10},
-		{val: &holeValue{hole: "myhole"}, expHoles: map[string][]string{"myhole": nil}},
+		{val: &holeValue{hole: &Hole{Name: "myhole"}}, expHoles: map[string]*Hole{"myhole": &Hole{Name: "myhole"}}},
 		{val: &referenceValue{ref: "myref"}, expRefs: []string{"myref"}},
 		{val: &aliasValue{alias: "myalias"}, expAliases: []string{"myalias"}},
 		{
 			val: newCompositeValue(
 				&interfaceValue{val: "test"},
 				&interfaceValue{val: 10},
-				&holeValue{hole: "myhole"},
+				&holeValue{hole: &Hole{Name: "myhole"}},
 				&referenceValue{ref: "myref"},
 				&aliasValue{alias: "myalias"},
 			),
 			expRefs:    []string{"myref"},
-			expHoles:   map[string][]string{"myhole": nil},
+			expHoles:   map[string]*Hole{"myhole": &Hole{Name: "myhole"}},
 			expValue:   []interface{}{"test", 10},
 			expAliases: []string{"myalias"},
 		},
-		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": "my-value"}, expValue: "my-value"},
-		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": &aliasValue{alias: "myalias"}}, expValue: nil, expAliases: []string{"myalias"}},
-		{val: &holeValue{hole: "myhole"}, holesFillers: map[string]interface{}{"myhole": newCompositeValue(&aliasValue{alias: "myalias1"}, &aliasValue{alias: "myalias2"})}, expValue: nil, expAliases: []string{"myalias1", "myalias2"}},
+		{val: &holeValue{hole: &Hole{Name: "myhole"}}, holesFillers: map[string]interface{}{"myhole": "my-value"}, expValue: "my-value"},
+		{val: &holeValue{hole: &Hole{Name: "myhole"}}, holesFillers: map[string]interface{}{"myhole": &aliasValue{alias: "myalias"}}, expValue: nil, expAliases: []string{"myalias"}},
+		{val: &holeValue{hole: &Hole{Name: "myhole"}}, holesFillers: map[string]interface{}{"myhole": newCompositeValue(&aliasValue{alias: "myalias1"}, &aliasValue{alias: "myalias2"})}, expValue: nil, expAliases: []string{"myalias1", "myalias2"}},
 		{
 			val: newCompositeValue(
 				&interfaceValue{val: "test"},
 				&interfaceValue{val: 10},
-				&holeValue{hole: "myhole"},
+				&holeValue{hole: &Hole{Name: "myhole"}},
 				&referenceValue{ref: "myref"},
 			),
 			refsFillers:  map[string]interface{}{"myref": "refvalue"},
@@ -50,28 +50,28 @@ func TestCompositeValues(t *testing.T) {
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: &Hole{Name: "hole1"}}, &interfaceValue{val: "middle1-"}, &holeValue{hole: &Hole{Name: "hole2"}}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: &Hole{Name: "hole3"}}, &interfaceValue{val: "suffix"}},
 			},
-			expHoles: map[string][]string{"hole1": nil, "hole2": nil, "hole3": nil},
+			expHoles: map[string]*Hole{"hole1": &Hole{Name: "hole1"}, "hole2": &Hole{Name: "hole2"}, "hole3": &Hole{Name: "hole3"}},
 			expValue: "prefix-middle1--middle2-suffix",
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2.name"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: &Hole{Name: "hole1"}}, &interfaceValue{val: "middle1-"}, &holeValue{hole: &Hole{Name: "hole2.name"}}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: &Hole{Name: "hole3"}}, &interfaceValue{val: "suffix"}},
 			},
 			holesFillers: map[string]interface{}{"hole1": "value1", "hole2.name": 2, "hole3": "value3"},
 			expValue:     "prefix-value1middle1-2-middle2-value3suffix",
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: &Hole{Name: "instance.name"}}, &holeValue{hole: &Hole{Name: "version"}}},
 			},
-			expHoles: map[string][]string{"instance.name": nil, "version": nil},
+			expHoles: map[string]*Hole{"instance.name": &Hole{Name: "instance.name"}, "version": &Hole{Name: "version"}},
 			expValue: "ins$\\ta{nce}-",
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: &Hole{Name: "instance.name"}}, &holeValue{hole: &Hole{Name: "version"}}},
 			},
 			holesFillers: map[string]interface{}{"instance.name": "toto", "version": 2},
 			expValue:     "ins$\\ta{nce}-toto2",
@@ -136,14 +136,14 @@ func TestCompositeValuesStringer(t *testing.T) {
 		{val: &interfaceValue{val: "te'st"}, expect: "\"te'st\""},
 		{val: &interfaceValue{val: 10}, expect: "10"},
 		{val: &interfaceValue{val: "10"}, expect: "'10'"},
-		{val: &holeValue{hole: "myhole"}, expect: "{myhole}"},
+		{val: &holeValue{hole: &Hole{Name: "myhole"}}, expect: "{myhole}"},
 		{val: &referenceValue{ref: "myref"}, expect: "$myref"},
 		{val: &aliasValue{alias: "myalias"}, expect: "@myalias"},
 		{
 			val: newCompositeValue(
 				&interfaceValue{val: "test"},
 				&interfaceValue{val: 10},
-				&holeValue{hole: "myhole"},
+				&holeValue{hole: &Hole{Name: "myhole"}},
 				&referenceValue{ref: "myref"},
 				&aliasValue{alias: "myalias"},
 			),
@@ -151,7 +151,7 @@ func TestCompositeValuesStringer(t *testing.T) {
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: &Hole{Name: "hole1"}}, &interfaceValue{val: "middle1-"}, &holeValue{hole: &Hole{Name: "hole2"}}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: &Hole{Name: "hole3"}}, &interfaceValue{val: "suffix"}},
 			},
 			expect: "'prefix-'+{hole1}+'middle1-'+{hole2}+'-middle2-'+{hole3}+'suffix'",
 		},
@@ -159,25 +159,25 @@ func TestCompositeValuesStringer(t *testing.T) {
 		{val: &referenceValue{val: []interface{}{"val1", 12}}, expect: "[val1,12]"},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name"}, &holeValue{hole: "version"}},
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: &Hole{Name: "instance.name"}}, &holeValue{hole: &Hole{Name: "version"}}},
 			},
 			expect: "'ins$\\ta{nce}-'+{instance.name}+{version}",
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name", val: "toto"}, &holeValue{hole: "version"}},
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: &Hole{Name: "instance.name"}, val: "toto"}, &holeValue{hole: &Hole{Name: "version"}}},
 			},
 			expect: "'ins$\\ta{nce}-'+'toto'+{version}",
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: "instance.name", val: "toto"}, &holeValue{hole: "version", val: 2}},
+				vals: []CompositeValue{&interfaceValue{val: "ins$\\ta{nce}-"}, &holeValue{hole: &Hole{Name: "instance.name"}, val: "toto"}, &holeValue{hole: &Hole{Name: "version"}, val: 2}},
 			},
 			expect: "'ins$\\ta{nce}-toto2'",
 		},
 		{
 			val: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "instance-"}, &holeValue{hole: "instance.name", val: "toto"}, &holeValue{hole: "version", val: 2}},
+				vals: []CompositeValue{&interfaceValue{val: "instance-"}, &holeValue{hole: &Hole{Name: "instance.name"}, val: "toto"}, &holeValue{hole: &Hole{Name: "version"}, val: 2}},
 			},
 			expect: "instance-toto2",
 		},
@@ -196,7 +196,7 @@ func TestCloneValues(t *testing.T) {
 		mutationFn func(CompositeValue)
 	}{
 		{from: &interfaceValue{val: "test"}, mutationFn: func(v CompositeValue) { v.(*interfaceValue).val = "other" }},
-		{from: &holeValue{hole: "myhole"}, mutationFn: func(v CompositeValue) { v.(*holeValue).ProcessHoles(map[string]interface{}{"myhole": "myvalue"}) }},
+		{from: &holeValue{hole: &Hole{Name: "myhole"}}, mutationFn: func(v CompositeValue) { v.(*holeValue).ProcessHoles(map[string]interface{}{"myhole": "myvalue"}) }},
 		{from: &referenceValue{ref: "myref"}, mutationFn: func(v CompositeValue) { v.(*referenceValue).ProcessRefs(map[string]interface{}{"myref": "myvalue"}) }},
 		{from: &aliasValue{alias: "myalias"}, mutationFn: func(v CompositeValue) {
 			v.(*aliasValue).ResolveAlias(func(s string) (string, bool) {
@@ -210,7 +210,7 @@ func TestCloneValues(t *testing.T) {
 			from: newCompositeValue(
 				&interfaceValue{val: "test"},
 				&interfaceValue{val: 10},
-				&holeValue{hole: "myhole"},
+				&holeValue{hole: &Hole{Name: "myhole"}},
 				&referenceValue{ref: "myref"},
 				&aliasValue{alias: "myalias"},
 			),
@@ -218,7 +218,7 @@ func TestCloneValues(t *testing.T) {
 		},
 		{
 			from: &concatenationValue{
-				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: "hole1"}, &interfaceValue{val: "middle1-"}, &holeValue{hole: "hole2"}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: "hole3"}, &interfaceValue{val: "suffix"}},
+				vals: []CompositeValue{&interfaceValue{val: "prefix-"}, &holeValue{hole: &Hole{Name: "hole1"}}, &interfaceValue{val: "middle1-"}, &holeValue{hole: &Hole{Name: "hole2"}}, &interfaceValue{val: "-middle2-"}, &holeValue{hole: &Hole{Name: "hole3"}}, &interfaceValue{val: "suffix"}},
 			},
 			mutationFn: func(v CompositeValue) {
 				v.(*concatenationValue).ProcessHoles(map[string]interface{}{"hole1": "myvalue"})

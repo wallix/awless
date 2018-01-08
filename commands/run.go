@@ -307,7 +307,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		}
 
 		var paramsStr bytes.Buffer
-		allParams, optParams := params.List(templDef.Params)
+		allParams, optParams, _ := params.List(templDef.Params)
 		tab := tabwriter.NewWriter(&paramsStr, 0, 0, 3, '.', 0)
 		for _, p := range allParams {
 			fmt.Fprintf(tab, "  %s\t", p)
@@ -343,7 +343,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		currentCmd.SetHelpTemplate(`{{with .Short}}{{. | trimTrailingWhitespaces}}
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
 		currentCmd.Flags().BoolVar(&noSuggestedParamsFlag, "prompt-only-required", false, "Prompt only required parameters")
-		currentCmd.Flags().BoolVarP(&allSuggestedParamsFlag, "prompt-all-params", "a", false, "Prompt all non-provided parameters")
+		currentCmd.Flags().BoolVarP(&allSuggestedParamsFlag, "prompt-all", "a", false, "Prompt all non-provided parameters")
 
 		actionCmd.AddCommand(currentCmd)
 	}

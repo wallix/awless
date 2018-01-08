@@ -29,10 +29,10 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 	runner.AliasFunc = resolveAliasFunc
 	runner.MissingHolesFunc = missingHolesStdinFunc()
 	if allSuggestedParamsFlag {
-		runner.ParamsSuggested = env.ALL_SUGGESTED
+		runner.ParamsSuggested = env.ALL_PARAMS
 	}
 	if noSuggestedParamsFlag {
-		runner.ParamsSuggested = env.NO_SUGGESTED
+		runner.ParamsSuggested = env.REQUIRED_PARAMS_ONLY
 	}
 
 	runner.Validators = []template.Validator{

@@ -28,6 +28,11 @@ import (
 	"github.com/wallix/awless/template/params"
 )
 
+var (
+	_ WithHoles = (*CommandNode)(nil)
+	_ WithHoles = (*ValueNode)(nil)
+)
+
 type Node interface {
 	clone() Node
 	String() string
@@ -55,9 +60,15 @@ type ExpressionNode interface {
 	Err() error
 }
 
+type Hole struct {
+	Name       string
+	ParamPaths []string
+	IsOptional bool
+}
+
 type WithHoles interface {
 	ProcessHoles(fills map[string]interface{}) (processed map[string]interface{})
-	GetHoles() map[string][]string
+	GetHoles() map[string]*Hole
 }
 
 type Command interface {
@@ -131,12 +142,15 @@ func (c *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]inte
 	return processed
 }
 
-func (c *CommandNode) GetHoles() map[string][]string {
-	holes := make(map[string][]string)
+func (c *CommandNode) GetHoles() map[string]*Hole {
+	holes := make(map[string]*Hole)
 	for paramKey, param := range c.Params {
 		if withHoles, ok := param.(WithHoles); ok {
-			for k := range withHoles.GetHoles() {
-				holes[k] = append(holes[k], strings.Join([]string{c.Action, c.Entity, paramKey}, "."))
+			for k, v := range withHoles.GetHoles() {
+				if _, ok := holes[k]; !ok {
+					holes[k] = v
+				}
+				holes[k].ParamPaths = append(holes[k].ParamPaths, strings.Join([]string{c.Action, c.Entity, paramKey}, "."))
 			}
 
 		}
@@ -270,11 +284,11 @@ func (n *ValueNode) IsRef(key string) bool {
 	return false
 }
 
-func (n *ValueNode) GetHoles() map[string][]string {
+func (n *ValueNode) GetHoles() map[string]*Hole {
 	if withHoles, ok := n.Value.(WithHoles); ok {
 		return withHoles.GetHoles()
 	}
-	return make(map[string][]string)
+	return make(map[string]*Hole)
 }
 
 func (s *Statement) Clone() *Statement {

@@ -74,7 +74,7 @@ func (e *compileEnv) MissingHolesFunc() func(string, []string, bool) string {
 	return e.missingHolesFunc
 }
 
-func (e *compileEnv) ParamsSuggested() int {
+func (e *compileEnv) ParamsMode() int {
 	return e.paramsSuggested
 }
 
@@ -148,7 +148,7 @@ func (b *envBuilder) WithLog(l *logger.Logger) *envBuilder {
 	return b
 }
 
-func (b *envBuilder) WithParamsSuggested(paramsSuggested int) *envBuilder {
+func (b *envBuilder) WithParamsMode(paramsSuggested int) *envBuilder {
 	b.E.paramsSuggested = paramsSuggested
 	return b
 }

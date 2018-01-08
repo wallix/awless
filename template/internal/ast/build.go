@@ -163,7 +163,7 @@ func (a *AST) addParamRefValue(text string) {
 }
 
 func (a *AST) addParamHoleValue(text string) {
-	a.stmtBuilder.addParamValue(&holeValue{hole: text})
+	a.stmtBuilder.addParamValue(NewHoleValue(text))
 }
 
 func (a *AST) addAliasParam(text string) {

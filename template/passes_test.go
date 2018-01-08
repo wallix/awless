@@ -210,13 +210,14 @@ func TestResolveMissingHolesPass(t *testing.T) {
 
 func TestResolveMissingSuggestedPass(t *testing.T) {
 	var count int
-	tpl := `create instance subnet=sub-1234 image=ami-1a17137a type=t2.nano name=my-instance securitygroup=@my-sec-group`
+	tpl := `create instance count=1 subnet=sub-1234 image=ami-1a17137a type=t2.nano name=my-instance securitygroup=@my-sec-group`
 	buildingEnv := NewEnv().WithMissingHolesFunc(func(in string, paramPaths []string, optional bool) string {
 		count++
 		if !optional {
+			t.Fatalf("unexepected required parameter %s: %v", in, paramPaths)
 			return ""
 		}
-		switch in {
+		switch paramPaths[0] {
 		case "create.instance.ip":
 			return "1.2.3.4"
 		case "create.instance.keypair":
@@ -228,7 +229,7 @@ func TestResolveMissingSuggestedPass(t *testing.T) {
 		case "create.instance.userdata":
 			return "/path/to/my/file"
 		default:
-			t.Fatalf("unexepected parameter %s", in)
+			t.Fatalf("unexepected optional parameter %s: %v", in, paramPaths)
 			return ""
 		}
 	}).WithLookupCommandFunc(func(tokens ...string) interface{} {
@@ -236,7 +237,7 @@ func TestResolveMissingSuggestedPass(t *testing.T) {
 	})
 	cenv := buildingEnv.Build()
 
-	pass := newMultiPass(injectCommandsInNodesPass, askSuggestedParamsPass)
+	pass := newMultiPass(injectCommandsInNodesPass, processAndValidateParamsPass, resolveMissingHolesPass)
 
 	compiled, _, err := pass.compile(MustParse(tpl), cenv)
 	if err != nil {
@@ -246,12 +247,12 @@ func TestResolveMissingSuggestedPass(t *testing.T) {
 	if got, want := count, 1; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := compiled.String(), "create instance image=ami-1a17137a keypair=mykeypair name=my-instance securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano"; got != want {
+	if got, want := compiled.String(), "create instance count=1 image=ami-1a17137a keypair=mykeypair name=my-instance securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano"; got != want {
 		t.Fatalf("got \n%s, want \n%s", got, want)
 	}
 
 	count = 0
-	cenv = buildingEnv.WithParamsSuggested(env.NO_SUGGESTED).Build()
+	cenv = buildingEnv.WithParamsMode(env.REQUIRED_PARAMS_ONLY).Build()
 	compiled, _, err = pass.compile(MustParse(tpl), cenv)
 	if err != nil {
 		t.Fatal(err)
@@ -260,12 +261,12 @@ func TestResolveMissingSuggestedPass(t *testing.T) {
 	if got, want := count, 0; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := compiled.String(), "create instance image=ami-1a17137a name=my-instance securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano"; got != want {
+	if got, want := compiled.String(), "create instance count=1 image=ami-1a17137a name=my-instance securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano"; got != want {
 		t.Fatalf("got \n%s, want \n%s", got, want)
 	}
 
 	count = 0
-	cenv = buildingEnv.WithParamsSuggested(env.ALL_SUGGESTED).Build()
+	cenv = buildingEnv.WithParamsMode(env.ALL_PARAMS).Build()
 	compiled, _, err = pass.compile(MustParse(tpl), cenv)
 	if err != nil {
 		t.Fatal(err)
@@ -274,7 +275,7 @@ func TestResolveMissingSuggestedPass(t *testing.T) {
 	if got, want := count, 5; got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
-	if got, want := compiled.String(), "create instance image=ami-1a17137a ip=1.2.3.4 keypair=mykeypair lock=true name=my-instance role=arole securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano userdata=/path/to/my/file"; got != want {
+	if got, want := compiled.String(), "create instance count=1 image=ami-1a17137a ip=1.2.3.4 keypair=mykeypair lock=true name=my-instance role=arole securitygroup=@my-sec-group subnet=sub-1234 type=t2.nano userdata=/path/to/my/file"; got != want {
 		t.Fatalf("got \n%s, want \n%s", got, want)
 	}
 }

@@ -67,7 +67,8 @@ type UpdateSecuritygroup struct {
 
 func (cmd *UpdateSecuritygroup) ParamsSpec() params.Spec {
 	return params.NewSpec(
-		params.AllOf(params.Key("id"), params.Key("protocol"), params.OnlyOneOf(params.Key("inbound"), params.Key("outbound")), params.Opt("securitygroup"), params.Suggested("cidr", "portrange")),
+		params.AllOf(params.Key("id"), params.Key("protocol"), params.OnlyOneOf(params.Key("inbound"), params.Key("outbound")),
+			params.Opt(params.Suggested("cidr", "portrange"), "securitygroup")),
 		params.Validators{
 			"cidr":     params.IsCIDR,
 			"inbound":  params.IsInEnumIgnoreCase("authorize", "revoke"),

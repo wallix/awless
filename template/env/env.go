@@ -11,9 +11,9 @@ const (
 )
 
 const (
-	DEFAULTS_SUGGESTED = iota
-	NO_SUGGESTED
-	ALL_SUGGESTED
+	REQUIRED_AND_SUGGESTED_PARAMS = iota
+	REQUIRED_PARAMS_ONLY
+	ALL_PARAMS
 )
 
 type log interface {
@@ -32,7 +32,7 @@ type Compiling interface {
 	LookupCommandFunc() func(...string) interface{}
 	AliasFunc() func(paramPath, alias string) string
 	MissingHolesFunc() func(string, []string, bool) string
-	ParamsSuggested() int
+	ParamsMode() int
 	Push(int, ...map[string]interface{})
 	Get(int) map[string]interface{}
 }

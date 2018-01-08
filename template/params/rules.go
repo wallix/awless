@@ -7,22 +7,15 @@ import (
 	"strings"
 )
 
-const (
-	DEFAULTS_SUGGESTED = iota
-	NO_SUGGESTED
-	ALL_SUGGESTED
-)
-
 type Rule interface {
 	Visit(func(Rule))
 	Run(input []string) error
 	Required() []string
 	Missing(input []string) []string
-	Suggested(input []string, paramsSuggested int) []string
 	String() string
 }
 
-func List(r Rule) ([]string, []string) {
+func List(r Rule) (required []string, optionals []string, suggested []string) {
 	return collect(r)
 }
 
@@ -35,7 +28,7 @@ func Run(r Rule, input []string) error {
 
 func unexpectedParam(r Rule, input []string) (err error) {
 	var unex []string
-	params, opts := collect(r)
+	params, opts, _ := collect(r)
 	all := append(params, opts...)
 	for _, s := range input {
 		if !contains(all, s) {
@@ -48,17 +41,21 @@ func unexpectedParam(r Rule, input []string) (err error) {
 	return
 }
 
-func collect(r Rule) (out []string, opts []string) {
+func collect(r Rule) (out []string, opts []string, suggs []string) {
 	r.Visit(func(r Rule) {
 		switch v := r.(type) {
 		case key:
 			out = append(out, v.String())
 		case opt:
-			opts = append(opts, v.optionals...)
+			opts = append(opts, v.keys()...)
+			for _, p := range v.suggested {
+				suggs = append(suggs, string(p))
+			}
 		}
 	})
 	sort.Strings(out)
 	sort.Strings(opts)
+	sort.Strings(suggs)
 	return
 }
 
@@ -183,20 +180,30 @@ func (n atLeastOneOf) String() string {
 }
 
 type opt struct {
-	optionals   []string
-	isSuggested bool
+	optionals []string
+	suggested []suggested
 }
 
-func Opt(s ...string) Rule {
+func Opt(i ...interface{}) Rule {
 	o := opt{}
-	o.optionals = append(o.optionals, s...)
+	for _, v := range i {
+		switch vv := v.(type) {
+		case string:
+			o.optionals = append(o.optionals, vv)
+		case []suggested:
+			o.suggested = append(o.suggested, vv...)
+		default:
+			panic("invalid type for optional param")
+		}
+	}
 	return o
 }
 
-func Suggested(s ...string) Rule {
-	o := opt{isSuggested: true}
-	o.optionals = append(o.optionals, s...)
-	return o
+func Suggested(s ...string) (sugs []suggested) {
+	for _, v := range s {
+		sugs = append(sugs, suggested(v))
+	}
+	return
 }
 
 var optErr = errors.New("opt err")
@@ -218,66 +225,50 @@ func (n opt) Required() []string {
 }
 
 func (n opt) String() string {
-	return "[" + strings.Join(n.optionals, " ") + "]"
+	return "[" + strings.Join(n.keys(), " ") + "]"
 }
 
-func (n opt) Suggested(input []string, paramsSuggested int) (miss []string) {
-	for _, p := range n.optionals {
-		if !contains(input, p) {
-			if paramsSuggested == ALL_SUGGESTED || (paramsSuggested == DEFAULTS_SUGGESTED && n.isSuggested) {
-				miss = append(miss, p)
-			}
-		}
+func (n opt) keys() (keys []string) {
+	for _, k := range n.optionals {
+		keys = append(keys, string(k))
+	}
+	for _, k := range n.suggested {
+		keys = append(keys, string(k))
 	}
 	return
 }
 
-func Key(k string, isSuggested ...bool) Rule {
-	var suggested bool
-	if len(isSuggested) > 0 {
-		suggested = isSuggested[0]
-	}
-	return key{key: k, isSuggested: suggested}
+func Key(k string) Rule {
+	return key(k)
 }
 
-type key struct {
-	key         string
-	isSuggested bool
-}
+type key string
+type suggested key
 
 func (n key) Visit(fn func(r Rule)) {
 	fn(n)
 }
 
 func (n key) Run(input []string) error {
-	if !contains(input, n.key) {
-		return errors.New(n.key)
+	if !contains(input, string(n)) {
+		return errors.New(string(n))
 	}
 	return nil
 }
 
 func (n key) Missing(input []string) (miss []string) {
-	if !contains(input, n.key) {
-		miss = append(miss, n.key)
-	}
-	return
-}
-
-func (n key) Suggested(input []string, paramsSuggested int) (miss []string) {
-	if n.isSuggested {
-		if !contains(input, n.key) {
-			miss = append(miss, n.key)
-		}
+	if !contains(input, string(n)) {
+		miss = append(miss, string(n))
 	}
 	return
 }
 
 func (n key) Required() []string {
-	return []string{n.key}
+	return []string{string(n)}
 }
 
 func (n key) String() string {
-	return n.key
+	return string(n)
 }
 
 type none struct{}
@@ -286,12 +277,11 @@ func None() Rule {
 	return none{}
 }
 
-func (n none) Visit(func(Rule))                 {}
-func (n none) Run(input []string) error         { return nil }
-func (n none) Required() []string               { return []string{} }
-func (n none) Missing([]string) []string        { return []string{} }
-func (n none) String() string                   { return "none" }
-func (n none) Suggested([]string, int) []string { return nil }
+func (n none) Visit(func(Rule))          {}
+func (n none) Run(input []string) error  { return nil }
+func (n none) Required() []string        { return []string{} }
+func (n none) Missing([]string) []string { return []string{} }
+func (n none) String() string            { return "none" }
 
 func build(rules []Rule) (d defaultRule) {
 	for _, n := range rules {
@@ -302,13 +292,6 @@ func build(rules []Rule) (d defaultRule) {
 
 type defaultRule struct {
 	rules rules
-}
-
-func (d defaultRule) Suggested(input []string, paramsSuggested int) (miss []string) {
-	for _, r := range d.rules {
-		miss = append(miss, r.Suggested(input, paramsSuggested)...)
-	}
-	return
 }
 
 type rules []Rule

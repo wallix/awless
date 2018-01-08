@@ -13,20 +13,24 @@ func TestListParams(t *testing.T) {
 		rules  params.Rule
 		exp    []string
 		expOpt []string
+		expSug []string
 	}{
 		{rules: params.Opt("b", "c", "a"), expOpt: []string{"a", "b", "c"}},
-		{rules: params.AllOf(params.Key("f"), params.Opt("a", "b")), exp: []string{"f"}, expOpt: []string{"a", "b"}},
+		{rules: params.AllOf(params.Key("f"), params.Opt("a", params.Suggested("b"))), exp: []string{"f"}, expOpt: []string{"a", "b"}, expSug: []string{"b"}},
 		{rules: params.OnlyOneOf(params.Key("b"), params.Key("c"), params.Opt("a")), exp: []string{"b", "c"}, expOpt: []string{"a"}},
-		{rules: params.AtLeastOneOf(params.Key("b"), params.Key("c"), params.Opt("a", "f")), exp: []string{"b", "c"}, expOpt: []string{"a", "f"}},
+		{rules: params.AtLeastOneOf(params.Key("b"), params.Key("c"), params.Opt(params.Suggested("a", "f"))), exp: []string{"b", "c"}, expOpt: []string{"a", "f"}, expSug: []string{"a", "f"}},
 	}
 
 	for i, tcase := range tcases {
-		actual, actualOpt := params.List(tcase.rules)
+		actual, actualOpt, actualSug := params.List(tcase.rules)
 		if got, want := actual, tcase.exp; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d. actual: got %v, want %v", i+1, got, want)
 		}
 		if got, want := actualOpt, tcase.expOpt; !reflect.DeepEqual(got, want) {
 			t.Fatalf("%d. actual opt: got %v, want %v", i+1, got, want)
+		}
+		if got, want := actualSug, tcase.expSug; !reflect.DeepEqual(got, want) {
+			t.Fatalf("%d. suggested: got %v, want %v", i+1, got, want)
 		}
 	}
 

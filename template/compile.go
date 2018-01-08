@@ -21,7 +21,7 @@ var (
 		checkInvalidReferenceDeclarationsPass,
 		resolveHolesPass,
 		resolveMissingHolesPass,
-		askSuggestedParamsPass,
+		removeOptionalHolesPass,
 		resolveAliasPass,
 		inlineVariableValuePass,
 	}
@@ -33,7 +33,7 @@ var (
 		checkInvalidReferenceDeclarationsPass,
 		resolveHolesPass,
 		resolveMissingHolesPass,
-		askSuggestedParamsPass,
+		removeOptionalHolesPass,
 		resolveAliasPass,
 		inlineVariableValuePass,
 		failOnUnresolvedHolesPass,
@@ -124,13 +124,28 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 	normalizeMissingRequiredParamsAsHoleAndValidate := func(node *ast.CommandNode) error {
 		rule := node.ParamsSpec().Rule()
 
-		missing := rule.Missing(node.Keys())
-		for _, e := range missing {
+		missingRequired := rule.Missing(node.Keys())
+		for _, e := range missingRequired {
 			normalized := fmt.Sprintf("%s.%s", node.Entity, e)
 			node.Params[e] = ast.NewHoleValue(normalized)
 		}
 		if err := params.Run(rule, node.Keys()); err != nil {
 			return cmdErr(node, err)
+		}
+
+		_, optionals, suggested := params.List(rule)
+
+		switch cenv.ParamsMode() {
+		case env.REQUIRED_PARAMS_ONLY:
+			return nil
+		case env.REQUIRED_AND_SUGGESTED_PARAMS:
+			suggested = excludeFromSlice(suggested, node.Keys())
+		case env.ALL_PARAMS:
+			suggested = excludeFromSlice(optionals, node.Keys())
+		}
+
+		for _, e := range suggested {
+			node.Params[e] = ast.NewOptionalHoleValue(fmt.Sprintf("%s.%s", node.Entity, e))
 		}
 		return nil
 	}
@@ -256,61 +271,45 @@ func resolveHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compili
 	return tpl, cenv, nil
 }
 
-func askSuggestedParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	type suggestedWithNode struct {
-		key       string
-		paramName string
-		node      *ast.CommandNode
-	}
-	var suggested []suggestedWithNode
-	collectSuggestedParams := func(node *ast.CommandNode) {
-		missingSuggested := node.ParamsSpec().Rule().Suggested(node.Keys(), cenv.ParamsSuggested())
-		for _, e := range missingSuggested {
-			normalized := fmt.Sprintf("%s.%s.%s", node.Action, node.Entity, e)
-			suggested = append(suggested, suggestedWithNode{key: normalized, node: node, paramName: e})
-		}
-	}
-	tpl.visitCommandNodes(collectSuggestedParams)
-	sort.Slice(suggested, func(i int, j int) bool {
-		return suggested[i].key <= suggested[j].key
-	})
-
-	for _, sug := range suggested {
-		if cenv.MissingHolesFunc() != nil {
-			if actual := cenv.MissingHolesFunc()(sug.key, []string{sug.key}, true); actual != "" {
-				params, err := parseParamsAsCompositeValues(sug.paramName + "=" + actual)
-				if err != nil {
-					if params, err = parseParamsAsCompositeValues(sug.paramName + "=" + quoteString(actual)); err != nil {
-						return tpl, cenv, err
-					}
-				}
-				sug.node.Params[sug.paramName] = params[sug.paramName]
-			}
-		}
-	}
-	return tpl, cenv, nil
-}
 func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	uniqueHoles := make(map[string][]string)
+	uniqueHoles := make(map[string]*ast.Hole)
 	tpl.visitHoles(func(h ast.WithHoles) {
 		for k, v := range h.GetHoles() {
-			uniqueHoles[k] = nil
-			for _, vv := range v {
-				if !contains(uniqueHoles[k], vv) {
-					uniqueHoles[k] = append(uniqueHoles[k], vv)
+			if _, ok := uniqueHoles[k]; !ok {
+				uniqueHoles[k] = v
+			}
+			for _, vv := range v.ParamPaths {
+				if !contains(uniqueHoles[k].ParamPaths, vv) {
+					uniqueHoles[k].ParamPaths = append(uniqueHoles[k].ParamPaths, vv)
 				}
 			}
 		}
 	})
-	var sortedHoles []string
-	for k := range uniqueHoles {
-		sortedHoles = append(sortedHoles, k)
+	var sortedHoles []*ast.Hole
+	for _, v := range uniqueHoles {
+		sortedHoles = append(sortedHoles, v)
 	}
-	sort.Strings(sortedHoles)
+	sort.Slice(sortedHoles, func(i, j int) bool {
+		a := sortedHoles[i]
+		b := sortedHoles[j]
 
-	for _, k := range sortedHoles {
+		if a.IsOptional == b.IsOptional {
+			return a.Name < b.Name
+		} else {
+			if a.IsOptional {
+				return false
+			}
+			return true
+		}
+	})
+
+	for _, hole := range sortedHoles {
+		k := hole.Name
 		if cenv.MissingHolesFunc() != nil {
-			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k], false)
+			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k].ParamPaths, uniqueHoles[k].IsOptional)
+			if actual == "" && uniqueHoles[k].IsOptional {
+				continue
+			}
 			params, err := ParseParams(fmt.Sprintf("%s=%s", k, actual))
 			if err != nil {
 				if params, err = ParseParams(fmt.Sprintf("%s=%s", k, quoteString(actual))); err != nil {
@@ -327,6 +326,31 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 	})
 
 	return tpl, cenv, nil
+}
+
+func removeOptionalHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
+	removeOptionalHoles := func(node *ast.CommandNode) error {
+		for key, param := range node.Params {
+			if param.Value() != nil {
+				continue
+			}
+			if withHole, ok := param.(ast.WithHoles); ok {
+				if len(withHole.GetHoles()) == 0 {
+					continue
+				}
+				isOptional := true
+				for _, h := range withHole.GetHoles() {
+					isOptional = isOptional && h.IsOptional
+				}
+				if isOptional {
+					delete(node.Params, key)
+				}
+			}
+		}
+		return nil
+	}
+	err := tpl.visitCommandNodesE(removeOptionalHoles)
+	return tpl, cenv, err
 }
 
 func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
@@ -463,4 +487,13 @@ func quoteString(str string) string {
 	} else {
 		return "'" + str + "'"
 	}
+}
+
+func excludeFromSlice(in []string, exclude []string) (out []string) {
+	for _, v := range in {
+		if !contains(exclude, v) {
+			out = append(out, v)
+		}
+	}
+	return out
 }
