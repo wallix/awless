@@ -68,21 +68,22 @@ func MustParse(text string) *Template {
 }
 
 func ParseParams(text string) (map[string]interface{}, error) {
-	full := fmt.Sprintf("none none %s", text)
-	n, err := parseStatement(full)
+	node, err := parseParamsAsCommandNode(text)
 	if err != nil {
-		return nil, fmt.Errorf("parse params: %s", err)
+		return nil, err
 	}
-
-	switch n.(type) {
-	case *ast.CommandNode:
-		return (n.(*ast.CommandNode)).ToFillerParams(), nil
-	default:
-		return nil, fmt.Errorf("parse params: expected a command node")
-	}
+	return node.ToFillerParams(), nil
 }
 
 func parseParamsAsCompositeValues(text string) (map[string]ast.CompositeValue, error) {
+	node, err := parseParamsAsCommandNode(text)
+	if err != nil {
+		return nil, err
+	}
+	return node.Params, nil
+}
+
+func parseParamsAsCommandNode(text string) (*ast.CommandNode, error) {
 	full := fmt.Sprintf("none none %s", text)
 	n, err := parseStatement(full)
 	if err != nil {
@@ -91,7 +92,7 @@ func parseParamsAsCompositeValues(text string) (map[string]ast.CompositeValue, e
 
 	switch n.(type) {
 	case *ast.CommandNode:
-		return (n.(*ast.CommandNode)).Params, nil
+		return (n.(*ast.CommandNode)), nil
 	default:
 		return nil, fmt.Errorf("parse params: expected a command node")
 	}

@@ -135,7 +135,7 @@ func missingHolesStdinFunc() func(string, []string, bool) string {
 	var count int
 	return func(hole string, paramPaths []string, optional bool) (response string) {
 		if count < 1 {
-			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion, ↵ to skip optional):")
+			fmt.Println("Please specify (Ctrl+C to quit, Tab for completion, Enter to skip optionals):")
 		}
 		var docs, enums []string
 		var typedParam *awsdoc.ParamType
@@ -155,9 +155,6 @@ func missingHolesStdinFunc() func(string, []string, bool) string {
 			}
 		}
 		if len(docs) > 0 {
-			if optional {
-				fmt.Fprint(os.Stderr, "[Optional: ↵ to skip] ")
-			}
 			fmt.Fprintln(os.Stderr, strings.Join(docs, "; ")+":")
 		}
 
@@ -170,21 +167,25 @@ func missingHolesStdinFunc() func(string, []string, bool) string {
 			autocomplete = enumCompletionFunc(enums)
 		}
 
+		var promptSuffix string
+		if optional {
+			promptSuffix = " (optional)"
+		}
 		var err error
-		for response, err = askHole(hole, autocomplete); err != nil; response, err = askHole(hole, autocomplete) {
+		for response, err = askHole(hole, promptSuffix, autocomplete); err != nil; response, err = askHole(hole, promptSuffix, autocomplete) {
 			if optional {
 				return ""
 			}
-			logger.Errorf("invalid value: %s", err)
+			logger.Error(err)
 		}
 		count++
 		return
 	}
 }
 
-func askHole(hole string, autocomplete readline.AutoCompleter) (string, error) {
+func askHole(hole, promptSuffix string, autocomplete readline.AutoCompleter) (string, error) {
 	l, err := readline.NewEx(&readline.Config{
-		Prompt:          renderCyanBoldFn(hole + "? "),
+		Prompt:          renderCyanBoldFn(hole+"?") + renderYellowFn(promptSuffix) + " ",
 		AutoComplete:    autocomplete,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
@@ -210,9 +211,9 @@ func askHole(hole string, autocomplete readline.AutoCompleter) (string, error) {
 		if line != "" {
 			return line, nil
 		}
-		return "", errors.New("empty")
+		return "", errors.New("required value")
 	}
-	return "", errors.New("empty")
+	return "", errors.New("required value")
 }
 
 type onceLoader struct {
@@ -341,8 +342,8 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 		currentCmd.SetUsageTemplate(customCommandUsageTemplate)
 		currentCmd.SetHelpTemplate(`{{with .Short}}{{. | trimTrailingWhitespaces}}
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
-		currentCmd.Flags().BoolVar(&noSuggestedParamsFlag, "only-required", false, "Disable prompt of non-required suggested parameters")
-		currentCmd.Flags().BoolVarP(&allSuggestedParamsFlag, "interactive", "i", false, "Prompt all non-provided parameters")
+		currentCmd.Flags().BoolVar(&noSuggestedParamsFlag, "prompt-only-required", false, "Prompt only required parameters")
+		currentCmd.Flags().BoolVarP(&allSuggestedParamsFlag, "prompt-all-params", "a", false, "Prompt all non-provided parameters")
 
 		actionCmd.AddCommand(currentCmd)
 	}
