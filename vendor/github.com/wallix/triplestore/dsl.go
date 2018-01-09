@@ -182,9 +182,10 @@ func BooleanLiteral(bl bool) Object {
 
 func (b *tripleBuilder) BooleanLiteral(bl bool) *triple {
 	return &triple{
-		sub:  b.sub,
-		pred: b.pred,
-		obj:  BooleanLiteral(bl).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        b.sub,
+		pred:       b.pred,
+		obj:        BooleanLiteral(bl).(object),
 	}
 }
 
@@ -209,9 +210,10 @@ func IntegerLiteral(i int) Object {
 
 func (b *tripleBuilder) IntegerLiteral(i int) *triple {
 	return &triple{
-		sub:  b.sub,
-		pred: b.pred,
-		obj:  IntegerLiteral(i).(object),
+		isSubBnode: b.isSubBnode,
+		sub:        b.sub,
+		pred:       b.pred,
+		obj:        IntegerLiteral(i).(object),
 	}
 }
 

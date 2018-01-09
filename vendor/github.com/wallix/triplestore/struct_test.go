@@ -27,7 +27,13 @@ type TestStruct struct {
 type MainStruct struct {
 	Name string   `predicate:"name"`
 	Age  int      `predicate:"age"`
-	E    Embedded `predicate:"embedded" subject:"rand"`
+	E    Embedded `predicate:"embedded" bnode:""`
+}
+
+type OtherStruct struct {
+	Name string   `predicate:"name"`
+	Age  int      `predicate:"age"`
+	E    Embedded `predicate:"embedded" bnode:"dimension"`
 }
 
 type Embedded struct {
@@ -36,30 +42,68 @@ type Embedded struct {
 }
 
 func TestEmbeddedStructToTriple(t *testing.T) {
-	e := Embedded{Size: 186, Male: true}
-	s := MainStruct{Name: "donald", Age: 32, E: e}
+	t.Run("name bnode", func(t *testing.T) {
+		e := Embedded{Size: 186, Male: true}
+		s := OtherStruct{Name: "donald", Age: 32, E: e}
 
-	tris := TriplesFromStruct("me", s)
-	src := NewSource()
-	src.Add(tris...)
-	snap := src.Snapshot()
+		tris := TriplesFromStruct("me", s)
+		src := NewSource()
+		src.Add(tris...)
+		snap := src.Snapshot()
 
-	if got, want := snap.Count(), 5; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
+		if got, want := snap.Count(), 5; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
 
-	all := snap.WithSubjPred("me", "embedded")
-	if got, want := len(all), 1; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	all = snap.WithPredObj("size", IntegerLiteral(186))
-	if got, want := len(all), 1; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-	all = snap.WithPredObj("male", BooleanLiteral(true))
-	if got, want := len(all), 1; got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
+		all := snap.WithSubjPred("me", "embedded")
+		if got, want := len(all), 1; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		all = snap.WithPredObj("size", IntegerLiteral(186))
+		if got, want := len(all), 1; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		all = snap.WithPredObj("male", BooleanLiteral(true))
+		if got, want := len(all), 1; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		if tri := SubjPred("me", "embedded").Bnode("dimension"); !snap.Contains(tri) {
+			t.Fatalf("snap should contains %v", tri)
+		}
+		if tri := BnodePred("dimension", "male").BooleanLiteral(true); !snap.Contains(tri) {
+			t.Fatalf("snap should contains %v", tri)
+		}
+		if tri := BnodePred("dimension", "size").IntegerLiteral(186); !snap.Contains(tri) {
+			t.Fatalf("snap should contains %v", tri)
+		}
+	})
+
+	t.Run("random bnode", func(t *testing.T) {
+		e := Embedded{Size: 186, Male: true}
+		s := MainStruct{Name: "donald", Age: 32, E: e}
+
+		tris := TriplesFromStruct("me", s)
+		src := NewSource()
+		src.Add(tris...)
+		snap := src.Snapshot()
+
+		if got, want := snap.Count(), 5; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+
+		all := snap.WithSubjPred("me", "embedded")
+		if got, want := len(all), 1; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		all = snap.WithPredObj("size", IntegerLiteral(186))
+		if got, want := len(all), 1; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		all = snap.WithPredObj("male", BooleanLiteral(true))
+		if got, want := len(all), 1; got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+	})
 }
 
 func TestSimpleStructToTriple(t *testing.T) {

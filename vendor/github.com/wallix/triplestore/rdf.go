@@ -9,10 +9,11 @@ type Triple interface {
 	Equal(Triple) bool
 }
 
-// Object is a resource (i.e. IRI) or a literal. Note that blank node are not supported.
+// Object is a resource (i.e. IRI), a literal or a blank node.
 type Object interface {
 	Literal() (Literal, bool)
 	Resource() (string, bool)
+	Bnode() (string, bool)
 	Equal(Object) bool
 }
 
@@ -92,6 +93,10 @@ func (o object) Literal() (Literal, bool) {
 
 func (o object) Resource() (string, bool) {
 	return o.resource, !o.isLit
+}
+
+func (o object) Bnode() (string, bool) {
+	return o.bnode, o.isBnode
 }
 
 func (o object) key() string {

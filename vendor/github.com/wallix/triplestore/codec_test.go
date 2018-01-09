@@ -67,7 +67,14 @@ func TestEncodeAndDecodeAllTripleTypes(t *testing.T) {
 
 		{SubjPred("one", "two").DateTimeLiteral(time.Now())},
 
-		//large data
+		// Bnodes
+		{BnodePred("one", "two").StringLiteral("three")},
+		{BnodePred("one", "two").Bnode("three")},
+
+		// Langtag
+		{BnodePred("one", "two").StringLiteralWithLang("three", "de")},
+
+		// Large data
 		{SubjPred(strings.Repeat("s", 65100), "two").Resource("three")},
 		{SubjPred(strings.Repeat("s", 65540), "two").Resource("three")},
 		{SubjPred("one", strings.Repeat("t", 65100)).Resource("three")},

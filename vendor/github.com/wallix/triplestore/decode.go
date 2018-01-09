@@ -148,10 +148,16 @@ func (dec *binaryDecoder) Decode() ([]Triple, error) {
 }
 
 func decodeTriple(r io.Reader) (Triple, bool, error) {
-	sub, err := readWord(r)
+	var isSubBNode bool
+	err := binary.Read(r, binary.BigEndian, &isSubBNode)
 	if err == io.EOF {
 		return nil, true, nil
 	} else if err != nil {
+		return nil, false, fmt.Errorf("is subject bnode: %s", err)
+	}
+
+	sub, err := readWord(r)
+	if err != nil {
 		return nil, false, fmt.Errorf("subject: %s", err)
 	}
 
@@ -172,30 +178,45 @@ func decodeTriple(r io.Reader) (Triple, bool, error) {
 			return nil, false, fmt.Errorf("resource: %s", err)
 		}
 		decodedObj.resource = string(resource)
-
+	} else if objType == bnodeTypeEncoding {
+		bnode, err := readWord(r)
+		if err != nil {
+			return nil, false, fmt.Errorf("bnode object: %s", err)
+		}
+		decodedObj.bnode = string(bnode)
+		decodedObj.isBnode = true
 	} else {
 		decodedObj.isLit = true
 		var decodedLiteral literal
 
-		litType, err := readWord(r)
-		if err != nil {
-			return nil, false, fmt.Errorf("literate type: %s", err)
+		if objType == literalWithLangEncoding {
+			lang, err := readWord(r)
+			if err != nil {
+				return nil, false, fmt.Errorf("lang: %s", err)
+			}
+			decodedLiteral.langtag = string(lang)
+		} else {
+			litType, err := readWord(r)
+			if err != nil {
+				return nil, false, fmt.Errorf("literate type: %s", err)
+			}
+			decodedLiteral.typ = XsdType(litType)
 		}
-		decodedLiteral.typ = XsdType(litType)
 
 		val, err := readWord(r)
 		if err != nil {
 			return nil, false, fmt.Errorf("literate: %s", err)
 		}
-
 		decodedLiteral.val = string(val)
+
 		decodedObj.lit = decodedLiteral
 	}
 
 	return &triple{
-		sub:  string(sub),
-		pred: string(pred),
-		obj:  decodedObj,
+		isSubBnode: isSubBNode,
+		sub:        string(sub),
+		pred:       string(pred),
+		obj:        decodedObj,
 	}, false, nil
 }
 

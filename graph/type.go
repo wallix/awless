@@ -288,7 +288,7 @@ func (grants Grants) Sort() {
 
 type Grant struct {
 	Permission string  `predicate:"cloud:permission"`
-	Grantee    Grantee `predicate:"cloud:grantee" subject:"rand"`
+	Grantee    Grantee `predicate:"cloud:grantee" bnode:""`
 }
 
 type Grantee struct {
@@ -321,7 +321,7 @@ func (g *Grant) unmarshalFromTriples(gph tstore.RDFGraph, id string) error {
 	if len(granteeTs) != 1 {
 		return fmt.Errorf("unmarshal grant: expect 1 grantee got: %d", len(granteeTs))
 	}
-	granteeNode, ok := granteeTs[0].Object().Resource()
+	granteeNode, ok := granteeTs[0].Object().Bnode()
 	if !ok {
 		return fmt.Errorf("unmarshal grant: grantee does not contain a resource identifier")
 	}

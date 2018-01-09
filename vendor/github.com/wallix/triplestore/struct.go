@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	predTag = "predicate"
-	subTag  = "subject"
+	predTag  = "predicate"
+	bnodeTag = "bnode"
 )
 
 func init() {
@@ -23,7 +23,11 @@ func init() {
 // - Predicate: tag value
 // - Literal: actual field value according to field's type
 // Unsupported types are ignored
-func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
+func TriplesFromStruct(sub string, i interface{}, bnodes ...bool) (out []Triple) {
+	var isBnode bool
+	if len(bnodes) > 0 {
+		isBnode = bnodes[0]
+	}
 	val := reflect.ValueOf(i)
 
 	var ok bool
@@ -46,21 +50,20 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 		}
 
 		pred := field.Tag.Get(predTag)
-		if tri, ok := buildTripleFromVal(sub, pred, fVal); ok {
+		if tri, ok := buildTripleFromVal(sub, pred, fVal, isBnode); ok {
 			out = append(out, tri)
 		}
 
-		tag, embedded := field.Tag.Lookup(subTag)
+		bnode, embedded := field.Tag.Lookup(bnodeTag)
 		fVal, ok := getStructOrPtrToStruct(fVal)
-		if ok && embedded {
-			embedSub := tag
-			if tag == "rand" {
-				embedSub = fmt.Sprintf("%x", rand.Uint32())
+		if embedded && ok {
+			if bnode == "" {
+				bnode = fmt.Sprintf("%x", rand.Uint32())
 			}
-			tris := TriplesFromStruct(embedSub, fVal.Interface())
+			tris := TriplesFromStruct(bnode, fVal.Interface(), true)
 			out = append(out, tris...)
 			if embedPred, hasPred := field.Tag.Lookup(predTag); hasPred {
-				out = append(out, SubjPred(sub, embedPred).Resource(embedSub))
+				out = append(out, SubjPred(sub, embedPred).Bnode(bnode))
 			}
 			continue
 		}
@@ -70,7 +73,7 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 			length := fVal.Len()
 			for i := 0; i < length; i++ {
 				sliceVal := fVal.Index(i)
-				if tri, ok := buildTripleFromVal(sub, pred, sliceVal); ok {
+				if tri, ok := buildTripleFromVal(sub, pred, sliceVal, isBnode); ok {
 					out = append(out, tri)
 				}
 			}
@@ -81,7 +84,7 @@ func TriplesFromStruct(sub string, i interface{}) (out []Triple) {
 	return
 }
 
-func buildTripleFromVal(sub, pred string, v reflect.Value) (Triple, bool) {
+func buildTripleFromVal(sub, pred string, v reflect.Value, bnode bool) (Triple, bool) {
 	if !v.CanInterface() {
 		return nil, false
 	}
@@ -93,6 +96,9 @@ func buildTripleFromVal(sub, pred string, v reflect.Value) (Triple, bool) {
 		return nil, false
 	}
 
+	if bnode {
+		return BnodePred(sub, pred).Object(objLit), true
+	}
 	return SubjPred(sub, pred).Object(objLit), true
 }
 

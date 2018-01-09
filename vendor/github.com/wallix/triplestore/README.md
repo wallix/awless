@@ -14,7 +14,7 @@ Here the RDF triples implementation follows along the [W3C RDF concepts](https:/
 
 - Create and manage triples through a convenient DSL
 - Snapshot and query RDFGraphs
-- **Binary** encoding/decoding (**blank nodes and lang tag not supported yet**)
+- **Binary** encoding/decoding
 - **Lenient NTriples** encoding/decoding (see W3C Test suite in _testdata/ntriples/w3c_suite/_)
 - [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) encoding
 - Stream encoding/decoding (for binary & NTriples format) for memory conscious program 
@@ -118,11 +118,14 @@ triples = append(triples,
 
 #### Create triples from a struct
 
-As a convenience you can create triples from a singular struct:
+As a convenience you can create triples from a singular struct, where you control embedding through bnode.
+
+Here is an example.
 
 ```go
 type Address struct {
 	Street string `predicate:"street"`
+	City   string `predicate:"city"`
 }
 
 type Person struct {
@@ -132,7 +135,7 @@ type Person struct {
 	Male     bool      `predicate:"male"`
 	Birth    time.Time `predicate:"birth"`
 	Surnames []string  `predicate:"surnames"`
-	Addr     Address   `subject:"address"`
+	Addr     Address   `predicate:"address" bnode:"myaddress"` // empty bnode value will make bnode value random
 }
 
 addr := &Address{...}
@@ -148,8 +151,9 @@ snap.Contains(SubjPredLit("jsmith", "name", "..."))
 snap.Contains(SubjPredLit("jsmith", "size", 186))
 snap.Contains(SubjPredLit("jsmith", "surnames", "..."))
 snap.Contains(SubjPredLit("jsmith", "surnames", "..."))
-snap.Contains(SubjPredLit("address", "street", "..."))
-
+snap.Contains(SubjPred("me", "address").Bnode("myaddress"))
+snap.Contains(BnodePred("myaddress", "street").StringLiteral("5th avenue"))
+snap.Contains(BnodePred("myaddress", "city").StringLiteral("New York"))
 ```
 
 #### Equality

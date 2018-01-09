@@ -288,8 +288,9 @@ func TestMarshalUnmarshalGrants(t *testing.T) {
 	}
 	g.store.Add(triples...)
 	rawRes := InitResource(r.Type(), r.Id())
-	err = rawRes.unmarshalFullRdf(g.store.Snapshot())
-	if err != nil {
+
+	snap := g.store.Snapshot()
+	if err := rawRes.unmarshalFullRdf(snap); err != nil {
 		t.Fatal(err)
 	}
 
