@@ -53,7 +53,7 @@ Choose one of the following options:
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
 - Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.: `awless list`
 - Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
-- Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Key=Value`
+- Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Env=Production`, `--tag-value Purchased`, `--tag-key Dept,Internal`
 
 # Getting started
 
