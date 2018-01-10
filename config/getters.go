@@ -16,6 +16,8 @@ func GetAWSRegion() string {
 	return ""
 }
 
+const defaultAWSSessionProfile = "default"
+
 func GetAWSProfile() string {
 	if profile, ok := Config[ProfileConfigKey]; ok && profile != "" {
 		return fmt.Sprint(profile)
@@ -23,7 +25,7 @@ func GetAWSProfile() string {
 	if profile, ok := Defaults[ProfileConfigKey]; ok && profile != "" { // Compatibility with old key
 		return fmt.Sprint(profile)
 	}
-	return ""
+	return defaultAWSSessionProfile
 }
 
 func GetAutosync() bool {

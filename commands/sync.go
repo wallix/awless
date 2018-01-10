@@ -70,7 +70,7 @@ var syncCmd = &cobra.Command{
 		}
 		localGraphs := make(map[string]cloud.GraphAPI)
 		for _, service := range services {
-			localGraphs[service.Name()] = sync.LoadLocalGraphForService(service.Name(), config.GetAWSRegion())
+			localGraphs[service.Name()] = sync.LoadLocalGraphForService(service.Name(), config.GetAWSProfile(), config.GetAWSRegion())
 		}
 		logger.Infof("running sync for region '%s'", config.GetAWSRegion())
 

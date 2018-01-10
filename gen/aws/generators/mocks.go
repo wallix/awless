@@ -94,6 +94,10 @@ func (m * {{ $mock.Name }}) Region() string {
 	return ""
 }
 
+func (m * {{ $mock.Name }}) Profile() string {
+	return ""
+}
+
 func (m * {{ $mock.Name }}) Provider() string {
 	return ""
 }

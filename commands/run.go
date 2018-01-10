@@ -224,7 +224,7 @@ type onceLoader struct {
 
 func (l *onceLoader) mustLoad() cloud.GraphAPI {
 	l.once.Do(func() {
-		l.g, l.err = sync.LoadLocalGraphs(config.GetAWSRegion())
+		l.g, l.err = sync.LoadLocalGraphs(config.GetAWSProfile(), config.GetAWSRegion())
 	})
 	exitOn(l.err)
 	return l.g
@@ -387,7 +387,7 @@ func resolveAliasFunc(paramPath, alias string) string {
 		typedParam = tparam
 	}
 
-	gph, err := sync.LoadLocalGraphs(config.GetAWSRegion())
+	gph, err := sync.LoadLocalGraphs(config.GetAWSProfile(), config.GetAWSRegion())
 	if err != nil {
 		fmt.Printf("resolve alias '%s': cannot load local graphs for region %s: %s\n", alias, config.GetAWSRegion(), err)
 		return ""

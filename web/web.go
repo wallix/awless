@@ -15,6 +15,7 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/cloud/rdf"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/sync/repo"
@@ -31,7 +32,7 @@ func New(port string) *server {
 }
 
 func (s *server) Start() error {
-	g, err := sync.LoadAllLocalGraphs()
+	g, err := sync.LoadAllLocalGraphs(config.GetAWSProfile())
 	if err != nil {
 		return fmt.Errorf("cannot load local graphs: %s", err)
 	}

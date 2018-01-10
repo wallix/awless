@@ -65,7 +65,7 @@ var inspectCmd = &cobra.Command{
 			}
 		}
 
-		g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
+		g, err := sync.LoadLocalGraphs(config.GetAWSProfile(), config.GetAWSRegion())
 		exitOn(err)
 
 		exitOn(inspector.Inspect(g))

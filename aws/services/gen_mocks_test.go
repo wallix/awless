@@ -87,6 +87,10 @@ func (m *mockEc2) Region() string {
 	return ""
 }
 
+func (m *mockEc2) Profile() string {
+	return ""
+}
+
 func (m *mockEc2) Provider() string {
 	return ""
 }
@@ -209,6 +213,10 @@ func (m *mockElbv2) Region() string {
 	return ""
 }
 
+func (m *mockElbv2) Profile() string {
+	return ""
+}
+
 func (m *mockElbv2) Provider() string {
 	return ""
 }
@@ -265,6 +273,10 @@ func (m *mockRds) Name() string {
 }
 
 func (m *mockRds) Region() string {
+	return ""
+}
+
+func (m *mockRds) Profile() string {
 	return ""
 }
 
@@ -338,6 +350,10 @@ func (m *mockAutoscaling) Name() string {
 }
 
 func (m *mockAutoscaling) Region() string {
+	return ""
+}
+
+func (m *mockAutoscaling) Profile() string {
 	return ""
 }
 
@@ -429,6 +445,10 @@ func (m *mockAcm) Region() string {
 	return ""
 }
 
+func (m *mockAcm) Profile() string {
+	return ""
+}
+
 func (m *mockAcm) Provider() string {
 	return ""
 }
@@ -488,6 +508,10 @@ func (m *mockIam) Name() string {
 }
 
 func (m *mockIam) Region() string {
+	return ""
+}
+
+func (m *mockIam) Profile() string {
 	return ""
 }
 
@@ -581,6 +605,10 @@ func (m *mockS3) Region() string {
 	return ""
 }
 
+func (m *mockS3) Profile() string {
+	return ""
+}
+
 func (m *mockS3) Provider() string {
 	return ""
 }
@@ -616,6 +644,10 @@ func (m *mockSns) Name() string {
 }
 
 func (m *mockSns) Region() string {
+	return ""
+}
+
+func (m *mockSns) Profile() string {
 	return ""
 }
 
@@ -691,6 +723,10 @@ func (m *mockSqs) Region() string {
 	return ""
 }
 
+func (m *mockSqs) Profile() string {
+	return ""
+}
+
 func (m *mockSqs) Provider() string {
 	return ""
 }
@@ -730,6 +766,10 @@ func (m *mockRoute53) Name() string {
 }
 
 func (m *mockRoute53) Region() string {
+	return ""
+}
+
+func (m *mockRoute53) Profile() string {
 	return ""
 }
 
@@ -787,6 +827,10 @@ func (m *mockLambda) Region() string {
 	return ""
 }
 
+func (m *mockLambda) Profile() string {
+	return ""
+}
+
 func (m *mockLambda) Provider() string {
 	return ""
 }
@@ -839,6 +883,10 @@ func (m *mockCloudwatch) Name() string {
 }
 
 func (m *mockCloudwatch) Region() string {
+	return ""
+}
+
+func (m *mockCloudwatch) Profile() string {
 	return ""
 }
 
@@ -913,6 +961,10 @@ func (m *mockCloudfront) Region() string {
 	return ""
 }
 
+func (m *mockCloudfront) Profile() string {
+	return ""
+}
+
 func (m *mockCloudfront) Provider() string {
 	return ""
 }
@@ -947,6 +999,10 @@ func (m *mockCloudformation) Name() string {
 }
 
 func (m *mockCloudformation) Region() string {
+	return ""
+}
+
+func (m *mockCloudformation) Profile() string {
 	return ""
 }
 
@@ -1001,6 +1057,10 @@ func (m *mockEcr) Name() string {
 }
 
 func (m *mockEcr) Region() string {
+	return ""
+}
+
+func (m *mockEcr) Profile() string {
 	return ""
 }
 
@@ -1062,6 +1122,10 @@ func (m *mockEcs) Name() string {
 }
 
 func (m *mockEcs) Region() string {
+	return ""
+}
+
+func (m *mockEcs) Profile() string {
 	return ""
 }
 

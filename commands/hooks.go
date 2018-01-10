@@ -19,6 +19,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -78,10 +79,12 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 	if localGlobalFlag {
 		return nil
 	}
-	awsConf := config.GetConfigWithPrefix("aws.")
-	logger.Verbosef("awless %s - loading AWS session with profile '%v' and region '%v'", config.Version, awsConf[config.ProfileConfigKey], awsConf[config.RegionConfigKey])
 
-	if err := awsservices.Init(awsConf, logger.DefaultLogger, config.SetProfileCallback, networkMonitorFlag); err != nil {
+	profile, region := config.GetAWSProfile(), config.GetAWSRegion()
+
+	logger.Verbosef("awless %s - loading AWS session with profile '%s' and region '%s'", config.Version, profile, region)
+
+	if err := awsservices.Init(profile, region, config.GetConfigWithPrefix("aws."), logger.DefaultLogger, config.SetProfileCallback, networkMonitorFlag); err != nil {
 		return err
 	}
 
@@ -91,7 +94,7 @@ func initCloudServicesHook(cmd *cobra.Command, args []string) error {
 			services = append(services, s)
 		}
 		if !noSyncGlobalFlag {
-			logger.Infof("Syncing new region '%s'... (disable with --no-sync global flag)", awsConf[config.RegionConfigKey])
+			logger.Infof("Syncing new region '%s'... (disable with --no-sync global flag)", region)
 			sync.NewSyncer(logger.DefaultLogger).Sync(services...)
 		}
 	}
@@ -148,8 +151,8 @@ func onVersionUpgrade(cmd *cobra.Command, args []string) error {
 		}); err != nil {
 			fmt.Printf("cannot store upgraded version in db: %s\n", err)
 		}
-		logger.Infof("You have just upgraded awless from %s to %s", lastVersion, config.Version)
 		migrationActionsAndExtraMessages(config.Version)
+		logger.Infof("You have just upgraded awless from %s to %s", lastVersion, config.Version)
 		logger.Infof("Check out %s features at https://github.com/wallix/awless/blob/master/CHANGELOG.md", config.Version)
 	}
 
@@ -196,6 +199,13 @@ func migrationActionsAndExtraMessages(current string) {
 		}
 		config.Unset("instance.image")
 		logger.Info("\tYou can always check your config values with 'awless config'")
+	case "v0.1.9":
+		logger.Info("In v0.1.9, the local data file model has been moved to support multi-account transparently")
+		oldData := filepath.Join(os.Getenv("__AWLESS_HOME"), "aws", "rdf")
+		if err := os.RemoveAll(oldData); err == nil {
+			logger.Info("-> Stale data have been removed. The local model (ex: used for completion) will progressively be synced again through your usage of awless.")
+			logger.Info("-> You can also manually run `awless sync`")
+		}
 	}
 }
 

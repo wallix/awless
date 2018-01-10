@@ -21,18 +21,20 @@ func TestSyncTripleFiles(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	name1, region1 := "testservice", "paris"
+	name1, region1, profile1 := "testservice", "paris", "admin"
 	srv1 := &mockService{
-		g:      graph.NewGraph(),
-		name:   name1,
-		region: region1,
+		g:       graph.NewGraph(),
+		name:    name1,
+		region:  region1,
+		profile: profile1,
 	}
 
-	name2, region2 := "testservice2", "bali"
+	name2, region2, profile2 := "testservice2", "bali", "superadmin"
 	srv2 := &mockService{
-		g:      graph.NewGraph(),
-		name:   name2,
-		region: region2,
+		g:       graph.NewGraph(),
+		name:    name2,
+		region:  region2,
+		profile: profile2,
 	}
 
 	os.Setenv("__AWLESS_HOME", tmpDir)
@@ -53,7 +55,7 @@ func TestSyncTripleFiles(t *testing.T) {
 	}
 
 	for _, srv := range []cloud.Service{srv1, srv2} {
-		info, err := os.Stat(filepath.Join(tmpDir, "aws", "rdf", srv.Region(), srv.Name()+fileExt))
+		info, err := os.Stat(filepath.Join(tmpDir, "aws", "rdf", srv.Profile(), srv.Region(), srv.Name()+fileExt))
 		if err != nil {
 			t.Fatalf("cannot find expected file: %s", err)
 		}
@@ -64,11 +66,12 @@ func TestSyncTripleFiles(t *testing.T) {
 }
 
 type mockService struct {
-	name, region string
-	g            *graph.Graph
+	name, region, profile string
+	g                     *graph.Graph
 }
 
 func (s *mockService) Region() string                                { return s.region }
+func (s *mockService) Profile() string                               { return s.profile }
 func (s *mockService) Name() string                                  { return s.name }
 func (s *mockService) ResourceTypes() []string                       { return []string{} }
 func (s *mockService) Fetch(context.Context) (cloud.GraphAPI, error) { return s.g, nil }

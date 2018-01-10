@@ -37,7 +37,7 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 
 	runner.Validators = []template.Validator{
 		&template.UniqueNameValidator{LookupGraph: func(key string) (cloud.GraphAPI, bool) {
-			g := sync.LoadLocalGraphForService(awsservices.ServicePerResourceType[key], config.GetAWSRegion())
+			g := sync.LoadLocalGraphForService(awsservices.ServicePerResourceType[key], config.GetAWSProfile(), config.GetAWSRegion())
 			return g, true
 		}},
 		&template.ParamIsSetValidator{Action: "create", Entity: "instance", Param: "keypair", WarningMessage: "This instance has no access keypair. You might not be able to connect to it. Use `awless create instance keypair=my-keypair ...`"},

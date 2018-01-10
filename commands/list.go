@@ -111,7 +111,7 @@ var listSpecificResourceCmd = func(resType string) *cobra.Command {
 
 			if localGlobalFlag {
 				if srvName, ok := awsservices.ServicePerResourceType[resType]; ok {
-					g = sync.LoadLocalGraphForService(srvName, config.GetAWSRegion())
+					g = sync.LoadLocalGraphForService(srvName, config.GetAWSProfile(), config.GetAWSRegion())
 				} else {
 					exitOn(fmt.Errorf("cannot find service for resource type %s", resType))
 				}
@@ -134,7 +134,7 @@ var listAllResourceInServiceCmd = func(srvName string) *cobra.Command {
 		Hidden: true,
 
 		Run: func(cmd *cobra.Command, args []string) {
-			g := sync.LoadLocalGraphForService(srvName, config.GetAWSRegion())
+			g := sync.LoadLocalGraphForService(srvName, config.GetAWSProfile(), config.GetAWSRegion())
 			displayer, err := console.BuildOptions(
 				console.WithFormat(listingFormat),
 				console.WithMaxWidth(console.GetTerminalWidth()),

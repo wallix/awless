@@ -65,7 +65,7 @@ var showCmd = &cobra.Command{
 		}
 
 		ref := args[0]
-		notFound := fmt.Errorf("resource with reference '%s' not found", deprefix(ref))
+		notFound := fmt.Errorf("resource '%s' not found", deprefix(ref))
 
 		if _, err := awsconfig.ParseRegion(ref); err == nil && ref != config.GetAWSRegion() {
 			logger.Errorf("Cannot show region '%s' as you are in region '%s'", ref, config.GetAWSRegion())
@@ -223,7 +223,7 @@ func runFullSync() {
 	}
 
 	logger.Infof("cannot find resource in existing data synced locally")
-	logger.Infof("running sync for current region '%s'", config.GetAWSRegion())
+	logger.Infof("running sync for region '%s' and profile '%s'", config.GetAWSRegion(), config.GetAWSProfile())
 
 	var services []cloud.Service
 	for _, srv := range cloud.ServiceRegistry {
@@ -243,7 +243,7 @@ func findResourceInLocalGraphs(ref string) (cloud.Resource, cloud.GraphAPI) {
 	case 1:
 		return resources[0], g
 	default:
-		logger.Infof("%d resources found with name '%s' in region '%s'. Show a specific resource with:", len(resources), deprefix(ref), config.GetAWSRegion())
+		logger.Infof("%d resources found with name '%s' in region '%s' for profile '%s'. Show a specific resource with:", len(resources), deprefix(ref), config.GetAWSRegion(), config.GetAWSProfile())
 		for _, res := range resources {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("\t`awless show %s` to show the %s", res.Id(), res.Type()))
@@ -260,13 +260,13 @@ func findResourceInLocalGraphs(ref string) (cloud.Resource, cloud.GraphAPI) {
 }
 
 func resolveResourceFromRefInCurrentRegion(ref string) (cloud.GraphAPI, []cloud.Resource, string) {
-	g, err := sync.LoadLocalGraphs(config.GetAWSRegion())
+	g, err := sync.LoadLocalGraphs(config.GetAWSProfile(), config.GetAWSRegion())
 	exitOn(err)
 	return resolveResourceFromRef(g, ref)
 }
 
 func resolveResourceFromRefInAllLocalRegion(ref string) (cloud.GraphAPI, []cloud.Resource, string) {
-	g, err := sync.LoadAllLocalGraphs()
+	g, err := sync.LoadAllLocalGraphs(config.GetAWSProfile())
 	exitOn(err)
 	return resolveResourceFromRef(g, ref)
 }
@@ -305,7 +305,7 @@ func deprefix(s string) string {
 }
 
 func decorateWithSuggestion(err error, ref string) error {
-	buf := bytes.NewBufferString(fmt.Sprintf("%s in region %s", err.Error(), config.GetAWSRegion()))
+	buf := bytes.NewBufferString(fmt.Sprintf("%s in region '%s' for profile '%s'", err.Error(), config.GetAWSRegion(), config.GetAWSProfile()))
 	g, resources, _ := resolveResourceFromRefInAllLocalRegion(ref)
 	for _, res := range resources {
 		parents, err := g.ResourceRelations(res, rdf.ParentOf, true)
@@ -314,7 +314,7 @@ func decorateWithSuggestion(err error, ref string) error {
 		}
 		for _, parent := range parents {
 			if parent.Type() == cloud.Region {
-				buf.WriteString(fmt.Sprintf("\n\tfound previously synced under region %s as %s. Show it with `awless show %s -r %s --local`", parent.Id(), res, res.Id(), parent.Id()))
+				buf.WriteString(fmt.Sprintf("\n\tfound previously synced under region '%s' as %s. Show it with `awless show %s -r %s --local`", parent.Id(), res, res.Id(), parent.Id()))
 			}
 		}
 

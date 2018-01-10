@@ -101,6 +101,7 @@ const (
 
 type Service interface {
 	Region() string
+	Profile() string
 	Name() string
 	ResourceTypes() []string
 	IsSyncDisabled() bool
