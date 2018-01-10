@@ -2,7 +2,8 @@
 
 ### Features
 
-- Add suggested params: optional but very common params that are prompted by default. Can be disabled with `--prompt-only-required` or forced with `--prompt-all` to leverage smart completion for all optional params
+- Support and seamless sync across multi-account (i.e. multiple profiles) and regions
+- Enriched params prompting with optional/skippable but very common params. Can be disabled with `--prompt-only-required` or forced with `--prompt-all` to leverage smart completion for all params
 - Automatically complete the username when deleting an access key by its ID, if it is contained in the local graph model:
     * `awless delete accesskey id=ACCESSKEYID`
 - Better completion for template parameters independently of their display name
