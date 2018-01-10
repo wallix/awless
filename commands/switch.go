@@ -17,8 +17,8 @@ limitations under the License.
 package commands
 
 import (
-	"errors"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/config"
@@ -40,12 +40,10 @@ var switchCmd = &cobra.Command{
 	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook),
 	PersistentPostRun: applyHooks(includeHookIf(&config.TriggerSyncOnConfigUpdate, initCloudServicesHook)),
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("REGION and/or PROFILE required. See examples.")
-		}
-		if len(args) > 2 {
-			return errors.New("too many arguments provided, expected REGION and/or PROFILE. See examples.")
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 1 || len(args) > 2 {
+			fmt.Fprintf(os.Stdout, "currently in region '%s' with profile '%s' (switch -h for help and examples)\n", config.GetAWSRegion(), config.GetAWSProfile())
+			return
 		}
 		for _, arg := range args {
 			if awsconfig.IsValidRegion(arg) {
@@ -58,6 +56,5 @@ var switchCmd = &cobra.Command{
 			}
 			exitOn(fmt.Errorf("could not find profile: '%s' in $HOME/.aws/{credentials,config}", arg))
 		}
-		return nil
 	},
 }

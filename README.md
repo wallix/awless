@@ -47,6 +47,7 @@ Choose one of the following options:
 - Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=http://...` 
 - Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
 - Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --latest-id`
+- Switch AWS accounts (i.e. profile) and regions easily with `awless switch`
 - Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
 - Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
 - CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
