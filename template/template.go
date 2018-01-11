@@ -33,10 +33,27 @@ type Template struct {
 	*ast.AST
 }
 
-func (s *Template) DryRun(renv env.Running) (*Template, error) {
+func (s *Template) DryRun(renv env.Running) (tpl *Template, err error) {
 	renv.SetDryRun(true)
 	defer renv.SetDryRun(false)
-	return s.Run(renv)
+
+	tpl, err = s.Run(renv)
+	if err != nil {
+		return
+	}
+
+	errs := &Errors{}
+	for _, cmd := range tpl.CommandNodesIterator() {
+		if cmderr := cmd.Err(); cmderr != nil {
+			errs.add(cmderr)
+		}
+	}
+
+	if _, any := errs.Errors(); any {
+		err = errs
+	}
+
+	return
 }
 
 func (s *Template) Run(renv env.Running) (*Template, error) {
@@ -246,6 +263,10 @@ type Errors struct {
 
 func (d *Errors) Errors() ([]error, bool) {
 	return d.errs, len(d.errs) > 0
+}
+
+func (d *Errors) add(err error) {
+	d.errs = append(d.errs, err)
 }
 
 func (d *Errors) Error() string {

@@ -109,14 +109,14 @@ func (cmd *AttachAlarm) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach alarm: AWS command returned nil output")
+			renv.Log().Warning("attach alarm: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach alarm '%s' done", extracted)
+		renv.Log().Verbosef("attach alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach alarm done")
+		renv.Log().Verbose("attach alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -182,14 +182,14 @@ func (cmd *AttachContainertask) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach containertask: AWS command returned nil output")
+			renv.Log().Warning("attach containertask: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach containertask '%s' done", extracted)
+		renv.Log().Verbosef("attach containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach containertask done")
+		renv.Log().Verbose("attach containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -251,7 +251,7 @@ func (cmd *AttachElasticip) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.AssociateAddress(input)
-	cmd.logger.ExtraVerbosef("ec2.AssociateAddress call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.AssociateAddress call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -261,14 +261,14 @@ func (cmd *AttachElasticip) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach elasticip: AWS command returned nil output")
+			renv.Log().Warning("attach elasticip: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach elasticip '%s' done", extracted)
+		renv.Log().Verbosef("attach elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach elasticip done")
+		renv.Log().Verbose("attach elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -282,13 +282,13 @@ func (cmd *AttachElasticip) run(renv env.Running, params map[string]interface{})
 
 func (cmd *AttachElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AssociateAddressInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.AssociateAddressInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.AssociateAddressInput: %s", err)
 	}
 
 	start := time.Now()
@@ -296,13 +296,13 @@ func (cmd *AttachElasticip) dryRun(renv env.Running, params map[string]interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.AssociateAddress call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: attach elasticip ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.AssociateAddress call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: attach elasticip ok")
 			return fakeDryRunId("elasticip"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *AttachElasticip) inject(params map[string]interface{}) error {
@@ -351,7 +351,7 @@ func (cmd *AttachInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.RegisterTargets(input)
-	cmd.logger.ExtraVerbosef("elbv2.RegisterTargets call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.RegisterTargets call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -361,14 +361,14 @@ func (cmd *AttachInstance) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach instance: AWS command returned nil output")
+			renv.Log().Warning("attach instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach instance '%s' done", extracted)
+		renv.Log().Verbosef("attach instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach instance done")
+		renv.Log().Verbose("attach instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -434,14 +434,14 @@ func (cmd *AttachInstanceprofile) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach instanceprofile: AWS command returned nil output")
+			renv.Log().Warning("attach instanceprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach instanceprofile '%s' done", extracted)
+		renv.Log().Verbosef("attach instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach instanceprofile done")
+		renv.Log().Verbose("attach instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -499,7 +499,7 @@ func (cmd *AttachInternetgateway) run(renv env.Running, params map[string]interf
 	}
 	start := time.Now()
 	output, err := cmd.api.AttachInternetGateway(input)
-	cmd.logger.ExtraVerbosef("ec2.AttachInternetGateway call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.AttachInternetGateway call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -509,14 +509,14 @@ func (cmd *AttachInternetgateway) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach internetgateway: AWS command returned nil output")
+			renv.Log().Warning("attach internetgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach internetgateway '%s' done", extracted)
+		renv.Log().Verbosef("attach internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach internetgateway done")
+		renv.Log().Verbose("attach internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -530,13 +530,13 @@ func (cmd *AttachInternetgateway) run(renv env.Running, params map[string]interf
 
 func (cmd *AttachInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AttachInternetGatewayInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.AttachInternetGatewayInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.AttachInternetGatewayInput: %s", err)
 	}
 
 	start := time.Now()
@@ -544,13 +544,13 @@ func (cmd *AttachInternetgateway) dryRun(renv env.Running, params map[string]int
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.AttachInternetGateway call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: attach internetgateway ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.AttachInternetGateway call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: attach internetgateway ok")
 			return fakeDryRunId("internetgateway"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *AttachInternetgateway) inject(params map[string]interface{}) error {
@@ -599,7 +599,7 @@ func (cmd *AttachMfadevice) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.EnableMFADevice(input)
-	cmd.logger.ExtraVerbosef("iam.EnableMFADevice call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.EnableMFADevice call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -609,14 +609,14 @@ func (cmd *AttachMfadevice) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach mfadevice: AWS command returned nil output")
+			renv.Log().Warning("attach mfadevice: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach mfadevice '%s' done", extracted)
+		renv.Log().Verbosef("attach mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach mfadevice done")
+		renv.Log().Verbose("attach mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -678,7 +678,7 @@ func (cmd *AttachNetworkinterface) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.AttachNetworkInterface(input)
-	cmd.logger.ExtraVerbosef("ec2.AttachNetworkInterface call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.AttachNetworkInterface call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -688,14 +688,14 @@ func (cmd *AttachNetworkinterface) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach networkinterface: AWS command returned nil output")
+			renv.Log().Warning("attach networkinterface: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach networkinterface '%s' done", extracted)
+		renv.Log().Verbosef("attach networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach networkinterface done")
+		renv.Log().Verbose("attach networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -709,13 +709,13 @@ func (cmd *AttachNetworkinterface) run(renv env.Running, params map[string]inter
 
 func (cmd *AttachNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AttachNetworkInterfaceInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.AttachNetworkInterfaceInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.AttachNetworkInterfaceInput: %s", err)
 	}
 
 	start := time.Now()
@@ -723,13 +723,13 @@ func (cmd *AttachNetworkinterface) dryRun(renv env.Running, params map[string]in
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.AttachNetworkInterface call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: attach networkinterface ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.AttachNetworkInterface call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: attach networkinterface ok")
 			return fakeDryRunId("networkinterface"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *AttachNetworkinterface) inject(params map[string]interface{}) error {
@@ -782,14 +782,14 @@ func (cmd *AttachPolicy) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach policy: AWS command returned nil output")
+			renv.Log().Warning("attach policy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach policy '%s' done", extracted)
+		renv.Log().Verbosef("attach policy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach policy done")
+		renv.Log().Verbose("attach policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -851,7 +851,7 @@ func (cmd *AttachRole) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.AddRoleToInstanceProfile(input)
-	cmd.logger.ExtraVerbosef("iam.AddRoleToInstanceProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.AddRoleToInstanceProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -861,14 +861,14 @@ func (cmd *AttachRole) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach role: AWS command returned nil output")
+			renv.Log().Warning("attach role: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach role '%s' done", extracted)
+		renv.Log().Verbosef("attach role '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach role done")
+		renv.Log().Verbose("attach role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -930,7 +930,7 @@ func (cmd *AttachRoutetable) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.AssociateRouteTable(input)
-	cmd.logger.ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.AssociateRouteTable call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -940,14 +940,14 @@ func (cmd *AttachRoutetable) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach routetable: AWS command returned nil output")
+			renv.Log().Warning("attach routetable: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach routetable '%s' done", extracted)
+		renv.Log().Verbosef("attach routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach routetable done")
+		renv.Log().Verbose("attach routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -961,13 +961,13 @@ func (cmd *AttachRoutetable) run(renv env.Running, params map[string]interface{}
 
 func (cmd *AttachRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AssociateRouteTableInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.AssociateRouteTableInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.AssociateRouteTableInput: %s", err)
 	}
 
 	start := time.Now()
@@ -975,13 +975,13 @@ func (cmd *AttachRoutetable) dryRun(renv env.Running, params map[string]interfac
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.AssociateRouteTable call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: attach routetable ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.AssociateRouteTable call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: attach routetable ok")
 			return fakeDryRunId("routetable"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *AttachRoutetable) inject(params map[string]interface{}) error {
@@ -1034,14 +1034,14 @@ func (cmd *AttachSecuritygroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach securitygroup: AWS command returned nil output")
+			renv.Log().Warning("attach securitygroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach securitygroup '%s' done", extracted)
+		renv.Log().Verbosef("attach securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach securitygroup done")
+		renv.Log().Verbose("attach securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1103,7 +1103,7 @@ func (cmd *AttachUser) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.AddUserToGroup(input)
-	cmd.logger.ExtraVerbosef("iam.AddUserToGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.AddUserToGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -1113,14 +1113,14 @@ func (cmd *AttachUser) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach user: AWS command returned nil output")
+			renv.Log().Warning("attach user: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach user '%s' done", extracted)
+		renv.Log().Verbosef("attach user '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach user done")
+		renv.Log().Verbose("attach user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1182,7 +1182,7 @@ func (cmd *AttachVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.AttachVolume(input)
-	cmd.logger.ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.AttachVolume call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -1192,14 +1192,14 @@ func (cmd *AttachVolume) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("attach volume: AWS command returned nil output")
+			renv.Log().Warning("attach volume: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("attach volume '%s' done", extracted)
+		renv.Log().Verbosef("attach volume '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("attach volume done")
+		renv.Log().Verbose("attach volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1213,13 +1213,13 @@ func (cmd *AttachVolume) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *AttachVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AttachVolumeInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.AttachVolumeInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.AttachVolumeInput: %s", err)
 	}
 
 	start := time.Now()
@@ -1227,13 +1227,13 @@ func (cmd *AttachVolume) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.AttachVolume call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: attach volume ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.AttachVolume call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: attach volume ok")
 			return fakeDryRunId("volume"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *AttachVolume) inject(params map[string]interface{}) error {
@@ -1286,14 +1286,14 @@ func (cmd *AuthenticateRegistry) run(renv env.Running, params map[string]interfa
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("authenticate registry: AWS command returned nil output")
+			renv.Log().Warning("authenticate registry: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("authenticate registry '%s' done", extracted)
+		renv.Log().Verbosef("authenticate registry '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("authenticate registry done")
+		renv.Log().Verbose("authenticate registry done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1359,14 +1359,14 @@ func (cmd *CheckCertificate) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check certificate: AWS command returned nil output")
+			renv.Log().Warning("check certificate: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check certificate '%s' done", extracted)
+		renv.Log().Verbosef("check certificate '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check certificate done")
+		renv.Log().Verbose("check certificate done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1432,14 +1432,14 @@ func (cmd *CheckDatabase) run(renv env.Running, params map[string]interface{}) (
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check database: AWS command returned nil output")
+			renv.Log().Warning("check database: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check database '%s' done", extracted)
+		renv.Log().Verbosef("check database '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check database done")
+		renv.Log().Verbose("check database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1505,14 +1505,14 @@ func (cmd *CheckDistribution) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check distribution: AWS command returned nil output")
+			renv.Log().Warning("check distribution: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check distribution '%s' done", extracted)
+		renv.Log().Verbosef("check distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check distribution done")
+		renv.Log().Verbose("check distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1578,14 +1578,14 @@ func (cmd *CheckInstance) run(renv env.Running, params map[string]interface{}) (
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check instance: AWS command returned nil output")
+			renv.Log().Warning("check instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check instance '%s' done", extracted)
+		renv.Log().Verbosef("check instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check instance done")
+		renv.Log().Verbose("check instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1651,14 +1651,14 @@ func (cmd *CheckLoadbalancer) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check loadbalancer: AWS command returned nil output")
+			renv.Log().Warning("check loadbalancer: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check loadbalancer '%s' done", extracted)
+		renv.Log().Verbosef("check loadbalancer '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check loadbalancer done")
+		renv.Log().Verbose("check loadbalancer done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1724,14 +1724,14 @@ func (cmd *CheckNatgateway) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check natgateway: AWS command returned nil output")
+			renv.Log().Warning("check natgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check natgateway '%s' done", extracted)
+		renv.Log().Verbosef("check natgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check natgateway done")
+		renv.Log().Verbose("check natgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1797,14 +1797,14 @@ func (cmd *CheckNetworkinterface) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check networkinterface: AWS command returned nil output")
+			renv.Log().Warning("check networkinterface: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check networkinterface '%s' done", extracted)
+		renv.Log().Verbosef("check networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check networkinterface done")
+		renv.Log().Verbose("check networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1870,14 +1870,14 @@ func (cmd *CheckScalinggroup) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check scalinggroup: AWS command returned nil output")
+			renv.Log().Warning("check scalinggroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check scalinggroup '%s' done", extracted)
+		renv.Log().Verbosef("check scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check scalinggroup done")
+		renv.Log().Verbose("check scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -1943,14 +1943,14 @@ func (cmd *CheckSecuritygroup) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check securitygroup: AWS command returned nil output")
+			renv.Log().Warning("check securitygroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check securitygroup '%s' done", extracted)
+		renv.Log().Verbosef("check securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check securitygroup done")
+		renv.Log().Verbose("check securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2016,14 +2016,14 @@ func (cmd *CheckVolume) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("check volume: AWS command returned nil output")
+			renv.Log().Warning("check volume: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("check volume '%s' done", extracted)
+		renv.Log().Verbosef("check volume '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("check volume done")
+		renv.Log().Verbose("check volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2085,7 +2085,7 @@ func (cmd *CopyImage) run(renv env.Running, params map[string]interface{}) (inte
 	}
 	start := time.Now()
 	output, err := cmd.api.CopyImage(input)
-	cmd.logger.ExtraVerbosef("ec2.CopyImage call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CopyImage call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2095,14 +2095,14 @@ func (cmd *CopyImage) run(renv env.Running, params map[string]interface{}) (inte
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("copy image: AWS command returned nil output")
+			renv.Log().Warning("copy image: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("copy image '%s' done", extracted)
+		renv.Log().Verbosef("copy image '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("copy image done")
+		renv.Log().Verbose("copy image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2116,13 +2116,13 @@ func (cmd *CopyImage) run(renv env.Running, params map[string]interface{}) (inte
 
 func (cmd *CopyImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CopyImageInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CopyImageInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CopyImageInput: %s", err)
 	}
 
 	start := time.Now()
@@ -2130,13 +2130,13 @@ func (cmd *CopyImage) dryRun(renv env.Running, params map[string]interface{}) (i
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CopyImage call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: copy image ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CopyImage call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: copy image ok")
 			return fakeDryRunId("image"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CopyImage) inject(params map[string]interface{}) error {
@@ -2185,7 +2185,7 @@ func (cmd *CopySnapshot) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.CopySnapshot(input)
-	cmd.logger.ExtraVerbosef("ec2.CopySnapshot call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CopySnapshot call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2195,14 +2195,14 @@ func (cmd *CopySnapshot) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("copy snapshot: AWS command returned nil output")
+			renv.Log().Warning("copy snapshot: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("copy snapshot '%s' done", extracted)
+		renv.Log().Verbosef("copy snapshot '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("copy snapshot done")
+		renv.Log().Verbose("copy snapshot done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2216,13 +2216,13 @@ func (cmd *CopySnapshot) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *CopySnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CopySnapshotInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CopySnapshotInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CopySnapshotInput: %s", err)
 	}
 
 	start := time.Now()
@@ -2230,13 +2230,13 @@ func (cmd *CopySnapshot) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CopySnapshot call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: copy snapshot ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CopySnapshot call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: copy snapshot ok")
 			return fakeDryRunId("snapshot"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CopySnapshot) inject(params map[string]interface{}) error {
@@ -2285,7 +2285,7 @@ func (cmd *CreateAccesskey) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateAccessKey(input)
-	cmd.logger.ExtraVerbosef("iam.CreateAccessKey call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreateAccessKey call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2295,14 +2295,14 @@ func (cmd *CreateAccesskey) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create accesskey: AWS command returned nil output")
+			renv.Log().Warning("create accesskey: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create accesskey '%s' done", extracted)
+		renv.Log().Verbosef("create accesskey '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create accesskey done")
+		renv.Log().Verbose("create accesskey done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2364,7 +2364,7 @@ func (cmd *CreateAlarm) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.PutMetricAlarm(input)
-	cmd.logger.ExtraVerbosef("cloudwatch.PutMetricAlarm call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudwatch.PutMetricAlarm call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2374,14 +2374,14 @@ func (cmd *CreateAlarm) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create alarm: AWS command returned nil output")
+			renv.Log().Warning("create alarm: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create alarm '%s' done", extracted)
+		renv.Log().Verbosef("create alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create alarm done")
+		renv.Log().Verbose("create alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2443,7 +2443,7 @@ func (cmd *CreateAppscalingpolicy) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.PutScalingPolicy(input)
-	cmd.logger.ExtraVerbosef("applicationautoscaling.PutScalingPolicy call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("applicationautoscaling.PutScalingPolicy call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2453,14 +2453,14 @@ func (cmd *CreateAppscalingpolicy) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create appscalingpolicy: AWS command returned nil output")
+			renv.Log().Warning("create appscalingpolicy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create appscalingpolicy '%s' done", extracted)
+		renv.Log().Verbosef("create appscalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create appscalingpolicy done")
+		renv.Log().Verbose("create appscalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2522,7 +2522,7 @@ func (cmd *CreateAppscalingtarget) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.RegisterScalableTarget(input)
-	cmd.logger.ExtraVerbosef("applicationautoscaling.RegisterScalableTarget call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("applicationautoscaling.RegisterScalableTarget call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2532,14 +2532,14 @@ func (cmd *CreateAppscalingtarget) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create appscalingtarget: AWS command returned nil output")
+			renv.Log().Warning("create appscalingtarget: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create appscalingtarget '%s' done", extracted)
+		renv.Log().Verbosef("create appscalingtarget '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create appscalingtarget done")
+		renv.Log().Verbose("create appscalingtarget done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2601,7 +2601,7 @@ func (cmd *CreateBucket) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateBucket(input)
-	cmd.logger.ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("s3.CreateBucket call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2611,14 +2611,14 @@ func (cmd *CreateBucket) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create bucket: AWS command returned nil output")
+			renv.Log().Warning("create bucket: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create bucket '%s' done", extracted)
+		renv.Log().Verbosef("create bucket '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create bucket done")
+		renv.Log().Verbose("create bucket done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2684,14 +2684,14 @@ func (cmd *CreateCertificate) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create certificate: AWS command returned nil output")
+			renv.Log().Warning("create certificate: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create certificate '%s' done", extracted)
+		renv.Log().Verbosef("create certificate '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create certificate done")
+		renv.Log().Verbose("create certificate done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2753,7 +2753,7 @@ func (cmd *CreateContainercluster) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateCluster(input)
-	cmd.logger.ExtraVerbosef("ecs.CreateCluster call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ecs.CreateCluster call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2763,14 +2763,14 @@ func (cmd *CreateContainercluster) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create containercluster: AWS command returned nil output")
+			renv.Log().Warning("create containercluster: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create containercluster '%s' done", extracted)
+		renv.Log().Verbosef("create containercluster '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create containercluster done")
+		renv.Log().Verbose("create containercluster done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2836,14 +2836,14 @@ func (cmd *CreateDatabase) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create database: AWS command returned nil output")
+			renv.Log().Warning("create database: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create database '%s' done", extracted)
+		renv.Log().Verbosef("create database '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create database done")
+		renv.Log().Verbose("create database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2905,7 +2905,7 @@ func (cmd *CreateDbsubnetgroup) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateDBSubnetGroup(input)
-	cmd.logger.ExtraVerbosef("rds.CreateDBSubnetGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("rds.CreateDBSubnetGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -2915,14 +2915,14 @@ func (cmd *CreateDbsubnetgroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create dbsubnetgroup: AWS command returned nil output")
+			renv.Log().Warning("create dbsubnetgroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create dbsubnetgroup '%s' done", extracted)
+		renv.Log().Verbosef("create dbsubnetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create dbsubnetgroup done")
+		renv.Log().Verbose("create dbsubnetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -2988,14 +2988,14 @@ func (cmd *CreateDistribution) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create distribution: AWS command returned nil output")
+			renv.Log().Warning("create distribution: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create distribution '%s' done", extracted)
+		renv.Log().Verbosef("create distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create distribution done")
+		renv.Log().Verbose("create distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3057,7 +3057,7 @@ func (cmd *CreateElasticip) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.AllocateAddress(input)
-	cmd.logger.ExtraVerbosef("ec2.AllocateAddress call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.AllocateAddress call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3067,14 +3067,14 @@ func (cmd *CreateElasticip) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create elasticip: AWS command returned nil output")
+			renv.Log().Warning("create elasticip: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create elasticip '%s' done", extracted)
+		renv.Log().Verbosef("create elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create elasticip done")
+		renv.Log().Verbose("create elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3088,13 +3088,13 @@ func (cmd *CreateElasticip) run(renv env.Running, params map[string]interface{})
 
 func (cmd *CreateElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.AllocateAddressInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.AllocateAddressInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.AllocateAddressInput: %s", err)
 	}
 
 	start := time.Now()
@@ -3102,13 +3102,13 @@ func (cmd *CreateElasticip) dryRun(renv env.Running, params map[string]interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.AllocateAddress call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create elasticip ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.AllocateAddress call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create elasticip ok")
 			return fakeDryRunId("elasticip"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateElasticip) inject(params map[string]interface{}) error {
@@ -3157,7 +3157,7 @@ func (cmd *CreateFunction) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateFunction(input)
-	cmd.logger.ExtraVerbosef("lambda.CreateFunction call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("lambda.CreateFunction call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3167,14 +3167,14 @@ func (cmd *CreateFunction) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create function: AWS command returned nil output")
+			renv.Log().Warning("create function: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create function '%s' done", extracted)
+		renv.Log().Verbosef("create function '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create function done")
+		renv.Log().Verbose("create function done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3236,7 +3236,7 @@ func (cmd *CreateGroup) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateGroup(input)
-	cmd.logger.ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreateGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3246,14 +3246,14 @@ func (cmd *CreateGroup) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create group: AWS command returned nil output")
+			renv.Log().Warning("create group: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create group '%s' done", extracted)
+		renv.Log().Verbosef("create group '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create group done")
+		renv.Log().Verbose("create group done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3315,7 +3315,7 @@ func (cmd *CreateImage) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateImage(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateImage call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateImage call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3325,14 +3325,14 @@ func (cmd *CreateImage) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create image: AWS command returned nil output")
+			renv.Log().Warning("create image: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create image '%s' done", extracted)
+		renv.Log().Verbosef("create image '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create image done")
+		renv.Log().Verbose("create image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3346,13 +3346,13 @@ func (cmd *CreateImage) run(renv env.Running, params map[string]interface{}) (in
 
 func (cmd *CreateImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateImageInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateImageInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateImageInput: %s", err)
 	}
 
 	start := time.Now()
@@ -3360,13 +3360,13 @@ func (cmd *CreateImage) dryRun(renv env.Running, params map[string]interface{}) 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateImage call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create image ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateImage call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create image ok")
 			return fakeDryRunId("image"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateImage) inject(params map[string]interface{}) error {
@@ -3415,7 +3415,7 @@ func (cmd *CreateInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.RunInstances(input)
-	cmd.logger.ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.RunInstances call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3425,14 +3425,14 @@ func (cmd *CreateInstance) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create instance: AWS command returned nil output")
+			renv.Log().Warning("create instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create instance '%s' done", extracted)
+		renv.Log().Verbosef("create instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create instance done")
+		renv.Log().Verbose("create instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3446,13 +3446,13 @@ func (cmd *CreateInstance) run(renv env.Running, params map[string]interface{}) 
 
 func (cmd *CreateInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.RunInstancesInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.RunInstancesInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.RunInstancesInput: %s", err)
 	}
 
 	start := time.Now()
@@ -3460,13 +3460,13 @@ func (cmd *CreateInstance) dryRun(renv env.Running, params map[string]interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.RunInstances call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create instance ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.RunInstances call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create instance ok")
 			return fakeDryRunId("instance"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateInstance) inject(params map[string]interface{}) error {
@@ -3515,7 +3515,7 @@ func (cmd *CreateInstanceprofile) run(renv env.Running, params map[string]interf
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateInstanceProfile(input)
-	cmd.logger.ExtraVerbosef("iam.CreateInstanceProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreateInstanceProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3525,14 +3525,14 @@ func (cmd *CreateInstanceprofile) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create instanceprofile: AWS command returned nil output")
+			renv.Log().Warning("create instanceprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create instanceprofile '%s' done", extracted)
+		renv.Log().Verbosef("create instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create instanceprofile done")
+		renv.Log().Verbose("create instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3594,7 +3594,7 @@ func (cmd *CreateInternetgateway) run(renv env.Running, params map[string]interf
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateInternetGateway(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateInternetGateway call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3604,14 +3604,14 @@ func (cmd *CreateInternetgateway) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create internetgateway: AWS command returned nil output")
+			renv.Log().Warning("create internetgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create internetgateway '%s' done", extracted)
+		renv.Log().Verbosef("create internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create internetgateway done")
+		renv.Log().Verbose("create internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3625,13 +3625,13 @@ func (cmd *CreateInternetgateway) run(renv env.Running, params map[string]interf
 
 func (cmd *CreateInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateInternetGatewayInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateInternetGatewayInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateInternetGatewayInput: %s", err)
 	}
 
 	start := time.Now()
@@ -3639,13 +3639,13 @@ func (cmd *CreateInternetgateway) dryRun(renv env.Running, params map[string]int
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateInternetGateway call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create internetgateway ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateInternetGateway call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create internetgateway ok")
 			return fakeDryRunId("internetgateway"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateInternetgateway) inject(params map[string]interface{}) error {
@@ -3694,7 +3694,7 @@ func (cmd *CreateKeypair) run(renv env.Running, params map[string]interface{}) (
 	}
 	start := time.Now()
 	output, err := cmd.api.ImportKeyPair(input)
-	cmd.logger.ExtraVerbosef("ec2.ImportKeyPair call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.ImportKeyPair call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3704,14 +3704,14 @@ func (cmd *CreateKeypair) run(renv env.Running, params map[string]interface{}) (
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create keypair: AWS command returned nil output")
+			renv.Log().Warning("create keypair: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create keypair '%s' done", extracted)
+		renv.Log().Verbosef("create keypair '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create keypair done")
+		renv.Log().Verbose("create keypair done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3773,7 +3773,7 @@ func (cmd *CreateLaunchconfiguration) run(renv env.Running, params map[string]in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateLaunchConfiguration(input)
-	cmd.logger.ExtraVerbosef("autoscaling.CreateLaunchConfiguration call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.CreateLaunchConfiguration call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3783,14 +3783,14 @@ func (cmd *CreateLaunchconfiguration) run(renv env.Running, params map[string]in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create launchconfiguration: AWS command returned nil output")
+			renv.Log().Warning("create launchconfiguration: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create launchconfiguration '%s' done", extracted)
+		renv.Log().Verbosef("create launchconfiguration '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create launchconfiguration done")
+		renv.Log().Verbose("create launchconfiguration done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3852,7 +3852,7 @@ func (cmd *CreateListener) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateListener(input)
-	cmd.logger.ExtraVerbosef("elbv2.CreateListener call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.CreateListener call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3862,14 +3862,14 @@ func (cmd *CreateListener) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create listener: AWS command returned nil output")
+			renv.Log().Warning("create listener: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create listener '%s' done", extracted)
+		renv.Log().Verbosef("create listener '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create listener done")
+		renv.Log().Verbose("create listener done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -3931,7 +3931,7 @@ func (cmd *CreateLoadbalancer) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateLoadBalancer(input)
-	cmd.logger.ExtraVerbosef("elbv2.CreateLoadBalancer call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.CreateLoadBalancer call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -3941,14 +3941,14 @@ func (cmd *CreateLoadbalancer) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create loadbalancer: AWS command returned nil output")
+			renv.Log().Warning("create loadbalancer: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create loadbalancer '%s' done", extracted)
+		renv.Log().Verbosef("create loadbalancer '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create loadbalancer done")
+		renv.Log().Verbose("create loadbalancer done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4010,7 +4010,7 @@ func (cmd *CreateLoginprofile) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateLoginProfile(input)
-	cmd.logger.ExtraVerbosef("iam.CreateLoginProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreateLoginProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4020,14 +4020,14 @@ func (cmd *CreateLoginprofile) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create loginprofile: AWS command returned nil output")
+			renv.Log().Warning("create loginprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create loginprofile '%s' done", extracted)
+		renv.Log().Verbosef("create loginprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create loginprofile done")
+		renv.Log().Verbose("create loginprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4093,14 +4093,14 @@ func (cmd *CreateMfadevice) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create mfadevice: AWS command returned nil output")
+			renv.Log().Warning("create mfadevice: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create mfadevice '%s' done", extracted)
+		renv.Log().Verbosef("create mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create mfadevice done")
+		renv.Log().Verbose("create mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4162,7 +4162,7 @@ func (cmd *CreateNatgateway) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateNatGateway(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateNatGateway call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateNatGateway call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4172,14 +4172,14 @@ func (cmd *CreateNatgateway) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create natgateway: AWS command returned nil output")
+			renv.Log().Warning("create natgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create natgateway '%s' done", extracted)
+		renv.Log().Verbosef("create natgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create natgateway done")
+		renv.Log().Verbose("create natgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4241,7 +4241,7 @@ func (cmd *CreateNetworkinterface) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateNetworkInterface(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateNetworkInterface call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateNetworkInterface call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4251,14 +4251,14 @@ func (cmd *CreateNetworkinterface) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create networkinterface: AWS command returned nil output")
+			renv.Log().Warning("create networkinterface: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create networkinterface '%s' done", extracted)
+		renv.Log().Verbosef("create networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create networkinterface done")
+		renv.Log().Verbose("create networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4272,13 +4272,13 @@ func (cmd *CreateNetworkinterface) run(renv env.Running, params map[string]inter
 
 func (cmd *CreateNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateNetworkInterfaceInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateNetworkInterfaceInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateNetworkInterfaceInput: %s", err)
 	}
 
 	start := time.Now()
@@ -4286,13 +4286,13 @@ func (cmd *CreateNetworkinterface) dryRun(renv env.Running, params map[string]in
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateNetworkInterface call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create networkinterface ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateNetworkInterface call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create networkinterface ok")
 			return fakeDryRunId("networkinterface"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateNetworkinterface) inject(params map[string]interface{}) error {
@@ -4341,7 +4341,7 @@ func (cmd *CreatePolicy) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.CreatePolicy(input)
-	cmd.logger.ExtraVerbosef("iam.CreatePolicy call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreatePolicy call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4351,14 +4351,14 @@ func (cmd *CreatePolicy) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create policy: AWS command returned nil output")
+			renv.Log().Warning("create policy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create policy '%s' done", extracted)
+		renv.Log().Verbosef("create policy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create policy done")
+		renv.Log().Verbose("create policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4420,7 +4420,7 @@ func (cmd *CreateQueue) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateQueue(input)
-	cmd.logger.ExtraVerbosef("sqs.CreateQueue call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("sqs.CreateQueue call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4430,14 +4430,14 @@ func (cmd *CreateQueue) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create queue: AWS command returned nil output")
+			renv.Log().Warning("create queue: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create queue '%s' done", extracted)
+		renv.Log().Verbosef("create queue '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create queue done")
+		renv.Log().Verbose("create queue done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4503,14 +4503,14 @@ func (cmd *CreateRecord) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create record: AWS command returned nil output")
+			renv.Log().Warning("create record: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create record '%s' done", extracted)
+		renv.Log().Verbosef("create record '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create record done")
+		renv.Log().Verbose("create record done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4572,7 +4572,7 @@ func (cmd *CreateRepository) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateRepository(input)
-	cmd.logger.ExtraVerbosef("ecr.CreateRepository call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ecr.CreateRepository call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4582,14 +4582,14 @@ func (cmd *CreateRepository) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create repository: AWS command returned nil output")
+			renv.Log().Warning("create repository: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create repository '%s' done", extracted)
+		renv.Log().Verbosef("create repository '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create repository done")
+		renv.Log().Verbose("create repository done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4655,14 +4655,14 @@ func (cmd *CreateRole) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create role: AWS command returned nil output")
+			renv.Log().Warning("create role: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create role '%s' done", extracted)
+		renv.Log().Verbosef("create role '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create role done")
+		renv.Log().Verbose("create role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4724,7 +4724,7 @@ func (cmd *CreateRoute) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateRoute(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateRoute call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateRoute call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4734,14 +4734,14 @@ func (cmd *CreateRoute) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create route: AWS command returned nil output")
+			renv.Log().Warning("create route: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create route '%s' done", extracted)
+		renv.Log().Verbosef("create route '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create route done")
+		renv.Log().Verbose("create route done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4755,13 +4755,13 @@ func (cmd *CreateRoute) run(renv env.Running, params map[string]interface{}) (in
 
 func (cmd *CreateRoute) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateRouteInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateRouteInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateRouteInput: %s", err)
 	}
 
 	start := time.Now()
@@ -4769,13 +4769,13 @@ func (cmd *CreateRoute) dryRun(renv env.Running, params map[string]interface{}) 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateRoute call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create route ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateRoute call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create route ok")
 			return fakeDryRunId("route"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateRoute) inject(params map[string]interface{}) error {
@@ -4824,7 +4824,7 @@ func (cmd *CreateRoutetable) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateRouteTable(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateRouteTable call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -4834,14 +4834,14 @@ func (cmd *CreateRoutetable) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create routetable: AWS command returned nil output")
+			renv.Log().Warning("create routetable: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create routetable '%s' done", extracted)
+		renv.Log().Verbosef("create routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create routetable done")
+		renv.Log().Verbose("create routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4855,13 +4855,13 @@ func (cmd *CreateRoutetable) run(renv env.Running, params map[string]interface{}
 
 func (cmd *CreateRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateRouteTableInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateRouteTableInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateRouteTableInput: %s", err)
 	}
 
 	start := time.Now()
@@ -4869,13 +4869,13 @@ func (cmd *CreateRoutetable) dryRun(renv env.Running, params map[string]interfac
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateRouteTable call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create routetable ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateRouteTable call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create routetable ok")
 			return fakeDryRunId("routetable"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateRoutetable) inject(params map[string]interface{}) error {
@@ -4928,14 +4928,14 @@ func (cmd *CreateS3object) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create s3object: AWS command returned nil output")
+			renv.Log().Warning("create s3object: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create s3object '%s' done", extracted)
+		renv.Log().Verbosef("create s3object '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create s3object done")
+		renv.Log().Verbose("create s3object done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -4997,7 +4997,7 @@ func (cmd *CreateScalinggroup) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateAutoScalingGroup(input)
-	cmd.logger.ExtraVerbosef("autoscaling.CreateAutoScalingGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.CreateAutoScalingGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5007,14 +5007,14 @@ func (cmd *CreateScalinggroup) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create scalinggroup: AWS command returned nil output")
+			renv.Log().Warning("create scalinggroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create scalinggroup '%s' done", extracted)
+		renv.Log().Verbosef("create scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create scalinggroup done")
+		renv.Log().Verbose("create scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5076,7 +5076,7 @@ func (cmd *CreateScalingpolicy) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.PutScalingPolicy(input)
-	cmd.logger.ExtraVerbosef("autoscaling.PutScalingPolicy call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.PutScalingPolicy call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5086,14 +5086,14 @@ func (cmd *CreateScalingpolicy) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create scalingpolicy: AWS command returned nil output")
+			renv.Log().Warning("create scalingpolicy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create scalingpolicy '%s' done", extracted)
+		renv.Log().Verbosef("create scalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create scalingpolicy done")
+		renv.Log().Verbose("create scalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5155,7 +5155,7 @@ func (cmd *CreateSecuritygroup) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateSecurityGroup(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateSecurityGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5165,14 +5165,14 @@ func (cmd *CreateSecuritygroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create securitygroup: AWS command returned nil output")
+			renv.Log().Warning("create securitygroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create securitygroup '%s' done", extracted)
+		renv.Log().Verbosef("create securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create securitygroup done")
+		renv.Log().Verbose("create securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5186,13 +5186,13 @@ func (cmd *CreateSecuritygroup) run(renv env.Running, params map[string]interfac
 
 func (cmd *CreateSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateSecurityGroupInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateSecurityGroupInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateSecurityGroupInput: %s", err)
 	}
 
 	start := time.Now()
@@ -5200,13 +5200,13 @@ func (cmd *CreateSecuritygroup) dryRun(renv env.Running, params map[string]inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateSecurityGroup call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create securitygroup ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateSecurityGroup call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create securitygroup ok")
 			return fakeDryRunId("securitygroup"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateSecuritygroup) inject(params map[string]interface{}) error {
@@ -5255,7 +5255,7 @@ func (cmd *CreateSnapshot) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateSnapshot(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateSnapshot call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateSnapshot call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5265,14 +5265,14 @@ func (cmd *CreateSnapshot) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create snapshot: AWS command returned nil output")
+			renv.Log().Warning("create snapshot: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create snapshot '%s' done", extracted)
+		renv.Log().Verbosef("create snapshot '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create snapshot done")
+		renv.Log().Verbose("create snapshot done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5286,13 +5286,13 @@ func (cmd *CreateSnapshot) run(renv env.Running, params map[string]interface{}) 
 
 func (cmd *CreateSnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateSnapshotInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateSnapshotInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateSnapshotInput: %s", err)
 	}
 
 	start := time.Now()
@@ -5300,13 +5300,13 @@ func (cmd *CreateSnapshot) dryRun(renv env.Running, params map[string]interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateSnapshot call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create snapshot ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateSnapshot call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create snapshot ok")
 			return fakeDryRunId("snapshot"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateSnapshot) inject(params map[string]interface{}) error {
@@ -5355,7 +5355,7 @@ func (cmd *CreateStack) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateStack(input)
-	cmd.logger.ExtraVerbosef("cloudformation.CreateStack call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudformation.CreateStack call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5365,14 +5365,14 @@ func (cmd *CreateStack) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create stack: AWS command returned nil output")
+			renv.Log().Warning("create stack: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create stack '%s' done", extracted)
+		renv.Log().Verbosef("create stack '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create stack done")
+		renv.Log().Verbose("create stack done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5434,7 +5434,7 @@ func (cmd *CreateSubnet) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateSubnet(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateSubnet call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateSubnet call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5444,14 +5444,14 @@ func (cmd *CreateSubnet) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create subnet: AWS command returned nil output")
+			renv.Log().Warning("create subnet: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create subnet '%s' done", extracted)
+		renv.Log().Verbosef("create subnet '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create subnet done")
+		renv.Log().Verbose("create subnet done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5465,13 +5465,13 @@ func (cmd *CreateSubnet) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *CreateSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateSubnetInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateSubnetInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateSubnetInput: %s", err)
 	}
 
 	start := time.Now()
@@ -5479,13 +5479,13 @@ func (cmd *CreateSubnet) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateSubnet call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create subnet ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateSubnet call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create subnet ok")
 			return fakeDryRunId("subnet"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateSubnet) inject(params map[string]interface{}) error {
@@ -5534,7 +5534,7 @@ func (cmd *CreateSubscription) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.Subscribe(input)
-	cmd.logger.ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("sns.Subscribe call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5544,14 +5544,14 @@ func (cmd *CreateSubscription) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create subscription: AWS command returned nil output")
+			renv.Log().Warning("create subscription: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create subscription '%s' done", extracted)
+		renv.Log().Verbosef("create subscription '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create subscription done")
+		renv.Log().Verbose("create subscription done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5617,14 +5617,14 @@ func (cmd *CreateTag) run(renv env.Running, params map[string]interface{}) (inte
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create tag: AWS command returned nil output")
+			renv.Log().Warning("create tag: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create tag '%s' done", extracted)
+		renv.Log().Verbosef("create tag '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create tag done")
+		renv.Log().Verbose("create tag done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5682,7 +5682,7 @@ func (cmd *CreateTargetgroup) run(renv env.Running, params map[string]interface{
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateTargetGroup(input)
-	cmd.logger.ExtraVerbosef("elbv2.CreateTargetGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.CreateTargetGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5692,14 +5692,14 @@ func (cmd *CreateTargetgroup) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create targetgroup: AWS command returned nil output")
+			renv.Log().Warning("create targetgroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create targetgroup '%s' done", extracted)
+		renv.Log().Verbosef("create targetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create targetgroup done")
+		renv.Log().Verbose("create targetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5761,7 +5761,7 @@ func (cmd *CreateTopic) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateTopic(input)
-	cmd.logger.ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("sns.CreateTopic call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5771,14 +5771,14 @@ func (cmd *CreateTopic) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create topic: AWS command returned nil output")
+			renv.Log().Warning("create topic: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create topic '%s' done", extracted)
+		renv.Log().Verbosef("create topic '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create topic done")
+		renv.Log().Verbose("create topic done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5840,7 +5840,7 @@ func (cmd *CreateUser) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateUser(input)
-	cmd.logger.ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreateUser call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5850,14 +5850,14 @@ func (cmd *CreateUser) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create user: AWS command returned nil output")
+			renv.Log().Warning("create user: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create user '%s' done", extracted)
+		renv.Log().Verbosef("create user '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create user done")
+		renv.Log().Verbose("create user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5919,7 +5919,7 @@ func (cmd *CreateVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateVolume(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateVolume call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -5929,14 +5929,14 @@ func (cmd *CreateVolume) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create volume: AWS command returned nil output")
+			renv.Log().Warning("create volume: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create volume '%s' done", extracted)
+		renv.Log().Verbosef("create volume '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create volume done")
+		renv.Log().Verbose("create volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -5950,13 +5950,13 @@ func (cmd *CreateVolume) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *CreateVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateVolumeInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateVolumeInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateVolumeInput: %s", err)
 	}
 
 	start := time.Now()
@@ -5964,13 +5964,13 @@ func (cmd *CreateVolume) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateVolume call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create volume ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateVolume call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create volume ok")
 			return fakeDryRunId("volume"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateVolume) inject(params map[string]interface{}) error {
@@ -6019,7 +6019,7 @@ func (cmd *CreateVpc) run(renv env.Running, params map[string]interface{}) (inte
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateVpc(input)
-	cmd.logger.ExtraVerbosef("ec2.CreateVpc call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.CreateVpc call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6029,14 +6029,14 @@ func (cmd *CreateVpc) run(renv env.Running, params map[string]interface{}) (inte
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create vpc: AWS command returned nil output")
+			renv.Log().Warning("create vpc: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create vpc '%s' done", extracted)
+		renv.Log().Verbosef("create vpc '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create vpc done")
+		renv.Log().Verbose("create vpc done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6050,13 +6050,13 @@ func (cmd *CreateVpc) run(renv env.Running, params map[string]interface{}) (inte
 
 func (cmd *CreateVpc) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.CreateVpcInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.CreateVpcInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.CreateVpcInput: %s", err)
 	}
 
 	start := time.Now()
@@ -6064,13 +6064,13 @@ func (cmd *CreateVpc) dryRun(renv env.Running, params map[string]interface{}) (i
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.CreateVpc call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: create vpc ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.CreateVpc call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: create vpc ok")
 			return fakeDryRunId("vpc"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *CreateVpc) inject(params map[string]interface{}) error {
@@ -6119,7 +6119,7 @@ func (cmd *CreateZone) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.CreateHostedZone(input)
-	cmd.logger.ExtraVerbosef("route53.CreateHostedZone call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("route53.CreateHostedZone call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6129,14 +6129,14 @@ func (cmd *CreateZone) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("create zone: AWS command returned nil output")
+			renv.Log().Warning("create zone: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("create zone '%s' done", extracted)
+		renv.Log().Verbosef("create zone '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("create zone done")
+		renv.Log().Verbose("create zone done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6198,7 +6198,7 @@ func (cmd *DeleteAccesskey) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteAccessKey(input)
-	cmd.logger.ExtraVerbosef("iam.DeleteAccessKey call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeleteAccessKey call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6208,14 +6208,14 @@ func (cmd *DeleteAccesskey) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete accesskey: AWS command returned nil output")
+			renv.Log().Warning("delete accesskey: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete accesskey '%s' done", extracted)
+		renv.Log().Verbosef("delete accesskey '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete accesskey done")
+		renv.Log().Verbose("delete accesskey done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6277,7 +6277,7 @@ func (cmd *DeleteAlarm) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteAlarms(input)
-	cmd.logger.ExtraVerbosef("cloudwatch.DeleteAlarms call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudwatch.DeleteAlarms call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6287,14 +6287,14 @@ func (cmd *DeleteAlarm) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete alarm: AWS command returned nil output")
+			renv.Log().Warning("delete alarm: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete alarm '%s' done", extracted)
+		renv.Log().Verbosef("delete alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete alarm done")
+		renv.Log().Verbose("delete alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6356,7 +6356,7 @@ func (cmd *DeleteAppscalingpolicy) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteScalingPolicy(input)
-	cmd.logger.ExtraVerbosef("applicationautoscaling.DeleteScalingPolicy call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("applicationautoscaling.DeleteScalingPolicy call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6366,14 +6366,14 @@ func (cmd *DeleteAppscalingpolicy) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete appscalingpolicy: AWS command returned nil output")
+			renv.Log().Warning("delete appscalingpolicy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete appscalingpolicy '%s' done", extracted)
+		renv.Log().Verbosef("delete appscalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete appscalingpolicy done")
+		renv.Log().Verbose("delete appscalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6435,7 +6435,7 @@ func (cmd *DeleteAppscalingtarget) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.DeregisterScalableTarget(input)
-	cmd.logger.ExtraVerbosef("applicationautoscaling.DeregisterScalableTarget call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("applicationautoscaling.DeregisterScalableTarget call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6445,14 +6445,14 @@ func (cmd *DeleteAppscalingtarget) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete appscalingtarget: AWS command returned nil output")
+			renv.Log().Warning("delete appscalingtarget: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete appscalingtarget '%s' done", extracted)
+		renv.Log().Verbosef("delete appscalingtarget '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete appscalingtarget done")
+		renv.Log().Verbose("delete appscalingtarget done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6514,7 +6514,7 @@ func (cmd *DeleteBucket) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteBucket(input)
-	cmd.logger.ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("s3.DeleteBucket call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6524,14 +6524,14 @@ func (cmd *DeleteBucket) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete bucket: AWS command returned nil output")
+			renv.Log().Warning("delete bucket: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete bucket '%s' done", extracted)
+		renv.Log().Verbosef("delete bucket '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete bucket done")
+		renv.Log().Verbose("delete bucket done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6593,7 +6593,7 @@ func (cmd *DeleteCertificate) run(renv env.Running, params map[string]interface{
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteCertificate(input)
-	cmd.logger.ExtraVerbosef("acm.DeleteCertificate call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("acm.DeleteCertificate call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6603,14 +6603,14 @@ func (cmd *DeleteCertificate) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete certificate: AWS command returned nil output")
+			renv.Log().Warning("delete certificate: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete certificate '%s' done", extracted)
+		renv.Log().Verbosef("delete certificate '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete certificate done")
+		renv.Log().Verbose("delete certificate done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6672,7 +6672,7 @@ func (cmd *DeleteContainercluster) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteCluster(input)
-	cmd.logger.ExtraVerbosef("ecs.DeleteCluster call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ecs.DeleteCluster call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6682,14 +6682,14 @@ func (cmd *DeleteContainercluster) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete containercluster: AWS command returned nil output")
+			renv.Log().Warning("delete containercluster: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete containercluster '%s' done", extracted)
+		renv.Log().Verbosef("delete containercluster '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete containercluster done")
+		renv.Log().Verbose("delete containercluster done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6755,14 +6755,14 @@ func (cmd *DeleteContainertask) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete containertask: AWS command returned nil output")
+			renv.Log().Warning("delete containertask: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete containertask '%s' done", extracted)
+		renv.Log().Verbosef("delete containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete containertask done")
+		renv.Log().Verbose("delete containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6820,7 +6820,7 @@ func (cmd *DeleteDatabase) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteDBInstance(input)
-	cmd.logger.ExtraVerbosef("rds.DeleteDBInstance call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("rds.DeleteDBInstance call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6830,14 +6830,14 @@ func (cmd *DeleteDatabase) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete database: AWS command returned nil output")
+			renv.Log().Warning("delete database: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete database '%s' done", extracted)
+		renv.Log().Verbosef("delete database '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete database done")
+		renv.Log().Verbose("delete database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6899,7 +6899,7 @@ func (cmd *DeleteDbsubnetgroup) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteDBSubnetGroup(input)
-	cmd.logger.ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("rds.DeleteDBSubnetGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -6909,14 +6909,14 @@ func (cmd *DeleteDbsubnetgroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete dbsubnetgroup: AWS command returned nil output")
+			renv.Log().Warning("delete dbsubnetgroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete dbsubnetgroup '%s' done", extracted)
+		renv.Log().Verbosef("delete dbsubnetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete dbsubnetgroup done")
+		renv.Log().Verbose("delete dbsubnetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -6982,14 +6982,14 @@ func (cmd *DeleteDistribution) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete distribution: AWS command returned nil output")
+			renv.Log().Warning("delete distribution: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete distribution '%s' done", extracted)
+		renv.Log().Verbosef("delete distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete distribution done")
+		renv.Log().Verbose("delete distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7051,7 +7051,7 @@ func (cmd *DeleteElasticip) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.ReleaseAddress(input)
-	cmd.logger.ExtraVerbosef("ec2.ReleaseAddress call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.ReleaseAddress call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7061,14 +7061,14 @@ func (cmd *DeleteElasticip) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete elasticip: AWS command returned nil output")
+			renv.Log().Warning("delete elasticip: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete elasticip '%s' done", extracted)
+		renv.Log().Verbosef("delete elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete elasticip done")
+		renv.Log().Verbose("delete elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7082,13 +7082,13 @@ func (cmd *DeleteElasticip) run(renv env.Running, params map[string]interface{})
 
 func (cmd *DeleteElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.ReleaseAddressInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.ReleaseAddressInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.ReleaseAddressInput: %s", err)
 	}
 
 	start := time.Now()
@@ -7096,13 +7096,13 @@ func (cmd *DeleteElasticip) dryRun(renv env.Running, params map[string]interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.ReleaseAddress call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete elasticip ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.ReleaseAddress call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete elasticip ok")
 			return fakeDryRunId("elasticip"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteElasticip) inject(params map[string]interface{}) error {
@@ -7151,7 +7151,7 @@ func (cmd *DeleteFunction) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteFunction(input)
-	cmd.logger.ExtraVerbosef("lambda.DeleteFunction call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("lambda.DeleteFunction call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7161,14 +7161,14 @@ func (cmd *DeleteFunction) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete function: AWS command returned nil output")
+			renv.Log().Warning("delete function: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete function '%s' done", extracted)
+		renv.Log().Verbosef("delete function '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete function done")
+		renv.Log().Verbose("delete function done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7230,7 +7230,7 @@ func (cmd *DeleteGroup) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteGroup(input)
-	cmd.logger.ExtraVerbosef("iam.DeleteGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeleteGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7240,14 +7240,14 @@ func (cmd *DeleteGroup) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete group: AWS command returned nil output")
+			renv.Log().Warning("delete group: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete group '%s' done", extracted)
+		renv.Log().Verbosef("delete group '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete group done")
+		renv.Log().Verbose("delete group done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7313,14 +7313,14 @@ func (cmd *DeleteImage) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete image: AWS command returned nil output")
+			renv.Log().Warning("delete image: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete image '%s' done", extracted)
+		renv.Log().Verbosef("delete image '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete image done")
+		renv.Log().Verbose("delete image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7378,7 +7378,7 @@ func (cmd *DeleteInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.TerminateInstances(input)
-	cmd.logger.ExtraVerbosef("ec2.TerminateInstances call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.TerminateInstances call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7388,14 +7388,14 @@ func (cmd *DeleteInstance) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete instance: AWS command returned nil output")
+			renv.Log().Warning("delete instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete instance '%s' done", extracted)
+		renv.Log().Verbosef("delete instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete instance done")
+		renv.Log().Verbose("delete instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7409,13 +7409,13 @@ func (cmd *DeleteInstance) run(renv env.Running, params map[string]interface{}) 
 
 func (cmd *DeleteInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.TerminateInstancesInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.TerminateInstancesInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.TerminateInstancesInput: %s", err)
 	}
 
 	start := time.Now()
@@ -7423,13 +7423,13 @@ func (cmd *DeleteInstance) dryRun(renv env.Running, params map[string]interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.TerminateInstances call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete instance ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.TerminateInstances call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete instance ok")
 			return fakeDryRunId("instance"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteInstance) inject(params map[string]interface{}) error {
@@ -7478,7 +7478,7 @@ func (cmd *DeleteInstanceprofile) run(renv env.Running, params map[string]interf
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteInstanceProfile(input)
-	cmd.logger.ExtraVerbosef("iam.DeleteInstanceProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeleteInstanceProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7488,14 +7488,14 @@ func (cmd *DeleteInstanceprofile) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete instanceprofile: AWS command returned nil output")
+			renv.Log().Warning("delete instanceprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete instanceprofile '%s' done", extracted)
+		renv.Log().Verbosef("delete instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete instanceprofile done")
+		renv.Log().Verbose("delete instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7557,7 +7557,7 @@ func (cmd *DeleteInternetgateway) run(renv env.Running, params map[string]interf
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteInternetGateway(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteInternetGateway call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteInternetGateway call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7567,14 +7567,14 @@ func (cmd *DeleteInternetgateway) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete internetgateway: AWS command returned nil output")
+			renv.Log().Warning("delete internetgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete internetgateway '%s' done", extracted)
+		renv.Log().Verbosef("delete internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete internetgateway done")
+		renv.Log().Verbose("delete internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7588,13 +7588,13 @@ func (cmd *DeleteInternetgateway) run(renv env.Running, params map[string]interf
 
 func (cmd *DeleteInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteInternetGatewayInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteInternetGatewayInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteInternetGatewayInput: %s", err)
 	}
 
 	start := time.Now()
@@ -7602,13 +7602,13 @@ func (cmd *DeleteInternetgateway) dryRun(renv env.Running, params map[string]int
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteInternetGateway call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete internetgateway ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteInternetGateway call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete internetgateway ok")
 			return fakeDryRunId("internetgateway"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteInternetgateway) inject(params map[string]interface{}) error {
@@ -7657,7 +7657,7 @@ func (cmd *DeleteKeypair) run(renv env.Running, params map[string]interface{}) (
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteKeyPair(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteKeyPair call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7667,14 +7667,14 @@ func (cmd *DeleteKeypair) run(renv env.Running, params map[string]interface{}) (
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete keypair: AWS command returned nil output")
+			renv.Log().Warning("delete keypair: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete keypair '%s' done", extracted)
+		renv.Log().Verbosef("delete keypair '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete keypair done")
+		renv.Log().Verbose("delete keypair done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7688,13 +7688,13 @@ func (cmd *DeleteKeypair) run(renv env.Running, params map[string]interface{}) (
 
 func (cmd *DeleteKeypair) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteKeyPairInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteKeyPairInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteKeyPairInput: %s", err)
 	}
 
 	start := time.Now()
@@ -7702,13 +7702,13 @@ func (cmd *DeleteKeypair) dryRun(renv env.Running, params map[string]interface{}
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteKeyPair call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete keypair ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteKeyPair call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete keypair ok")
 			return fakeDryRunId("keypair"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteKeypair) inject(params map[string]interface{}) error {
@@ -7757,7 +7757,7 @@ func (cmd *DeleteLaunchconfiguration) run(renv env.Running, params map[string]in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteLaunchConfiguration(input)
-	cmd.logger.ExtraVerbosef("autoscaling.DeleteLaunchConfiguration call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.DeleteLaunchConfiguration call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7767,14 +7767,14 @@ func (cmd *DeleteLaunchconfiguration) run(renv env.Running, params map[string]in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete launchconfiguration: AWS command returned nil output")
+			renv.Log().Warning("delete launchconfiguration: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete launchconfiguration '%s' done", extracted)
+		renv.Log().Verbosef("delete launchconfiguration '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete launchconfiguration done")
+		renv.Log().Verbose("delete launchconfiguration done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7836,7 +7836,7 @@ func (cmd *DeleteListener) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteListener(input)
-	cmd.logger.ExtraVerbosef("elbv2.DeleteListener call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.DeleteListener call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7846,14 +7846,14 @@ func (cmd *DeleteListener) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete listener: AWS command returned nil output")
+			renv.Log().Warning("delete listener: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete listener '%s' done", extracted)
+		renv.Log().Verbosef("delete listener '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete listener done")
+		renv.Log().Verbose("delete listener done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7915,7 +7915,7 @@ func (cmd *DeleteLoadbalancer) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteLoadBalancer(input)
-	cmd.logger.ExtraVerbosef("elbv2.DeleteLoadBalancer call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.DeleteLoadBalancer call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -7925,14 +7925,14 @@ func (cmd *DeleteLoadbalancer) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete loadbalancer: AWS command returned nil output")
+			renv.Log().Warning("delete loadbalancer: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete loadbalancer '%s' done", extracted)
+		renv.Log().Verbosef("delete loadbalancer '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete loadbalancer done")
+		renv.Log().Verbose("delete loadbalancer done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -7994,7 +7994,7 @@ func (cmd *DeleteLoginprofile) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteLoginProfile(input)
-	cmd.logger.ExtraVerbosef("iam.DeleteLoginProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeleteLoginProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8004,14 +8004,14 @@ func (cmd *DeleteLoginprofile) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete loginprofile: AWS command returned nil output")
+			renv.Log().Warning("delete loginprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete loginprofile '%s' done", extracted)
+		renv.Log().Verbosef("delete loginprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete loginprofile done")
+		renv.Log().Verbose("delete loginprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8073,7 +8073,7 @@ func (cmd *DeleteMfadevice) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteVirtualMFADevice(input)
-	cmd.logger.ExtraVerbosef("iam.DeleteVirtualMFADevice call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeleteVirtualMFADevice call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8083,14 +8083,14 @@ func (cmd *DeleteMfadevice) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete mfadevice: AWS command returned nil output")
+			renv.Log().Warning("delete mfadevice: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete mfadevice '%s' done", extracted)
+		renv.Log().Verbosef("delete mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete mfadevice done")
+		renv.Log().Verbose("delete mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8152,7 +8152,7 @@ func (cmd *DeleteNatgateway) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteNatGateway(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteNatGateway call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteNatGateway call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8162,14 +8162,14 @@ func (cmd *DeleteNatgateway) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete natgateway: AWS command returned nil output")
+			renv.Log().Warning("delete natgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete natgateway '%s' done", extracted)
+		renv.Log().Verbosef("delete natgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete natgateway done")
+		renv.Log().Verbose("delete natgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8231,7 +8231,7 @@ func (cmd *DeleteNetworkinterface) run(renv env.Running, params map[string]inter
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteNetworkInterface(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteNetworkInterface call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteNetworkInterface call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8241,14 +8241,14 @@ func (cmd *DeleteNetworkinterface) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete networkinterface: AWS command returned nil output")
+			renv.Log().Warning("delete networkinterface: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete networkinterface '%s' done", extracted)
+		renv.Log().Verbosef("delete networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete networkinterface done")
+		renv.Log().Verbose("delete networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8262,13 +8262,13 @@ func (cmd *DeleteNetworkinterface) run(renv env.Running, params map[string]inter
 
 func (cmd *DeleteNetworkinterface) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteNetworkInterfaceInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteNetworkInterfaceInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteNetworkInterfaceInput: %s", err)
 	}
 
 	start := time.Now()
@@ -8276,13 +8276,13 @@ func (cmd *DeleteNetworkinterface) dryRun(renv env.Running, params map[string]in
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteNetworkInterface call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete networkinterface ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteNetworkInterface call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete networkinterface ok")
 			return fakeDryRunId("networkinterface"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteNetworkinterface) inject(params map[string]interface{}) error {
@@ -8331,7 +8331,7 @@ func (cmd *DeletePolicy) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.DeletePolicy(input)
-	cmd.logger.ExtraVerbosef("iam.DeletePolicy call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeletePolicy call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8341,14 +8341,14 @@ func (cmd *DeletePolicy) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete policy: AWS command returned nil output")
+			renv.Log().Warning("delete policy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete policy '%s' done", extracted)
+		renv.Log().Verbosef("delete policy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete policy done")
+		renv.Log().Verbose("delete policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8410,7 +8410,7 @@ func (cmd *DeleteQueue) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteQueue(input)
-	cmd.logger.ExtraVerbosef("sqs.DeleteQueue call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("sqs.DeleteQueue call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8420,14 +8420,14 @@ func (cmd *DeleteQueue) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete queue: AWS command returned nil output")
+			renv.Log().Warning("delete queue: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete queue '%s' done", extracted)
+		renv.Log().Verbosef("delete queue '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete queue done")
+		renv.Log().Verbose("delete queue done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8493,14 +8493,14 @@ func (cmd *DeleteRecord) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete record: AWS command returned nil output")
+			renv.Log().Warning("delete record: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete record '%s' done", extracted)
+		renv.Log().Verbosef("delete record '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete record done")
+		renv.Log().Verbose("delete record done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8562,7 +8562,7 @@ func (cmd *DeleteRepository) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteRepository(input)
-	cmd.logger.ExtraVerbosef("ecr.DeleteRepository call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ecr.DeleteRepository call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8572,14 +8572,14 @@ func (cmd *DeleteRepository) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete repository: AWS command returned nil output")
+			renv.Log().Warning("delete repository: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete repository '%s' done", extracted)
+		renv.Log().Verbosef("delete repository '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete repository done")
+		renv.Log().Verbose("delete repository done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8645,14 +8645,14 @@ func (cmd *DeleteRole) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete role: AWS command returned nil output")
+			renv.Log().Warning("delete role: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete role '%s' done", extracted)
+		renv.Log().Verbosef("delete role '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete role done")
+		renv.Log().Verbose("delete role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8714,7 +8714,7 @@ func (cmd *DeleteRoute) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteRoute(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteRoute call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteRoute call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8724,14 +8724,14 @@ func (cmd *DeleteRoute) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete route: AWS command returned nil output")
+			renv.Log().Warning("delete route: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete route '%s' done", extracted)
+		renv.Log().Verbosef("delete route '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete route done")
+		renv.Log().Verbose("delete route done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8745,13 +8745,13 @@ func (cmd *DeleteRoute) run(renv env.Running, params map[string]interface{}) (in
 
 func (cmd *DeleteRoute) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteRouteInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteRouteInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteRouteInput: %s", err)
 	}
 
 	start := time.Now()
@@ -8759,13 +8759,13 @@ func (cmd *DeleteRoute) dryRun(renv env.Running, params map[string]interface{}) 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteRoute call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete route ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteRoute call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete route ok")
 			return fakeDryRunId("route"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteRoute) inject(params map[string]interface{}) error {
@@ -8814,7 +8814,7 @@ func (cmd *DeleteRoutetable) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteRouteTable(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteRouteTable call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteRouteTable call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8824,14 +8824,14 @@ func (cmd *DeleteRoutetable) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete routetable: AWS command returned nil output")
+			renv.Log().Warning("delete routetable: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete routetable '%s' done", extracted)
+		renv.Log().Verbosef("delete routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete routetable done")
+		renv.Log().Verbose("delete routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8845,13 +8845,13 @@ func (cmd *DeleteRoutetable) run(renv env.Running, params map[string]interface{}
 
 func (cmd *DeleteRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteRouteTableInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteRouteTableInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteRouteTableInput: %s", err)
 	}
 
 	start := time.Now()
@@ -8859,13 +8859,13 @@ func (cmd *DeleteRoutetable) dryRun(renv env.Running, params map[string]interfac
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteRouteTable call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete routetable ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteRouteTable call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete routetable ok")
 			return fakeDryRunId("routetable"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteRoutetable) inject(params map[string]interface{}) error {
@@ -8914,7 +8914,7 @@ func (cmd *DeleteS3object) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteObject(input)
-	cmd.logger.ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("s3.DeleteObject call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -8924,14 +8924,14 @@ func (cmd *DeleteS3object) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete s3object: AWS command returned nil output")
+			renv.Log().Warning("delete s3object: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete s3object '%s' done", extracted)
+		renv.Log().Verbosef("delete s3object '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete s3object done")
+		renv.Log().Verbose("delete s3object done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -8993,7 +8993,7 @@ func (cmd *DeleteScalinggroup) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteAutoScalingGroup(input)
-	cmd.logger.ExtraVerbosef("autoscaling.DeleteAutoScalingGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.DeleteAutoScalingGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9003,14 +9003,14 @@ func (cmd *DeleteScalinggroup) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete scalinggroup: AWS command returned nil output")
+			renv.Log().Warning("delete scalinggroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete scalinggroup '%s' done", extracted)
+		renv.Log().Verbosef("delete scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete scalinggroup done")
+		renv.Log().Verbose("delete scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9072,7 +9072,7 @@ func (cmd *DeleteScalingpolicy) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.DeletePolicy(input)
-	cmd.logger.ExtraVerbosef("autoscaling.DeletePolicy call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.DeletePolicy call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9082,14 +9082,14 @@ func (cmd *DeleteScalingpolicy) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete scalingpolicy: AWS command returned nil output")
+			renv.Log().Warning("delete scalingpolicy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete scalingpolicy '%s' done", extracted)
+		renv.Log().Verbosef("delete scalingpolicy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete scalingpolicy done")
+		renv.Log().Verbose("delete scalingpolicy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9151,7 +9151,7 @@ func (cmd *DeleteSecuritygroup) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteSecurityGroup(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteSecurityGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9161,14 +9161,14 @@ func (cmd *DeleteSecuritygroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete securitygroup: AWS command returned nil output")
+			renv.Log().Warning("delete securitygroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete securitygroup '%s' done", extracted)
+		renv.Log().Verbosef("delete securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete securitygroup done")
+		renv.Log().Verbose("delete securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9182,13 +9182,13 @@ func (cmd *DeleteSecuritygroup) run(renv env.Running, params map[string]interfac
 
 func (cmd *DeleteSecuritygroup) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteSecurityGroupInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteSecurityGroupInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteSecurityGroupInput: %s", err)
 	}
 
 	start := time.Now()
@@ -9196,13 +9196,13 @@ func (cmd *DeleteSecuritygroup) dryRun(renv env.Running, params map[string]inter
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteSecurityGroup call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete securitygroup ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteSecurityGroup call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete securitygroup ok")
 			return fakeDryRunId("securitygroup"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteSecuritygroup) inject(params map[string]interface{}) error {
@@ -9251,7 +9251,7 @@ func (cmd *DeleteSnapshot) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteSnapshot(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteSnapshot call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteSnapshot call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9261,14 +9261,14 @@ func (cmd *DeleteSnapshot) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete snapshot: AWS command returned nil output")
+			renv.Log().Warning("delete snapshot: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete snapshot '%s' done", extracted)
+		renv.Log().Verbosef("delete snapshot '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete snapshot done")
+		renv.Log().Verbose("delete snapshot done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9282,13 +9282,13 @@ func (cmd *DeleteSnapshot) run(renv env.Running, params map[string]interface{}) 
 
 func (cmd *DeleteSnapshot) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteSnapshotInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteSnapshotInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteSnapshotInput: %s", err)
 	}
 
 	start := time.Now()
@@ -9296,13 +9296,13 @@ func (cmd *DeleteSnapshot) dryRun(renv env.Running, params map[string]interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteSnapshot call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete snapshot ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteSnapshot call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete snapshot ok")
 			return fakeDryRunId("snapshot"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteSnapshot) inject(params map[string]interface{}) error {
@@ -9351,7 +9351,7 @@ func (cmd *DeleteStack) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteStack(input)
-	cmd.logger.ExtraVerbosef("cloudformation.DeleteStack call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudformation.DeleteStack call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9361,14 +9361,14 @@ func (cmd *DeleteStack) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete stack: AWS command returned nil output")
+			renv.Log().Warning("delete stack: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete stack '%s' done", extracted)
+		renv.Log().Verbosef("delete stack '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete stack done")
+		renv.Log().Verbose("delete stack done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9430,7 +9430,7 @@ func (cmd *DeleteSubnet) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteSubnet(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteSubnet call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteSubnet call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9440,14 +9440,14 @@ func (cmd *DeleteSubnet) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete subnet: AWS command returned nil output")
+			renv.Log().Warning("delete subnet: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete subnet '%s' done", extracted)
+		renv.Log().Verbosef("delete subnet '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete subnet done")
+		renv.Log().Verbose("delete subnet done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9461,13 +9461,13 @@ func (cmd *DeleteSubnet) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *DeleteSubnet) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteSubnetInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteSubnetInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteSubnetInput: %s", err)
 	}
 
 	start := time.Now()
@@ -9475,13 +9475,13 @@ func (cmd *DeleteSubnet) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteSubnet call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete subnet ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteSubnet call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete subnet ok")
 			return fakeDryRunId("subnet"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteSubnet) inject(params map[string]interface{}) error {
@@ -9530,7 +9530,7 @@ func (cmd *DeleteSubscription) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.Unsubscribe(input)
-	cmd.logger.ExtraVerbosef("sns.Unsubscribe call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("sns.Unsubscribe call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9540,14 +9540,14 @@ func (cmd *DeleteSubscription) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete subscription: AWS command returned nil output")
+			renv.Log().Warning("delete subscription: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete subscription '%s' done", extracted)
+		renv.Log().Verbosef("delete subscription '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete subscription done")
+		renv.Log().Verbose("delete subscription done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9613,14 +9613,14 @@ func (cmd *DeleteTag) run(renv env.Running, params map[string]interface{}) (inte
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete tag: AWS command returned nil output")
+			renv.Log().Warning("delete tag: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete tag '%s' done", extracted)
+		renv.Log().Verbosef("delete tag '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete tag done")
+		renv.Log().Verbose("delete tag done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9678,7 +9678,7 @@ func (cmd *DeleteTargetgroup) run(renv env.Running, params map[string]interface{
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteTargetGroup(input)
-	cmd.logger.ExtraVerbosef("elbv2.DeleteTargetGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.DeleteTargetGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9688,14 +9688,14 @@ func (cmd *DeleteTargetgroup) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete targetgroup: AWS command returned nil output")
+			renv.Log().Warning("delete targetgroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete targetgroup '%s' done", extracted)
+		renv.Log().Verbosef("delete targetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete targetgroup done")
+		renv.Log().Verbose("delete targetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9757,7 +9757,7 @@ func (cmd *DeleteTopic) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteTopic(input)
-	cmd.logger.ExtraVerbosef("sns.DeleteTopic call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("sns.DeleteTopic call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9767,14 +9767,14 @@ func (cmd *DeleteTopic) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete topic: AWS command returned nil output")
+			renv.Log().Warning("delete topic: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete topic '%s' done", extracted)
+		renv.Log().Verbosef("delete topic '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete topic done")
+		renv.Log().Verbose("delete topic done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9836,7 +9836,7 @@ func (cmd *DeleteUser) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteUser(input)
-	cmd.logger.ExtraVerbosef("iam.DeleteUser call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeleteUser call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9846,14 +9846,14 @@ func (cmd *DeleteUser) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete user: AWS command returned nil output")
+			renv.Log().Warning("delete user: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete user '%s' done", extracted)
+		renv.Log().Verbosef("delete user '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete user done")
+		renv.Log().Verbose("delete user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9915,7 +9915,7 @@ func (cmd *DeleteVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteVolume(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteVolume call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteVolume call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -9925,14 +9925,14 @@ func (cmd *DeleteVolume) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete volume: AWS command returned nil output")
+			renv.Log().Warning("delete volume: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete volume '%s' done", extracted)
+		renv.Log().Verbosef("delete volume '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete volume done")
+		renv.Log().Verbose("delete volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -9946,13 +9946,13 @@ func (cmd *DeleteVolume) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *DeleteVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteVolumeInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteVolumeInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteVolumeInput: %s", err)
 	}
 
 	start := time.Now()
@@ -9960,13 +9960,13 @@ func (cmd *DeleteVolume) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteVolume call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete volume ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteVolume call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete volume ok")
 			return fakeDryRunId("volume"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteVolume) inject(params map[string]interface{}) error {
@@ -10015,7 +10015,7 @@ func (cmd *DeleteVpc) run(renv env.Running, params map[string]interface{}) (inte
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteVpc(input)
-	cmd.logger.ExtraVerbosef("ec2.DeleteVpc call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DeleteVpc call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10025,14 +10025,14 @@ func (cmd *DeleteVpc) run(renv env.Running, params map[string]interface{}) (inte
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete vpc: AWS command returned nil output")
+			renv.Log().Warning("delete vpc: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete vpc '%s' done", extracted)
+		renv.Log().Verbosef("delete vpc '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete vpc done")
+		renv.Log().Verbose("delete vpc done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10046,13 +10046,13 @@ func (cmd *DeleteVpc) run(renv env.Running, params map[string]interface{}) (inte
 
 func (cmd *DeleteVpc) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DeleteVpcInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DeleteVpcInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DeleteVpcInput: %s", err)
 	}
 
 	start := time.Now()
@@ -10060,13 +10060,13 @@ func (cmd *DeleteVpc) dryRun(renv env.Running, params map[string]interface{}) (i
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DeleteVpc call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: delete vpc ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DeleteVpc call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: delete vpc ok")
 			return fakeDryRunId("vpc"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DeleteVpc) inject(params map[string]interface{}) error {
@@ -10115,7 +10115,7 @@ func (cmd *DeleteZone) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.DeleteHostedZone(input)
-	cmd.logger.ExtraVerbosef("route53.DeleteHostedZone call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("route53.DeleteHostedZone call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10125,14 +10125,14 @@ func (cmd *DeleteZone) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("delete zone: AWS command returned nil output")
+			renv.Log().Warning("delete zone: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("delete zone '%s' done", extracted)
+		renv.Log().Verbosef("delete zone '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("delete zone done")
+		renv.Log().Verbose("delete zone done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10198,14 +10198,14 @@ func (cmd *DetachAlarm) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach alarm: AWS command returned nil output")
+			renv.Log().Warning("detach alarm: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach alarm '%s' done", extracted)
+		renv.Log().Verbosef("detach alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach alarm done")
+		renv.Log().Verbose("detach alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10271,14 +10271,14 @@ func (cmd *DetachContainertask) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach containertask: AWS command returned nil output")
+			renv.Log().Warning("detach containertask: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach containertask '%s' done", extracted)
+		renv.Log().Verbosef("detach containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach containertask done")
+		renv.Log().Verbose("detach containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10340,7 +10340,7 @@ func (cmd *DetachElasticip) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.DisassociateAddress(input)
-	cmd.logger.ExtraVerbosef("ec2.DisassociateAddress call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DisassociateAddress call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10350,14 +10350,14 @@ func (cmd *DetachElasticip) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach elasticip: AWS command returned nil output")
+			renv.Log().Warning("detach elasticip: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach elasticip '%s' done", extracted)
+		renv.Log().Verbosef("detach elasticip '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach elasticip done")
+		renv.Log().Verbose("detach elasticip done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10371,13 +10371,13 @@ func (cmd *DetachElasticip) run(renv env.Running, params map[string]interface{})
 
 func (cmd *DetachElasticip) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DisassociateAddressInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DisassociateAddressInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DisassociateAddressInput: %s", err)
 	}
 
 	start := time.Now()
@@ -10385,13 +10385,13 @@ func (cmd *DetachElasticip) dryRun(renv env.Running, params map[string]interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DisassociateAddress call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: detach elasticip ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DisassociateAddress call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: detach elasticip ok")
 			return fakeDryRunId("elasticip"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DetachElasticip) inject(params map[string]interface{}) error {
@@ -10440,7 +10440,7 @@ func (cmd *DetachInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.DeregisterTargets(input)
-	cmd.logger.ExtraVerbosef("elbv2.DeregisterTargets call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("elbv2.DeregisterTargets call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10450,14 +10450,14 @@ func (cmd *DetachInstance) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach instance: AWS command returned nil output")
+			renv.Log().Warning("detach instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach instance '%s' done", extracted)
+		renv.Log().Verbosef("detach instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach instance done")
+		renv.Log().Verbose("detach instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10523,14 +10523,14 @@ func (cmd *DetachInstanceprofile) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach instanceprofile: AWS command returned nil output")
+			renv.Log().Warning("detach instanceprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach instanceprofile '%s' done", extracted)
+		renv.Log().Verbosef("detach instanceprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach instanceprofile done")
+		renv.Log().Verbose("detach instanceprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10592,7 +10592,7 @@ func (cmd *DetachInternetgateway) run(renv env.Running, params map[string]interf
 	}
 	start := time.Now()
 	output, err := cmd.api.DetachInternetGateway(input)
-	cmd.logger.ExtraVerbosef("ec2.DetachInternetGateway call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DetachInternetGateway call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10602,14 +10602,14 @@ func (cmd *DetachInternetgateway) run(renv env.Running, params map[string]interf
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach internetgateway: AWS command returned nil output")
+			renv.Log().Warning("detach internetgateway: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach internetgateway '%s' done", extracted)
+		renv.Log().Verbosef("detach internetgateway '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach internetgateway done")
+		renv.Log().Verbose("detach internetgateway done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10623,13 +10623,13 @@ func (cmd *DetachInternetgateway) run(renv env.Running, params map[string]interf
 
 func (cmd *DetachInternetgateway) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DetachInternetGatewayInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DetachInternetGatewayInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DetachInternetGatewayInput: %s", err)
 	}
 
 	start := time.Now()
@@ -10637,13 +10637,13 @@ func (cmd *DetachInternetgateway) dryRun(renv env.Running, params map[string]int
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DetachInternetGateway call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: detach internetgateway ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DetachInternetGateway call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: detach internetgateway ok")
 			return fakeDryRunId("internetgateway"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DetachInternetgateway) inject(params map[string]interface{}) error {
@@ -10692,7 +10692,7 @@ func (cmd *DetachMfadevice) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.DeactivateMFADevice(input)
-	cmd.logger.ExtraVerbosef("iam.DeactivateMFADevice call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.DeactivateMFADevice call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10702,14 +10702,14 @@ func (cmd *DetachMfadevice) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach mfadevice: AWS command returned nil output")
+			renv.Log().Warning("detach mfadevice: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach mfadevice '%s' done", extracted)
+		renv.Log().Verbosef("detach mfadevice '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach mfadevice done")
+		renv.Log().Verbose("detach mfadevice done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10775,14 +10775,14 @@ func (cmd *DetachNetworkinterface) run(renv env.Running, params map[string]inter
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach networkinterface: AWS command returned nil output")
+			renv.Log().Warning("detach networkinterface: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach networkinterface '%s' done", extracted)
+		renv.Log().Verbosef("detach networkinterface '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach networkinterface done")
+		renv.Log().Verbose("detach networkinterface done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10844,14 +10844,14 @@ func (cmd *DetachPolicy) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach policy: AWS command returned nil output")
+			renv.Log().Warning("detach policy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach policy '%s' done", extracted)
+		renv.Log().Verbosef("detach policy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach policy done")
+		renv.Log().Verbose("detach policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10913,7 +10913,7 @@ func (cmd *DetachRole) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.RemoveRoleFromInstanceProfile(input)
-	cmd.logger.ExtraVerbosef("iam.RemoveRoleFromInstanceProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.RemoveRoleFromInstanceProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -10923,14 +10923,14 @@ func (cmd *DetachRole) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach role: AWS command returned nil output")
+			renv.Log().Warning("detach role: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach role '%s' done", extracted)
+		renv.Log().Verbosef("detach role '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach role done")
+		renv.Log().Verbose("detach role done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -10992,7 +10992,7 @@ func (cmd *DetachRoutetable) run(renv env.Running, params map[string]interface{}
 	}
 	start := time.Now()
 	output, err := cmd.api.DisassociateRouteTable(input)
-	cmd.logger.ExtraVerbosef("ec2.DisassociateRouteTable call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DisassociateRouteTable call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11002,14 +11002,14 @@ func (cmd *DetachRoutetable) run(renv env.Running, params map[string]interface{}
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach routetable: AWS command returned nil output")
+			renv.Log().Warning("detach routetable: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach routetable '%s' done", extracted)
+		renv.Log().Verbosef("detach routetable '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach routetable done")
+		renv.Log().Verbose("detach routetable done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11023,13 +11023,13 @@ func (cmd *DetachRoutetable) run(renv env.Running, params map[string]interface{}
 
 func (cmd *DetachRoutetable) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DisassociateRouteTableInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DisassociateRouteTableInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DisassociateRouteTableInput: %s", err)
 	}
 
 	start := time.Now()
@@ -11037,13 +11037,13 @@ func (cmd *DetachRoutetable) dryRun(renv env.Running, params map[string]interfac
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DisassociateRouteTable call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: detach routetable ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DisassociateRouteTable call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: detach routetable ok")
 			return fakeDryRunId("routetable"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DetachRoutetable) inject(params map[string]interface{}) error {
@@ -11096,14 +11096,14 @@ func (cmd *DetachSecuritygroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach securitygroup: AWS command returned nil output")
+			renv.Log().Warning("detach securitygroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach securitygroup '%s' done", extracted)
+		renv.Log().Verbosef("detach securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach securitygroup done")
+		renv.Log().Verbose("detach securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11165,7 +11165,7 @@ func (cmd *DetachUser) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.RemoveUserFromGroup(input)
-	cmd.logger.ExtraVerbosef("iam.RemoveUserFromGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.RemoveUserFromGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11175,14 +11175,14 @@ func (cmd *DetachUser) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach user: AWS command returned nil output")
+			renv.Log().Warning("detach user: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach user '%s' done", extracted)
+		renv.Log().Verbosef("detach user '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach user done")
+		renv.Log().Verbose("detach user done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11244,7 +11244,7 @@ func (cmd *DetachVolume) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.DetachVolume(input)
-	cmd.logger.ExtraVerbosef("ec2.DetachVolume call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.DetachVolume call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11254,14 +11254,14 @@ func (cmd *DetachVolume) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("detach volume: AWS command returned nil output")
+			renv.Log().Warning("detach volume: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("detach volume '%s' done", extracted)
+		renv.Log().Verbosef("detach volume '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("detach volume done")
+		renv.Log().Verbose("detach volume done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11275,13 +11275,13 @@ func (cmd *DetachVolume) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *DetachVolume) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.DetachVolumeInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.DetachVolumeInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.DetachVolumeInput: %s", err)
 	}
 
 	start := time.Now()
@@ -11289,13 +11289,13 @@ func (cmd *DetachVolume) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.DetachVolume call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: detach volume ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.DetachVolume call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: detach volume ok")
 			return fakeDryRunId("volume"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *DetachVolume) inject(params map[string]interface{}) error {
@@ -11344,7 +11344,7 @@ func (cmd *ImportImage) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.ImportImage(input)
-	cmd.logger.ExtraVerbosef("ec2.ImportImage call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.ImportImage call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11354,14 +11354,14 @@ func (cmd *ImportImage) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("import image: AWS command returned nil output")
+			renv.Log().Warning("import image: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("import image '%s' done", extracted)
+		renv.Log().Verbosef("import image '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("import image done")
+		renv.Log().Verbose("import image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11375,13 +11375,13 @@ func (cmd *ImportImage) run(renv env.Running, params map[string]interface{}) (in
 
 func (cmd *ImportImage) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.ImportImageInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.ImportImageInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.ImportImageInput: %s", err)
 	}
 
 	start := time.Now()
@@ -11389,13 +11389,13 @@ func (cmd *ImportImage) dryRun(renv env.Running, params map[string]interface{}) 
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.ImportImage call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: import image ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.ImportImage call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: import image ok")
 			return fakeDryRunId("image"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *ImportImage) inject(params map[string]interface{}) error {
@@ -11444,7 +11444,7 @@ func (cmd *RestartDatabase) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.RebootDBInstance(input)
-	cmd.logger.ExtraVerbosef("rds.RebootDBInstance call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("rds.RebootDBInstance call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11454,14 +11454,14 @@ func (cmd *RestartDatabase) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("restart database: AWS command returned nil output")
+			renv.Log().Warning("restart database: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("restart database '%s' done", extracted)
+		renv.Log().Verbosef("restart database '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("restart database done")
+		renv.Log().Verbose("restart database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11523,7 +11523,7 @@ func (cmd *RestartInstance) run(renv env.Running, params map[string]interface{})
 	}
 	start := time.Now()
 	output, err := cmd.api.RebootInstances(input)
-	cmd.logger.ExtraVerbosef("ec2.RebootInstances call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.RebootInstances call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11533,14 +11533,14 @@ func (cmd *RestartInstance) run(renv env.Running, params map[string]interface{})
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("restart instance: AWS command returned nil output")
+			renv.Log().Warning("restart instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("restart instance '%s' done", extracted)
+		renv.Log().Verbosef("restart instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("restart instance done")
+		renv.Log().Verbose("restart instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11554,13 +11554,13 @@ func (cmd *RestartInstance) run(renv env.Running, params map[string]interface{})
 
 func (cmd *RestartInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.RebootInstancesInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.RebootInstancesInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.RebootInstancesInput: %s", err)
 	}
 
 	start := time.Now()
@@ -11568,13 +11568,13 @@ func (cmd *RestartInstance) dryRun(renv env.Running, params map[string]interface
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.RebootInstances call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: restart instance ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.RebootInstances call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: restart instance ok")
 			return fakeDryRunId("instance"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *RestartInstance) inject(params map[string]interface{}) error {
@@ -11623,7 +11623,7 @@ func (cmd *StartAlarm) run(renv env.Running, params map[string]interface{}) (int
 	}
 	start := time.Now()
 	output, err := cmd.api.EnableAlarmActions(input)
-	cmd.logger.ExtraVerbosef("cloudwatch.EnableAlarmActions call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudwatch.EnableAlarmActions call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11633,14 +11633,14 @@ func (cmd *StartAlarm) run(renv env.Running, params map[string]interface{}) (int
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("start alarm: AWS command returned nil output")
+			renv.Log().Warning("start alarm: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("start alarm '%s' done", extracted)
+		renv.Log().Verbosef("start alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("start alarm done")
+		renv.Log().Verbose("start alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11706,14 +11706,14 @@ func (cmd *StartContainertask) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("start containertask: AWS command returned nil output")
+			renv.Log().Warning("start containertask: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("start containertask '%s' done", extracted)
+		renv.Log().Verbosef("start containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("start containertask done")
+		renv.Log().Verbose("start containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11775,7 +11775,7 @@ func (cmd *StartDatabase) run(renv env.Running, params map[string]interface{}) (
 	}
 	start := time.Now()
 	output, err := cmd.api.StartDBInstance(input)
-	cmd.logger.ExtraVerbosef("rds.StartDBInstance call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("rds.StartDBInstance call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11785,14 +11785,14 @@ func (cmd *StartDatabase) run(renv env.Running, params map[string]interface{}) (
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("start database: AWS command returned nil output")
+			renv.Log().Warning("start database: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("start database '%s' done", extracted)
+		renv.Log().Verbosef("start database '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("start database done")
+		renv.Log().Verbose("start database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11854,7 +11854,7 @@ func (cmd *StartInstance) run(renv env.Running, params map[string]interface{}) (
 	}
 	start := time.Now()
 	output, err := cmd.api.StartInstances(input)
-	cmd.logger.ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.StartInstances call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11864,14 +11864,14 @@ func (cmd *StartInstance) run(renv env.Running, params map[string]interface{}) (
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("start instance: AWS command returned nil output")
+			renv.Log().Warning("start instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("start instance '%s' done", extracted)
+		renv.Log().Verbosef("start instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("start instance done")
+		renv.Log().Verbose("start instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -11885,13 +11885,13 @@ func (cmd *StartInstance) run(renv env.Running, params map[string]interface{}) (
 
 func (cmd *StartInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.StartInstancesInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.StartInstancesInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.StartInstancesInput: %s", err)
 	}
 
 	start := time.Now()
@@ -11899,13 +11899,13 @@ func (cmd *StartInstance) dryRun(renv env.Running, params map[string]interface{}
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.StartInstances call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: start instance ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.StartInstances call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: start instance ok")
 			return fakeDryRunId("instance"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *StartInstance) inject(params map[string]interface{}) error {
@@ -11954,7 +11954,7 @@ func (cmd *StopAlarm) run(renv env.Running, params map[string]interface{}) (inte
 	}
 	start := time.Now()
 	output, err := cmd.api.DisableAlarmActions(input)
-	cmd.logger.ExtraVerbosef("cloudwatch.DisableAlarmActions call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudwatch.DisableAlarmActions call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -11964,14 +11964,14 @@ func (cmd *StopAlarm) run(renv env.Running, params map[string]interface{}) (inte
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("stop alarm: AWS command returned nil output")
+			renv.Log().Warning("stop alarm: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("stop alarm '%s' done", extracted)
+		renv.Log().Verbosef("stop alarm '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("stop alarm done")
+		renv.Log().Verbose("stop alarm done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12037,14 +12037,14 @@ func (cmd *StopContainertask) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("stop containertask: AWS command returned nil output")
+			renv.Log().Warning("stop containertask: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("stop containertask '%s' done", extracted)
+		renv.Log().Verbosef("stop containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("stop containertask done")
+		renv.Log().Verbose("stop containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12106,7 +12106,7 @@ func (cmd *StopDatabase) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.StopDBInstance(input)
-	cmd.logger.ExtraVerbosef("rds.StopDBInstance call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("rds.StopDBInstance call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12116,14 +12116,14 @@ func (cmd *StopDatabase) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("stop database: AWS command returned nil output")
+			renv.Log().Warning("stop database: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("stop database '%s' done", extracted)
+		renv.Log().Verbosef("stop database '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("stop database done")
+		renv.Log().Verbose("stop database done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12185,7 +12185,7 @@ func (cmd *StopInstance) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.StopInstances(input)
-	cmd.logger.ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.StopInstances call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12195,14 +12195,14 @@ func (cmd *StopInstance) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("stop instance: AWS command returned nil output")
+			renv.Log().Warning("stop instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("stop instance '%s' done", extracted)
+		renv.Log().Verbosef("stop instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("stop instance done")
+		renv.Log().Verbose("stop instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12216,13 +12216,13 @@ func (cmd *StopInstance) run(renv env.Running, params map[string]interface{}) (i
 
 func (cmd *StopInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.StopInstancesInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.StopInstancesInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.StopInstancesInput: %s", err)
 	}
 
 	start := time.Now()
@@ -12230,13 +12230,13 @@ func (cmd *StopInstance) dryRun(renv env.Running, params map[string]interface{})
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.StopInstances call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: stop instance ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.StopInstances call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: stop instance ok")
 			return fakeDryRunId("instance"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *StopInstance) inject(params map[string]interface{}) error {
@@ -12289,14 +12289,14 @@ func (cmd *UpdateBucket) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update bucket: AWS command returned nil output")
+			renv.Log().Warning("update bucket: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update bucket '%s' done", extracted)
+		renv.Log().Verbosef("update bucket '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update bucket done")
+		renv.Log().Verbose("update bucket done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12358,7 +12358,7 @@ func (cmd *UpdateContainertask) run(renv env.Running, params map[string]interfac
 	}
 	start := time.Now()
 	output, err := cmd.api.UpdateService(input)
-	cmd.logger.ExtraVerbosef("ecs.UpdateService call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ecs.UpdateService call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12368,14 +12368,14 @@ func (cmd *UpdateContainertask) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update containertask: AWS command returned nil output")
+			renv.Log().Warning("update containertask: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update containertask '%s' done", extracted)
+		renv.Log().Verbosef("update containertask '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update containertask done")
+		renv.Log().Verbose("update containertask done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12441,14 +12441,14 @@ func (cmd *UpdateDistribution) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update distribution: AWS command returned nil output")
+			renv.Log().Warning("update distribution: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update distribution '%s' done", extracted)
+		renv.Log().Verbosef("update distribution '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update distribution done")
+		renv.Log().Verbose("update distribution done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12514,14 +12514,14 @@ func (cmd *UpdateImage) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update image: AWS command returned nil output")
+			renv.Log().Warning("update image: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update image '%s' done", extracted)
+		renv.Log().Verbosef("update image '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update image done")
+		renv.Log().Verbose("update image done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12579,7 +12579,7 @@ func (cmd *UpdateInstance) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.ModifyInstanceAttribute(input)
-	cmd.logger.ExtraVerbosef("ec2.ModifyInstanceAttribute call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.ModifyInstanceAttribute call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12589,14 +12589,14 @@ func (cmd *UpdateInstance) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update instance: AWS command returned nil output")
+			renv.Log().Warning("update instance: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update instance '%s' done", extracted)
+		renv.Log().Verbosef("update instance '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update instance done")
+		renv.Log().Verbose("update instance done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12610,13 +12610,13 @@ func (cmd *UpdateInstance) run(renv env.Running, params map[string]interface{}) 
 
 func (cmd *UpdateInstance) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 	if err := cmd.inject(params); err != nil {
-		return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 	}
 
 	input := &ec2.ModifyInstanceAttributeInput{}
 	input.SetDryRun(true)
 	if err := structInjector(cmd, input, renv.Context()); err != nil {
-		return nil, fmt.Errorf("dry run: cannot inject in ec2.ModifyInstanceAttributeInput: %s", err)
+		return nil, fmt.Errorf("cannot inject in ec2.ModifyInstanceAttributeInput: %s", err)
 	}
 
 	start := time.Now()
@@ -12624,13 +12624,13 @@ func (cmd *UpdateInstance) dryRun(renv env.Running, params map[string]interface{
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch code := awsErr.Code(); {
 		case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-			cmd.logger.ExtraVerbosef("dry run: ec2.ModifyInstanceAttribute call took %s", time.Since(start))
-			cmd.logger.Verbose("dry run: update instance ok")
+			renv.Log().ExtraVerbosef("dry run: ec2.ModifyInstanceAttribute call took %s", time.Since(start))
+			renv.Log().Verbose("dry run: update instance ok")
 			return fakeDryRunId("instance"), nil
 		}
 	}
 
-	return nil, fmt.Errorf("dry run: %s", err)
+	return nil, err
 }
 
 func (cmd *UpdateInstance) inject(params map[string]interface{}) error {
@@ -12679,7 +12679,7 @@ func (cmd *UpdateLoginprofile) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.UpdateLoginProfile(input)
-	cmd.logger.ExtraVerbosef("iam.UpdateLoginProfile call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.UpdateLoginProfile call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12689,14 +12689,14 @@ func (cmd *UpdateLoginprofile) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update loginprofile: AWS command returned nil output")
+			renv.Log().Warning("update loginprofile: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update loginprofile '%s' done", extracted)
+		renv.Log().Verbosef("update loginprofile '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update loginprofile done")
+		renv.Log().Verbose("update loginprofile done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12758,7 +12758,7 @@ func (cmd *UpdatePolicy) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.CreatePolicyVersion(input)
-	cmd.logger.ExtraVerbosef("iam.CreatePolicyVersion call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("iam.CreatePolicyVersion call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12768,14 +12768,14 @@ func (cmd *UpdatePolicy) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update policy: AWS command returned nil output")
+			renv.Log().Warning("update policy: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update policy '%s' done", extracted)
+		renv.Log().Verbosef("update policy '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update policy done")
+		renv.Log().Verbose("update policy done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12841,14 +12841,14 @@ func (cmd *UpdateRecord) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update record: AWS command returned nil output")
+			renv.Log().Warning("update record: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update record '%s' done", extracted)
+		renv.Log().Verbosef("update record '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update record done")
+		renv.Log().Verbose("update record done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12910,7 +12910,7 @@ func (cmd *UpdateS3object) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.PutObjectAcl(input)
-	cmd.logger.ExtraVerbosef("s3.PutObjectAcl call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("s3.PutObjectAcl call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12920,14 +12920,14 @@ func (cmd *UpdateS3object) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update s3object: AWS command returned nil output")
+			renv.Log().Warning("update s3object: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update s3object '%s' done", extracted)
+		renv.Log().Verbosef("update s3object '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update s3object done")
+		renv.Log().Verbose("update s3object done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -12989,7 +12989,7 @@ func (cmd *UpdateScalinggroup) run(renv env.Running, params map[string]interface
 	}
 	start := time.Now()
 	output, err := cmd.api.UpdateAutoScalingGroup(input)
-	cmd.logger.ExtraVerbosef("autoscaling.UpdateAutoScalingGroup call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("autoscaling.UpdateAutoScalingGroup call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -12999,14 +12999,14 @@ func (cmd *UpdateScalinggroup) run(renv env.Running, params map[string]interface
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update scalinggroup: AWS command returned nil output")
+			renv.Log().Warning("update scalinggroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update scalinggroup '%s' done", extracted)
+		renv.Log().Verbosef("update scalinggroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update scalinggroup done")
+		renv.Log().Verbose("update scalinggroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13072,14 +13072,14 @@ func (cmd *UpdateSecuritygroup) run(renv env.Running, params map[string]interfac
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update securitygroup: AWS command returned nil output")
+			renv.Log().Warning("update securitygroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update securitygroup '%s' done", extracted)
+		renv.Log().Verbosef("update securitygroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update securitygroup done")
+		renv.Log().Verbose("update securitygroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13137,7 +13137,7 @@ func (cmd *UpdateStack) run(renv env.Running, params map[string]interface{}) (in
 	}
 	start := time.Now()
 	output, err := cmd.api.UpdateStack(input)
-	cmd.logger.ExtraVerbosef("cloudformation.UpdateStack call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("cloudformation.UpdateStack call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -13147,14 +13147,14 @@ func (cmd *UpdateStack) run(renv env.Running, params map[string]interface{}) (in
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update stack: AWS command returned nil output")
+			renv.Log().Warning("update stack: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update stack '%s' done", extracted)
+		renv.Log().Verbosef("update stack '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update stack done")
+		renv.Log().Verbose("update stack done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13216,7 +13216,7 @@ func (cmd *UpdateSubnet) run(renv env.Running, params map[string]interface{}) (i
 	}
 	start := time.Now()
 	output, err := cmd.api.ModifySubnetAttribute(input)
-	cmd.logger.ExtraVerbosef("ec2.ModifySubnetAttribute call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("ec2.ModifySubnetAttribute call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -13226,14 +13226,14 @@ func (cmd *UpdateSubnet) run(renv env.Running, params map[string]interface{}) (i
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update subnet: AWS command returned nil output")
+			renv.Log().Warning("update subnet: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update subnet '%s' done", extracted)
+		renv.Log().Verbosef("update subnet '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update subnet done")
+		renv.Log().Verbose("update subnet done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -13299,14 +13299,14 @@ func (cmd *UpdateTargetgroup) run(renv env.Running, params map[string]interface{
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("update targetgroup: AWS command returned nil output")
+			renv.Log().Warning("update targetgroup: AWS command returned nil output")
 		}
 	}
 
 	if extracted != nil {
-		cmd.logger.Verbosef("update targetgroup '%s' done", extracted)
+		renv.Log().Verbosef("update targetgroup '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("update targetgroup done")
+		renv.Log().Verbose("update targetgroup done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {

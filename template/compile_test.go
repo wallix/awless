@@ -11,6 +11,23 @@ import (
 	"github.com/wallix/awless/template/internal/ast"
 )
 
+func TestDryRun(t *testing.T) {
+	env := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
+		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()
+	}).Build()
+
+	t.Run("return error", func(t *testing.T) {
+		tpl := template.MustParse("create instance userdata=/invalid-file count=1 image=ami-123456 name=any subnet=any type=t2.micro")
+		_, _, err := template.Compile(tpl, env, template.NewRunnerCompileMode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := tpl.DryRun(template.NewRunEnv(env)); err == nil {
+			t.Fatal("expected error got none")
+		}
+	})
+}
+
 func TestParamsProcessing(t *testing.T) {
 	env := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 		return awsspec.MockAWSSessionFactory.Build(strings.Join(tokens, ""))()

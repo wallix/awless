@@ -299,7 +299,7 @@ func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) 
 	}
 	start := time.Now()
 	output, err := cmd.api.{{ $tag.Call }}(input)
-	cmd.logger.ExtraVerbosef("{{ $tag.API }}.{{ $tag.Call }} call took %s", time.Since(start))
+	renv.Log().ExtraVerbosef("{{ $tag.API }}.{{ $tag.Call }} call took %s", time.Since(start))
 	if err != nil {
 		return nil, decorateAWSError(err)
 	}
@@ -316,14 +316,14 @@ func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) 
 		if output != nil {
 			extracted = v.ExtractResult(output)
 		} else {
-			cmd.logger.Warning("{{ $tag.Action }} {{ $tag.Entity }}: AWS command returned nil output")
+			renv.Log().Warning("{{ $tag.Action }} {{ $tag.Entity }}: AWS command returned nil output")
 		}
 	}
 	
 	if extracted != nil {
-		cmd.logger.Verbosef("{{ $tag.Action }} {{ $tag.Entity }} '%s' done", extracted)
+		renv.Log().Verbosef("{{ $tag.Action }} {{ $tag.Entity }} '%s' done", extracted)
 	} else {
-		cmd.logger.Verbose("{{ $tag.Action }} {{ $tag.Entity }} done")
+		renv.Log().Verbose("{{ $tag.Action }} {{ $tag.Entity }} done")
 	}
 
 	if v, ok := implementsAfterRun(cmd); ok {
@@ -339,13 +339,13 @@ func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) 
 	{{ if $tag.GenDryRun }}
 	func (cmd *{{ $cmdName }}) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
 		if err := cmd.inject(params); err != nil {
-			return nil, fmt.Errorf("dry run: cannot set params on command struct: %s", err)
+			return nil, fmt.Errorf("cannot set params on command struct: %s", err)
 		}
 
 		input := &{{ $tag.Input }}{}
 		input.SetDryRun(true)
 		if err := structInjector(cmd, input, renv.Context()) ; err != nil {
-			return nil, fmt.Errorf("dry run: cannot inject in {{ $tag.Input }}: %s", err)
+			return nil, fmt.Errorf("cannot inject in {{ $tag.Input }}: %s", err)
 		}
 
 		start := time.Now()
@@ -353,13 +353,13 @@ func (cmd *{{ $cmdName }}) run(renv env.Running, params map[string]interface{}) 
 		if awsErr, ok := err.(awserr.Error); ok {
 			switch code := awsErr.Code(); {
 			case code == dryRunOperation, strings.HasSuffix(code, notFound), strings.Contains(awsErr.Message(), "Invalid IAM Instance Profile name"):
-				cmd.logger.ExtraVerbosef("dry run: {{ $tag.API }}.{{ $tag.Call }} call took %s", time.Since(start))
-				cmd.logger.Verbose("dry run: {{ $tag.Action }} {{ $tag.Entity }} ok")
+				renv.Log().ExtraVerbosef("dry run: {{ $tag.API }}.{{ $tag.Call }} call took %s", time.Since(start))
+				renv.Log().Verbose("dry run: {{ $tag.Action }} {{ $tag.Entity }} ok")
 				return fakeDryRunId("{{ $tag.Entity }}"), nil
 			}
 		}
 
-		return nil, fmt.Errorf("dry run: %s", err) 
+		return nil, err
 	}
 	{{- end }}
 {{- else }}

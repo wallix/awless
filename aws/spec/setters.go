@@ -547,8 +547,7 @@ func fileOrRemoteFileAsBase64(v interface{}, tplData interface{}) (string, error
 	}
 
 	if readErr != nil {
-		logger.Errorf("got userdata from '%s' but cannot read content: %s", path, readErr)
-		return "", readErr
+		return "", fmt.Errorf("got userdata from '%s' but cannot read content: %s", path, readErr)
 	}
 
 	if tpl, err := gotemplate.New(path).Parse(string(content)); err != nil {

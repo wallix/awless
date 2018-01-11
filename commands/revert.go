@@ -72,7 +72,7 @@ var revertCmd = &cobra.Command{
 			Profile:  config.GetAWSProfile(),
 			Source:   reverted.String(),
 		}
-		tplExec.SetMessage(fmt.Sprintf("Revert: %s", loaded.Message))
+		tplExec.SetMessage(fmt.Sprintf("Revert %s: %s", loaded.ID, loaded.Message))
 
 		exitOn(NewRunner(tplExec.Template, tplExec.Message, tplExec.Path).Run())
 

@@ -27,6 +27,10 @@
     * `awless delete record id=awls-39ec0618`
     * `awless delete record id=@my.sub.domain.com`
 
+### Fixes
+
+- Fix regression error: errors in dry run showed but where ignored hence user could wrongly confirm to run the template
+
 ## v0.1.8 [2017-11-29]
 
 ### Features
