@@ -52,7 +52,7 @@ func TestGoTemplatingInUserdata(t *testing.T) {
 
 	awsparams := &ec2.RunInstancesInput{}
 
-	err = setFieldWithType(f.Name(), awsparams, "UserData", awsfiletobase64, map[string]string{"name": "johndoe"})
+	err = setFieldWithType(f.Name(), awsparams, "UserData", awsuserdatatobase64, map[string]string{"name": "johndoe"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestSetFieldWithTypeAWSFile(t *testing.T) {
 
 	awsparams := &ec2.RunInstancesInput{}
 
-	err = setFieldWithType(f.Name(), awsparams, "UserData", awsfiletobase64)
+	err = setFieldWithType(f.Name(), awsparams, "UserData", awsuserdatatobase64)
 	if err != nil {
 		t.Fatal(err)
 	}

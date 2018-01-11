@@ -42,7 +42,7 @@ type CreateInstance struct {
 	Subnet         *string   `awsName:"SubnetId" awsType:"awsstr" templateName:"subnet"`
 	Keypair        *string   `awsName:"KeyName" awsType:"awsstr" templateName:"keypair"`
 	PrivateIP      *string   `awsName:"PrivateIpAddress" awsType:"awsstr" templateName:"ip"`
-	UserData       *string   `awsName:"UserData" awsType:"awsfiletobase64" templateName:"userdata"`
+	UserData       *string   `awsName:"UserData" awsType:"awsuserdatatobase64" templateName:"userdata"`
 	SecurityGroups []*string `awsName:"SecurityGroupIds" awsType:"awsstringslice" templateName:"securitygroup"`
 	Lock           *bool     `awsName:"DisableApiTermination" awsType:"awsbool" templateName:"lock"`
 	Role           *string   `awsName:"IamInstanceProfile.Name" awsType:"awsstr" templateName:"role"`

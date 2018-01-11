@@ -32,7 +32,7 @@ type CreateLaunchconfiguration struct {
 	Name           *string   `awsName:"LaunchConfigurationName" awsType:"awsstr" templateName:"name"`
 	Public         *bool     `awsName:"AssociatePublicIpAddress" awsType:"awsbool" templateName:"public"`
 	Keypair        *string   `awsName:"KeyName" awsType:"awsstr" templateName:"keypair"`
-	Userdata       *string   `awsName:"UserData" awsType:"awsfiletobase64" templateName:"userdata"`
+	Userdata       *string   `awsName:"UserData" awsType:"awsuserdatatobase64" templateName:"userdata"`
 	Securitygroups []*string `awsName:"SecurityGroups" awsType:"awsstringslice" templateName:"securitygroups"`
 	Role           *string   `awsName:"IamInstanceProfile" awsType:"awsstr" templateName:"role"`
 	Spotprice      *string   `awsName:"SpotPrice" awsType:"awsstr" templateName:"spotprice"`

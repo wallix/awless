@@ -55,7 +55,7 @@ const (
 	awsstringpointermap = "awsstringpointermap"
 	awsslicestruct      = "awsslicestruct"
 	awsslicestructint64 = "awsslicestructint64"
-	awsfiletobase64     = "awsfiletobase64"
+	awsuserdatatobase64 = "awsuserdatatobase64"
 	awsfiletobyteslice  = "awsfiletobyteslice"
 	awsfiletostring     = "awsfiletostring"
 	awsdimensionslice   = "awsdimensionslice"
@@ -251,12 +251,12 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 			stepAdjustments = append(stepAdjustments, stepAdjustment)
 		}
 		v = stepAdjustments
-	case awsfiletobase64:
+	case awsuserdatatobase64:
 		var tplData interface{}
 		if len(interfs) > 0 {
 			tplData = interfs[0]
 		}
-		v, err = fileOrRemoteFileAsBase64(v, tplData)
+		v, err = userDataContentAsBase64(v, tplData)
 		if err != nil {
 			return err
 		}
@@ -521,36 +521,39 @@ func castStringPointerSlice(v interface{}) []*string {
 	}
 }
 
-func fileOrRemoteFileAsBase64(v interface{}, tplData interface{}) (string, error) {
-	path := castString(v)
+func userDataContentAsBase64(v interface{}, tplData interface{}) (string, error) {
+	userdata := castString(v)
 
 	var readErr error
 	var content []byte
 
-	if strings.HasPrefix(path, "http") {
+	if strings.HasPrefix(strings.TrimSpace(userdata), "#") { // userdata are bash content or yml cloud script content (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-shell-scripts)
+		r := strings.NewReplacer("\\a", "\a", "\\b", "\b", "\\f", "\f", "\\n", "\n", "\\t", "\t", "\\r", "\r", "\\v", "\v")
+		content = []byte(r.Replace(userdata))
+	} else if strings.HasPrefix(userdata, "http") {
 		client := &http.Client{Timeout: 5 * time.Second}
 
-		logger.ExtraVerbosef("fetching remote userdata at '%s'", path)
-		resp, err := client.Get(path)
+		logger.ExtraVerbosef("fetching remote userdata at '%s'", userdata)
+		resp, err := client.Get(userdata)
 		if err != nil {
 			return "", err
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode < http.StatusOK || resp.StatusCode > 299 {
-			return "", fmt.Errorf("'%s' when fetching userdata at '%s'", resp.Status, path)
+			return "", fmt.Errorf("'%s' when fetching userdata at '%s'", resp.Status, userdata)
 		}
 
 		content, readErr = ioutil.ReadAll(resp.Body)
 	} else {
-		content, readErr = ioutil.ReadFile(path)
+		content, readErr = ioutil.ReadFile(userdata)
 	}
 
 	if readErr != nil {
-		return "", fmt.Errorf("got userdata from '%s' but cannot read content: %s", path, readErr)
+		return "", fmt.Errorf("got userdata from '%s' but cannot read content: %s", userdata, readErr)
 	}
 
-	if tpl, err := gotemplate.New(path).Parse(string(content)); err != nil {
+	if tpl, err := gotemplate.New("userdata").Parse(string(content)); err != nil {
 		logger.Warningf("cannot parse userdata as Go template: %s", err)
 	} else {
 		var buf bytes.Buffer
