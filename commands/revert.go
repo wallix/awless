@@ -74,7 +74,7 @@ var revertCmd = &cobra.Command{
 		}
 		tplExec.SetMessage(fmt.Sprintf("Revert %s: %s", loaded.ID, loaded.Message))
 
-		exitOn(NewRunner(tplExec.Template, tplExec.Message, tplExec.Path).Run())
+		exitOn(NewRunnerRequiredParamsOnly(tplExec.Template, tplExec.Message, tplExec.Path).Run())
 
 		return nil
 	},

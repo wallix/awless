@@ -125,7 +125,7 @@ var runCmd = &cobra.Command{
 			Source:   templ.String(),
 		}
 
-		exitOn(NewRunner(tplExec.Template, tplExec.Message, tplExec.Path, config.Defaults, extraParams).Run())
+		exitOn(NewRunnerRequiredParamsOnly(tplExec.Template, tplExec.Message, tplExec.Path, config.Defaults, extraParams).Run())
 
 		return nil
 	},

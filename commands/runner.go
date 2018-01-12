@@ -16,6 +16,12 @@ import (
 	"github.com/wallix/awless/template/env"
 )
 
+func NewRunnerRequiredParamsOnly(tpl *template.Template, msg, tplPath string, fillers ...map[string]interface{}) *template.Runner {
+	r := NewRunner(tpl, msg, tplPath, fillers...)
+	r.ParamsSuggested = env.REQUIRED_PARAMS_ONLY
+	return r
+}
+
 func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[string]interface{}) *template.Runner {
 	runner := &template.Runner{}
 

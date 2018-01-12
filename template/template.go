@@ -94,7 +94,7 @@ func processCmdNode(renv env.Running, n *ast.CommandNode, vars map[string]interf
 	n.ProcessRefs(vars)
 	if renv.IsDryRun() {
 		n.CmdResult, n.CmdErr = n.Command.Run(renv, n.ToDriverParams())
-		n.CmdErr = prefixError(n.CmdErr, "dry run")
+		n.CmdErr = prefixError(n.CmdErr, fmt.Sprintf("dry run: %s %s", n.Action, n.Entity))
 	} else {
 		n.CmdResult, n.CmdErr = n.Run(renv, n.ToDriverParams())
 		var res, status string
