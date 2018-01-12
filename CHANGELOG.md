@@ -1,4 +1,6 @@
-## v0.1.9 [unreleased]
+## v0.1.9 [2018-01-12]
+
+**In this release, the local data model has been updated to support multi-account and stale data is removed when upgrading. Local data (ex: used for completion, etc...) will progressively be synced again through your usage of awless. Although, to get all your data now under the new model, you can manually run `'awless sync'`**	
 
 ### Features
 
@@ -6,8 +8,11 @@
 - Enriched params prompting with optional/skippable but very common params. Can be disabled with `--prompt-only-required` or forced with `--prompt-all` to leverage smart completion for all params
 - Automatically complete the username when deleting an access key by its ID, if it is contained in the local graph model:
     * `awless delete accesskey id=ACCESSKEYID`
+-  For `awless update stack` param `stackfile` can now slurp yml and json params files. Thanks to @Trane9991 ([#167](https://github.com/wallix/awless/pull/167), [#145](https://github.com/wallix/awless/issues/145))
 - Better completion for template parameters independently of their display name
 - Aliases can now be resolved to properties other than IDs. For example, they are resolved to ARN in attach/detach/update/delete policy: `awless attach policy arn=@my-policy-name`
+- Running only `awless switch` now returns your current region and profile, allowing a quick and short region/profile lookup
+- Better completion of slice properties 
 
 ### AWS Services
 
@@ -30,6 +35,7 @@
 ### Fixes
 
 - Fix regression error: errors in dry run showed but where ignored hence user could wrongly confirm to run the template
+- Delete a DNS record only by its awless ID
 
 ## v0.1.8 [2017-11-29]
 
