@@ -23,6 +23,8 @@ func TestRevertOneliner(t *testing.T) {
 		{in: "detach mfadevice id=my-mfa-device-id user=toto", exp: "attach mfadevice id=my-mfa-device-id user=toto"},
 		{in: "stop database id=my-db-id", exp: "start database id=my-db-id"},
 		{in: "start database id=my-db-id", exp: "stop database id=my-db-id"},
+		{in: "create instanceprofile name='my funny name with spaces'", exp: "delete instanceprofile name='my funny name with spaces'"},
+		{in: "create appscalingtarget dimension=dim max-capacity=10 min-capacity=4 resource=['1','2','3'] role=role service-namespace=ecs", exp: "delete appscalingtarget dimension=dim resource=['1','2','3'] service-namespace=ecs"},
 	}
 
 	for _, tcase := range tcases {
@@ -75,7 +77,7 @@ func TestRevertTemplate(t *testing.T) {
 	})
 
 	t.Run("More advanced template", func(t *testing.T) {
-		tpl := MustParse("attach policy arn=stuff user=mrT\ncreate vpc\ncreate subnet\nstart instance id=i-54g3hj\ncreate tag key=Key resource=myinst value=Value\ncreate instance")
+		tpl := MustParse("attach policy arn=stuff user=mrT\ncreate vpc\ncreate subnet\nstart instance ids=i-54g3hj\ncreate tag key=Key resource=myinst value=Value\ncreate instance")
 		for i, cmd := range tpl.CommandNodesIterator() {
 			if i == 1 {
 				cmd.CmdResult = "vpc-12345"
@@ -96,7 +98,7 @@ func TestRevertTemplate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		exp := "delete tag key=Key resource=myinst value=Value\ncheck instance id=i-54g3hj state=running timeout=180\nstop instance id=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
+		exp := "delete tag key=Key resource=myinst value=Value\ncheck instance id=i-54g3hj state=running timeout=180\nstop instance ids=i-54g3hj\ndelete subnet id=sub-12345\ndelete vpc id=vpc-12345\ndetach policy arn=stuff user=mrT"
 		if got, want := reverted.String(), exp; got != want {
 			t.Fatalf("got: %s\nwant: %s\n", got, want)
 		}

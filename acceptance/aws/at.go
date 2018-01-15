@@ -18,6 +18,7 @@ type ATBuilder struct {
 	expectCalls  map[string]int
 	expectInput  map[string]interface{}
 	ignoredInput map[string]struct{}
+	expectRevert string
 	mock         mock
 	graph        *graph.Graph
 }
@@ -64,6 +65,11 @@ func (b *ATBuilder) Mock(i mock) *ATBuilder {
 	return b
 }
 
+func (b *ATBuilder) ExpectRevert(revert string) *ATBuilder {
+	b.expectRevert = revert
+	return b
+}
+
 func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 	t.Helper()
 	b.mock.SetInputs(b.expectInput)
@@ -106,6 +112,15 @@ func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 	if b.cmdResult != nil {
 		if got, want := fmt.Sprint(ran.CommandNodesIterator()[0].Result()), StringValue(b.cmdResult); got != want {
 			t.Fatalf("got %s, want %s", got, want)
+		}
+	}
+	if b.expectRevert != "" {
+		revert, err := ran.Revert()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := revert.String(), b.expectRevert; got != want {
+			t.Fatalf("got\n%s\nwant\n%s", got, want)
 		}
 	}
 }

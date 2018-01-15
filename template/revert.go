@@ -43,19 +43,19 @@ func (te *Template) Revert() (*Template, error) {
 						if k == "port" {
 							continue
 						}
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				case "containertask":
-					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
-					params = append(params, fmt.Sprintf("container-name=%s", quoteParamIfNeeded(cmd.Params["container-name"])))
+					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"].String()))
+					params = append(params, fmt.Sprintf("container-name=%s", cmd.Params["container-name"].String()))
 				case "networkinterface":
 					params = append(params, fmt.Sprintf("attachment=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				case "mfadevice":
-					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.Params["id"])))
-					params = append(params, fmt.Sprintf("user=%s", quoteParamIfNeeded(cmd.Params["user"])))
+					params = append(params, fmt.Sprintf("id=%s", cmd.Params["id"].String()))
+					params = append(params, fmt.Sprintf("user=%s", cmd.Params["user"].String()))
 				default:
 					for k, v := range cmd.Params {
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				}
 			case "start", "stop", "detach":
@@ -67,43 +67,43 @@ func (te *Template) Revert() (*Template, error) {
 						if k == "force" {
 							continue
 						}
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				case cmd.Entity == "containertask":
-					params = append(params, fmt.Sprintf("cluster=%s", quoteParamIfNeeded(cmd.Params["cluster"])))
-					params = append(params, fmt.Sprintf("type=%s", quoteParamIfNeeded(cmd.Params["type"])))
+					params = append(params, fmt.Sprintf("cluster=%s", cmd.Params["cluster"].String()))
+					params = append(params, fmt.Sprintf("type=%s", cmd.Params["type"].String()))
 					switch fmt.Sprint(cmd.Params["type"]) {
 					case "service":
-						params = append(params, fmt.Sprintf("deployment-name=%s", quoteParamIfNeeded(cmd.Params["deployment-name"])))
+						params = append(params, fmt.Sprintf("deployment-name=%s", cmd.Params["deployment-name"].String()))
 					case "task":
 						params = append(params, fmt.Sprintf("run-arn=%s", quoteParamIfNeeded(cmd.CmdResult)))
 					default:
-						return nil, fmt.Errorf("start containertask with type '%v' can not be reverted", cmd.Params["deployment-name"])
+						return nil, fmt.Errorf("start containertask with type '%v' can not be reverted", cmd.Params["deployment-name"].String())
 					}
 				default:
 					for k, v := range cmd.Params {
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				}
 			case "create":
 				switch cmd.Entity {
 				case "tag":
 					for k, v := range cmd.Params {
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				case "record":
 					for k, v := range cmd.Params {
 						if k == "comment" {
 							continue
 						}
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				case "route":
 					for k, v := range cmd.Params {
 						if k == "gateway" {
 							continue
 						}
-						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
+						params = append(params, fmt.Sprintf("%s=%v", k, v.String()))
 					}
 				case "database":
 					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.CmdResult)))
@@ -117,23 +117,23 @@ func (te *Template) Revert() (*Template, error) {
 					params = append(params, fmt.Sprintf("url=%s", quoteParamIfNeeded(cmd.CmdResult)))
 				case "s3object":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.CmdResult)))
-					params = append(params, fmt.Sprintf("bucket=%s", quoteParamIfNeeded(cmd.Params["bucket"])))
+					params = append(params, fmt.Sprintf("bucket=%s", cmd.Params["bucket"].String()))
 				case "role", "group", "user", "stack", "instanceprofile", "repository":
-					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
+					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"].String()))
 				case "accesskey":
 					params = append(params, fmt.Sprintf("id=%s", quoteParamIfNeeded(cmd.CmdResult)))
-					params = append(params, fmt.Sprintf("user=%s", quoteParamIfNeeded(cmd.Params["user"])))
+					params = append(params, fmt.Sprintf("user=%s", cmd.Params["user"].String()))
 				case "appscalingtarget":
-					params = append(params, fmt.Sprintf("dimension=%s", quoteParamIfNeeded(cmd.Params["dimension"])))
-					params = append(params, fmt.Sprintf("resource=%s", quoteParamIfNeeded(cmd.Params["resource"])))
-					params = append(params, fmt.Sprintf("service-namespace=%s", quoteParamIfNeeded(cmd.Params["service-namespace"])))
+					params = append(params, fmt.Sprintf("dimension=%s", cmd.Params["dimension"].String()))
+					params = append(params, fmt.Sprintf("resource=%s", cmd.Params["resource"].String()))
+					params = append(params, fmt.Sprintf("service-namespace=%s", cmd.Params["service-namespace"].String()))
 				case "appscalingpolicy":
-					params = append(params, fmt.Sprintf("dimension=%s", quoteParamIfNeeded(cmd.Params["dimension"])))
-					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
-					params = append(params, fmt.Sprintf("resource=%s", quoteParamIfNeeded(cmd.Params["resource"])))
-					params = append(params, fmt.Sprintf("service-namespace=%s", quoteParamIfNeeded(cmd.Params["service-namespace"])))
+					params = append(params, fmt.Sprintf("dimension=%s", cmd.Params["dimension"].String()))
+					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"].String()))
+					params = append(params, fmt.Sprintf("resource=%s", cmd.Params["resource"].String()))
+					params = append(params, fmt.Sprintf("service-namespace=%s", cmd.Params["service-namespace"].String()))
 				case "loginprofile":
-					params = append(params, fmt.Sprintf("username=%s", quoteParamIfNeeded(cmd.Params["username"])))
+					params = append(params, fmt.Sprintf("username=%s", cmd.Params["username"].String()))
 				case "bucket", "launchconfiguration", "scalinggroup", "alarm", "dbsubnetgroup", "keypair":
 					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.CmdResult)))
 					if cmd.Entity == "scalinggroup" {
@@ -149,7 +149,7 @@ func (te *Template) Revert() (*Template, error) {
 						params = append(params, fmt.Sprintf("%s=%v", k, quoteParamIfNeeded(v)))
 					}
 				case "instanceprofile":
-					params = append(params, fmt.Sprintf("name=%s", quoteParamIfNeeded(cmd.Params["name"])))
+					params = append(params, fmt.Sprintf("name=%s", cmd.Params["name"].String()))
 				}
 			case "copy":
 				switch cmd.Entity {
@@ -185,13 +185,27 @@ func (te *Template) Revert() (*Template, error) {
 				lines = append(lines, fmt.Sprintf("check scalinggroup count=0 name=%s timeout=600", quoteParamIfNeeded(cmd.CmdResult)))
 			}
 			if cmd.Action == "start" && cmd.Entity == "instance" {
-				lines = append(lines, fmt.Sprintf("check instance id=%s state=running timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
+				switch vv := cmd.ToDriverParams()["ids"].(type) {
+				case string:
+					lines = append(lines, fmt.Sprintf("check instance id=%s state=running timeout=180", quoteParamIfNeeded(vv)))
+				case []interface{}:
+					for _, s := range vv {
+						lines = append(lines, fmt.Sprintf("check instance id=%v state=running timeout=180", quoteParamIfNeeded(s)))
+					}
+				}
 			}
 			if cmd.Action == "stop" && cmd.Entity == "instance" {
-				lines = append(lines, fmt.Sprintf("check instance id=%s state=stopped timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
+				switch vv := cmd.ToDriverParams()["ids"].(type) {
+				case string:
+					lines = append(lines, fmt.Sprintf("check instance id=%s state=stopped timeout=180", quoteParamIfNeeded(vv)))
+				case []interface{}:
+					for _, s := range vv {
+						lines = append(lines, fmt.Sprintf("check instance id=%v state=stopped timeout=180", quoteParamIfNeeded(s)))
+					}
+				}
 			}
 			if cmd.Action == "start" && cmd.Entity == "containertask" && fmt.Sprint(cmd.Params["type"]) == "service" {
-				lines = append(lines, fmt.Sprintf("update containertask cluster=%s deployment-name=%s desired-count=0", quoteParamIfNeeded(cmd.Params["cluster"]), quoteParamIfNeeded(cmd.Params["deployment-name"])))
+				lines = append(lines, fmt.Sprintf("update containertask cluster=%s deployment-name=%s desired-count=0", cmd.Params["cluster"].String(), cmd.Params["deployment-name"].String()))
 			}
 
 			lines = append(lines, fmt.Sprintf("%s %s %s", revertAction, cmd.Entity, strings.Join(params, " ")))
@@ -208,7 +222,7 @@ func (te *Template) Revert() (*Template, error) {
 					lines = append(lines, fmt.Sprintf("check loadbalancer id=%s state=not-found timeout=180", quoteParamIfNeeded(cmd.CmdResult)))
 				}
 				if cmd.Action == "attach" && cmd.Entity == "volume" {
-					lines = append(lines, fmt.Sprintf("check volume id=%s state=available timeout=180", quoteParamIfNeeded(cmd.Params["id"])))
+					lines = append(lines, fmt.Sprintf("check volume id=%s state=available timeout=180", cmd.Params["id"].String()))
 				}
 				if cmd.Action == "create" && cmd.Entity == "natgateway" {
 					lines = append(lines, fmt.Sprintf("check natgateway id=%s state=deleted timeout=180", quoteParamIfNeeded(cmd.CmdResult)))

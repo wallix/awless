@@ -40,7 +40,8 @@ func TestInstance(t *testing.T) {
 				Tags: []*ec2.Tag{
 					{Key: String("Name"), Value: String("myinstance")},
 				},
-			}).ExpectCommandResult("new-instance-id").ExpectCalls("RunInstances", "CreateTagsRequest").Run(t)
+			}).ExpectCommandResult("new-instance-id").ExpectCalls("RunInstances", "CreateTagsRequest").
+				ExpectRevert("delete instance id=new-instance-id").Run(t)
 		})
 
 		t.Run("with user data", func(t *testing.T) {
