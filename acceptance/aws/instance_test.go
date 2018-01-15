@@ -175,7 +175,7 @@ func TestInstance(t *testing.T) {
 	})
 
 	t.Run("check", func(t *testing.T) {
-		Template("check instance id=id-1234 state=running timeout=0").Mock(&ec2Mock{
+		Template("check instance id=id-1234 state=running timeout=1").Mock(&ec2Mock{
 			DescribeInstancesFunc: func(input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 				return &ec2.DescribeInstancesOutput{Reservations: []*ec2.Reservation{
 					{Instances: []*ec2.Instance{{InstanceId: input.InstanceIds[0], State: &ec2.InstanceState{Name: String("running")}}}},

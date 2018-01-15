@@ -156,8 +156,17 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 
 func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	convert := func(node *ast.CommandNode) error {
+		refsParams := make(map[string]struct{})
 		for _, reducer := range node.ParamsSpec().Reducers() {
-			out, err := reducer.Reduce(node.ToDriverParams())
+			params := node.ToDriverParams()
+			for k, v := range node.Params {
+				if ref, isRef := v.(ast.WithRefs); isRef && len(ref.GetRefs()) > 0 {
+					params[k] = v
+					refsParams[k] = struct{}{}
+				}
+			}
+
+			out, err := reducer.Reduce(params)
 			if err != nil {
 				return cmdErr(node, err)
 			}
@@ -165,7 +174,11 @@ func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compil
 				delete(node.Params, k)
 			}
 			for k, v := range out {
-				node.Params[k] = ast.NewInterfaceValue(v)
+				if ref, isRef := v.(ast.CompositeValue); isRef {
+					node.Params[k] = ref
+				} else {
+					node.Params[k] = ast.NewInterfaceValue(v)
+				}
 			}
 		}
 		return nil

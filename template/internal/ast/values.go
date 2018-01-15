@@ -400,6 +400,10 @@ type referenceValue struct {
 	alias string
 }
 
+func NewReferenceValue(s string) CompositeValue {
+	return &referenceValue{ref: s}
+}
+
 func (r *referenceValue) GetRefs() (refs []string) {
 	if r.val == nil {
 		refs = append(refs, r.ref)

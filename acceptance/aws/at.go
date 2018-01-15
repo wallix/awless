@@ -13,16 +13,21 @@ import (
 )
 
 type ATBuilder struct {
-	template    string
-	cmdResult   *string
-	expectCalls map[string]int
-	expectInput map[string]interface{}
-	mock        mock
-	graph       *graph.Graph
+	template     string
+	cmdResult    *string
+	expectCalls  map[string]int
+	expectInput  map[string]interface{}
+	ignoredInput map[string]struct{}
+	mock         mock
+	graph        *graph.Graph
 }
 
 func Template(template string) *ATBuilder {
-	return &ATBuilder{template: template, expectCalls: make(map[string]int), expectInput: make(map[string]interface{})}
+	return &ATBuilder{template: template,
+		expectCalls:  make(map[string]int),
+		expectInput:  make(map[string]interface{}),
+		ignoredInput: make(map[string]struct{}),
+	}
 }
 
 func (b *ATBuilder) ExpectCommandResult(key string) *ATBuilder {
@@ -42,14 +47,27 @@ func (b *ATBuilder) ExpectInput(call string, input interface{}) *ATBuilder {
 	return b
 }
 
+func (b *ATBuilder) IgnoreInput(calls ...string) *ATBuilder {
+	for _, call := range calls {
+		b.ignoredInput[call] = struct{}{}
+	}
+	return b
+}
+
 func (b *ATBuilder) Graph(g *graph.Graph) *ATBuilder {
 	b.graph = g
+	return b
+}
+
+func (b *ATBuilder) Mock(i mock) *ATBuilder {
+	b.mock = i
 	return b
 }
 
 func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 	t.Helper()
 	b.mock.SetInputs(b.expectInput)
+	b.mock.SetIgnored(b.ignoredInput)
 	b.mock.SetTesting(t)
 
 	tpl, err := template.Parse(b.template)
@@ -90,11 +108,6 @@ func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 			t.Fatalf("got %s, want %s", got, want)
 		}
 	}
-}
-
-func (b *ATBuilder) Mock(i mock) *ATBuilder {
-	b.mock = i
-	return b
 }
 
 func StringValue(v *string) string {
