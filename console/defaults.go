@@ -65,7 +65,7 @@ var ColumnsInListing = map[string][]string{
 	cloud.Topic:               {properties.ID},
 	cloud.Queue:               {properties.ID, properties.ApproximateMessageCount, properties.Created, properties.Modified, properties.Delay},
 	cloud.Zone:                {properties.ID, properties.Name, properties.Comment, properties.Private, properties.RecordCount, properties.CallerReference},
-	cloud.Record:              {properties.ID, properties.Type, properties.Name, properties.Records, properties.TTL},
+	cloud.Record:              {properties.ID, properties.Type, properties.Name, properties.Records, properties.Alias, properties.TTL},
 	cloud.Function:            {properties.Name, properties.Size, properties.Memory, properties.Runtime, properties.Version, properties.Modified, properties.Description},
 	cloud.Metric:              {properties.ID, properties.Name, properties.Namespace, properties.Dimensions},
 	cloud.Alarm:               {properties.Name, properties.Namespace, properties.MetricName, properties.Description, properties.State, properties.Updated, properties.Dimensions},
@@ -432,6 +432,7 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.Type},
 		StringColumnDefinition{Prop: properties.Name},
 		SliceColumnDefinition{StringColumnDefinition{Prop: properties.Records}},
+		StringColumnDefinition{Prop: properties.Alias},
 		StringColumnDefinition{Prop: properties.TTL},
 	},
 	// Lamba

@@ -30,6 +30,7 @@ const (
 	AgentVersion                      = "AgentVersion"
 	AlarmActions                      = "AlarmActions"
 	AlarmNames                        = "AlarmNames"
+	Alias                             = "Alias"
 	Aliases                           = "Aliases"
 	ApproximateMessageCount           = "ApproximateMessageCount"
 	Architecture                      = "Architecture"

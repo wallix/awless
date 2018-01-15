@@ -32,6 +32,7 @@ const (
 	AgentVersion                      = "cloud:agentVersion"
 	AlarmActions                      = "cloud:alarmActions"
 	AlarmNames                        = "cloud:alarmNames"
+	Alias                             = "cloud:alias"
 	Aliases                           = "cloud:aliases"
 	ApproximateMessageCount           = "cloud:approximateMessageCount"
 	Architecture                      = "cloud:architecture"
@@ -242,6 +243,7 @@ var Labels = map[string]string{
 	properties.AgentVersion:                      AgentVersion,
 	properties.AlarmActions:                      AlarmActions,
 	properties.AlarmNames:                        AlarmNames,
+	properties.Alias:                             Alias,
 	properties.Aliases:                           Aliases,
 	properties.ApproximateMessageCount:           ApproximateMessageCount,
 	properties.Architecture:                      Architecture,
@@ -452,6 +454,7 @@ var Properties = RDFProperties{
 	AgentVersion:            {ID: AgentVersion, RdfType: "rdf:Property", RdfsLabel: "AgentVersion", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	AlarmActions:            {ID: AlarmActions, RdfType: "rdf:Property", RdfsLabel: "AlarmActions", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	AlarmNames:              {ID: AlarmNames, RdfType: "rdf:Property", RdfsLabel: "AlarmNames", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	Alias:                   {ID: Alias, RdfType: "rdf:Property", RdfsLabel: "Alias", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	Aliases:                 {ID: Aliases, RdfType: "rdf:Property", RdfsLabel: "Aliases", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	ApproximateMessageCount: {ID: ApproximateMessageCount, RdfType: "rdf:Property", RdfsLabel: "ApproximateMessageCount", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Architecture:            {ID: Architecture, RdfType: "rdf:Property", RdfsLabel: "Architecture", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

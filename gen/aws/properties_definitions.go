@@ -27,6 +27,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "AgentVersion", RDFLabel: fmt.Sprintf("%s:agentVersion", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "AlarmActions", RDFLabel: fmt.Sprintf("%s:alarmActions", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "AlarmNames", RDFLabel: fmt.Sprintf("%s:alarmNames", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
+	{AwlessLabel: "Alias", RDFLabel: fmt.Sprintf("%s:alias", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Aliases", RDFLabel: fmt.Sprintf("%s:aliases", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "ApproximateMessageCount", RDFLabel: fmt.Sprintf("%s:approximateMessageCount", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "Architecture", RDFLabel: fmt.Sprintf("%s:architecture", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

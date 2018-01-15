@@ -16,6 +16,7 @@
 
 ### AWS Services
 
+- Listing of Route53 records now contains a new column for aliases [#181](https://github.com/wallix/awless/issues/181)
 - Create an image from an existing instance. See `awless create image -h`
     * `awless create image instance=@my-instance-name name=redis-image  description='redis prod image'`
     * `awless create image instance=i-0ee436a45561c04df name=redis-image reboot=true`

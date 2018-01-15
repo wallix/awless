@@ -436,6 +436,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.HealthCheck:           {name: "HealthCheckId", transform: extractValueFn},
 		properties.Region:                {name: "Region", transform: extractValueFn},
 		properties.Records:               {name: "ResourceRecords", transform: extractStringSliceValues("Value")},
+		properties.Alias:                 {name: "AliasTarget", transform: extractFieldFn("DNSName")},
 		properties.Set:                   {name: "SetIdentifier", transform: extractValueFn},
 		properties.TTL:                   {name: "TTL", transform: extractValueFn},
 		properties.TrafficPolicyInstance: {name: "TrafficPolicyInstanceId", transform: extractValueFn},
