@@ -223,7 +223,7 @@ func (cmd *DeleteImage) dryRun(renv env.Running, params map[string]interface{}) 
 			return nil, err
 		}
 		if len(snaps) > 0 {
-			cmd.logger.Infof("deleting image will also delete snapshot %s (prevent that by appending `delete-snapshots=false`)", strings.Join(snaps, ", "))
+			renv.Log().Warningf("deleting image will also delete snapshot %s (prevent that by appending `delete-snapshots=false`)", strings.Join(snaps, ", "))
 		}
 	}
 
