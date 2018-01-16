@@ -1,4 +1,4 @@
-## v0.1.9 [2018-01-12]
+## v0.1.9 [2018-01-16]
 
 **In this release, the local data model has been updated to support multi-account and stale data is removed when upgrading. Local data (ex: used for completion, etc...) will progressively be synced again through your usage of awless. Although, to get all your data now under the new model, you can manually run `'awless sync'`**	
 
