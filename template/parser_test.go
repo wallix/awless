@@ -159,7 +159,7 @@ func TestParseDoubleQuotedString(t *testing.T) {
 		}
 
 		if n, ok := tpl.Statements[0].Node.(*ast.CommandNode); ok {
-			if got, want := n.Params["data"].Value(), tcase.exp; got != want {
+			if got, want := n.ParamNodes["data"].(ast.InterfaceNode).Value(), tcase.exp; got != want {
 				t.Fatalf("%d. got %s, want %s", i+1, got, want)
 			}
 		} else {
@@ -202,7 +202,7 @@ func TestParseSingleQuotedString(t *testing.T) {
 		}
 
 		if n, ok := tpl.Statements[0].Node.(*ast.CommandNode); ok {
-			if got, want := n.Params["data"].Value(), tcase.exp; got != want {
+			if got, want := n.ParamNodes["data"].(ast.InterfaceNode).Value(), tcase.exp; got != want {
 				t.Fatalf("%d. got %s, want %s", i+1, got, want)
 			}
 		} else {
@@ -276,8 +276,8 @@ func TestParamsOnlyParsing(t *testing.T) {
 		input string
 		exp   map[string]interface{}
 	}{
-		{input: "type=t2.micro subnet=@my-subnet count=4", exp: map[string]interface{}{"type": "t2.micro", "subnet": ast.NewAliasValue("my-subnet"), "count": 4}},
-		{input: "subnet=[sub-1234,sub-2345]", exp: map[string]interface{}{"subnet": []interface{}{"sub-1234", "sub-2345"}}},
+		{input: "type=t2.micro subnet=@my-subnet count=4", exp: map[string]interface{}{"type": "t2.micro", "subnet": ast.NewAliasNode("my-subnet"), "count": 4}},
+		{input: "subnet=[sub-1234,sub-2345]", exp: map[string]interface{}{"subnet": ast.NewListNode([]interface{}{"sub-1234", "sub-2345"})}},
 	}
 	for i, tcase := range tcases {
 		params, err := ParseParams(tcase.input)
@@ -321,7 +321,7 @@ func TestTemplateParsing(t *testing.T) {
 					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
-					return assertAliases(tpl.Statements[0].Node, map[string][]string{"arn": {"arn:aws:iam::aws:policy/AmazonS3FullAccess"}})
+					return assertAliases(tpl.Statements[0].Node, map[string]string{"arn": "arn:aws:iam::aws:policy/AmazonS3FullAccess"})
 				},
 			},
 			{
@@ -330,7 +330,7 @@ func TestTemplateParsing(t *testing.T) {
 					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
-					return assertAliases(tpl.Statements[0].Node, map[string][]string{"id": {"my vm name"}})
+					return assertAliases(tpl.Statements[0].Node, map[string]string{"id": "my vm name"})
 				},
 			},
 			{
@@ -339,7 +339,7 @@ func TestTemplateParsing(t *testing.T) {
 					if err := isCommandNode(tpl.Statements[0].Node); err != nil {
 						t.Fatal(err)
 					}
-					return assertAliases(tpl.Statements[0].Node, map[string][]string{"id": {"my f$!=€&g vm name"}})
+					return assertAliases(tpl.Statements[0].Node, map[string]string{"id": "my f$!=€&g vm name"})
 				},
 			},
 			{
@@ -470,19 +470,19 @@ func TestTemplateParsing(t *testing.T) {
 			{
 				input: `create subnet vpc=$myvpc`,
 				verifyFn: func(n ast.Node) error {
-					return assertRefs(n, map[string][]string{"vpc": {"myvpc"}})
+					return assertRefs(n, map[string]string{"vpc": "myvpc"})
 				},
 			},
 			{
 				input: `create instance subnet=@my-subnet`,
 				verifyFn: func(n ast.Node) error {
-					return assertAliases(n, map[string][]string{"subnet": {"my-subnet"}})
+					return assertAliases(n, map[string]string{"subnet": "my-subnet"})
 				},
 			},
 			{
 				input: `delete vpc id={my-vpc-id}`,
 				verifyFn: func(n ast.Node) error {
-					return assertHoleKeys(n, map[string][]string{"id": {"my-vpc-id"}})
+					return assertHoleKeys(n, map[string]string{"id": "my-vpc-id"})
 				},
 			},
 			{
@@ -536,13 +536,13 @@ func TestTemplateParsing(t *testing.T) {
 					if err := assertParams(n, map[string]interface{}{"cidr": "10.0.0.0/25"}); err != nil {
 						return err
 					}
-					if err := assertHoleKeys(n, map[string][]string{"type": {"instance.type"}}); err != nil {
+					if err := assertHoleKeys(n, map[string]string{"type": "instance.type"}); err != nil {
 						return err
 					}
-					if err := assertRefs(n, map[string][]string{"vpc": {"myvpc"}}); err != nil {
+					if err := assertRefs(n, map[string]string{"vpc": "myvpc"}); err != nil {
 						return err
 					}
-					if err := assertAliases(n, map[string][]string{"subnet": {"default-subnet"}}); err != nil {
+					if err := assertAliases(n, map[string]string{"subnet": "default-subnet"}); err != nil {
 						return err
 					}
 					return nil
@@ -559,7 +559,7 @@ func TestTemplateParsing(t *testing.T) {
 						"conditions": []interface{}{"aws:MultiFactorAuthPresent==true", "aws:TokenIssueTime!=Null"}}); err != nil {
 						return err
 					}
-					if err := assertHoleKeys(n, map[string][]string{}); err != nil {
+					if err := assertHoleKeys(n, map[string]string{}); err != nil {
 						return err
 					}
 					return nil
@@ -589,12 +589,12 @@ func TestTemplateParsing(t *testing.T) {
 create subnet`,
 				verifyFn: func(s *Template) error {
 					if err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
-						make(map[string][]string), make(map[string]interface{}), make(map[string][]string), make(map[string][]string),
+						make(map[string]string), make(map[string]interface{}), make(map[string]string), make(map[string]string),
 					); err != nil {
 						return err
 					}
 					if err := assertCommandNode(s.Statements[1].Node, "create", "subnet",
-						make(map[string][]string), make(map[string]interface{}), make(map[string][]string), make(map[string][]string),
+						make(map[string]string), make(map[string]interface{}), make(map[string]string), make(map[string]string),
 					); err != nil {
 						return err
 					}
@@ -613,12 +613,12 @@ create subnet
 `,
 				verifyFn: func(s *Template) error {
 					if err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
-						make(map[string][]string), make(map[string]interface{}), make(map[string][]string), make(map[string][]string),
+						make(map[string]string), make(map[string]interface{}), make(map[string]string), make(map[string]string),
 					); err != nil {
 						return err
 					}
 					if err := assertCommandNode(s.Statements[1].Node, "create", "subnet",
-						make(map[string][]string), make(map[string]interface{}), make(map[string][]string), make(map[string][]string),
+						make(map[string]string), make(map[string]interface{}), make(map[string]string), make(map[string]string),
 					); err != nil {
 						return err
 					}
@@ -637,12 +637,12 @@ create subnet
 `,
 				verifyFn: func(s *Template) error {
 					if err := assertCommandNode(s.Statements[0].Node, "create", "vpc",
-						make(map[string][]string), make(map[string]interface{}), make(map[string][]string), make(map[string][]string),
+						make(map[string]string), make(map[string]interface{}), make(map[string]string), make(map[string]string),
 					); err != nil {
 						return err
 					}
 					if err := assertCommandNode(s.Statements[1].Node, "create", "subnet",
-						make(map[string][]string), make(map[string]interface{}), make(map[string][]string), make(map[string][]string),
+						make(map[string]string), make(map[string]interface{}), make(map[string]string), make(map[string]string),
 					); err != nil {
 						return err
 					}
@@ -658,30 +658,30 @@ create instance count=1 instance.type=t2.micro subnet=$mysubnet image=ami-9398d3
 
 				verifyFn: func(s *Template) error {
 					err := assertDeclarationNode(s.Statements[0].Node, "myvpc", "create", "vpc",
-						map[string][]string{},
+						map[string]string{},
 						map[string]interface{}{"cidr": "10.0.0.0/24", "num": 3},
-						map[string][]string{},
-						map[string][]string{},
+						map[string]string{},
+						map[string]string{},
 					)
 					if err != nil {
 						return err
 					}
 
 					err = assertDeclarationNode(s.Statements[1].Node, "mysubnet", "delete", "subnet",
-						map[string][]string{"vpc": {"myvpc"}},
+						map[string]string{"vpc": "myvpc"},
 						map[string]interface{}{"cidr": "10.0.0.0/25"},
-						map[string][]string{"name": {"the_name"}},
-						map[string][]string{},
+						map[string]string{"name": "the_name"},
+						map[string]string{},
 					)
 					if err != nil {
 						return err
 					}
 
 					err = assertCommandNode(s.Statements[2].Node, "create", "instance",
-						map[string][]string{"subnet": {"mysubnet"}},
+						map[string]string{"subnet": "mysubnet"},
 						map[string]interface{}{"count": 1, "instance.type": "t2.micro", "ip": "127.0.0.1", "image": "ami-9398d3e0"},
-						map[string][]string{},
-						map[string][]string{},
+						map[string]string{},
+						map[string]string{},
 					)
 
 					return err
@@ -695,22 +695,22 @@ mysecondvar = {var-hole}
                        `,
 
 				verifyFn: func(s *Template) error {
-					err := assertVariableDeclarationNode(s.Statements[0].Node, "myname", "my var-value", []string{})
+					err := assertVariableDeclarationNode(s.Statements[0].Node, "myname", "my var-value", "")
 					if err != nil {
 						return err
 					}
 
 					err = assertDeclarationNode(s.Statements[1].Node, "mysubnet", "create", "subnet",
-						map[string][]string{"vpc": {"myvpc"}, "name": {"myname"}},
+						map[string]string{"vpc": "myvpc", "name": "myname"},
 						map[string]interface{}{"cidr": "10.0.0.0/25"},
-						map[string][]string{},
-						map[string][]string{},
+						map[string]string{},
+						map[string]string{},
 					)
 					if err != nil {
 						return err
 					}
 
-					err = assertVariableDeclarationNode(s.Statements[2].Node, "mysecondvar", nil, []string{"var-hole"})
+					err = assertVariableDeclarationNode(s.Statements[2].Node, "mysecondvar", nil, "{var-hole}")
 					if err != nil {
 						return err
 					}
@@ -741,7 +741,7 @@ mysecondvar = {var-hole}
 				input: `create s3object bucket=my-existing-bucket file=./todolist.txt`,
 				verifyFn: func(s *Template) error {
 					if err := assertCommandNode(s.Statements[0].Node, "create", "s3object",
-						map[string][]string{}, map[string]interface{}{"bucket": "my-existing-bucket", "file": "./todolist.txt"}, map[string][]string{}, map[string][]string{},
+						map[string]string{}, map[string]interface{}{"bucket": "my-existing-bucket", "file": "./todolist.txt"}, map[string]string{}, map[string]string{},
 					); err != nil {
 						return err
 					}
@@ -775,8 +775,8 @@ func assertParams(n ast.Node, expected map[string]interface{}) error {
 	return compare(cmd.ToDriverParams(), expected)
 }
 
-func assertAliases(n ast.Node, expected map[string][]string) error {
-	compare := func(got, want map[string][]string) error {
+func assertAliases(n ast.Node, expected map[string]string) error {
+	compare := func(got, want map[string]string) error {
 		if !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("aliases: got %#v, want %#v", got, want)
 		}
@@ -784,12 +784,10 @@ func assertAliases(n ast.Node, expected map[string][]string) error {
 	}
 
 	cmd := extractCommandNode(n)
-	aliases := make(map[string][]string)
-	for k, param := range cmd.Params {
-		if withAlias, ok := param.(ast.WithAlias); ok {
-			if len(withAlias.GetAliases()) > 0 {
-				aliases[k] = withAlias.GetAliases()
-			}
+	aliases := make(map[string]string)
+	for k, param := range cmd.ParamNodes {
+		if alias, ok := param.(ast.AliasNode); ok {
+			aliases[k] = alias.Alias()
 		}
 	}
 	return compare(aliases, expected)
@@ -797,23 +795,39 @@ func assertAliases(n ast.Node, expected map[string][]string) error {
 
 func assertCmdNodeParams(n ast.Node, expected map[string]interface{}) error {
 	cmd := extractCmdNode(n)
-	if got, want := len(cmd.Params), len(expected); got != want {
-		return fmt.Errorf("got %d params (%#v), want %d params (%#v)", got, cmd.Params, want, expected)
+	if got, want := len(cmd.ParamNodes), len(expected); got != want {
+		return fmt.Errorf("got %d params (%#v), want %d params (%#v)", got, cmd.ParamNodes, want, expected)
 	}
 	for key, expVal := range expected {
-		nodeVal, ok := cmd.Params[key]
+		node, ok := cmd.ParamNodes[key]
 		if !ok {
 			return fmt.Errorf("param '%s' missing in action params.", key)
 		}
-		if got, want := nodeVal.Value(), expVal; !reflect.DeepEqual(got, want) {
+		var value interface{}
+		if i, ok := node.(ast.InterfaceNode); ok {
+			value = i.Value()
+		}
+		if l, ok := node.(ast.ListNode); ok {
+			var arr []interface{}
+			for _, e := range l.Elems() {
+				switch ev := e.(type) {
+				case ast.InterfaceNode:
+					arr = append(arr, ev.Value())
+				default:
+					arr = append(arr, ev)
+				}
+			}
+			value = arr
+		}
+		if got, want := value, expVal; !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("param '%s': got %#v, want %#v", key, got, want)
 		}
 	}
 	return nil
 }
 
-func assertRefs(n ast.Node, expected map[string][]string) error {
-	compare := func(got, want map[string][]string) error {
+func assertRefs(n ast.Node, expected map[string]string) error {
+	compare := func(got, want map[string]string) error {
 		if !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("refs: got %#v, want %#v", got, want)
 		}
@@ -821,19 +835,17 @@ func assertRefs(n ast.Node, expected map[string][]string) error {
 	}
 
 	cmd := extractCommandNode(n)
-	refs := make(map[string][]string)
-	for k, p := range cmd.Params {
-		if withRef, ok := p.(ast.WithRefs); ok {
-			if len(withRef.GetRefs()) > 0 {
-				refs[k] = withRef.GetRefs()
-			}
+	refs := make(map[string]string)
+	for k, p := range cmd.ParamNodes {
+		if ref, ok := p.(ast.RefNode); ok {
+			refs[k] = ref.Ref()
 		}
 	}
 	return compare(refs, expected)
 }
 
-func assertHoleKeys(n ast.Node, expected map[string][]string) error {
-	compare := func(got, want map[string][]string) error {
+func assertHoleKeys(n ast.Node, expected map[string]string) error {
+	compare := func(got, want map[string]string) error {
 		if !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("holes: got %#v, want %#v", got, want)
 		}
@@ -841,20 +853,16 @@ func assertHoleKeys(n ast.Node, expected map[string][]string) error {
 	}
 
 	cmd := extractCommandNode(n)
-	holes := make(map[string][]string)
-	for k, p := range cmd.Params {
-		if withHole, ok := p.(ast.WithHoles); ok {
-			if len(withHole.GetHoles()) > 0 {
-				for holeKey := range withHole.GetHoles() {
-					holes[k] = append(holes[k], holeKey)
-				}
-			}
+	holes := make(map[string]string)
+	for k, p := range cmd.ParamNodes {
+		if hole, ok := p.(ast.HoleNode); ok {
+			holes[k] = hole.Hole()
 		}
 	}
 	return compare(holes, expected)
 }
 
-func assertVariableDeclarationNode(n ast.Node, expIdent string, value interface{}, hole []string) error {
+func assertVariableDeclarationNode(n ast.Node, expIdent string, value interface{}, expHole string) error {
 	if err := isDeclarationNode(n); err != nil {
 		return err
 	}
@@ -863,30 +871,26 @@ func assertVariableDeclarationNode(n ast.Node, expIdent string, value interface{
 	if got, want := decl.Ident, expIdent; got != want {
 		return fmt.Errorf("ident: got '%s' want '%s'", got, want)
 	}
-	if err := isValueNode(decl.Expr); err != nil {
+	if err := isRightExpressionNode(decl.Expr); err != nil {
 		return err
 	}
-	val := decl.Expr.(*ast.ValueNode)
-	if got, want := val.Value.Value(), value; got != want {
+	val := decl.Expr.(*ast.RightExpressionNode)
+	if got, want := val.Result(), value; got != want {
 		return fmt.Errorf("value: got '%s' want '%s'", got, want)
 	}
-	if len(hole) > 0 {
-		withHole, ok := val.Value.(ast.WithHoles)
+	if expHole != "" {
+		hole, ok := val.Node().(ast.HoleNode)
 		if !ok {
-			return fmt.Errorf("hole value: expect '%#v': got no hole (%#v)", hole, val.Value)
+			return fmt.Errorf("hole value: expect '%#v': got no hole (%#v)", expHole, val.Node())
 		}
-		var holesKeys []string
-		for k := range withHole.GetHoles() {
-			holesKeys = append(holesKeys, k)
-		}
-		if got, want := holesKeys, hole; !reflect.DeepEqual(got, want) {
+		if got, want := hole.String(), expHole; !reflect.DeepEqual(got, want) {
 			return fmt.Errorf("hole value: got '%#v' want '%#v'", got, want)
 		}
 	}
 	return nil
 }
 
-func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, refs map[string][]string, params map[string]interface{}, holes, aliases map[string][]string) error {
+func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
 	if err := isDeclarationNode(n); err != nil {
 		return err
 	}
@@ -900,11 +904,11 @@ func assertDeclarationNode(n ast.Node, expIdent, expAction, expEntity string, re
 	return nil
 }
 
-func assertCommandNode(n ast.Node, expAction, expEntity string, refs map[string][]string, params map[string]interface{}, holes, aliases map[string][]string) error {
+func assertCommandNode(n ast.Node, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
 	return verifyCommandNode(n, expAction, expEntity, refs, params, holes, aliases)
 }
 
-func verifyCommandNode(n ast.Node, expAction, expEntity string, refs map[string][]string, params map[string]interface{}, holes, aliases map[string][]string) error {
+func verifyCommandNode(n ast.Node, expAction, expEntity string, refs map[string]string, params map[string]interface{}, holes, aliases map[string]string) error {
 	if err := isCommandNode(n); err != nil {
 		return err
 	}
@@ -995,11 +999,11 @@ func isDeclarationNode(n ast.Node) error {
 	return nil
 }
 
-func isValueNode(n ast.Node) error {
+func isRightExpressionNode(n ast.Node) error {
 	switch n.(type) {
-	case *ast.ValueNode:
+	case *ast.RightExpressionNode:
 	default:
-		return errors.New("expected value node")
+		return fmt.Errorf("expected right expression node, got %#v", n)
 	}
 	return nil
 }

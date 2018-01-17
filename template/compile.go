@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/internal/ast"
@@ -24,6 +23,7 @@ var (
 		removeOptionalHolesPass,
 		resolveAliasPass,
 		inlineVariableValuePass,
+		resolveParamsAndExtractRefsPass,
 	}
 
 	NewRunnerCompileMode = []compileFunc{
@@ -38,6 +38,7 @@ var (
 		inlineVariableValuePass,
 		failOnUnresolvedHolesPass,
 		failOnUnresolvedAliasPass,
+		resolveParamsAndExtractRefsPass,
 		convertParamsPass,
 		validateCommandsPass,
 	}
@@ -127,7 +128,7 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 		missingRequired := rule.Missing(node.Keys())
 		for _, e := range missingRequired {
 			normalized := fmt.Sprintf("%s.%s", node.Entity, e)
-			node.Params[e] = ast.NewHoleValue(normalized)
+			node.ParamNodes[e] = ast.NewHoleNode(normalized)
 		}
 		if err := params.Run(rule, node.Keys()); err != nil {
 			return cmdErr(node, err)
@@ -145,7 +146,8 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 		}
 
 		for _, e := range suggested {
-			node.Params[e] = ast.NewOptionalHoleValue(fmt.Sprintf("%s.%s", node.Entity, e))
+			key := fmt.Sprintf("%s.%s", node.Entity, e)
+			node.ParamNodes[e] = ast.NewOptionalHoleNode(key)
 		}
 		return nil
 	}
@@ -154,16 +156,56 @@ func processAndValidateParamsPass(tpl *Template, cenv env.Compiling) (*Template,
 	return tpl, cenv, err
 }
 
+func resolveParamsAndExtractRefsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
+	for _, node := range tpl.CommandNodesIterator() {
+		for k, param := range node.ParamNodes {
+			switch paramNode := param.(type) {
+			case ast.InterfaceNode:
+				node.ParamNodes[k] = paramNode.Value()
+			case ast.RefNode:
+				node.Refs[k] = paramNode
+				delete(node.ParamNodes, k)
+			case ast.ListNode:
+				var hasRef bool
+				var arr []interface{}
+				for _, elem := range paramNode.Elems() {
+					switch e := elem.(type) {
+					case ast.InterfaceNode:
+						arr = append(arr, e.Value())
+					case ast.RefNode:
+						hasRef = true
+						arr = append(arr, e)
+					case ast.HoleNode, ast.ConcatenationNode, ast.AliasNode, ast.ListNode:
+						return tpl, cenv, fmt.Errorf("%s: unresolved value in list of type %T", k, e)
+					default:
+						arr = append(arr, e)
+					}
+				}
+				if hasRef {
+					node.Refs[k] = ast.NewListNode(arr)
+					delete(node.ParamNodes, k)
+				} else {
+					node.ParamNodes[k] = arr
+				}
+			case ast.ConcatenationNode:
+				node.ParamNodes[k] = paramNode.Concat()
+			case ast.HoleNode, ast.AliasNode:
+				return tpl, cenv, fmt.Errorf("%s: unresolved value of type %T", k, paramNode)
+			}
+		}
+	}
+	return tpl, cenv, nil
+}
+
 func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	convert := func(node *ast.CommandNode) error {
-		refsParams := make(map[string]struct{})
 		for _, reducer := range node.ParamsSpec().Reducers() {
-			params := node.ToDriverParams()
-			for k, v := range node.Params {
-				if ref, isRef := v.(ast.WithRefs); isRef && len(ref.GetRefs()) > 0 {
-					params[k] = v
-					refsParams[k] = struct{}{}
-				}
+			params := make(map[string]interface{})
+			for k, v := range node.ParamNodes {
+				params[k] = v
+			}
+			for k, v := range node.Refs {
+				params[k] = v
 			}
 
 			out, err := reducer.Reduce(params)
@@ -171,13 +213,15 @@ func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compil
 				return cmdErr(node, err)
 			}
 			for _, k := range reducer.Keys() {
-				delete(node.Params, k)
+				delete(node.ParamNodes, k)
+				delete(node.Refs, k)
 			}
 			for k, v := range out {
-				if ref, isRef := v.(ast.CompositeValue); isRef {
-					node.Params[k] = ref
-				} else {
-					node.Params[k] = ast.NewInterfaceValue(v)
+				switch v.(type) {
+				case ast.ListNode, ast.RefNode, ast.ConcatenationNode:
+					node.Refs[k] = v
+				default:
+					node.ParamNodes[k] = v
 				}
 			}
 		}
@@ -189,7 +233,7 @@ func convertParamsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compil
 
 func validateCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	collectValidationErrs := func(node *ast.CommandNode) error {
-		if err := params.Validate(node.ParamsSpec().Validators(), node.ToDriverParamsExcludingRefs()); err != nil {
+		if err := params.Validate(node.ParamsSpec().Validators(), node.ParamNodes); err != nil {
 			return cmdErr(node, err)
 		}
 		return nil
@@ -199,50 +243,7 @@ func validateCommandsPass(tpl *Template, cenv env.Compiling) (*Template, env.Com
 }
 
 func checkInvalidReferenceDeclarationsPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	usedRefs := make(map[string]struct{})
-
-	for _, withRef := range tpl.WithRefsIterator() {
-		for _, ref := range withRef.GetRefs() {
-			usedRefs[ref] = struct{}{}
-		}
-	}
-
-	knownRefs := make(map[string]bool)
-
-	var each = func(withRef ast.WithRefs) error {
-		for _, ref := range withRef.GetRefs() {
-			if _, ok := knownRefs[ref]; !ok {
-				return fmt.Errorf("using reference '$%s' but '%s' is undefined in template\n", ref, ref)
-			}
-		}
-		return nil
-	}
-
-	for _, st := range tpl.Statements {
-		switch n := st.Node.(type) {
-		case ast.WithRefs:
-			if err := each(n); err != nil {
-				return tpl, cenv, err
-			}
-		case *ast.DeclarationNode:
-			expr := st.Node.(*ast.DeclarationNode).Expr
-			switch nn := expr.(type) {
-			case ast.WithRefs:
-				if err := each(nn); err != nil {
-					return tpl, cenv, err
-				}
-			}
-		}
-		if decl, isDecl := st.Node.(*ast.DeclarationNode); isDecl {
-			ref := decl.Ident
-			if _, ok := knownRefs[ref]; ok {
-				return tpl, cenv, fmt.Errorf("using reference '$%s' but '%s' has already been assigned in template\n", ref, ref)
-			}
-			knownRefs[ref] = true
-		}
-	}
-
-	return tpl, cenv, nil
+	return tpl, cenv, ast.VerifyRefs(tpl.AST)
 }
 
 func inlineVariableValuePass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
@@ -252,64 +253,45 @@ func inlineVariableValuePass(tpl *Template, cenv env.Compiling) (*Template, env.
 	for i, st := range tpl.Statements {
 		decl, isDecl := st.Node.(*ast.DeclarationNode)
 		if isDecl {
-			value, isValue := decl.Expr.(*ast.ValueNode)
-			if isValue {
-				if val := value.Value.Value(); val != nil {
-					cenv.Push(env.RESOLVED_VARS, map[string]interface{}{decl.Ident: val})
+			if right, isRightExpr := decl.Expr.(*ast.RightExpressionNode); isRightExpr {
+				if res := right.Result(); res != nil {
+					cenv.Push(env.RESOLVED_VARS, map[string]interface{}{decl.Ident: res})
 				}
-				for j := i + 1; j < len(tpl.Statements); j++ {
-					expr := extractExpressionNode(tpl.Statements[j])
-					if expr != nil {
-						if withRef, ok := expr.(ast.WithRefs); ok {
-							withRef.ReplaceRef(decl.Ident, value.Value)
-						}
-					}
-				}
-				if value.IsResolved() {
-					continue
-				}
+				ast.ProcessRefs(
+					&ast.AST{Statements: tpl.Statements[i+1:]},
+					map[string]interface{}{decl.Ident: right.Node()},
+				)
+				continue
 			}
 		}
+
 		newTpl.Statements = append(newTpl.Statements, st)
 	}
 	return newTpl, cenv, nil
 }
 
 func resolveHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	tpl.visitHoles(func(h ast.WithHoles) {
-		processed := h.ProcessHoles(cenv.Get(env.FILLERS))
-		cenv.Push(env.PROCESSED_FILLERS, processed)
-	})
+	processed := ast.ProcessHoles(tpl.AST, cenv.Get(env.FILLERS))
+	cenv.Push(env.PROCESSED_FILLERS, processed)
 
 	return tpl, cenv, nil
 }
 
 func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	uniqueHoles := make(map[string]*ast.Hole)
-	tpl.visitHoles(func(h ast.WithHoles) {
-		for k, v := range h.GetHoles() {
-			if _, ok := uniqueHoles[k]; !ok {
-				uniqueHoles[k] = v
-			}
-			for _, vv := range v.ParamPaths {
-				if !contains(uniqueHoles[k].ParamPaths, vv) {
-					uniqueHoles[k].ParamPaths = append(uniqueHoles[k].ParamPaths, vv)
-				}
-			}
-		}
-	})
-	var sortedHoles []*ast.Hole
-	for _, v := range uniqueHoles {
-		sortedHoles = append(sortedHoles, v)
+	uniqueHoles := ast.CollectUniqueHoles(tpl.AST)
+
+	var sortedHoles []ast.HoleNode
+	for hole := range uniqueHoles {
+		sortedHoles = append(sortedHoles, hole)
 	}
 	sort.Slice(sortedHoles, func(i, j int) bool {
 		a := sortedHoles[i]
 		b := sortedHoles[j]
 
-		if a.IsOptional == b.IsOptional {
-			return a.Name < b.Name
+		if a.IsOptional() == b.IsOptional() {
+			return a.Hole() < b.Hole()
 		} else {
-			if a.IsOptional {
+			if a.IsOptional() {
 				return false
 			}
 			return true
@@ -317,15 +299,15 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 	})
 
 	for _, hole := range sortedHoles {
-		k := hole.Name
+		k := hole.Hole()
 		if cenv.MissingHolesFunc() != nil {
-			actual := cenv.MissingHolesFunc()(k, uniqueHoles[k].ParamPaths, uniqueHoles[k].IsOptional)
-			if actual == "" && uniqueHoles[k].IsOptional {
+			actual := cenv.MissingHolesFunc()(k, uniqueHoles[hole], hole.IsOptional())
+			if actual == "" && hole.IsOptional() {
 				continue
 			}
 			params, err := ParseParams(fmt.Sprintf("%s=%s", k, actual))
 			if err != nil {
-				if params, err = ParseParams(fmt.Sprintf("%s=%s", k, quoteString(actual))); err != nil {
+				if params, err = ParseParams(fmt.Sprintf("%s=%s", k, ast.Quote(actual))); err != nil {
 					return tpl, cenv, err
 				}
 			}
@@ -333,37 +315,15 @@ func resolveMissingHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.
 		}
 	}
 
-	tpl.visitHoles(func(h ast.WithHoles) {
-		processed := h.ProcessHoles(cenv.Get(env.FILLERS))
-		cenv.Push(env.PROCESSED_FILLERS, processed)
-	})
+	processed := ast.ProcessHoles(tpl.AST, cenv.Get(env.FILLERS))
+	cenv.Push(env.PROCESSED_FILLERS, processed)
 
 	return tpl, cenv, nil
 }
 
 func removeOptionalHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	removeOptionalHoles := func(node *ast.CommandNode) error {
-		for key, param := range node.Params {
-			if param.Value() != nil {
-				continue
-			}
-			if withHole, ok := param.(ast.WithHoles); ok {
-				if len(withHole.GetHoles()) == 0 {
-					continue
-				}
-				isOptional := true
-				for _, h := range withHole.GetHoles() {
-					isOptional = isOptional && h.IsOptional
-				}
-				if isOptional {
-					delete(node.Params, key)
-				}
-			}
-		}
-		return nil
-	}
-	err := tpl.visitCommandNodesE(removeOptionalHoles)
-	return tpl, cenv, err
+	ast.RemoveOptionalHoles(tpl.AST)
+	return tpl, cenv, nil
 }
 
 func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
@@ -385,20 +345,7 @@ func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compili
 		}
 	}
 
-	for _, expr := range tpl.expressionNodesIterator() {
-		switch ee := expr.(type) {
-		case *ast.CommandNode:
-			for k, v := range ee.Params {
-				if vv, ok := v.(ast.WithAlias); ok {
-					vv.ResolveAlias(resolvAliasFunc(ee.Action, ee.Entity, k))
-				}
-			}
-		case *ast.ValueNode:
-			if vv, ok := ee.Value.(ast.WithAlias); ok {
-				vv.ResolveAlias(resolvAliasFunc("", "", ""))
-			}
-		}
-	}
+	ast.ProcessAliases(tpl.AST, resolvAliasFunc)
 
 	switch len(emptyResolv) {
 	case 0:
@@ -415,11 +362,9 @@ func resolveAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compili
 
 func failOnUnresolvedHolesPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
 	uniqueUnresolved := make(map[string]struct{})
-	tpl.visitHoles(func(withHole ast.WithHoles) {
-		for hole := range withHole.GetHoles() {
-			uniqueUnresolved[hole] = struct{}{}
-		}
-	})
+	for _, hole := range ast.CollectHoles(tpl.AST) {
+		uniqueUnresolved[hole.String()] = struct{}{}
+	}
 
 	var unresolved []string
 	for k := range uniqueUnresolved {
@@ -435,30 +380,19 @@ func failOnUnresolvedHolesPass(tpl *Template, cenv env.Compiling) (*Template, en
 }
 
 func failOnUnresolvedAliasPass(tpl *Template, cenv env.Compiling) (*Template, env.Compiling, error) {
-	var unresolved []string
+	uniqueUnresolved := make(map[string]struct{})
 
-	visitAliases := func(withAlias ast.WithAlias) {
-		for _, alias := range withAlias.GetAliases() {
-			unresolved = append(unresolved, alias)
-		}
+	for _, alias := range ast.CollectAliases(tpl.AST) {
+		uniqueUnresolved[alias.String()] = struct{}{}
 	}
 
-	for _, n := range tpl.expressionNodesIterator() {
-		switch nn := n.(type) {
-		case *ast.ValueNode:
-			if withAlias, ok := nn.Value.(ast.WithAlias); ok {
-				visitAliases(withAlias)
-			}
-		case *ast.CommandNode:
-			for _, param := range nn.Params {
-				if withAlias, ok := param.(ast.WithAlias); ok {
-					visitAliases(withAlias)
-				}
-			}
-		}
+	var unresolved []string
+	for k := range uniqueUnresolved {
+		unresolved = append(unresolved, k)
 	}
 
 	if len(unresolved) > 0 {
+		sort.Strings(unresolved)
 		return tpl, cenv, fmt.Errorf("template contains unresolved alias: %v", unresolved)
 	}
 
@@ -492,14 +426,6 @@ func contains(arr []string, s string) bool {
 		}
 	}
 	return false
-}
-
-func quoteString(str string) string {
-	if strings.ContainsRune(str, '\'') {
-		return "\"" + str + "\""
-	} else {
-		return "'" + str + "'"
-	}
 }
 
 func excludeFromSlice(in []string, exclude []string) (out []string) {

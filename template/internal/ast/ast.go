@@ -19,18 +19,11 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
-)
-
-var (
-	_ WithHoles = (*CommandNode)(nil)
-	_ WithHoles = (*ValueNode)(nil)
 )
 
 type Node interface {
@@ -60,36 +53,19 @@ type ExpressionNode interface {
 	Err() error
 }
 
-type Hole struct {
-	Name       string
-	ParamPaths []string
-	IsOptional bool
-}
-
-type WithHoles interface {
-	ProcessHoles(fills map[string]interface{}) (processed map[string]interface{})
-	GetHoles() map[string]*Hole
-}
-
 type Command interface {
 	ParamsSpec() params.Spec
 	Run(env.Running, map[string]interface{}) (interface{}, error)
-}
-
-type CommandNode struct {
-	Command
-	CmdResult interface{}
-	CmdErr    error
-
-	Action, Entity string
-	Params         map[string]CompositeValue
 }
 
 func (c *CommandNode) Result() interface{} { return c.CmdResult }
 func (c *CommandNode) Err() error          { return c.CmdErr }
 
 func (c *CommandNode) Keys() (keys []string) {
-	for k := range c.Params {
+	for k := range c.ParamNodes {
+		keys = append(keys, k)
+	}
+	for k := range c.Refs {
 		keys = append(keys, k)
 	}
 	return
@@ -98,8 +74,27 @@ func (c *CommandNode) Keys() (keys []string) {
 func (c *CommandNode) String() string {
 	var all []string
 
-	for k, v := range c.Params {
-		all = append(all, fmt.Sprintf("%s=%s", k, v.String()))
+	for k, v := range c.ParamNodes {
+		switch vv := v.(type) {
+		case string:
+			all = append(all, fmt.Sprintf("%s=%v", k, quoteStringIfNeeded(vv)))
+		case []interface{}:
+			var a []string
+			for _, e := range vv {
+				switch ee := e.(type) {
+				case string:
+					a = append(a, quoteStringIfNeeded(ee))
+				default:
+					a = append(a, fmt.Sprint(ee))
+				}
+			}
+			all = append(all, fmt.Sprintf("%s=[%s]", k, strings.Join(a, ",")))
+		default:
+			all = append(all, fmt.Sprintf("%s=%v", k, v))
+		}
+	}
+	for k, v := range c.Refs {
+		all = append(all, fmt.Sprintf("%s=%v", k, v))
 	}
 
 	sort.Strings(all)
@@ -119,96 +114,56 @@ func (c *CommandNode) clone() Node {
 	cmd := &CommandNode{
 		Command: c.Command,
 		Action:  c.Action, Entity: c.Entity,
-		Params: make(map[string]CompositeValue),
+		ParamNodes: make(map[string]interface{}),
+		Refs:       make(map[string]interface{}),
 	}
 
-	for k, v := range c.Params {
-		cmd.Params[k] = v.Clone()
+	for k, v := range c.ParamNodes {
+		cmd.ParamNodes[k] = v
+	}
+	for k, v := range c.Refs {
+		cmd.Refs[k] = v
 	}
 	return cmd
 }
 
-func (c *CommandNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
-	processed := make(map[string]interface{})
-
-	for _, param := range c.Params {
-		if withHoles, ok := param.(WithHoles); ok {
-			paramProcessed := withHoles.ProcessHoles(fills)
-			for k, v := range paramProcessed {
-				processed[k] = v
-			}
-		}
-	}
-	return processed
-}
-
-func (c *CommandNode) GetHoles() map[string]*Hole {
-	holes := make(map[string]*Hole)
-	for paramKey, param := range c.Params {
-		if withHoles, ok := param.(WithHoles); ok {
-			for k, v := range withHoles.GetHoles() {
-				if _, ok := holes[k]; !ok {
-					holes[k] = v
-				}
-				holes[k].ParamPaths = append(holes[k].ParamPaths, strings.Join([]string{c.Action, c.Entity, paramKey}, "."))
-			}
-
-		}
-	}
-	return holes
-}
-
 func (c *CommandNode) ProcessRefs(refs map[string]interface{}) {
-	for _, param := range c.Params {
-		if withRef, ok := param.(WithRefs); ok {
-			withRef.ProcessRefs(refs)
-		}
-	}
-}
-
-func (c *CommandNode) GetRefs() (refs []string) {
-	for _, param := range c.Params {
-		if withRef, ok := param.(WithRefs); ok {
-			refs = append(refs, withRef.GetRefs()...)
-		}
-	}
-	return
-}
-
-func (c *CommandNode) ReplaceRef(key string, value CompositeValue) {
-	for k, param := range c.Params {
-		if withRef, ok := param.(WithRefs); ok {
-			if withRef.IsRef(key) {
-				c.Params[k] = value
-			} else {
-				withRef.ReplaceRef(key, value)
+	for paramKey, param := range c.Refs {
+		if ref, ok := param.(RefNode); ok {
+			for k, v := range refs {
+				if k == ref.key {
+					c.ParamNodes[paramKey] = v
+				}
 			}
 		}
-	}
-}
 
-func (c *CommandNode) IsRef(key string) bool {
-	return false
+		if list, ok := param.(ListNode); ok {
+			var new []interface{}
+			for _, e := range list.arr {
+				newElem := e
+				if ref, isRef := e.(RefNode); isRef {
+					for k, v := range refs {
+						if k == ref.key {
+							newElem = v
+						}
+					}
+				}
+				new = append(new, newElem)
+			}
+			c.ParamNodes[paramKey] = new
+		}
+	}
 }
 
 func (c *CommandNode) ToDriverParams() map[string]interface{} {
 	params := make(map[string]interface{})
-	for k, v := range c.Params {
-		if v.Value() != nil {
-			params[k] = v.Value()
-		}
-	}
-	return params
-}
-
-func (c *CommandNode) ToDriverParamsExcludingRefs() map[string]interface{} {
-	params := make(map[string]interface{})
-	for k, v := range c.Params {
-		if _, ok := v.(WithRefs); ok {
-			continue
-		}
-		if v.Value() != nil {
-			params[k] = v.Value()
+	for k, v := range c.ParamNodes {
+		switch node := v.(type) {
+		case InterfaceNode:
+			params[k] = node.i
+		case RefNode, HoleNode, AliasNode:
+		default:
+			params[k] = node
 		}
 	}
 	return params
@@ -216,79 +171,32 @@ func (c *CommandNode) ToDriverParamsExcludingRefs() map[string]interface{} {
 
 func (c *CommandNode) ToFillerParams() map[string]interface{} {
 	params := make(map[string]interface{})
-	for k, v := range c.Params {
-		if v.Value() != nil {
-			params[k] = v.Value()
-		} else if _, ok := v.(WithAlias); ok {
-			params[k] = v
+	fn := func(k string, v interface{}) interface{} {
+		switch vv := v.(type) {
+		case InterfaceNode:
+			return vv.i
+		case AliasNode:
+			return v
+		}
+		return nil
+	}
+
+	for k, v := range c.ParamNodes {
+		i := fn(k, v)
+		if i != nil {
+			params[k] = i
+			continue
+		}
+		switch vv := v.(type) {
+		case ListNode:
+			var arr []interface{}
+			for _, a := range vv.arr {
+				arr = append(arr, fn(k, a))
+			}
+			params[k] = NewListNode(arr)
 		}
 	}
 	return params
-}
-
-type ValueNode struct {
-	Value CompositeValue
-}
-
-func (n *ValueNode) clone() Node {
-	return &ValueNode{
-		Value: n.Value.Clone(),
-	}
-}
-
-func (n *ValueNode) String() string {
-	return n.Value.String()
-}
-
-func (n *ValueNode) Result() interface{} { return n.Value }
-func (n *ValueNode) Err() error          { return nil }
-
-func (n *ValueNode) IsResolved() bool {
-	if withHoles, ok := n.Value.(WithHoles); ok {
-		return len(withHoles.GetHoles()) == 0
-	}
-	return true
-}
-
-func (n *ValueNode) ProcessHoles(fills map[string]interface{}) map[string]interface{} {
-	if withHoles, ok := n.Value.(WithHoles); ok {
-		return withHoles.ProcessHoles(fills)
-	}
-	return make(map[string]interface{})
-}
-
-func (n *ValueNode) ProcessRefs(refs map[string]interface{}) {
-	if withRef, ok := n.Value.(WithRefs); ok {
-		withRef.ProcessRefs(refs)
-	}
-}
-
-func (n *ValueNode) GetRefs() (refs []string) {
-	if withRef, ok := n.Value.(WithRefs); ok {
-		refs = append(refs, withRef.GetRefs()...)
-	}
-	return
-}
-
-func (n *ValueNode) ReplaceRef(key string, value CompositeValue) {
-	if withRef, ok := n.Value.(WithRefs); ok {
-		if withRef.IsRef(key) {
-			n.Value = value
-		} else {
-			withRef.ReplaceRef(key, value)
-		}
-	}
-}
-
-func (n *ValueNode) IsRef(key string) bool {
-	return false
-}
-
-func (n *ValueNode) GetHoles() map[string]*Hole {
-	if withHoles, ok := n.Value.(WithHoles); ok {
-		return withHoles.GetHoles()
-	}
-	return make(map[string]*Hole)
 }
 
 func (s *Statement) Clone() *Statement {
@@ -320,25 +228,6 @@ func (n *DeclarationNode) String() string {
 	return fmt.Sprintf("%s = %s", n.Ident, n.Expr)
 }
 
-func printParamValue(i interface{}) string {
-	switch ii := i.(type) {
-	case nil:
-		return ""
-	case []string:
-		return "[" + strings.Join(ii, ",") + "]"
-	case []interface{}:
-		var strs []string
-		for _, val := range ii {
-			strs = append(strs, fmt.Sprint(val))
-		}
-		return "[" + strings.Join(strs, ",") + "]"
-	case string:
-		return quoteStringIfNeeded(ii)
-	default:
-		return fmt.Sprintf("%v", i)
-	}
-}
-
 func (a *AST) Clone() *AST {
 	clone := &AST{}
 	for _, stat := range a.Statements {
@@ -347,39 +236,6 @@ func (a *AST) Clone() *AST {
 	return clone
 }
 
-var SimpleStringValue = regexp.MustCompile("^[a-zA-Z0-9-._:/+;~@<>*]+$") // in sync with [a-zA-Z0-9-._:/+;~@<>]+ in PEG (with ^ and $ around)
-
-func quoteStringIfNeeded(input string) string {
-	if _, err := strconv.Atoi(input); err == nil {
-		return "'" + input + "'"
-	}
-	if _, err := strconv.ParseFloat(input, 64); err == nil {
-		return "'" + input + "'"
-	}
-	if SimpleStringValue.MatchString(input) {
-		return input
-	} else {
-		return quoteString(input)
-	}
-}
-
-func quoteString(str string) string {
-	if strings.ContainsRune(str, '\'') {
-		return "\"" + str + "\""
-	} else {
-		return "'" + str + "'"
-	}
-}
-
-func isQuoted(str string) bool {
-	if len(str) < 2 {
-		return false
-	}
-	if str[0] == '\'' && str[len(str)-1] == '\'' {
-		return true
-	}
-	if str[0] == '"' && str[len(str)-1] == '"' {
-		return true
-	}
-	return false
+func (a *AST) clone() Node {
+	return a.Clone()
 }

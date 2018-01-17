@@ -71,7 +71,7 @@ func (n allOf) Run(input []string) (err error) {
 	for _, r := range n.rules {
 		err = r.Run(input)
 		if err != optErr && err != nil {
-			return errors.New(n.String())
+			return fmt.Errorf("%s: expecting %s", err, n.String())
 		}
 	}
 	return nil

@@ -67,7 +67,8 @@ func (s *Template) Run(renv env.Running) (*Template, error) {
 		current.Statements = append(current.Statements, clone)
 		switch n := clone.Node.(type) {
 		case *ast.CommandNode:
-			if stop := processCmdNode(renv, n, vars); stop {
+			n.ProcessRefs(vars)
+			if stop := processCmdNode(renv, n); stop {
 				return current, nil
 			}
 		case *ast.DeclarationNode:
@@ -75,7 +76,8 @@ func (s *Template) Run(renv env.Running) (*Template, error) {
 			expr := n.Expr
 			switch n := expr.(type) {
 			case *ast.CommandNode:
-				if stop := processCmdNode(renv, n, vars); stop {
+				n.ProcessRefs(vars)
+				if stop := processCmdNode(renv, n); stop {
 					return current, nil
 				}
 				vars[ident] = n.Result()
@@ -90,8 +92,7 @@ func (s *Template) Run(renv env.Running) (*Template, error) {
 	return current, nil
 }
 
-func processCmdNode(renv env.Running, n *ast.CommandNode, vars map[string]interface{}) bool {
-	n.ProcessRefs(vars)
+func processCmdNode(renv env.Running, n *ast.CommandNode) bool {
 	if renv.IsDryRun() {
 		n.CmdResult, n.CmdErr = n.Command.Run(renv, n.ToDriverParams())
 		n.CmdErr = prefixError(n.CmdErr, fmt.Sprintf("dry run: %s %s", n.Action, n.Entity))
@@ -155,14 +156,6 @@ func (t *Template) UniqueDefinitions(apis map[string]string) (res []string) {
 	return
 }
 
-func (s *Template) visitHoles(fn func(n ast.WithHoles)) {
-	for _, n := range s.expressionNodesIterator() {
-		if h, ok := n.(ast.WithHoles); ok {
-			fn(h)
-		}
-	}
-}
-
 func (s *Template) visitCommandNodes(fn func(n *ast.CommandNode)) {
 	for _, cmd := range s.CommandNodesIterator() {
 		fn(cmd)
@@ -189,22 +182,6 @@ func (s *Template) CommandNodesIterator() (nodes []*ast.CommandNode) {
 			switch expr.(type) {
 			case *ast.CommandNode:
 				nodes = append(nodes, expr.(*ast.CommandNode))
-			}
-		}
-	}
-	return
-}
-
-func (s *Template) WithRefsIterator() (nodes []ast.WithRefs) {
-	for _, sts := range s.Statements {
-		switch nn := sts.Node.(type) {
-		case ast.WithRefs:
-			nodes = append(nodes, nn)
-		case *ast.DeclarationNode:
-			expr := sts.Node.(*ast.DeclarationNode).Expr
-			switch nnn := expr.(type) {
-			case *ast.CommandNode:
-				nodes = append(nodes, nnn)
 			}
 		}
 	}

@@ -18,6 +18,7 @@ type ATBuilder struct {
 	expectCalls  map[string]int
 	expectInput  map[string]interface{}
 	ignoredInput map[string]struct{}
+	fillers      map[string]string
 	expectRevert string
 	mock         mock
 	graph        *graph.Graph
@@ -65,6 +66,11 @@ func (b *ATBuilder) Mock(i mock) *ATBuilder {
 	return b
 }
 
+func (b *ATBuilder) Fillers(fillers map[string]string) *ATBuilder {
+	b.fillers = fillers
+	return b
+}
+
 func (b *ATBuilder) ExpectRevert(revert string) *ATBuilder {
 	b.expectRevert = revert
 	return b
@@ -87,6 +93,8 @@ func (b *ATBuilder) Run(t *testing.T, l ...*logger.Logger) {
 
 	cenv := template.NewEnv().WithLookupCommandFunc(func(tokens ...string) interface{} {
 		return awsspec.CommandFactory.Build(strings.Join(tokens, ""))()
+	}).WithMissingHolesFunc(func(key string, paramPaths []string, isOptional bool) string {
+		return b.fillers[key]
 	}).Build()
 	compiled, cenv, err := template.Compile(tpl, cenv, template.NewRunnerCompileMode)
 	if err != nil {

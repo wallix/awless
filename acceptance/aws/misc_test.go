@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 )
 
 func TestReducingReferences(t *testing.T) {
@@ -86,4 +87,13 @@ check instance id=id-2345 state=running timeout=180
 stop instance ids=[id-1234,new-instance-id,id-2345]
 delete instance id=new-instance-id`).Run(t)
 	})
+}
+
+func TestWithMissingRequiredParams(t *testing.T) {
+	Template("create user").Mock(&iamMock{
+		CreateUserFunc: func(input *iam.CreateUserInput) (*iam.CreateUserOutput, error) {
+			return &iam.CreateUserOutput{User: &iam.User{UserId: String("new-user-id")}}, nil
+		}}).Fillers(map[string]string{"user.name": "donald"}).ExpectInput("CreateUser", &iam.CreateUserInput{
+		UserName: String("donald"),
+	}).ExpectCommandResult("new-user-id").ExpectCalls("CreateUser").Run(t)
 }

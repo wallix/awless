@@ -75,14 +75,6 @@ func ParseParams(text string) (map[string]interface{}, error) {
 	return node.ToFillerParams(), nil
 }
 
-func parseParamsAsCompositeValues(text string) (map[string]ast.CompositeValue, error) {
-	node, err := parseParamsAsCommandNode(text)
-	if err != nil {
-		return nil, err
-	}
-	return node.Params, nil
-}
-
 func parseParamsAsCommandNode(text string) (*ast.CommandNode, error) {
 	full := fmt.Sprintf("none none %s", text)
 	n, err := parseStatement(full)
