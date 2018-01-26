@@ -1,3 +1,13 @@
+## v0.1.10 [unrelased]
+
+### Features
+
+- Region embedded in a profile through AWS shared config files (~/.aws/{credentials,config}) has now precedence over the awless configured region (see #181 below)
+
+### Fixes
+
+- [#182](https://github.com/wallix/awless/issues/182): Region embedded in profile should be taken into account with the correct precedence
+
 ## v0.1.9 [2018-01-16]
 
 **In this release, the local data model has been updated to support multi-account and stale data is removed when upgrading. Local data (ex: used for completion, etc...) will progressively be synced again through your usage of awless. Although, to get all your data now under the new model, you can manually run `'awless sync'`**	

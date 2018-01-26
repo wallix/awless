@@ -37,8 +37,11 @@ var switchCmd = &cobra.Command{
   awless switch mfa                 # now using profile mfa (with mfa a valid profile in ~/.aws/{config,credentials})
   awless switch default us-west-1   # now using region us-west-1 and the default profile
   awless sw eu-west-3 admin         # now using profile admin in region eu-west-3`,
-	PersistentPreRun:  applyHooks(initAwlessEnvHook, initLoggerHook),
-	PersistentPostRun: applyHooks(includeHookIf(&config.TriggerSyncOnConfigUpdate, initCloudServicesHook)),
+	PersistentPreRun: applyHooks(initAwlessEnvHook, initLoggerHook),
+	PersistentPostRun: applyHooks(
+		includeHookIf(&config.TriggerSyncOnConfigUpdate, initCloudServicesHook),
+		notifyOnRegionOrProfilePrecedenceHook,
+	),
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 || len(args) > 2 {

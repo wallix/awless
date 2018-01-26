@@ -35,10 +35,11 @@ func init() {
 }
 
 var configCmd = &cobra.Command{
-	Use:               "config",
-	Short:             "get, set, unset configuration values",
-	Example:           "  awless config        # list all your config\n  awless config set aws.region eu-west-1\n  awless config unset instance.count",
-	PersistentPreRunE: initAwlessEnvHook,
+	Use:                "config",
+	Short:              "get, set, unset configuration values",
+	Example:            "  awless config        # list all your config\n  awless config set aws.region eu-west-1\n  awless config unset instance.count",
+	PersistentPreRunE:  initAwlessEnvHook,
+	PersistentPostRunE: notifyOnRegionOrProfilePrecedenceHook,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if keysOnly {
