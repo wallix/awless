@@ -62,6 +62,15 @@ func init() {
 	cobra.AddTemplateFunc("HasCmdOnelinerChilds", HasCmdOnelinerChilds)
 
 	RootCmd.SetUsageTemplate(customRootUsage)
+
+	cobra.OnInitialize(func() {
+		switch awsColorGlobalFlag {
+		case "never":
+			color.NoColor = true
+		case "always":
+			color.NoColor = false
+		}
+	})
 }
 
 var RootCmd = &cobra.Command{
