@@ -27,6 +27,7 @@ import (
 	"github.com/wallix/awless/template/env"
 	"github.com/wallix/awless/template/params"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"github.com/wallix/awless/logger"
@@ -34,29 +35,32 @@ import (
 )
 
 type CreateStack struct {
-	_               string `action:"create" entity:"stack" awsAPI:"cloudformation" awsCall:"CreateStack" awsInput:"cloudformation.CreateStackInput" awsOutput:"cloudformation.CreateStackOutput"`
-	logger          *logger.Logger
-	graph           cloud.GraphAPI
-	api             cloudformationiface.CloudFormationAPI
-	Name            *string   `awsName:"StackName" awsType:"awsstr" templateName:"name"`
-	TemplateFile    *string   `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file"`
-	Capabilities    []*string `awsName:"Capabilities" awsType:"awsstringslice" templateName:"capabilities"`
-	DisableRollback *bool     `awsName:"DisableRollback" awsType:"awsbool" templateName:"disable-rollback"`
-	Notifications   []*string `awsName:"NotificationARNs" awsType:"awsstringslice" templateName:"notifications"`
-	OnFailure       *string   `awsName:"OnFailure" awsType:"awsstr" templateName:"on-failure"`
-	Parameters      []*string `awsName:"Parameters" awsType:"awsparameterslice" templateName:"parameters"`
-	ResourceTypes   []*string `awsName:"ResourceTypes" awsType:"awsstringslice" templateName:"resource-types"`
-	Role            *string   `awsName:"RoleARN" awsType:"awsstr" templateName:"role"`
-	PolicyFile      *string   `awsName:"StackPolicyBody" awsType:"awsfiletostring" templateName:"policy-file"`
-	Timeout         *int64    `awsName:"TimeoutInMinutes" awsType:"awsint64" templateName:"timeout"`
-	Tags            []*string `awsName:"Tags" awsType:"awstagslice" templateName:"tags"`
-	PolicyBody      *string   `awsName:"StackPolicyBody" awsType:"awsstr"`
-	StackFile       *string   `templateName:"stack-file"`
+	_                      string `action:"create" entity:"stack" awsAPI:"cloudformation" awsCall:"CreateStack" awsInput:"cloudformation.CreateStackInput" awsOutput:"cloudformation.CreateStackOutput"`
+	logger                 *logger.Logger
+	graph                  cloud.GraphAPI
+	api                    cloudformationiface.CloudFormationAPI
+	Name                   *string                               `awsName:"StackName" awsType:"awsstr" templateName:"name"`
+	TemplateFile           *string                               `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file"`
+	Capabilities           []*string                             `awsName:"Capabilities" awsType:"awsstringslice" templateName:"capabilities"`
+	DisableRollback        *bool                                 `awsName:"DisableRollback" awsType:"awsbool" templateName:"disable-rollback"`
+	Notifications          []*string                             `awsName:"NotificationARNs" awsType:"awsstringslice" templateName:"notifications"`
+	OnFailure              *string                               `awsName:"OnFailure" awsType:"awsstr" templateName:"on-failure"`
+	Parameters             []*string                             `awsName:"Parameters" awsType:"awsparameterslice" templateName:"parameters"`
+	ResourceTypes          []*string                             `awsName:"ResourceTypes" awsType:"awsstringslice" templateName:"resource-types"`
+	Role                   *string                               `awsName:"RoleARN" awsType:"awsstr" templateName:"role"`
+	PolicyFile             *string                               `awsName:"StackPolicyBody" awsType:"awsfiletostring" templateName:"policy-file"`
+	Timeout                *int64                                `awsName:"TimeoutInMinutes" awsType:"awsint64" templateName:"timeout"`
+	Tags                   []*string                             `awsName:"Tags" awsType:"awstagslice" templateName:"tags"`
+	PolicyBody             *string                               `awsName:"StackPolicyBody" awsType:"awsstr"`
+	StackFile              *string                               `templateName:"stack-file"`
+	RollbackConfigurations *cloudformation.RollbackConfiguration `awsName:"RollbackConfiguration" awsType:"awsrollbackconfig"`
+	RollbackTriggers       []*string                             `templateName:"rollback-triggers"`
+	RollbackMonitoringMin  *int64                                `templateName:"rollback-monitoring-min"`
 }
 
 func (cmd *CreateStack) ParamsSpec() params.Spec {
 	return params.NewSpec(
-		params.AllOf(params.Key("name"), params.Key("template-file"), params.Opt("capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout")),
+		params.AllOf(params.Key("name"), params.Key("template-file"), params.Opt("capabilities", "disable-rollback", "notifications", "on-failure", "parameters", "policy-file", "resource-types", "role", "stack-file", "tags", "timeout", "rollback-triggers", "rollback-monitoring-min")),
 		params.Validators{"template-file": params.IsFilepath},
 	)
 }
@@ -71,32 +75,38 @@ func (cmd *CreateStack) ExtractResult(i interface{}) string {
 func (cmd *CreateStack) BeforeRun(renv env.Running) error {
 	var err error
 	cmd.Parameters, cmd.Tags, cmd.PolicyBody, err = processStackFile(cmd.StackFile, cmd.PolicyFile, cmd.Parameters, cmd.Tags)
+	if len(cmd.RollbackTriggers) > 0 || cmd.RollbackMonitoringMin != nil {
+		cmd.RollbackConfigurations = newRollBackConfig(cmd.RollbackTriggers, cmd.RollbackMonitoringMin)
+	}
 	return err
 }
 
 type UpdateStack struct {
-	_                   string `action:"update" entity:"stack" awsAPI:"cloudformation" awsCall:"UpdateStack" awsInput:"cloudformation.UpdateStackInput" awsOutput:"cloudformation.UpdateStackOutput"`
-	logger              *logger.Logger
-	graph               cloud.GraphAPI
-	api                 cloudformationiface.CloudFormationAPI
-	Name                *string   `awsName:"StackName" awsType:"awsstr" templateName:"name"`
-	Capabilities        []*string `awsName:"Capabilities" awsType:"awsstringslice" templateName:"capabilities"`
-	Notifications       []*string `awsName:"NotificationARNs" awsType:"awsstringslice" templateName:"notifications"`
-	Parameters          []*string `awsName:"Parameters" awsType:"awsparameterslice" templateName:"parameters"`
-	ResourceTypes       []*string `awsName:"ResourceTypes" awsType:"awsstringslice" templateName:"resource-types"`
-	Role                *string   `awsName:"RoleARN" awsType:"awsstr" templateName:"role"`
-	PolicyFile          *string   `awsName:"StackPolicyBody" awsType:"awsfiletostring" templateName:"policy-file"`
-	PolicyUpdateFile    *string   `awsName:"StackPolicyDuringUpdateBody" awsType:"awsfiletostring" templateName:"policy-update-file"`
-	TemplateFile        *string   `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file"`
-	UsePreviousTemplate *bool     `awsName:"UsePreviousTemplate" awsType:"awsbool" templateName:"use-previous-template"`
-	Tags                []*string `awsName:"Tags" awsType:"awstagslice" templateName:"tags"`
-	PolicyBody          *string   `awsName:"StackPolicyBody" awsType:"awsstr"`
-	StackFile           *string   `templateName:"stack-file"`
+	_                      string `action:"update" entity:"stack" awsAPI:"cloudformation" awsCall:"UpdateStack" awsInput:"cloudformation.UpdateStackInput" awsOutput:"cloudformation.UpdateStackOutput"`
+	logger                 *logger.Logger
+	graph                  cloud.GraphAPI
+	api                    cloudformationiface.CloudFormationAPI
+	Name                   *string                               `awsName:"StackName" awsType:"awsstr" templateName:"name"`
+	Capabilities           []*string                             `awsName:"Capabilities" awsType:"awsstringslice" templateName:"capabilities"`
+	Notifications          []*string                             `awsName:"NotificationARNs" awsType:"awsstringslice" templateName:"notifications"`
+	Parameters             []*string                             `awsName:"Parameters" awsType:"awsparameterslice" templateName:"parameters"`
+	ResourceTypes          []*string                             `awsName:"ResourceTypes" awsType:"awsstringslice" templateName:"resource-types"`
+	Role                   *string                               `awsName:"RoleARN" awsType:"awsstr" templateName:"role"`
+	PolicyFile             *string                               `awsName:"StackPolicyBody" awsType:"awsfiletostring" templateName:"policy-file"`
+	PolicyUpdateFile       *string                               `awsName:"StackPolicyDuringUpdateBody" awsType:"awsfiletostring" templateName:"policy-update-file"`
+	TemplateFile           *string                               `awsName:"TemplateBody" awsType:"awsfiletostring" templateName:"template-file"`
+	UsePreviousTemplate    *bool                                 `awsName:"UsePreviousTemplate" awsType:"awsbool" templateName:"use-previous-template"`
+	Tags                   []*string                             `awsName:"Tags" awsType:"awstagslice" templateName:"tags"`
+	PolicyBody             *string                               `awsName:"StackPolicyBody" awsType:"awsstr"`
+	StackFile              *string                               `templateName:"stack-file"`
+	RollbackConfigurations *cloudformation.RollbackConfiguration `awsName:"RollbackConfiguration" awsType:"awsrollbackconfig"`
+	RollbackTriggers       []*string                             `templateName:"rollback-triggers"`
+	RollbackMonitoringMin  *int64                                `templateName:"rollback-monitoring-min"`
 }
 
 func (cmd *UpdateStack) ParamsSpec() params.Spec {
 	return params.NewSpec(params.AllOf(params.Key("name"),
-		params.Opt("capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "stack-file", "tags", "template-file", "use-previous-template"),
+		params.Opt("capabilities", "notifications", "parameters", "policy-file", "policy-update-file", "resource-types", "role", "stack-file", "tags", "template-file", "use-previous-template", "rollback-triggers", "rollback-monitoring-min"),
 	))
 }
 
@@ -110,7 +120,28 @@ func (cmd *UpdateStack) ExtractResult(i interface{}) string {
 func (cmd *UpdateStack) BeforeRun(renv env.Running) error {
 	var err error
 	cmd.Parameters, cmd.Tags, cmd.PolicyBody, err = processStackFile(cmd.StackFile, cmd.PolicyFile, cmd.Parameters, cmd.Tags)
+	if len(cmd.RollbackTriggers) > 0 || cmd.RollbackMonitoringMin != nil {
+		cmd.RollbackConfigurations = newRollBackConfig(cmd.RollbackTriggers, cmd.RollbackMonitoringMin)
+	}
+
 	return err
+}
+
+func newRollBackConfig(rollbackTriggers []*string, monitoringTime *int64) *cloudformation.RollbackConfiguration {
+	rc := &cloudformation.RollbackConfiguration{
+		MonitoringTimeInMinutes: monitoringTime,
+	}
+
+	if len(rollbackTriggers) > 0 {
+		for _, rt := range rollbackTriggers {
+			rc.RollbackTriggers = append(rc.RollbackTriggers, &cloudformation.RollbackTrigger{
+				Arn:  rt,
+				Type: aws.String("AWS::CloudWatch::Alarm"),
+			})
+		}
+	}
+
+	return rc
 }
 
 type stackFile struct {
