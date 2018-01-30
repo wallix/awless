@@ -83,7 +83,7 @@ func notifyIfUpgrade(url string, messaging io.Writer) error {
 			default:
 				install = "Run `go get -u github.com/wallix/awless`"
 			}
-			fmt.Fprintf(messaging, "New version %s available. Changelog at https://github.com/wallix/awless/blob/master/CHANGELOG.md\n%s\n", latest.Version, install)
+			fmt.Fprintf(messaging, "New version %s available. Checkout the latest features at https://github.com/wallix/awless/blob/master/CHANGELOG.md\n%s\n", latest.Version, install)
 		}
 	}
 
