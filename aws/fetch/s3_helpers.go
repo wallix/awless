@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"strings"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -27,7 +29,21 @@ func forEachBucketParallel(ctx context.Context, cache fetch.Cache, api s3iface.S
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
-	for _, output := range buckets {
+	filters := getFiltersFromContext(ctx)
+	filterOnBucketName, hasBucketFilter := filters["bucket"]
+
+	var filteredBuckets []*s3.Bucket
+	if hasBucketFilter {
+		for _, b := range buckets {
+			if strings.Contains(strings.ToLower(*b.Name), strings.ToLower(filterOnBucketName)) {
+				filteredBuckets = append(filteredBuckets, b)
+			}
+		}
+	} else {
+		filteredBuckets = buckets
+	}
+
+	for _, output := range filteredBuckets {
 		wg.Add(1)
 		go func(b *s3.Bucket) {
 			defer wg.Done()

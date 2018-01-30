@@ -2,7 +2,14 @@
 
 ### Features
 
-- Region embedded in a profile through AWS shared config files (~/.aws/{credentials,config}) has now precedence over the awless configured region (see #181 below)
+
+- Support for region embedded in AWS profile (i.e. shared config files ~/.aws/{credentials,config}). See #181 in Fixes for more details 
+- Listing flag `--filter` now passes on the user wanted filtering down to the AWS API when possible so that: _less unneeded resources are fetched_, _bandwidth is reduced_, _some throttling avoided_.
+  
+  For example:
+  
+      *`awless ls s3objects --filter bucket=website`*
+      *`awless ls records --filter name=io`*
 
 ### Fixes
 
