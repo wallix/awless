@@ -7,6 +7,7 @@
 ### Fixes
 
 - [#182](https://github.com/wallix/awless/issues/182): Region embedded in profile should be taken into account with the correct precedence
+- [#144](https://github.com/wallix/awless/issues/144): Allow to filter on fetch records given a zone name
 
 ## v0.1.9 [2018-01-16]
 

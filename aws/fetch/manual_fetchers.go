@@ -787,6 +787,9 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
+		filters := getFiltersFromContext(ctx)
+		filterOnZoneName, hasNameFilter := filters["name"]
+
 		errC := make(chan error)
 		zoneC := make(chan *route53.HostedZone)
 		objectsC := make(chan *route53.ResourceRecordSet)
@@ -796,7 +799,13 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			err := conf.APIs.Route53.ListHostedZonesPages(&route53.ListHostedZonesInput{},
 				func(out *route53.ListHostedZonesOutput, lastPage bool) (shouldContinue bool) {
 					for _, output := range out.HostedZones {
-						zoneC <- output
+						if hasNameFilter {
+							if strings.Contains(strings.ToLower(*output.Name), strings.ToLower(filterOnZoneName)) {
+								zoneC <- output
+							}
+						} else {
+							zoneC <- output
+						}
 					}
 					return out.NextMarker != nil
 				})
