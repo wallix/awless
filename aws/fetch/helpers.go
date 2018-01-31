@@ -23,7 +23,7 @@ func getFiltersFromContext(ctx context.Context) map[string]string {
 	return out
 }
 
-func sliceOfSlice(in []*string, maxLength int) (res [][]*string) {
+func sliceOfSlice(in []string, maxLength int) (res [][]string) {
 	if maxLength <= 0 {
 		return
 	}

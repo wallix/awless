@@ -34,25 +34,20 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
-		var clusterArns []*string
-
-		if val, e := cache.Get("getClustersNames", func() (interface{}, error) {
-			return getClustersNames(ctx, conf.APIs.Ecs)
-		}); e != nil {
-			return resources, objects, e
-		} else if v, ok := val.([]*string); ok {
-			clusterArns = v
+		clusterArns, err := getClusterArns(ctx, cache, conf.APIs.Ecs)
+		if err != nil {
+			return resources, objects, err
 		}
 
 		for _, cluster := range clusterArns {
 			var badResErr error
-			err := conf.APIs.Ecs.ListContainerInstancesPages(&ecs.ListContainerInstancesInput{Cluster: cluster}, func(out *ecs.ListContainerInstancesOutput, lastPage bool) (shouldContinue bool) {
+			err := conf.APIs.Ecs.ListContainerInstancesPages(&ecs.ListContainerInstancesInput{Cluster: &cluster}, func(out *ecs.ListContainerInstancesOutput, lastPage bool) (shouldContinue bool) {
 				var containerInstancesOut *ecs.DescribeContainerInstancesOutput
 				if len(out.ContainerInstanceArns) == 0 {
 					return out.NextToken != nil
 				}
 
-				if containerInstancesOut, badResErr = conf.APIs.Ecs.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{Cluster: cluster, ContainerInstances: out.ContainerInstanceArns}); badResErr != nil {
+				if containerInstancesOut, badResErr = conf.APIs.Ecs.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{Cluster: &cluster, ContainerInstances: out.ContainerInstanceArns}); badResErr != nil {
 					return false
 				}
 
@@ -62,9 +57,9 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 					if res, badResErr = awsconv.NewResource(inst); badResErr != nil {
 						return false
 					}
-					res.Properties()[properties.Cluster] = awssdk.StringValue(cluster)
+					res.Properties()[properties.Cluster] = cluster
 					resources = append(resources, res)
-					parent := graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(cluster))
+					parent := graph.InitResource(cloud.ContainerCluster, cluster)
 					res.AddRelation(rdf.ChildrenOfRel, parent)
 				}
 				return out.NextToken != nil
@@ -158,7 +153,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		fetchDefinitionsInput := &ecs.ListTaskDefinitionsInput{}
 		userFilters := getFiltersFromContext(ctx)
 		if givenFamilyPrefix, hasFilter := userFilters["name"]; hasFilter {
-			fetchDefinitionsInput.FamilyPrefix = awssdk.String(givenFamilyPrefix)
+			fetchDefinitionsInput.FamilyPrefix = &givenFamilyPrefix
 		}
 
 		err := conf.APIs.Ecs.ListTaskDefinitionsPages(fetchDefinitionsInput, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
@@ -284,18 +279,13 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
-		var clusterNames []*string
-
-		if val, e := cache.Get("getClustersNames", func() (interface{}, error) {
-			return getClustersNames(ctx, conf.APIs.Ecs)
-		}); e != nil {
-			return resources, objects, e
-		} else if v, ok := val.([]*string); ok {
-			clusterNames = v
+		clusterNames, err := getClusterArns(ctx, cache, conf.APIs.Ecs)
+		if err != nil {
+			return resources, objects, nil
 		}
 
 		for _, clusterArns := range sliceOfSlice(clusterNames, 100) {
-			clustersOut, err := conf.APIs.Ecs.DescribeClusters(&ecs.DescribeClustersInput{Clusters: clusterArns})
+			clustersOut, err := conf.APIs.Ecs.DescribeClusters(&ecs.DescribeClustersInput{Clusters: awssdk.StringSlice(clusterArns)})
 			if err != nil {
 				return resources, objects, err
 			}
