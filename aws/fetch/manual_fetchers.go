@@ -151,8 +151,7 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		resc := make(chan resStruct)
 
 		fetchDefinitionsInput := &ecs.ListTaskDefinitionsInput{}
-		userFilters := getFiltersFromContext(ctx)
-		if givenFamilyPrefix, hasFilter := userFilters["name"]; hasFilter {
+		if givenFamilyPrefix, hasFilter := getUserFiltersFromContext(ctx)["name"]; hasFilter {
 			fetchDefinitionsInput.FamilyPrefix = &givenFamilyPrefix
 		}
 
@@ -783,8 +782,7 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
-		filters := getFiltersFromContext(ctx)
-		filterOnZoneName, hasNameFilter := filters["name"]
+		filterOnZoneName, hasNameFilter := getUserFiltersFromContext(ctx)["name"]
 
 		errC := make(chan error)
 		zoneC := make(chan *route53.HostedZone)

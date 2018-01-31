@@ -12,7 +12,7 @@ import (
 
 func getClusterArns(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) ([]string, error) {
 	var arns []string
-	if clusterName, hasFilter := getFiltersFromContext(ctx)["cluster"]; hasFilter {
+	if clusterName, hasFilter := getUserFiltersFromContext(ctx)["cluster"]; hasFilter {
 		out, err := api.DescribeClusters(&ecs.DescribeClustersInput{Clusters: []*string{&clusterName}})
 		if err != nil {
 			return arns, err

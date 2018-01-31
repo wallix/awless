@@ -29,21 +29,7 @@ func forEachBucketParallel(ctx context.Context, cache fetch.Cache, api s3iface.S
 	errc := make(chan error)
 	var wg sync.WaitGroup
 
-	filters := getFiltersFromContext(ctx)
-	filterOnBucketName, hasBucketFilter := filters["bucket"]
-
-	var filteredBuckets []*s3.Bucket
-	if hasBucketFilter {
-		for _, b := range buckets {
-			if strings.Contains(strings.ToLower(*b.Name), strings.ToLower(filterOnBucketName)) {
-				filteredBuckets = append(filteredBuckets, b)
-			}
-		}
-	} else {
-		filteredBuckets = buckets
-	}
-
-	for _, output := range filteredBuckets {
+	for _, output := range buckets {
 		wg.Add(1)
 		go func(b *s3.Bucket) {
 			defer wg.Done()
@@ -92,9 +78,30 @@ func fetchObjectsForBucket(ctx context.Context, api s3iface.S3API, bucket *s3.Bu
 
 func getBucketsPerRegion(ctx context.Context, api s3iface.S3API) ([]*s3.Bucket, error) {
 	var buckets []*s3.Bucket
+
 	out, err := api.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
 		return buckets, err
+	}
+
+	var userBucketName string
+	var hasBucketFilter bool
+	if id, hasID := getUserFiltersFromContext(ctx)["id"]; hasID {
+		userBucketName = id
+		hasBucketFilter = true
+	} else if buck, hasBucket := getUserFiltersFromContext(ctx)["bucket"]; hasBucket {
+		userBucketName = buck
+		hasBucketFilter = true
+	}
+
+	if hasBucketFilter {
+		for _, b := range out.Buckets {
+			if strings.Contains(strings.ToLower(*b.Name), strings.ToLower(userBucketName)) {
+				buckets = append(buckets, b)
+			}
+		}
+	} else {
+		buckets = out.Buckets
 	}
 
 	bucketc := make(chan *s3.Bucket)
@@ -102,7 +109,7 @@ func getBucketsPerRegion(ctx context.Context, api s3iface.S3API) ([]*s3.Bucket, 
 
 	var wg sync.WaitGroup
 
-	for _, bucket := range out.Buckets {
+	for _, bucket := range buckets {
 		wg.Add(1)
 		go func(b *s3.Bucket) {
 			defer wg.Done()
@@ -128,17 +135,18 @@ func getBucketsPerRegion(ctx context.Context, api s3iface.S3API) ([]*s3.Bucket, 
 		close(bucketc)
 	}()
 
+	var bucketsInRegion []*s3.Bucket
 	for {
 		select {
 		case err := <-errc:
 			if err != nil {
-				return buckets, err
+				return bucketsInRegion, err
 			}
 		case b, ok := <-bucketc:
 			if !ok {
-				return buckets, nil
+				return bucketsInRegion, nil
 			}
-			buckets = append(buckets, b)
+			bucketsInRegion = append(bucketsInRegion, b)
 		}
 	}
 }
