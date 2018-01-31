@@ -155,7 +155,13 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var wg sync.WaitGroup
 		resc := make(chan resStruct)
 
-		err := conf.APIs.Ecs.ListTaskDefinitionsPages(&ecs.ListTaskDefinitionsInput{}, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
+		fetchDefinitionsInput := &ecs.ListTaskDefinitionsInput{}
+		userFilters := getFiltersFromContext(ctx)
+		if givenFamilyPrefix, hasFilter := userFilters["name"]; hasFilter {
+			fetchDefinitionsInput.FamilyPrefix = awssdk.String(givenFamilyPrefix)
+		}
+
+		err := conf.APIs.Ecs.ListTaskDefinitionsPages(fetchDefinitionsInput, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
 			for _, arn := range out.TaskDefinitionArns {
 				wg.Add(1)
 				go func(taskDefArn *string) {

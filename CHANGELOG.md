@@ -3,18 +3,20 @@
 ### Features
 
 
-- Support for region embedded in AWS profile (i.e. shared config files ~/.aws/{credentials,config}). See #181 in Fixes for more details 
+- Support for region embedded in an AWS profile (i.e. shared config files ~/.aws/{credentials,config}). See #181 in Fixes for more details 
 - Listing flag `--filter` now passes on the user wanted filtering down to the AWS API when possible so that: _less unneeded resources are fetched_, _bandwidth is reduced_, _some throttling avoided_.
   
   For example:
   
       *`awless ls s3objects --filter bucket=website`*
       *`awless ls records --filter name=io`*
+      *`awless ls containertasks --filter name=my-task-definition-name`* 
 
 ### Fixes
 
-- [#182](https://github.com/wallix/awless/issues/182): Region embedded in profile should be taken into account with the correct precedence
-- [#144](https://github.com/wallix/awless/issues/144): Allow to filter on fetch records given a zone name
+- [#182](https://github.com/wallix/awless/issues/182): Region embedded in profile taken into account and given correct precedence
+- [#144](https://github.com/wallix/awless/issues/144): Filtering done on AWS side when listing records for a given zone name
+- [#172](https://github.com/wallix/awless/issues/172): Filtering done on AWS side when listing containertasks for a given task definition name
 
 ## v0.1.9 [2018-01-16]
 
