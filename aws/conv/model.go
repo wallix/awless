@@ -295,6 +295,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.MinSize:                 {name: "MinSize", transform: extractValueFn},
 		properties.NewInstancesProtected:   {name: "NewInstancesProtectedFromScaleIn", transform: extractValueFn},
 		properties.State:                   {name: "Status", transform: extractValueFn},
+		properties.Tags:                    {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.ScalingPolicy: {
 		properties.Name:              {name: "PolicyName", transform: extractValueFn},
