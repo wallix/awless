@@ -9,6 +9,16 @@ import (
 	"github.com/wallix/awless/graph"
 )
 
+func TestIsFetchingByType(t *testing.T) {
+	s, bytype := fetch.IsFetchingByType(context.WithValue(context.Background(), "fetchmode", "user"))
+	if got, want := s, "user"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := bytype, true; got != want {
+		t.Fatalf("got %t, want %t", got, want)
+	}
+}
+
 func TestFetcher(t *testing.T) {
 	instances := []*graph.Resource{
 		graph.InitResource("instance", "inst_1"),

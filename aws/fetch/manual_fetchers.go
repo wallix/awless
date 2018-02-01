@@ -382,25 +382,19 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := conf.APIs.Iam.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{
-				Filter: []*string{
-					awssdk.String(iam.EntityTypeUser),
-				},
-			}, func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
-				for _, output := range out.UserDetailList {
-					objectsC <- output
-					res, e := awsconv.NewResource(output)
-					if e != nil {
-						errC <- e
-						return false
-					}
-					resourcesC <- res
-				}
-				return out.Marker != nil
-			})
+			accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
 			if err != nil {
 				errC <- err
 				return
+			}
+			for _, output := range accountDetails.Users {
+				objectsC <- output
+				if res, e := awsconv.NewResource(output); e != nil {
+					errC <- e
+					return
+				} else {
+					resourcesC <- res
+				}
 			}
 		}()
 
@@ -454,6 +448,58 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		}
 	}
 
+	funcs["group"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*iam.GroupDetail
+
+		if !conf.getBoolDefaultTrue("aws.access.group.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource access[group]")
+			return resources, objects, nil
+		}
+
+		accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range accountDetails.Groups {
+			objects = append(objects, output)
+			if res, err := awsconv.NewResource(output); err != nil {
+				return resources, objects, err
+			} else {
+				resources = append(resources, res)
+			}
+		}
+
+		return resources, objects, nil
+	}
+
+	funcs["role"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*iam.RoleDetail
+
+		if !conf.getBoolDefaultTrue("aws.access.role.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource access[role]")
+			return resources, objects, nil
+		}
+
+		accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range accountDetails.Roles {
+			objects = append(objects, output)
+			if res, err := awsconv.NewResource(output); err != nil {
+				return resources, objects, err
+			} else {
+				resources = append(resources, res)
+			}
+		}
+
+		return resources, objects, nil
+	}
+
 	funcs["policy"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
 		var resources []*graph.Resource
 		var objects []*iam.Policy
@@ -472,25 +518,25 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := conf.APIs.Iam.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String("LocalManagedPolicy"), awssdk.String("AWSManagedPolicy")}},
-				func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
-					for _, p := range out.Policies {
-						res, rerr := awsconv.NewResource(p)
-						if rerr != nil {
-							return false
-						}
-						if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
-							res.Properties()[properties.Type] = "AWS Managed"
-						} else {
-							res.Properties()[properties.Type] = "Customer Managed"
-						}
-						res.Properties()[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
-						resourcesC <- res
-					}
-					return out.Marker != nil
-				})
+
+			accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
 			if err != nil {
 				errC <- err
+				return
+			}
+			for _, p := range accountDetails.Policies {
+				res, e := awsconv.NewResource(p)
+				if e != nil {
+					errC <- e
+					return
+				}
+				if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
+					res.Properties()[properties.Type] = "AWS Managed"
+				} else {
+					res.Properties()[properties.Type] = "Customer Managed"
+				}
+				res.Properties()[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
+				resourcesC <- res
 			}
 		}()
 

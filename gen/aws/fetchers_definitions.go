@@ -101,8 +101,8 @@ var FetchersDefs = []fetchersDef{
 		Api:    []string{"iam", "sts"},
 		Fetchers: []fetcher{
 			{Api: "iam", ResourceType: cloud.User, AWSType: "iam.UserDetail", ManualFetcher: true},
-			{Api: "iam", ResourceType: cloud.Group, AWSType: "iam.GroupDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeGroup)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "GroupDetailList", Multipage: true, NextPageMarker: "Marker"},
-			{Api: "iam", ResourceType: cloud.Role, AWSType: "iam.RoleDetail", ApiMethod: "GetAccountAuthorizationDetailsPages", Input: "iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String(iam.EntityTypeRole)}}", Output: "iam.GetAccountAuthorizationDetailsOutput", OutputsExtractor: "RoleDetailList", Multipage: true, NextPageMarker: "Marker"},
+			{Api: "iam", ResourceType: cloud.Group, AWSType: "iam.GroupDetail", ManualFetcher: true},
+			{Api: "iam", ResourceType: cloud.Role, AWSType: "iam.RoleDetail", ManualFetcher: true},
 			{Api: "iam", ResourceType: cloud.Policy, AWSType: "iam.Policy", ManualFetcher: true},
 			{Api: "iam", ResourceType: cloud.AccessKey, AWSType: "iam.AccessKeyMetadata", ManualFetcher: true},
 			{Api: "iam", ResourceType: cloud.InstanceProfile, AWSType: "iam.InstanceProfile", ApiMethod: "ListInstanceProfilesPages", Input: "iam.ListInstanceProfilesInput{}", Output: "iam.ListInstanceProfilesOutput", OutputsExtractor: "InstanceProfiles", Multipage: true, NextPageMarker: "Marker"},
