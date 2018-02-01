@@ -298,7 +298,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"policy-file":             "The path to the file containing the stack policy body",
 		"template-file":           "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
 		"stack-file":              "The path to the file containing Parameters/Tags/StackPolices definition (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html#w2ab2c13c15c15). Values passed via CLI has higher priority than ones defined in StackFile",
-		"rollback-triggers":       "List of ClodwatchAlarm Arns to monitor during and after creation",
+		"rollback-triggers":       "List of CloudWatch Alarm ARNs to monitor during and after creation",
 		"rollback-monitoring-min": "Time to monitor rollback-triggers during and after creation",
 	},
 	"create.subnet": {
@@ -539,7 +539,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"policy-update-file":      "The path to the file containing the temporary overriding stack policy",
 		"template-file":           "The path to the file containing the template body with a minimum size of 1 byte and a maximum size of 51,200 bytes",
 		"stack-file":              "The path to the file containing Parameters/Tags/StackPolices definition (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-cfn-artifacts.html#w2ab2c13c15c15). Values passed via CLI has higher priority than ones defined in StackFile",
-		"rollback-triggers":       "List of ClodwatchAlarm Arns to monitor during and after update",
+		"rollback-triggers":       "List of CloudWatch Alarm ARNs to monitor during and after update",
 		"rollback-monitoring-min": "Time to monitor rollback-triggers during and after update",
 	},
 	"update.targetgroup": {
