@@ -42,8 +42,9 @@ func init() {
 }
 
 var searchCmd = &cobra.Command{
-	Use:   "search",
-	Short: "Perform various searches and resolution",
+	Hidden: true,
+	Use:    "search",
+	Short:  "Perform various searches and resolution",
 }
 
 var awsImagesCmd = &cobra.Command{
