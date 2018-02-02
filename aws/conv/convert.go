@@ -177,12 +177,23 @@ func InitResource(source interface{}) (*graph.Resource, error) {
 	return res, nil
 }
 
-func NewResource(source interface{}) (*graph.Resource, error) {
+func NewResource(source interface{}, pairOfExtraProperties ...interface{}) (*graph.Resource, error) {
 	res, err := InitResource(source)
 	if err != nil {
 		return res, err
 	}
+
 	res.Properties()[properties.ID] = res.Id()
+
+	if count := len(pairOfExtraProperties); count > 1 && count%2 == 0 {
+		for i := 0; i < count; i = i + 2 {
+			key, isString := pairOfExtraProperties[i].(string)
+			if isString {
+				value := pairOfExtraProperties[i+1]
+				res.Properties()[key] = value
+			}
+		}
+	}
 
 	value := reflect.ValueOf(source)
 	if !value.IsValid() || value.Kind() != reflect.Ptr || value.IsNil() {

@@ -431,6 +431,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	cloud.Record: {
 		properties.Name:                  {name: "Name", transform: extractValueFn},
+		properties.Zone:                  {name: "Zone"},
 		properties.Failover:              {name: "Failover", transform: extractValueFn},
 		properties.Continent:             {name: "GeoLocation", transform: extractFieldFn("ContinentCode")},
 		properties.Country:               {name: "GeoLocation", transform: extractFieldFn("CountryCode")},
