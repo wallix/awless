@@ -28,40 +28,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-func TestNewResourceWithExtraProperties(t *testing.T) {
-	t.Run("valid pairs", func(t *testing.T) {
-		r, err := NewResource(&ec2.Instance{}, "count", 3, "name", "john")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		p, _ := r.Property("count")
-		if got, want := p, 3; got != want {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-		p, _ = r.Property("name")
-		if got, want := p, "john"; got != want {
-			t.Fatalf("got %v, want %v", got, want)
-		}
-	})
-	t.Run("invalid pairs", func(t *testing.T) {
-		r, err := NewResource(&ec2.Instance{}, "count", 3, "name", "john", "keyonly")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if _, exists := r.Property("count"); exists {
-			t.Fatalf("unexpected key")
-		}
-		if _, exists := r.Property("name"); exists {
-			t.Fatalf("unexpected key")
-		}
-		if _, exists := r.Property("keyonly"); exists {
-			t.Fatalf("unexpected key")
-		}
-	})
-}
-
 func TestTransformFunctions(t *testing.T) {
 	t.Parallel()
 	t.Run("extractTag", func(t *testing.T) {

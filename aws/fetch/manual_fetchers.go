@@ -866,10 +866,12 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 						func(out *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
 							for _, output := range out.ResourceRecordSets {
 								objectsC <- output
-								res, err := awsconv.NewResource(output, properties.Zone, *z.Name)
+								res, err := awsconv.NewResource(output)
 								if err != nil {
 									errC <- err
 								}
+								res.Properties()[properties.Zone] = *z.Name
+
 								parent, err := awsconv.InitResource(z)
 								if err != nil {
 									errC <- err
