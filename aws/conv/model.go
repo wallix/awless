@@ -213,6 +213,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Arn:          {name: "ListenerArn", transform: extractValueFn},
 		properties.Certificates: {name: "Certificates", transform: extractStringSliceValues("CertificateArn")},
 		properties.Actions:      {name: "DefaultActions", transform: extractStringSliceValues("Type")},
+		properties.TargetGroups: {name: "DefaultActions", transform: extractStringSliceValues("TargetGroupArn")},
 		properties.LoadBalancer: {name: "LoadBalancerArn", transform: extractValueFn},
 		properties.Port:         {name: "Port", transform: extractValueFn},
 		properties.Protocol:     {name: "Protocol", transform: extractValueFn},
