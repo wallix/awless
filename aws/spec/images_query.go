@@ -224,14 +224,14 @@ var (
 	}
 
 	RedHat = Platform{
-		Name: "redhat", Id: "309956199498", DistroName: "rhel", LatestVariant: "7.3",
+		Name: "redhat", Id: "309956199498", DistroName: "rhel", LatestVariant: "7.4",
 		MatchFunc: func(s string, d Distro) bool {
 			return strings.Contains(s, fmt.Sprintf("%s-%s", d.Name, d.Variant))
 		},
 	}
 
 	Debian = Platform{
-		Name: "debian", Id: "379101102735", DistroName: "debian", LatestVariant: "jessie",
+		Name: "debian", Id: "379101102735", DistroName: "debian", LatestVariant: "stretch",
 		MatchFunc: func(s string, d Distro) bool {
 			return strings.HasPrefix(s, fmt.Sprintf("%s-%s", d.Name, d.Variant))
 		},
