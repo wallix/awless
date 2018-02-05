@@ -88,7 +88,7 @@ const maxMsgLen = 140
 var runCmd = &cobra.Command{
 	Use:               "run PATH",
 	Short:             "Run a template given a filepath or URL",
-	Example:           "  awless run ~/templates/my-infra.txt\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.awls\n  awless run repo:create_vpc",
+	Example:           "  awless run ~/templates/my-infra.aws\n  awless run https://raw.githubusercontent.com/wallix/awless-templates/master/create_vpc.aws\n  awless run repo:create_vpc",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 
@@ -334,7 +334,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 			PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 			Short:             awsdoc.AwlessCommandDefinitionsDoc(action, templDef.Entity, fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity)),
-			Long:              fmt.Sprintf("Params: \n%s\nParams patterns:\n  %s", paramsStr.String(), templDef.Params),
+			Long:              fmt.Sprintf("Params:\n%s\nParams patterns:\n  %s\n\nOther actions on '%s':\n%s", paramsStr.String(), templDef.Params, templDef.Entity, availableActionsForEntity(templDef.Entity)),
 			Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
 			RunE:              run(templDef),
 			ValidArgs:         validArgs,
@@ -428,6 +428,21 @@ func resolveAliasFunc(paramPath, alias string) string {
 	}
 
 	return matchingResource.Id()
+}
+
+func availableActionsForEntity(entity string) string {
+	var out []string
+	for actionentity, _ := range awsspec.APIPerTemplateDefName {
+		if strings.HasSuffix(actionentity, entity) {
+			index := strings.Index(actionentity, entity)
+			out = append(out, fmt.Sprintf("  %s %s", actionentity[:index], actionentity[index:]))
+		}
+	}
+	if len(out) > 0 {
+		sort.Strings(out)
+		return strings.Join(out, "\n")
+	}
+	return "none"
 }
 
 func oneLinerShortDesc(action string, entities []string) string {
