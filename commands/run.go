@@ -334,7 +334,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 			PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 			Short:             awsdoc.AwlessCommandDefinitionsDoc(action, templDef.Entity, fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity)),
-			Long:              fmt.Sprintf("Params:\n%s\nParams patterns:\n  %s\n\nOther actions on '%s':\n%s", paramsStr.String(), templDef.Params, templDef.Entity, availableActionsForEntity(templDef.Entity)),
+			Long:              fmt.Sprintf("Params:\n%s\nParams patterns:\n  %s\n\nSee also:\n%s", paramsStr.String(), templDef.Params, availableActionsForEntity(templDef.Entity)),
 			Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
 			RunE:              run(templDef),
 			ValidArgs:         validArgs,
