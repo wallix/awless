@@ -11,7 +11,7 @@ var (
 	services      = []string{"iam", "ec2", "s3", "route53", "elbv2", "rds", "autoscaling", "lambda", "sns", "sqs", "cloudwatch", "cloudfront", "ecr", "ecs", "applicationautoscaling", "acm", "sts", "cloudformation"}
 	instanceTypes = []string{"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"}
 	s3ACLs        = []string{"private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control", "log-delivery-write"}
-	distros       = []string{"amazonlinux", "canonical", "redhat", "debian", "suselinux", "windows"}
+	distros       = []string{"amazonlinux", "canonical:ubuntu", "redhat:rhel", "debian:debian", "suselinux", "windows:server"}
 )
 
 var EnumDoc = map[string][]string{
