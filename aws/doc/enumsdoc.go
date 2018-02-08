@@ -12,6 +12,7 @@ var (
 	instanceTypes = []string{"t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "c4.large", "c4.xlarge"}
 	s3ACLs        = []string{"private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control", "log-delivery-write"}
 	distros       = []string{"amazonlinux", "canonical:ubuntu", "redhat:rhel", "debian:debian", "suselinux", "windows:server"}
+	regions       = []string{"us-east-1", "us-east-2", "us-west-1", "us-west-2", "eu-west-1", "eu-west-2", "eu-west-3", "eu-central-1", "ca-central-1", "ap-northeast-1", "ap-northeast-2", "ap-southeast-1", "ap-southeast-2", "ap-south-1", "sa-east-1"}
 )
 
 var EnumDoc = map[string][]string{
@@ -125,6 +126,9 @@ var EnumDoc = map[string][]string{
 	"create.subscription.protocol": {"http", "https", "email", "email-json", "sms", "sqs", "lambda"},
 
 	"create.zone.isprivate": boolean,
+
+	"copy.image.source-id":     {""},
+	"copy.image.source-region": regions,
 
 	"delete.containertask.all-versions": boolean,
 
