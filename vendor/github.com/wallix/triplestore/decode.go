@@ -207,7 +207,11 @@ func decodeTriple(r io.Reader) (Triple, bool, error) {
 		if err != nil {
 			return nil, false, fmt.Errorf("literate: %s", err)
 		}
-		decodedLiteral.val = string(val)
+		if decodedLiteral.typ == XsdString || objType == literalWithLangEncoding {
+			decodedLiteral.val = unescapeStringLiteral(string(val))
+		} else {
+			decodedLiteral.val = string(val)
+		}
 
 		decodedObj.lit = decodedLiteral
 	}
@@ -288,4 +292,8 @@ func (dec *datasetDecoder) Decode() ([]Triple, error) {
 	}
 
 	return all, nil
+}
+
+func unescapeStringLiteral(s string) string {
+	return strings.Replace(s, "\\n", "\n", -1)
 }

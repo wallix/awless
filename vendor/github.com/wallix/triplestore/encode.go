@@ -120,7 +120,11 @@ func encodeBinTriple(t Triple, buff *bytes.Buffer) error {
 			binary.Write(buff, binary.BigEndian, wordLength(len(typ)))
 			buff.WriteString(string(typ))
 		}
+
 		litVal := lit.Value()
+		if lit.Type() == XsdString {
+			litVal = escapeStringLiteral(litVal)
+		}
 		binary.Write(buff, binary.BigEndian, wordLength(len(litVal)))
 		buff.WriteString(litVal)
 	} else if bnode, isBnode := obj.Bnode(); isBnode {
@@ -202,12 +206,12 @@ func encodeNTriple(t Triple, ctx *Context, buff *bytes.Buffer) {
 			buff.WriteString("<" + buildIRI(ctx, rid) + ">")
 		} else if lit, ok := t.Object().Literal(); ok {
 			if lit.Lang() != "" {
-				buff.WriteString("\"" + lit.Value() + "\"@" + lit.Lang())
+				buff.WriteString("\"" + escapeStringLiteral(lit.Value()) + "\"@" + lit.Lang())
 			} else {
 				switch lit.Type() {
 				case XsdString:
 					// namespace empty as per spec
-					buff.WriteString("\"" + lit.Value() + "\"")
+					buff.WriteString("\"" + escapeStringLiteral(lit.Value()) + "\"")
 				default:
 					if ctx != nil {
 						if _, ok := ctx.Prefixes["xsd"]; ok {
@@ -298,4 +302,8 @@ func (dg *dotGraphEncoder) Encode(tris ...Triple) error {
 	fmt.Fprintf(dg.w, "}")
 
 	return nil
+}
+
+func escapeStringLiteral(s string) string {
+	return strings.Replace(s, "\n", "\\n", -1)
 }

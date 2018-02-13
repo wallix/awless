@@ -36,6 +36,12 @@ Test it:
 go test -v -cover -race github.com/wallix/triplestore
 ```
 
+Bench it:
+
+```
+go test -run=none -bench=. -benchmem
+```
+
 Import it in your source code:
 
 ```go

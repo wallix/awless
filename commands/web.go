@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/web"
 )
 
@@ -34,15 +35,16 @@ func init() {
 }
 
 var webCmd = &cobra.Command{
-	Use:    "web",
-	Hidden: true,
-	Short:  "Browse your cloud data through a web ui",
+	Use:              "web",
+	Hidden:           true,
+	Short:            "[Experimental] Browse your locally synced data through the web",
+	PersistentPreRun: applyHooks(initLoggerHook, initAwlessEnvHook),
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !strings.HasPrefix(webPortFlag, ":") {
 			webPortFlag = ":" + webPortFlag
 		}
-		server := web.New(webPortFlag)
+		server := web.New(webPortFlag, config.GetAWSProfile())
 		exitOn(server.Start())
 	},
 }

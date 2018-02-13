@@ -44,6 +44,7 @@ func printVersion(*cobra.Command, []string) {
 ██╔══██║ ██║███╗██║ ██║     ██╔═╝       ██╗     ██╗   
 ██║  ██║ ╚███╔███╔╝ ██████╗ ██████╗ ██████║ ██████║   
 ╚═╝  ╚═╝  ╚══╝╚══╝  ╚═════╝ ╚═════╝ ╚═════╝ ╚═════╝
+
 `)
-	fmt.Println("awless", config.CurrentBuildInfo.String())
+	fmt.Println(config.CurrentBuildInfo)
 }

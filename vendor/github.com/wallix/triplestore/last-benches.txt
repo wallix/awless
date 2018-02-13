@@ -1,0 +1,16 @@
+goos: linux
+goarch: amd64
+pkg: github.com/wallix/triplestore
+BenchmarkEncodingMemallocation-4   	   20000	     63748 ns/op	   32288 B/op	    1209 allocs/op
+BenchmarkAllEncoding/binary-4      	    2000	    636999 ns/op	  303264 B/op	   12012 allocs/op
+BenchmarkAllEncoding/binary_streaming-4         	    2000	   1149133 ns/op	  303268 B/op	   12012 allocs/op
+BenchmarkAllEncoding/ntriples-4                 	    3000	    495783 ns/op	  529136 B/op	    4014 allocs/op
+BenchmarkAllEncoding/ntriples_streaming-4       	    2000	    940655 ns/op	  529172 B/op	    4015 allocs/op
+BenchmarkAllEncoding/ntriples_with_context-4    	    1000	   1212262 ns/op	  764839 B/op	    8015 allocs/op
+BenchmarkAllDecoding/binary-4                   	 3000000	       475 ns/op	      80 B/op	       3 allocs/op
+BenchmarkAllDecoding/binary_streaming-4         	  300000	      4129 ns/op	     176 B/op	       4 allocs/op
+BenchmarkAllDecoding/ntriples-4                 	 1000000	      1200 ns/op	    4112 B/op	       2 allocs/op
+BenchmarkAllDecoding/ntriples_streaming-4       	 1000000	      2114 ns/op	    4212 B/op	       3 allocs/op
+BenchmarkSnapshotSource-4                       	       1	6622021728 ns/op	1482407016 B/op	22231365 allocs/op
+PASS
+ok  	github.com/wallix/triplestore	24.139s
