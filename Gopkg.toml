@@ -76,7 +76,3 @@
 [[constraint]]
   branch = "master"
   name = "github.com/boombuler/barcode"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/qianlnk/qrcode"
