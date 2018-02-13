@@ -35,6 +35,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"id":  "The ID of the Internet gateway",
 		"vpc": "The ID of the VPC",
 	},
+	"attach.listener": {
+		"id": "The Amazon Resource Name (ARN) of the listener",
+	},
 	"attach.mfadevice": {
 		"id":         "The serial number that uniquely identifies the MFA device",
 		"mfa-code-1": "An authentication code emitted by the device",

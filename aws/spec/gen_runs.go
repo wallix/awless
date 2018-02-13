@@ -557,6 +557,85 @@ func (cmd *AttachInternetgateway) inject(params map[string]interface{}) error {
 	return structSetter(cmd, params)
 }
 
+func NewAttachListener(sess *session.Session, g cloud.GraphAPI, l ...*logger.Logger) *AttachListener {
+	cmd := new(AttachListener)
+	if len(l) > 0 {
+		cmd.logger = l[0]
+	} else {
+		cmd.logger = logger.DiscardLogger
+	}
+	if sess != nil {
+		cmd.api = elbv2.New(sess)
+	}
+	cmd.graph = g
+	return cmd
+}
+
+func (cmd *AttachListener) SetApi(api elbv2iface.ELBV2API) {
+	cmd.api = api
+}
+
+func (cmd *AttachListener) Run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if renv.IsDryRun() {
+		return cmd.dryRun(renv, params)
+	}
+	return cmd.run(renv, params)
+}
+
+func (cmd *AttachListener) run(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	if err := cmd.inject(params); err != nil {
+		return nil, fmt.Errorf("cannot set params on command struct: %s", err)
+	}
+
+	if v, ok := implementsBeforeRun(cmd); ok {
+		if brErr := v.BeforeRun(renv); brErr != nil {
+			return nil, fmt.Errorf("before run: %s", brErr)
+		}
+	}
+
+	input := &elbv2.AddListenerCertificatesInput{}
+	if err := structInjector(cmd, input, renv.Context()); err != nil {
+		return nil, fmt.Errorf("cannot inject in elbv2.AddListenerCertificatesInput: %s", err)
+	}
+	start := time.Now()
+	output, err := cmd.api.AddListenerCertificates(input)
+	renv.Log().ExtraVerbosef("elbv2.AddListenerCertificates call took %s", time.Since(start))
+	if err != nil {
+		return nil, decorateAWSError(err)
+	}
+
+	var extracted interface{}
+	if v, ok := implementsResultExtractor(cmd); ok {
+		if output != nil {
+			extracted = v.ExtractResult(output)
+		} else {
+			renv.Log().Warning("attach listener: AWS command returned nil output")
+		}
+	}
+
+	if extracted != nil {
+		renv.Log().Verbosef("attach listener '%s' done", extracted)
+	} else {
+		renv.Log().Verbose("attach listener done")
+	}
+
+	if v, ok := implementsAfterRun(cmd); ok {
+		if brErr := v.AfterRun(renv, output); brErr != nil {
+			return nil, fmt.Errorf("after run: %s", brErr)
+		}
+	}
+
+	return extracted, nil
+}
+
+func (cmd *AttachListener) dryRun(renv env.Running, params map[string]interface{}) (interface{}, error) {
+	return fakeDryRunId("listener"), nil
+}
+
+func (cmd *AttachListener) inject(params map[string]interface{}) error {
+	return structSetter(cmd, params)
+}
+
 func NewAttachMfadevice(sess *session.Session, g cloud.GraphAPI, l ...*logger.Logger) *AttachMfadevice {
 	cmd := new(AttachMfadevice)
 	if len(l) > 0 {

@@ -48,6 +48,10 @@ var cliExamplesDoc = map[string][]string{
 	"attach.internetgateway": {
 		"awless attach internetgateway id=igw-636c0504 vpc=vpc-1aba387c",
 	},
+	"attach.listener": {
+		"awless attach listener certificate=@www.mysite.com id=arn:aws:elasticloadbalancing:.../00683da53db92e54",
+		"awless attach listener certificate=arn:aws:acm:...a7b691c218 id=arn:aws:elasticloadbalancing:.../00683da53db92e54",
+	},
 	"attach.policy": {
 		"awless attach policy role=MyNewRole service=ec2 access=readonly",
 		"awless attach policy user=jsmith service=s3 access=readonly",

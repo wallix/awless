@@ -47,6 +47,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":     "The name of the InstanceProfile to associate to the Instance",
 		"replace":  "If 'true' will replace existing instance profile with provided one",
 	},
+	"attach.listener": {
+		"certificate": "The awless alias of the certificate's name (ex: @www.mysite.com), or the full certificate's ARN",
+	},
 	"attach.mfadevice": {
 		"no-prompt": "Use 'true' to disable the prompt that asks to append the mfadevice to ~/.aws/config file",
 	},

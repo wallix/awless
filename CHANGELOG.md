@@ -11,6 +11,9 @@
       *`awless ls s3objects --filter bucket=website`*
       *`awless ls records --filter name=io`*
       *`awless ls containertasks --filter name=my-task-definition-name`* 
+      
+- [#191](https://github.com/wallix/awless/issues/191) Attach a certificate to a listener with: `awless listener attach id=... certificate=...` (see awless attach listener -h for more)
+
 
 ### Fixes
 
