@@ -294,6 +294,8 @@ func (dec *datasetDecoder) Decode() ([]Triple, error) {
 	return all, nil
 }
 
+var unescaper = strings.NewReplacer("\\n", "\n", "\\r", "\r")
+
 func unescapeStringLiteral(s string) string {
-	return strings.Replace(s, "\\n", "\n", -1)
+	return unescaper.Replace(s)
 }

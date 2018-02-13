@@ -304,6 +304,8 @@ func (dg *dotGraphEncoder) Encode(tris ...Triple) error {
 	return nil
 }
 
+var escaper = strings.NewReplacer("\n", "\\n", "\r", "\\r")
+
 func escapeStringLiteral(s string) string {
-	return strings.Replace(s, "\n", "\\n", -1)
+	return escaper.Replace(s)
 }
