@@ -217,7 +217,7 @@ func (c *Client) localExec() ([]string, bool) {
 		exists = false
 		bin = "ssh"
 	}
-	args := []string{bin, fmt.Sprintf("%s@%s", c.User, c.IP)}
+	args := []string{bin}
 	if len(c.Keypath) > 0 {
 		args = append(args, "-i", c.Keypath)
 	}
@@ -227,6 +227,9 @@ func (c *Client) localExec() ([]string, bool) {
 	if !c.StrictHostKeyChecking {
 		args = append(args, "-o", "StrictHostKeychecking=no")
 	}
+
+	args = append(args, fmt.Sprintf("%s@%s", c.User, c.IP))
+
 	if c.Proxy != nil {
 		var keyArg string
 		if k := c.Proxy.Keypath; len(k) > 0 {
