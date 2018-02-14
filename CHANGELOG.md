@@ -3,6 +3,7 @@
 ### Features
 
 
+- Create instances: support CentOS for distro prompting
 - Support for region embedded in an AWS profile (i.e. shared config files ~/.aws/{credentials,config}). See #181 in Fixes for more details 
 - Listing flag `--filter` now passes on the user wanted filtering down to the AWS API when possible so that: _less unneeded resources are fetched_, _bandwidth is reduced_, _some throttling avoided_.
   
