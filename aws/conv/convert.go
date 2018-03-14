@@ -182,6 +182,7 @@ func NewResource(source interface{}) (*graph.Resource, error) {
 	if err != nil {
 		return res, err
 	}
+
 	res.Properties()[properties.ID] = res.Id()
 
 	value := reflect.ValueOf(source)
@@ -426,14 +427,18 @@ var extractFieldFn = func(field string) transformFn {
 }
 
 var extractTagsFn = func(i interface{}) (interface{}, error) {
-	tags, ok := i.([]*ec2.Tag)
-	if !ok {
-		return nil, fmt.Errorf("extract tags: not a tag slice, but a %T", i)
-	}
-
 	var out []string
-	for _, t := range tags {
-		out = append(out, fmt.Sprintf("%s=%s", awssdk.StringValue(t.Key), awssdk.StringValue(t.Value)))
+	switch tags := i.(type) {
+	case []*ec2.Tag:
+		for _, t := range tags {
+			out = append(out, fmt.Sprintf("%s=%s", awssdk.StringValue(t.Key), awssdk.StringValue(t.Value)))
+		}
+	case []*autoscaling.TagDescription:
+		for _, t := range tags {
+			out = append(out, fmt.Sprintf("%s=%s", awssdk.StringValue(t.Key), awssdk.StringValue(t.Value)))
+		}
+	default:
+		return nil, fmt.Errorf("extract tags: not a tag slice, but a %T", i)
 	}
 
 	return out, nil

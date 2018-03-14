@@ -3,7 +3,73 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","awstesting/mock","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/acm","service/acm/acmiface","service/applicationautoscaling","service/applicationautoscaling/applicationautoscalingiface","service/autoscaling","service/autoscaling/autoscalingiface","service/cloudformation","service/cloudformation/cloudformationiface","service/cloudfront","service/cloudfront/cloudfrontiface","service/cloudwatch","service/cloudwatch/cloudwatchiface","service/configservice","service/ec2","service/ec2/ec2iface","service/ecr","service/ecr/ecriface","service/ecs","service/ecs/ecsiface","service/elbv2","service/elbv2/elbv2iface","service/iam","service/iam/iamiface","service/lambda","service/lambda/lambdaiface","service/rds","service/rds/rdsiface","service/route53","service/route53/route53iface","service/s3","service/s3/s3iface","service/sns","service/sns/snsiface","service/sqs","service/sqs/sqsiface","service/sts","service/sts/stsiface"]
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "awstesting/mock",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/ec2query",
+    "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/restjson",
+    "private/protocol/restxml",
+    "private/protocol/xml/xmlutil",
+    "service/acm",
+    "service/acm/acmiface",
+    "service/applicationautoscaling",
+    "service/applicationautoscaling/applicationautoscalingiface",
+    "service/autoscaling",
+    "service/autoscaling/autoscalingiface",
+    "service/cloudformation",
+    "service/cloudformation/cloudformationiface",
+    "service/cloudfront",
+    "service/cloudfront/cloudfrontiface",
+    "service/cloudwatch",
+    "service/cloudwatch/cloudwatchiface",
+    "service/configservice",
+    "service/ec2",
+    "service/ec2/ec2iface",
+    "service/ecr",
+    "service/ecr/ecriface",
+    "service/ecs",
+    "service/ecs/ecsiface",
+    "service/elbv2",
+    "service/elbv2/elbv2iface",
+    "service/iam",
+    "service/iam/iamiface",
+    "service/lambda",
+    "service/lambda/lambdaiface",
+    "service/rds",
+    "service/rds/rdsiface",
+    "service/route53",
+    "service/route53/route53iface",
+    "service/s3",
+    "service/s3/s3iface",
+    "service/sns",
+    "service/sns/snsiface",
+    "service/sqs",
+    "service/sqs/sqsiface",
+    "service/sts",
+    "service/sts/stsiface"
+  ]
   revision = "f62f7b7c5425f2b1a630932617477bdeac6dc371"
   version = "v1.12.55"
 
@@ -14,10 +80,14 @@
   version = "v1.3.1"
 
 [[projects]]
+  branch = "master"
   name = "github.com/boombuler/barcode"
-  packages = [".","qr","utils"]
-  revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
-  version = "v1.0.0"
+  packages = [
+    ".",
+    "qr",
+    "utils"
+  ]
+  revision = "5a7395f62784d17e29056e861ebd448ac1096261"
 
 [[projects]]
   branch = "master"
@@ -122,13 +192,21 @@
 
 [[projects]]
   name = "github.com/src-d/gcfg"
-  packages = [".","scanner","token","types"]
+  packages = [
+    ".",
+    "scanner",
+    "token",
+    "types"
+  ]
   revision = "f187355171c936ac84a82793659ebb4936bc1c23"
   version = "v1.3.0"
 
 [[projects]]
   name = "github.com/wallix/awless-scheduler"
-  packages = ["client","model"]
+  packages = [
+    "client",
+    "model"
+  ]
   revision = "e49d8194851286ac48b298155cef00aa9fa7534d"
   version = "v0.0.6"
 
@@ -136,7 +214,7 @@
   branch = "master"
   name = "github.com/wallix/triplestore"
   packages = ["."]
-  revision = "4a8373fdb943493da4880d6b9a78b68cc2e5b172"
+  revision = "4099dd913851642f2c0b71f9c1a0c6887748849c"
 
 [[projects]]
   branch = "master"
@@ -147,7 +225,15 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","ssh","ssh/agent","ssh/knownhosts","ssh/terminal"]
+  packages = [
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "ssh",
+    "ssh/agent",
+    "ssh/knownhosts",
+    "ssh/terminal"
+  ]
   revision = "0fcca4842a8d74bfddc2c96a073bd2a4d2a7a2e8"
 
 [[projects]]
@@ -159,18 +245,68 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "28a7276518d399b9634904daad79e18b44d481bc"
 
 [[projects]]
   name = "gopkg.in/src-d/go-billy.v3"
-  packages = [".","helper/chroot","helper/polyfill","osfs","util"]
+  packages = [
+    ".",
+    "helper/chroot",
+    "helper/polyfill",
+    "osfs",
+    "util"
+  ]
   revision = "c329b7bc7b9d24905d2bc1b85bfa29f7ae266314"
   version = "v3.1.0"
 
 [[projects]]
   name = "gopkg.in/src-d/go-git.v4"
-  packages = [".","config","internal/revision","plumbing","plumbing/cache","plumbing/filemode","plumbing/format/config","plumbing/format/diff","plumbing/format/gitignore","plumbing/format/idxfile","plumbing/format/index","plumbing/format/objfile","plumbing/format/packfile","plumbing/format/pktline","plumbing/object","plumbing/protocol/packp","plumbing/protocol/packp/capability","plumbing/protocol/packp/sideband","plumbing/revlist","plumbing/storer","plumbing/transport","plumbing/transport/client","plumbing/transport/file","plumbing/transport/git","plumbing/transport/http","plumbing/transport/internal/common","plumbing/transport/server","plumbing/transport/ssh","storage","storage/filesystem","storage/filesystem/internal/dotgit","storage/memory","utils/binary","utils/diff","utils/ioutil","utils/merkletrie","utils/merkletrie/filesystem","utils/merkletrie/index","utils/merkletrie/internal/frame","utils/merkletrie/noder"]
+  packages = [
+    ".",
+    "config",
+    "internal/revision",
+    "plumbing",
+    "plumbing/cache",
+    "plumbing/filemode",
+    "plumbing/format/config",
+    "plumbing/format/diff",
+    "plumbing/format/gitignore",
+    "plumbing/format/idxfile",
+    "plumbing/format/index",
+    "plumbing/format/objfile",
+    "plumbing/format/packfile",
+    "plumbing/format/pktline",
+    "plumbing/object",
+    "plumbing/protocol/packp",
+    "plumbing/protocol/packp/capability",
+    "plumbing/protocol/packp/sideband",
+    "plumbing/revlist",
+    "plumbing/storer",
+    "plumbing/transport",
+    "plumbing/transport/client",
+    "plumbing/transport/file",
+    "plumbing/transport/git",
+    "plumbing/transport/http",
+    "plumbing/transport/internal/common",
+    "plumbing/transport/server",
+    "plumbing/transport/ssh",
+    "storage",
+    "storage/filesystem",
+    "storage/filesystem/internal/dotgit",
+    "storage/memory",
+    "utils/binary",
+    "utils/diff",
+    "utils/ioutil",
+    "utils/merkletrie",
+    "utils/merkletrie/filesystem",
+    "utils/merkletrie/index",
+    "utils/merkletrie/internal/frame",
+    "utils/merkletrie/noder"
+  ]
   revision = "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
   version = "v4.0.0-rc13"
 

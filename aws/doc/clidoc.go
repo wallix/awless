@@ -48,6 +48,10 @@ var cliExamplesDoc = map[string][]string{
 	"attach.internetgateway": {
 		"awless attach internetgateway id=igw-636c0504 vpc=vpc-1aba387c",
 	},
+	"attach.listener": {
+		"awless attach listener certificate=@www.mysite.com id=arn:aws:elasticloadbalancing:.../00683da53db92e54",
+		"awless attach listener certificate=arn:aws:acm:...a7b691c218 id=arn:aws:elasticloadbalancing:.../00683da53db92e54",
+	},
 	"attach.policy": {
 		"awless attach policy role=MyNewRole service=ec2 access=readonly",
 		"awless attach policy user=jsmith service=s3 access=readonly",
@@ -140,6 +144,7 @@ var cliExamplesDoc = map[string][]string{
 		"awless create image instance=@redis-prod name=redis-prod-image",
 	},
 	"create.instance": {
+		"awless create image=ami-123456 # Start to create instance from specific image",
 		"awless create instance keypair=jsmith type=t2.micro subnet=@my-subnet",
 		"awless create instance image=ami-123456 keypair=jsmith",
 		"awless create instance name=redis type=t2.nano keypair=jsmith userdata=/home/jsmith/data.sh",
@@ -255,11 +260,11 @@ var cliExamplesDoc = map[string][]string{
 	"update.distribution":    {},
 	"update.instance":        {},
 	"update.image": {
-		"awless update image id=@my-image description=new-description # Make an AMI public",
-		"awless update image id=ami-bd6bb2c5 groups=all operation=add # Make an AMI private",
-		"awless update image id=ami-bd6bb2c5 groups=all operation=remove # Grants launch permission to an AWS account",
-		"awless update image id=@my-image accounts=3456728198326 operation=add # Remove launch permission to multiple AWS accounts",
-		"awless update image id=@my-image accounts=[3456728198326,546371829387] operation=remove",
+		"awless update image id=@my-image description=new-description",
+		"awless update image id=ami-bd6bb2c5 groups=all operation=add # Make an AMI public",
+		"awless update image id=ami-bd6bb2c5 groups=all operation=remove # Make an AMI private",
+		"awless update image id=@my-image accounts=3456728198326 operation=add # Grants launch permission to an AWS account",
+		"awless update image id=@my-image accounts=[3456728198326,546371829387] operation=remove  # Remove launch permission to multiple AWS accounts",
 	},
 	"update.loginprofile": {},
 	"update.policy":       {},

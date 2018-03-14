@@ -204,6 +204,7 @@ const (
 	Subnet                            = "Subnet"
 	Subnets                           = "Subnets"
 	Tags                              = "Tags"
+	TargetGroups                      = "TargetGroups"
 	Timeout                           = "Timeout"
 	Timezone                          = "Timezone"
 	TLSVersionRequired                = "TLSVersionRequired"

@@ -75,8 +75,11 @@ func TestParseImageQueryString(t *testing.T) {
 			in:  "redhat:RHEL:7.3:::instance-store",
 			out: ImageQuery{Platform: Platforms["redhat"], Distro: Distro{Name: "rhel", Variant: "7.3", Arch: defaultArch, Virt: defaultVirt, Store: "instance-store"}}},
 		{
+			in:  "centos:centos:7",
+			out: ImageQuery{Platform: Platforms["centos"], Distro: Distro{Name: "centos", Variant: "7", Arch: defaultArch, Virt: defaultVirt, Store: defaultStore}}},
+		{
 			in:  "debian",
-			out: ImageQuery{Platform: Platforms["debian"], Distro: Distro{Name: "debian", Variant: "jessie", Arch: defaultArch, Virt: defaultVirt, Store: defaultStore}}},
+			out: ImageQuery{Platform: Platforms["debian"], Distro: Distro{Name: "debian", Variant: "stretch", Arch: defaultArch, Virt: defaultVirt, Store: defaultStore}}},
 	}
 
 	for _, tcase := range tcases {

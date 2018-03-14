@@ -27,6 +27,20 @@ func TestListener(t *testing.T) {
 			}).ExpectCalls("CreateListener").Run(t)
 	})
 
+	t.Run("attach", func(t *testing.T) {
+		Template("attach listener id=arn:listener certificate=arn:certificate:to:attach").
+			Mock(&elbv2Mock{
+				AddListenerCertificatesFunc: func(input *elbv2.AddListenerCertificatesInput) (*elbv2.AddListenerCertificatesOutput, error) {
+					return nil, nil
+				},
+			}).ExpectInput("AddListenerCertificates", &elbv2.AddListenerCertificatesInput{
+			Certificates: []*elbv2.Certificate{
+				{CertificateArn: String("arn:certificate:to:attach")},
+			},
+			ListenerArn: String("arn:listener"),
+		}).ExpectCalls("AddListenerCertificates").Run(t)
+	})
+
 	t.Run("delete", func(t *testing.T) {
 		Template("delete listener id=arn:of:listener:to:delete").Mock(&elbv2Mock{
 			DeleteListenerFunc: func(input *elbv2.DeleteListenerInput) (*elbv2.DeleteListenerOutput, error) {

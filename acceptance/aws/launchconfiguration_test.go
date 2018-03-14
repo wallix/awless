@@ -10,7 +10,7 @@ import (
 func TestLaunchConfiguration(t *testing.T) {
 	t.Run("create", func(t *testing.T) {
 		t.Skip("need support of multiple API in mocks")
-		_, userdataFile, cleanup := generateTmpFile("this is my content with {{ .Variables.oneRef }} content")
+		_, userdataFile, cleanup := generateTmpFile("this is my content with {{ .AWLESS.oneRef }} content")
 		defer cleanup()
 		t.Run("with image", func(t *testing.T) {
 			Template("oneRef=awesome\n"+

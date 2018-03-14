@@ -87,9 +87,9 @@ func parseTriple(b []byte) (Triple, error) {
 			return tBuilder.Object(obj), err
 		} else if bytes.HasPrefix(b, []byte{'@'}) {
 			lang, _, err := parseLangtag(b[1:])
-			return tBuilder.StringLiteralWithLang(lit, lang), err
+			return tBuilder.StringLiteralWithLang(unescapeStringLiteral(lit), lang), err
 		} else {
-			return tBuilder.StringLiteral(lit), err
+			return tBuilder.StringLiteral(unescapeStringLiteral(lit)), err
 		}
 	} else {
 		return nil, errors.New("invalid object")

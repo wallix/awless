@@ -15,7 +15,6 @@ import (
 	"github.com/wallix/awless/cloud"
 	"github.com/wallix/awless/cloud/properties"
 	"github.com/wallix/awless/cloud/rdf"
-	"github.com/wallix/awless/config"
 	"github.com/wallix/awless/graph"
 	"github.com/wallix/awless/sync"
 	"github.com/wallix/awless/sync/repo"
@@ -23,23 +22,26 @@ import (
 )
 
 type server struct {
-	port string
-	gph  cloud.GraphAPI
+	port       string
+	awsProfile string
+	gph        cloud.GraphAPI
 }
 
-func New(port string) *server {
-	return &server{port: port}
+func New(port, profile string) *server {
+	return &server{port: port, awsProfile: profile}
 }
 
 func (s *server) Start() error {
-	g, err := sync.LoadAllLocalGraphs(config.GetAWSProfile())
+	log.Printf("Retrieving all local synced regions for the '%s' profile\n", s.awsProfile)
+	log.Println("(use awless web -p otherprofile for browsing through another profile)")
+	g, err := sync.LoadAllLocalGraphs(s.awsProfile)
 	if err != nil {
 		return fmt.Errorf("cannot load local graphs: %s", err)
 	}
 
 	s.gph = g
 
-	log.Printf("Starting browsing on http://localhost%s\n", s.port)
+	log.Printf("Starting browsing at http://localhost%s\n", s.port)
 	return http.ListenAndServe(s.port, s.routes())
 }
 
@@ -65,7 +67,7 @@ func (s *server) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) rdfHandler(w http.ResponseWriter, r *http.Request) {
-	tris, err := loadLocalTriples()
+	tris, err := loadLocalTriples(s.awsProfile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -90,7 +92,7 @@ func (s *server) graphHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	tris, err := loadLocalTriples()
+	tris, err := loadLocalTriples(s.awsProfile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -201,8 +203,8 @@ func newResource(r cloud.Resource) *Resource {
 	return &Resource{Id: r.Id(), Type: r.Type(), Properties: r.Properties()}
 }
 
-func loadLocalTriples() ([]tstore.Triple, error) {
-	path := filepath.Join(repo.BaseDir(), "*", fmt.Sprintf("*%s", ".triples"))
+func loadLocalTriples(profile string) ([]tstore.Triple, error) {
+	path := filepath.Join(repo.BaseDir(), profile, "*", fmt.Sprintf("*%s", ".nt"))
 	files, _ := filepath.Glob(path)
 
 	var readers []io.Reader

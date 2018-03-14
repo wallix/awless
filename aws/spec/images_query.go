@@ -36,6 +36,8 @@ import (
 //
 // - redhat::::instance-store
 //
+// - centos:centos
+//
 // The default values are: Arch="x86_64", Virt="hvm", Store="ebs"
 type ImageResolver func(*ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error)
 
@@ -212,6 +214,7 @@ var (
 		"redhat":      RedHat,
 		"debian":      Debian,
 		"amazonlinux": AmazonLinux,
+		"centos":      CentOS,
 		"suselinux":   SuseLinux,
 		"windows":     Windows,
 	}
@@ -224,16 +227,23 @@ var (
 	}
 
 	RedHat = Platform{
-		Name: "redhat", Id: "309956199498", DistroName: "rhel", LatestVariant: "7.3",
+		Name: "redhat", Id: "309956199498", DistroName: "rhel", LatestVariant: "7.4",
 		MatchFunc: func(s string, d Distro) bool {
 			return strings.Contains(s, fmt.Sprintf("%s-%s", d.Name, d.Variant))
 		},
 	}
 
 	Debian = Platform{
-		Name: "debian", Id: "379101102735", DistroName: "debian", LatestVariant: "jessie",
+		Name: "debian", Id: "379101102735", DistroName: "debian", LatestVariant: "stretch",
 		MatchFunc: func(s string, d Distro) bool {
 			return strings.HasPrefix(s, fmt.Sprintf("%s-%s", d.Name, d.Variant))
+		},
+	}
+
+	CentOS = Platform{
+		Name: "centos", Id: "679593333241", DistroName: "centos", LatestVariant: "7",
+		MatchFunc: func(s string, d Distro) bool {
+			return strings.HasPrefix(s, strings.ToLower(fmt.Sprintf("%s Linux %s", d.Name, d.Variant)))
 		},
 	}
 

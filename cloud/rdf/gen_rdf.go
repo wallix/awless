@@ -206,6 +206,7 @@ const (
 	Subnet                            = "cloud:subnet"
 	Subnets                           = "cloud:subnets"
 	Tags                              = "cloud:tags"
+	TargetGroups                      = "cloud:targetGroups"
 	Timeout                           = "cloud:timezone"
 	Timezone                          = "cloud:timeout"
 	TLSVersionRequired                = "cloud:tlsVersionRequired"
@@ -417,6 +418,7 @@ var Labels = map[string]string{
 	properties.Subnet:                            Subnet,
 	properties.Subnets:                           Subnets,
 	properties.Tags:                              Tags,
+	properties.TargetGroups:                      TargetGroups,
 	properties.Timeout:                           Timeout,
 	properties.Timezone:                          Timezone,
 	properties.TLSVersionRequired:                TLSVersionRequired,
@@ -628,6 +630,7 @@ var Properties = RDFProperties{
 	Subnet:                    {ID: Subnet, RdfType: "rdf:Property", RdfsLabel: "Subnet", RdfsDefinedBy: "rdfs:Class", RdfsDataType: "xsd:string"},
 	Subnets:                   {ID: Subnets, RdfType: "rdf:Property", RdfsLabel: "Subnets", RdfsDefinedBy: "rdfs:list", RdfsDataType: "rdfs:Class"},
 	Tags:                      {ID: Tags, RdfType: "rdf:Property", RdfsLabel: "Tags", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
+	TargetGroups:              {ID: TargetGroups, RdfType: "rdf:Property", RdfsLabel: "TargetGroups", RdfsDefinedBy: "rdfs:list", RdfsDataType: "xsd:string"},
 	Timeout:                   {ID: Timeout, RdfType: "rdf:Property", RdfsLabel: "Timeout", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:int"},
 	Timezone:                  {ID: Timezone, RdfType: "rdf:Property", RdfsLabel: "Timezone", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},
 	TLSVersionRequired:        {ID: TLSVersionRequired, RdfType: "rdf:Property", RdfsLabel: "TLSVersionRequired", RdfsDefinedBy: "rdfs:Literal", RdfsDataType: "xsd:string"},

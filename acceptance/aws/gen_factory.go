@@ -92,6 +92,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(ec2iface.EC2API))
 			return cmd
 		}
+	case "attachlistener":
+		return func() interface{} {
+			cmd := awsspec.NewAttachListener(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(elbv2iface.ELBV2API))
+			return cmd
+		}
 	case "attachmfadevice":
 		return func() interface{} {
 			cmd := awsspec.NewAttachMfadevice(nil, f.Graph, f.Logger)

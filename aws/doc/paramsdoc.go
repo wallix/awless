@@ -47,6 +47,9 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":     "The name of the InstanceProfile to associate to the Instance",
 		"replace":  "If 'true' will replace existing instance profile with provided one",
 	},
+	"attach.listener": {
+		"certificate": "The awless alias of the certificate's name (ex: @www.mysite.com), or the full certificate's ARN",
+	},
 	"attach.mfadevice": {
 		"no-prompt": "Use 'true' to disable the prompt that asks to append the mfadevice to ~/.aws/config file",
 	},
@@ -222,7 +225,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":   "The name of the instance to launch",
 		"role":   "The name of the instance profile (role) to launch the instance with",
 		"image":  "The ID of an AMI for the instance to be launched",
-		"distro": "The distro query to resolve official community bare distro AMI from current region. See `awless search images -h`",
+		"distro": "The distro query to resolve official community free bare distro AMI from current region. See `awless search images -h`",
 	},
 	"create.image": {
 		"reboot": "True to shut down and reboot the instance before creating the image, otherwise no reboot and file system integrity on the created image cannot be guaranteed",

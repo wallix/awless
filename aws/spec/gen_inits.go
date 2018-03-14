@@ -55,6 +55,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewAttachInstanceprofile(f.Sess, f.Graph, f.Log) }
 	case "attachinternetgateway":
 		return func() interface{} { return NewAttachInternetgateway(f.Sess, f.Graph, f.Log) }
+	case "attachlistener":
+		return func() interface{} { return NewAttachListener(f.Sess, f.Graph, f.Log) }
 	case "attachmfadevice":
 		return func() interface{} { return NewAttachMfadevice(f.Sess, f.Graph, f.Log) }
 	case "attachnetworkinterface":
@@ -376,6 +378,7 @@ var (
 	_ command = &AttachInstance{}
 	_ command = &AttachInstanceprofile{}
 	_ command = &AttachInternetgateway{}
+	_ command = &AttachListener{}
 	_ command = &AttachMfadevice{}
 	_ command = &AttachNetworkinterface{}
 	_ command = &AttachPolicy{}

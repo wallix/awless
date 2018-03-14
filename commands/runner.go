@@ -64,9 +64,9 @@ func NewRunner(tpl *template.Template, msg, tplPath string, fillers ...map[strin
 		} else {
 			fmt.Printf("%s\n\n", renderGreenFn(tplExec.Template))
 			if isSchedulingMode() {
-				fmt.Print("Confirm scheduling? [y/N] ")
+				fmt.Printf("Confirm scheduling (region: %s)? [y/N] ", config.GetAWSRegion())
 			} else {
-				fmt.Print("Confirm? [y/N] ")
+				fmt.Printf("Confirm (region: %s)? [y/N] ", config.GetAWSRegion())
 			}
 			if _, err := fmt.Scanln(&yesorno); err != nil && err.Error() != "unexpected newline" {
 				return false, err

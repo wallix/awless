@@ -213,6 +213,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Arn:          {name: "ListenerArn", transform: extractValueFn},
 		properties.Certificates: {name: "Certificates", transform: extractStringSliceValues("CertificateArn")},
 		properties.Actions:      {name: "DefaultActions", transform: extractStringSliceValues("Type")},
+		properties.TargetGroups: {name: "DefaultActions", transform: extractStringSliceValues("TargetGroupArn")},
 		properties.LoadBalancer: {name: "LoadBalancerArn", transform: extractValueFn},
 		properties.Port:         {name: "Port", transform: extractValueFn},
 		properties.Protocol:     {name: "Protocol", transform: extractValueFn},
@@ -295,6 +296,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.MinSize:                 {name: "MinSize", transform: extractValueFn},
 		properties.NewInstancesProtected:   {name: "NewInstancesProtectedFromScaleIn", transform: extractValueFn},
 		properties.State:                   {name: "Status", transform: extractValueFn},
+		properties.Tags:                    {name: "Tags", transform: extractTagsFn},
 	},
 	cloud.ScalingPolicy: {
 		properties.Name:              {name: "PolicyName", transform: extractValueFn},
@@ -430,6 +432,7 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 	},
 	cloud.Record: {
 		properties.Name:                  {name: "Name", transform: extractValueFn},
+		properties.Zone:                  {name: "Zone"},
 		properties.Failover:              {name: "Failover", transform: extractValueFn},
 		properties.Continent:             {name: "GeoLocation", transform: extractFieldFn("ContinentCode")},
 		properties.Country:               {name: "GeoLocation", transform: extractFieldFn("CountryCode")},

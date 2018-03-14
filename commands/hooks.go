@@ -72,7 +72,7 @@ func applyRegionAndProfilePrecedence() error {
 			if e := config.SetVolatile(config.RegionConfigKey, region); e != nil {
 				return e
 			}
-			regionOverridenThrough = fmt.Sprintf("profile '%s' (see AWS config files $HOME/{credentials,config})", profile)
+			regionOverridenThrough = fmt.Sprintf("profile '%s' (see AWS config files $HOME/.aws/{credentials,config})", profile)
 		} else {
 			regionOverridenThrough = ""
 		}

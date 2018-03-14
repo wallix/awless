@@ -10,23 +10,36 @@ import (
 	"github.com/wallix/awless/fetch"
 )
 
-func getClustersNames(ctx context.Context, api ecsiface.ECSAPI) (res []*string, err error) {
-	err = api.ListClustersPages(&ecs.ListClustersInput{}, func(out *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool) {
-		res = append(res, out.ClusterArns...)
-		return out.NextToken != nil
-	})
-	return
+func getClusterArns(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) ([]string, error) {
+	var arns []string
+	if clusterName, hasFilter := getUserFiltersFromContext(ctx)["cluster"]; hasFilter {
+		out, err := api.DescribeClusters(&ecs.DescribeClustersInput{Clusters: []*string{&clusterName}})
+		if err != nil {
+			return arns, err
+		}
+		for _, c := range out.Clusters {
+			arns = append(arns, awssdk.StringValue(c.ClusterArn))
+		}
+	} else {
+		if val, cerr := cache.Get("getClustersNames", func() (interface{}, error) {
+			err := api.ListClustersPages(&ecs.ListClustersInput{}, func(out *ecs.ListClustersOutput, lastPage bool) (shouldContinue bool) {
+				arns = append(arns, awssdk.StringValueSlice(out.ClusterArns)...)
+				return out.NextToken != nil
+			})
+			return arns, err
+		}); cerr != nil {
+			return arns, cerr
+		} else if v, ok := val.([]string); ok {
+			arns = v
+		}
+	}
+	return arns, nil
 }
 
 func getAllTasks(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) (res []*ecs.Task, err error) {
-	var clusterArns []*string
-
-	if val, e := cache.Get("getClustersNames", func() (interface{}, error) {
-		return getClustersNames(ctx, api)
-	}); e != nil {
-		return nil, e
-	} else if v, ok := val.([]*string); ok {
-		clusterArns = v
+	clusterArns, cerr := getClusterArns(ctx, cache, api)
+	if cerr != nil {
+		return res, cerr
 	}
 
 	type listTasksOutput struct {
@@ -37,26 +50,26 @@ func getAllTasks(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) (r
 	tasksNamesc := make(chan listTasksOutput)
 	var wg sync.WaitGroup
 
-	addTaskContainersFunc := func(cl *string) func(*ecs.ListTasksOutput, bool) bool {
+	addTaskContainersFunc := func(cl string) func(*ecs.ListTasksOutput, bool) bool {
 		return func(out *ecs.ListTasksOutput, lastPage bool) (shouldContinue bool) {
-			tasksNamesc <- listTasksOutput{output: out, cluster: cl}
+			tasksNamesc <- listTasksOutput{output: out, cluster: awssdk.String(cl)}
 			return out.NextToken != nil
 		}
 	}
 
 	for _, cluster := range clusterArns {
 		wg.Add(1)
-		go func(cl *string) {
+		go func(cl string) {
 			defer wg.Done()
-			if er := api.ListTasksPages(&ecs.ListTasksInput{Cluster: cl, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc(cl)); er != nil {
+			if er := api.ListTasksPages(&ecs.ListTasksInput{Cluster: &cl, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc(cl)); er != nil {
 				tasksNamesc <- listTasksOutput{err: er}
 			}
 		}(cluster)
 
 		wg.Add(1)
-		go func(cl *string) {
+		go func(cl string) {
 			defer wg.Done()
-			if er := api.ListTasksPages(&ecs.ListTasksInput{Cluster: cl, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc(cl)); er != nil {
+			if er := api.ListTasksPages(&ecs.ListTasksInput{Cluster: &cl, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc(cl)); er != nil {
 				tasksNamesc <- listTasksOutput{err: er}
 			}
 		}(cluster)

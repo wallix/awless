@@ -1,0 +1,45 @@
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://isni.org/isni/0000000114443708> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://isni.org/ontology#identifierValid> "0000000114443708" .
+<http://data.bnf.fr/ark:/12148/cb410730494#Expression> <http://purl.org/dc/terms/contributor> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb410730494#Expression> <http://data.bnf.fr/vocabulary/roles/r360> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://purl.org/dc/terms/modified> "2013-07-31" .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://rdvocab.info/ElementsGr2/biographicalInformation> "Psychologue. - Professeur, Institute of child development, University of Minnesota, Minneapolis, Minn.  (en 2002)" .
+<http://data.bnf.fr/ark:/12148/cb410730494#Expression> <http://id.loc.gov/vocabulary/relators/edt> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb38888129f#Expression> <http://data.bnf.fr/vocabulary/roles/r360> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://purl.org/dc/terms/created> "1999-03-03" .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://xmlns.com/foaf/0.1/focus> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://viaf.org/viaf/54300511/> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2004/02/skos/core#editorialNote> "Conflict in child and adolescent development / ed. by Carolyn Uhlinger Shantz, Willard W. Hartup, 1992. - . - LC Authorities. - http://authorities.loc.gov. - 2008-10-06"@fr .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://data.bnf.fr/ark:/12148/cb377521548#Expression> <http://id.loc.gov/vocabulary/relators/edt> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://xmlns.com/foaf/0.1/familyName> "Hartup" .
+<http://data.bnf.fr/ark:/12148/cb376249874#Expression> <http://purl.org/dc/terms/contributor> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb38888129f#Expression> <http://purl.org/dc/terms/contributor> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb376249874#Expression> <http://data.bnf.fr/vocabulary/roles/r360> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/54300511> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://www.w3.org/2002/07/owl#sameAs> <http://data.bnf.fr/ark:/12148/cb134913753#foaf:Person> .
+<http://data.bnf.fr/ark:/12148/cb39942376j#Expression> <http://data.bnf.fr/vocabulary/roles/r360> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://xmlns.com/foaf/0.1/gender> "male" .
+<http://data.bnf.fr/ark:/12148/cb35632707j#Expression> <http://data.bnf.fr/vocabulary/roles/r360> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://data.bnf.fr/ontology/bnf-onto/FRBNF> "13491375"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2004/02/skos/core#prefLabel> "Willard W. Hartup"@fr .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://rdvocab.info/ElementsGr2/languageOfThePerson> <http://id.loc.gov/vocabulary/iso639-2/eng> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://www.idref.fr/050215388> .
+<http://data.bnf.fr/ark:/12148/cb38888129f#Expression> <http://id.loc.gov/vocabulary/relators/edt> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://xmlns.com/foaf/0.1/page> <http://data.bnf.fr/13491375/willard_w__hartup/> .
+<http://data.bnf.fr/ark:/12148/cb39942376j#Expression> <http://purl.org/dc/terms/contributor> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2004/02/skos/core#note> "Psychologue. - Professeur, Institute of child development, University of Minnesota, Minneapolis, Minn.  (en 2002)"@fr .
+<http://data.bnf.fr/ark:/12148/cb377521548#Expression> <http://data.bnf.fr/vocabulary/roles/r360> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb377521548#Expression> <http://purl.org/dc/terms/contributor> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb35632707j#Expression> <http://id.loc.gov/vocabulary/relators/edt> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://xmlns.com/foaf/0.1/givenName> "Willard W." .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://www.w3.org/2002/07/owl#sameAs> <http://www.idref.fr/050215388/id> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://data.bnf.fr/ontology/bnf-onto/firstYear> "1927"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://rdvocab.info/ElementsGr2/countryAssociatedWithThePerson> <http://id.loc.gov/vocabulary/countries/xxu> .
+<http://data.bnf.fr/ark:/12148/cb134913753> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://catalogue.bnf.fr/ark:/12148/cb134913753> .
+<http://data.bnf.fr/ark:/12148/cb39942376j#Expression> <http://id.loc.gov/vocabulary/relators/edt> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb376249874#Expression> <http://id.loc.gov/vocabulary/relators/edt> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+<http://data.bnf.fr/ark:/12148/cb134913753#about> <http://xmlns.com/foaf/0.1/name> "Willard W. Hartup" .
+<http://data.bnf.fr/ark:/12148/cb35632707j#Expression> <http://purl.org/dc/terms/contributor> <http://data.bnf.fr/ark:/12148/cb134913753#about> .
+

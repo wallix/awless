@@ -34,25 +34,20 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
-		var clusterArns []*string
-
-		if val, e := cache.Get("getClustersNames", func() (interface{}, error) {
-			return getClustersNames(ctx, conf.APIs.Ecs)
-		}); e != nil {
-			return resources, objects, e
-		} else if v, ok := val.([]*string); ok {
-			clusterArns = v
+		clusterArns, err := getClusterArns(ctx, cache, conf.APIs.Ecs)
+		if err != nil {
+			return resources, objects, err
 		}
 
 		for _, cluster := range clusterArns {
 			var badResErr error
-			err := conf.APIs.Ecs.ListContainerInstancesPages(&ecs.ListContainerInstancesInput{Cluster: cluster}, func(out *ecs.ListContainerInstancesOutput, lastPage bool) (shouldContinue bool) {
+			err := conf.APIs.Ecs.ListContainerInstancesPages(&ecs.ListContainerInstancesInput{Cluster: &cluster}, func(out *ecs.ListContainerInstancesOutput, lastPage bool) (shouldContinue bool) {
 				var containerInstancesOut *ecs.DescribeContainerInstancesOutput
 				if len(out.ContainerInstanceArns) == 0 {
 					return out.NextToken != nil
 				}
 
-				if containerInstancesOut, badResErr = conf.APIs.Ecs.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{Cluster: cluster, ContainerInstances: out.ContainerInstanceArns}); badResErr != nil {
+				if containerInstancesOut, badResErr = conf.APIs.Ecs.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{Cluster: &cluster, ContainerInstances: out.ContainerInstanceArns}); badResErr != nil {
 					return false
 				}
 
@@ -62,9 +57,9 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 					if res, badResErr = awsconv.NewResource(inst); badResErr != nil {
 						return false
 					}
-					res.Properties()[properties.Cluster] = awssdk.StringValue(cluster)
+					res.Properties()[properties.Cluster] = cluster
 					resources = append(resources, res)
-					parent := graph.InitResource(cloud.ContainerCluster, awssdk.StringValue(cluster))
+					parent := graph.InitResource(cloud.ContainerCluster, cluster)
 					res.AddRelation(rdf.ChildrenOfRel, parent)
 				}
 				return out.NextToken != nil
@@ -155,7 +150,12 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var wg sync.WaitGroup
 		resc := make(chan resStruct)
 
-		err := conf.APIs.Ecs.ListTaskDefinitionsPages(&ecs.ListTaskDefinitionsInput{}, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
+		fetchDefinitionsInput := &ecs.ListTaskDefinitionsInput{}
+		if givenFamilyPrefix, hasFilter := getUserFiltersFromContext(ctx)["name"]; hasFilter {
+			fetchDefinitionsInput.FamilyPrefix = &givenFamilyPrefix
+		}
+
+		err := conf.APIs.Ecs.ListTaskDefinitionsPages(fetchDefinitionsInput, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
 			for _, arn := range out.TaskDefinitionArns {
 				wg.Add(1)
 				go func(taskDefArn *string) {
@@ -278,18 +278,13 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
-		var clusterNames []*string
-
-		if val, e := cache.Get("getClustersNames", func() (interface{}, error) {
-			return getClustersNames(ctx, conf.APIs.Ecs)
-		}); e != nil {
-			return resources, objects, e
-		} else if v, ok := val.([]*string); ok {
-			clusterNames = v
+		clusterNames, err := getClusterArns(ctx, cache, conf.APIs.Ecs)
+		if err != nil {
+			return resources, objects, nil
 		}
 
 		for _, clusterArns := range sliceOfSlice(clusterNames, 100) {
-			clustersOut, err := conf.APIs.Ecs.DescribeClusters(&ecs.DescribeClustersInput{Clusters: clusterArns})
+			clustersOut, err := conf.APIs.Ecs.DescribeClusters(&ecs.DescribeClustersInput{Clusters: awssdk.StringSlice(clusterArns)})
 			if err != nil {
 				return resources, objects, err
 			}
@@ -387,25 +382,19 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := conf.APIs.Iam.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{
-				Filter: []*string{
-					awssdk.String(iam.EntityTypeUser),
-				},
-			}, func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
-				for _, output := range out.UserDetailList {
-					objectsC <- output
-					res, e := awsconv.NewResource(output)
-					if e != nil {
-						errC <- e
-						return false
-					}
-					resourcesC <- res
-				}
-				return out.Marker != nil
-			})
+			accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
 			if err != nil {
 				errC <- err
 				return
+			}
+			for _, output := range accountDetails.Users {
+				objectsC <- output
+				if res, e := awsconv.NewResource(output); e != nil {
+					errC <- e
+					return
+				} else {
+					resourcesC <- res
+				}
 			}
 		}()
 
@@ -459,6 +448,58 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		}
 	}
 
+	funcs["group"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*iam.GroupDetail
+
+		if !conf.getBoolDefaultTrue("aws.access.group.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource access[group]")
+			return resources, objects, nil
+		}
+
+		accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range accountDetails.Groups {
+			objects = append(objects, output)
+			if res, err := awsconv.NewResource(output); err != nil {
+				return resources, objects, err
+			} else {
+				resources = append(resources, res)
+			}
+		}
+
+		return resources, objects, nil
+	}
+
+	funcs["role"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*iam.RoleDetail
+
+		if !conf.getBoolDefaultTrue("aws.access.role.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource access[role]")
+			return resources, objects, nil
+		}
+
+		accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
+		if err != nil {
+			return resources, objects, err
+		}
+
+		for _, output := range accountDetails.Roles {
+			objects = append(objects, output)
+			if res, err := awsconv.NewResource(output); err != nil {
+				return resources, objects, err
+			} else {
+				resources = append(resources, res)
+			}
+		}
+
+		return resources, objects, nil
+	}
+
 	funcs["policy"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
 		var resources []*graph.Resource
 		var objects []*iam.Policy
@@ -477,25 +518,25 @@ func addManualAccessFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := conf.APIs.Iam.GetAccountAuthorizationDetailsPages(&iam.GetAccountAuthorizationDetailsInput{Filter: []*string{awssdk.String("LocalManagedPolicy"), awssdk.String("AWSManagedPolicy")}},
-				func(out *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) (shouldContinue bool) {
-					for _, p := range out.Policies {
-						res, rerr := awsconv.NewResource(p)
-						if rerr != nil {
-							return false
-						}
-						if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
-							res.Properties()[properties.Type] = "AWS Managed"
-						} else {
-							res.Properties()[properties.Type] = "Customer Managed"
-						}
-						res.Properties()[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
-						resourcesC <- res
-					}
-					return out.Marker != nil
-				})
+
+			accountDetails, err := getAccountAuthorizationDetails(ctx, cache, conf.APIs.Iam)
 			if err != nil {
 				errC <- err
+				return
+			}
+			for _, p := range accountDetails.Policies {
+				res, e := awsconv.NewResource(p)
+				if e != nil {
+					errC <- e
+					return
+				}
+				if strings.HasPrefix(awssdk.StringValue(p.Arn), "arn:aws:iam::aws:policy") {
+					res.Properties()[properties.Type] = "AWS Managed"
+				} else {
+					res.Properties()[properties.Type] = "Customer Managed"
+				}
+				res.Properties()[properties.Attached] = awssdk.Int64Value(p.AttachmentCount) > 0
+				resourcesC <- res
 			}
 		}()
 
@@ -787,8 +828,7 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			return resources, objects, nil
 		}
 
-		filters := getFiltersFromContext(ctx)
-		filterOnZoneName, hasNameFilter := filters["name"]
+		zoneName, hasZoneFilter := getUserFiltersFromContext(ctx)["zone"]
 
 		errC := make(chan error)
 		zoneC := make(chan *route53.HostedZone)
@@ -799,8 +839,8 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 			err := conf.APIs.Route53.ListHostedZonesPages(&route53.ListHostedZonesInput{},
 				func(out *route53.ListHostedZonesOutput, lastPage bool) (shouldContinue bool) {
 					for _, output := range out.HostedZones {
-						if hasNameFilter {
-							if strings.Contains(strings.ToLower(*output.Name), strings.ToLower(filterOnZoneName)) {
+						if hasZoneFilter {
+							if strings.Contains(strings.ToLower(*output.Name), strings.ToLower(zoneName)) {
 								zoneC <- output
 							}
 						} else {
@@ -830,6 +870,8 @@ func addManualDnsFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 								if err != nil {
 									errC <- err
 								}
+								res.Properties()[properties.Zone] = *z.Name
+
 								parent, err := awsconv.InitResource(z)
 								if err != nil {
 									errC <- err

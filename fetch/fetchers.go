@@ -83,11 +83,21 @@ func (f *fetcher) Fetch(ctx context.Context) (*graph.Graph, error) {
 	return gph, nil
 }
 
+const fetchModeKey = "fetchmode"
+
+func IsFetchingByType(c context.Context) (string, bool) {
+	v, ok := c.Value(fetchModeKey).(string)
+	return v, len(v) != 0 && ok
+}
+
 func (f *fetcher) FetchByType(ctx context.Context, resourceType string) (*graph.Graph, error) {
 	results := make(chan FetchResult)
 	defer close(results)
 
-	go f.fetchResource(ctx, resourceType, results)
+	go f.fetchResource(
+		context.WithValue(ctx, fetchModeKey, resourceType),
+		resourceType,
+		results)
 
 	gph := graph.NewGraph()
 	select {

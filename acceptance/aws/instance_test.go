@@ -45,7 +45,7 @@ func TestInstance(t *testing.T) {
 		})
 
 		t.Run("with user data", func(t *testing.T) {
-			_, userdataFile, cleanup := generateTmpFile("this is my content with {{ .Variables.oneRef }} content")
+			_, userdataFile, cleanup := generateTmpFile("this is my content with {{ .AWLESS.oneRef }} content")
 			defer cleanup()
 
 			Template("oneRef=awesome\n"+

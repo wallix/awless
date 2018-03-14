@@ -104,7 +104,16 @@ func (h ARNLastValueColumnDefinition) format(i interface{}) string {
 	return str
 }
 
+func ToShortArn(s string) string {
+	index := strings.LastIndex(s, ":")
+	if index > 0 {
+		return s[index+1:]
+	}
+	return s
+}
+
 type SliceColumnDefinition struct {
+	ForEach func(string) string
 	StringColumnDefinition
 }
 
@@ -118,7 +127,11 @@ func (h SliceColumnDefinition) format(i interface{}) string {
 	}
 	var buf bytes.Buffer
 	for i := 0; i < value.Len(); i++ {
-		buf.WriteString(fmt.Sprint(value.Index(i).Interface()))
+		s := fmt.Sprint(value.Index(i).Interface())
+		if h.ForEach != nil {
+			s = h.ForEach(s)
+		}
+		buf.WriteString(s)
 		if i < value.Len()-1 {
 			buf.WriteRune(' ')
 		}

@@ -24,6 +24,7 @@ var APIPerTemplateDefName = map[string]string{
 	"attachinstance":            "elbv2",
 	"attachinstanceprofile":     "ec2",
 	"attachinternetgateway":     "ec2",
+	"attachlistener":            "elbv2",
 	"attachmfadevice":           "iam",
 	"attachnetworkinterface":    "ec2",
 	"attachpolicy":              "iam",
@@ -217,6 +218,12 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity: "internetgateway",
 		Api:    "ec2",
 		Params: new(AttachInternetgateway).ParamsSpec().Rule(),
+	},
+	"attachlistener": {
+		Action: "attach",
+		Entity: "listener",
+		Api:    "elbv2",
+		Params: new(AttachListener).ParamsSpec().Rule(),
 	},
 	"attachmfadevice": {
 		Action: "attach",
@@ -1151,7 +1158,7 @@ var AWSTemplatesDefinitions = map[string]Definition{
 }
 
 var DriverSupportedActions = map[string][]string{
-	"attach":       {"alarm", "containertask", "elasticip", "instance", "instanceprofile", "internetgateway", "mfadevice", "networkinterface", "policy", "role", "routetable", "securitygroup", "user", "volume"},
+	"attach":       {"alarm", "containertask", "elasticip", "instance", "instanceprofile", "internetgateway", "listener", "mfadevice", "networkinterface", "policy", "role", "routetable", "securitygroup", "user", "volume"},
 	"authenticate": {"registry"},
 	"check":        {"certificate", "database", "distribution", "instance", "loadbalancer", "natgateway", "networkinterface", "scalinggroup", "securitygroup", "volume"},
 	"copy":         {"image", "snapshot"},
