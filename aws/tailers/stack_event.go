@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
+	fixedwidth "github.com/ianlopshire/go-fixedwidth"
 	"github.com/wallix/awless/aws/services"
 )
 
@@ -42,8 +44,20 @@ type stackEventTailer struct {
 	cancelAfterTimeout bool
 }
 
+// 53 - symbols, longest CF resource name: AWS::KinesisAnalytics::ApplicationReferenceDataSource
+// 45 - longest CF statuse "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS"
+
+// Copy of cloudformation.StackEvent to set custom width for each field
 type stackEvent struct {
-	*cloudformation.StackEvent
+	// *cloudformation.StackEvent
+	Timestamp         *time.Time
+	ResourceStatus    *string
+	ResourceType      *string
+	LogicalResourceId *string
+
+	PhysicalResourceId   *string
+	ResourceStatusReason *string
+	EventId              *string
 }
 
 type stackEvents []stackEvent
@@ -74,15 +88,13 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid polling frequency: %s, must be greater than 5s", t.pollingFrequency)
 	}
 
-	tab := tabwriter.NewWriter(w, 8, 8, 8, '\t', 0)
-	tab.Write(t.filters.header())
+	// tab := tabwriter.NewWriter(w, 8, 8, 8, '\t', 0)
+	// tab.Write(t.filters.header())
 
 	if !t.follow {
-		if err := t.displayLastEvents(cfn, tab); err != nil {
+		if err := t.displayLastEvents(cfn, w); err != nil {
 			return err
 		}
-
-		tab.Flush()
 
 		return nil
 	}
@@ -118,11 +130,9 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 				return fmt.Errorf("Timeout (%s) reached. Exiting...", t.timeout.String())
 			}
 		case <-ticker.C:
-			if err := t.displayRelevantEvents(cfn, tab); err != nil {
+			if err := t.displayRelevantEvents(cfn, w); err != nil {
 				return err
 			}
-
-			tab.Flush()
 
 			if t.deploymentStatus.isFinished {
 				if len(t.deploymentStatus.failedEvents) > 0 {
@@ -175,7 +185,7 @@ func (t *stackEventTailer) getLatestEvents(cfn *awsservices.Cloudformation) (sta
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
 				return stEvents, nil
 			}
-			stEvents = append(stEvents, stackEvent{e})
+			stEvents = append(stEvents, NewStackEvent(e))
 		}
 
 		if resp.NextToken == nil {
@@ -233,7 +243,7 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 		}
 
 		for _, e := range resp.StackEvents {
-			event := stackEvent{e}
+			event := NewStackEvent(e)
 			// if lastEventID == nil then it's first run of this method
 			// if lastEventID == nil then it's not first run and print only new messages
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
@@ -282,25 +292,28 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 	return events.printReverse(w, t.filters)
 }
 
-func coloredResourceStatus(str string) string {
+func colorizeResourceStatus(str string) *string {
+	var c color.Attribute
 	switch {
 	case strings.HasSuffix(str, StackEventFailed),
 		str == cloudformation.StackStatusUpdateRollbackInProgress,
 		str == cloudformation.StackStatusRollbackInProgress:
-		return color.New(color.FgRed).SprintFunc()(str)
+		c = color.FgRed
 	case strings.HasSuffix(str, StackEventInProgress):
-		return color.New(color.FgYellow).SprintFunc()(str)
+		c = color.FgYellow
 	case strings.HasSuffix(str, StackEventComplete):
-		return color.New(color.FgGreen).SprintFunc()(str)
-	default:
-		return str
+		c = color.FgGreen
 	}
 
+	s := color.New(c).SprintFunc()(str)
+
+	return &s
 }
 
 func (e stackEvents) printReverse(w io.Writer, f filters) error {
 	for i := len(e) - 1; i >= 0; i-- {
-		w.Write(e[i].filter(f))
+		w.Write(e[i].Format(f))
+		w.Write([]byte("\n"))
 	}
 
 	return nil
@@ -333,34 +346,6 @@ func (f filters) header() []byte {
 	return []byte(color.New(color.Bold).Sprintf(buf.String()) + "\n")
 }
 
-func (e *stackEvent) filter(filters []string) (out []byte) {
-	var buf bytes.Buffer
-
-	for i, f := range filters {
-		switch {
-		case f == StackEventLogicalID && e.LogicalResourceId != nil:
-			buf.WriteString(*e.LogicalResourceId)
-		case f == StackEventTimestamp && e.Timestamp != nil:
-			buf.WriteString(e.Timestamp.Format(time.RFC3339))
-		case f == StackEventStatus && e.ResourceStatus != nil:
-			buf.WriteString(coloredResourceStatus(*e.ResourceStatus))
-		case f == StackEventStatusReason && e.ResourceStatusReason != nil:
-			buf.WriteString(*e.ResourceStatusReason)
-		case f == StackEventType && e.ResourceType != nil:
-			buf.WriteString(*e.ResourceType)
-		}
-
-		if i != len(filters)-1 {
-			buf.WriteRune('\t')
-		}
-
-	}
-
-	buf.WriteRune('\n')
-
-	return buf.Bytes()
-}
-
 func (s *stackEvent) isDeploymentStart() bool {
 	return (s.ResourceType != nil && *s.ResourceType == configservice.ResourceTypeAwsCloudFormationStack) &&
 		(s.ResourceStatus != nil &&
@@ -380,8 +365,82 @@ func (s *stackEvent) isFailed() bool {
 	return (s.ResourceStatus != nil && (strings.HasSuffix(*s.ResourceStatus, StackEventFailed) || *s.ResourceStatus == cloudformation.StackStatusUpdateRollbackInProgress))
 }
 
+func (s *stackEvent) fromCFEvent() bool {
+	return (s.ResourceStatus != nil && (strings.HasSuffix(*s.ResourceStatus, StackEventFailed) || *s.ResourceStatus == cloudformation.StackStatusUpdateRollbackInProgress))
+}
+
 func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) error {
 	inp := &cloudformation.CancelUpdateStackInput{StackName: &s.stackName}
 	_, err := cfn.CancelUpdateStack(inp)
 	return err
+}
+
+func NewStackEvent(e *cloudformation.StackEvent) stackEvent {
+	return stackEvent{
+		Timestamp:            e.Timestamp,
+		ResourceStatus:       colorizeResourceStatus(*e.ResourceStatus),
+		ResourceType:         e.ResourceType,
+		LogicalResourceId:    e.LogicalResourceId,
+		PhysicalResourceId:   e.PhysicalResourceId,
+		ResourceStatusReason: e.ResourceStatusReason,
+		EventId:              e.EventId,
+	}
+}
+
+func (e *stackEvent) Format(fil filters) []byte {
+	st := reflect.TypeOf(e).Elem()
+	sv := reflect.ValueOf(e).Elem()
+	var startPos = 1
+	var fs []reflect.StructField
+
+	for i := 0; i < st.NumField(); i++ {
+		fs = append(fs, st.Field(i))
+	}
+
+	for _, fil := range fil {
+		for i := 0; i < len(fs); i++ {
+			tag := e.getFieldPosition(fs[i].Name, &startPos, fil)
+			if tag == nil {
+				continue
+			}
+			fs[i].Tag = reflect.StructTag(*tag)
+		}
+	}
+
+	st2 := reflect.StructOf(fs)
+	sv2 := sv.Convert(st2)
+
+	b, _ := fixedwidth.Marshal(sv2.Interface())
+	return b
+}
+
+func (e *stackEvent) getFieldPosition(field string, startPos *int, f string) *string {
+	const space = 5
+	var endPos = *startPos
+
+	// for _, f := range filters {
+	switch {
+	case f == StackEventLogicalID && e.LogicalResourceId != nil && field == "LogicalResourceId":
+		endPos = *startPos + 20 + space
+	case f == StackEventTimestamp && e.Timestamp != nil && field == "Timestamp":
+		endPos = *startPos + 20 + space
+	case f == StackEventStatus && e.ResourceStatus != nil && field == "ResourceStatus":
+		endPos = *startPos + 53 + space
+	case f == StackEventStatusReason && e.ResourceStatusReason != nil && field == "ResourceStatusReason":
+		endPos = *startPos + 60 + space
+	case f == StackEventType && e.ResourceType != nil && field == "ResourceType":
+		endPos = *startPos + 45 + space
+	default:
+		return nil
+	}
+	// }
+
+	// // field is missing from filter
+	// if endPos == *startPos {
+	// 	return ""
+	// }
+
+	tag := fmt.Sprintf(`fixed:"%d,%d"`, *startPos, endPos)
+	*startPos = endPos + 1
+	return &tag
 }

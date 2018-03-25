@@ -120,6 +120,12 @@
   version = "v1.6.0"
 
 [[projects]]
+  name = "github.com/ianlopshire/go-fixedwidth"
+  packages = ["."]
+  revision = "b5f5b05297fca5895c0c6d9b4c8dda091b84cfd6"
+  version = "v0.2.1"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
@@ -325,6 +331,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c16569f26e1430b337ef16bbc9e19239de261ca85cc54b76ff67116e4eacabc7"
+  inputs-digest = "dc5a8334da384b8de743df843e031a98ecec1fcdcb02be3e7a9819584032bc1c"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -76,3 +76,6 @@
 [[constraint]]
   branch = "master"
   name = "github.com/boombuler/barcode"
+[[constraint]]
+  name = "github.com/ianlopshire/go-fixedwidth"
+  version = "0.2.1"
