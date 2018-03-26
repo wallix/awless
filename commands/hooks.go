@@ -77,7 +77,7 @@ func applyRegionAndProfilePrecedence() error {
 			regionOverridenThrough = ""
 		}
 	} else {
-		return err
+		fmt.Fprintln(os.Stderr, err)
 	}
 
 	if awsRegionGlobalFlag != "" {
@@ -247,8 +247,11 @@ func hasEmbeddedRegionInSharedConfigForProfile(profile string) (string, bool, er
 		SharedConfigState: session.SharedConfigEnable,
 		Profile:           profile,
 	})
+	if err != nil {
+		return "", false, fmt.Errorf("cannot check profile '%s' has embedded region in shared config file: %s", profile, err)
+	}
 	region := *s.Config.Region
-	return region, len(region) > 0, err
+	return region, len(region) > 0, nil
 }
 
 func isNotAwlessFormerDefaultAMI(s string) bool {
