@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-    "github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
@@ -245,7 +245,7 @@ func migrationActionsAndExtraMessages(current string) {
 
 func hasEmbeddedRegionInSharedConfigForProfile(profile string) (string, bool, error) {
 	s, err := session.NewSessionWithOptions(session.Options{
-        AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
 		SharedConfigState: session.SharedConfigEnable,
 		Profile:           profile,
 	})
