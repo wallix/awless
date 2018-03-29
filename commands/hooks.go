@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/spf13/cobra"
 	"github.com/wallix/awless/aws/services"
 	"github.com/wallix/awless/cloud"
@@ -78,7 +78,7 @@ func applyRegionAndProfilePrecedence() error {
 			regionOverridenThrough = ""
 		}
 	} else {
-		fmt.Fprintln(os.Stderr, err)
+		return err
 	}
 
 	if awsRegionGlobalFlag != "" {
@@ -246,8 +246,8 @@ func migrationActionsAndExtraMessages(current string) {
 func hasEmbeddedRegionInSharedConfigForProfile(profile string) (string, bool, error) {
 	s, err := session.NewSessionWithOptions(session.Options{
 		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
-		SharedConfigState: session.SharedConfigEnable,
-		Profile:           profile,
+		SharedConfigState:       session.SharedConfigEnable,
+		Profile:                 profile,
 	})
 	if err != nil {
 		return "", false, fmt.Errorf("cannot check profile '%s' has embedded region in shared config file: %s", profile, err)
