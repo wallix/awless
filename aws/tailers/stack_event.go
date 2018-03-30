@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -12,16 +13,16 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
-	fixedwidth "github.com/ianlopshire/go-fixedwidth"
 	"github.com/wallix/awless/aws/services"
 )
 
 const (
-	StackEventLogicalID    = "id"
-	StackEventTimestamp    = "ts"
-	StackEventStatus       = "status"
-	StackEventStatusReason = "reason"
-	StackEventType         = "type"
+	StackEventFilterLogicalID    = "id"
+	StackEventFilterTimestamp    = "ts"
+	StackEventFilterStatus       = "status"
+	StackEventFilterStatusReason = "reason"
+	StackEventFilterType         = "type"
+	StackEventFilterPhysicalId   = "physical-id"
 
 	// valid stack status codes
 	// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
@@ -46,15 +47,27 @@ type stackEventTailer struct {
 
 // Copy of cloudformation.StackEvent for futher string formating
 type stackEvent struct {
-	Timestamp         *string
-	ResourceStatus    *string
-	ResourceType      *string
-	LogicalResourceId *string
+	Timestamp         *string `width:"20,5"`
+	ResourceStatus    *string `width:"50,5"`
+	ResourceType      *string `width:"45,5"`
+	LogicalResourceId *string `width:"20,5"`
 
-	PhysicalResourceId   *string
-	ResourceStatusReason *string
+	PhysicalResourceId   *string `width:"100,5"`
+	ResourceStatusReason *string `width:"100,5"`
 	EventId              *string
 }
+
+var filtersMapping = map[string]string{
+	StackEventFilterLogicalID:    "LogicalResourceId",
+	StackEventFilterTimestamp:    "Timestamp",
+	StackEventFilterStatus:       "ResourceStatus",
+	StackEventFilterStatusReason: "ResourceStatusReason",
+	StackEventFilterType:         "ResourceType",
+	StackEventFilterPhysicalId:   "PhysicalResourceId",
+}
+
+var DefaultStackEventFilters = []string{StackEventFilterTimestamp, StackEventFilterLogicalID, StackEventFilterType, StackEventFilterStatus}
+var AllStackEventFilters = append(DefaultStackEventFilters, StackEventFilterStatusReason, StackEventFilterPhysicalId)
 
 type stackEvents []stackEvent
 
@@ -127,7 +140,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 			if t.deploymentStatus.isFinished {
 				if len(t.deploymentStatus.failedEvents) > 0 {
 					var errBuf bytes.Buffer
-					var f filters = []string{StackEventLogicalID, StackEventType, StackEventStatus, StackEventStatusReason}
+					var f filters = []string{StackEventFilterLogicalID, StackEventFilterType, StackEventFilterStatus, StackEventFilterStatusReason}
 
 					if isTimeoutReached {
 						errBuf.WriteString("Update was cancelled because timeout has been reached and option 'Cancel On Timeout' enabled\n")
@@ -137,7 +150,8 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 
 					errBuf.WriteString("Failed events summary:\n")
 
-					// printing error events as a nice table
+					// using tabwriter here, because we have all data
+					// and no need to stream it
 					errTab := tabwriter.NewWriter(&errBuf, 25, 8, 0, '\t', 0)
 					errTab.Write(f.header())
 					t.deploymentStatus.failedEvents.printReverse(errTab, f)
@@ -310,12 +324,12 @@ func (e stackEvents) printReverse(w io.Writer, f filters) error {
 
 func (f filters) header() []byte {
 	s := &stackEvent{
-		Timestamp:            func() *string { t := "Timestamp"; return &t }(),
-		ResourceStatus:       func() *string { t := "Status"; return &t }(),
-		LogicalResourceId:    func() *string { t := "Logical ID"; return &t }(),
-		PhysicalResourceId:   func() *string { t := "Physical ID"; return &t }(),
-		ResourceStatusReason: func() *string { t := "Status Reason"; return &t }(),
-		ResourceType:         func() *string { t := "Type"; return &t }(),
+		Timestamp:            func() *string { t := color.New(color.Bold).Sprintf("Timestamp"); return &t }(),
+		ResourceStatus:       func() *string { t := color.New(color.Bold).Sprintf("Status"); return &t }(),
+		LogicalResourceId:    func() *string { t := color.New(color.Bold).Sprintf("Logical ID"); return &t }(),
+		PhysicalResourceId:   func() *string { t := color.New(color.Bold).Sprintf("Physical ID"); return &t }(),
+		ResourceStatusReason: func() *string { t := color.New(color.Bold).Sprintf("Status Reason"); return &t }(),
+		ResourceType:         func() *string { t := color.New(color.Bold).Sprintf("Type"); return &t }(),
 	}
 
 	return s.format(f)
@@ -353,7 +367,7 @@ func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) er
 func NewStackEvent(e *cloudformation.StackEvent) stackEvent {
 	return stackEvent{
 		Timestamp:            func() *string { t := e.Timestamp.Format(time.RFC3339); return &t }(),
-		ResourceStatus:       e.ResourceStatus,
+		ResourceStatus:       colorizeResourceStatus(*e.ResourceStatus),
 		ResourceType:         e.ResourceType,
 		LogicalResourceId:    e.LogicalResourceId,
 		PhysicalResourceId:   e.PhysicalResourceId,
@@ -362,68 +376,64 @@ func NewStackEvent(e *cloudformation.StackEvent) stackEvent {
 	}
 }
 
-// Format dynamically generates fixed position for each field
-// by adding struct tag like `fixed:"start,end"` for
-// further marshaling into structured field by package
-// "github.com/ianlopshire/go-fixedwidth"
+// Format reads the struct tag `width:"<width>,<space>"`
+// further marshaling into structured field
 func (s *stackEvent) format(fil filters) []byte {
-	st := reflect.TypeOf(s).Elem()
-	sv := reflect.ValueOf(s).Elem()
-	var startPos = 1
-	var fs []reflect.StructField
+	tp := reflect.TypeOf(s).Elem()
+	v := reflect.ValueOf(s).Elem()
 
-	// copying original struct fields
-	for i := 0; i < st.NumField(); i++ {
-		fs = append(fs, st.Field(i))
-	}
+	buf := bytes.Buffer{}
+	for _, f := range fil {
+		field, ok := tp.FieldByName(filtersMapping[f])
+		if !ok {
+			continue
+		}
+		value := v.FieldByName(filtersMapping[f])
 
-	// applying tags to the struct fields based on
-	// provided filters values
-	for _, fil := range fil {
-		for i := 0; i < len(fs); i++ {
-			tag := s.getFieldPosition(fs[i].Name, &startPos, fil)
-			if tag == nil {
-				continue
-			}
-			fs[i].Tag = reflect.StructTag(*tag)
+		split := strings.Split(field.Tag.Get("width"), ",")
+		if len(split) != 2 {
+			continue
+		}
+
+		width, err := strconv.Atoi(split[0])
+		if err != nil {
+			continue
+		}
+
+		space, err := strconv.Atoi(split[1])
+		if err != nil {
+			continue
+		}
+
+		var v string
+		if !value.IsNil() {
+			v = value.Elem().String()
+		}
+
+		// handle coloring
+		// if string starts with "\x1b" then it is colored
+		if strings.HasPrefix(v, "\x1b") {
+			// color adds additional length to the string
+			// which is not displayed in the console
+			// and results in text shift
+			// so we need to increase column width a bit
+			// colored string looks like: "\x1b[31mText\x1b[0m"
+			width += strings.Index(v, "m") + 1 + len("\x1b[0m")
+		}
+
+		// crop string if it longer then defined width
+		if len(v) > width {
+			v = v[:width]
+		}
+
+		buf.WriteString(v)
+
+		// fil the rest of the line space with " "
+		for i := len(v); i < width+space; i++ {
+			buf.WriteString(" ")
 		}
 	}
-	// creating new structure based on it's fields
-	st2 := reflect.StructOf(fs)
-	// copying values from original structure to the new one
-	sv2 := sv.Convert(st2)
 
-	// marshalling struct to the string of fixed size
-	// based on applyed tags
-	b, _ := fixedwidth.Marshal(sv2.Interface())
-	return append(b, []byte("\n")...)
-}
-
-func (s *stackEvent) getFieldPosition(field string, startPos *int, f string) *string {
-	const space = 5
-	var endPos = *startPos
-
-	switch {
-	case f == StackEventLogicalID && s.LogicalResourceId != nil && field == "LogicalResourceId":
-		endPos = *startPos + 20 + space
-	case f == StackEventTimestamp && s.Timestamp != nil && field == "Timestamp":
-		endPos = *startPos + 18 + space
-	case f == StackEventStatus && s.ResourceStatus != nil && field == "ResourceStatus":
-		s.ResourceStatus = colorizeResourceStatus(*s.ResourceStatus)
-		// 53 - symbols, longest CF resource name: "AWS::KinesisAnalytics::ApplicationReferenceDataSource"
-		endPos = *startPos + 53 + space
-	case f == StackEventStatusReason && s.ResourceStatusReason != nil && field == "ResourceStatusReason":
-		// resource status reason, copping on 60 characters. complete error will
-		// be displayed as summary when the tailing complete
-		endPos = *startPos + 60 + space
-	case f == StackEventType && s.ResourceType != nil && field == "ResourceType":
-		// 45 - longest CF status "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS"
-		endPos = *startPos + 45 + space
-	default:
-		return nil
-	}
-
-	tag := fmt.Sprintf(`fixed:"%d,%d"`, *startPos, endPos)
-	*startPos = endPos + 1
-	return &tag
+	buf.WriteRune('\n')
+	return buf.Bytes()
 }
