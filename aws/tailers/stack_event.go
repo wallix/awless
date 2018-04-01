@@ -10,6 +10,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
@@ -52,8 +53,8 @@ type stackEvent struct {
 	ResourceType      *string `width:"45,5"`
 	LogicalResourceId *string `width:"20,5"`
 
-	PhysicalResourceId   *string `width:"100,5"`
-	ResourceStatusReason *string `width:"100,5"`
+	PhysicalResourceId   *string `width:"50,5"`
+	ResourceStatusReason *string `width:"50,5"`
 	EventId              *string
 }
 
@@ -382,7 +383,10 @@ func (s *stackEvent) format(fil filters) []byte {
 	tp := reflect.TypeOf(s).Elem()
 	v := reflect.ValueOf(s).Elem()
 
+	fmt.Println(" Call Format")
+
 	buf := bytes.Buffer{}
+	var nextLine *stackEvent
 	for _, f := range fil {
 		field, ok := tp.FieldByName(filtersMapping[f])
 		if !ok {
@@ -390,17 +394,17 @@ func (s *stackEvent) format(fil filters) []byte {
 		}
 		value := v.FieldByName(filtersMapping[f])
 
-		split := strings.Split(field.Tag.Get("width"), ",")
-		if len(split) != 2 {
+		splt := strings.Split(field.Tag.Get("width"), ",")
+		if len(splt) != 2 {
 			continue
 		}
 
-		width, err := strconv.Atoi(split[0])
+		width, err := strconv.Atoi(splt[0])
 		if err != nil {
 			continue
 		}
 
-		space, err := strconv.Atoi(split[1])
+		space, err := strconv.Atoi(splt[1])
 		if err != nil {
 			continue
 		}
@@ -421,19 +425,51 @@ func (s *stackEvent) format(fil filters) []byte {
 			width += strings.Index(v, "m") + 1 + len("\x1b[0m")
 		}
 
-		// crop string if it longer then defined width
 		if len(v) > width {
+			if nextLine == nil {
+				nextLine = &stackEvent{}
+			}
+			if field.Name == "ResourceStatusReason" {
+				nextLine.ResourceStatusReason = aws.String(v[width:])
+			}
+			if field.Name == "ResourceStatus" {
+				nextLine.ResourceStatus = aws.String(v[width:])
+			}
+
 			v = v[:width]
 		}
 
 		buf.WriteString(v)
-
 		// fil the rest of the line space with " "
-		for i := len(v); i < width+space; i++ {
-			buf.WriteString(" ")
-		}
+		buf.WriteString(createSpaces(width + space - len(v)))
+		// totalWidth += width
 	}
 
 	buf.WriteRune('\n')
+	if nextLine != nil {
+		buf.Write(nextLine.format(fil))
+	}
 	return buf.Bytes()
+}
+
+func createSpaces(n int) string {
+	var buf = bytes.Buffer{}
+	for i := 0; i < n; i++ {
+		buf.WriteString(".")
+	}
+
+	return buf.String()
+}
+
+func split(buf []byte, lim int) [][]byte {
+	var chunk []byte
+	chunks := make([][]byte, 0, len(buf)/lim+1)
+	for len(buf) >= lim {
+		chunk, buf = buf[:lim], buf[lim:]
+		chunks = append(chunks, chunk)
+	}
+	if len(buf) > 0 {
+		chunks = append(chunks, buf[:len(buf)])
+	}
+	return chunks
 }
