@@ -1,13 +1,13 @@
 package awstailers
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
 	"reflect"
 	"strconv"
 	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -51,10 +51,10 @@ type stackEvent struct {
 	Timestamp         *string `width:"20,5"`
 	ResourceStatus    *string `width:"50,5"`
 	ResourceType      *string `width:"45,5"`
-	LogicalResourceId *string `width:"20,5"`
+	LogicalResourceId *string `width:"25,5"`
 
-	PhysicalResourceId   *string `width:"50,5"`
-	ResourceStatusReason *string `width:"50,5"`
+	PhysicalResourceId   *string `width:"40,5"`
+	ResourceStatusReason *string `width:"40,5"`
 	EventId              *string
 }
 
@@ -151,12 +151,9 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 
 					errBuf.WriteString("Failed events summary:\n")
 
-					// using tabwriter here, because we have all data
-					// and no need to stream it
-					errTab := tabwriter.NewWriter(&errBuf, 25, 8, 0, '\t', 0)
-					errTab.Write(f.header())
-					t.deploymentStatus.failedEvents.printReverse(errTab, f)
-					errTab.Flush()
+					errBuf.Write(f.header())
+					writer := bufio.NewWriter(&errBuf)
+					t.deploymentStatus.failedEvents.printReverse(writer, f)
 
 					return fmt.Errorf(errBuf.String())
 				}
@@ -383,11 +380,9 @@ func (s *stackEvent) format(fil filters) []byte {
 	tp := reflect.TypeOf(s).Elem()
 	v := reflect.ValueOf(s).Elem()
 
-	fmt.Println(" Call Format")
-
 	buf := bytes.Buffer{}
 	var nextLine *stackEvent
-	for _, f := range fil {
+	for i, f := range fil {
 		field, ok := tp.FieldByName(filtersMapping[f])
 		if !ok {
 			continue
@@ -407,6 +402,12 @@ func (s *stackEvent) format(fil filters) []byte {
 		space, err := strconv.Atoi(splt[1])
 		if err != nil {
 			continue
+		}
+
+		// no need of space in the last column
+		if i == len(fil)-1 {
+			width += space
+			space = 0
 		}
 
 		var v string
@@ -450,21 +451,8 @@ func (s *stackEvent) format(fil filters) []byte {
 func createSpaces(n int) string {
 	var buf = bytes.Buffer{}
 	for i := 0; i < n; i++ {
-		buf.WriteString(".")
+		buf.WriteString(" ")
 	}
 
 	return buf.String()
-}
-
-func split(buf []byte, lim int) [][]byte {
-	var chunk []byte
-	chunks := make([][]byte, 0, len(buf)/lim+1)
-	for len(buf) >= lim {
-		chunk, buf = buf[:lim], buf[lim:]
-		chunks = append(chunks, chunk)
-	}
-	if len(buf) > 0 {
-		chunks = append(chunks, buf[:len(buf)])
-	}
-	return chunks
 }
