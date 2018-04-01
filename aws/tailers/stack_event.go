@@ -429,13 +429,8 @@ func (s *stackEvent) format(fil filters) []byte {
 			if nextLine == nil {
 				nextLine = &stackEvent{}
 			}
-			if field.Name == "ResourceStatusReason" {
-				nextLine.ResourceStatusReason = aws.String(v[width:])
-			}
-			if field.Name == "ResourceStatus" {
-				nextLine.ResourceStatus = aws.String(v[width:])
-			}
-
+			nv := reflect.ValueOf(nextLine).Elem()
+			nv.FieldByName(field.Name).Set(reflect.ValueOf(aws.String(v[width:])))
 			v = v[:width]
 		}
 
