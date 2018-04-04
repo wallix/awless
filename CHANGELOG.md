@@ -18,6 +18,7 @@
 
 ### Fixes
 
+- [#196](https://github.com/wallix/awless/issues/196): Regression fix SIGSEV when having AWS config with role assuming
 - [#182](https://github.com/wallix/awless/issues/182): Region embedded in profile taken into account and given correct precedence
 - [#144](https://github.com/wallix/awless/issues/144): Filtering done on AWS side when listing records for a given zone name
 - [#172](https://github.com/wallix/awless/issues/172): Filtering done on AWS side when listing containertasks for a given task definition name
