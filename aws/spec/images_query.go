@@ -214,6 +214,7 @@ var (
 		"redhat":      RedHat,
 		"debian":      Debian,
 		"amazonlinux": AmazonLinux,
+		"coreos":      CoreOS,
 		"centos":      CentOS,
 		"suselinux":   SuseLinux,
 		"windows":     Windows,
@@ -237,6 +238,13 @@ var (
 		Name: "debian", Id: "379101102735", DistroName: "debian", LatestVariant: "stretch",
 		MatchFunc: func(s string, d Distro) bool {
 			return strings.HasPrefix(s, fmt.Sprintf("%s-%s", d.Name, d.Variant))
+		},
+	}
+
+	CoreOS = Platform{
+		Name: "coreos", Id: "595879546273", DistroName: "coreos", LatestVariant: "1688",
+		MatchFunc: func(s string, d Distro) bool {
+			return strings.HasPrefix(s, strings.ToLower(fmt.Sprintf("%s-stable-%s", d.Name, d.Variant)))
 		},
 	}
 
