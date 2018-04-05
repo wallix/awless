@@ -256,9 +256,9 @@ var (
 	}
 
 	AmazonLinux = Platform{
-		Name: "amazonlinux", Id: "137112412989", LatestVariant: "hvm",
+		Name: "amazonlinux", Id: "137112412989", DistroName: "amzn", LatestVariant: "hvm",
 		MatchFunc: func(s string, d Distro) bool {
-			return strings.HasPrefix(s, fmt.Sprintf("amzn-ami-%s", d.Variant))
+			return strings.HasPrefix(s, fmt.Sprintf("%s-ami-%s", d.Name, d.Variant))
 		},
 	}
 
