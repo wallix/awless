@@ -58,7 +58,7 @@ func init() {
 	sshCmd.Flags().BoolVar(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
 }
 
-var defaultAMIUsers = []string{"ec2-user", "ubuntu", "centos", "bitnami", "admin", "root"}
+var defaultAMIUsers = []string{"ec2-user", "ubuntu", "centos", "core", "bitnami", "admin", "root"}
 
 var sshCmd = &cobra.Command{
 	Use:   "ssh [USER@]INSTANCE",
