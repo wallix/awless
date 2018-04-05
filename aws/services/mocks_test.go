@@ -77,8 +77,9 @@ func (m *mockS3) ListBuckets(input *s3.ListBucketsInput) (*s3.ListBucketsOutput,
 	}
 	return &s3.ListBucketsOutput{Buckets: buckets}, nil
 }
-func (m *mockS3) ListObjects(input *s3.ListObjectsInput) (*s3.ListObjectsOutput, error) {
-	return &s3.ListObjectsOutput{Contents: m.objects[awssdk.StringValue(input.Bucket)]}, nil
+func (m *mockS3) ListObjectsPages(input *s3.ListObjectsInput, fn func(*s3.ListObjectsOutput, bool) bool) error {
+	fn(&s3.ListObjectsOutput{Contents: m.objects[awssdk.StringValue(input.Bucket)]}, true)
+	return nil
 }
 func (m *mockS3) GetBucketLocation(input *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
 	for region, buckets := range m.buckets {
