@@ -53,27 +53,58 @@ func forEachBucketParallel(ctx context.Context, cache fetch.Cache, api s3iface.S
 }
 
 func fetchObjectsForBucket(ctx context.Context, api s3iface.S3API, bucket *s3.Bucket, resourcesC chan<- *graph.Resource) error {
-	out, err := api.ListObjects(&s3.ListObjectsInput{Bucket: bucket.Name})
-	if err != nil {
-		return err
+	objectc := make(chan []*s3.Object)
+	errc := make(chan error)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := api.ListObjectsPages(&s3.ListObjectsInput{Bucket: bucket.Name}, func(page *s3.ListObjectsOutput, lastPage bool) bool {
+			objectc <- page.Contents
+			return !lastPage
+		}); err != nil {
+			errc <- err
+			return
+		}
+	}()
+
+	processObjects := func(objs []*s3.Object) {
+		for _, output := range objs {
+			res, err := awsconv.NewResource(output)
+			if err != nil {
+				errc <- err
+				return
+			}
+			res.SetProperty("Bucket", awssdk.StringValue(bucket.Name))
+			resourcesC <- res
+			parent, err := awsconv.InitResource(bucket)
+			if err != nil {
+				errc <- err
+				return
+			}
+			res.AddRelation(rdf.ChildrenOfRel, parent)
+			resourcesC <- parent
+		}
 	}
 
-	for _, output := range out.Contents {
-		res, err := awsconv.NewResource(output)
-		if err != nil {
-			return err
-		}
-		res.SetProperty("Bucket", awssdk.StringValue(bucket.Name))
-		resourcesC <- res
-		parent, err := awsconv.InitResource(bucket)
-		if err != nil {
-			return err
-		}
-		res.AddRelation(rdf.ChildrenOfRel, parent)
-		resourcesC <- parent
-	}
+	go func() {
+		wg.Wait()
+		close(objectc)
+		close(errc)
+	}()
 
-	return nil
+	for {
+		select {
+		case err := <-errc:
+			return err
+		case objects, ok := <-objectc:
+			if !ok {
+				return nil
+			}
+			processObjects(objects)
+		}
+	}
 }
 
 func getBucketsPerRegion(ctx context.Context, api s3iface.S3API) ([]*s3.Bucket, error) {
