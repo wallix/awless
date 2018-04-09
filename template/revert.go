@@ -2,14 +2,20 @@ package template
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/wallix/awless/template/internal/ast"
 )
 
-func (te *Template) Revert() (*Template, error) {
+func (temp *Template) Revert() (*Template, error) {
+	tpl, _, err := Compile(temp, new(noopCompileEnv), PreRevertCompileMode)
+	if err != nil {
+		return temp, err
+	}
+
 	var lines []string
-	cmdsReverseIterator := te.CommandNodesReverseIterator()
+	cmdsReverseIterator := tpl.CommandNodesReverseIterator()
 	for i, cmd := range cmdsReverseIterator {
 		notLastCommand := (i != len(cmdsReverseIterator)-1)
 		if isRevertible(cmd) {
@@ -236,12 +242,12 @@ func (te *Template) Revert() (*Template, error) {
 	}
 
 	text := strings.Join(lines, "\n")
-	tpl, err := Parse(text)
+	reverted, err := Parse(text)
 	if err != nil {
 		return nil, fmt.Errorf("revert: \n%s\n%s", text, err)
 	}
 
-	return tpl, nil
+	return reverted, nil
 }
 
 func IsRevertible(t *Template) bool {
@@ -317,6 +323,12 @@ func isRevertible(cmd *ast.CommandNode) bool {
 func printItem(i interface{}) string {
 	switch ii := i.(type) {
 	case string:
+		if _, err := strconv.Atoi(ii); err == nil {
+			return "'" + ii + "'"
+		}
+		if _, err := strconv.ParseFloat(ii, 64); err == nil {
+			return "'" + ii + "'"
+		}
 		return quoteParamIfNeeded(i)
 	case []interface{}:
 		var out []string
