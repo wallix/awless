@@ -933,7 +933,11 @@ func (d *defaultSorter) symbol() string {
 }
 
 func valueLowerOrEqual(a, b interface{}) bool {
-	if a == b {
+	if a == nil && b == nil {
+		return true
+	}
+	if aTyp, bTyp := reflect.TypeOf(a), reflect.TypeOf(b); aTyp != nil &&
+		aTyp.Comparable() && bTyp != nil && bTyp.Comparable() && a == b {
 		return true
 	}
 	if a == nil {
@@ -962,6 +966,8 @@ func valueLowerOrEqual(a, b interface{}) bool {
 		aa := a.(time.Time)
 		bb := b.(time.Time)
 		return aa.After(bb)
+	case []string, []int:
+		return fmt.Sprint(a) <= fmt.Sprint(b)
 	default:
 		panic(fmt.Sprintf("can not compare values of type %T", a))
 	}
