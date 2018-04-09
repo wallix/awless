@@ -386,7 +386,7 @@ func (cmd *DeleteDistribution) ManualRun(renv env.Running) (interface{}, error) 
 	entries = map[string]interface{}{
 		"id":      cmd.Id,
 		"state":   "Deployed",
-		"timeout": 900,
+		"timeout": 1800,
 	}
 	if err := params.Validate(checkDistribution.ParamsSpec().Validators(), entries); err != nil {
 		return nil, err
