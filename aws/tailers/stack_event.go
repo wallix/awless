@@ -450,7 +450,6 @@ func (s *stackEvent) format(fil filters) []byte {
 		buf.WriteString(v)
 		// fil the rest of the line space with " "
 		buf.WriteString(createSpaces(width + space - len(v)))
-		// totalWidth += width
 	}
 
 	buf.WriteRune('\n')
