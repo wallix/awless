@@ -11,7 +11,8 @@ import (
 
 func TestRevertOneliner(t *testing.T) {
 	tcases := []struct {
-		in, exp string
+		in, exp   string
+		cmdResult interface{}
 	}{
 		{in: "create instanceprofile name=stuff", exp: "delete instanceprofile name=stuff"},
 		{in: "delete instanceprofile name=stuff", exp: "create instanceprofile name=stuff"},
@@ -22,19 +23,31 @@ func TestRevertOneliner(t *testing.T) {
 		{in: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=revoke portrange=443 protocol=tcp", exp: "update securitygroup cidr=0.0.0.0/0 id=sg-12345 outbound=authorize portrange=443 protocol=tcp"},
 		{in: "attach mfadevice id=my-mfa-device-id user=toto mfa-code-1=1234 mfa-code-2=2345", exp: "detach mfadevice id=my-mfa-device-id user=toto"},
 		{in: "detach mfadevice id=my-mfa-device-id user=toto", exp: "attach mfadevice id=my-mfa-device-id user=toto"},
+
+		{in: "stop instance ids=inst-id-1", exp: "check instance id=inst-id-1 state=stopped timeout=180\nstart instance ids=inst-id-1", cmdResult: "inst-id-1"},
+		{in: "start instance ids=inst-id-1", exp: "check instance id=inst-id-1 state=running timeout=180\nstop instance ids=inst-id-1", cmdResult: "inst-id-1"},
+
+		{in: "stop instance ids=inst-id-1,inst-id-2", exp: "check instance id=inst-id-1 state=stopped timeout=180\ncheck instance id=inst-id-2 state=stopped timeout=180\nstart instance ids=[inst-id-1,inst-id-2]", cmdResult: "inst-id-1"},
+		{in: "start instance ids=inst-id-1,inst-id-2", exp: "check instance id=inst-id-1 state=running timeout=180\ncheck instance id=inst-id-2 state=running timeout=180\nstop instance ids=[inst-id-1,inst-id-2]", cmdResult: "inst-id-1"},
+
 		{in: "stop database id=my-db-id", exp: "start database id=my-db-id"},
 		{in: "start database id=my-db-id", exp: "stop database id=my-db-id"},
+
 		{in: "create instanceprofile name='my funny name with spaces'", exp: "delete instanceprofile name='my funny name with spaces'"},
-		{in: "create appscalingtarget dimension=dim max-capacity=10 min-capacity=4 resource=['1','2','3'] role=role service-namespace=ecs", exp: "delete appscalingtarget dimension=dim resource=['1','2','3'] service-namespace=ecs"},
+		{in: "create appscalingtarget dimension=dim max-capacity=10 min-capacity=4 resource=['one res','two','three','4', 5, '4.3', 5.1] role=role service-namespace=ecs", exp: "delete appscalingtarget dimension=dim resource=['one res',two,three,'4',5,'4.3',5.1] service-namespace=ecs"},
 	}
 
 	for _, tcase := range tcases {
-		reverted, err := MustParse(tcase.in).Revert()
+		parsed := MustParse(tcase.in)
+		if tcase.cmdResult != nil {
+			parsed.CommandNodesIterator()[0].CmdResult = tcase.cmdResult
+		}
+		reverted, err := parsed.Revert()
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("case '%s': %s", tcase.in, err)
 		}
 		if got, want := reverted.String(), tcase.exp; got != want {
-			t.Fatalf("got: %s\nwant: %s\n", got, want)
+			t.Fatalf("got\n%q\n\nwant\n%q\n", got, want)
 		}
 	}
 }

@@ -26,6 +26,10 @@ var (
 		resolveParamsAndExtractRefsPass,
 	}
 
+	PreRevertCompileMode = []compileFunc{
+		resolveParamsAndExtractRefsPass,
+	}
+
 	NewRunnerCompileMode = []compileFunc{
 		injectCommandsInNodesPass,
 		failOnDeclarationWithNoResultPass,

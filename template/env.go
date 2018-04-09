@@ -84,6 +84,16 @@ func (e *compileEnv) Log() *logger.Logger {
 	return e.log
 }
 
+type noopCompileEnv struct{}
+
+func (*noopCompileEnv) LookupCommandFunc() func(...string) interface{}        { return nil }
+func (*noopCompileEnv) AliasFunc() func(paramPath, alias string) string       { return nil }
+func (*noopCompileEnv) MissingHolesFunc() func(string, []string, bool) string { return nil }
+func (*noopCompileEnv) ParamsMode() int                                       { return -1 }
+func (*noopCompileEnv) Log() *logger.Logger                                   { return logger.DiscardLogger }
+func (*noopCompileEnv) Push(int, ...map[string]interface{})                   {}
+func (*noopCompileEnv) Get(int) map[string]interface{}                        { return make(map[string]interface{}) }
+
 func NewEnv() *envBuilder {
 	b := &envBuilder{new(compileEnv)}
 	b.E.lookupCommandFunc = func(...string) interface{} { return nil }
