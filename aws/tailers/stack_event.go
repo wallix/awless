@@ -154,7 +154,7 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 					errBuf.Write(f.header())
 					writer := bufio.NewWriter(&errBuf)
 					t.deploymentStatus.failedEvents.printReverse(writer, f)
-
+					writer.Flush()
 					return fmt.Errorf(errBuf.String())
 				}
 				return nil
@@ -321,13 +321,23 @@ func (e stackEvents) printReverse(w io.Writer, f filters) error {
 }
 
 func (f filters) header() []byte {
+	//// TODO: bold text still shifts the columns, need to figure out whats wrong
+	// s := &stackEvent{
+	// 	Timestamp:            func() *string { t := color.New(color.Bold).Sprintf("Timestamp"); return &t }(),
+	// 	ResourceStatus:       func() *string { t := color.New(color.Bold).Sprintf("Status"); return &t }(),
+	// 	LogicalResourceId:    func() *string { t := color.New(color.Bold).Sprintf("Logical ID"); return &t }(),
+	// 	PhysicalResourceId:   func() *string { t := color.New(color.Bold).Sprintf("Physical ID"); return &t }(),
+	// 	ResourceStatusReason: func() *string { t := color.New(color.Bold).Sprintf("Status Reason"); return &t }(),
+	// 	ResourceType:         func() *string { t := color.New(color.Bold).Sprintf("Type"); return &t }(),
+	// }
+
 	s := &stackEvent{
-		Timestamp:            func() *string { t := color.New(color.Bold).Sprintf("Timestamp"); return &t }(),
-		ResourceStatus:       func() *string { t := color.New(color.Bold).Sprintf("Status"); return &t }(),
-		LogicalResourceId:    func() *string { t := color.New(color.Bold).Sprintf("Logical ID"); return &t }(),
-		PhysicalResourceId:   func() *string { t := color.New(color.Bold).Sprintf("Physical ID"); return &t }(),
-		ResourceStatusReason: func() *string { t := color.New(color.Bold).Sprintf("Status Reason"); return &t }(),
-		ResourceType:         func() *string { t := color.New(color.Bold).Sprintf("Type"); return &t }(),
+		Timestamp:            func() *string { t := "Timestamp"; return &t }(),
+		ResourceStatus:       func() *string { t := "Status"; return &t }(),
+		LogicalResourceId:    func() *string { t := "Logical ID"; return &t }(),
+		PhysicalResourceId:   func() *string { t := "Physical ID"; return &t }(),
+		ResourceStatusReason: func() *string { t := "Status Reason"; return &t }(),
+		ResourceType:         func() *string { t := "Type"; return &t }(),
 	}
 
 	return s.format(f)
@@ -352,10 +362,6 @@ func (s *stackEvent) isFailed() bool {
 	return (s.ResourceStatus != nil && (strings.HasSuffix(*s.ResourceStatus, StackEventFailed) || *s.ResourceStatus == cloudformation.StackStatusUpdateRollbackInProgress))
 }
 
-func (s *stackEvent) fromCFEvent() bool {
-	return (s.ResourceStatus != nil && (strings.HasSuffix(*s.ResourceStatus, StackEventFailed) || *s.ResourceStatus == cloudformation.StackStatusUpdateRollbackInProgress))
-}
-
 func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) error {
 	inp := &cloudformation.CancelUpdateStackInput{StackName: &s.stackName}
 	_, err := cfn.CancelUpdateStack(inp)
@@ -365,7 +371,7 @@ func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) er
 func NewStackEvent(e *cloudformation.StackEvent) stackEvent {
 	return stackEvent{
 		Timestamp:            func() *string { t := e.Timestamp.Format(time.RFC3339); return &t }(),
-		ResourceStatus:       colorizeResourceStatus(*e.ResourceStatus),
+		ResourceStatus:       e.ResourceStatus,
 		ResourceType:         e.ResourceType,
 		LogicalResourceId:    e.LogicalResourceId,
 		PhysicalResourceId:   e.PhysicalResourceId,
@@ -379,6 +385,10 @@ func NewStackEvent(e *cloudformation.StackEvent) stackEvent {
 func (s *stackEvent) format(fil filters) []byte {
 	tp := reflect.TypeOf(s).Elem()
 	v := reflect.ValueOf(s).Elem()
+
+	if s.ResourceStatus != nil {
+		s.ResourceStatus = colorizeResourceStatus(*s.ResourceStatus)
+	}
 
 	buf := bytes.Buffer{}
 	var nextLine *stackEvent
@@ -423,6 +433,8 @@ func (s *stackEvent) format(fil filters) []byte {
 			// and results in text shift
 			// so we need to increase column width a bit
 			// colored string looks like: "\x1b[31mText\x1b[0m"
+			// TODO: looks like this doesn't helps, if one line has the
+			// more then one colored column (like header)
 			width += strings.Index(v, "m") + 1 + len("\x1b[0m")
 		}
 
