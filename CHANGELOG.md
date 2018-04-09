@@ -1,23 +1,29 @@
-## v0.1.10 [unrelased]
+## v0.1.10 [unreleased]
 
 ### Features
 
+- Create instances now supports distro prompting for CentOS, Amazon Linux 2, CoreOS
+   
+      $ awless create instance name=myinst distro=amazonlinux:amzn2
+      $ awless create instance distro=coreos
+      $ awless create instance distro=centos name=myinst
 
-- Create instances: support CentOS for distro prompting
-- Support for region embedded in an AWS profile (i.e. shared config files ~/.aws/{credentials,config}). See #181 in Fixes for more details 
-- Listing flag `--filter` now passes on the user wanted filtering down to the AWS API when possible so that: _less unneeded resources are fetched_, _bandwidth is reduced_, _some throttling avoided_.
+- Avoiding extra throttling: Listing flag `--filter` now passes on the user wanted filtering down to the AWS API when possible so that _less unneeded resources are fetched_, _bandwidth is reduced_ and _some throttling avoided_.
   
   For example:
   
-      *`awless ls s3objects --filter bucket=website`*
-      *`awless ls records --filter name=io`*
-      *`awless ls containertasks --filter name=my-task-definition-name`* 
+      $ awless ls s3objects --filter bucket=website
+      $ awless ls records --filter name=io
+      $ awless ls containertasks --filter name=my-task-definition-name
+
+- Support for region embedded in an AWS profile (i.e. shared config files ~/.aws/{credentials,config}). See #181 in Fixes for more details 
       
 - [#191](https://github.com/wallix/awless/issues/191) Attach a certificate to a listener with: `awless listener attach id=... certificate=...` (see awless attach listener -h for more)
 
 
 ### Fixes
 
+- [#200](https://github.com/wallix/awless/issues/200): Now paging is supported for s3 objects when listing
 - [#196](https://github.com/wallix/awless/issues/196): Regression fix SIGSEV when having AWS config with role assuming
 - [#182](https://github.com/wallix/awless/issues/182): Region embedded in profile taken into account and given correct precedence
 - [#144](https://github.com/wallix/awless/issues/144): Filtering done on AWS side when listing records for a given zone name
