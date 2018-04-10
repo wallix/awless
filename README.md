@@ -36,23 +36,47 @@ Choose one of the following options:
 <em>Note that the video above is in <a href="https://en.wikipedia.org/wiki/APNG">APNG</a> and requires a recent browser.</em>
 </p>
 
-- `awless show` : Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
 - **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
-- `awless run` : Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates (ex: `awless run my-awless-templates/create_my_infra.txt`)
-- Hundreds of powerful CRUD CLI one-liner integrated in the awless templating engine:
+- `awless show` : Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
+- `awless run` : Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates
 
-        $ awless create instance -h
-        $ awless create vpc -h
-        $ awless attach policy -h
-        etc.
-        
+      $ awless run my-awless-templates/create_my_infra.aws
+
+- **Hundreds of powerful CRUD CLI one-liners** integrated in the awless templating engine:
+
+      $ awless create instance -h
+      $ awless create vpc -h
+      $ awless attach policy -h
+      etc.
+
 - `awless log` : Easy reporting of all the CLI template executions
 - `awless revert` : Revert of executed templates and resources creation
-- Create instances straight from a distro name (i.e. no need to know the region or AMI ;) ). Ex: `awless create instance distro=debian ...` (_free tier community bare distro only_, see `awless create instance -h`)
-- Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=/home/john/...` 
-- `awless ssh` : Clean and simple SSH to public & private instances using only a name. Ex: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
-- Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --latest-id`
+- Create instances straight from a distro name. No need to know the region or AMI ;) (_free tier community bare distro only_, see `awless create instance -h`)
+
+      $ awless create instance distro=debian
+      $ awless create instance distro=coreos
+      $ awless create instance distro=redhat::7.2 type=t2.micro
+      $ awless create instance distro=debian:debian:jessie lock=true
+      $ awless create instance distro=amazonlinux:amzn2
+      etc.
+
+- Leveraging AWS `userdata` to provision instance on creation from remote (i.e http) or local scripts: `awless create instance ... userdata=/home/john/...` 
+- `awless ssh` : Clean and simple SSH to public & private instances using only a name
+
+      $ awless ssh my-production-instance
+      $ awless ssh redis-prod --through jump-server
+      $ awless ssh 34.215.29.221
+      $ awless ssh db-private --private
+      $ awless ssh 172.31.77.151 --port 2222 --through my-proxy --through-port 23
+      etc.
+
 - `awless switch` : Switch easily between AWS accounts (i.e. profile) and regions
+
+       $ awless switch admin eu-west-2
+       $ awless switch us-west-1
+       $ awless switch mfa
+       etc.
+
 - `awless inspect` : Leverage _experimental_ inspectors which are small CLI utilities to run analysis on your cloud resources graphs
 - `awless list` : Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.
 - `awless sync` : Explicitly and manually sync to fetch & store resources locally. Then query & inspect your cloud offline
