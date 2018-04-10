@@ -17,8 +17,7 @@
 - exploration of your cloud infrastructure and resources relations, **even offline** using a local graph storage
 - greater output's readability with numerous machine and human friendly formats
 - ensure smart defaults & security best practices
-- connect easily using awless' smart SSH to your private & public instances
-
+- connect easily using awless' **smart SSH** to your private & public instances
 
 # Install
 
@@ -29,7 +28,7 @@ Choose one of the following options:
 3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
 4. If you have Golang already installed, install from the source with: `go get -u github.com/wallix/awless`
 
-# Main Features
+# Main features
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/wiki/wallix/awless/apng/awless-demo.png"><img src="https://raw.githubusercontent.com/wiki/wallix/awless/apng/awless-demo.png" alt="video of a few awless commands"></a>
@@ -37,23 +36,29 @@ Choose one of the following options:
 <em>Note that the video above is in <a href="https://en.wikipedia.org/wiki/APNG">APNG</a> and requires a recent browser.</em>
 </p>
 
-- Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.: `awless show`
-- Aliasing of resources through their natural name so you don't have to always use cryptic ids that are impossible to remember
-- Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates: `awless run my-awless-templates/create_my_infra.txt`
-- Powerful CRUD CLI one-liner (integrated in the awless templating engine) with: `awless create instance ...`, `awless create vpc ...`, `awless attach policy ...`
-- Easy reporting of all the CLI template executions: `awless log`
-- Revert of executed templates and resources creation: `awless revert`
-- Create instances with a specific community bare distribution independently of the AWS region: `awless create instance distro=debian ...`
-- Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=http://...` 
-- Clean and simple SSH to public & private instances using only a name: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
+- `awless show` : Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
+- **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
+- `awless run` : Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates (ex: `awless run my-awless-templates/create_my_infra.txt`)
+- Hundreds of powerful CRUD CLI one-liner integrated in the awless templating engine:
+
+        $ awless create instance -h
+        $ awless create vpc -h
+        $ awless attach policy -h
+        etc.
+        
+- `awless log` : Easy reporting of all the CLI template executions
+- `awless revert` : Revert of executed templates and resources creation
+- Create instances straight from a distro name (i.e. no need to know the region or AMI ;) ). Ex: `awless create instance distro=debian ...` (_free tier community bare distro only_, see `awless create instance -h`)
+- Leveraging AWS `userdata` to provision instance on creation given remote (i.e http) or local scripts: `awless create instance ... userdata=/home/john/...` 
+- `awless ssh` : Clean and simple SSH to public & private instances using only a name. Ex: `awless ssh my-production-instance`, `awless ssh redis-prod --through jump-server`
 - Resolve public images dynamically (i.e. independant of the region specific AMI id): `awless search images canonical:ubuntu:xenial --latest-id`
-- Switch AWS accounts (i.e. profile) and regions easily with `awless switch`
-- Inspectors are small CLI utilities to run analysis on your cloud resources graphs: `awless inspect`
-- Manual sync mode to fetch & store resources locally. Then query & inspect your cloud offline: `awless sync`
-- CLI autocompletion for Unix/Linux's bash and zsh `awless completion`
-- Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.: `awless list`
+- `awless switch` : Switch easily between AWS accounts (i.e. profile) and regions
+- `awless inspect` : Leverage _experimental_ inspectors which are small CLI utilities to run analysis on your cloud resources graphs
+- `awless list` : Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.
+- `awless sync` : Explicitly and manually sync to fetch & store resources locally. Then query & inspect your cloud offline
 - Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
 - Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Env=Production`, `--tag-value Purchased`, `--tag-key Dept,Internal`
+- `awless completion` : CLI autocompletion for Unix/Linux's bash and zsh 
 
 # Getting started
 
