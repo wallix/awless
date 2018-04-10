@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
@@ -18,7 +19,7 @@ func TestStack(t *testing.T) {
 
 	t.Run("create", func(t *testing.T) {
 
-		Template("create stack name=new-stack template-file="+tplFilePath+" capabilities=one,two disable-rollback=true notifications=none,ntwo on-failure=done parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" timeout=180").Mock(&cloudformationMock{
+		Template("create stack name=new-stack template-file="+tplFilePath+" capabilities=one,two disable-rollback=true notifications=none,ntwo on-failure=done parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" rollback-triggers=[arn1,arn2] rollback-monitoring-min=2 timeout=180").Mock(&cloudformationMock{
 			CreateStackFunc: func(input *cloudformation.CreateStackInput) (*cloudformation.CreateStackOutput, error) {
 				return &cloudformation.CreateStackOutput{StackId: String("new-stack-id")}, nil
 			}}).ExpectInput("CreateStack", &cloudformation.CreateStackInput{
@@ -33,6 +34,13 @@ func TestStack(t *testing.T) {
 			RoleARN:          String("donjuan"),
 			StackPolicyBody:  String("policy content"),
 			TimeoutInMinutes: Int64(180),
+			RollbackConfiguration: &cloudformation.RollbackConfiguration{
+				MonitoringTimeInMinutes: Int64(2),
+				RollbackTriggers: []*cloudformation.RollbackTrigger{
+					{Arn: String("arn1"), Type: aws.String("AWS::CloudWatch::Alarm")},
+					{Arn: String("arn2"), Type: aws.String("AWS::CloudWatch::Alarm")},
+				},
+			},
 		}).ExpectCommandResult("new-stack-id").ExpectCalls("CreateStack").Run(t)
 	})
 
