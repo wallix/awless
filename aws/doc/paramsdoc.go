@@ -225,7 +225,7 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":   "The name of the instance to launch",
 		"role":   "The name of the instance profile (role) to launch the instance with",
 		"image":  "The ID of an AMI for the instance to be launched",
-		"distro": "The distro query to resolve official community free bare distro AMI from current region. See `awless search images -h`",
+		"distro": "The distro query to resolve official community free bare distro AMI from current region. See above description from this help for specific queries. Default choices:",
 	},
 	"create.image": {
 		"reboot": "True to shut down and reboot the instance before creating the image, otherwise no reboot and file system integrity on the created image cannot be guaranteed",

@@ -10,6 +10,7 @@ import (
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/wallix/awless/aws/doc"
 )
 
 // Image resolving allows to find AWS AMIs identifiers specifying what you want instead
@@ -287,6 +288,7 @@ func init() {
 	for name := range Platforms {
 		SupportedAMIOwners = append(SupportedAMIOwners, name)
 	}
+	awsdoc.CommandDefinitionsDoc["create.instance"] = fmt.Sprintf("Create an EC2 instance.\n\nThe `distro` param allows to resolve from the current region the official community free bare AMI according to an awless specific bare distro query format, ordering by latest first. The query string specification is the following column separated format:\n\n\t\t%s\n\nIn this query format, everything is optional expect for the 'owner'. Supported owners: %s", ImageQuerySpec, strings.Join(SupportedAMIOwners, ", "))
 }
 
 func ParseImageQuery(s string) (ImageQuery, error) {

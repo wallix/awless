@@ -6,13 +6,13 @@ import (
 )
 
 func AwlessCommandDefinitionsDoc(action, entity, fallbackDef string) string {
-	if v, ok := commandDefinitionsDoc[action+"."+entity]; ok {
+	if v, ok := CommandDefinitionsDoc[action+"."+entity]; ok {
 		return v
 	}
 	return fallbackDef
 }
 
-var commandDefinitionsDoc = map[string]string{
+var CommandDefinitionsDoc = map[string]string{
 	"copy.image": "Copy an EC2 image from given source region to current awless region",
 }
 
