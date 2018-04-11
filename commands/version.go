@@ -37,14 +37,6 @@ var versionCmd = &cobra.Command{
 }
 
 func printVersion(*cobra.Command, []string) {
-	fmt.Fprint(os.Stderr, `
- █████╗  ██╗    ██╗ ██╗     ██████  ██████╗ ██████╗     
-██╔══██╗ ██║    ██║ ██║     ██╔══╝  ██╔═══╝ ██╔═══╝    
-███████║ ██║ █╗ ██║ ██║     ████╗   ██████  ██████   
-██╔══██║ ██║███╗██║ ██║     ██╔═╝       ██╗     ██╗   
-██║  ██║ ╚███╔███╔╝ ██████╗ ██████╗ ██████║ ██████║   
-╚═╝  ╚═╝  ╚══╝╚══╝  ╚═════╝ ╚═════╝ ╚═════╝ ╚═════╝
-
-`)
+	fmt.Fprint(os.Stderr, config.AWLESS_ASCII_LOGO)
 	fmt.Println(config.CurrentBuildInfo)
 }

@@ -50,7 +50,8 @@ func InitAwlessEnv() error {
 	os.MkdirAll(KeysDir, 0700)
 
 	if AwlessFirstInstall {
-		fmt.Fprintln(os.Stderr, "Welcome to awless! Resolving environment data...")
+		fmt.Fprintln(os.Stderr, AWLESS_ASCII_LOGO)
+		fmt.Fprintln(os.Stderr, "Welcome! Resolving environment data...")
 		fmt.Fprintln(os.Stderr)
 
 		if err = InitConfig(resolveRequiredConfigFromEnv()); err != nil {
