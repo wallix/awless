@@ -28,6 +28,8 @@ Choose one of the following options:
 3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
 4. If you have Golang already installed, install from the source with: `go get -u github.com/wallix/awless`
 
+If you have previously used the AWS CLI or aws-shell, you don't need to configure anything! Your config will be automatically loaded (i.e. ~/.aws/{credentials,config}) and `awless` will prompt for any missing info.
+
 # Main features
 
 <p align="center">
@@ -38,7 +40,7 @@ Choose one of the following options:
 
 - **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
 - `awless show` : Explore a resource - even offline thanks to the sync ;) - given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
-- `awless run` : Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates, ex: `awless run my-awless-templates/create_my_infra.aws`
+- `awless run` : Create, update and delete complex infrastructures with smart defaults and sound auto-complete through awless templates, ex: `awless run my-awless-templates/create_my_infra.aws`
 
 - **Hundreds of powerful CRUD CLI one-liners** integrated in the awless templating engine:
 
