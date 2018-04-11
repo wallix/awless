@@ -37,10 +37,8 @@ Choose one of the following options:
 </p>
 
 - **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
-- `awless show` : Explore a resource given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
-- `awless run` : Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates
-
-      $ awless run my-awless-templates/create_my_infra.aws
+- `awless show` : Explore a resource - even offline thanks to the sync ;) - given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
+- `awless run` : Creation, update and deletion of complex infrastructures with smart defaults and sound autocomplete through awless templates, ex: `awless run my-awless-templates/create_my_infra.aws`
 
 - **Hundreds of powerful CRUD CLI one-liners** integrated in the awless templating engine:
 
@@ -77,11 +75,12 @@ Choose one of the following options:
        $ awless switch mfa
        etc.
 
-- `awless inspect` : Leverage _experimental_ inspectors which are small CLI utilities to run analysis on your cloud resources graphs
 - `awless list` : Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.
-- `awless sync` : Explicitly and manually sync to fetch & store resources locally. Then query & inspect your cloud offline
+- Transparently syncing cloud resources locally to a graph representation in order for the CLI to leverage data and their relations in other awless commands and in an offline manner ([more on the sync](https://github.com/wallix/awless/wiki/Getting-Started#sync))
+- `awless sync` : Explicit and manual command to fetch & store resources locally. Then query & inspect your cloud offline
 - Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
 - Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Env=Production`, `--tag-value Purchased`, `--tag-key Dept,Internal`
+- `awless inspect` : Leverage _experimental_ inspectors which are small CLI utilities to run analysis on your cloud resources graphs
 - `awless completion` : CLI autocompletion for Unix/Linux's bash and zsh 
 
 # Getting started
