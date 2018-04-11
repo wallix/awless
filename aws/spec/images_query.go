@@ -229,7 +229,7 @@ var (
 	}
 
 	RedHat = Platform{
-		Name: "redhat", Id: "309956199498", DistroName: "rhel", LatestVariant: "7.4",
+		Name: "redhat", Id: "309956199498", DistroName: "rhel", LatestVariant: "7.5",
 		MatchFunc: func(s string, d Distro) bool {
 			return strings.Contains(s, fmt.Sprintf("%s-%s", d.Name, d.Variant))
 		},
