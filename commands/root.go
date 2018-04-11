@@ -87,26 +87,26 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-const customRootUsage = `Usage:{{if .Runnable}}
+const customRootUsage = `USAGE:{{if .Runnable}}
   {{if .HasAvailableFlags}}{{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{if gt .Aliases 0}}
 
-Aliases:
+ALIASES:
   {{.NameAndAliases}}
 {{end}}{{if .HasExample}}
 
-Examples:
+EXAMPLES:
 {{ .Example }}{{end}}{{ if .HasAvailableSubCommands}}
 
-Commands:{{range .Commands}}{{ if not (IsCmdAnnotatedOneliner .Annotations)}}{{if .IsAvailableCommand }}
+COMMANDS:{{range .Commands}}{{ if not (IsCmdAnnotatedOneliner .Annotations)}}{{if .IsAvailableCommand }}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{ if HasCmdOnelinerChilds .}}
 
-One-liner Template Commands:{{range .Commands}}{{ if IsCmdAnnotatedOneliner .Annotations}}{{if .IsAvailableCommand }}
+ONE-LINER TEMPLATE COMMANDS:{{range .Commands}}{{ if IsCmdAnnotatedOneliner .Annotations}}{{if .IsAvailableCommand }}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{end}}{{end}}{{ if .HasAvailableLocalFlags}}
 
-Flags:
+FLAGS:
 {{.LocalFlags.FlagUsages | trimRightSpace}}{{end}}{{ if .HasAvailableInheritedFlags}}
 
-Global Flags:
+GLOBAL FLAGS:
 {{.InheritedFlags.FlagUsages | trimRightSpace}}{{end}}{{if .HasHelpSubCommands}}
 
 Additional help topics:{{range .Commands}}{{if .IsHelpCommand}}

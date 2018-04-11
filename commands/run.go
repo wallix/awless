@@ -334,7 +334,7 @@ func createDriverCommands(action string, entities []string) *cobra.Command {
 			PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 			PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
 			Short:             awsdoc.AwlessCommandDefinitionsDoc(action, templDef.Entity, fmt.Sprintf("%s a %s%s", strings.Title(action), apiStr, templDef.Entity)),
-			Long:              fmt.Sprintf("Params:\n%s\nParams patterns:\n  %s\n\nSee also:\n%s", paramsStr.String(), templDef.Params, availableActionsForEntity(templDef.Entity)),
+			Long:              fmt.Sprintf("PARAMS:\n%s\nPARAMS PATTERNS:\n  %s\n\nSEE ALSO:\n%s", paramsStr.String(), templDef.Params, availableActionsForEntity(templDef.Entity)),
 			Example:           awsdoc.AwlessExamplesDoc(action, templDef.Entity),
 			RunE:              run(templDef),
 			ValidArgs:         validArgs,
@@ -660,25 +660,25 @@ func joinSentence(arr []string) string {
 }
 
 const customCommandUsageTemplate = `
-Usage:{{if .Runnable}}
+USAGE:{{if .Runnable}}
   {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
   {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
 
-Aliases:
+ALIASES:
   {{.NameAndAliases}}{{end}}{{if .HasExample}}
 
-Examples:
+EXAMPLES:
 {{.Example}}{{end}}
 
 {{.Long}}{{if .HasAvailableSubCommands}}
 
-Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+AVAILABLE COMMANDS:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
 
-Flags:
+FLAGS:
 {{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
 
-Global Flags:
+GLOBAL FLAGS:
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
 
 Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
