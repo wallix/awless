@@ -68,6 +68,7 @@ const (
 	aws6digitsstring    = "aws6digitsstring"
 	awsbyteslice        = "awsbyteslice"
 	awstagslice         = "awstagslice"
+	awsrollbackconfig   = "awsrollbackconfig"
 )
 
 var (
@@ -359,6 +360,8 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 		}
 
 		v = tags
+	case awsrollbackconfig:
+		// do nothing since we did all job in BeforeRun
 	}
 	awsutil.SetValueAtPath(i, fieldPath, v)
 	return nil
