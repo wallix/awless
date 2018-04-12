@@ -18,8 +18,7 @@ func TestStack(t *testing.T) {
 	defer polClean()
 
 	t.Run("create", func(t *testing.T) {
-
-		Template("create stack name=new-stack template-file="+tplFilePath+" capabilities=one,two disable-rollback=true notifications=none,ntwo on-failure=done parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" rollback-triggers=[arn1,arn2] rollback-monitoring-min=2 timeout=180").Mock(&cloudformationMock{
+		Template("create stack name=new-stack template-file="+tplFilePath+" capabilities=one,two disable-rollback=true notifications=none,ntwo on-failure=done parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" rollback-monitoring-min=2 rollback-triggers=[arn1,arn2] timeout=180").Mock(&cloudformationMock{
 			CreateStackFunc: func(input *cloudformation.CreateStackInput) (*cloudformation.CreateStackOutput, error) {
 				return &cloudformation.CreateStackOutput{StackId: String("new-stack-id")}, nil
 			}}).ExpectInput("CreateStack", &cloudformation.CreateStackInput{
@@ -48,7 +47,7 @@ func TestStack(t *testing.T) {
 		_, polUpdateFilePath, clean := generateTmpFile("update policy content")
 		defer clean()
 
-		Template("update stack name=other-name template-file="+tplFilePath+" use-previous-template=true capabilities=one,two notifications=none,ntwo parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" policy-update-file="+polUpdateFilePath).Mock(&cloudformationMock{
+		Template("update stack name=other-name template-file="+tplFilePath+" use-previous-template=true capabilities=one,two notifications=none,ntwo parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" policy-update-file="+polUpdateFilePath+" rollback-monitoring-min=2 rollback-triggers=[arn1,arn2]").Mock(&cloudformationMock{
 			UpdateStackFunc: func(input *cloudformation.UpdateStackInput) (*cloudformation.UpdateStackOutput, error) {
 				return &cloudformation.UpdateStackOutput{StackId: String("any-stack-id")}, nil
 			}}).ExpectInput("UpdateStack", &cloudformation.UpdateStackInput{
@@ -62,6 +61,13 @@ func TestStack(t *testing.T) {
 			StackPolicyBody:             String("policy content"),
 			StackPolicyDuringUpdateBody: String("update policy content"),
 			UsePreviousTemplate:         Bool(true),
+			RollbackConfiguration: &cloudformation.RollbackConfiguration{
+				MonitoringTimeInMinutes: Int64(2),
+				RollbackTriggers: []*cloudformation.RollbackTrigger{
+					{Arn: String("arn1"), Type: aws.String("AWS::CloudWatch::Alarm")},
+					{Arn: String("arn2"), Type: aws.String("AWS::CloudWatch::Alarm")},
+				},
+			},
 		}).ExpectCommandResult("any-stack-id").ExpectCalls("UpdateStack").Run(t)
 	})
 

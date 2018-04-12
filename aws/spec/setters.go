@@ -43,32 +43,32 @@ import (
 )
 
 const (
-	awsstr              = "awsstr"
-	awsint              = "awsint"
-	awsint64            = "awsint64"
-	awsfloat            = "awsfloat"
-	awsbool             = "awsbool"
-	awsboolattribute    = "awsboolattribute"
-	awsstringattribute  = "awsstringattribute"
-	awsint64slice       = "awsint64slice"
-	awsstringslice      = "awsstringslice"
-	awsstringpointermap = "awsstringpointermap"
-	awsslicestruct      = "awsslicestruct"
-	awsslicestructint64 = "awsslicestructint64"
-	awsuserdatatobase64 = "awsuserdatatobase64"
-	awsfiletobyteslice  = "awsfiletobyteslice"
-	awsfiletostring     = "awsfiletostring"
-	awsdimensionslice   = "awsdimensionslice"
-	awsparameterslice   = "awsparameterslice"
-	awsecskeyvalue      = "awsecskeyvalue"
-	awsportmappings     = "awsportmappings"
-	awssubnetmappings   = "awssubnetmappings"
-	awsstepadjustments  = "awsstepadjustments"
-	awscsvstr           = "awscsvstr"
-	aws6digitsstring    = "aws6digitsstring"
-	awsbyteslice        = "awsbyteslice"
-	awstagslice         = "awstagslice"
-	awsrollbackconfig   = "awsrollbackconfig"
+	awsstr                   = "awsstr"
+	awsint                   = "awsint"
+	awsint64                 = "awsint64"
+	awsfloat                 = "awsfloat"
+	awsbool                  = "awsbool"
+	awsboolattribute         = "awsboolattribute"
+	awsstringattribute       = "awsstringattribute"
+	awsint64slice            = "awsint64slice"
+	awsstringslice           = "awsstringslice"
+	awsstringpointermap      = "awsstringpointermap"
+	awsslicestruct           = "awsslicestruct"
+	awsslicestructint64      = "awsslicestructint64"
+	awsuserdatatobase64      = "awsuserdatatobase64"
+	awsfiletobyteslice       = "awsfiletobyteslice"
+	awsfiletostring          = "awsfiletostring"
+	awsdimensionslice        = "awsdimensionslice"
+	awsparameterslice        = "awsparameterslice"
+	awsecskeyvalue           = "awsecskeyvalue"
+	awsportmappings          = "awsportmappings"
+	awssubnetmappings        = "awssubnetmappings"
+	awsstepadjustments       = "awsstepadjustments"
+	awscsvstr                = "awscsvstr"
+	aws6digitsstring         = "aws6digitsstring"
+	awsbyteslice             = "awsbyteslice"
+	awstagslice              = "awstagslice"
+	awsalarmrollbacktriggers = "awsalarmrollbacktriggers"
 )
 
 var (
@@ -360,9 +360,19 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 		}
 
 		v = tags
-	case awsrollbackconfig:
-		// do nothing since we did all job in BeforeRun
+	case awsalarmrollbacktriggers:
+		var triggers []*cloudformation.RollbackTrigger
+		if list := castStringSlice(v); len(list) > 0 {
+			for _, t := range list {
+				triggers = append(triggers, &cloudformation.RollbackTrigger{
+					Arn:  aws.String(t),
+					Type: aws.String("AWS::CloudWatch::Alarm"),
+				})
+			}
+		}
+		v = triggers
 	}
+
 	awsutil.SetValueAtPath(i, fieldPath, v)
 	return nil
 }
