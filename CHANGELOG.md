@@ -1,7 +1,8 @@
-## v0.1.10 [unreleased]
+## v0.1.10 [2018-04-13]
 
 ### Features
 
+- Much better performance when synchronising all access data (IAM, etc.)
 - Create instances now supports distro prompting for CentOS, Amazon Linux 2, CoreOS
    
       $ awless create instance name=myinst distro=amazonlinux:amzn2

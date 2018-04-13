@@ -78,6 +78,8 @@ func TestSemverUpgradeOrNot(t *testing.T) {
 
 		{current: "1.1.0", latest: "1.1.1", exp: true, revert: false},
 		{current: "2.1.5", latest: "2.2.0", exp: true, revert: false},
+
+		{current: "0.1.9", latest: "0.1.10", exp: true, revert: false},
 	}
 
 	for _, tc := range tcases {
