@@ -28,7 +28,7 @@ Choose one of the following options:
 3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
 4. If you have Golang already installed, install from the source with: `go get -u github.com/wallix/awless`
 
-If you have previously used the AWS CLI or aws-shell, you don't need to configure anything! Your config will be automatically loaded (i.e. ~/.aws/{credentials,config}) and `awless` will prompt for any missing info.
+If you have previously used the AWS CLI or aws-shell, you don't need to configure anything! Your config will be automatically loaded (i.e. ~/.aws/{credentials,config}) and `awless` will prompt for any missing info (more at our [getting started](https://github.com/wallix/awless/wiki/Getting-Started)).
 
 # Main features
 
@@ -39,7 +39,7 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
 </p>
 
 - **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
-- `awless show` : Explore a resource - even offline thanks to the sync ;) - given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
+- `awless show` : Explore a specific resource - even offline thanks to the sync ;) - given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
 - `awless run` : Create, update and delete complex infrastructures with smart defaults and sound auto-complete through awless templates, ex: `awless run my-awless-templates/create_my_infra.aws`
 
 - **Hundreds of powerful CRUD CLI one-liners** integrated in the awless templating engine:
@@ -47,7 +47,8 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
       $ awless create instance -h
       $ awless create vpc -h
       $ awless attach policy -h
-      etc.
+      $ ...
+      (see awless -h)
 
 - `awless log` : Easy reporting of all the CLI template executions
 - `awless revert` : Revert of executed templates and resources creation
@@ -68,21 +69,38 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
       $ awless ssh 34.215.29.221
       $ awless ssh db-private --private
       $ awless ssh 172.31.77.151 --port 2222 --through my-proxy --through-port 23
-      etc.
+      $ ...
+      (see awless ssh -h)
 
 - `awless switch` : Switch easily between AWS accounts (i.e. profile) and regions
 
-       $ awless switch admin eu-west-2
-       $ awless switch us-west-1
-       $ awless switch mfa
-       etc.
+      $ awless switch admin eu-west-2
+      $ awless switch us-west-1
+      $ awless switch mfa
+      etc.
 
 - `awless list` : Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.
-- Transparently syncing cloud resources locally to a graph representation in order for the CLI to leverage data and their relations in other awless commands and in an offline manner ([more on the sync](https://github.com/wallix/awless/wiki/Getting-Started#sync))
+- `awless` transparently syncs cloud resources locally to a graph representation in order for the CLI to leverage data and their relations in other awless commands and in an offline manner ([more on the sync](https://github.com/wallix/awless/wiki/Getting-Started#sync))
 - `awless sync` : Explicit and manual command to fetch & store resources locally. Then query & inspect your cloud offline
-- Output formats either human (Markdown-compatible tables) or machine readable (csv, tsv, json, ...): `--format`
+- Output formats either human (**default display is Markdown-compatible tables**) or machine readable (csv, tsv, json, ...): `--format`
 - Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Env=Production`, `--tag-value Purchased`, `--tag-key Dept,Internal`
-- `awless inspect` : Leverage _experimental_ inspectors which are small CLI utilities to run analysis on your cloud resources graphs
+
+      $ awless list instances --sort uptime --local
+      $ awless list users --format csv --columns name,created
+      $ awless list volumes --filter state=use --filter type=gp2
+      $ awless list volumes --tag-value Purchased
+      $ awless ls vpcs --tag-key Dept --tag-key Internal --format tsv
+      $ awless ls instances --tag Env=Production,Dept=Marketing
+      $ awless ls instances --filter state=running,type=micro --format json
+      $ awless ls s3objects --filter bucket=pdf-bucket -r us-west-2
+      $ ...
+      (see awless ls -h)
+
+- `awless inspect` : Leverage **experimental** and community inspectors which are interface implementation utilities to run analysis on your cloud resources graphs
+
+      $ awless inspect -i bucket_sizer
+      (see awless inspect -h)
+
 - `awless completion` : CLI autocompletion for Unix/Linux's bash and zsh 
 
 # Getting started
