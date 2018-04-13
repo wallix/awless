@@ -40,7 +40,27 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
 
 - **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
 - `awless show` : Explore a specific resource - even offline thanks to the sync ;) - given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
-- `awless run` : Create, update and delete complex infrastructures with smart defaults and sound auto-complete through awless templates, ex: `awless run my-awless-templates/create_my_infra.aws`
+
+      $ awless show jsmith --local
+
+- `awless list` : Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc. Listing filters via *resources properties* or *resources tags*.
+
+      $ awless list instances --sort uptime --local
+      $ awless list users --format csv --columns name,created
+      $ awless list volumes --filter state=use --filter type=gp2
+      $ awless list volumes --tag-value Purchased
+      $ awless ls vpcs --tag-key Dept --tag-key Internal --format tsv
+      $ awless ls instances --tag Env=Production,Dept=Marketing
+      $ awless ls instances --filter state=running,type=micro --format json
+      $ awless ls s3objects --filter bucket=pdf-bucket -r us-west-2
+      $ ...
+      (see awless ls -h)
+
+- `awless run` : Create, update and delete complex infrastructures with smart defaults and sound auto-complete through awless templates.
+
+      $ awless run ~/templates/my-infra.aws
+      $ awless run https://raw.githubusercontent.com/wallix/awless-templates/master/linux_bastion.aws
+      etc.
 
 - **Hundreds of powerful CRUD CLI one-liners** integrated in the awless templating engine:
 
@@ -50,7 +70,7 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
       $ ...
       (see awless -h)
 
-- `awless log` : Easy reporting of all the CLI template executions
+- `awless log` : Detailled and easy reporting of all the CLI template executions
 - `awless revert` : Revert of executed templates and resources creation
 - Create instances straight from a distro name. No need to know the region or AMI ;) (_free tier community bare distro only_, see `awless create instance -h`)
 
@@ -79,23 +99,9 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
       $ awless switch mfa
       etc.
 
-- `awless list` : Clear and easy listing of multi-region cloud resources (subnets, instances, users, buckets, records, etc.) on AWS EC2, IAM, S3, RDS, AutoScaling, SNS, SQS, Route53, CloudWatch, CloudFormation, Lambda, etc.
 - `awless` transparently syncs cloud resources locally to a graph representation in order for the CLI to leverage data and their relations in other awless commands and in an offline manner ([more on the sync](https://github.com/wallix/awless/wiki/Getting-Started#sync))
 - `awless sync` : Explicit and manual command to fetch & store resources locally. Then query & inspect your cloud offline
-- Output formats either human (**default display is Markdown-compatible tables**) or machine readable (csv, tsv, json, ...): `--format`
-- Listing filters via *resources properties* or *resources tags*: `--filter property=val`, `--tag Env=Production`, `--tag-value Purchased`, `--tag-key Dept,Internal`
-
-      $ awless list instances --sort uptime --local
-      $ awless list users --format csv --columns name,created
-      $ awless list volumes --filter state=use --filter type=gp2
-      $ awless list volumes --tag-value Purchased
-      $ awless ls vpcs --tag-key Dept --tag-key Internal --format tsv
-      $ awless ls instances --tag Env=Production,Dept=Marketing
-      $ awless ls instances --filter state=running,type=micro --format json
-      $ awless ls s3objects --filter bucket=pdf-bucket -r us-west-2
-      $ ...
-      (see awless ls -h)
-
+- Output listing formats either human (**default display is Markdown-compatible tables**) or machine readable (csv, tsv, json, ...): `--format`
 - `awless inspect` : Leverage **experimental** and community inspectors which are interface implementation utilities to run analysis on your cloud resources graphs
 
       $ awless inspect -i bucket_sizer
