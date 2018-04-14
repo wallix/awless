@@ -64,6 +64,11 @@ func applyRegionAndProfilePrecedence() error {
 			return err
 		}
 		profileOverridenThrough = "AWS_DEFAULT_PROFILE variable"
+	} else if envProfile := os.Getenv("AWS_PROFILE"); envProfile != "" {
+		if err := config.SetVolatile(config.ProfileConfigKey, envProfile); err != nil {
+			return err
+		}
+		profileOverridenThrough = "AWS_PROFILE variable"
 	}
 
 	profile := config.GetAWSProfile()
