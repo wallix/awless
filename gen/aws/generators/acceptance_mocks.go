@@ -8,11 +8,10 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
-	"html/template"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/wallix/awless/gen/aws"
 )
@@ -146,15 +145,8 @@ func generateAcceptanceMocks() {
 	if err != nil {
 		panic(err)
 	}
-	var buff bytes.Buffer
-	err = templ.Execute(&buff, apis)
-	if err != nil {
-		panic(err)
-	}
 
-	if err = ioutil.WriteFile(filepath.Join(AWSAT_DIR, "gen_mocks.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, apis, AWSAT_DIR, "gen_mocks.go")
 }
 
 func generateAcceptanceFactory() {
@@ -180,15 +172,7 @@ func generateAcceptanceFactory() {
 		panic(err)
 	}
 
-	var buff bytes.Buffer
-	err = templ.Execute(&buff, finder.result)
-	if err != nil {
-		panic(err)
-	}
-
-	if err = ioutil.WriteFile(filepath.Join(AWSAT_DIR, "gen_factory.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, finder.result, AWSAT_DIR, "gen_factory.go")
 }
 
 type apiInfo struct {

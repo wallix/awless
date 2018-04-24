@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -53,13 +54,7 @@ func generateParamsDocLookup() {
 		}
 	}
 
-	file, err := os.Create(filepath.Join(DOC_DIR, "gen_paramsdoc.go"))
-	if err != nil {
-		panic(err)
-	}
-	if err = templ.Execute(file, doc); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, doc, DOC_DIR, "gen_paramsdoc.go")
 }
 
 func searchParamInDoc(paramsDoc map[string]string, input, field string) (string, bool) {
@@ -125,7 +120,8 @@ func dbInstanceKey(s string) string {
 }
 
 type entries struct {
-	Shapes map[string]interface{} `json:"shapes"`
+	fileRef string
+	Shapes  map[string]interface{} `json:"shapes"`
 }
 
 func loadAllRefs() map[string]string {
@@ -149,20 +145,22 @@ func loadAllRefs() map[string]string {
 		filepath.Join("acm", "2015-12-08", "docs-2.json"),
 	}
 
+	apisPath := filepath.Join(ROOT_DIR, "vendor", "github.com", "aws", "aws-sdk-go", "models", "apis")
+	log.Printf("looking up local AWS services doc at %s", relativePathToRoot(apisPath))
+
 	entriesC := make(chan *entries)
 
 	var wg sync.WaitGroup
-
 	for _, fileRef := range fileRefs {
 		wg.Add(1)
 		go func(ref string) {
 			defer wg.Done()
-			file, err := os.Open(filepath.Join(ROOT_DIR, "vendor", "github.com", "aws", "aws-sdk-go", "models", "apis", ref))
+			file, err := os.Open(filepath.Join(apisPath, ref))
 			if err != nil {
 				panic(err)
 			}
 
-			all := new(entries)
+			all := &entries{fileRef: ref}
 			if err := json.NewDecoder(file).Decode(all); err != nil {
 				panic(err)
 			}
@@ -188,6 +186,7 @@ func loadAllRefs() map[string]string {
 				}
 			}
 		}
+		log.Printf("\t %s", e.fileRef)
 	}
 
 	return refs

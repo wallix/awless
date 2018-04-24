@@ -17,9 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
-	"io/ioutil"
-	"path/filepath"
 	"text/template"
 
 	"github.com/wallix/awless/gen/aws"
@@ -31,15 +28,7 @@ func generateProperties() {
 		panic(err)
 	}
 
-	var buff bytes.Buffer
-	err = templ.Execute(&buff, aws.PropertiesDefinitions)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile(filepath.Join(CLOUD_PROPERTIES_DIR, "gen_properties.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, aws.PropertiesDefinitions, CLOUD_PROPERTIES_DIR, "gen_properties.go")
 }
 
 func generateRDFProperties() {
@@ -48,15 +37,7 @@ func generateRDFProperties() {
 		panic(err)
 	}
 
-	var buff bytes.Buffer
-	err = templ.Execute(&buff, aws.PropertiesDefinitions)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile(filepath.Join(CLOUD_RDF_DIR, "gen_rdf.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, aws.PropertiesDefinitions, CLOUD_RDF_DIR, "gen_rdf.go")
 }
 
 const propertiesTempl = `/* Copyright 2017 WALLIX

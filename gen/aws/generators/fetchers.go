@@ -17,9 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
-	"io/ioutil"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -38,15 +35,7 @@ func generateFetcherFuncs() {
 		panic(err)
 	}
 
-	var buff bytes.Buffer
-	err = templ.Execute(&buff, aws.FetchersDefs)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := ioutil.WriteFile(filepath.Join(FETCHERS_DIR, "gen_fetchers.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, aws.FetchersDefs, FETCHERS_DIR, "gen_fetchers.go")
 }
 
 const fetchersTempl = `// Auto generated implementation for the AWS cloud service

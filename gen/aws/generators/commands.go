@@ -17,14 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -59,31 +56,13 @@ func generateCommands() {
 	if err != nil {
 		panic(err)
 	}
-
-	var buff bytes.Buffer
-	err = templ.Execute(&buff, cmdsData)
-	if err != nil {
-		panic(err)
-	}
-
-	if err = ioutil.WriteFile(filepath.Join(SPEC_DIR, "gen_runs.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, cmdsData, SPEC_DIR, "gen_runs.go")
 
 	templ, err = template.New("cmdInits").Parse(cmdInits)
 	if err != nil {
 		panic(err)
 	}
-
-	buff.Reset()
-	err = templ.Execute(&buff, cmdsData)
-	if err != nil {
-		panic(err)
-	}
-
-	if err = ioutil.WriteFile(filepath.Join(SPEC_DIR, "gen_inits.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, cmdsData, SPEC_DIR, "gen_inits.go")
 
 	templ, err = template.New("templates_definitions").Funcs(
 		template.FuncMap{
@@ -93,15 +72,7 @@ func generateCommands() {
 	if err != nil {
 		panic(err)
 	}
-
-	buff.Reset()
-	if err = templ.Execute(&buff, cmdsData); err != nil {
-		panic(err)
-	}
-
-	if err = ioutil.WriteFile(filepath.Join(SPEC_DIR, "gen_cmds_defs.go"), buff.Bytes(), 0666); err != nil {
-		panic(err)
-	}
+	writeTemplateToFile(templ, cmdsData, SPEC_DIR, "gen_cmds_defs.go")
 }
 
 type cmdData struct {

@@ -24,8 +24,13 @@
 package main
 
 import (
+	"bytes"
 	"flag"
+	"io/ioutil"
+	"log"
 	"path/filepath"
+
+	"text/template"
 )
 
 var (
@@ -41,6 +46,8 @@ var (
 )
 
 func main() {
+	log.SetFlags(0)
+	log.SetPrefix("[+] ")
 	flag.Parse()
 
 	// fetchers
@@ -61,4 +68,22 @@ func main() {
 
 	// doc
 	generateParamsDocLookup()
+}
+
+func writeTemplateToFile(templ *template.Template, data interface{}, dir, filename string) {
+	var buff bytes.Buffer
+	if err := templ.Execute(&buff, data); err != nil {
+		log.Fatal(err)
+	}
+	path := filepath.Join(dir, filename)
+	if err := ioutil.WriteFile(path, buff.Bytes(), 0666); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("generated %s", relativePathToRoot(path))
+}
+
+func relativePathToRoot(path string) string {
+	rel, _ := filepath.Rel(ROOT_DIR, path)
+	return rel
 }

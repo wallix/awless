@@ -1,6 +1,6 @@
 test:
-	@echo Running tests
-	@go test ./...
+	@echo Running tests (with -race flag on) 
+	@go test ./... -race
 
 generate:
 	@echo Generating commands code: runtime, doc, etc.
