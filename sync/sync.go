@@ -17,7 +17,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -191,7 +190,7 @@ func LoadLocalGraphForService(serviceName, profile, region string) cloud.GraphAP
 		regionDir = "global"
 	}
 	path := filepath.Join(repo.BaseDir(), profile, regionDir, fmt.Sprintf("%s%s", serviceName, fileExt))
-	g, err := graph.NewGraphFromFile(path)
+	g, err := graph.NewGraphFromFiles(path)
 	if err != nil {
 		return graph.NewGraph()
 	}
@@ -206,36 +205,12 @@ func LoadLocalGraphs(profile, region string) (cloud.GraphAPI, error) {
 	files = append(files, globalFiles...)
 	files = append(files, regionFiles...)
 
-	g := graph.NewGraph()
-
-	var readers []io.Reader
-	for _, f := range files {
-		reader, err := os.Open(f)
-		if err != nil {
-			return g, fmt.Errorf("loading '%s': %s", f, err)
-		}
-		readers = append(readers, reader)
-	}
-
-	err := g.UnmarshalFromReaders(readers...)
-	return g, err
+	return graph.NewGraphFromFiles(files...)
 }
 
 func LoadAllLocalGraphs(profile string) (cloud.GraphAPI, error) {
 	path := filepath.Join(repo.BaseDir(), profile, "*", fmt.Sprintf("*%s", fileExt))
 	files, _ := filepath.Glob(path)
 
-	g := graph.NewGraph()
-
-	var readers []io.Reader
-	for _, f := range files {
-		reader, err := os.Open(f)
-		if err != nil {
-			return g, fmt.Errorf("loading '%s': %s", f, err)
-		}
-		readers = append(readers, reader)
-	}
-
-	err := g.UnmarshalFromReaders(readers...)
-	return g, err
+	return graph.NewGraphFromFiles(files...)
 }

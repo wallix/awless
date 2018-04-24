@@ -35,13 +35,19 @@ func NewGraph() *Graph {
 	return &Graph{tstore.NewSource()}
 }
 
-func NewGraphFromFile(filepath string) (*Graph, error) {
+func NewGraphFromFiles(files ...string) (cloud.GraphAPI, error) {
 	g := NewGraph()
-	f, err := os.Open(filepath)
-	if err != nil {
-		return g, err
+
+	var readers []io.Reader
+	for _, f := range files {
+		if reader, err := os.Open(f); err != nil {
+			return g, err
+		} else {
+			readers = append(readers, reader)
+		}
 	}
-	err = g.UnmarshalFromReaders(f)
+
+	err := g.UnmarshalFromReaders(readers...)
 	return g, err
 }
 
@@ -365,7 +371,7 @@ func (g *Graph) Unmarshal(data []byte) error {
 }
 
 func (g *Graph) UnmarshalFromReaders(readers ...io.Reader) error {
-	dec := tstore.NewDatasetDecoder(tstore.NewAutoDecoder, readers...)
+	dec := tstore.NewDatasetDecoder(tstore.NewLenientNTDecoder, readers...)
 	ts, err := dec.Decode()
 	if err != nil {
 		return err
