@@ -60,6 +60,8 @@ var (
 	DependingOnRel = "dependingOn"
 )
 
+var Labels = make(map[string]string)
+
 type rdfProp struct {
 	ID, RdfType, RdfsLabel, RdfsDefinedBy, RdfsDataType string
 }

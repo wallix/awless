@@ -94,10 +94,12 @@ const (
   {{- end }}
 )
 
-var Labels = map[string]string{
-  {{- range $, $prop := . }}
-  properties.{{ $prop.AwlessLabel }}: {{ $prop.AwlessLabel }},
-  {{- end }}
+func init() {
+	Labels = map[string]string{
+	{{- range $, $prop := . }}
+	properties.{{ $prop.AwlessLabel }}: {{ $prop.AwlessLabel }},
+	{{- end }}
+	}
 }
 
 var Properties = RDFProperties{
