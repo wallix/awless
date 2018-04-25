@@ -70,11 +70,6 @@ func (n *RightExpressionNode) clone() Node {
 	}
 }
 
-type CompiledCommand struct {
-	Params map[string]interface{}
-	Refs   map[string]string
-}
-
 type CommandNode struct {
 	Command
 	CmdResult interface{}
