@@ -39,7 +39,7 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
 </p>
 
 - **Aliasing of resources through their natural name** so you don't have to always use cryptic ids that are impossible to remember
-- `awless show` : Explore a specific resource - even offline thanks to the sync ;) - given only a *name* (or id/arn) showing its properties, relations, dependencies, etc.
+- `awless show` : Explore the  properties, relations, dependencies of a specific resource (even offline thanks to the sync) given only a *name* (or id/arn).
 
       $ awless show jsmith --local
 
@@ -111,15 +111,14 @@ If you have previously used the AWS CLI or aws-shell, you don't need to configur
 
 # Getting started
 
-Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/Getting-Started).
-
-Or read the [introductory blog post about awless](https://medium.com/@hbbio/awless-io-a-mighty-cli-for-aws-a0d48bdb59a4).
+Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/Getting-Started) or read the [introductory blog post about awless] (https://medium.com/@hbbio/awless-io-a-mighty-cli-for-aws-a0d48bdb59a4).
 
 More articles:
 
    - [Simplified user management for AWS](https://medium.com/@awlessCLI/simplified-user-management-for-aws-6f828ccab387)
    - [InfoWorld: Production-grade deployment of WordPress](https://www.infoworld.com/article/3230547/cloud-computing/awless-tutorial-try-a-smarter-cli-for-aws.html)
    - [Easy create & tear down of a multi-AZ CockroachDB cluster](https://github.com/wallix/awless-templates/tree/master/cockroachdb)
+   - [Deploy Vuls.io to an AWS instance and scan for vulnerabilities](https://github.com/wallix/awless-templates/tree/master/vuln_scanners)
 
 # Awards
 
