@@ -20,6 +20,8 @@
 - clearer and flexible terminal output's with: numerous formats (machine/human friendly), enriched resources's properties/relations when feasible
 - connect easily using awless' **smart SSH** to your private & public instances
 
+For more read our [FAQ](#faq) below (how `awless` compares to other tools, etc.)
+
 # Install
 
 Choose one of the following options:
@@ -125,6 +127,65 @@ More articles:
 
 - [Top 50 Developer Tools of 2017](https://stackshare.io/posts/top-developer-tools-2017)
 - [InfoWorld Bossie Awards 2017](https://www.infoworld.com/article/3227920/cloud-computing/bossie-awards-2017-the-best-cloud-computing-software.html#slide12)
+
+# FAQ
+
+Here is a compilation of the question we often answer (... thanks for asking them and forcing us to make things clearer ;) ):
+
+**There are already some AWS CLIs. What is `awless` unique approach?**
+
+Three things that differentiates `awless` from other AWS CLIs:
+
+* It has it owns **compiled and very simple templating language** to build AWS infrastructures.
+* Commands are made of VERB + ENTITY [+ param=value] and are actually valid lines of the template language. 
+* It transparently syncs locally a representation of the cloud resources and their relations.
+
+Leveraging and combining the points exposed above, `awless` lays some strong foundations for plenty of current/future features/characteristic such as:
+
+- Wrapping AWS API calls to enrich them with before/after behaviour when interacting with the cloud
+- Having a small and hierarchical set of commands to intuitively interact with AWS
+- Enriching listing of resources using the local model and relations that are not calculated with other CLIs
+- Referencing and finding resources quickly avoiding cryptic IDs in favor of names, etc.
+- Exposing in the terminal relation between resources: lineage, siblings, etc.
+- Performing local analysis of your cloud
+- Having a smart SSH to easily connect to instances
+- etc.
+
+**How do you create infrastructure with `awless`?**
+
+You build infrastructure using `template files` or `command one-liners` that get compiled and run through `awless` builtin engine. See [what the templating language looks like](https://github.com/wallix/awless-templates/blob/master/cockroachdb/cockroach_insecure_cluster.aws). Learn [more about the way templates work](https://github.com/wallix/awless/wiki/Templates)
+
+Note that all your actions against the cloud are logged. Templates are revertible/rollbackable.
+
+**How does `awless` compares to `aws-shell` or `saws`?**
+
+(Points above should also help answering this question)
+
+`aws-shell` and `saws` are directly mapped to the official AWS CLI. Their **only** objective is to make you productive and help you manage exhaustively the sheer number of AWS services, options, etc.
+
+`awless` addresses this UI/productivity concern differently: small and hierarchical set of commands; favoring enriched listing with relations showing over AWS exhaustive outputting of properties; more useful human/machine formats.
+
+The main point is that **the UI/productivity concern is just a feature of awless and not its primary or only one**, so there is much more to the tool.
+
+Also `aws-shell` and `saws` are exhaustive in their support of AWS services. `awless` is so far more infrastructure centric, with an emphasis on enriching the information about your real infrastructure. `awless` is able to add any new AWS service quickly if that fits and make sense (see wiki on how to add a new AWS service).
+
+**How does `awless` compares to Terraform?**
+
+Terraform is a great product! `awless` is much younger than Terraform and Terraform is much broader in scope. 
+
+The approach is different though. When creating insfrastructure `awless`:
+
+- favors simplicity with a straight forward, compiled and simple deployment language
+- employs an all-or-nothing deployment: do not keep state, etc.
+- `awless` does provide a rollback on any ran template.
+
+**Does `awless` handles state when creating infrastructure (i.e. keep track of the changes)?**
+
+As [https://logz.io/blog/terraform-ansible-puppet/](quoted): _"Terraform is an amazing tool but a major challenge is managing the state file. Whenever you apply changes to your infrastructure, the entire managed body of code and created objects are tracked in the Terraform State file (.tfstate), which can reach hundreds of thousands of lines and must be managed carefully lest you incur large merge conflicts or unwanted resource changes"_, Ofer Velich.
+
+As for now with `awless`, we have taken a different road. So `awless` does not keep state of your cloud. It is more of an all-or-nothing deployment solution. 
+
+Note that `awless` logs (through rich and revertable logs) all your actions against the cloud (apart from reading/listing) and that you can revert any template ran.
 
 # About
 
