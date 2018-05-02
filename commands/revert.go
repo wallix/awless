@@ -35,7 +35,7 @@ func init() {
 
 var revertCmd = &cobra.Command{
 	Use:               "revert REVERTID",
-	Short:             "Revert a template execution given a revert ID (see `awless log` to list revert ids)",
+	Short:             "Revert a template from a revert ID (see `awless log`). If deployment has changed there is no guarantee that it is still revertible.",
 	Example:           "  awless revert 01BA7RV6ES86PZYCM3H28WM6KZ",
 	PersistentPreRun:  applyHooks(initLoggerHook, initAwlessEnvHook, initCloudServicesHook, initSyncerHook, firstInstallDoneHook),
 	PersistentPostRun: applyHooks(verifyNewVersionHook, onVersionUpgrade, networkMonitorHook),
