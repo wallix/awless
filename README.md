@@ -9,14 +9,15 @@
 
 # Why awless
 
-`awless` stands out by providing the following features:
+`awless` stands out by having the following characteristics:
 
 - small and hierarchical set of commands
-- create and revert fully-fledged infrastructures through a new simple and powerful templating language (see [`awless` templates (wiki)](https://github.com/wallix/awless/wiki/Templates))
-- local log of all your cloud modifications done through `awless`
-- exploration of your cloud infrastructure and resources relations, **even offline** using a local graph storage
-- greater output's readability with numerous machine and human friendly formats
-- ensure smart defaults & security best practices
+- a simple/powerful text [templating language](https://github.com/wallix/awless/wiki/Templates) to create and **revert** fully-fledged infrastructures 
+- wrapping/composing AWS API calls when necessary to enrich behaviour. Ex: ensure smart defaults, security best practices, etc. 
+- local log of all your cloud modifications done through `awless` to list/revert past actions
+- sync to a local graph storage of your cloud representation 
+- exploration of your cloud infrastructure and resources interrelations, **even offline** using the local graph storage
+- clearer and flexible terminal output's with: numerous formats (machine/human friendly), enriched resources's properties/relations when feasible
 - connect easily using awless' **smart SSH** to your private & public instances
 
 # Install
