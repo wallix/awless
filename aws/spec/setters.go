@@ -28,6 +28,7 @@ import (
 	gotemplate "text/template"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 
 	"bytes"
@@ -63,6 +64,7 @@ const (
 	awsecskeyvalue           = "awsecskeyvalue"
 	awsportmappings          = "awsportmappings"
 	awssubnetmappings        = "awssubnetmappings"
+	awsclassicloadblisteners = "awsclassicloadblisteners"
 	awsstepadjustments       = "awsstepadjustments"
 	awscsvstr                = "awscsvstr"
 	aws6digitsstring         = "aws6digitsstring"
@@ -177,6 +179,29 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 			subnetMappings = append(subnetMappings, &elbv2.SubnetMapping{SubnetId: aws.String(splits[0]), AllocationId: aws.String(splits[1])})
 		}
 		v = subnetMappings
+	case awsclassicloadblisteners:
+		var listeners []*elb.Listener
+		for _, s := range castStringSlice(v) {
+			splits := strings.Split(s, ":")
+			if len(splits) != 4 {
+				return fmt.Errorf("missing value in listeners param '%s', expect format like HTTP:80:HTTP:80", splits)
+			}
+			loadbPort, err := strconv.ParseInt(splits[1], 10, 64)
+			if err != nil {
+				return fmt.Errorf("expecting numerical port value for loadbalancer port in '%s', (expect format like HTTP:80:HTTP:80)", splits)
+			}
+			instancePort, err := strconv.ParseInt(splits[3], 10, 64)
+			if err != nil {
+				return fmt.Errorf("expecting numerical port value for instance port in '%s', (expect format like HTTP:80:HTTP:80)", splits)
+			}
+			listeners = append(listeners, &elb.Listener{
+				Protocol:         aws.String(splits[0]),
+				LoadBalancerPort: aws.Int64(loadbPort),
+				InstanceProtocol: aws.String(splits[2]),
+				InstancePort:     aws.Int64(instancePort),
+			})
+		}
+		v = listeners
 	case awsportmappings:
 		sl := castStringSlice(v)
 		var portMappings []*ecs.PortMapping
@@ -349,17 +374,32 @@ func setFieldWithType(v, i interface{}, fieldPath string, destType string, inter
 
 		return nil
 	case awstagslice:
-		sl := castStringSlice(v)
-		var tags []*cloudformation.Tag
-		for _, s := range sl {
+		var (
+			elbTags    []*elb.Tag
+			cfTags     []*cloudformation.Tag
+			appendFunc func(s1, s2 string)
+			assignFunc func()
+		)
+		switch i.(type) {
+		case *elb.CreateLoadBalancerInput:
+			appendFunc = func(s1, s2 string) {
+				elbTags = append(elbTags, &elb.Tag{Key: aws.String(s1), Value: aws.String(s2)})
+			}
+			assignFunc = func() { v = elbTags }
+		case *cloudformation.CreateStackInput, *cloudformation.UpdateStackInput:
+			appendFunc = func(s1, s2 string) {
+				cfTags = append(cfTags, &cloudformation.Tag{Key: aws.String(s1), Value: aws.String(s2)})
+			}
+			assignFunc = func() { v = cfTags }
+		}
+		for _, s := range castStringSlice(v) {
 			splits := strings.SplitN(s, ":", 2)
 			if len(splits) != 2 {
 				return fmt.Errorf("invalid tag '%s', expected 'key:value'", s)
 			}
-			tags = append(tags, &cloudformation.Tag{Key: aws.String(splits[0]), Value: aws.String(splits[1])})
+			appendFunc(splits[0], splits[1])
 		}
-
-		v = tags
+		assignFunc()
 	case awsalarmrollbacktriggers:
 		var triggers []*cloudformation.RollbackTrigger
 		if list := castStringSlice(v); len(list) > 0 {

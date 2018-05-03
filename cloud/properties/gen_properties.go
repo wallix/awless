@@ -160,6 +160,7 @@ const (
 	PendingTasksCount                 = "PendingTasksCount"
 	PlacementGroup                    = "PlacementGroup"
 	Port                              = "Port"
+	Ports                             = "Ports"
 	PortRange                         = "PortRange"
 	PreferredBackupDate               = "PreferredBackupDate"
 	PreferredMaintenanceDate          = "PreferredMaintenanceDate"

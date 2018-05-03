@@ -157,6 +157,7 @@ var PropertiesDefinitions = []property{
 	{AwlessLabel: "PendingTasksCount", RDFLabel: fmt.Sprintf("%s:pendingTasksCount", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
 	{AwlessLabel: "PlacementGroup", RDFLabel: fmt.Sprintf("%s:placementGroup", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "Port", RDFLabel: fmt.Sprintf("%s:port", rdf.NetNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdInt},
+	{AwlessLabel: "Ports", RDFLabel: fmt.Sprintf("%s:ports", rdf.NetNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsList, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "PortRange", RDFLabel: fmt.Sprintf("%s:portRange", rdf.NetNS), RDFType: rdf.RdfsSubProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "PreferredBackupDate", RDFLabel: fmt.Sprintf("%s:preferredBackupDate", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},
 	{AwlessLabel: "PreferredMaintenanceDate", RDFLabel: fmt.Sprintf("%s:preferredMaintenanceDate", rdf.CloudNS), RDFType: rdf.RdfProperty, RdfsDefinedBy: rdf.RdfsLiteral, RdfsDataType: rdf.XsdString},

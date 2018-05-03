@@ -61,6 +61,12 @@ var mocksDefs = []*mockDef{
 		},
 	},
 	{
+		Api: "elb",
+		Funcs: []*mockFuncDef{
+			{FuncType: "list", AWSType: "elb.LoadBalancerDescription", ApiMethod: "DescribeLoadBalancersPages", Input: "elb.DescribeLoadBalancersInput", Output: "elb.DescribeLoadBalancersOutput", OutputsExtractor: "LoadBalancerDescriptions", Multipage: true, NextPageMarker: "NextMarker"},
+		},
+	},
+	{
 		Api: "rds",
 		Funcs: []*mockFuncDef{
 			{FuncType: "list", AWSType: "rds.DBInstance", ApiMethod: "DescribeDBInstancesPages", Input: "rds.DescribeDBInstancesInput", Output: "rds.DescribeDBInstancesOutput", OutputsExtractor: "DBInstances", Multipage: true, NextPageMarker: "Marker"},

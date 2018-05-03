@@ -38,6 +38,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -10732,6 +10734,662 @@ func (m *ecsMock) WaitUntilTasksStoppedWithContext(param0 aws.Context, param1 *e
 	m.addCall("WaitUntilTasksStoppedWithContext")
 	m.verifyInput("WaitUntilTasksStoppedWithContext", param0)
 	return m.WaitUntilTasksStoppedWithContextFunc(param0, param1, param2...)
+}
+
+type elbMock struct {
+	basicMock
+	elbiface.ELBAPI
+	AddTagsFunc                                            func(param0 *elb.AddTagsInput) (*elb.AddTagsOutput, error)
+	AddTagsRequestFunc                                     func(param0 *elb.AddTagsInput) (*request.Request, *elb.AddTagsOutput)
+	AddTagsWithContextFunc                                 func(param0 aws.Context, param1 *elb.AddTagsInput, param2 ...request.Option) (*elb.AddTagsOutput, error)
+	ApplySecurityGroupsToLoadBalancerFunc                  func(param0 *elb.ApplySecurityGroupsToLoadBalancerInput) (*elb.ApplySecurityGroupsToLoadBalancerOutput, error)
+	ApplySecurityGroupsToLoadBalancerRequestFunc           func(param0 *elb.ApplySecurityGroupsToLoadBalancerInput) (*request.Request, *elb.ApplySecurityGroupsToLoadBalancerOutput)
+	ApplySecurityGroupsToLoadBalancerWithContextFunc       func(param0 aws.Context, param1 *elb.ApplySecurityGroupsToLoadBalancerInput, param2 ...request.Option) (*elb.ApplySecurityGroupsToLoadBalancerOutput, error)
+	AttachLoadBalancerToSubnetsFunc                        func(param0 *elb.AttachLoadBalancerToSubnetsInput) (*elb.AttachLoadBalancerToSubnetsOutput, error)
+	AttachLoadBalancerToSubnetsRequestFunc                 func(param0 *elb.AttachLoadBalancerToSubnetsInput) (*request.Request, *elb.AttachLoadBalancerToSubnetsOutput)
+	AttachLoadBalancerToSubnetsWithContextFunc             func(param0 aws.Context, param1 *elb.AttachLoadBalancerToSubnetsInput, param2 ...request.Option) (*elb.AttachLoadBalancerToSubnetsOutput, error)
+	ConfigureHealthCheckFunc                               func(param0 *elb.ConfigureHealthCheckInput) (*elb.ConfigureHealthCheckOutput, error)
+	ConfigureHealthCheckRequestFunc                        func(param0 *elb.ConfigureHealthCheckInput) (*request.Request, *elb.ConfigureHealthCheckOutput)
+	ConfigureHealthCheckWithContextFunc                    func(param0 aws.Context, param1 *elb.ConfigureHealthCheckInput, param2 ...request.Option) (*elb.ConfigureHealthCheckOutput, error)
+	CreateAppCookieStickinessPolicyFunc                    func(param0 *elb.CreateAppCookieStickinessPolicyInput) (*elb.CreateAppCookieStickinessPolicyOutput, error)
+	CreateAppCookieStickinessPolicyRequestFunc             func(param0 *elb.CreateAppCookieStickinessPolicyInput) (*request.Request, *elb.CreateAppCookieStickinessPolicyOutput)
+	CreateAppCookieStickinessPolicyWithContextFunc         func(param0 aws.Context, param1 *elb.CreateAppCookieStickinessPolicyInput, param2 ...request.Option) (*elb.CreateAppCookieStickinessPolicyOutput, error)
+	CreateLBCookieStickinessPolicyFunc                     func(param0 *elb.CreateLBCookieStickinessPolicyInput) (*elb.CreateLBCookieStickinessPolicyOutput, error)
+	CreateLBCookieStickinessPolicyRequestFunc              func(param0 *elb.CreateLBCookieStickinessPolicyInput) (*request.Request, *elb.CreateLBCookieStickinessPolicyOutput)
+	CreateLBCookieStickinessPolicyWithContextFunc          func(param0 aws.Context, param1 *elb.CreateLBCookieStickinessPolicyInput, param2 ...request.Option) (*elb.CreateLBCookieStickinessPolicyOutput, error)
+	CreateLoadBalancerFunc                                 func(param0 *elb.CreateLoadBalancerInput) (*elb.CreateLoadBalancerOutput, error)
+	CreateLoadBalancerListenersFunc                        func(param0 *elb.CreateLoadBalancerListenersInput) (*elb.CreateLoadBalancerListenersOutput, error)
+	CreateLoadBalancerListenersRequestFunc                 func(param0 *elb.CreateLoadBalancerListenersInput) (*request.Request, *elb.CreateLoadBalancerListenersOutput)
+	CreateLoadBalancerListenersWithContextFunc             func(param0 aws.Context, param1 *elb.CreateLoadBalancerListenersInput, param2 ...request.Option) (*elb.CreateLoadBalancerListenersOutput, error)
+	CreateLoadBalancerPolicyFunc                           func(param0 *elb.CreateLoadBalancerPolicyInput) (*elb.CreateLoadBalancerPolicyOutput, error)
+	CreateLoadBalancerPolicyRequestFunc                    func(param0 *elb.CreateLoadBalancerPolicyInput) (*request.Request, *elb.CreateLoadBalancerPolicyOutput)
+	CreateLoadBalancerPolicyWithContextFunc                func(param0 aws.Context, param1 *elb.CreateLoadBalancerPolicyInput, param2 ...request.Option) (*elb.CreateLoadBalancerPolicyOutput, error)
+	CreateLoadBalancerRequestFunc                          func(param0 *elb.CreateLoadBalancerInput) (*request.Request, *elb.CreateLoadBalancerOutput)
+	CreateLoadBalancerWithContextFunc                      func(param0 aws.Context, param1 *elb.CreateLoadBalancerInput, param2 ...request.Option) (*elb.CreateLoadBalancerOutput, error)
+	DeleteLoadBalancerFunc                                 func(param0 *elb.DeleteLoadBalancerInput) (*elb.DeleteLoadBalancerOutput, error)
+	DeleteLoadBalancerListenersFunc                        func(param0 *elb.DeleteLoadBalancerListenersInput) (*elb.DeleteLoadBalancerListenersOutput, error)
+	DeleteLoadBalancerListenersRequestFunc                 func(param0 *elb.DeleteLoadBalancerListenersInput) (*request.Request, *elb.DeleteLoadBalancerListenersOutput)
+	DeleteLoadBalancerListenersWithContextFunc             func(param0 aws.Context, param1 *elb.DeleteLoadBalancerListenersInput, param2 ...request.Option) (*elb.DeleteLoadBalancerListenersOutput, error)
+	DeleteLoadBalancerPolicyFunc                           func(param0 *elb.DeleteLoadBalancerPolicyInput) (*elb.DeleteLoadBalancerPolicyOutput, error)
+	DeleteLoadBalancerPolicyRequestFunc                    func(param0 *elb.DeleteLoadBalancerPolicyInput) (*request.Request, *elb.DeleteLoadBalancerPolicyOutput)
+	DeleteLoadBalancerPolicyWithContextFunc                func(param0 aws.Context, param1 *elb.DeleteLoadBalancerPolicyInput, param2 ...request.Option) (*elb.DeleteLoadBalancerPolicyOutput, error)
+	DeleteLoadBalancerRequestFunc                          func(param0 *elb.DeleteLoadBalancerInput) (*request.Request, *elb.DeleteLoadBalancerOutput)
+	DeleteLoadBalancerWithContextFunc                      func(param0 aws.Context, param1 *elb.DeleteLoadBalancerInput, param2 ...request.Option) (*elb.DeleteLoadBalancerOutput, error)
+	DeregisterInstancesFromLoadBalancerFunc                func(param0 *elb.DeregisterInstancesFromLoadBalancerInput) (*elb.DeregisterInstancesFromLoadBalancerOutput, error)
+	DeregisterInstancesFromLoadBalancerRequestFunc         func(param0 *elb.DeregisterInstancesFromLoadBalancerInput) (*request.Request, *elb.DeregisterInstancesFromLoadBalancerOutput)
+	DeregisterInstancesFromLoadBalancerWithContextFunc     func(param0 aws.Context, param1 *elb.DeregisterInstancesFromLoadBalancerInput, param2 ...request.Option) (*elb.DeregisterInstancesFromLoadBalancerOutput, error)
+	DescribeAccountLimitsFunc                              func(param0 *elb.DescribeAccountLimitsInput) (*elb.DescribeAccountLimitsOutput, error)
+	DescribeAccountLimitsRequestFunc                       func(param0 *elb.DescribeAccountLimitsInput) (*request.Request, *elb.DescribeAccountLimitsOutput)
+	DescribeAccountLimitsWithContextFunc                   func(param0 aws.Context, param1 *elb.DescribeAccountLimitsInput, param2 ...request.Option) (*elb.DescribeAccountLimitsOutput, error)
+	DescribeInstanceHealthFunc                             func(param0 *elb.DescribeInstanceHealthInput) (*elb.DescribeInstanceHealthOutput, error)
+	DescribeInstanceHealthRequestFunc                      func(param0 *elb.DescribeInstanceHealthInput) (*request.Request, *elb.DescribeInstanceHealthOutput)
+	DescribeInstanceHealthWithContextFunc                  func(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.Option) (*elb.DescribeInstanceHealthOutput, error)
+	DescribeLoadBalancerAttributesFunc                     func(param0 *elb.DescribeLoadBalancerAttributesInput) (*elb.DescribeLoadBalancerAttributesOutput, error)
+	DescribeLoadBalancerAttributesRequestFunc              func(param0 *elb.DescribeLoadBalancerAttributesInput) (*request.Request, *elb.DescribeLoadBalancerAttributesOutput)
+	DescribeLoadBalancerAttributesWithContextFunc          func(param0 aws.Context, param1 *elb.DescribeLoadBalancerAttributesInput, param2 ...request.Option) (*elb.DescribeLoadBalancerAttributesOutput, error)
+	DescribeLoadBalancerPoliciesFunc                       func(param0 *elb.DescribeLoadBalancerPoliciesInput) (*elb.DescribeLoadBalancerPoliciesOutput, error)
+	DescribeLoadBalancerPoliciesRequestFunc                func(param0 *elb.DescribeLoadBalancerPoliciesInput) (*request.Request, *elb.DescribeLoadBalancerPoliciesOutput)
+	DescribeLoadBalancerPoliciesWithContextFunc            func(param0 aws.Context, param1 *elb.DescribeLoadBalancerPoliciesInput, param2 ...request.Option) (*elb.DescribeLoadBalancerPoliciesOutput, error)
+	DescribeLoadBalancerPolicyTypesFunc                    func(param0 *elb.DescribeLoadBalancerPolicyTypesInput) (*elb.DescribeLoadBalancerPolicyTypesOutput, error)
+	DescribeLoadBalancerPolicyTypesRequestFunc             func(param0 *elb.DescribeLoadBalancerPolicyTypesInput) (*request.Request, *elb.DescribeLoadBalancerPolicyTypesOutput)
+	DescribeLoadBalancerPolicyTypesWithContextFunc         func(param0 aws.Context, param1 *elb.DescribeLoadBalancerPolicyTypesInput, param2 ...request.Option) (*elb.DescribeLoadBalancerPolicyTypesOutput, error)
+	DescribeLoadBalancersFunc                              func(param0 *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error)
+	DescribeLoadBalancersRequestFunc                       func(param0 *elb.DescribeLoadBalancersInput) (*request.Request, *elb.DescribeLoadBalancersOutput)
+	DescribeLoadBalancersWithContextFunc                   func(param0 aws.Context, param1 *elb.DescribeLoadBalancersInput, param2 ...request.Option) (*elb.DescribeLoadBalancersOutput, error)
+	DescribeTagsFunc                                       func(param0 *elb.DescribeTagsInput) (*elb.DescribeTagsOutput, error)
+	DescribeTagsRequestFunc                                func(param0 *elb.DescribeTagsInput) (*request.Request, *elb.DescribeTagsOutput)
+	DescribeTagsWithContextFunc                            func(param0 aws.Context, param1 *elb.DescribeTagsInput, param2 ...request.Option) (*elb.DescribeTagsOutput, error)
+	DetachLoadBalancerFromSubnetsFunc                      func(param0 *elb.DetachLoadBalancerFromSubnetsInput) (*elb.DetachLoadBalancerFromSubnetsOutput, error)
+	DetachLoadBalancerFromSubnetsRequestFunc               func(param0 *elb.DetachLoadBalancerFromSubnetsInput) (*request.Request, *elb.DetachLoadBalancerFromSubnetsOutput)
+	DetachLoadBalancerFromSubnetsWithContextFunc           func(param0 aws.Context, param1 *elb.DetachLoadBalancerFromSubnetsInput, param2 ...request.Option) (*elb.DetachLoadBalancerFromSubnetsOutput, error)
+	DisableAvailabilityZonesForLoadBalancerFunc            func(param0 *elb.DisableAvailabilityZonesForLoadBalancerInput) (*elb.DisableAvailabilityZonesForLoadBalancerOutput, error)
+	DisableAvailabilityZonesForLoadBalancerRequestFunc     func(param0 *elb.DisableAvailabilityZonesForLoadBalancerInput) (*request.Request, *elb.DisableAvailabilityZonesForLoadBalancerOutput)
+	DisableAvailabilityZonesForLoadBalancerWithContextFunc func(param0 aws.Context, param1 *elb.DisableAvailabilityZonesForLoadBalancerInput, param2 ...request.Option) (*elb.DisableAvailabilityZonesForLoadBalancerOutput, error)
+	EnableAvailabilityZonesForLoadBalancerFunc             func(param0 *elb.EnableAvailabilityZonesForLoadBalancerInput) (*elb.EnableAvailabilityZonesForLoadBalancerOutput, error)
+	EnableAvailabilityZonesForLoadBalancerRequestFunc      func(param0 *elb.EnableAvailabilityZonesForLoadBalancerInput) (*request.Request, *elb.EnableAvailabilityZonesForLoadBalancerOutput)
+	EnableAvailabilityZonesForLoadBalancerWithContextFunc  func(param0 aws.Context, param1 *elb.EnableAvailabilityZonesForLoadBalancerInput, param2 ...request.Option) (*elb.EnableAvailabilityZonesForLoadBalancerOutput, error)
+	ModifyLoadBalancerAttributesFunc                       func(param0 *elb.ModifyLoadBalancerAttributesInput) (*elb.ModifyLoadBalancerAttributesOutput, error)
+	ModifyLoadBalancerAttributesRequestFunc                func(param0 *elb.ModifyLoadBalancerAttributesInput) (*request.Request, *elb.ModifyLoadBalancerAttributesOutput)
+	ModifyLoadBalancerAttributesWithContextFunc            func(param0 aws.Context, param1 *elb.ModifyLoadBalancerAttributesInput, param2 ...request.Option) (*elb.ModifyLoadBalancerAttributesOutput, error)
+	RegisterInstancesWithLoadBalancerFunc                  func(param0 *elb.RegisterInstancesWithLoadBalancerInput) (*elb.RegisterInstancesWithLoadBalancerOutput, error)
+	RegisterInstancesWithLoadBalancerRequestFunc           func(param0 *elb.RegisterInstancesWithLoadBalancerInput) (*request.Request, *elb.RegisterInstancesWithLoadBalancerOutput)
+	RegisterInstancesWithLoadBalancerWithContextFunc       func(param0 aws.Context, param1 *elb.RegisterInstancesWithLoadBalancerInput, param2 ...request.Option) (*elb.RegisterInstancesWithLoadBalancerOutput, error)
+	RemoveTagsFunc                                         func(param0 *elb.RemoveTagsInput) (*elb.RemoveTagsOutput, error)
+	RemoveTagsRequestFunc                                  func(param0 *elb.RemoveTagsInput) (*request.Request, *elb.RemoveTagsOutput)
+	RemoveTagsWithContextFunc                              func(param0 aws.Context, param1 *elb.RemoveTagsInput, param2 ...request.Option) (*elb.RemoveTagsOutput, error)
+	SetLoadBalancerListenerSSLCertificateFunc              func(param0 *elb.SetLoadBalancerListenerSSLCertificateInput) (*elb.SetLoadBalancerListenerSSLCertificateOutput, error)
+	SetLoadBalancerListenerSSLCertificateRequestFunc       func(param0 *elb.SetLoadBalancerListenerSSLCertificateInput) (*request.Request, *elb.SetLoadBalancerListenerSSLCertificateOutput)
+	SetLoadBalancerListenerSSLCertificateWithContextFunc   func(param0 aws.Context, param1 *elb.SetLoadBalancerListenerSSLCertificateInput, param2 ...request.Option) (*elb.SetLoadBalancerListenerSSLCertificateOutput, error)
+	SetLoadBalancerPoliciesForBackendServerFunc            func(param0 *elb.SetLoadBalancerPoliciesForBackendServerInput) (*elb.SetLoadBalancerPoliciesForBackendServerOutput, error)
+	SetLoadBalancerPoliciesForBackendServerRequestFunc     func(param0 *elb.SetLoadBalancerPoliciesForBackendServerInput) (*request.Request, *elb.SetLoadBalancerPoliciesForBackendServerOutput)
+	SetLoadBalancerPoliciesForBackendServerWithContextFunc func(param0 aws.Context, param1 *elb.SetLoadBalancerPoliciesForBackendServerInput, param2 ...request.Option) (*elb.SetLoadBalancerPoliciesForBackendServerOutput, error)
+	SetLoadBalancerPoliciesOfListenerFunc                  func(param0 *elb.SetLoadBalancerPoliciesOfListenerInput) (*elb.SetLoadBalancerPoliciesOfListenerOutput, error)
+	SetLoadBalancerPoliciesOfListenerRequestFunc           func(param0 *elb.SetLoadBalancerPoliciesOfListenerInput) (*request.Request, *elb.SetLoadBalancerPoliciesOfListenerOutput)
+	SetLoadBalancerPoliciesOfListenerWithContextFunc       func(param0 aws.Context, param1 *elb.SetLoadBalancerPoliciesOfListenerInput, param2 ...request.Option) (*elb.SetLoadBalancerPoliciesOfListenerOutput, error)
+	WaitUntilAnyInstanceInServiceFunc                      func(param0 *elb.DescribeInstanceHealthInput) error
+	WaitUntilAnyInstanceInServiceWithContextFunc           func(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.WaiterOption) error
+	WaitUntilInstanceDeregisteredFunc                      func(param0 *elb.DescribeInstanceHealthInput) error
+	WaitUntilInstanceDeregisteredWithContextFunc           func(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.WaiterOption) error
+	WaitUntilInstanceInServiceFunc                         func(param0 *elb.DescribeInstanceHealthInput) error
+	WaitUntilInstanceInServiceWithContextFunc              func(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.WaiterOption) error
+}
+
+func (m *elbMock) AddTags(param0 *elb.AddTagsInput) (*elb.AddTagsOutput, error) {
+	m.addCall("AddTags")
+	m.verifyInput("AddTags", param0)
+	return m.AddTagsFunc(param0)
+}
+
+func (m *elbMock) AddTagsRequest(param0 *elb.AddTagsInput) (*request.Request, *elb.AddTagsOutput) {
+	m.addCall("AddTagsRequest")
+	m.verifyInput("AddTagsRequest", param0)
+	return m.AddTagsRequestFunc(param0)
+}
+
+func (m *elbMock) AddTagsWithContext(param0 aws.Context, param1 *elb.AddTagsInput, param2 ...request.Option) (*elb.AddTagsOutput, error) {
+	m.addCall("AddTagsWithContext")
+	m.verifyInput("AddTagsWithContext", param0)
+	return m.AddTagsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) ApplySecurityGroupsToLoadBalancer(param0 *elb.ApplySecurityGroupsToLoadBalancerInput) (*elb.ApplySecurityGroupsToLoadBalancerOutput, error) {
+	m.addCall("ApplySecurityGroupsToLoadBalancer")
+	m.verifyInput("ApplySecurityGroupsToLoadBalancer", param0)
+	return m.ApplySecurityGroupsToLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) ApplySecurityGroupsToLoadBalancerRequest(param0 *elb.ApplySecurityGroupsToLoadBalancerInput) (*request.Request, *elb.ApplySecurityGroupsToLoadBalancerOutput) {
+	m.addCall("ApplySecurityGroupsToLoadBalancerRequest")
+	m.verifyInput("ApplySecurityGroupsToLoadBalancerRequest", param0)
+	return m.ApplySecurityGroupsToLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) ApplySecurityGroupsToLoadBalancerWithContext(param0 aws.Context, param1 *elb.ApplySecurityGroupsToLoadBalancerInput, param2 ...request.Option) (*elb.ApplySecurityGroupsToLoadBalancerOutput, error) {
+	m.addCall("ApplySecurityGroupsToLoadBalancerWithContext")
+	m.verifyInput("ApplySecurityGroupsToLoadBalancerWithContext", param0)
+	return m.ApplySecurityGroupsToLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) AttachLoadBalancerToSubnets(param0 *elb.AttachLoadBalancerToSubnetsInput) (*elb.AttachLoadBalancerToSubnetsOutput, error) {
+	m.addCall("AttachLoadBalancerToSubnets")
+	m.verifyInput("AttachLoadBalancerToSubnets", param0)
+	return m.AttachLoadBalancerToSubnetsFunc(param0)
+}
+
+func (m *elbMock) AttachLoadBalancerToSubnetsRequest(param0 *elb.AttachLoadBalancerToSubnetsInput) (*request.Request, *elb.AttachLoadBalancerToSubnetsOutput) {
+	m.addCall("AttachLoadBalancerToSubnetsRequest")
+	m.verifyInput("AttachLoadBalancerToSubnetsRequest", param0)
+	return m.AttachLoadBalancerToSubnetsRequestFunc(param0)
+}
+
+func (m *elbMock) AttachLoadBalancerToSubnetsWithContext(param0 aws.Context, param1 *elb.AttachLoadBalancerToSubnetsInput, param2 ...request.Option) (*elb.AttachLoadBalancerToSubnetsOutput, error) {
+	m.addCall("AttachLoadBalancerToSubnetsWithContext")
+	m.verifyInput("AttachLoadBalancerToSubnetsWithContext", param0)
+	return m.AttachLoadBalancerToSubnetsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) ConfigureHealthCheck(param0 *elb.ConfigureHealthCheckInput) (*elb.ConfigureHealthCheckOutput, error) {
+	m.addCall("ConfigureHealthCheck")
+	m.verifyInput("ConfigureHealthCheck", param0)
+	return m.ConfigureHealthCheckFunc(param0)
+}
+
+func (m *elbMock) ConfigureHealthCheckRequest(param0 *elb.ConfigureHealthCheckInput) (*request.Request, *elb.ConfigureHealthCheckOutput) {
+	m.addCall("ConfigureHealthCheckRequest")
+	m.verifyInput("ConfigureHealthCheckRequest", param0)
+	return m.ConfigureHealthCheckRequestFunc(param0)
+}
+
+func (m *elbMock) ConfigureHealthCheckWithContext(param0 aws.Context, param1 *elb.ConfigureHealthCheckInput, param2 ...request.Option) (*elb.ConfigureHealthCheckOutput, error) {
+	m.addCall("ConfigureHealthCheckWithContext")
+	m.verifyInput("ConfigureHealthCheckWithContext", param0)
+	return m.ConfigureHealthCheckWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) CreateAppCookieStickinessPolicy(param0 *elb.CreateAppCookieStickinessPolicyInput) (*elb.CreateAppCookieStickinessPolicyOutput, error) {
+	m.addCall("CreateAppCookieStickinessPolicy")
+	m.verifyInput("CreateAppCookieStickinessPolicy", param0)
+	return m.CreateAppCookieStickinessPolicyFunc(param0)
+}
+
+func (m *elbMock) CreateAppCookieStickinessPolicyRequest(param0 *elb.CreateAppCookieStickinessPolicyInput) (*request.Request, *elb.CreateAppCookieStickinessPolicyOutput) {
+	m.addCall("CreateAppCookieStickinessPolicyRequest")
+	m.verifyInput("CreateAppCookieStickinessPolicyRequest", param0)
+	return m.CreateAppCookieStickinessPolicyRequestFunc(param0)
+}
+
+func (m *elbMock) CreateAppCookieStickinessPolicyWithContext(param0 aws.Context, param1 *elb.CreateAppCookieStickinessPolicyInput, param2 ...request.Option) (*elb.CreateAppCookieStickinessPolicyOutput, error) {
+	m.addCall("CreateAppCookieStickinessPolicyWithContext")
+	m.verifyInput("CreateAppCookieStickinessPolicyWithContext", param0)
+	return m.CreateAppCookieStickinessPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) CreateLBCookieStickinessPolicy(param0 *elb.CreateLBCookieStickinessPolicyInput) (*elb.CreateLBCookieStickinessPolicyOutput, error) {
+	m.addCall("CreateLBCookieStickinessPolicy")
+	m.verifyInput("CreateLBCookieStickinessPolicy", param0)
+	return m.CreateLBCookieStickinessPolicyFunc(param0)
+}
+
+func (m *elbMock) CreateLBCookieStickinessPolicyRequest(param0 *elb.CreateLBCookieStickinessPolicyInput) (*request.Request, *elb.CreateLBCookieStickinessPolicyOutput) {
+	m.addCall("CreateLBCookieStickinessPolicyRequest")
+	m.verifyInput("CreateLBCookieStickinessPolicyRequest", param0)
+	return m.CreateLBCookieStickinessPolicyRequestFunc(param0)
+}
+
+func (m *elbMock) CreateLBCookieStickinessPolicyWithContext(param0 aws.Context, param1 *elb.CreateLBCookieStickinessPolicyInput, param2 ...request.Option) (*elb.CreateLBCookieStickinessPolicyOutput, error) {
+	m.addCall("CreateLBCookieStickinessPolicyWithContext")
+	m.verifyInput("CreateLBCookieStickinessPolicyWithContext", param0)
+	return m.CreateLBCookieStickinessPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) CreateLoadBalancer(param0 *elb.CreateLoadBalancerInput) (*elb.CreateLoadBalancerOutput, error) {
+	m.addCall("CreateLoadBalancer")
+	m.verifyInput("CreateLoadBalancer", param0)
+	return m.CreateLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) CreateLoadBalancerListeners(param0 *elb.CreateLoadBalancerListenersInput) (*elb.CreateLoadBalancerListenersOutput, error) {
+	m.addCall("CreateLoadBalancerListeners")
+	m.verifyInput("CreateLoadBalancerListeners", param0)
+	return m.CreateLoadBalancerListenersFunc(param0)
+}
+
+func (m *elbMock) CreateLoadBalancerListenersRequest(param0 *elb.CreateLoadBalancerListenersInput) (*request.Request, *elb.CreateLoadBalancerListenersOutput) {
+	m.addCall("CreateLoadBalancerListenersRequest")
+	m.verifyInput("CreateLoadBalancerListenersRequest", param0)
+	return m.CreateLoadBalancerListenersRequestFunc(param0)
+}
+
+func (m *elbMock) CreateLoadBalancerListenersWithContext(param0 aws.Context, param1 *elb.CreateLoadBalancerListenersInput, param2 ...request.Option) (*elb.CreateLoadBalancerListenersOutput, error) {
+	m.addCall("CreateLoadBalancerListenersWithContext")
+	m.verifyInput("CreateLoadBalancerListenersWithContext", param0)
+	return m.CreateLoadBalancerListenersWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) CreateLoadBalancerPolicy(param0 *elb.CreateLoadBalancerPolicyInput) (*elb.CreateLoadBalancerPolicyOutput, error) {
+	m.addCall("CreateLoadBalancerPolicy")
+	m.verifyInput("CreateLoadBalancerPolicy", param0)
+	return m.CreateLoadBalancerPolicyFunc(param0)
+}
+
+func (m *elbMock) CreateLoadBalancerPolicyRequest(param0 *elb.CreateLoadBalancerPolicyInput) (*request.Request, *elb.CreateLoadBalancerPolicyOutput) {
+	m.addCall("CreateLoadBalancerPolicyRequest")
+	m.verifyInput("CreateLoadBalancerPolicyRequest", param0)
+	return m.CreateLoadBalancerPolicyRequestFunc(param0)
+}
+
+func (m *elbMock) CreateLoadBalancerPolicyWithContext(param0 aws.Context, param1 *elb.CreateLoadBalancerPolicyInput, param2 ...request.Option) (*elb.CreateLoadBalancerPolicyOutput, error) {
+	m.addCall("CreateLoadBalancerPolicyWithContext")
+	m.verifyInput("CreateLoadBalancerPolicyWithContext", param0)
+	return m.CreateLoadBalancerPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) CreateLoadBalancerRequest(param0 *elb.CreateLoadBalancerInput) (*request.Request, *elb.CreateLoadBalancerOutput) {
+	m.addCall("CreateLoadBalancerRequest")
+	m.verifyInput("CreateLoadBalancerRequest", param0)
+	return m.CreateLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) CreateLoadBalancerWithContext(param0 aws.Context, param1 *elb.CreateLoadBalancerInput, param2 ...request.Option) (*elb.CreateLoadBalancerOutput, error) {
+	m.addCall("CreateLoadBalancerWithContext")
+	m.verifyInput("CreateLoadBalancerWithContext", param0)
+	return m.CreateLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DeleteLoadBalancer(param0 *elb.DeleteLoadBalancerInput) (*elb.DeleteLoadBalancerOutput, error) {
+	m.addCall("DeleteLoadBalancer")
+	m.verifyInput("DeleteLoadBalancer", param0)
+	return m.DeleteLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) DeleteLoadBalancerListeners(param0 *elb.DeleteLoadBalancerListenersInput) (*elb.DeleteLoadBalancerListenersOutput, error) {
+	m.addCall("DeleteLoadBalancerListeners")
+	m.verifyInput("DeleteLoadBalancerListeners", param0)
+	return m.DeleteLoadBalancerListenersFunc(param0)
+}
+
+func (m *elbMock) DeleteLoadBalancerListenersRequest(param0 *elb.DeleteLoadBalancerListenersInput) (*request.Request, *elb.DeleteLoadBalancerListenersOutput) {
+	m.addCall("DeleteLoadBalancerListenersRequest")
+	m.verifyInput("DeleteLoadBalancerListenersRequest", param0)
+	return m.DeleteLoadBalancerListenersRequestFunc(param0)
+}
+
+func (m *elbMock) DeleteLoadBalancerListenersWithContext(param0 aws.Context, param1 *elb.DeleteLoadBalancerListenersInput, param2 ...request.Option) (*elb.DeleteLoadBalancerListenersOutput, error) {
+	m.addCall("DeleteLoadBalancerListenersWithContext")
+	m.verifyInput("DeleteLoadBalancerListenersWithContext", param0)
+	return m.DeleteLoadBalancerListenersWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DeleteLoadBalancerPolicy(param0 *elb.DeleteLoadBalancerPolicyInput) (*elb.DeleteLoadBalancerPolicyOutput, error) {
+	m.addCall("DeleteLoadBalancerPolicy")
+	m.verifyInput("DeleteLoadBalancerPolicy", param0)
+	return m.DeleteLoadBalancerPolicyFunc(param0)
+}
+
+func (m *elbMock) DeleteLoadBalancerPolicyRequest(param0 *elb.DeleteLoadBalancerPolicyInput) (*request.Request, *elb.DeleteLoadBalancerPolicyOutput) {
+	m.addCall("DeleteLoadBalancerPolicyRequest")
+	m.verifyInput("DeleteLoadBalancerPolicyRequest", param0)
+	return m.DeleteLoadBalancerPolicyRequestFunc(param0)
+}
+
+func (m *elbMock) DeleteLoadBalancerPolicyWithContext(param0 aws.Context, param1 *elb.DeleteLoadBalancerPolicyInput, param2 ...request.Option) (*elb.DeleteLoadBalancerPolicyOutput, error) {
+	m.addCall("DeleteLoadBalancerPolicyWithContext")
+	m.verifyInput("DeleteLoadBalancerPolicyWithContext", param0)
+	return m.DeleteLoadBalancerPolicyWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DeleteLoadBalancerRequest(param0 *elb.DeleteLoadBalancerInput) (*request.Request, *elb.DeleteLoadBalancerOutput) {
+	m.addCall("DeleteLoadBalancerRequest")
+	m.verifyInput("DeleteLoadBalancerRequest", param0)
+	return m.DeleteLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) DeleteLoadBalancerWithContext(param0 aws.Context, param1 *elb.DeleteLoadBalancerInput, param2 ...request.Option) (*elb.DeleteLoadBalancerOutput, error) {
+	m.addCall("DeleteLoadBalancerWithContext")
+	m.verifyInput("DeleteLoadBalancerWithContext", param0)
+	return m.DeleteLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DeregisterInstancesFromLoadBalancer(param0 *elb.DeregisterInstancesFromLoadBalancerInput) (*elb.DeregisterInstancesFromLoadBalancerOutput, error) {
+	m.addCall("DeregisterInstancesFromLoadBalancer")
+	m.verifyInput("DeregisterInstancesFromLoadBalancer", param0)
+	return m.DeregisterInstancesFromLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) DeregisterInstancesFromLoadBalancerRequest(param0 *elb.DeregisterInstancesFromLoadBalancerInput) (*request.Request, *elb.DeregisterInstancesFromLoadBalancerOutput) {
+	m.addCall("DeregisterInstancesFromLoadBalancerRequest")
+	m.verifyInput("DeregisterInstancesFromLoadBalancerRequest", param0)
+	return m.DeregisterInstancesFromLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) DeregisterInstancesFromLoadBalancerWithContext(param0 aws.Context, param1 *elb.DeregisterInstancesFromLoadBalancerInput, param2 ...request.Option) (*elb.DeregisterInstancesFromLoadBalancerOutput, error) {
+	m.addCall("DeregisterInstancesFromLoadBalancerWithContext")
+	m.verifyInput("DeregisterInstancesFromLoadBalancerWithContext", param0)
+	return m.DeregisterInstancesFromLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeAccountLimits(param0 *elb.DescribeAccountLimitsInput) (*elb.DescribeAccountLimitsOutput, error) {
+	m.addCall("DescribeAccountLimits")
+	m.verifyInput("DescribeAccountLimits", param0)
+	return m.DescribeAccountLimitsFunc(param0)
+}
+
+func (m *elbMock) DescribeAccountLimitsRequest(param0 *elb.DescribeAccountLimitsInput) (*request.Request, *elb.DescribeAccountLimitsOutput) {
+	m.addCall("DescribeAccountLimitsRequest")
+	m.verifyInput("DescribeAccountLimitsRequest", param0)
+	return m.DescribeAccountLimitsRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeAccountLimitsWithContext(param0 aws.Context, param1 *elb.DescribeAccountLimitsInput, param2 ...request.Option) (*elb.DescribeAccountLimitsOutput, error) {
+	m.addCall("DescribeAccountLimitsWithContext")
+	m.verifyInput("DescribeAccountLimitsWithContext", param0)
+	return m.DescribeAccountLimitsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeInstanceHealth(param0 *elb.DescribeInstanceHealthInput) (*elb.DescribeInstanceHealthOutput, error) {
+	m.addCall("DescribeInstanceHealth")
+	m.verifyInput("DescribeInstanceHealth", param0)
+	return m.DescribeInstanceHealthFunc(param0)
+}
+
+func (m *elbMock) DescribeInstanceHealthRequest(param0 *elb.DescribeInstanceHealthInput) (*request.Request, *elb.DescribeInstanceHealthOutput) {
+	m.addCall("DescribeInstanceHealthRequest")
+	m.verifyInput("DescribeInstanceHealthRequest", param0)
+	return m.DescribeInstanceHealthRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeInstanceHealthWithContext(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.Option) (*elb.DescribeInstanceHealthOutput, error) {
+	m.addCall("DescribeInstanceHealthWithContext")
+	m.verifyInput("DescribeInstanceHealthWithContext", param0)
+	return m.DescribeInstanceHealthWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeLoadBalancerAttributes(param0 *elb.DescribeLoadBalancerAttributesInput) (*elb.DescribeLoadBalancerAttributesOutput, error) {
+	m.addCall("DescribeLoadBalancerAttributes")
+	m.verifyInput("DescribeLoadBalancerAttributes", param0)
+	return m.DescribeLoadBalancerAttributesFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancerAttributesRequest(param0 *elb.DescribeLoadBalancerAttributesInput) (*request.Request, *elb.DescribeLoadBalancerAttributesOutput) {
+	m.addCall("DescribeLoadBalancerAttributesRequest")
+	m.verifyInput("DescribeLoadBalancerAttributesRequest", param0)
+	return m.DescribeLoadBalancerAttributesRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancerAttributesWithContext(param0 aws.Context, param1 *elb.DescribeLoadBalancerAttributesInput, param2 ...request.Option) (*elb.DescribeLoadBalancerAttributesOutput, error) {
+	m.addCall("DescribeLoadBalancerAttributesWithContext")
+	m.verifyInput("DescribeLoadBalancerAttributesWithContext", param0)
+	return m.DescribeLoadBalancerAttributesWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeLoadBalancerPolicies(param0 *elb.DescribeLoadBalancerPoliciesInput) (*elb.DescribeLoadBalancerPoliciesOutput, error) {
+	m.addCall("DescribeLoadBalancerPolicies")
+	m.verifyInput("DescribeLoadBalancerPolicies", param0)
+	return m.DescribeLoadBalancerPoliciesFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancerPoliciesRequest(param0 *elb.DescribeLoadBalancerPoliciesInput) (*request.Request, *elb.DescribeLoadBalancerPoliciesOutput) {
+	m.addCall("DescribeLoadBalancerPoliciesRequest")
+	m.verifyInput("DescribeLoadBalancerPoliciesRequest", param0)
+	return m.DescribeLoadBalancerPoliciesRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancerPoliciesWithContext(param0 aws.Context, param1 *elb.DescribeLoadBalancerPoliciesInput, param2 ...request.Option) (*elb.DescribeLoadBalancerPoliciesOutput, error) {
+	m.addCall("DescribeLoadBalancerPoliciesWithContext")
+	m.verifyInput("DescribeLoadBalancerPoliciesWithContext", param0)
+	return m.DescribeLoadBalancerPoliciesWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeLoadBalancerPolicyTypes(param0 *elb.DescribeLoadBalancerPolicyTypesInput) (*elb.DescribeLoadBalancerPolicyTypesOutput, error) {
+	m.addCall("DescribeLoadBalancerPolicyTypes")
+	m.verifyInput("DescribeLoadBalancerPolicyTypes", param0)
+	return m.DescribeLoadBalancerPolicyTypesFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancerPolicyTypesRequest(param0 *elb.DescribeLoadBalancerPolicyTypesInput) (*request.Request, *elb.DescribeLoadBalancerPolicyTypesOutput) {
+	m.addCall("DescribeLoadBalancerPolicyTypesRequest")
+	m.verifyInput("DescribeLoadBalancerPolicyTypesRequest", param0)
+	return m.DescribeLoadBalancerPolicyTypesRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancerPolicyTypesWithContext(param0 aws.Context, param1 *elb.DescribeLoadBalancerPolicyTypesInput, param2 ...request.Option) (*elb.DescribeLoadBalancerPolicyTypesOutput, error) {
+	m.addCall("DescribeLoadBalancerPolicyTypesWithContext")
+	m.verifyInput("DescribeLoadBalancerPolicyTypesWithContext", param0)
+	return m.DescribeLoadBalancerPolicyTypesWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeLoadBalancers(param0 *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error) {
+	m.addCall("DescribeLoadBalancers")
+	m.verifyInput("DescribeLoadBalancers", param0)
+	return m.DescribeLoadBalancersFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancersRequest(param0 *elb.DescribeLoadBalancersInput) (*request.Request, *elb.DescribeLoadBalancersOutput) {
+	m.addCall("DescribeLoadBalancersRequest")
+	m.verifyInput("DescribeLoadBalancersRequest", param0)
+	return m.DescribeLoadBalancersRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeLoadBalancersWithContext(param0 aws.Context, param1 *elb.DescribeLoadBalancersInput, param2 ...request.Option) (*elb.DescribeLoadBalancersOutput, error) {
+	m.addCall("DescribeLoadBalancersWithContext")
+	m.verifyInput("DescribeLoadBalancersWithContext", param0)
+	return m.DescribeLoadBalancersWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DescribeTags(param0 *elb.DescribeTagsInput) (*elb.DescribeTagsOutput, error) {
+	m.addCall("DescribeTags")
+	m.verifyInput("DescribeTags", param0)
+	return m.DescribeTagsFunc(param0)
+}
+
+func (m *elbMock) DescribeTagsRequest(param0 *elb.DescribeTagsInput) (*request.Request, *elb.DescribeTagsOutput) {
+	m.addCall("DescribeTagsRequest")
+	m.verifyInput("DescribeTagsRequest", param0)
+	return m.DescribeTagsRequestFunc(param0)
+}
+
+func (m *elbMock) DescribeTagsWithContext(param0 aws.Context, param1 *elb.DescribeTagsInput, param2 ...request.Option) (*elb.DescribeTagsOutput, error) {
+	m.addCall("DescribeTagsWithContext")
+	m.verifyInput("DescribeTagsWithContext", param0)
+	return m.DescribeTagsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DetachLoadBalancerFromSubnets(param0 *elb.DetachLoadBalancerFromSubnetsInput) (*elb.DetachLoadBalancerFromSubnetsOutput, error) {
+	m.addCall("DetachLoadBalancerFromSubnets")
+	m.verifyInput("DetachLoadBalancerFromSubnets", param0)
+	return m.DetachLoadBalancerFromSubnetsFunc(param0)
+}
+
+func (m *elbMock) DetachLoadBalancerFromSubnetsRequest(param0 *elb.DetachLoadBalancerFromSubnetsInput) (*request.Request, *elb.DetachLoadBalancerFromSubnetsOutput) {
+	m.addCall("DetachLoadBalancerFromSubnetsRequest")
+	m.verifyInput("DetachLoadBalancerFromSubnetsRequest", param0)
+	return m.DetachLoadBalancerFromSubnetsRequestFunc(param0)
+}
+
+func (m *elbMock) DetachLoadBalancerFromSubnetsWithContext(param0 aws.Context, param1 *elb.DetachLoadBalancerFromSubnetsInput, param2 ...request.Option) (*elb.DetachLoadBalancerFromSubnetsOutput, error) {
+	m.addCall("DetachLoadBalancerFromSubnetsWithContext")
+	m.verifyInput("DetachLoadBalancerFromSubnetsWithContext", param0)
+	return m.DetachLoadBalancerFromSubnetsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) DisableAvailabilityZonesForLoadBalancer(param0 *elb.DisableAvailabilityZonesForLoadBalancerInput) (*elb.DisableAvailabilityZonesForLoadBalancerOutput, error) {
+	m.addCall("DisableAvailabilityZonesForLoadBalancer")
+	m.verifyInput("DisableAvailabilityZonesForLoadBalancer", param0)
+	return m.DisableAvailabilityZonesForLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) DisableAvailabilityZonesForLoadBalancerRequest(param0 *elb.DisableAvailabilityZonesForLoadBalancerInput) (*request.Request, *elb.DisableAvailabilityZonesForLoadBalancerOutput) {
+	m.addCall("DisableAvailabilityZonesForLoadBalancerRequest")
+	m.verifyInput("DisableAvailabilityZonesForLoadBalancerRequest", param0)
+	return m.DisableAvailabilityZonesForLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) DisableAvailabilityZonesForLoadBalancerWithContext(param0 aws.Context, param1 *elb.DisableAvailabilityZonesForLoadBalancerInput, param2 ...request.Option) (*elb.DisableAvailabilityZonesForLoadBalancerOutput, error) {
+	m.addCall("DisableAvailabilityZonesForLoadBalancerWithContext")
+	m.verifyInput("DisableAvailabilityZonesForLoadBalancerWithContext", param0)
+	return m.DisableAvailabilityZonesForLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) EnableAvailabilityZonesForLoadBalancer(param0 *elb.EnableAvailabilityZonesForLoadBalancerInput) (*elb.EnableAvailabilityZonesForLoadBalancerOutput, error) {
+	m.addCall("EnableAvailabilityZonesForLoadBalancer")
+	m.verifyInput("EnableAvailabilityZonesForLoadBalancer", param0)
+	return m.EnableAvailabilityZonesForLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) EnableAvailabilityZonesForLoadBalancerRequest(param0 *elb.EnableAvailabilityZonesForLoadBalancerInput) (*request.Request, *elb.EnableAvailabilityZonesForLoadBalancerOutput) {
+	m.addCall("EnableAvailabilityZonesForLoadBalancerRequest")
+	m.verifyInput("EnableAvailabilityZonesForLoadBalancerRequest", param0)
+	return m.EnableAvailabilityZonesForLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) EnableAvailabilityZonesForLoadBalancerWithContext(param0 aws.Context, param1 *elb.EnableAvailabilityZonesForLoadBalancerInput, param2 ...request.Option) (*elb.EnableAvailabilityZonesForLoadBalancerOutput, error) {
+	m.addCall("EnableAvailabilityZonesForLoadBalancerWithContext")
+	m.verifyInput("EnableAvailabilityZonesForLoadBalancerWithContext", param0)
+	return m.EnableAvailabilityZonesForLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) ModifyLoadBalancerAttributes(param0 *elb.ModifyLoadBalancerAttributesInput) (*elb.ModifyLoadBalancerAttributesOutput, error) {
+	m.addCall("ModifyLoadBalancerAttributes")
+	m.verifyInput("ModifyLoadBalancerAttributes", param0)
+	return m.ModifyLoadBalancerAttributesFunc(param0)
+}
+
+func (m *elbMock) ModifyLoadBalancerAttributesRequest(param0 *elb.ModifyLoadBalancerAttributesInput) (*request.Request, *elb.ModifyLoadBalancerAttributesOutput) {
+	m.addCall("ModifyLoadBalancerAttributesRequest")
+	m.verifyInput("ModifyLoadBalancerAttributesRequest", param0)
+	return m.ModifyLoadBalancerAttributesRequestFunc(param0)
+}
+
+func (m *elbMock) ModifyLoadBalancerAttributesWithContext(param0 aws.Context, param1 *elb.ModifyLoadBalancerAttributesInput, param2 ...request.Option) (*elb.ModifyLoadBalancerAttributesOutput, error) {
+	m.addCall("ModifyLoadBalancerAttributesWithContext")
+	m.verifyInput("ModifyLoadBalancerAttributesWithContext", param0)
+	return m.ModifyLoadBalancerAttributesWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) RegisterInstancesWithLoadBalancer(param0 *elb.RegisterInstancesWithLoadBalancerInput) (*elb.RegisterInstancesWithLoadBalancerOutput, error) {
+	m.addCall("RegisterInstancesWithLoadBalancer")
+	m.verifyInput("RegisterInstancesWithLoadBalancer", param0)
+	return m.RegisterInstancesWithLoadBalancerFunc(param0)
+}
+
+func (m *elbMock) RegisterInstancesWithLoadBalancerRequest(param0 *elb.RegisterInstancesWithLoadBalancerInput) (*request.Request, *elb.RegisterInstancesWithLoadBalancerOutput) {
+	m.addCall("RegisterInstancesWithLoadBalancerRequest")
+	m.verifyInput("RegisterInstancesWithLoadBalancerRequest", param0)
+	return m.RegisterInstancesWithLoadBalancerRequestFunc(param0)
+}
+
+func (m *elbMock) RegisterInstancesWithLoadBalancerWithContext(param0 aws.Context, param1 *elb.RegisterInstancesWithLoadBalancerInput, param2 ...request.Option) (*elb.RegisterInstancesWithLoadBalancerOutput, error) {
+	m.addCall("RegisterInstancesWithLoadBalancerWithContext")
+	m.verifyInput("RegisterInstancesWithLoadBalancerWithContext", param0)
+	return m.RegisterInstancesWithLoadBalancerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) RemoveTags(param0 *elb.RemoveTagsInput) (*elb.RemoveTagsOutput, error) {
+	m.addCall("RemoveTags")
+	m.verifyInput("RemoveTags", param0)
+	return m.RemoveTagsFunc(param0)
+}
+
+func (m *elbMock) RemoveTagsRequest(param0 *elb.RemoveTagsInput) (*request.Request, *elb.RemoveTagsOutput) {
+	m.addCall("RemoveTagsRequest")
+	m.verifyInput("RemoveTagsRequest", param0)
+	return m.RemoveTagsRequestFunc(param0)
+}
+
+func (m *elbMock) RemoveTagsWithContext(param0 aws.Context, param1 *elb.RemoveTagsInput, param2 ...request.Option) (*elb.RemoveTagsOutput, error) {
+	m.addCall("RemoveTagsWithContext")
+	m.verifyInput("RemoveTagsWithContext", param0)
+	return m.RemoveTagsWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) SetLoadBalancerListenerSSLCertificate(param0 *elb.SetLoadBalancerListenerSSLCertificateInput) (*elb.SetLoadBalancerListenerSSLCertificateOutput, error) {
+	m.addCall("SetLoadBalancerListenerSSLCertificate")
+	m.verifyInput("SetLoadBalancerListenerSSLCertificate", param0)
+	return m.SetLoadBalancerListenerSSLCertificateFunc(param0)
+}
+
+func (m *elbMock) SetLoadBalancerListenerSSLCertificateRequest(param0 *elb.SetLoadBalancerListenerSSLCertificateInput) (*request.Request, *elb.SetLoadBalancerListenerSSLCertificateOutput) {
+	m.addCall("SetLoadBalancerListenerSSLCertificateRequest")
+	m.verifyInput("SetLoadBalancerListenerSSLCertificateRequest", param0)
+	return m.SetLoadBalancerListenerSSLCertificateRequestFunc(param0)
+}
+
+func (m *elbMock) SetLoadBalancerListenerSSLCertificateWithContext(param0 aws.Context, param1 *elb.SetLoadBalancerListenerSSLCertificateInput, param2 ...request.Option) (*elb.SetLoadBalancerListenerSSLCertificateOutput, error) {
+	m.addCall("SetLoadBalancerListenerSSLCertificateWithContext")
+	m.verifyInput("SetLoadBalancerListenerSSLCertificateWithContext", param0)
+	return m.SetLoadBalancerListenerSSLCertificateWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) SetLoadBalancerPoliciesForBackendServer(param0 *elb.SetLoadBalancerPoliciesForBackendServerInput) (*elb.SetLoadBalancerPoliciesForBackendServerOutput, error) {
+	m.addCall("SetLoadBalancerPoliciesForBackendServer")
+	m.verifyInput("SetLoadBalancerPoliciesForBackendServer", param0)
+	return m.SetLoadBalancerPoliciesForBackendServerFunc(param0)
+}
+
+func (m *elbMock) SetLoadBalancerPoliciesForBackendServerRequest(param0 *elb.SetLoadBalancerPoliciesForBackendServerInput) (*request.Request, *elb.SetLoadBalancerPoliciesForBackendServerOutput) {
+	m.addCall("SetLoadBalancerPoliciesForBackendServerRequest")
+	m.verifyInput("SetLoadBalancerPoliciesForBackendServerRequest", param0)
+	return m.SetLoadBalancerPoliciesForBackendServerRequestFunc(param0)
+}
+
+func (m *elbMock) SetLoadBalancerPoliciesForBackendServerWithContext(param0 aws.Context, param1 *elb.SetLoadBalancerPoliciesForBackendServerInput, param2 ...request.Option) (*elb.SetLoadBalancerPoliciesForBackendServerOutput, error) {
+	m.addCall("SetLoadBalancerPoliciesForBackendServerWithContext")
+	m.verifyInput("SetLoadBalancerPoliciesForBackendServerWithContext", param0)
+	return m.SetLoadBalancerPoliciesForBackendServerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) SetLoadBalancerPoliciesOfListener(param0 *elb.SetLoadBalancerPoliciesOfListenerInput) (*elb.SetLoadBalancerPoliciesOfListenerOutput, error) {
+	m.addCall("SetLoadBalancerPoliciesOfListener")
+	m.verifyInput("SetLoadBalancerPoliciesOfListener", param0)
+	return m.SetLoadBalancerPoliciesOfListenerFunc(param0)
+}
+
+func (m *elbMock) SetLoadBalancerPoliciesOfListenerRequest(param0 *elb.SetLoadBalancerPoliciesOfListenerInput) (*request.Request, *elb.SetLoadBalancerPoliciesOfListenerOutput) {
+	m.addCall("SetLoadBalancerPoliciesOfListenerRequest")
+	m.verifyInput("SetLoadBalancerPoliciesOfListenerRequest", param0)
+	return m.SetLoadBalancerPoliciesOfListenerRequestFunc(param0)
+}
+
+func (m *elbMock) SetLoadBalancerPoliciesOfListenerWithContext(param0 aws.Context, param1 *elb.SetLoadBalancerPoliciesOfListenerInput, param2 ...request.Option) (*elb.SetLoadBalancerPoliciesOfListenerOutput, error) {
+	m.addCall("SetLoadBalancerPoliciesOfListenerWithContext")
+	m.verifyInput("SetLoadBalancerPoliciesOfListenerWithContext", param0)
+	return m.SetLoadBalancerPoliciesOfListenerWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) WaitUntilAnyInstanceInService(param0 *elb.DescribeInstanceHealthInput) error {
+	m.addCall("WaitUntilAnyInstanceInService")
+	m.verifyInput("WaitUntilAnyInstanceInService", param0)
+	return m.WaitUntilAnyInstanceInServiceFunc(param0)
+}
+
+func (m *elbMock) WaitUntilAnyInstanceInServiceWithContext(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.WaiterOption) error {
+	m.addCall("WaitUntilAnyInstanceInServiceWithContext")
+	m.verifyInput("WaitUntilAnyInstanceInServiceWithContext", param0)
+	return m.WaitUntilAnyInstanceInServiceWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) WaitUntilInstanceDeregistered(param0 *elb.DescribeInstanceHealthInput) error {
+	m.addCall("WaitUntilInstanceDeregistered")
+	m.verifyInput("WaitUntilInstanceDeregistered", param0)
+	return m.WaitUntilInstanceDeregisteredFunc(param0)
+}
+
+func (m *elbMock) WaitUntilInstanceDeregisteredWithContext(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.WaiterOption) error {
+	m.addCall("WaitUntilInstanceDeregisteredWithContext")
+	m.verifyInput("WaitUntilInstanceDeregisteredWithContext", param0)
+	return m.WaitUntilInstanceDeregisteredWithContextFunc(param0, param1, param2...)
+}
+
+func (m *elbMock) WaitUntilInstanceInService(param0 *elb.DescribeInstanceHealthInput) error {
+	m.addCall("WaitUntilInstanceInService")
+	m.verifyInput("WaitUntilInstanceInService", param0)
+	return m.WaitUntilInstanceInServiceFunc(param0)
+}
+
+func (m *elbMock) WaitUntilInstanceInServiceWithContext(param0 aws.Context, param1 *elb.DescribeInstanceHealthInput, param2 ...request.WaiterOption) error {
+	m.addCall("WaitUntilInstanceInServiceWithContext")
+	m.verifyInput("WaitUntilInstanceInServiceWithContext", param0)
+	return m.WaitUntilInstanceInServiceWithContextFunc(param0, param1, param2...)
 }
 
 type elbv2Mock struct {

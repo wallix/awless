@@ -13,7 +13,8 @@ func AwlessCommandDefinitionsDoc(action, entity, fallbackDef string) string {
 }
 
 var CommandDefinitionsDoc = map[string]string{
-	"copy.image": "Copy an EC2 image from given source region to current awless region",
+	"copy.image":                 "Copy an EC2 image from given source region to current awless region",
+	"create.classicloadbalancer": "Create a ELB Classic Loadbalancer (recommended only for EC2 Classic instances).\n\nYou should favor newer AWS load balancers. See `awless create loadbalancer -h`.",
 }
 
 func AwlessExamplesDoc(action, entity string) string {
@@ -121,6 +122,11 @@ var cliExamplesDoc = map[string][]string{
 	},
 	"create.containercluster": {
 		"awless create containercluster name=mycluster",
+	},
+	"create.classicloadbalancer": {
+		"create classicloadbalancer name=my-loadb subnets=[sub-123,sub-456] listeners=HTTPS:443:HTTP:80 securitygroups=sg-54321",
+		"create classicloadbalancer heathcheck-path=/health/ping listeners=TCP:80:TCP:8080 tags=Env:Test,Created:Awless",
+		"create classicloadbalancer listeners=[TCP:5000:TCP:5000,HTTPS:443:HTTP:80]",
 	},
 	"create.database": {
 		"awless create database engine=postgres id=mystartup-prod-db subnetgroup=@my-dbsubnetgroup password=notsafe dbname=mydb size=5 type=db.t2.small username=admin vpcsecuritygroups=@postgres_sg",
@@ -258,9 +264,12 @@ var cliExamplesDoc = map[string][]string{
 	"stop.containertask":     {},
 	"stop.instance":          {},
 	"update.bucket":          {},
-	"update.containertask":   {},
-	"update.distribution":    {},
-	"update.instance":        {},
+	"update.classicloadbalancer": {
+		"awless update classicloadbalancer name=my-loadb health-target=HTTP:80/health health-interval=30 health-timeout=5 healthy-threshold=10 unhealthy-threshold=2",
+	},
+	"update.containertask": {},
+	"update.distribution":  {},
+	"update.instance":      {},
 	"update.image": {
 		"awless update image id=@my-image description=new-description",
 		"awless update image id=ami-bd6bb2c5 groups=all operation=add # Make an AMI public",

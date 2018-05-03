@@ -58,6 +58,10 @@ func LoadBalancer(id string) *rBuilder {
 	return new("loadbalancer", id)
 }
 
+func ClassicLoadBalancer(id string) *rBuilder {
+	return new("classicloadbalancer", id)
+}
+
 func AvailabilityZone(id string) *rBuilder {
 	return new("availabilityzone", id)
 }

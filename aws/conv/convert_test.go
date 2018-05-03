@@ -26,6 +26,7 @@ import (
 	"github.com/wallix/awless/graph"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elb"
 )
 
 func TestTransformFunctions(t *testing.T) {
@@ -82,6 +83,31 @@ func TestTransformFunctions(t *testing.T) {
 		if got, want := val.(string), "running"; got != want {
 			t.Fatalf("got %s, want %s", got, want)
 		}
+	})
+
+	t.Run("extractClassicLoadbListenerDescriptions", func(t *testing.T) {
+		t.Parallel()
+		descriptions := []*elb.ListenerDescription{
+			{Listener: &elb.Listener{LoadBalancerPort: awssdk.Int64(443), Protocol: awssdk.String("HTTPS"), InstancePort: awssdk.Int64(8080), InstanceProtocol: awssdk.String("HTTP")}},
+			{Listener: &elb.Listener{LoadBalancerPort: awssdk.Int64(5000), Protocol: awssdk.String("SSL"), InstancePort: awssdk.Int64(3000), InstanceProtocol: awssdk.String("TCP")}},
+		}
+
+		expected := []string{"HTTPS:443:HTTP:8080", "SSL:5000:TCP:3000"}
+
+		i, err := extractClassicLoadbListenerDescriptionsFn(descriptions)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res := i.([]string)
+		if got, want := len(res), len(expected); got != want {
+			t.Fatalf("got %d, want %d", got, want)
+		}
+		for i := range expected {
+			if got, want := res[i], expected[i]; got != want {
+				t.Fatalf("got %s, want %s", got, want)
+			}
+		}
+
 	})
 
 	t.Run("extractIpPermissions", func(t *testing.T) {

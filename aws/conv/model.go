@@ -194,6 +194,20 @@ var awsResourcesDef = map[string]map[string]*propertyTransform{
 		properties.Type:              {name: "Type", transform: extractValueFn},
 		properties.Vpc:               {name: "VpcId", transform: extractValueFn},
 	},
+
+	cloud.ClassicLoadBalancer: {
+		properties.Name:              {name: "LoadBalancerName", transform: extractValueFn},
+		properties.AvailabilityZones: {name: "AvailabilityZones", transform: extractValueFn},
+		properties.Subnets:           {name: "Subnets", transform: extractValueFn},
+		properties.Instances:         {name: "Instances", transform: extractStringSliceValues("InstanceId")},
+		properties.Ports:             {name: "ListenerDescriptions", transform: extractClassicLoadbListenerDescriptionsFn},
+		properties.Zone:              {name: "CanonicalHostedZoneNameID", transform: extractValueFn},
+		properties.Created:           {name: "CreatedTime", transform: extractTimeFn},
+		properties.PublicDNS:         {name: "DNSName", transform: extractValueFn},
+		properties.Scheme:            {name: "Scheme", transform: extractValueFn},
+		properties.Vpc:               {name: "VPCId", transform: extractValueFn},
+	},
+
 	cloud.TargetGroup: {
 		properties.Name:                    {name: "TargetGroupName", transform: extractValueFn},
 		properties.Arn:                     {name: "TargetGroupArn", transform: extractValueFn},

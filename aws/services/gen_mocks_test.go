@@ -39,6 +39,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -260,6 +262,64 @@ func (m *mockElbv2) DescribeLoadBalancersPages(input *elbv2.DescribeLoadBalancer
 
 func (m *mockElbv2) DescribeTargetGroups(input *elbv2.DescribeTargetGroupsInput) (*elbv2.DescribeTargetGroupsOutput, error) {
 	return &elbv2.DescribeTargetGroupsOutput{TargetGroups: m.targetgroups}, nil
+}
+
+type mockElb struct {
+	elbiface.ELBAPI
+	loadbalancerdescriptions []*elb.LoadBalancerDescription
+}
+
+func (m *mockElb) Name() string {
+	return ""
+}
+
+func (m *mockElb) Region() string {
+	return ""
+}
+
+func (m *mockElb) Profile() string {
+	return ""
+}
+
+func (m *mockElb) Provider() string {
+	return ""
+}
+
+func (m *mockElb) ProviderAPI() string {
+	return ""
+}
+
+func (m *mockElb) ResourceTypes() []string {
+	return []string{}
+}
+
+func (m *mockElb) Fetch(context.Context) (cloud.GraphAPI, error) {
+	return nil, nil
+}
+
+func (m *mockElb) IsSyncDisabled() bool {
+	return false
+}
+
+func (m *mockElb) FetchByType(context.Context, string) (cloud.GraphAPI, error) {
+	return nil, nil
+}
+
+func (m *mockElb) DescribeLoadBalancersPages(input *elb.DescribeLoadBalancersInput, fn func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
+	var pages [][]*elb.LoadBalancerDescription
+	for i := 0; i < len(m.loadbalancerdescriptions); i += 2 {
+		page := []*elb.LoadBalancerDescription{m.loadbalancerdescriptions[i]}
+		if i+1 < len(m.loadbalancerdescriptions) {
+			page = append(page, m.loadbalancerdescriptions[i+1])
+		}
+		pages = append(pages, page)
+	}
+	for i, page := range pages {
+		fn(&elb.DescribeLoadBalancersOutput{LoadBalancerDescriptions: page, NextMarker: aws.String(strconv.Itoa(i + 1))},
+			i < len(pages),
+		)
+	}
+	return nil
 }
 
 type mockRds struct {

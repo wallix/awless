@@ -47,9 +47,10 @@ const (
 	NetworkInterface string = "networkinterface"
 	Certificate      string = "certificate"
 	//loadbalancer
-	LoadBalancer string = "loadbalancer"
-	TargetGroup  string = "targetgroup"
-	Listener     string = "listener"
+	ClassicLoadBalancer string = "classicloadbalancer"
+	LoadBalancer        string = "loadbalancer"
+	TargetGroup         string = "targetgroup"
+	Listener            string = "listener"
 	//database
 	Database      string = "database"
 	DbSubnetGroup string = "dbsubnetgroup"

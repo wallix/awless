@@ -25,6 +25,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
@@ -165,15 +166,16 @@ func TestSetFieldWithMultiType(t *testing.T) {
 			Str1, Str2 *string
 			Integer    *int64
 		}
-		MapAttribute      map[string]*string
-		EmptyMapAttribute map[string]*string
-		ParameterList     []*cloudformation.Parameter
-		PortMappings      []*ecs.PortMapping
-		SubnetMappings    []*elbv2.SubnetMapping
-		StepAdjustments   []*applicationautoscaling.StepAdjustment
-		CSVString         *string
-		SixDigitsString   *string
-		ByteSlice         []byte
+		MapAttribute          map[string]*string
+		EmptyMapAttribute     map[string]*string
+		ParameterList         []*cloudformation.Parameter
+		PortMappings          []*ecs.PortMapping
+		SubnetMappings        []*elbv2.SubnetMapping
+		LoadBalancerListeners []*elb.Listener
+		StepAdjustments       []*applicationautoscaling.StepAdjustment
+		CSVString             *string
+		SixDigitsString       *string
+		ByteSlice             []byte
 	}{Field: "initial", MapAttribute: map[string]*string{"test": awssdk.String("1234")}}
 
 	err := setFieldWithType("expected", &any, "Field", awsstr)
@@ -561,6 +563,38 @@ func TestSetFieldWithMultiType(t *testing.T) {
 	}
 	if got, want := *any.SubnetMappings[1].AllocationId, "eipalloc-456"; got != want {
 		t.Fatalf("got %s, want %s", got, want)
+	}
+
+	err = setFieldWithType([]string{"HTTP:80:UDP:8080", "HTTPS:443:TCP:12345"}, &any, "LoadBalancerListeners", awsclassicloadblisteners)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(any.LoadBalancerListeners), 2; got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[0].Protocol, "HTTP"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[0].LoadBalancerPort, int64(80); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[0].InstanceProtocol, "UDP"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[0].InstancePort, int64(8080); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[1].Protocol, "HTTPS"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[1].LoadBalancerPort, int64(443); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[1].InstanceProtocol, "TCP"; got != want {
+		t.Fatalf("got %s, want %s", got, want)
+	}
+	if got, want := *any.LoadBalancerListeners[1].InstancePort, int64(12345); got != want {
+		t.Fatalf("got %d, want %d", got, want)
 	}
 
 	err = setFieldWithType([]string{"0:0.25:-1", "0.75:1:+1"}, &any, "StepAdjustments", awsstepadjustments)

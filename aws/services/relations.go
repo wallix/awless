@@ -99,6 +99,12 @@ var addParentsFns = map[string][]addParentFn{
 		funcBuilder{parent: cloud.AvailabilityZone, fieldName: "ZoneName", listName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
 		funcBuilder{parent: cloud.SecurityGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
 	},
+	cloud.ClassicLoadBalancer: {
+		funcBuilder{parent: cloud.Vpc, fieldName: "VPCId"}.build(),
+		funcBuilder{parent: cloud.Subnet, stringListName: "Subnets", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.AvailabilityZone, stringListName: "AvailabilityZones", relation: DEPENDING_ON}.build(),
+		funcBuilder{parent: cloud.SecurityGroup, stringListName: "SecurityGroups", relation: APPLIES_ON}.build(),
+	},
 	cloud.Listener: {
 		funcBuilder{parent: cloud.LoadBalancer, fieldName: "LoadBalancerArn"}.build(),
 	},

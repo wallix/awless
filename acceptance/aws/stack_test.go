@@ -18,7 +18,7 @@ func TestStack(t *testing.T) {
 	defer polClean()
 
 	t.Run("create", func(t *testing.T) {
-		Template("create stack name=new-stack template-file="+tplFilePath+" capabilities=one,two disable-rollback=true notifications=none,ntwo on-failure=done parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" rollback-monitoring-min=2 rollback-triggers=[arn1,arn2] timeout=180").Mock(&cloudformationMock{
+		Template("create stack name=new-stack template-file="+tplFilePath+" tags=Env:Prod,Dept:IT capabilities=one,two disable-rollback=true notifications=none,ntwo on-failure=done parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" rollback-monitoring-min=2 rollback-triggers=[arn1,arn2] timeout=180").Mock(&cloudformationMock{
 			CreateStackFunc: func(input *cloudformation.CreateStackInput) (*cloudformation.CreateStackOutput, error) {
 				return &cloudformation.CreateStackOutput{StackId: String("new-stack-id")}, nil
 			}}).ExpectInput("CreateStack", &cloudformation.CreateStackInput{
@@ -33,6 +33,7 @@ func TestStack(t *testing.T) {
 			RoleARN:          String("donjuan"),
 			StackPolicyBody:  String("policy content"),
 			TimeoutInMinutes: Int64(180),
+			Tags:             []*cloudformation.Tag{{Key: String("Env"), Value: String("Prod")}, {Key: String("Dept"), Value: String("IT")}},
 			RollbackConfiguration: &cloudformation.RollbackConfiguration{
 				MonitoringTimeInMinutes: Int64(2),
 				RollbackTriggers: []*cloudformation.RollbackTrigger{
@@ -47,7 +48,7 @@ func TestStack(t *testing.T) {
 		_, polUpdateFilePath, clean := generateTmpFile("update policy content")
 		defer clean()
 
-		Template("update stack name=other-name template-file="+tplFilePath+" use-previous-template=true capabilities=one,two notifications=none,ntwo parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" policy-update-file="+polUpdateFilePath+" rollback-monitoring-min=2 rollback-triggers=[arn1,arn2]").Mock(&cloudformationMock{
+		Template("update stack name=other-name template-file="+tplFilePath+" use-previous-template=true tags=Env:Prod,Dept:IT capabilities=one,two notifications=none,ntwo parameters=1:pone,2:ptwo resource-types=rone,rtwo role=donjuan policy-file="+polFilePath+" policy-update-file="+polUpdateFilePath+" rollback-monitoring-min=2 rollback-triggers=[arn1,arn2]").Mock(&cloudformationMock{
 			UpdateStackFunc: func(input *cloudformation.UpdateStackInput) (*cloudformation.UpdateStackOutput, error) {
 				return &cloudformation.UpdateStackOutput{StackId: String("any-stack-id")}, nil
 			}}).ExpectInput("UpdateStack", &cloudformation.UpdateStackInput{
@@ -61,6 +62,7 @@ func TestStack(t *testing.T) {
 			StackPolicyBody:             String("policy content"),
 			StackPolicyDuringUpdateBody: String("update policy content"),
 			UsePreviousTemplate:         Bool(true),
+			Tags:                        []*cloudformation.Tag{{Key: String("Env"), Value: String("Prod")}, {Key: String("Dept"), Value: String("IT")}},
 			RollbackConfiguration: &cloudformation.RollbackConfiguration{
 				MonitoringTimeInMinutes: Int64(2),
 				RollbackTriggers: []*cloudformation.RollbackTrigger{

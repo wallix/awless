@@ -18,8 +18,9 @@ limitations under the License.
 package awsdoc
 
 var generatedParamsDoc = map[string]map[string]string{
-	"attach.alarm":         {},
-	"attach.containertask": {},
+	"attach.alarm":               {},
+	"attach.classicloadbalancer": {},
+	"attach.containertask":       {},
 	"attach.elasticip": {
 		"allow-reassociation": "For a VPC in an EC2-Classic account, specify true to allow an Elastic IP address that is already associated with an instance or network interface to be reassociated with the specified instance or network interface",
 		"id":               "The allocation ID",
@@ -132,6 +133,12 @@ var generatedParamsDoc = map[string]map[string]string{
 		"name": "",
 	},
 	"create.certificate": {},
+	"create.classicloadbalancer": {
+		"scheme":         "The nodes of an Internet-facing load balancer have public IP addresses",
+		"securitygroups": "[Application Load Balancers] The IDs of the security groups to assign to the load balancer",
+		"subnets":        "The IDs of the subnets to attach to the load balancer",
+		"tags":           "One or more tags to assign to the load balancer",
+	},
 	"create.containercluster": {
 		"name": "The name of your cluster",
 	},
@@ -350,6 +357,7 @@ var generatedParamsDoc = map[string]map[string]string{
 	"delete.certificate": {
 		"arn": "String that contains the ARN of the ACM Certificate to be deleted",
 	},
+	"delete.classicloadbalancer": {},
 	"delete.containercluster": {
 		"id": "The short name or full Amazon Resource Name (ARN) of the cluster to delete",
 	},
@@ -468,8 +476,9 @@ var generatedParamsDoc = map[string]map[string]string{
 	"delete.zone": {
 		"id": "The ID of the hosted zone you want to delete",
 	},
-	"detach.alarm":         {},
-	"detach.containertask": {},
+	"detach.alarm":               {},
+	"detach.classicloadbalancer": {},
+	"detach.containertask":       {},
 	"detach.elasticip": {
 		"association": "The association ID",
 	},
@@ -539,6 +548,9 @@ var generatedParamsDoc = map[string]map[string]string{
 		"ids": "One or more instance IDs",
 	},
 	"update.bucket": {},
+	"update.classicloadbalancer": {
+		"name": "The name of the load balancer",
+	},
 	"update.containertask": {
 		"cluster":         "The short name or full Amazon Resource Name (ARN) of the cluster that your service is running on",
 		"deployment-name": "The name of the service to update",

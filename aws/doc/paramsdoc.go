@@ -24,6 +24,10 @@ var manualParamsDoc = map[string]map[string]string{
 		"name":       "The Name of the Alarm to update",
 		"action-arn": "The Amazon Resource Name (ARN) of the action to execute when this alarm transitions to the ALARM state from any other state",
 	},
+	"attach.classicloadbalancer": {
+		"name":     "The name of the Classic load balancer",
+		"instance": "The ID of the instance",
+	},
 	"attach.containertask": {
 		"container-name":    "The name of a container",
 		"name":              "The name of the new or existing task containing the container to attach",
@@ -153,6 +157,13 @@ var manualParamsDoc = map[string]map[string]string{
 	"create.certificate": {
 		"domains":            "Main and Additional Fully qualified domain names (FQDNs) to be included in the Certificate name and Subject Alternative Name of the ACM Certificate",
 		"validation-domains": "The domain name that you want ACM to use to send you validation emails. This domain name is the suffix of the email addresses that you want ACM to use. This must be the same as the DomainName value or a superdomain of the domain value",
+	},
+	"create.classicloadbalancer": {
+		"name":             "The name of the Classic load balancer",
+		"zones":            "At least 1 availability zone from the same region as the load balancer",
+		"listeners":        "The list of listeners. Format for a listener: LOADB_PROTO:LOADB_PORT:INST_PROTO:INST_PORT . Ex: [HTTPS:443:HTTP:8080,TCP:53:TCP:4567]",
+		"healthcheck-path": "The healthcheck ping path only. Otherwise default to ping port 80 using TCP. Ex: home.html (protocol and port are derived from the first listener)",
+		"tags":             "A list of tags to assign to the load balancer. Example: tags=Env:Prod,Country:US",
 	},
 	"create.database": {
 		"autoupgrade":        "Set to true to indicate that minor version patches are applied automatically",
@@ -374,6 +385,9 @@ var manualParamsDoc = map[string]map[string]string{
 	"delete.launchconfiguration": {
 		"name": "The name of the launch configuration to be deleted",
 	},
+	"delete.classicloadbalancer": {
+		"name": "The name of the Classic load balancer",
+	},
 	"delete.policy": {
 		"all-versions": "Set to 'true' to delete all existing versions of the policy to be deleted",
 	},
@@ -401,6 +415,10 @@ var manualParamsDoc = map[string]map[string]string{
 	"detach.alarm": {
 		"name":       "The name of the alarm",
 		"action-arn": "The Amazon Resource Name (ARN) to be detached of the ALARM actions",
+	},
+	"detach.classicloadbalancer": {
+		"name":     "The name of the Classic load balancer",
+		"instance": "The ID of the instance",
 	},
 	"detach.containertask": {
 		"container-name": "The name of the container to detach",
@@ -477,6 +495,13 @@ var manualParamsDoc = map[string]map[string]string{
 		"redirect-hostname": "Hostname where HTTP requests will be redirected when publishing website",
 		"index-suffix":      "A suffix that is appended to a request that is for a directory on the website endpoint",
 		"enforce-https":     "Use HTTPS rather than HTTP when redirecting requests",
+	},
+	"update.classicloadbalancer": {
+		"health-interval":     "The approximate interval, in seconds, between health checks of an individual instance",
+		"health-timeout":      "The amount of time, in seconds, during which no response means a failed health check. This value must be less than the Interval value",
+		"healthy-threshold":   "The number of consecutive health checks successes required before moving the instance to the Healthy state",
+		"unhealthy-threshold": "The number of consecutive health check failures required before moving the instance to the Unhealthy state",
+		"health-target":       "String with format PROTOCOL:PORT[PING_PATH]. For HTTP/HTTPS, you must include a ping path. Protocols: TCP, HTTP, HTTPS, or SSL. Ex: TCP:5000, or HTTP:80/weather/us/wa/seattle",
 	},
 	"update.distribution": {
 		"id":              "The ID of the distribution to update",

@@ -12,6 +12,7 @@ var entities = map[Entity]struct{}{
 	"scalinggroup":        {},
 	"bucket":              {},
 	"certificate":         {},
+	"classicloadbalancer": {},
 	"container":           {},
 	"containercluster":    {},
 	"containerservice":    {},

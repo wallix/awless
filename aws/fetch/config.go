@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -29,6 +30,7 @@ type AWSAPI struct {
 	Iam                    iamiface.IAMAPI
 	Ec2                    ec2iface.EC2API
 	Elbv2                  elbv2iface.ELBV2API
+	Elb                    elbiface.ELBAPI
 	Rds                    rdsiface.RDSAPI
 	Autoscaling            autoscalingiface.AutoScalingAPI
 	Ecr                    ecriface.ECRAPI

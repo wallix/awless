@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -60,6 +61,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 		return func() interface{} {
 			cmd := awsspec.NewAttachAlarm(nil, f.Graph, f.Logger)
 			cmd.SetApi(f.Mock.(cloudwatchiface.CloudWatchAPI))
+			return cmd
+		}
+	case "attachclassicloadbalancer":
+		return func() interface{} {
+			cmd := awsspec.NewAttachClassicLoadbalancer(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(elbiface.ELBAPI))
 			return cmd
 		}
 	case "attachcontainertask":
@@ -258,6 +265,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 		return func() interface{} {
 			cmd := awsspec.NewCreateCertificate(nil, f.Graph, f.Logger)
 			cmd.SetApi(f.Mock.(acmiface.ACMAPI))
+			return cmd
+		}
+	case "createclassicloadbalancer":
+		return func() interface{} {
+			cmd := awsspec.NewCreateClassicLoadbalancer(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(elbiface.ELBAPI))
 			return cmd
 		}
 	case "createcontainercluster":
@@ -542,6 +555,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(acmiface.ACMAPI))
 			return cmd
 		}
+	case "deleteclassicloadbalancer":
+		return func() interface{} {
+			cmd := awsspec.NewDeleteClassicLoadbalancer(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(elbiface.ELBAPI))
+			return cmd
+		}
 	case "deletecontainercluster":
 		return func() interface{} {
 			cmd := awsspec.NewDeleteContainercluster(nil, f.Graph, f.Logger)
@@ -800,6 +819,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 			cmd.SetApi(f.Mock.(cloudwatchiface.CloudWatchAPI))
 			return cmd
 		}
+	case "detachclassicloadbalancer":
+		return func() interface{} {
+			cmd := awsspec.NewDetachClassicLoadbalancer(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(elbiface.ELBAPI))
+			return cmd
+		}
 	case "detachcontainertask":
 		return func() interface{} {
 			cmd := awsspec.NewDetachContainertask(nil, f.Graph, f.Logger)
@@ -948,6 +973,12 @@ func (f *AcceptanceFactory) Build(key string) func() interface{} {
 		return func() interface{} {
 			cmd := awsspec.NewUpdateBucket(nil, f.Graph, f.Logger)
 			cmd.SetApi(f.Mock.(s3iface.S3API))
+			return cmd
+		}
+	case "updateclassicloadbalancer":
+		return func() interface{} {
+			cmd := awsspec.NewUpdateClassicLoadbalancer(nil, f.Graph, f.Logger)
+			cmd.SetApi(f.Mock.(elbiface.ELBAPI))
 			return cmd
 		}
 	case "updatecontainertask":

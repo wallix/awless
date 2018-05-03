@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -89,6 +90,8 @@ func InitResource(source interface{}) (*graph.Resource, error) {
 	case *ec2.NetworkInterface:
 		res = graph.InitResource(cloud.NetworkInterface, awssdk.StringValue(ss.NetworkInterfaceId))
 	// Loadbalancer
+	case *elb.LoadBalancerDescription:
+		res = graph.InitResource(cloud.ClassicLoadBalancer, awssdk.StringValue(ss.LoadBalancerName))
 	case *elbv2.LoadBalancer:
 		res = graph.InitResource(cloud.LoadBalancer, awssdk.StringValue(ss.LoadBalancerArn))
 	case *elbv2.TargetGroup:
@@ -489,6 +492,20 @@ var extractStringSliceValues = func(key string) transformFn {
 
 		return res, nil
 	}
+}
+
+var extractClassicLoadbListenerDescriptionsFn = func(i interface{}) (interface{}, error) {
+	listeners, ok := i.([]*elb.ListenerDescription)
+	if !ok {
+		return nil, fmt.Errorf("extract classic loadb listener descriptions: unexpected type %T", i)
+	}
+	var out []string
+	for _, d := range listeners {
+		if list := d.Listener; list != nil {
+			out = append(out, fmt.Sprintf("%s:%d:%s:%d", *list.Protocol, *list.LoadBalancerPort, *list.InstanceProtocol, *list.InstancePort))
+		}
+	}
+	return out, nil
 }
 
 var extractRoutesSliceFn = func(i interface{}) (interface{}, error) {

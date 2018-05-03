@@ -35,6 +35,8 @@ func TestRevertOneliner(t *testing.T) {
 
 		{in: "create instanceprofile name='my funny name with spaces'", exp: "delete instanceprofile name='my funny name with spaces'"},
 		{in: "create appscalingtarget dimension=dim max-capacity=10 min-capacity=4 resource=['one res','two','three','4', 5, '4.3', 5.1] role=role service-namespace=ecs", exp: "delete appscalingtarget dimension=dim resource=['one res',two,three,'4',5,'4.3',5.1] service-namespace=ecs"},
+
+		{in: "create classicloadbalancer name=my-classic-loadb", exp: "delete classicloadbalancer name=my-classic-loadb", cmdResult: "my-classic-loadb"},
 	}
 
 	for _, tcase := range tcases {

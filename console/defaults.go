@@ -39,6 +39,7 @@ var ColumnsInListing = map[string][]string{
 	cloud.Snapshot:            {properties.ID, properties.Volume, properties.Encrypted, properties.Owner, properties.State, properties.Progress, properties.Created, properties.Size},
 	cloud.NetworkInterface:    {properties.ID, properties.Vpc, properties.Subnet, properties.State, properties.Instance, properties.PrivateIP, properties.PublicIP, properties.Description},
 	cloud.LoadBalancer:        {properties.Name, properties.Vpc, properties.State, properties.PublicDNS, properties.Created, properties.Scheme},
+	cloud.ClassicLoadBalancer: {properties.Name, properties.Vpc, properties.PublicDNS, properties.Instances, properties.Ports, properties.Created, properties.Scheme},
 	cloud.TargetGroup:         {properties.Name, properties.Vpc, properties.CheckHTTPCode, properties.Port, properties.Protocol, properties.CheckInterval, properties.CheckPath, properties.CheckPort, properties.CheckProtocol},
 	cloud.Listener:            {properties.ID, properties.Protocol, properties.Port, properties.LoadBalancer, properties.TargetGroups, properties.AlarmActions},
 	cloud.Database:            {properties.ID, properties.Name, properties.AvailabilityZone, properties.Class, properties.State, properties.Storage, properties.Port, properties.Username, properties.Public, properties.ReplicaOf, properties.Engine, properties.EngineVersion, properties.Created},
@@ -222,6 +223,15 @@ var DefaultsColumnDefinitions = map[string][]ColumnDefinition{
 		StringColumnDefinition{Prop: properties.PublicDNS},
 		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
 		StringColumnDefinition{Prop: properties.Scheme},
+	},
+	cloud.ClassicLoadBalancer: {
+		StringColumnDefinition{Prop: properties.Name},
+		StringColumnDefinition{Prop: properties.Vpc},
+		StringColumnDefinition{Prop: properties.PublicDNS},
+		TimeColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Created, Friendly: "Created"}},
+		StringColumnDefinition{Prop: properties.Scheme},
+		SliceColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Instances}},
+		SliceColumnDefinition{StringColumnDefinition: StringColumnDefinition{Prop: properties.Ports}},
 	},
 	cloud.TargetGroup: {
 		StringColumnDefinition{Prop: properties.Name},

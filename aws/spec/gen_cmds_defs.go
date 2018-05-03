@@ -19,6 +19,7 @@ package awsspec
 
 var APIPerTemplateDefName = map[string]string{
 	"attachalarm":               "cloudwatch",
+	"attachclassicloadbalancer": "elb",
 	"attachcontainertask":       "ecs",
 	"attachelasticip":           "ec2",
 	"attachinstance":            "elbv2",
@@ -52,6 +53,7 @@ var APIPerTemplateDefName = map[string]string{
 	"createappscalingtarget":    "applicationautoscaling",
 	"createbucket":              "s3",
 	"createcertificate":         "acm",
+	"createclassicloadbalancer": "elb",
 	"createcontainercluster":    "ecs",
 	"createdatabase":            "rds",
 	"createdbsubnetgroup":       "rds",
@@ -99,6 +101,7 @@ var APIPerTemplateDefName = map[string]string{
 	"deleteappscalingtarget":    "applicationautoscaling",
 	"deletebucket":              "s3",
 	"deletecertificate":         "acm",
+	"deleteclassicloadbalancer": "elb",
 	"deletecontainercluster":    "ecs",
 	"deletecontainertask":       "ecs",
 	"deletedatabase":            "rds",
@@ -142,6 +145,7 @@ var APIPerTemplateDefName = map[string]string{
 	"deletevpc":                 "ec2",
 	"deletezone":                "route53",
 	"detachalarm":               "cloudwatch",
+	"detachclassicloadbalancer": "elb",
 	"detachcontainertask":       "ecs",
 	"detachelasticip":           "ec2",
 	"detachinstance":            "elbv2",
@@ -167,6 +171,7 @@ var APIPerTemplateDefName = map[string]string{
 	"stopdatabase":              "rds",
 	"stopinstance":              "ec2",
 	"updatebucket":              "s3",
+	"updateclassicloadbalancer": "elb",
 	"updatecontainertask":       "ecs",
 	"updatedistribution":        "cloudfront",
 	"updateimage":               "ec2",
@@ -188,6 +193,12 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity: "alarm",
 		Api:    "cloudwatch",
 		Params: new(AttachAlarm).ParamsSpec().Rule(),
+	},
+	"attachclassicloadbalancer": {
+		Action: "attach",
+		Entity: "classicloadbalancer",
+		Api:    "elb",
+		Params: new(AttachClassicLoadbalancer).ParamsSpec().Rule(),
 	},
 	"attachcontainertask": {
 		Action: "attach",
@@ -386,6 +397,12 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Entity: "certificate",
 		Api:    "acm",
 		Params: new(CreateCertificate).ParamsSpec().Rule(),
+	},
+	"createclassicloadbalancer": {
+		Action: "create",
+		Entity: "classicloadbalancer",
+		Api:    "elb",
+		Params: new(CreateClassicLoadbalancer).ParamsSpec().Rule(),
 	},
 	"createcontainercluster": {
 		Action: "create",
@@ -669,6 +686,12 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Api:    "acm",
 		Params: new(DeleteCertificate).ParamsSpec().Rule(),
 	},
+	"deleteclassicloadbalancer": {
+		Action: "delete",
+		Entity: "classicloadbalancer",
+		Api:    "elb",
+		Params: new(DeleteClassicLoadbalancer).ParamsSpec().Rule(),
+	},
 	"deletecontainercluster": {
 		Action: "delete",
 		Entity: "containercluster",
@@ -927,6 +950,12 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Api:    "cloudwatch",
 		Params: new(DetachAlarm).ParamsSpec().Rule(),
 	},
+	"detachclassicloadbalancer": {
+		Action: "detach",
+		Entity: "classicloadbalancer",
+		Api:    "elb",
+		Params: new(DetachClassicLoadbalancer).ParamsSpec().Rule(),
+	},
 	"detachcontainertask": {
 		Action: "detach",
 		Entity: "containertask",
@@ -1077,6 +1106,12 @@ var AWSTemplatesDefinitions = map[string]Definition{
 		Api:    "s3",
 		Params: new(UpdateBucket).ParamsSpec().Rule(),
 	},
+	"updateclassicloadbalancer": {
+		Action: "update",
+		Entity: "classicloadbalancer",
+		Api:    "elb",
+		Params: new(UpdateClassicLoadbalancer).ParamsSpec().Rule(),
+	},
 	"updatecontainertask": {
 		Action: "update",
 		Entity: "containertask",
@@ -1158,16 +1193,16 @@ var AWSTemplatesDefinitions = map[string]Definition{
 }
 
 var DriverSupportedActions = map[string][]string{
-	"attach":       {"alarm", "containertask", "elasticip", "instance", "instanceprofile", "internetgateway", "listener", "mfadevice", "networkinterface", "policy", "role", "routetable", "securitygroup", "user", "volume"},
+	"attach":       {"alarm", "classicloadbalancer", "containertask", "elasticip", "instance", "instanceprofile", "internetgateway", "listener", "mfadevice", "networkinterface", "policy", "role", "routetable", "securitygroup", "user", "volume"},
 	"authenticate": {"registry"},
 	"check":        {"certificate", "database", "distribution", "instance", "loadbalancer", "natgateway", "networkinterface", "scalinggroup", "securitygroup", "volume"},
 	"copy":         {"image", "snapshot"},
-	"create":       {"accesskey", "alarm", "appscalingpolicy", "appscalingtarget", "bucket", "certificate", "containercluster", "database", "dbsubnetgroup", "distribution", "elasticip", "function", "group", "image", "instance", "instanceprofile", "internetgateway", "keypair", "launchconfiguration", "listener", "loadbalancer", "loginprofile", "mfadevice", "natgateway", "networkinterface", "policy", "queue", "record", "repository", "role", "route", "routetable", "s3object", "scalinggroup", "scalingpolicy", "securitygroup", "snapshot", "stack", "subnet", "subscription", "tag", "targetgroup", "topic", "user", "volume", "vpc", "zone"},
-	"delete":       {"accesskey", "alarm", "appscalingpolicy", "appscalingtarget", "bucket", "certificate", "containercluster", "containertask", "database", "dbsubnetgroup", "distribution", "elasticip", "function", "group", "image", "instance", "instanceprofile", "internetgateway", "keypair", "launchconfiguration", "listener", "loadbalancer", "loginprofile", "mfadevice", "natgateway", "networkinterface", "policy", "queue", "record", "repository", "role", "route", "routetable", "s3object", "scalinggroup", "scalingpolicy", "securitygroup", "snapshot", "stack", "subnet", "subscription", "tag", "targetgroup", "topic", "user", "volume", "vpc", "zone"},
-	"detach":       {"alarm", "containertask", "elasticip", "instance", "instanceprofile", "internetgateway", "mfadevice", "networkinterface", "policy", "role", "routetable", "securitygroup", "user", "volume"},
+	"create":       {"accesskey", "alarm", "appscalingpolicy", "appscalingtarget", "bucket", "certificate", "classicloadbalancer", "containercluster", "database", "dbsubnetgroup", "distribution", "elasticip", "function", "group", "image", "instance", "instanceprofile", "internetgateway", "keypair", "launchconfiguration", "listener", "loadbalancer", "loginprofile", "mfadevice", "natgateway", "networkinterface", "policy", "queue", "record", "repository", "role", "route", "routetable", "s3object", "scalinggroup", "scalingpolicy", "securitygroup", "snapshot", "stack", "subnet", "subscription", "tag", "targetgroup", "topic", "user", "volume", "vpc", "zone"},
+	"delete":       {"accesskey", "alarm", "appscalingpolicy", "appscalingtarget", "bucket", "certificate", "classicloadbalancer", "containercluster", "containertask", "database", "dbsubnetgroup", "distribution", "elasticip", "function", "group", "image", "instance", "instanceprofile", "internetgateway", "keypair", "launchconfiguration", "listener", "loadbalancer", "loginprofile", "mfadevice", "natgateway", "networkinterface", "policy", "queue", "record", "repository", "role", "route", "routetable", "s3object", "scalinggroup", "scalingpolicy", "securitygroup", "snapshot", "stack", "subnet", "subscription", "tag", "targetgroup", "topic", "user", "volume", "vpc", "zone"},
+	"detach":       {"alarm", "classicloadbalancer", "containertask", "elasticip", "instance", "instanceprofile", "internetgateway", "mfadevice", "networkinterface", "policy", "role", "routetable", "securitygroup", "user", "volume"},
 	"import":       {"image"},
 	"restart":      {"database", "instance"},
 	"start":        {"alarm", "containertask", "database", "instance"},
 	"stop":         {"alarm", "containertask", "database", "instance"},
-	"update":       {"bucket", "containertask", "distribution", "image", "instance", "loginprofile", "policy", "record", "s3object", "scalinggroup", "securitygroup", "stack", "subnet", "targetgroup"},
+	"update":       {"bucket", "classicloadbalancer", "containertask", "distribution", "image", "instance", "loginprofile", "policy", "record", "s3object", "scalinggroup", "securitygroup", "stack", "subnet", "targetgroup"},
 }

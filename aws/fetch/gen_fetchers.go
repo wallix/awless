@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -452,6 +453,37 @@ func BuildInfraFetchFuncs(conf *Config) fetch.Funcs {
 		}
 
 		return resources, objects, nil
+	}
+
+	funcs["classicloadbalancer"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var resources []*graph.Resource
+		var objects []*elb.LoadBalancerDescription
+
+		if !conf.getBoolDefaultTrue("aws.infra.classicloadbalancer.sync") && !getBoolFromContext(ctx, "force") {
+			conf.Log.Verbose("sync: *disabled* for resource infra[classicloadbalancer]")
+			return resources, objects, nil
+		}
+		var badResErr error
+		err := conf.APIs.Elb.DescribeLoadBalancersPages(&elb.DescribeLoadBalancersInput{},
+			func(out *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+				for _, output := range out.LoadBalancerDescriptions {
+					if badResErr != nil {
+						return false
+					}
+					objects = append(objects, output)
+					var res *graph.Resource
+					if res, badResErr = awsconv.NewResource(output); badResErr != nil {
+						return false
+					}
+					resources = append(resources, res)
+				}
+				return out.NextMarker != nil
+			})
+		if err != nil {
+			return resources, objects, err
+		}
+
+		return resources, objects, badResErr
 	}
 
 	funcs["loadbalancer"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {

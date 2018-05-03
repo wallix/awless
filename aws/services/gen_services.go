@@ -46,6 +46,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr/ecriface"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -102,6 +104,7 @@ var ResourceTypes = []string{
 	"elasticip",
 	"snapshot",
 	"networkinterface",
+	"classicloadbalancer",
 	"loadbalancer",
 	"targetgroup",
 	"listener",
@@ -140,6 +143,7 @@ var ResourceTypes = []string{
 var ServicePerAPI = map[string]string{
 	"ec2":         "infra",
 	"elbv2":       "infra",
+	"elb":         "infra",
 	"rds":         "infra",
 	"autoscaling": "infra",
 	"ecr":         "infra",
@@ -174,6 +178,7 @@ var ServicePerResourceType = map[string]string{
 	"elasticip":           "infra",
 	"snapshot":            "infra",
 	"networkinterface":    "infra",
+	"classicloadbalancer": "infra",
 	"loadbalancer":        "infra",
 	"targetgroup":         "infra",
 	"listener":            "infra",
@@ -225,6 +230,7 @@ var APIPerResourceType = map[string]string{
 	"elasticip":           "ec2",
 	"snapshot":            "ec2",
 	"networkinterface":    "ec2",
+	"classicloadbalancer": "elb",
 	"loadbalancer":        "elbv2",
 	"targetgroup":         "elbv2",
 	"listener":            "elbv2",
@@ -267,6 +273,7 @@ type Infra struct {
 	log             *logger.Logger
 	ec2iface.EC2API
 	elbv2iface.ELBV2API
+	elbiface.ELBAPI
 	rdsiface.RDSAPI
 	autoscalingiface.AutoScalingAPI
 	ecriface.ECRAPI
@@ -279,6 +286,7 @@ func NewInfra(sess *session.Session, profile string, extraConf map[string]interf
 	region := awssdk.StringValue(sess.Config.Region)
 	ec2API := ec2.New(sess)
 	elbv2API := elbv2.New(sess)
+	elbAPI := elb.New(sess)
 	rdsAPI := rds.New(sess)
 	autoscalingAPI := autoscaling.New(sess)
 	ecrAPI := ecr.New(sess)
@@ -289,6 +297,7 @@ func NewInfra(sess *session.Session, profile string, extraConf map[string]interf
 	fetchConfig := awsfetch.NewConfig(
 		ec2API,
 		elbv2API,
+		elbAPI,
 		rdsAPI,
 		autoscalingAPI,
 		ecrAPI,
@@ -302,6 +311,7 @@ func NewInfra(sess *session.Session, profile string, extraConf map[string]interf
 	return &Infra{
 		EC2API:         ec2API,
 		ELBV2API:       elbv2API,
+		ELBAPI:         elbAPI,
 		RDSAPI:         rdsAPI,
 		AutoScalingAPI: autoscalingAPI,
 		ECRAPI:         ecrAPI,
@@ -345,6 +355,7 @@ func (s *Infra) ResourceTypes() []string {
 		"elasticip",
 		"snapshot",
 		"networkinterface",
+		"classicloadbalancer",
 		"loadbalancer",
 		"targetgroup",
 		"listener",
@@ -716,6 +727,28 @@ func (s *Infra) Fetch(ctx context.Context) (cloud.GraphAPI, error) {
 			for _, fn := range addParentsFns["networkinterface"] {
 				wg.Add(1)
 				go func(f addParentFn, snap tstore.RDFGraph, region string, res *ec2.NetworkInterface) {
+					defer wg.Done()
+					err := f(gph, snap, region, res)
+					if err != nil {
+						errc <- err
+						return
+					}
+				}(fn, snap, s.region, r)
+			}
+		}
+	}
+	if getBool(s.config, "aws.infra.classicloadbalancer.sync", true) {
+		list, err := s.fetcher.Get("classicloadbalancer_objects")
+		if err != nil {
+			return gph, err
+		}
+		if _, ok := list.([]*elb.LoadBalancerDescription); !ok {
+			return gph, errors.New("cannot cast to '[]*elb.LoadBalancerDescription' type from fetch context")
+		}
+		for _, r := range list.([]*elb.LoadBalancerDescription) {
+			for _, fn := range addParentsFns["classicloadbalancer"] {
+				wg.Add(1)
+				go func(f addParentFn, snap tstore.RDFGraph, region string, res *elb.LoadBalancerDescription) {
 					defer wg.Done()
 					err := f(gph, snap, region, res)
 					if err != nil {

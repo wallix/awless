@@ -45,6 +45,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 	switch key {
 	case "attachalarm":
 		return func() interface{} { return NewAttachAlarm(f.Sess, f.Graph, f.Log) }
+	case "attachclassicloadbalancer":
+		return func() interface{} { return NewAttachClassicLoadbalancer(f.Sess, f.Graph, f.Log) }
 	case "attachcontainertask":
 		return func() interface{} { return NewAttachContainertask(f.Sess, f.Graph, f.Log) }
 	case "attachelasticip":
@@ -111,6 +113,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewCreateBucket(f.Sess, f.Graph, f.Log) }
 	case "createcertificate":
 		return func() interface{} { return NewCreateCertificate(f.Sess, f.Graph, f.Log) }
+	case "createclassicloadbalancer":
+		return func() interface{} { return NewCreateClassicLoadbalancer(f.Sess, f.Graph, f.Log) }
 	case "createcontainercluster":
 		return func() interface{} { return NewCreateContainercluster(f.Sess, f.Graph, f.Log) }
 	case "createdatabase":
@@ -205,6 +209,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewDeleteBucket(f.Sess, f.Graph, f.Log) }
 	case "deletecertificate":
 		return func() interface{} { return NewDeleteCertificate(f.Sess, f.Graph, f.Log) }
+	case "deleteclassicloadbalancer":
+		return func() interface{} { return NewDeleteClassicLoadbalancer(f.Sess, f.Graph, f.Log) }
 	case "deletecontainercluster":
 		return func() interface{} { return NewDeleteContainercluster(f.Sess, f.Graph, f.Log) }
 	case "deletecontainertask":
@@ -291,6 +297,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewDeleteZone(f.Sess, f.Graph, f.Log) }
 	case "detachalarm":
 		return func() interface{} { return NewDetachAlarm(f.Sess, f.Graph, f.Log) }
+	case "detachclassicloadbalancer":
+		return func() interface{} { return NewDetachClassicLoadbalancer(f.Sess, f.Graph, f.Log) }
 	case "detachcontainertask":
 		return func() interface{} { return NewDetachContainertask(f.Sess, f.Graph, f.Log) }
 	case "detachelasticip":
@@ -341,6 +349,8 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 		return func() interface{} { return NewStopInstance(f.Sess, f.Graph, f.Log) }
 	case "updatebucket":
 		return func() interface{} { return NewUpdateBucket(f.Sess, f.Graph, f.Log) }
+	case "updateclassicloadbalancer":
+		return func() interface{} { return NewUpdateClassicLoadbalancer(f.Sess, f.Graph, f.Log) }
 	case "updatecontainertask":
 		return func() interface{} { return NewUpdateContainertask(f.Sess, f.Graph, f.Log) }
 	case "updatedistribution":
@@ -373,6 +383,7 @@ func (f *AWSFactory) Build(key string) func() interface{} {
 
 var (
 	_ command = &AttachAlarm{}
+	_ command = &AttachClassicLoadbalancer{}
 	_ command = &AttachContainertask{}
 	_ command = &AttachElasticip{}
 	_ command = &AttachInstance{}
@@ -406,6 +417,7 @@ var (
 	_ command = &CreateAppscalingtarget{}
 	_ command = &CreateBucket{}
 	_ command = &CreateCertificate{}
+	_ command = &CreateClassicLoadbalancer{}
 	_ command = &CreateContainercluster{}
 	_ command = &CreateDatabase{}
 	_ command = &CreateDbsubnetgroup{}
@@ -453,6 +465,7 @@ var (
 	_ command = &DeleteAppscalingtarget{}
 	_ command = &DeleteBucket{}
 	_ command = &DeleteCertificate{}
+	_ command = &DeleteClassicLoadbalancer{}
 	_ command = &DeleteContainercluster{}
 	_ command = &DeleteContainertask{}
 	_ command = &DeleteDatabase{}
@@ -496,6 +509,7 @@ var (
 	_ command = &DeleteVpc{}
 	_ command = &DeleteZone{}
 	_ command = &DetachAlarm{}
+	_ command = &DetachClassicLoadbalancer{}
 	_ command = &DetachContainertask{}
 	_ command = &DetachElasticip{}
 	_ command = &DetachInstance{}
@@ -521,6 +535,7 @@ var (
 	_ command = &StopDatabase{}
 	_ command = &StopInstance{}
 	_ command = &UpdateBucket{}
+	_ command = &UpdateClassicLoadbalancer{}
 	_ command = &UpdateContainertask{}
 	_ command = &UpdateDistribution{}
 	_ command = &UpdateImage{}

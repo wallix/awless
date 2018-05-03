@@ -137,6 +137,7 @@ func loadAllRefs() map[string]string {
 		filepath.Join("route53", "2013-04-01", "docs-2.json"),
 		filepath.Join("monitoring", "2010-08-01", "docs-2.json"),
 		filepath.Join("elasticloadbalancingv2", "2015-12-01", "docs-2.json"),
+		filepath.Join("elasticloadbalancing", "2012-06-01", "docs-2.json"),
 		filepath.Join("sts", "2011-06-15", "docs-2.json"),
 		filepath.Join("cloudformation", "2010-05-15", "docs-2.json"),
 		filepath.Join("ecr", "2015-09-21", "docs-2.json"),
