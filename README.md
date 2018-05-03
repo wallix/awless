@@ -181,7 +181,7 @@ The approach is different though. When creating insfrastructure `awless`:
 
 **Does `awless` handles state when creating infrastructure (i.e. keep track of the changes)?**
 
-As [https://logz.io/blog/terraform-ansible-puppet/](quoted): _"Terraform is an amazing tool but a major challenge is managing the state file. Whenever you apply changes to your infrastructure, the entire managed body of code and created objects are tracked in the Terraform State file (.tfstate), which can reach hundreds of thousands of lines and must be managed carefully lest you incur large merge conflicts or unwanted resource changes"_, Ofer Velich.
+Quoting from a [logz.io/blog entry](https://logz.io/blog/terraform-ansible-puppet/): _"Terraform is an amazing tool but a major challenge is managing the state file. Whenever you apply changes to your infrastructure, the entire managed body of code and created objects are tracked in the Terraform State file (.tfstate), which can reach hundreds of thousands of lines and must be managed carefully lest you incur large merge conflicts or unwanted resource changes"_, Ofer Velich.
 
 As for now with `awless`, we have taken a different path: `awless` does not keep state of your cloud; it is more of an all-or-nothing deployment solution. 
 
