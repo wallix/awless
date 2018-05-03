@@ -130,17 +130,17 @@ More articles:
 
 # FAQ
 
-Here is a compilation of the question we often answer (... thanks for asking them and forcing us to make things clearer ;) ):
+Here is a compilation of the question we often answer (thanks for asking them so that we can make things clearer!):
 
 **There are already some AWS CLIs. What is `awless` unique approach?**
 
 Three things that differentiates `awless` from other AWS CLIs:
 
-* It has it owns **compiled and very simple templating language** to build AWS infrastructures.
-* Commands are made of VERB + ENTITY [+ param=value] and are actually valid lines of the template language. 
-* It transparently syncs locally a representation of the cloud resources and their relations.
+* It has its own **compiled and very simple templating language** to build AWS infrastructures.
+* Commands are made of _VERB + ENTITY [+ param=value]_ and are actually valid lines of the template language. 
+* It transparently syncs to a local graph a representation of the cloud resources and their relations.
 
-Leveraging and combining the points exposed above, `awless` lays some strong foundations for plenty of current/future features/characteristic such as:
+Leveraging and combining the points above, `awless` lays some strong foundations for plenty of current/future features/characteristic such as:
 
 - Wrapping AWS API calls to enrich them with before/after behaviour when interacting with the cloud
 - Having a small and hierarchical set of commands to intuitively interact with AWS
@@ -183,9 +183,9 @@ The approach is different though. When creating insfrastructure `awless`:
 
 As [https://logz.io/blog/terraform-ansible-puppet/](quoted): _"Terraform is an amazing tool but a major challenge is managing the state file. Whenever you apply changes to your infrastructure, the entire managed body of code and created objects are tracked in the Terraform State file (.tfstate), which can reach hundreds of thousands of lines and must be managed carefully lest you incur large merge conflicts or unwanted resource changes"_, Ofer Velich.
 
-As for now with `awless`, we have taken a different road. So `awless` does not keep state of your cloud. It is more of an all-or-nothing deployment solution. 
+As for now with `awless`, we have taken a different path: `awless` does not keep state of your cloud; it is more of an all-or-nothing deployment solution. 
 
-Note that `awless` logs (through rich and revertable logs) all your actions against the cloud (apart from reading/listing) and that you can revert any template ran.
+Note that `awless` logs (through rich and revertable logs) all your actions against the cloud and that you can revert any template ran.
 
 # About
 
