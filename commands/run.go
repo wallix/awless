@@ -135,7 +135,7 @@ func missingHolesStdinFunc() func(string, []string, bool) string {
 	var count int
 	return func(hole string, paramPaths []string, optional bool) (response string) {
 		if count < 1 {
-			fmt.Println("Please specify (Tab for completion, Enter to skip optionals, Ctrl+C to quit):")
+			fmt.Println("Please specify " + "(" + renderYellowFn("TAB") + " for completion, " + renderYellowFn("','+TAB") + " for list completion, " + renderYellowFn("Enter") + " to skip optionals, " + renderYellowFn("Ctrl+C") + " to quit) :")
 		}
 		var docs, enums []string
 		var typedParam *awsdoc.ParamType
