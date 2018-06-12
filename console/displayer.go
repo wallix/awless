@@ -405,7 +405,11 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 	for i := range values {
 		var props []string
 		for j, h := range d.columnDefinitions {
-			props = append(props, h.format(values[i][j]))
+			val := h.format(values[i][j])
+			if strings.Contains(val, ",") {
+				val = "\"" + val + "\""
+			}
+			props = append(props, val)
 		}
 		buff.WriteString(strings.Join(props, ",") + "\n")
 	}
