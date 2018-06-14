@@ -5,5 +5,7 @@ install: true
 go:
   - 1.9
 
+before_install:
+  - go get github.com/mattn/goveralls
 script:
-  - go test $(go list ./... | grep -v /vendor/)
+  - $GOPATH/bin/goveralls -service=travis-ci
