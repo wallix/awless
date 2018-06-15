@@ -17,6 +17,10 @@ var (
 
 var EnumDoc = map[string][]string{
 
+	"attach.mfadevice.mfa-code-1": {""},
+	"attach.mfadevice.mfa-code-2": {""},
+	"attach.mfadevice.no-prompt":  boolean,
+
 	"attach.policy.access":  {"readonly", "full"},
 	"attach.policy.service": services,
 
@@ -193,10 +197,15 @@ type ParamType struct {
 }
 
 var ParamTypeDoc = map[string]*ParamType{
+	"attach.mfadevice.user": {ResourceType: cloud.User, PropertyName: properties.Name},
+
 	"attach.policy.group": {ResourceType: cloud.Group, PropertyName: properties.Name},
 	"attach.policy.role":  {ResourceType: cloud.Role, PropertyName: properties.Name},
 	"attach.policy.user":  {ResourceType: cloud.User, PropertyName: properties.Name},
 	"attach.policy.arn":   {ResourceType: cloud.Policy, PropertyName: properties.Arn},
+
+	"attach.user.name":  {ResourceType: cloud.User, PropertyName: properties.Name},
+	"attach.user.group": {ResourceType: cloud.Group, PropertyName: properties.Name},
 
 	"attach.role.instanceprofile": {ResourceType: cloud.InstanceProfile, PropertyName: properties.Name},
 
