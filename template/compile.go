@@ -179,7 +179,9 @@ func resolveParamsAndExtractRefsPass(tpl *Template, cenv env.Compiling) (*Templa
 					case ast.RefNode:
 						hasRef = true
 						arr = append(arr, e)
-					case ast.HoleNode, ast.ConcatenationNode, ast.AliasNode, ast.ListNode:
+					case ast.ConcatenationNode:
+						arr = append(arr, e.Concat())
+					case ast.HoleNode, ast.AliasNode, ast.ListNode:
 						return tpl, cenv, fmt.Errorf("%s: unresolved value in list of type %T", k, e)
 					default:
 						arr = append(arr, e)

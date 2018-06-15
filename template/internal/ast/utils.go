@@ -231,9 +231,9 @@ func (v *visitor) visit(tree Node) {
 	case *CommandNode:
 		v.action, v.entity = t.Action, t.Entity
 		for key, param := range t.ParamNodes {
-			v.parent = tree
-			v.key = key
 			if n, ok := param.(Node); ok {
+				v.parent = tree
+				v.key = key
 				v.visit(n)
 			}
 		}
@@ -249,18 +249,18 @@ func (v *visitor) visit(tree Node) {
 		}
 
 	case ListNode:
-		v.parent = tree
 		for i, el := range t.arr {
-			v.listIndex = i
 			if n, ok := el.(Node); ok {
+				v.listIndex = i
+				v.parent = tree
 				v.visit(n)
 			}
 		}
 	case ConcatenationNode:
-		v.parent = tree
 		for i, el := range t.arr {
-			v.concatItemIndex = i
 			if n, ok := el.(Node); ok {
+				v.concatItemIndex = i
+				v.parent = tree
 				v.visit(n)
 			}
 		}

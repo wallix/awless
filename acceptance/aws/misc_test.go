@@ -97,3 +97,34 @@ func TestWithMissingRequiredParams(t *testing.T) {
 		UserName: String("donald"),
 	}).ExpectCommandResult("new-user-id").ExpectCalls("CreateUser").Run(t)
 }
+
+func TestConcatenationWithReferences(t *testing.T) {
+	Template(`mfaResource = "arn:aws:iam::" + {account.id} + ":mfa/${aws:username}"
+userResource = "arn:aws:iam::" + {account.id} + ":user/${aws:username}"
+
+policy = create policy name=ManageOwnMFADevice effect=allow action=[iam:CreateVirtualMFADevice,iam:EnableMFADevice,iam:ResyncMFADevice,iam:DeleteVirtualMFADevice] resource=$mfaResource,$userResource`).
+		Fillers(map[string]string{"account.id": "123456789"}).
+		Mock(&iamMock{CreatePolicyFunc: func(input *iam.CreatePolicyInput) (*iam.CreatePolicyOutput, error) {
+			return &iam.CreatePolicyOutput{Policy: &iam.Policy{Arn: String("arn:new-policy-arn")}}, nil
+		},
+		}).ExpectInput("CreatePolicy", &iam.CreatePolicyInput{
+		PolicyName: String("ManageOwnMFADevice"),
+		PolicyDocument: String(`{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "iam:CreateVirtualMFADevice",
+    "iam:EnableMFADevice",
+    "iam:ResyncMFADevice",
+    "iam:DeleteVirtualMFADevice"
+   ],
+   "Resource": [
+    "arn:aws:iam::123456789:mfa/${aws:username}",
+    "arn:aws:iam::123456789:user/${aws:username}"
+   ]
+  }
+ ]
+}`)}).ExpectCalls("CreatePolicy").ExpectRevert("delete policy all-versions=true arn=arn:new-policy-arn").Run(t)
+}
