@@ -125,7 +125,12 @@ func (a *AST) addParamValue(text string) {
 	var val interface{}
 	i, err := strconv.Atoi(text)
 	if err == nil {
-		val = i
+		if len(text) > 1 && text[0] == '0' {
+			// We want an integer beginning with '0' to keep its initial '0' (so as string)
+			val = text
+		} else {
+			val = i
+		}
 	} else {
 		f, err := strconv.ParseFloat(text, 64)
 		if err == nil {

@@ -103,7 +103,7 @@ func TestConcatenationWithReferences(t *testing.T) {
 userResource = "arn:aws:iam::" + {account.id} + ":user/${aws:username}"
 
 policy = create policy name=ManageOwnMFADevice effect=allow action=[iam:CreateVirtualMFADevice,iam:EnableMFADevice,iam:ResyncMFADevice,iam:DeleteVirtualMFADevice] resource=$mfaResource,$userResource`).
-		Fillers(map[string]string{"account.id": "123456789"}).
+		Fillers(map[string]string{"account.id": "0123456789"}).
 		Mock(&iamMock{CreatePolicyFunc: func(input *iam.CreatePolicyInput) (*iam.CreatePolicyOutput, error) {
 			return &iam.CreatePolicyOutput{Policy: &iam.Policy{Arn: String("arn:new-policy-arn")}}, nil
 		},
@@ -121,8 +121,8 @@ policy = create policy name=ManageOwnMFADevice effect=allow action=[iam:CreateVi
     "iam:DeleteVirtualMFADevice"
    ],
    "Resource": [
-    "arn:aws:iam::123456789:mfa/${aws:username}",
-    "arn:aws:iam::123456789:user/${aws:username}"
+    "arn:aws:iam::0123456789:mfa/${aws:username}",
+    "arn:aws:iam::0123456789:user/${aws:username}"
    ]
   }
  ]
