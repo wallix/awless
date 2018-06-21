@@ -406,7 +406,8 @@ func (d *csvDisplayer) Print(w io.Writer) error {
 		var props []string
 		for j, h := range d.columnDefinitions {
 			val := h.format(values[i][j])
-			if strings.Contains(val, ",") {
+			if strings.ContainsAny(val, ",\n\"") {
+				val = strings.Replace(val, "\"", "\"\"", -1) // Replace " in val by "" (cf https://tools.ietf.org/html/rfc4180)
 				val = "\"" + val + "\""
 			}
 			props = append(props, val)

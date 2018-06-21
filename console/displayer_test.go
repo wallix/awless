@@ -681,6 +681,33 @@ func TestCompareInterface(t *testing.T) {
 	}
 }
 
+func TestCSVDisplayWithCommaAndQuotes(t *testing.T) {
+	g := graph.NewGraph()
+	g.AddResource(
+		resourcetest.Instance("inst_1").Prop(p.Name, "with,comma").Build(),
+		resourcetest.Instance("inst_2").Prop(p.Name, "with\nlinebreak").Build(),
+		resourcetest.Instance("inst_3").Prop(p.Name, "with\"quote").Build(),
+	)
+
+	displayer, _ := BuildOptions(
+		WithRdfType("instance"),
+		WithColumns([]string{"ID", "Name"}),
+		WithFormat("csv"),
+	).SetSource(g).Build()
+
+	expected := "ID,Name\n" +
+		"inst_1,\"with,comma\"\n" +
+		"inst_2,\"with\nlinebreak\"\n" +
+		"inst_3,\"with\"\"quote\"\n"
+	var w bytes.Buffer
+	if err := displayer.Print(&w); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := w.String(), expected; got != want {
+		t.Fatalf("got \n[%q]\n\nwant\n\n[%q]\n", got, want)
+	}
+}
+
 func createInfraGraph() *graph.Graph {
 	g := graph.NewGraph()
 	g.AddResource(resourcetest.Region("eu-west-1").Build(),

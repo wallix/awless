@@ -7,9 +7,9 @@
 
 ### Fixes
 
+- [#220](https://github.com/wallix/awless/issues/220): Add double quotes to CSV output if needed thanks to @lllama
 - Fix compilation error in templates with concatenation and reference (c.f. for example in [this template](https://gist.githubusercontent.com/fxaguessy/ef9511bf5ed8f3312904cccb96b818e8/raw/75c0f808220665441055b589be133cf711c64f37/ManageOwnMFA.aws))
 - Parse integer beginning with '0' as string (preventing the deletion of the initial '0' for example in `... account.id=0123456789`)
-
 
 ## v0.1.10 [2018-04-13]
 
