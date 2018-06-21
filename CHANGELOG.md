@@ -2,6 +2,14 @@
 
 ### Features
 
+- [#71](https://github.com/wallix/awless/issues/71): Add support for Classic load-balancers:
+
+    $ awless list classicloadbalancers
+    $ awless create classicloadbalancer name=my-loadb subnets=[sub-123,sub-456] listeners=HTTP:80:HTTP:8080 healthcheck-path=/health/ping  securitygroups=sg-54321 tags=Env:Test,Created:Awless
+    $ awless update classicloadbalancer name=my-loadb health-interval=10 health-target=HTTP:80/weather/ health-timeout=300 healthy-threshold=10  unhealthy-threshold=5
+    $ awless attach classicloadbalancer name=my-loadb instance=@redis-prod-1
+    $ awless delete classicloadbalancer name=my-loadb
+
 - [#214](https://github.com/wallix/awless/issues/214): `AWS_PROFILE` env variable now loaded in `awless` in addition to the deprecated `AWS_DEFAULT_PROFILE` thanks to @alewando
 - Better completion for `attach mfadevice` and `attach user` commands
 - [#219](https://github.com/wallix/awless/issues/219): Validate access key and secret key before writing into `~/.aws/credentials` file
