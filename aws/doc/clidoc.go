@@ -125,7 +125,7 @@ var cliExamplesDoc = map[string][]string{
 	},
 	"create.classicloadbalancer": {
 		"create classicloadbalancer name=my-loadb subnets=[sub-123,sub-456] listeners=HTTPS:443:HTTP:80 securitygroups=sg-54321",
-		"create classicloadbalancer heathcheck-path=/health/ping listeners=TCP:80:TCP:8080 tags=Env:Test,Created:Awless",
+		"create classicloadbalancer healthcheck-path=/health/ping listeners=TCP:80:TCP:8080 tags=Env:Test,Created:Awless",
 		"create classicloadbalancer listeners=[TCP:5000:TCP:5000,HTTPS:443:HTTP:80]",
 	},
 	"create.database": {

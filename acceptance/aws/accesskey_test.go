@@ -42,18 +42,18 @@ func TestAccesskey(t *testing.T) {
 			Template("create accesskey user=jdoe save=true").
 				Mock(&iamMock{
 					CreateAccessKeyFunc: func(*iam.CreateAccessKeyInput) (*iam.CreateAccessKeyOutput, error) {
-						return &iam.CreateAccessKeyOutput{AccessKey: &iam.AccessKey{AccessKeyId: String("0123456EXAMPLE"), SecretAccessKey: String("MYSECRETKEY")}}, nil
+						return &iam.CreateAccessKeyOutput{AccessKey: &iam.AccessKey{AccessKeyId: String("0123456EXAMPLE0123456EXAMPLE"), SecretAccessKey: String("MYSECRETKEYMYSECRETKEYMYSECRETKEYMYSECRETKEY")}}, nil
 					},
 				}).ExpectInput("CreateAccessKey", &iam.CreateAccessKeyInput{UserName: String("jdoe")}).
-				ExpectCommandResult("0123456EXAMPLE").ExpectCalls("CreateAccessKey").Run(t)
+				ExpectCommandResult("0123456EXAMPLE0123456EXAMPLE").ExpectCalls("CreateAccessKey").Run(t)
 			cred, err := ioutil.ReadFile(awsspec.AWSCredFilepath)
 			if err != nil {
 				t.Fatal(err)
 			}
 			expected := `
 [jdoe]
-aws_access_key_id = 0123456EXAMPLE
-aws_secret_access_key = MYSECRETKEY
+aws_access_key_id = 0123456EXAMPLE0123456EXAMPLE
+aws_secret_access_key = MYSECRETKEYMYSECRETKEYMYSECRETKEYMYSECRETKEY
 `
 			if got, want := string(cred), expected; got != want {
 				t.Fatalf("got %s, want %s", got, want)
