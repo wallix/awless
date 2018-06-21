@@ -118,6 +118,7 @@ Take the tour at [Getting Started (wiki)](https://github.com/wallix/awless/wiki/
 
 More articles:
 
+   - [Simplified Multi-Factor Authentication for AWS](https://medium.com/@awlessCLI/simplified-multi-factor-authentication-for-aws-d703e8d9f332)
    - [Simplified user management for AWS](https://medium.com/@awlessCLI/simplified-user-management-for-aws-6f828ccab387)
    - [InfoWorld: Production-grade deployment of WordPress](https://www.infoworld.com/article/3230547/cloud-computing/awless-tutorial-try-a-smarter-cli-for-aws.html)
    - [Easy create & tear down of a multi-AZ CockroachDB cluster](https://github.com/wallix/awless-templates/tree/master/cockroachdb)

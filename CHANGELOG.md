@@ -1,5 +1,7 @@
 ## v0.1.11 [2018-06-21]
 
+**Check out our new article** on [Simplified Multi-Factor Authentication](https://medium.com/@awlessCLI/simplified-multi-factor-authentication-for-aws-d703e8d9f332) with `awless`
+
 ### Features
 
 - [#71](https://github.com/wallix/awless/issues/71): Add support for Classic load-balancers:
