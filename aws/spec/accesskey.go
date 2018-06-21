@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/wallix/awless/cloud/match"
@@ -200,14 +201,22 @@ func (c *credentialsPrompter) Prompt() error {
 	return nil
 }
 
+var accessKeysRegex = regexp.MustCompile("^[a-zA-Z0-9/+=]{20,60}$")
+
 func (c *credentialsPrompter) Store() (bool, error) {
 	var created bool
 
 	if c.Val.SecretAccessKey == "" {
 		return created, errors.New("given empty secret access key")
 	}
+	if !accessKeysRegex.MatchString(c.Val.SecretAccessKey) {
+		return created, errors.New("given invalid secret access key")
+	}
 	if c.Val.AccessKeyID == "" {
 		return created, errors.New("given empty access key")
+	}
+	if !accessKeysRegex.MatchString(c.Val.AccessKeyID) {
+		return created, errors.New("given invalid access key")
 	}
 	return appendToAwsFile(
 		fmt.Sprintf("\n[%s]\naws_access_key_id = %s\naws_secret_access_key = %s\n", c.Profile, c.Val.AccessKeyID, c.Val.SecretAccessKey),
