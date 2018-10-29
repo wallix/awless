@@ -130,9 +130,10 @@ var sshCmd = &cobra.Command{
 		} else {
 			if pub := connectionCtx.ip; pub != "" {
 				firsHopClient.IP = connectionCtx.ip
+			} else if priv := connectionCtx.privip; priv != "" {
+				firsHopClient.IP = connectionCtx.privip
 			} else {
-				logger.Infof("`--private` flag can be used to connect through instance's private IP '%s'", connectionCtx.privip)
-				exitOn(fmt.Errorf("no public IP resolved for instance %s (state '%s')", connectionCtx.instance.Id(), connectionCtx.state))
+				exitOn(fmt.Errorf("no public/private IP resolved for instance %s (state '%s')", connectionCtx.instance.Id(), connectionCtx.state))
 			}
 		}
 
