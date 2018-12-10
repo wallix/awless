@@ -18,6 +18,7 @@ package match
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/wallix/awless/cloud"
@@ -113,7 +114,7 @@ func (p propertyMatcher) Contains() propertyMatcher {
 }
 
 type tagMatcher struct {
-	key, value string
+	tagRegexp *regexp.Regexp
 }
 
 func (m tagMatcher) Match(r cloud.Resource) bool {
@@ -122,7 +123,7 @@ func (m tagMatcher) Match(r cloud.Resource) bool {
 		return false
 	}
 	for _, t := range tags {
-		if fmt.Sprintf("%s=%s", m.key, m.value) == t {
+		if m.tagRegexp.MatchString(t) {
 			return true
 		}
 	}
@@ -130,7 +131,10 @@ func (m tagMatcher) Match(r cloud.Resource) bool {
 }
 
 func Tag(key, val string) tagMatcher {
-	return tagMatcher{key: key, value: val}
+	tagQuoteRegexp := "^" + regexp.QuoteMeta(key + "=" + val) + "$"
+	tagWildcardRegexp := regexp.MustCompile(strings.Replace(tagQuoteRegexp, "\\*", ".*", -1))
+
+	return tagMatcher{tagRegexp: tagWildcardRegexp}
 }
 
 type tagKeyMatcher struct {
