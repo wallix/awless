@@ -1,13 +1,16 @@
 package awstailers
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
+	"reflect"
+	"strconv"
 	"strings"
-	"text/tabwriter"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/configservice"
 	"github.com/fatih/color"
@@ -15,11 +18,12 @@ import (
 )
 
 const (
-	StackEventLogicalID    = "id"
-	StackEventTimestamp    = "ts"
-	StackEventStatus       = "status"
-	StackEventStatusReason = "reason"
-	StackEventType         = "type"
+	StackEventFilterLogicalID    = "id"
+	StackEventFilterTimestamp    = "ts"
+	StackEventFilterStatus       = "status"
+	StackEventFilterStatusReason = "reason"
+	StackEventFilterType         = "type"
+	StackEventFilterPhysicalId   = "physical-id"
 
 	// valid stack status codes
 	// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
@@ -42,9 +46,29 @@ type stackEventTailer struct {
 	cancelAfterTimeout bool
 }
 
+// Copy of cloudformation.StackEvent for futher string formating
 type stackEvent struct {
-	*cloudformation.StackEvent
+	Timestamp         *string `width:"20,5"`
+	ResourceStatus    *string `width:"50,5"`
+	ResourceType      *string `width:"45,5"`
+	LogicalResourceId *string `width:"25,5"`
+
+	PhysicalResourceId   *string `width:"40,5"`
+	ResourceStatusReason *string `width:"40,5"`
+	EventId              *string
 }
+
+var filtersMapping = map[string]string{
+	StackEventFilterLogicalID:    "LogicalResourceId",
+	StackEventFilterTimestamp:    "Timestamp",
+	StackEventFilterStatus:       "ResourceStatus",
+	StackEventFilterStatusReason: "ResourceStatusReason",
+	StackEventFilterType:         "ResourceType",
+	StackEventFilterPhysicalId:   "PhysicalResourceId",
+}
+
+var DefaultStackEventFilters = []string{StackEventFilterTimestamp, StackEventFilterLogicalID, StackEventFilterType, StackEventFilterStatus}
+var AllStackEventFilters = append(DefaultStackEventFilters, StackEventFilterStatusReason, StackEventFilterPhysicalId)
 
 type stackEvents []stackEvent
 
@@ -74,17 +98,9 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 		return fmt.Errorf("invalid polling frequency: %s, must be greater than 5s", t.pollingFrequency)
 	}
 
-	tab := tabwriter.NewWriter(w, 8, 8, 8, '\t', 0)
-	tab.Write(t.filters.header())
-
+	w.Write(t.filters.header())
 	if !t.follow {
-		if err := t.displayLastEvents(cfn, tab); err != nil {
-			return err
-		}
-
-		tab.Flush()
-
-		return nil
+		return t.displayLastEvents(cfn, w)
 	}
 
 	isDeploying, err := t.isStackBeingDeployed(cfn)
@@ -118,16 +134,14 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 				return fmt.Errorf("Timeout (%s) reached. Exiting...", t.timeout.String())
 			}
 		case <-ticker.C:
-			if err := t.displayRelevantEvents(cfn, tab); err != nil {
+			if err := t.displayRelevantEvents(cfn, w); err != nil {
 				return err
 			}
-
-			tab.Flush()
 
 			if t.deploymentStatus.isFinished {
 				if len(t.deploymentStatus.failedEvents) > 0 {
 					var errBuf bytes.Buffer
-					var f filters = []string{StackEventLogicalID, StackEventType, StackEventStatus, StackEventStatusReason}
+					var f filters = []string{StackEventFilterLogicalID, StackEventFilterType, StackEventFilterStatus, StackEventFilterStatusReason}
 
 					if isTimeoutReached {
 						errBuf.WriteString("Update was cancelled because timeout has been reached and option 'Cancel On Timeout' enabled\n")
@@ -137,12 +151,10 @@ func (t *stackEventTailer) Tail(w io.Writer) error {
 
 					errBuf.WriteString("Failed events summary:\n")
 
-					// printing error events as a nice table
-					errTab := tabwriter.NewWriter(&errBuf, 25, 8, 0, '\t', 0)
-					errTab.Write(f.header())
-					t.deploymentStatus.failedEvents.printReverse(errTab, f)
-					errTab.Flush()
-
+					errBuf.Write(f.header())
+					writer := bufio.NewWriter(&errBuf)
+					t.deploymentStatus.failedEvents.printReverse(writer, f)
+					writer.Flush()
 					return fmt.Errorf(errBuf.String())
 				}
 				return nil
@@ -175,7 +187,7 @@ func (t *stackEventTailer) getLatestEvents(cfn *awsservices.Cloudformation) (sta
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
 				return stEvents, nil
 			}
-			stEvents = append(stEvents, stackEvent{e})
+			stEvents = append(stEvents, NewStackEvent(e))
 		}
 
 		if resp.NextToken == nil {
@@ -233,7 +245,7 @@ func (t *stackEventTailer) getRelevantEvents(cfn *awsservices.Cloudformation) (s
 		}
 
 		for _, e := range resp.StackEvents {
-			event := stackEvent{e}
+			event := NewStackEvent(e)
 			// if lastEventID == nil then it's first run of this method
 			// if lastEventID == nil then it's not first run and print only new messages
 			if t.lastEventID != nil && *e.EventId == *t.lastEventID {
@@ -282,83 +294,53 @@ func (t *stackEventTailer) displayRelevantEvents(cfn *awsservices.Cloudformation
 	return events.printReverse(w, t.filters)
 }
 
-func coloredResourceStatus(str string) string {
+func colorizeResourceStatus(str string) *string {
+	var c color.Attribute
 	switch {
 	case strings.HasSuffix(str, StackEventFailed),
 		str == cloudformation.StackStatusUpdateRollbackInProgress,
 		str == cloudformation.StackStatusRollbackInProgress:
-		return color.New(color.FgRed).SprintFunc()(str)
+		c = color.FgRed
 	case strings.HasSuffix(str, StackEventInProgress):
-		return color.New(color.FgYellow).SprintFunc()(str)
+		c = color.FgYellow
 	case strings.HasSuffix(str, StackEventComplete):
-		return color.New(color.FgGreen).SprintFunc()(str)
-	default:
-		return str
+		c = color.FgGreen
 	}
 
+	s := color.New(c).SprintFunc()(str)
+
+	return &s
 }
 
 func (e stackEvents) printReverse(w io.Writer, f filters) error {
 	for i := len(e) - 1; i >= 0; i-- {
-		w.Write(e[i].filter(f))
+		w.Write(e[i].format(f))
 	}
 
 	return nil
 }
 
 func (f filters) header() []byte {
-	var buf bytes.Buffer
-	for i, filter := range f {
-		switch filter {
-		case StackEventLogicalID:
-			buf.WriteString("Logical ID")
-		case StackEventTimestamp:
-			buf.WriteString("Timestamp")
-		case StackEventStatus:
-			buf.WriteString("Status")
-		case StackEventStatusReason:
-			buf.WriteString("Status Reason")
-		case StackEventType:
-			buf.WriteString("Type")
-		}
+	//// TODO: bold text still shifts the columns, need to figure out whats wrong
+	// s := &stackEvent{
+	// 	Timestamp:            func() *string { t := color.New(color.Bold).Sprintf("Timestamp"); return &t }(),
+	// 	ResourceStatus:       func() *string { t := color.New(color.Bold).Sprintf("Status"); return &t }(),
+	// 	LogicalResourceId:    func() *string { t := color.New(color.Bold).Sprintf("Logical ID"); return &t }(),
+	// 	PhysicalResourceId:   func() *string { t := color.New(color.Bold).Sprintf("Physical ID"); return &t }(),
+	// 	ResourceStatusReason: func() *string { t := color.New(color.Bold).Sprintf("Status Reason"); return &t }(),
+	// 	ResourceType:         func() *string { t := color.New(color.Bold).Sprintf("Type"); return &t }(),
+	// }
 
-		if i != len(f)-1 {
-			buf.WriteRune('\t')
-		}
-
+	s := &stackEvent{
+		Timestamp:            func() *string { t := "Timestamp"; return &t }(),
+		ResourceStatus:       func() *string { t := "Status"; return &t }(),
+		LogicalResourceId:    func() *string { t := "Logical ID"; return &t }(),
+		PhysicalResourceId:   func() *string { t := "Physical ID"; return &t }(),
+		ResourceStatusReason: func() *string { t := "Status Reason"; return &t }(),
+		ResourceType:         func() *string { t := "Type"; return &t }(),
 	}
 
-	// with "\n" formatted with bold, tabwriter somehow shift lines
-	// so we need to add "\n" after string being bolded
-	return []byte(color.New(color.Bold).Sprintf(buf.String()) + "\n")
-}
-
-func (e *stackEvent) filter(filters []string) (out []byte) {
-	var buf bytes.Buffer
-
-	for i, f := range filters {
-		switch {
-		case f == StackEventLogicalID && e.LogicalResourceId != nil:
-			buf.WriteString(*e.LogicalResourceId)
-		case f == StackEventTimestamp && e.Timestamp != nil:
-			buf.WriteString(e.Timestamp.Format(time.RFC3339))
-		case f == StackEventStatus && e.ResourceStatus != nil:
-			buf.WriteString(coloredResourceStatus(*e.ResourceStatus))
-		case f == StackEventStatusReason && e.ResourceStatusReason != nil:
-			buf.WriteString(*e.ResourceStatusReason)
-		case f == StackEventType && e.ResourceType != nil:
-			buf.WriteString(*e.ResourceType)
-		}
-
-		if i != len(filters)-1 {
-			buf.WriteRune('\t')
-		}
-
-	}
-
-	buf.WriteRune('\n')
-
-	return buf.Bytes()
+	return s.format(f)
 }
 
 func (s *stackEvent) isDeploymentStart() bool {
@@ -384,4 +366,104 @@ func (s *stackEventTailer) cancelStackUpdate(cfn *awsservices.Cloudformation) er
 	inp := &cloudformation.CancelUpdateStackInput{StackName: &s.stackName}
 	_, err := cfn.CancelUpdateStack(inp)
 	return err
+}
+
+func NewStackEvent(e *cloudformation.StackEvent) stackEvent {
+	return stackEvent{
+		Timestamp:            func() *string { t := e.Timestamp.Format(time.RFC3339); return &t }(),
+		ResourceStatus:       e.ResourceStatus,
+		ResourceType:         e.ResourceType,
+		LogicalResourceId:    e.LogicalResourceId,
+		PhysicalResourceId:   e.PhysicalResourceId,
+		ResourceStatusReason: e.ResourceStatusReason,
+		EventId:              e.EventId,
+	}
+}
+
+// Format reads the struct tag `width:"<width>,<space>"`
+// further marshaling into structured field
+func (s *stackEvent) format(fil filters) []byte {
+	tp := reflect.TypeOf(s).Elem()
+	v := reflect.ValueOf(s).Elem()
+
+	if s.ResourceStatus != nil {
+		s.ResourceStatus = colorizeResourceStatus(*s.ResourceStatus)
+	}
+
+	buf := bytes.Buffer{}
+	var nextLine *stackEvent
+	for i, f := range fil {
+		field, ok := tp.FieldByName(filtersMapping[f])
+		if !ok {
+			continue
+		}
+		value := v.FieldByName(filtersMapping[f])
+
+		splt := strings.Split(field.Tag.Get("width"), ",")
+		if len(splt) != 2 {
+			continue
+		}
+
+		width, err := strconv.Atoi(splt[0])
+		if err != nil {
+			continue
+		}
+
+		space, err := strconv.Atoi(splt[1])
+		if err != nil {
+			continue
+		}
+
+		// no need of space in the last column
+		if i == len(fil)-1 {
+			width += space
+			space = 0
+		}
+
+		var v string
+		if !value.IsNil() {
+			v = value.Elem().String()
+		}
+
+		// handle coloring
+		// if string starts with "\x1b" then it is colored
+		if strings.HasPrefix(v, "\x1b") {
+			// color adds additional length to the string
+			// which is not displayed in the console
+			// and results in text shift
+			// so we need to increase column width a bit
+			// colored string looks like: "\x1b[31mText\x1b[0m"
+			// TODO: looks like this doesn't helps, if one line has the
+			// more then one colored column (like header)
+			width += strings.Index(v, "m") + 1 + len("\x1b[0m")
+		}
+
+		if len(v) > width {
+			if nextLine == nil {
+				nextLine = &stackEvent{}
+			}
+			nv := reflect.ValueOf(nextLine).Elem()
+			nv.FieldByName(field.Name).Set(reflect.ValueOf(aws.String(v[width:])))
+			v = v[:width]
+		}
+
+		buf.WriteString(v)
+		// fil the rest of the line space with " "
+		buf.WriteString(createSpaces(width + space - len(v)))
+	}
+
+	buf.WriteRune('\n')
+	if nextLine != nil {
+		buf.Write(nextLine.format(fil))
+	}
+	return buf.Bytes()
+}
+
+func createSpaces(n int) string {
+	var buf = bytes.Buffer{}
+	for i := 0; i < n; i++ {
+		buf.WriteString(" ")
+	}
+
+	return buf.String()
 }

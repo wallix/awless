@@ -19,6 +19,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -42,13 +43,8 @@ func init() {
 	tailCmd.AddCommand(scalingActivitiesCmd)
 
 	stackEventsCmd.PersistentFlags().StringArrayVar(&stackEventsFilters, "filters",
-		[]string{awstailers.StackEventTimestamp, awstailers.StackEventLogicalID, awstailers.StackEventType, awstailers.StackEventStatus},
-		fmt.Sprintf("Filter the output columns. Valid filters: %s, %s, %s, %s, %s",
-			awstailers.StackEventLogicalID,
-			awstailers.StackEventStatus,
-			awstailers.StackEventStatusReason,
-			awstailers.StackEventTimestamp,
-			awstailers.StackEventType))
+		awstailers.DefaultStackEventFilters,
+		fmt.Sprintf("Filter the output columns. Valid filters: %s", strings.Join(awstailers.AllStackEventFilters, ",")))
 
 	stackEventsCmd.PersistentFlags().BoolVar(&cancelStackUpdateAfterTimeout, "cancel-on-timeout", false, "Cancel stack update when timeout is reached, use with 'timeout' flag")
 	stackEventsCmd.PersistentFlags().DurationVar(&stackEventsTailTimeout, "timeout", time.Duration(1*time.Hour), "Time to wait for stack update to complete, use with 'follow' flag")
