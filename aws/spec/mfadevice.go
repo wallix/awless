@@ -73,7 +73,7 @@ func (cmd *CreateMfadevice) ManualRun(renv env.Running) (interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("encode qrcode: %s", err)
 	}
-	qrCodeDisplaySize := 40
+	qrCodeDisplaySize := 43
 	qrcode, err = barcode.Scale(qrcode, qrCodeDisplaySize, qrCodeDisplaySize)
 	if err != nil {
 		return nil, fmt.Errorf("scale qrcode: %s", err)
