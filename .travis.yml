@@ -2,10 +2,11 @@ language: go
 
 install: true
 
+go_import_path: github.com/wallix/awless
+
 go:
-  - 1.9.x
-  - 1.10.x
   - 1.11.x
+  - 1.12.x
 
 before_install:
   - go get github.com/mattn/goveralls
