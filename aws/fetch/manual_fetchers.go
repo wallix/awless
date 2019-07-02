@@ -85,8 +85,8 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 
 		var tasks []*ecs.Task
 
-		if val, e := cache.Get("getAllTasks", func() (interface{}, error) {
-			return getAllTasks(ctx, cache, conf.APIs.Ecs)
+		if val, e := cache.Get("getTasks", func() (interface{}, error) {
+			return getTasks(ctx, cache, conf.APIs.Ecs)
 		}); e != nil {
 			return resources, objects, e
 		} else if v, ok := val.([]*ecs.Task); ok {
@@ -134,12 +134,22 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 	}
 
 	funcs["containertask"] = func(ctx context.Context, cache fetch.Cache) ([]*graph.Resource, interface{}, error) {
+		var err error
 		var objects []*ecs.TaskDefinition
 		var resources []*graph.Resource
 
 		if !conf.getBoolDefaultTrue("aws.infra.containertask.sync") && !getBoolFromContext(ctx, "force") {
 			conf.Log.Verbose("sync: *disabled* for resource infra[containertask]")
 			return resources, objects, nil
+		}
+
+		var tasks []*ecs.Task
+		if val, e := cache.Get("getTasks", func() (interface{}, error) {
+			return getTasks(ctx, cache, conf.APIs.Ecs)
+		}); e != nil {
+			return resources, objects, e
+		} else if v, ok := val.([]*ecs.Task); ok {
+			tasks = v
 		}
 
 		type resStruct struct {
@@ -150,43 +160,23 @@ func addManualInfraFetchFuncs(conf *Config, funcs map[string]fetch.Func) {
 		var wg sync.WaitGroup
 		resc := make(chan resStruct)
 
-		fetchDefinitionsInput := &ecs.ListTaskDefinitionsInput{}
-		if givenFamilyPrefix, hasFilter := getUserFiltersFromContext(ctx)["name"]; hasFilter {
-			fetchDefinitionsInput.FamilyPrefix = &givenFamilyPrefix
-		}
-
-		err := conf.APIs.Ecs.ListTaskDefinitionsPages(fetchDefinitionsInput, func(out *ecs.ListTaskDefinitionsOutput, lastPage bool) (shouldContinue bool) {
-			for _, arn := range out.TaskDefinitionArns {
-				wg.Add(1)
-				go func(taskDefArn *string) {
-					defer wg.Done()
-					tasksOut, err := conf.APIs.Ecs.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{TaskDefinition: taskDefArn})
-					if err != nil {
-						resc <- resStruct{err: err}
-						return
-					}
-					resc <- resStruct{res: tasksOut.TaskDefinition}
-				}(arn)
-			}
-			return out.NextToken != nil
-		})
-		if err != nil {
-			return resources, objects, err
+		for _, t := range tasks {
+			wg.Add(1)
+			go func(taskDefArn *string) {
+				defer wg.Done()
+				tasksOut, err := conf.APIs.Ecs.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{TaskDefinition: taskDefArn})
+				if err != nil {
+					resc <- resStruct{err: err}
+					return
+				}
+				resc <- resStruct{res: tasksOut.TaskDefinition}
+			}(t.TaskDefinitionArn)
 		}
 
 		go func() {
 			wg.Wait()
 			close(resc)
 		}()
-
-		var tasks []*ecs.Task
-		if val, e := cache.Get("getAllTasks", func() (interface{}, error) {
-			return getAllTasks(ctx, cache, conf.APIs.Ecs)
-		}); e != nil {
-			return resources, objects, e
-		} else if v, ok := val.([]*ecs.Task); ok {
-			tasks = v
-		}
 
 		var errors []string
 
