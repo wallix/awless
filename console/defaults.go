@@ -49,7 +49,7 @@ var ColumnsInListing = map[string][]string{
 	cloud.ScalingPolicy:       {properties.Name, properties.Type, properties.ScalingGroupName, properties.AlarmNames, properties.AdjustmentType, properties.ScalingAdjustment},
 	cloud.Repository:          {properties.Name, properties.URI, properties.Created, properties.Account, properties.Arn},
 	cloud.ContainerCluster:    {properties.Name, properties.State, properties.ActiveServicesCount, properties.PendingTasksCount, properties.RegisteredContainerInstancesCount, properties.RunningTasksCount},
-	cloud.ContainerTask:       {properties.Name, properties.Version, properties.State, properties.ContainersImages, properties.Deployments},
+	cloud.ContainerTask:       {properties.Name, properties.Version, properties.Cluster, properties.ContainerInstance, properties.ServiceName, properties.Family, properties.State, properties.DesiredStatus, properties.LaunchType, properties.ContainersImages, properties.Deployments, properties.StartedBy},
 	cloud.Container:           {properties.Name, properties.DeploymentName, properties.State, properties.Created, properties.Launched, properties.Stopped, properties.Cluster, properties.ContainerTask},
 	cloud.ContainerInstance:   {properties.ID, properties.Instance, properties.Cluster, properties.State, properties.RunningTasksCount, properties.PendingTasksCount, properties.Created, properties.AgentConnected},
 	cloud.Certificate:         {properties.Arn, properties.Name},

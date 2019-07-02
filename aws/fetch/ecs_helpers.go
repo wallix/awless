@@ -36,10 +36,32 @@ func getClusterArns(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI)
 	return arns, nil
 }
 
-func getAllTasks(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) (res []*ecs.Task, err error) {
+func getTasks(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) (res []*ecs.Task, err error) {
 	clusterArns, cerr := getClusterArns(ctx, cache, api)
 	if cerr != nil {
 		return res, cerr
+	}
+
+	hasStatusFilter := false
+	templ := &ecs.ListTasksInput{}
+	if givenContainerInstance, hasFilter := getUserFiltersFromContext(ctx)["clusterinstance"]; hasFilter {
+		templ.ContainerInstance = &givenContainerInstance
+	}
+	if givenDesiredStatus, hasFilter := getUserFiltersFromContext(ctx)["desiredstatus"]; hasFilter {
+		templ.DesiredStatus = &givenDesiredStatus
+		hasStatusFilter = true
+	}
+	if givenFamily, hasFilter := getUserFiltersFromContext(ctx)["family"]; hasFilter {
+		templ.Family = &givenFamily
+	}
+	if givenLaunchType, hasFilter := getUserFiltersFromContext(ctx)["launchtype"]; hasFilter {
+		templ.LaunchType = &givenLaunchType
+	}
+	if givenServiceName, hasFilter := getUserFiltersFromContext(ctx)["service"]; hasFilter {
+		templ.ServiceName = &givenServiceName
+	}
+	if givenStartedBy, hasFilter := getUserFiltersFromContext(ctx)["startedby"]; hasFilter {
+		templ.StartedBy = &givenStartedBy
 	}
 
 	type listTasksOutput struct {
@@ -59,20 +81,42 @@ func getAllTasks(ctx context.Context, cache fetch.Cache, api ecsiface.ECSAPI) (r
 
 	for _, cluster := range clusterArns {
 		wg.Add(1)
+		templ.Cluster = &cluster
 		go func(cl string) {
 			defer wg.Done()
-			if er := api.ListTasksPages(&ecs.ListTasksInput{Cluster: &cl, DesiredStatus: awssdk.String("RUNNING")}, addTaskContainersFunc(cl)); er != nil {
+			fetchTasksInput := &ecs.ListTasksInput{
+				Cluster:           &cl,
+				ContainerInstance: templ.ContainerInstance,
+				DesiredStatus:     templ.DesiredStatus,
+				Family:            templ.Family,
+				LaunchType:        templ.LaunchType,
+				ServiceName:       templ.ServiceName,
+				StartedBy:         templ.StartedBy,
+			}
+			if er := api.ListTasksPages(fetchTasksInput, addTaskContainersFunc(cl)); er != nil {
 				tasksNamesc <- listTasksOutput{err: er}
 			}
 		}(cluster)
 
-		wg.Add(1)
-		go func(cl string) {
-			defer wg.Done()
-			if er := api.ListTasksPages(&ecs.ListTasksInput{Cluster: &cl, DesiredStatus: awssdk.String("STOPPED")}, addTaskContainersFunc(cl)); er != nil {
-				tasksNamesc <- listTasksOutput{err: er}
-			}
-		}(cluster)
+		// If the user did not specify a status filter, also query for the STOPPED status since the default is RUNNING
+		if !hasStatusFilter {
+			wg.Add(1)
+			go func(cl string) {
+				defer wg.Done()
+				fetchTasksInput := &ecs.ListTasksInput{
+					Cluster:           &cl,
+					ContainerInstance: templ.ContainerInstance,
+					DesiredStatus:     awssdk.String("STOPPED"),
+					Family:            templ.Family,
+					LaunchType:        templ.LaunchType,
+					ServiceName:       templ.ServiceName,
+					StartedBy:         templ.StartedBy,
+				}
+				if er := api.ListTasksPages(fetchTasksInput, addTaskContainersFunc(cl)); er != nil {
+					tasksNamesc <- listTasksOutput{err: er}
+				}
+			}(cluster)
+		}
 	}
 
 	type describeTasksOutput struct {
