@@ -45,6 +45,7 @@ var printSSHConfigFlag bool
 var printSSHCLIFlag bool
 var privateIPFlag bool
 var disableStrictHostKeyCheckingFlag bool
+var anyHostFlag bool
 
 func init() {
 	RootCmd.AddCommand(sshCmd)
@@ -55,6 +56,7 @@ func init() {
 	sshCmd.Flags().BoolVar(&printSSHConfigFlag, "print-config", false, "Print SSH configuration for ~/.ssh/config file.")
 	sshCmd.Flags().BoolVar(&printSSHCLIFlag, "print-cli", false, "Print the CLI one-liner to connect with SSH. (/usr/bin/ssh user@ip -i ...)")
 	sshCmd.Flags().BoolVar(&privateIPFlag, "private", false, "Use private ip to connect to host")
+	sshCmd.Flags().BoolVar(&anyHostFlag, "any", false, "Connect to any running host matching the instance name")
 	sshCmd.Flags().BoolVar(&disableStrictHostKeyCheckingFlag, "disable-strict-host-keychecking", false, "Disable the remote host key check from ~/.ssh/known_hosts or ~/.awless/known_hosts file")
 }
 
@@ -75,6 +77,7 @@ var sshCmd = &cobra.Command{
 
   awless ssh db-private --through my-bastion  # connect to a private inst through a public one
   awless ssh db-private --private             # connect using the private IP (when you have a VPN, tunnel, etc ...)
+  awless ssh db-private --any                 # connect to any host with the name db-private
 
   awless ssh redis-prod --print-cli           # print out the full terminal command to connect to instance
   awless ssh redis-prod --print-config        # print out the full SSH config (i.e: ~/.ssh/config) to connect to instance
@@ -241,6 +244,11 @@ func initInstanceConnectionContext(userhost, keypath string) (*instanceConnectio
 			logger.Infof("Found only one instance running: %s. Will connect to this instance.", running[0].Id())
 			ctx.instance = running[0]
 		default:
+			if anyHostFlag {
+				logger.Infof("Multiple running instances found, connecting to: %s.", running[0].Id())
+				ctx.instance = running[0]
+				break
+			}
 			logger.Warning("Connect through the running ones using their id:")
 			for _, res := range running {
 				var up string
