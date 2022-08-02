@@ -29,7 +29,7 @@ Choose one of the following options:
 1. On macOS, use [homebrew](http://brew.sh):  `brew tap wallix/awless; brew install awless`
 2. With `curl` (macOS/Linux), run: `curl https://raw.githubusercontent.com/wallix/awless/master/getawless.sh | bash`
 3. Download the latest `awless` binaries (Windows/Linux/macOS) [from Github](https://github.com/wallix/awless/releases/latest)
-4. If you have Golang already installed, install from the source with: `go get -u github.com/wallix/awless`
+4. If you have Golang already installed, install from the source with: `go install github.com/wallix/awless@latest`
 
 If you have previously used the AWS CLI or aws-shell, you don't need to configure anything! Your config will be automatically loaded (i.e. ~/.aws/{credentials,config}) and `awless` will prompt for any missing info (more at our [getting started](https://github.com/wallix/awless/wiki/Getting-Started)).
 
